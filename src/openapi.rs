@@ -1454,6 +1454,17 @@ pub enum AdditionalProperties {
     Schema(Box<Schema>),
 }
 
+/// The declared SDK parameter name used by refusal validation only.
+/// Keep the dual-header precedence here with the other extension accessors.
+pub(crate) fn refusal_parameter_name(node: &serde_yaml_ng::Value) -> Option<&str> {
+    node.get("x-crozier-parameter-name")
+        .and_then(serde_yaml_ng::Value::as_str)
+        .or_else(|| {
+            node.get("x-fern-parameter-name")
+                .and_then(serde_yaml_ng::Value::as_str)
+        })
+}
+
 /// Load and parse an OpenAPI document, dispatching on the file extension.
 pub fn load(path: &Path) -> Result<OpenApi> {
     let text = std::fs::read_to_string(path).map_err(|source| Error::ReadSpec {
@@ -3735,5 +3746,27 @@ paths:
              large rarely-present field rather than raising this ceiling.",
             std::mem::size_of::<Operation>()
         );
+    }
+}
+
+#[cfg(test)]
+mod refusal_name_tests {
+    #[test]
+    fn declared_parameter_names_obey_dual_header_precedence() {
+        for (text, expected) in [
+            ("x-fern-parameter-name: fernName", Some("fernName")),
+            (
+                "x-crozier-parameter-name: crozierName\nx-fern-parameter-name: fernName",
+                Some("crozierName"),
+            ),
+            (
+                "x-crozier-parameter-name: null\nx-fern-parameter-name: fernName",
+                Some("fernName"),
+            ),
+            ("type: string", None),
+        ] {
+            let node = serde_yaml_ng::from_str(text).unwrap();
+            assert_eq!(super::refusal_parameter_name(&node), expected);
+        }
     }
 }

@@ -15796,3 +15796,137 @@ fn repeated_path_names_refuse_and_distinct_positions_recover() {
         run(false);
     }
 }
+
+#[test]
+fn normalized_parameter_collisions_refuse_and_renamed_parameters_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        std::fs::write(&spec, &probe).unwrap();
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().code(1).stderr(predicates::str::contains(
+            "request-property-camelcase-collision",
+        ));
+        assert!(!output.exists());
+        std::fs::write(&spec, probe.replace("accountId", "otherAccountId")).unwrap();
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().success();
+        assert!(output.join("pyproject.toml").is_file());
+    }
+}
+
+#[test]
+fn inferred_path_and_body_parameter_names_share_collision_validation() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    for (route, parameters, body) in [
+        (
+            "/accounts/{+accountId}",
+            serde_json::json!([{"name": "accountId", "in": "path", "required": true, "schema": {"type": "string"}}]),
+            serde_json::Value::Null,
+        ),
+        (
+            "/accounts",
+            serde_json::json!([{"name": "accountId", "in": "query", "schema": {"type": "string"}}]),
+            serde_json::json!({"type": "object", "properties": {"account_id": {"type": "string"}}}),
+        ),
+    ] {
+        let mut op = serde_json::json!({"operationId": "probe", "parameters": parameters, "responses": {"204": {"description": "Done"}}});
+        if !body.is_null() {
+            op["requestBody"] =
+                serde_json::json!({"content": {"application/json": {"schema": body}}});
+        }
+        let document = serde_json::json!({"openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {route: {"post": op}}});
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            command.assert().code(1).stderr(predicates::str::contains(
+                "request-property-camelcase-collision",
+            ));
+            assert!(!output.exists());
+        }
+    }
+}
+
+#[test]
+fn declared_parameter_names_deconflict_refusals_without_repairing_generation() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
+    )
+    .unwrap();
+    for body in [false, true] {
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        let op = &mut document["paths"]["/accounts"]["get"];
+        let hint = serde_json::json!({"type": "string", "x-fern-parameter-name": "account_id", "x-crozier-parameter-name": "otherAccount"});
+        if body {
+            op["parameters"].as_array_mut().unwrap().truncate(1);
+            op["requestBody"] = serde_json::json!({"content": {"application/json": {"schema": {"type": "object", "properties": {"accountId": hint}}}}});
+        } else {
+            op["parameters"][1]["x-fern-parameter-name"] = serde_json::json!("account_id");
+            op["parameters"][1]["x-crozier-parameter-name"] = serde_json::json!("otherAccount");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{body}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let result = command.output().unwrap();
+            let stderr = String::from_utf8(result.stderr).unwrap();
+            // Parameter-only baseline generation still fails at ruff. The
+            // body case already generates; this node changes neither outcome.
+            assert!(
+                !stderr.contains("request-property-camelcase-collision"),
+                "{stderr}"
+            );
+            if body {
+                assert_eq!(result.status.code(), Some(0), "{stderr}");
+                assert!(output.join("pyproject.toml").is_file());
+            } else {
+                assert_eq!(result.status.code(), Some(1), "{stderr}");
+                assert!(stderr.contains("Duplicate keyword argument"), "{stderr}");
+                assert!(!output.exists());
+            }
+        }
+    }
+}

@@ -17,6 +17,7 @@ pub(crate) fn validate(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
 }
 
 fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
+    let source = source_document(path)?;
     for (route, _) in &doc.paths {
         let mut placeholders = std::collections::HashSet::new();
         for segment in route.split('{').skip(1) {
@@ -41,6 +42,82 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
     for (route, item) in &doc.paths {
         for (method, op) in item.operations() {
             let location = format!("{method} {route}");
+            let raw_operation = &source["paths"][route][method.to_ascii_lowercase()];
+            let mut names: Vec<String> = op
+                .parameters
+                .iter()
+                .map(|parameter| {
+                    let raw = raw_operation["parameters"]
+                        .as_sequence()
+                        .into_iter()
+                        .flatten()
+                        .chain(
+                            source["paths"][route]["parameters"]
+                                .as_sequence()
+                                .into_iter()
+                                .flatten(),
+                        )
+                        .map(|node| source_target(&source, node))
+                        .find(|node| node["name"].as_str() == Some(parameter.name.as_str()));
+                    raw.and_then(crate::openapi::refusal_parameter_name)
+                        .unwrap_or(&parameter.name)
+                        .to_owned()
+                })
+                .collect();
+            for segment in route.split('{').skip(1) {
+                if let Some((name, _)) = segment.split_once('}') {
+                    if !op.parameters.iter().any(|parameter| parameter.name == name) {
+                        names.push(name.to_owned());
+                    }
+                }
+            }
+            let mut body_hints = std::collections::HashMap::new();
+            let raw_body = source_target(&source, &raw_operation["requestBody"]);
+            for media in raw_body["content"]
+                .as_mapping()
+                .into_iter()
+                .flat_map(|mapping| mapping.values())
+            {
+                source_property_names(
+                    &source,
+                    &media["schema"],
+                    &mut std::collections::HashSet::new(),
+                    &mut body_hints,
+                );
+            }
+            if let Some(body) = &op.request_body {
+                for media in body.content.values() {
+                    if let Some(schema) = &media.schema {
+                        let mut properties = Vec::new();
+                        request_properties(
+                            schema,
+                            &doc.components.schemas,
+                            &mut std::collections::HashSet::new(),
+                            &mut properties,
+                        );
+                        names.extend(properties.into_iter().map(|name| {
+                            body_hints
+                                .get(name)
+                                .cloned()
+                                .unwrap_or_else(|| name.to_owned())
+                        }));
+                    }
+                }
+            }
+            let mut parameter_names = std::collections::HashMap::new();
+            for name in &names {
+                let identifier = crate::naming::to_snake_case(name)
+                    .trim_matches('_')
+                    .to_owned();
+                if let Some(previous) = parameter_names.insert(identifier, name) {
+                    if previous != name {
+                        return Err(Error::InvalidSpec {
+                            path: path.to_owned(),
+                            message: format!("request-property-camelcase-collision: {location} parameters {previous:?} and {name:?} normalize to the same identifier; give them distinct names"),
+                        });
+                    }
+                }
+            }
             for parameter in &op.parameters {
                 if let Some(schema) = &parameter.schema {
                     check_schema(
@@ -96,6 +173,106 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn source_document(path: &Path) -> Result<serde_yaml_ng::Value> {
+    let text = std::fs::read_to_string(path).map_err(|source| Error::ReadSpec {
+        path: path.to_owned(),
+        source,
+    })?;
+    // JSON's numeric visitor accepts large integers as floats; YAML Value's
+    // visitor rejects u128. Neither number matters to name validation.
+    if path
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("json"))
+    {
+        if let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) {
+            return serde_yaml_ng::to_value(value).map_err(|error| Error::ParseSpec {
+                path: path.to_owned(),
+                message: error.to_string(),
+            });
+        }
+    }
+    serde_yaml_ng::from_str(&text).map_err(|error| Error::ParseSpec {
+        path: path.to_owned(),
+        message: error.to_string(),
+    })
+}
+
+fn source_target<'a>(
+    source: &'a serde_yaml_ng::Value,
+    mut node: &'a serde_yaml_ng::Value,
+) -> &'a serde_yaml_ng::Value {
+    let mut visited = std::collections::HashSet::new();
+    while let Some(reference) = node["$ref"]
+        .as_str()
+        .filter(|reference| reference.starts_with("#/"))
+    {
+        if !visited.insert(reference) {
+            break;
+        }
+        let mut target = source;
+        for part in reference[2..].split('/') {
+            let key = part.replace("~1", "/").replace("~0", "~");
+            target = match target {
+                serde_yaml_ng::Value::Sequence(items) => {
+                    key.parse::<usize>().ok().and_then(|index| items.get(index))
+                }
+                _ => target.get(key.as_str()),
+            }
+            .unwrap_or(&serde_yaml_ng::Value::Null);
+        }
+        if target.is_null() {
+            break;
+        }
+        node = target;
+    }
+    node
+}
+
+fn source_property_names(
+    source: &serde_yaml_ng::Value,
+    node: &serde_yaml_ng::Value,
+    visited: &mut std::collections::HashSet<String>,
+    names: &mut std::collections::HashMap<String, String>,
+) {
+    if let Some(reference) = node["$ref"].as_str() {
+        if !visited.insert(reference.to_owned()) {
+            return;
+        }
+    }
+    let node = source_target(source, node);
+    for (key, property) in node["properties"].as_mapping().into_iter().flatten() {
+        if let Some(wire) = key.as_str() {
+            if let Some(name) = crate::openapi::refusal_parameter_name(property) {
+                names.insert(wire.to_owned(), name.to_owned());
+            }
+        }
+    }
+    for member in node["allOf"].as_sequence().into_iter().flatten() {
+        source_property_names(source, member, visited, names);
+    }
+}
+
+fn request_properties<'a>(
+    schema: &'a Schema,
+    schemas: &'a indexmap::IndexMap<String, Schema>,
+    visited: &mut std::collections::HashSet<&'a str>,
+    names: &mut Vec<&'a str>,
+) {
+    if let Some(reference) = &schema.reference {
+        if let Some(name) = reference.strip_prefix("#/components/schemas/") {
+            if visited.insert(name) {
+                if let Some(target) = schemas.get(name) {
+                    request_properties(target, schemas, visited, names);
+                }
+            }
+        }
+    }
+    names.extend(schema.properties.keys().map(String::as_str));
+    for member in schema.all_of.iter().flatten() {
+        request_properties(member, schemas, visited, names);
+    }
 }
 
 fn check_schema(
