@@ -2670,50 +2670,23 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
 }
 
 /// Drop operations and component schemas marked with the ignore extension
-/// (`x-crozier-ignore` / `x-fern-ignore`, issue #78), along with any schema that is
-/// no longer reachable once an ignored schema is gone.
+/// (`x-crozier-ignore` / `x-fern-ignore`, issue #78).
 ///
 /// An operation whose [`Operation::ignored`] is set is removed (and its path with
 /// it, if it becomes empty); a component whose [`Schema::ignored`] is set is never
-/// emitted. Removing an operation removes nothing from `components.schemas`: the
-/// TrueForge API ignores its three `/api/internal/import/*` operations, and Fern's
-/// golden still declares `ImportAgentsRequest`, `ImportSessionRequest` and every
-/// schema they reach, though nothing else references them. Beyond the explicit
-/// removals, a schema is pruned when it *was* reachable from an ignored schema's
-/// own `$ref`s yet is *not* reachable from any surviving operation — i.e. it fell
-/// out of the SDK's transitive closure as a result of that ignore. Standalone
-/// component schemas are left untouched, so this is inert on a spec with no ignore
-/// markers and never changes a full, unfiltered generation.
+/// emitted. Neither removal takes any other schema with it. Removing an operation
+/// removes nothing from `components.schemas`: the TrueForge API ignores its three
+/// `/api/internal/import/*` operations, and Fern's golden still declares
+/// `ImportAgentsRequest`, `ImportSessionRequest` and every schema they reach,
+/// though nothing else references them. Removing a schema keeps the schemas it
+/// referenced the same way: Fern 5.20.0 still declares `LegacyPart` when its one
+/// referrer `LegacyWidget` is ignored (the hand-written fixture
+/// `x-fern-ignore-schema`). So the ignore is inert on a spec with no markers and
+/// never changes a full, unfiltered generation.
 ///
 /// Unlike [`filter_by_audience`], the ignore honours **both** operation- and
 /// schema-level markers, per the [dual-header policy](self#fern-compatible-extensions).
 pub fn filter_ignored(doc: &mut OpenApi) {
-    let ignored_schemas: std::collections::BTreeSet<String> = doc
-        .components
-        .schemas
-        .iter()
-        .filter(|(_, s)| s.ignored())
-        .map(|(k, _)| k.clone())
-        .collect();
-    let has_ignored_op = doc
-        .paths
-        .values()
-        .flat_map(|i| i.operations())
-        .any(|(_, op)| op.ignored());
-    if ignored_schemas.is_empty() && !has_ignored_op {
-        return;
-    }
-
-    // Schemas reachable from the schemas that are being removed.
-    let mut removed_seed = std::collections::BTreeSet::new();
-    for key in &ignored_schemas {
-        removed_seed.insert(key.clone());
-        if let Some(s) = doc.components.schemas.get(key) {
-            collect_schema_refs(s, &mut removed_seed);
-        }
-    }
-    let reachable_from_removed = expand_schema_closure(doc, removed_seed);
-
     // Remove the ignored operations, then drop paths that are now empty.
     for item in doc.paths.values_mut() {
         for slot in item.operation_slots() {
@@ -2723,22 +2696,16 @@ pub fn filter_ignored(doc: &mut OpenApi) {
         }
     }
     doc.paths.retain(|_, item| !item.operations().is_empty());
-
-    // Schemas still reachable from the operations that survived.
-    let kept_seed = operation_schema_seed(doc.paths.values().flat_map(|i| i.operations()));
-    let reachable_from_kept = expand_schema_closure(doc, kept_seed);
-
-    doc.components.schemas.retain(|key, _| {
-        if ignored_schemas.contains(key) {
-            return false;
-        }
-        // Prune a schema that became unreferenced because an ignored schema was
-        // its only path in; keep everything a surviving op still reaches and every
-        // standalone schema no operation referenced in the first place.
-        let became_unreferenced =
-            reachable_from_removed.contains(key) && !reachable_from_kept.contains(key);
-        !became_unreferenced
-    });
+    let ignored_schemas: Vec<String> = doc
+        .components
+        .schemas
+        .iter()
+        .filter(|(_, schema)| schema.ignored())
+        .map(|(key, _)| key.clone())
+        .collect();
+    for key in &ignored_schemas {
+        doc.components.schemas.shift_remove(key);
+    }
 }
 
 /// Seed a schema-closure walk with every `#/components/schemas/*` key the given
@@ -3001,6 +2968,34 @@ components:
         let mut kept = schema_keys(&doc);
         kept.sort();
         assert_eq!(kept, ["OrphanKept", "Shared"]);
+    }
+
+    #[test]
+    fn schema_level_ignore_keeps_the_schemas_only_it_referenced() {
+        // Fern 5.20.0 keeps `LegacyPart`, whose one referrer is the ignored
+        // `LegacyWidget` (the hand-written fixture `x-fern-ignore-schema`).
+        let mut doc = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  /widgets:
+    get:
+      operationId: getWidget
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Widget" } } } }
+components:
+  schemas:
+    Widget: { type: object, properties: { id: { type: string } } }
+    LegacyWidget:
+      x-fern-ignore: true
+      type: object
+      properties: { part: { $ref: "#/components/schemas/LegacyPart" } }
+    LegacyPart: { type: object, properties: { serial: { type: string } } }
+"##,
+        );
+        filter_ignored(&mut doc);
+        assert_eq!(schema_keys(&doc), ["Widget", "LegacyPart"]);
     }
 
     #[test]

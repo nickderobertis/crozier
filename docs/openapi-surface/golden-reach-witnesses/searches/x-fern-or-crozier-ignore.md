@@ -56,3 +56,17 @@ search on its own.
 
 - **Declined** (`sourcegraph`): `github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181` — not a real-world specification: a test fixture written to exercise a tool — `fern-api/fern` at `7afb6e0db4ba7455ea0bc83229153f8368c54181`, `packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml`: an importer test fixture in `src/__test__/fixtures/`, titled Test extension `x-fern-ignore`
 - **Declined** (`sourcegraph`): `github.com/fern-api/fern:packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181` — not a real-world specification: a test fixture written to exercise a tool — `fern-api/fern` at `7afb6e0db4ba7455ea0bc83229153f8368c54181`, `packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml`: an importer test fixture in `src/__test__/fixtures/`, titled Test extension `x-fern-ignore`
+
+### Successor arm
+
+Commit `63c6be587` repaired a divergence the hand-written fixture
+[`x-fern-ignore-schema`](../../handwritten/x-fern-ignore-schema/) found:
+ignoring a component schema also pruned the schemas only it referenced, where
+Fern 5.20.0 keeps them. `filter_ignored` now removes the ignored schemas alone.
+The searched arm `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]`
+keeps its spelling, and its body still runs exactly when a component schema is
+ignored, on `63c6be587` as on build `4828cc2b93f0`, which every probe above ran.
+So the verdict above stands for it unchanged. The second searched arm,
+`src/openapi.rs::filter_ignored[if ignored_schemas\.contains\(key\) \{]`, was
+the prune's own test, and the repair removed it with the prune. It is no longer a
+handling site of this row.

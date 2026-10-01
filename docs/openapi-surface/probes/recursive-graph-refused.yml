@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: recursive-graph-refused
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+paths:
+  /nodes:
+    get:
+      operationId: getNode
+      responses:
+        "200":
+          description: The node
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Node"
+components:
+  schemas:
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+        "-":
+          type: object
+          properties:
+            label:
+              type: string
+            child:
+              $ref: "#/components/schemas/Node"
