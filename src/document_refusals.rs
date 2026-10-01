@@ -19,6 +19,7 @@ enum Class {
     PathWithoutLeadingSlash,
     PathParameterUnreferenced,
     UndefinedComponentReference,
+    DefaultNotValidForType,
 }
 
 impl Class {
@@ -31,6 +32,7 @@ impl Class {
             Self::PathWithoutLeadingSlash => "path-without-leading-slash",
             Self::PathParameterUnreferenced => "path-parameter-unreferenced",
             Self::UndefinedComponentReference => "undefined-component-reference",
+            Self::DefaultNotValidForType => "default-not-valid-for-type",
         }
     }
 }
@@ -189,6 +191,259 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
                         }
                     }
                 }
+            }
+        }
+    }
+    check_document_schema_defaults(&root, path, strict)?;
+    Ok(())
+}
+
+#[derive(Clone, Copy)]
+enum SchemaLocation {
+    Type,
+    Field,
+    Query,
+}
+
+fn check_document_schema_defaults(
+    root: &serde_yaml_ng::Value,
+    path: &Path,
+    strict: bool,
+) -> Result<()> {
+    if let Some(schemas) = root
+        .get("components")
+        .and_then(|value| value.get("schemas"))
+        .and_then(serde_yaml_ng::Value::as_mapping)
+    {
+        for (name, schema) in schemas {
+            if let Some(name) = name.as_str() {
+                check_schema_defaults(
+                    schema,
+                    root,
+                    path,
+                    strict,
+                    &format!("components/schemas/{name}"),
+                    SchemaLocation::Type,
+                    &mut std::collections::HashSet::new(),
+                )?;
+            }
+        }
+    }
+    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+        for (route, item) in paths {
+            let Some(route) = route.as_str() else {
+                continue;
+            };
+            for method in [
+                "get", "put", "post", "delete", "options", "head", "patch", "trace",
+            ] {
+                let Some(operation) = item.get(method) else {
+                    continue;
+                };
+                if ignored_reference_node(operation) {
+                    continue;
+                }
+                let mut seen = std::collections::HashSet::new();
+                if let Some(parameters) = item.get("parameters") {
+                    check_bound_schema_defaults(
+                        parameters,
+                        root,
+                        path,
+                        strict,
+                        &format!("paths/{route}/parameters"),
+                        &mut seen,
+                    )?;
+                }
+                for key in ["parameters", "requestBody", "responses"] {
+                    if let Some(value) = operation.get(key) {
+                        check_bound_schema_defaults(
+                            value,
+                            root,
+                            path,
+                            strict,
+                            &format!("paths/{route}/{method}/{key}"),
+                            &mut seen,
+                        )?;
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn check_bound_schema_defaults(
+    node: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    path: &Path,
+    strict: bool,
+    element: &str,
+    seen: &mut std::collections::HashSet<String>,
+) -> Result<()> {
+    if ignored_reference_node(node) {
+        return Ok(());
+    }
+    if let Some(reference) = node.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+        if let Some(pointer) = reference.strip_prefix('#') {
+            if seen.insert(reference.to_owned()) {
+                if let Some(target) = yaml_pointer(root, pointer) {
+                    check_bound_schema_defaults(target, root, path, strict, reference, seen)?;
+                }
+            }
+        }
+        return Ok(());
+    }
+    match node {
+        serde_yaml_ng::Value::Mapping(values) => {
+            for (key, value) in values {
+                let key = key
+                    .as_str()
+                    .map(str::to_owned)
+                    .or_else(|| key.as_i64().map(|key| key.to_string()));
+                let Some(key) = key else { continue };
+                if key == "schema" {
+                    let location = match node.get("in").and_then(serde_yaml_ng::Value::as_str) {
+                        Some("query") => SchemaLocation::Query,
+                        Some(_) => SchemaLocation::Field,
+                        None => SchemaLocation::Type,
+                    };
+                    let name = node.get("name").and_then(serde_yaml_ng::Value::as_str);
+                    let schema_element = name.map_or_else(
+                        || format!("{element}/schema"),
+                        |name| format!("{element}/{name}/schema"),
+                    );
+                    check_schema_defaults(
+                        value,
+                        root,
+                        path,
+                        strict,
+                        &schema_element,
+                        location,
+                        seen,
+                    )?;
+                } else if !matches!(
+                    key.as_str(),
+                    "example" | "examples" | "default" | "enum" | "links" | "headers" | "encoding"
+                ) && !key.starts_with("x-")
+                {
+                    check_bound_schema_defaults(
+                        value,
+                        root,
+                        path,
+                        strict,
+                        &format!("{element}/{key}"),
+                        seen,
+                    )?;
+                }
+            }
+        }
+        serde_yaml_ng::Value::Sequence(values) => {
+            for (index, value) in values.iter().enumerate() {
+                check_bound_schema_defaults(
+                    value,
+                    root,
+                    path,
+                    strict,
+                    &format!("{element}/{index}"),
+                    seen,
+                )?;
+            }
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+fn check_schema_defaults(
+    schema: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    path: &Path,
+    strict: bool,
+    element: &str,
+    location: SchemaLocation,
+    seen: &mut std::collections::HashSet<String>,
+) -> Result<()> {
+    if ignored_reference_node(schema) {
+        return Ok(());
+    }
+    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+        if let Some(pointer) = reference.strip_prefix('#') {
+            if seen.insert(reference.to_owned()) {
+                if let Some(target) = yaml_pointer(root, pointer) {
+                    check_schema_defaults(
+                        target,
+                        root,
+                        path,
+                        strict,
+                        reference.trim_start_matches("#/"),
+                        SchemaLocation::Type,
+                        seen,
+                    )?;
+                }
+            }
+        }
+    }
+    if let Some(default) = schema
+        .get("default")
+        .filter(|value| !value.is_null() && !matches!(location, SchemaLocation::Type))
+    {
+        let invalid = match schema.get("type").and_then(serde_yaml_ng::Value::as_str) {
+            Some("integer") => default.as_f64().is_none_or(|value| value.fract() != 0.0),
+            Some("number") => default.as_f64().is_none(),
+            _ => false,
+        };
+        if invalid {
+            return refusal(
+                path,
+                strict,
+                Class::DefaultNotValidForType,
+                &format!("{element} default {default:?}"),
+            );
+        }
+    }
+    if let Some(properties) = schema
+        .get("properties")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+    {
+        for (name, child) in properties {
+            if let Some(name) = name.as_str() {
+                check_schema_defaults(
+                    child,
+                    root,
+                    path,
+                    strict,
+                    &format!("{element}/properties/{name}"),
+                    SchemaLocation::Field,
+                    seen,
+                )?;
+            }
+        }
+    }
+    for key in ["items", "additionalProperties"] {
+        if let Some(child) = schema.get(key) {
+            check_schema_defaults(
+                child,
+                root,
+                path,
+                strict,
+                &format!("{element}/{key}"),
+                SchemaLocation::Type,
+                seen,
+            )?;
+        }
+    }
+    for key in ["allOf", "oneOf", "anyOf"] {
+        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+            for (index, child) in children.iter().enumerate() {
+                check_schema_defaults(
+                    child,
+                    root,
+                    path,
+                    strict,
+                    &format!("{element}/{key}/{index}"),
+                    SchemaLocation::Type,
+                    seen,
+                )?;
             }
         }
     }

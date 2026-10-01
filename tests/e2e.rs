@@ -15965,3 +15965,89 @@ fn security_reference_recovers_when_the_referenced_document_is_present() {
         assert!(failures.is_empty(), "{}", failures.join("\n"));
     }
 }
+
+#[test]
+fn primitive_default_refusal_recovers_with_declared_types() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("default-not-valid-for-type");
+    for case in [
+        "probe.yml",
+        "number-string-control.yml",
+        "integer-fraction-control.yml",
+        "integer-boolean-control.yml",
+        "number-boolean-control.yml",
+        "unused-property-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures("default-not-valid-for-type", &run, "default", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("repaired.yml");
+    std::fs::write(
+        &repaired,
+        std::fs::read_to_string(class.join("probe.yml"))
+            .unwrap()
+            .replace("default: 'one'", "default: 2"),
+    )
+    .unwrap();
+    for label in ["shared-parameter", "referenced-parameter"] {
+        let text = std::fs::read_to_string(class.join(format!("{label}-control.yml"))).unwrap();
+        let spec = dir.path().join(format!("{label}.yml"));
+        std::fs::write(&spec, &text).unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures("default-not-valid-for-type", &run, "page", strict);
+            assert!(failures.is_empty(), "{label}: {}", failures.join("\n"));
+        }
+        std::fs::write(&spec, text.replace("default: one", "default: 2")).unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{label}: {}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+    let mut accepted = vec![repaired];
+    accepted.extend(
+        [
+            "integer-null-control.yml",
+            "boolean-string-control.yml",
+            "string-number-control.yml",
+            "number-valid-control.yml",
+            "integer-integral-float-control.yml",
+            "unused-integer-control.yml",
+            "response-integer-valid-yaml-control.yml",
+        ]
+        .map(|case| class.join(case)),
+    );
+    for spec in accepted {
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(
+            normal.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            normal.stderr
+        );
+        assert_eq!(
+            strict.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            strict.stderr
+        );
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
