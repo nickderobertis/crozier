@@ -80,7 +80,7 @@ pub fn run(options: &Options, cwd: &Path, io: &mut Io<'_>) -> Result<u8, String>
     let json_target = options
         .json
         .as_ref()
-        .map(|path| JsonTarget::new(path, cwd))
+        .map(|path| JsonTarget::create(path, cwd))
         .transpose()?;
     let diff_dir = options
         .diff_dir
@@ -148,7 +148,7 @@ enum JsonTarget {
 }
 
 impl JsonTarget {
-    fn new(given: &Path, cwd: &Path) -> Result<Self, String> {
+    fn create(given: &Path, cwd: &Path) -> Result<Self, String> {
         if given == Path::new("-") {
             return Ok(JsonTarget::Stdout);
         }
