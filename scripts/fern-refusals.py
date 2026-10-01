@@ -56,7 +56,8 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Iterable
+from types import ModuleType
+from typing import Any, Iterable, NamedTuple, TypedDict
 
 REPO = Path(__file__).resolve().parent.parent
 # The tests point this at a scratch copy to show `check` failing on drift.
@@ -161,6 +162,8 @@ def enumerated_locator(source: str, row: dict[str, str]) -> str:
 
 
 def searched_candidates(source: str) -> dict[str, dict[str, Any]]:
+    # A search's candidate record is free-form JSON; only its repository, path,
+    # commit and sha256 are read.
     path = SURFACE / "golden-reach-witnesses" / source / "candidates.jsonl"
     found = {}
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -169,13 +172,27 @@ def searched_candidates(source: str) -> dict[str, dict[str, Any]]:
     return found
 
 
-def failed(verdict: Any) -> bool:
+class Entry(TypedDict, total=False):
+    """One selected document: how the committed records locate it and name it."""
+    key: str
+    digest: str
+    source: str
+    locator: str
+    revision: str
+    records: set[str]
+    name: str
+    reason: str
+    verdict: str
+    logs: list[str]
+
+
+def failed(verdict: object) -> bool:
     return str(verdict).startswith(("failed", "refused"))
 
 
-def population() -> list[dict[str, Any]]:
+def population() -> list[Entry]:
     """Every selected document, merged by digest where the digest is known."""
-    entries: list[dict[str, Any]] = []
+    entries: list[Entry] = []
     corpus = rel(CORPUS)
     located = {row["name"]: row for row in read_tsv(EVIDENCE / "dropped-sources.tsv", DROPPED_HEADER)}
     for line, name, _reason in dropped_rows():
@@ -218,7 +235,7 @@ def population() -> list[dict[str, Any]]:
                 entries.append({"digest": hit["sha256"], "source": source,
                                 "locator": raw_url(hit["repository"], hit["commit"], hit["path"]),
                                 "revision": hit["commit"], "records": {record}})
-    merged: dict[str, dict[str, Any]] = {}
+    merged: dict[str, Entry] = {}
     for entry in entries:
         key = entry["digest"] or entry["locator"] or f"{corpus}#{entry['name']}"
         if key in merged:
@@ -227,7 +244,8 @@ def population() -> list[dict[str, Any]]:
             kept.setdefault("logs", [])
             kept["logs"] = sorted(set(kept["logs"]) | set(entry.get("logs", [])))
         else:
-            merged[key] = dict(entry, key=key, logs=sorted(entry.get("logs", [])))
+            merged[key] = Entry(**entry, key=key)
+            merged[key]["logs"] = sorted(entry.get("logs", []))
     return sorted(merged.values(), key=lambda entry: entry["key"])
 
 
@@ -239,7 +257,7 @@ def select(_args: argparse.Namespace) -> int:
     return 0
 
 
-def _load(name: str, path: Path) -> Any:
+def _load(name: str, path: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -271,7 +289,7 @@ class Fetcher:
         github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
         self.acquirer = github.Acquirer(CACHE / "evidence", cache=CACHE / "evidence")
 
-    def get(self, entry: dict[str, Any]) -> tuple[bytes | None, str]:
+    def get(self, entry: Entry) -> tuple[bytes | None, str]:
         digest = entry["digest"]
         if digest and digest in self.index:
             return self.index[digest].read_bytes(), ""
@@ -368,7 +386,7 @@ def scrub(log: str) -> str:
 EXIT = re.compile(r"check(?: exits?| exit) (\d+)")
 
 
-def committed_check(entry: dict[str, Any]) -> dict[str, str] | None:
+def committed_check(entry: Entry) -> dict[str, str] | None:
     """A committed screen's `fern check` log, when its record states the exit."""
     exits = EXIT.findall(entry.get("verdict", ""))
     log = next((path for path in entry.get("logs", []) if path.endswith("-check.log")), None)
@@ -461,7 +479,7 @@ def measure(args: argparse.Namespace) -> int:
     documents = CACHE / "documents"
     documents.mkdir(parents=True, exist_ok=True)
 
-    def one(entry: dict[str, Any], data: bytes) -> dict[str, str]:
+    def one(entry: Entry, data: bytes) -> dict[str, str]:
         digest = hashlib.sha256(data).hexdigest()
         path = documents / f"{digest}{suffix_of(entry['locator'])}"
         path.write_bytes(data)
@@ -560,8 +578,12 @@ def diagnostics(log: str) -> list[str]:
     return specific or found or formatting
 
 
-# Every class's and finding's template by name, for `most_specific`.
-TEMPLATES: dict[str, str] = {}
+class Template(NamedTuple):
+    """A class's or finding's `diagnostic` as a matcher, with how much literal
+    text it pins down."""
+    name: str
+    pattern: re.Pattern[str]
+    literal: int
 
 
 def template_pattern(template: str) -> re.Pattern[str]:
@@ -569,40 +591,38 @@ def template_pattern(template: str) -> re.Pattern[str]:
     return re.compile("^" + ".*?".join(parts) + "$", re.S)
 
 
-def most_specific(names: list[str], templates: dict[str, str]) -> list[str]:
+def template(name: str, diagnostic: str) -> Template:
+    return Template(name, template_pattern(diagnostic), len(diagnostic.replace("<…>", "")))
+
+
+def most_specific(matching: list[Template]) -> list[str]:
     """Of the templates matching one message, those with the most literal text:
     `Default value <…> is not a valid enum value` over `… is not a valid <…>`."""
-    if not names:
-        return names
-    literal = {name: len(templates[name].replace("<…>", "")) for name in names}
-    best = max(literal.values())
-    return [name for name in names if literal[name] == best]
+    best = max((candidate.literal for candidate in matching), default=0)
+    return [candidate.name for candidate in matching if candidate.literal == best]
 
 
-def class_patterns(classes: list[dict[str, str]]) -> list[tuple[str, re.Pattern[str]]]:
-    TEMPLATES.update((row["class"], row["diagnostic"]) for row in classes)
-    return [(row["class"], template_pattern(row["diagnostic"])) for row in classes]
+def class_patterns(classes: list[dict[str, str]]) -> list[Template]:
+    return [template(row["class"], row["diagnostic"]) for row in classes]
 
 
-def finding_patterns(findings: list[dict[str, str]]) -> list[tuple[str, re.Pattern[str]]]:
+def finding_patterns(findings: list[dict[str, str]]) -> list[Template]:
     """The phrases `fern check` refuses while `fern generate` still writes an SDK."""
-    TEMPLATES.update((row["finding"], row["diagnostic"]) for row in findings)
-    return [(row["finding"], template_pattern(row["diagnostic"])) for row in findings
-            if row["kind"] == "check-only"]
+    return [template(row["finding"], row["diagnostic"]) for row in findings if row["kind"] == "check-only"]
 
 
-def classify(messages: list[str], patterns: list[tuple[str, re.Pattern[str]]],
-             findings: list[tuple[str, re.Pattern[str]]]) -> tuple[list[str], list[str], list[str]]:
+def classify(messages: list[str], patterns: list[Template],
+             findings: list[Template]) -> tuple[list[str], list[str], list[str]]:
     """The classes and check-only findings `messages` carry, and the messages
     that match no single class or finding."""
     carried: list[str] = []
     found: list[str] = []
     unmatched: list[str] = []
     for message in messages:
-        matched = most_specific([name for name, pattern in [*patterns, *findings] if pattern.match(message)],
-                                TEMPLATES)
-        hits = [name for name, _ in patterns if name in matched]
-        near = [name for name, _ in findings if name in matched]
+        matched = most_specific([candidate for candidate in [*patterns, *findings]
+                                 if candidate.pattern.match(message)])
+        hits = [candidate.name for candidate in patterns if candidate.name in matched]
+        near = [candidate.name for candidate in findings if candidate.name in matched]
         if len(hits) + len(near) != 1:
             unmatched.append(f"{message}  [matches: {', '.join(hits + near) or 'none'}]")
         elif hits and hits[0] not in carried:
@@ -616,8 +636,8 @@ def read_log(path: str) -> str:
     return (REPO / path).read_text(encoding="utf-8", errors="replace") if path else ""
 
 
-def verdict(result: dict[str, str], patterns: list[tuple[str, re.Pattern[str]]],
-            findings: list[tuple[str, re.Pattern[str]]]) -> tuple[dict[str, str] | None, list[str], list[str]]:
+def verdict(result: dict[str, str], patterns: list[Template],
+            findings: list[Template]) -> tuple[dict[str, str] | None, list[str], list[str]]:
     """Whether Fern refuses the measured document, and why.
 
     Fern refuses when its generation exits non-zero, writes nothing, or reports
@@ -674,10 +694,13 @@ def tables() -> tuple[dict[str, str], list[str]]:
             continue
         for log in (result["check_log"], result["generate_log"]):
             if log and not (REPO / log).is_file():
-                problems.append(f"{entry['key']}: its Fern log {log} is missing")
+                problems.append(f"{entry['key']}: its Fern log {log} is missing; restore it from git, or "
+                                "take the document again with `measure --again`")
         refusal, found, unmatched = verdict(result, patterns, near)
         digest = result["digest"]
-        problems += [f"{digest}: no single class or finding matches {message}" for message in unmatched]
+        problems += [f"{digest}: no single class or finding matches {message}; add a classes.tsv or "
+                     "findings.tsv row for the phrase, or narrow the template that overlaps it"
+                     for message in unmatched]
         table = documents if refusal else generated
         if digest in table:
             kept = table[digest]
@@ -688,7 +711,8 @@ def tables() -> tuple[dict[str, str], list[str]]:
                                      findings=",".join(found) or EMPTY)
             continue
         if not refusal["classes"]:
-            problems.append(f"{digest}: Fern refuses it, but {refusal['fern_log']} carries no refusal class")
+            problems.append(f"{digest}: Fern refuses it, but {refusal['fern_log']} carries no refusal class; "
+                            "add a class for the phrase that stopped it")
         for name in filter(None, refusal["classes"].split(",")):
             counts[name] += 1
         documents[digest] = dict(identity, digest=digest, **refusal, crozier_exit=result["crozier_exit"],
@@ -781,7 +805,7 @@ def probe(args: argparse.Namespace) -> int:
     """
     classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
     by_name = {row["class"]: row for row in classes}
-    patterns = dict(class_patterns(classes))
+    patterns = {candidate.name: candidate.pattern for candidate in class_patterns(classes)}
     missing = [name for name in args.cls if name not in by_name]
     if missing:
         fail(f"no classes.tsv row for {', '.join(missing)}; add the row first")

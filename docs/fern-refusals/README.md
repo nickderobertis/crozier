@@ -3,8 +3,7 @@
 The classes of input Fern (CLI 5.67.1, `fernapi/fern-python-sdk` 5.20.0)
 refuses, crashes on, or falsely reports success over, and what crozier does with
 each. crozier's default is to generate wherever its output is valid and useful;
-[`fern-strict`](../configuration.md#strict-fern-compatibility) refuses as Fern
-does. This directory is the one statement of which inputs that covers. The gate
+`fern-strict` refuses as Fern does. This directory is the one statement of which inputs that covers. The gate
 (`tests/e2e.rs::fern_refusal_classes_hold`, in `just check`) reads it, and
 nothing but the steps below writes it.
 

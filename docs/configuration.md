@@ -113,7 +113,7 @@ A refusal exits 1, writes nothing to the output directory, and prints one line
 naming the refusal class, the offending element, and that `fern-strict` caused
 it. The setting only ever decides *whether* an SDK is written, never a byte of
 one that is. The classes of input it governs, and how each was measured, are
-registered in [`fern-refusals/`](fern-refusals/README.md).
+registered in `docs/fern-refusals/`.
 
 Unknown fields and unknown generator types are rejected at parse time, with the
 offending file's path in the error. Generators run in declaration order.
