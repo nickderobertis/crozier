@@ -1,11 +1,11 @@
 # A Fern reference for `crozier compare`
 
-[`crozier compare`](compare.md) checks crozier's output against a reference SDK
+`crozier compare` checks crozier's output against a reference SDK
 that a command you configure produces. For a team moving from Fern, that
 reference is Fern's own output for the same OpenAPI document. This page is a
 copy-paste script that produces it: crozier does not ship or run it, and nothing
 in crozier knows about Fern beyond the byte-match rules its output is compared
-under ([`matching.md`](matching.md#how-the-comparison-works)).
+under.
 
 ## What you need
 

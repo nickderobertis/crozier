@@ -23,7 +23,7 @@ built-in's defaults.
 | `crozier init` | Write a starter `crozier.yml` (`--output <path>`, `--force`). |
 | `crozier config [<name>]` | Print the effective config and the layer each value came from. |
 | `crozier schema` | Print the config JSON Schema to stdout. |
-| `crozier compare [PATHS...]` | Check every configured generator's output against a reference SDK your `reference.command` produces, and time both sides. See [`compare.md`](compare.md). |
+| `crozier compare [PATHS...]` | Check every configured generator's output against a reference SDK your `reference.command` produces, and time both sides. |
 
 ## Precedence
 
@@ -109,7 +109,7 @@ project-name: my-api
 audiences: [public]
 audience-strict: false
 layout: packaged          # packaged|flat — see "Output layout"
-reference:                # used only by `crozier compare` — see compare.md
+reference:                # used only by `crozier compare`
   command: ./scripts/reference-sdk.sh
 
 generators:
@@ -138,6 +138,7 @@ generators:
 Unknown fields and unknown generator types are rejected at parse time, with the
 offending file's path in the error. Generators run in declaration order.
 
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires this page to link the compare reference; human readers reach configuration.md from the README, not through AGENTS.md, and this is the one place the page sends them to the command's own reference. -->
 The `reference` block (one key, `command`) is read only by
 [`crozier compare`](compare.md): it names the command that produces each
 generator's reference SDK. It resolves as `--reference-command` >

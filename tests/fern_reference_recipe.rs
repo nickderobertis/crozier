@@ -7,10 +7,12 @@
 //! and npm.)
 #![cfg(unix)]
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
+use crozier::compare::REFERENCE_VARIABLES;
 
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -115,6 +117,45 @@ const BASE: &[(&str, &str)] = &[
     ("CROZIER_REFERENCE_EXTRA_FIELDS", "ignore"),
     ("CROZIER_REFERENCE_LAYOUT", "packaged"),
 ];
+
+/// The `CROZIER_REFERENCE_*` names the recipe reads must be the ones crozier
+/// exports: `BASE` plus the two `run` sets (`OUTPUT`, `SPEC`) is exactly
+/// [`REFERENCE_VARIABLES`], so a renamed variable fails here and then fails every
+/// recipe run below until the script reads the new name; and every name the page's
+/// mapping table or the script itself spells out is one crozier exports.
+#[test]
+fn the_recipe_reads_only_variables_crozier_exports() {
+    let exported: BTreeSet<&str> = REFERENCE_VARIABLES.into_iter().collect();
+    let mut given: BTreeSet<&str> = BASE.iter().map(|(name, _)| *name).collect();
+    given.extend(["CROZIER_REFERENCE_OUTPUT", "CROZIER_REFERENCE_SPEC"]);
+    assert_eq!(given, exported);
+
+    let page = std::fs::read_to_string(root().join("docs/fern-reference.md")).unwrap();
+    let table: Vec<String> = page
+        .lines()
+        .filter_map(|line| line.strip_prefix("| `"))
+        .map(|rest| rest[..rest.find('`').unwrap()].to_string())
+        .filter(|name| name.chars().all(|c| c.is_ascii_uppercase() || c == '_'))
+        .map(|name| format!("CROZIER_REFERENCE_{name}"))
+        .collect();
+    assert_eq!(table.len(), 9, "the mapping table's rows: {table:?}");
+    let script = recipe();
+    let spelled = script
+        .split("CROZIER_REFERENCE_")
+        .skip(1)
+        .filter_map(|rest| {
+            let end = rest
+                .find(|c: char| !(c.is_ascii_uppercase() || c == '_'))
+                .unwrap_or(rest.len());
+            (end > 0).then(|| format!("CROZIER_REFERENCE_{}", &rest[..end]))
+        });
+    for name in table.into_iter().chain(spelled) {
+        assert!(
+            exported.contains(name.as_str()),
+            "{name} is not a variable crozier exports"
+        );
+    }
+}
 
 fn run(overrides: &[(&str, &str)], removed: &[&str]) -> Run {
     let work = tempfile::tempdir().unwrap();

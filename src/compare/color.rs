@@ -10,7 +10,7 @@
 //! Only the human output on stderr is ever coloured; the JSON report and the
 //! `--diff-dir` files never are.
 
-use super::report::Status;
+use super::report::{ExitStatus, Status};
 
 const GREEN: &str = "\u{1b}[32m";
 const RED: &str = "\u{1b}[31m";
@@ -55,14 +55,13 @@ impl Painter {
         self.paint(color, text)
     }
 
-    /// `text` in the colour of exit status `code`: 0 green, 3 red, anything else
-    /// (4) yellow.
+    /// `text` in the colour of exit status `code`: 0 green, 3 red, 4 yellow.
     #[must_use]
-    pub fn exit(self, code: u8, text: &str) -> String {
+    pub fn exit(self, code: ExitStatus, text: &str) -> String {
         let color = match code {
-            0 => GREEN,
-            3 => RED,
-            _ => YELLOW,
+            ExitStatus::Matched => GREEN,
+            ExitStatus::Mismatched => RED,
+            ExitStatus::CouldNotCheck => YELLOW,
         };
         self.paint(color, text)
     }
@@ -132,11 +131,14 @@ mod tests {
             on.status(Status::CouldNotCheck, "m"),
             "\u{1b}[33mm\u{1b}[0m"
         );
-        assert_eq!(on.exit(0, "r"), "\u{1b}[32mr\u{1b}[0m");
-        assert_eq!(on.exit(3, "r"), "\u{1b}[31mr\u{1b}[0m");
-        assert_eq!(on.exit(4, "r"), "\u{1b}[33mr\u{1b}[0m");
+        assert_eq!(on.exit(ExitStatus::Matched, "r"), "\u{1b}[32mr\u{1b}[0m");
+        assert_eq!(on.exit(ExitStatus::Mismatched, "r"), "\u{1b}[31mr\u{1b}[0m");
+        assert_eq!(
+            on.exit(ExitStatus::CouldNotCheck, "r"),
+            "\u{1b}[33mr\u{1b}[0m"
+        );
         let off = Painter::new(false);
         assert_eq!(off.status(Status::Mismatched, "m"), "m");
-        assert_eq!(off.exit(3, "r"), "r");
+        assert_eq!(off.exit(ExitStatus::Mismatched, "r"), "r");
     }
 }

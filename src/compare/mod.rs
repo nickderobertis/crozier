@@ -113,7 +113,7 @@ pub fn run(options: &Options, cwd: &Path, io: &mut Io<'_>) -> Result<u8, String>
         target.write(&report, io.stdout)?;
     }
     let _ = io.stderr.write_all(report.render(painter).as_bytes());
-    Ok(report.exit_code)
+    Ok(report.exit_code.into())
 }
 
 /// Write one progress line to stderr.
@@ -303,7 +303,7 @@ impl Checker<'_> {
         );
         let mut run = ReferenceRun {
             command,
-            exit_code: outcome.exit_code,
+            exit_code: outcome.exit_code(),
             diagnostic: None,
         };
         let located = if outcome.succeeded() {
@@ -488,43 +488,44 @@ fn clean_join(base: &Path, path: &Path) -> PathBuf {
 }
 
 /// The variables a reference command receives on top of the inherited
-/// environment: where to write, and the generator's resolved settings.
+/// environment, in the order [`reference_env`] gives their values: where to
+/// write, then the generator's resolved settings. The one source of the names:
+/// `docs/compare.md`'s table and the Fern recipe's tests are checked against it.
+pub const REFERENCE_VARIABLES: [&str; 11] = [
+    "CROZIER_REFERENCE_OUTPUT",
+    "CROZIER_REFERENCE_GENERATOR",
+    "CROZIER_REFERENCE_CONFIG_FILE",
+    "CROZIER_REFERENCE_SPEC",
+    "CROZIER_REFERENCE_PACKAGE_NAME",
+    "CROZIER_REFERENCE_PROJECT_NAME",
+    "CROZIER_REFERENCE_CLIENT_CLASS_NAME",
+    "CROZIER_REFERENCE_AUDIENCES",
+    "CROZIER_REFERENCE_AUDIENCE_STRICT",
+    "CROZIER_REFERENCE_EXTRA_FIELDS",
+    "CROZIER_REFERENCE_LAYOUT",
+];
+
+/// [`REFERENCE_VARIABLES`] paired with this generator's values.
 fn reference_env(resolved: &Resolved, name: &str, output: &Path) -> Vec<(String, String)> {
     let args = &resolved.args;
-    [
-        ("CROZIER_REFERENCE_OUTPUT", output.display().to_string()),
-        ("CROZIER_REFERENCE_GENERATOR", name.to_string()),
-        (
-            "CROZIER_REFERENCE_CONFIG_FILE",
-            resolved.config_path.display().to_string(),
-        ),
-        ("CROZIER_REFERENCE_SPEC", args.spec.display().to_string()),
-        (
-            "CROZIER_REFERENCE_PACKAGE_NAME",
-            resolved.names.package_name.clone(),
-        ),
-        (
-            "CROZIER_REFERENCE_PROJECT_NAME",
-            resolved.names.project_name.clone(),
-        ),
-        (
-            "CROZIER_REFERENCE_CLIENT_CLASS_NAME",
-            resolved.names.client_class_name.clone(),
-        ),
-        ("CROZIER_REFERENCE_AUDIENCES", args.audiences.join(",")),
-        (
-            "CROZIER_REFERENCE_AUDIENCE_STRICT",
-            args.audience_strict.to_string(),
-        ),
-        (
-            "CROZIER_REFERENCE_EXTRA_FIELDS",
-            args.extra_fields.as_str().to_string(),
-        ),
-        ("CROZIER_REFERENCE_LAYOUT", args.layout.as_str().to_string()),
-    ]
-    .into_iter()
-    .map(|(k, v)| (k.to_string(), v))
-    .collect()
+    let values = [
+        output.display().to_string(),
+        name.to_string(),
+        resolved.config_path.display().to_string(),
+        args.spec.display().to_string(),
+        resolved.names.package_name.clone(),
+        resolved.names.project_name.clone(),
+        resolved.names.client_class_name.clone(),
+        args.audiences.join(","),
+        args.audience_strict.to_string(),
+        args.extra_fields.as_str().to_string(),
+        args.layout.as_str().to_string(),
+    ];
+    REFERENCE_VARIABLES
+        .into_iter()
+        .map(str::to_string)
+        .zip(values)
+        .collect()
 }
 
 /// How many distinct paths the two trees hold between them.

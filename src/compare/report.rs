@@ -41,6 +41,58 @@ fn nullable(schema: &mut schemars::Schema) {
 /// any change a consumer could notice.
 pub const SCHEMA_VERSION: u32 = 1;
 
+/// A run's exit status, serialized as its number. Exit 1 (the command failed)
+/// and 2 (usage) write no report, so they are not among its values.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(into = "u8", try_from = "u8")]
+pub enum ExitStatus {
+    /// 0: every checked generator matched, or nothing was checked.
+    Matched,
+    /// 3: at least one generator mismatched.
+    Mismatched,
+    /// 4: none mismatched, and at least one could not be checked.
+    CouldNotCheck,
+}
+
+impl From<ExitStatus> for u8 {
+    fn from(status: ExitStatus) -> u8 {
+        match status {
+            ExitStatus::Matched => 0,
+            ExitStatus::Mismatched => 3,
+            ExitStatus::CouldNotCheck => 4,
+        }
+    }
+}
+
+impl TryFrom<u8> for ExitStatus {
+    type Error = String;
+
+    fn try_from(code: u8) -> Result<Self, String> {
+        match code {
+            0 => Ok(ExitStatus::Matched),
+            3 => Ok(ExitStatus::Mismatched),
+            4 => Ok(ExitStatus::CouldNotCheck),
+            other => Err(format!("{other} is not a report exit status (0, 3 or 4)")),
+        }
+    }
+}
+
+impl JsonSchema for ExitStatus {
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "ExitStatus".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let mut schema = u8::json_schema(generator);
+        schema.insert("enum".to_string(), serde_json::json!([0, 3, 4]));
+        schema
+    }
+}
+
 /// One `crozier compare` run.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -56,8 +108,7 @@ pub struct Report {
     /// The command's exit status: 0 every checked generator matched (or nothing
     /// was checked), 3 at least one mismatched, 4 none mismatched and at least one
     /// could not be checked.
-    #[schemars(extend("enum" = [0, 3, 4]))]
-    pub exit_code: u8,
+    pub exit_code: ExitStatus,
     /// How many results have each status.
     pub counts: Counts,
     /// Timing summed over the generators where both sides ran.
@@ -286,11 +337,11 @@ impl Report {
             ratio(totals.reference_seconds, totals.crozier_seconds)
         };
         let exit_code = if counts.mismatched > 0 {
-            3
+            ExitStatus::Mismatched
         } else if counts.could_not_check > 0 {
-            4
+            ExitStatus::CouldNotCheck
         } else {
-            0
+            ExitStatus::Matched
         };
         Report {
             schema_version: SCHEMA_VERSION,
@@ -345,16 +396,18 @@ impl Report {
             out.push_str("Timing totals: no generator ran both sides\n");
         }
         let summary = match self.exit_code {
-            3 => format!(
+            ExitStatus::Mismatched => format!(
                 "Result: {} generator(s) mismatched the reference (exit 3)",
                 c.mismatched
             ),
-            4 => format!(
+            ExitStatus::CouldNotCheck => format!(
                 "Result: no mismatch, but {} could not be checked (exit 4)",
                 c.could_not_check
             ),
-            _ if self.results.is_empty() => "Result: nothing to check (exit 0)".to_string(),
-            _ => format!(
+            ExitStatus::Matched if self.results.is_empty() => {
+                "Result: nothing to check (exit 0)".to_string()
+            }
+            ExitStatus::Matched => format!(
                 "Result: every checked generator matched the reference ({} of {}, exit 0)",
                 c.matched,
                 self.results.len()
@@ -455,6 +508,27 @@ mod tests {
     }
 
     #[test]
+    fn an_exit_status_is_its_number_and_only_a_report_status_parses() {
+        for (status, code) in [
+            (ExitStatus::Matched, 0u8),
+            (ExitStatus::Mismatched, 3),
+            (ExitStatus::CouldNotCheck, 4),
+        ] {
+            assert_eq!(u8::from(status), code);
+            assert_eq!(serde_json::to_string(&status).unwrap(), code.to_string());
+            assert_eq!(
+                serde_json::from_str::<ExitStatus>(&code.to_string()).unwrap(),
+                status
+            );
+        }
+        let error = serde_json::from_str::<ExitStatus>("1").unwrap_err();
+        assert!(
+            error.to_string().contains("1 is not a report exit status"),
+            "{error}"
+        );
+    }
+
+    #[test]
     fn timing_derives_every_figure_from_the_two_measurements() {
         let t = Timing::from_measurements(Some(3.0), Some(0.5));
         assert_eq!(t.speedup, Some(6.0));
@@ -480,7 +554,7 @@ mod tests {
                 result(Status::Mismatched, timed),
             ],
         );
-        assert_eq!(report.exit_code, 3);
+        assert_eq!(report.exit_code, ExitStatus::Mismatched);
         assert_eq!(
             report.counts,
             Counts {
@@ -501,12 +575,12 @@ mod tests {
                 result(Status::CouldNotCheck, None),
             ],
         );
-        assert_eq!(report.exit_code, 4);
+        assert_eq!(report.exit_code, ExitStatus::CouldNotCheck);
         assert_eq!(report.timing_totals.speedup, None);
-        assert_eq!(Report::new(vec![], vec![]).exit_code, 0);
+        assert_eq!(Report::new(vec![], vec![]).exit_code, ExitStatus::Matched);
         assert_eq!(
             Report::new(vec![], vec![result(Status::Matched, None)]).exit_code,
-            0
+            ExitStatus::Matched
         );
     }
 

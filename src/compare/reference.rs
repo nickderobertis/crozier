@@ -12,13 +12,22 @@ use std::time::Instant;
 /// How many trailing lines of the command's output a diagnostic keeps.
 const TAIL_LINES: usize = 20;
 
-/// How one reference-command invocation ended.
+/// How a reference-command invocation ended.
+#[derive(Debug, Clone, PartialEq)]
+pub enum End {
+    /// It ran and exited with this status.
+    Exited(i32),
+    /// It ran and ended without an exit status (killed by a signal).
+    Signalled,
+    /// `sh` could not be started, for this reason.
+    NotStarted(String),
+}
+
+/// One reference-command invocation.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Outcome {
-    /// The exit status; `None` when it could not start or ended without one.
-    pub exit_code: Option<i32>,
-    /// Why it could not start, when it could not.
-    pub spawn_error: Option<String>,
+    /// How it ended.
+    pub end: End,
     /// The command's stderr.
     pub stderr: String,
     /// Its stdout, kept only as a fallback diagnostic when stderr is empty.
@@ -43,15 +52,13 @@ pub fn run(command: &str, cwd: &Path, env: &[(String, String)]) -> Outcome {
     let seconds = started.elapsed().as_secs_f64();
     match output {
         Ok(output) => Outcome {
-            exit_code: output.status.code(),
-            spawn_error: None,
+            end: output.status.code().map_or(End::Signalled, End::Exited),
             stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
             stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
             seconds,
         },
         Err(error) => Outcome {
-            exit_code: None,
-            spawn_error: Some(error.to_string()),
+            end: End::NotStarted(error.to_string()),
             stderr: String::new(),
             stdout: String::new(),
             seconds,
@@ -63,16 +70,25 @@ impl Outcome {
     /// Whether the command ran and exited 0.
     #[must_use]
     pub fn succeeded(&self) -> bool {
-        self.exit_code == Some(0)
+        self.end == End::Exited(0)
+    }
+
+    /// The exit status; `None` when it could not start or ended without one.
+    #[must_use]
+    pub fn exit_code(&self) -> Option<i32> {
+        match self.end {
+            End::Exited(code) => Some(code),
+            End::Signalled | End::NotStarted(_) => None,
+        }
     }
 
     /// The exit status as a progress line shows it.
     #[must_use]
     pub fn status_text(&self) -> String {
-        match (&self.spawn_error, self.exit_code) {
-            (Some(_), _) => "could not start".to_string(),
-            (None, Some(code)) => format!("exit {code}"),
-            (None, None) => "ended without an exit status".to_string(),
+        match self.end {
+            End::Exited(code) => format!("exit {code}"),
+            End::Signalled => "ended without an exit status".to_string(),
+            End::NotStarted(_) => "could not start".to_string(),
         }
     }
 
@@ -80,7 +96,7 @@ impl Outcome {
     /// stderr is empty), or why it could not start. `None` when there is none.
     #[must_use]
     pub fn diagnostic(&self) -> Option<String> {
-        if let Some(error) = &self.spawn_error {
+        if let End::NotStarted(error) = &self.end {
             return Some(format!("could not run `sh`: {error}"));
         }
         let source = if self.stderr.trim().is_empty() {
@@ -96,10 +112,10 @@ impl Outcome {
     /// its exit status and diagnostic.
     #[must_use]
     pub fn failure_reason(&self) -> String {
-        let what = match (&self.spawn_error, self.exit_code) {
-            (Some(_), _) => "the reference command could not be started".to_string(),
-            (None, Some(code)) => format!("the reference command exited with status {code}"),
-            (None, None) => "the reference command was terminated by a signal".to_string(),
+        let what = match self.end {
+            End::Exited(code) => format!("the reference command exited with status {code}"),
+            End::Signalled => "the reference command was terminated by a signal".to_string(),
+            End::NotStarted(_) => "the reference command could not be started".to_string(),
         };
         match self.diagnostic() {
             Some(diagnostic) => format!("{what}:\n{diagnostic}"),
@@ -189,7 +205,8 @@ mod tests {
             dir.path(),
             &[],
         );
-        assert_eq!(outcome.exit_code, Some(7));
+        assert_eq!(outcome.end, End::Exited(7));
+        assert_eq!(outcome.exit_code(), Some(7));
         let reason = outcome.failure_reason();
         assert!(
             reason.starts_with("the reference command exited with status 7:\n"),
@@ -216,12 +233,14 @@ mod tests {
     fn a_signal_and_a_failed_start_are_reported() {
         let dir = tempfile::tempdir().unwrap();
         let outcome = run("kill -9 $$", dir.path(), &[]);
-        assert_eq!(outcome.exit_code, None);
+        assert_eq!(outcome.end, End::Signalled);
+        assert_eq!(outcome.exit_code(), None);
         assert_eq!(outcome.status_text(), "ended without an exit status");
         assert!(outcome.failure_reason().contains("terminated by a signal"));
 
         let outcome = run("true", &dir.path().join("missing-dir"), &[]);
-        assert!(outcome.spawn_error.is_some());
+        assert!(matches!(outcome.end, End::NotStarted(_)));
+        assert_eq!(outcome.exit_code(), None);
         assert_eq!(outcome.status_text(), "could not start");
         assert!(outcome.failure_reason().contains("could not be started"));
         assert!(outcome.diagnostic().unwrap().contains("could not run `sh`"));

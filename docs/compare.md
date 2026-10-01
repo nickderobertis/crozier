@@ -10,9 +10,8 @@ For each generator it:
 1. runs your reference command, which writes the reference SDK into a temporary
    directory;
 2. generates crozier's SDK into another temporary directory;
-3. compares the two whole trees under the byte-match rules
-   ([`src/parity.rs`](../src/parity.rs), described in
-   [`matching.md`](matching.md#how-the-comparison-works));
+3. compares the two whole trees under the byte-match rules in
+   [`src/parity.rs`](../src/parity.rs);
 4. records the wall time of each side.
 
 ```sh
@@ -76,8 +75,7 @@ There is **no default command** and no environment variable sets it. A generator
 with no command resolved is `could_not_check`, with the reason "no reference
 command configured: set `reference.command` in crozier.yml or pass
 `--reference-command`". `crozier generate` ignores the block, and `crozier
-config` shows the resolved `reference.command` with its source. The setting sits
-beside the others in [`configuration.md`](configuration.md).
+config` shows the resolved `reference.command` with its source.
 
 ## The reference-command contract
 
@@ -106,6 +104,7 @@ beside the others in [`configuration.md`](configuration.md).
 - After the command exits 0, the reference SDK is `$CROZIER_REFERENCE_OUTPUT`
   itself, or its single subdirectory when it holds exactly one entry and that
   entry is a directory.
+  <!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires this page to link configuration.md for the layout setting rather than restate it; human readers reach compare.md from the README, not through AGENTS.md. -->
 - The reference is expected to have the layout the generator's `layout` setting
   names (`packaged` or `flat`, see
   [`configuration.md`](configuration.md#output-layout)). crozier generates its

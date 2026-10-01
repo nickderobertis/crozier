@@ -114,7 +114,7 @@ fn every_status_in_one_run_with_json_and_diffs() {
     assert_eq!(run.code, Ok(3), "{}", run.stderr);
     assert!(run.stdout.is_empty());
     let report = read_report(&root.join("report.json"));
-    assert_eq!(report.exit_code, 3);
+    assert_eq!(report.exit_code, report::ExitStatus::Mismatched);
     assert_eq!(report.searched_paths, [root.display().to_string()]);
     assert_eq!(
         (
@@ -136,8 +136,13 @@ fn every_status_in_one_run_with_json_and_diffs() {
         timing.reference_seconds.unwrap(),
         timing.crozier_seconds.unwrap(),
     );
-    assert_eq!(timing.speedup, Some(r / c));
-    assert_eq!(timing.saved_seconds, Some(r - c));
+    // Read back from JSON, each figure can sit one ulp from the value derived
+    // from the read-back measurements (serde_json parses without exact round-trip).
+    assert!((timing.speedup.unwrap() - r / c).abs() < 1e-9, "{timing:?}");
+    assert!(
+        (timing.saved_seconds.unwrap() - (r - c)).abs() < 1e-9,
+        "{timing:?}"
+    );
     assert_eq!(
         packaged.spec,
         Some(fixture("openapi.yml").display().to_string())
@@ -289,6 +294,26 @@ fn the_reference_command_receives_resolved_settings_with_defaults() {
     );
     // The output directory was a fresh temporary one, gone after the run.
     assert!(!Path::new(output).exists());
+}
+
+#[test]
+fn the_documented_reference_variables_are_the_ones_crozier_exports() {
+    let page =
+        std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/compare.md"))
+            .unwrap();
+    let documented: Vec<&str> = page
+        .lines()
+        .filter_map(|line| line.trim_start().strip_prefix("| `CROZIER_REFERENCE_"))
+        .map(|rest| &rest[..rest.find('`').unwrap()])
+        .collect();
+    let exported: Vec<&str> = REFERENCE_VARIABLES
+        .iter()
+        .map(|name| name.strip_prefix("CROZIER_REFERENCE_").unwrap())
+        .collect();
+    assert_eq!(
+        documented, exported,
+        "docs/compare.md's variable table must list REFERENCE_VARIABLES, in order"
+    );
 }
 
 #[test]
