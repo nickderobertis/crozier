@@ -2460,6 +2460,35 @@ components:
     );
 }
 
+/// The configuration-gate ledger is held to its form, and to the covers it
+/// measures: a missing, misheaded, malformed, repeated or orphaned row is refused.
+#[test]
+fn handwritten_gate_refuses_a_malformed_or_orphaned_configuration_gate_ledger() {
+    let fixture = HandwrittenFixture::new();
+    let ledger = fixture.path("docs/openapi-surface/handwritten-config-gates.tsv");
+    let row = format!("{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t-\t0\t1\n");
+
+    fixture.write_gates(&row);
+    fixture.assert_refused(
+        "handwritten-config-gates.tsv",
+        "names no live arm-level cover of a fixture declaring that setting",
+    );
+    fixture.write_gates(&format!("{row}{row}"));
+    fixture.assert_refused("handwritten-config-gates.tsv", "rows are not sorted");
+    fixture.write_gates("sample-fixture\tsample-golden\n");
+    fixture.assert_refused(
+        "handwritten-config-gates.tsv line 2",
+        "not six tab-separated fields",
+    );
+    std::fs::write(&ledger, "fixture\tkey\n").expect("misheaded ledger");
+    fixture.assert_refused(
+        "handwritten-config-gates.tsv",
+        "the header line must be exactly",
+    );
+    std::fs::remove_file(&ledger).expect("remove ledger");
+    fixture.assert_refused("handwritten-config-gates.tsv", "missing — restore it");
+}
+
 #[test]
 fn handwritten_gate_refuses_a_fixture_whose_fern_tree_is_missing_or_moved() {
     let fixture = HandwrittenFixture::new();

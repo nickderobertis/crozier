@@ -1771,6 +1771,16 @@ class ConfigGatedRecordTests(unittest.TestCase):
     def test_the_heading_is_the_arm_search_scripts_own(self) -> None:
         self.assertEqual(golden_reach_search().CONFIG_GATE_HEADING, CONFIG_GATE_HEADING)
 
+    def test_each_config_flag_is_the_one_crozier_declares_for_its_field(self) -> None:
+        """CONFIG_FLAGS restates a CLI flag; this holds it to `src/cli.rs`, so a
+        renamed flag fails here rather than making the probe check pass vacuously."""
+        cli = (REPO / "src" / "cli.rs").read_text(encoding="utf-8")
+        for setting, flag in CONFIG_FLAGS.items():
+            with self.subTest(setting=setting):
+                self.assertTrue(flag.startswith("--"))
+                self.assertRegex(cli, rf'#\[arg\(long = "{re.escape(flag[2:])}"\)\]\s*{re.escape(setting)}:',
+                                 f"src/cli.rs declares no `{flag}` for the field `{setting}`")
+
     def test_a_well_formed_record_is_accepted(self) -> None:
         self.assertEqual([], self.failures(self.record()))
         self.assertEqual(CONFIG_GATED, config_gated_verdict(self.record(), self.KEY))
