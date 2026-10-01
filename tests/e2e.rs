@@ -14449,6 +14449,10 @@ fn wire_test_failures(id: &str, wire_test: &Path, sdk: &Path, probe: &Path) -> V
             return Vec::new();
         }
     };
+    let (mypy_cache, _cache_lock) = match sdk_mypy_cache(&py) {
+        Ok(cache) => cache,
+        Err(reason) => return vec![format!("{id}: wire_test.py cannot run: {reason}")],
+    };
     let class_dir = wire_test.parent().unwrap_or(wire_test);
     let result = std::process::Command::new(&py)
         .args(["-m", "pytest", "-q", "-p", "no:cacheprovider", "--rootdir"])
@@ -14457,7 +14461,7 @@ fn wire_test_failures(id: &str, wire_test: &Path, sdk: &Path, probe: &Path) -> V
         .env("CROZIER_SDK_DIR", sdk)
         .env("CROZIER_SDK_SRC", sdk.join("src"))
         .env("CROZIER_PROBE", probe)
-        .env("MYPY_CACHE_DIR", sdk_mypy_cache(&py))
+        .env("MYPY_CACHE_DIR", &mypy_cache)
         .env("PYTHONDONTWRITEBYTECODE", "1")
         .output();
     match result {
@@ -14540,6 +14544,11 @@ fn pip_constraint(constraint: &str) -> String {
 /// system temp dir by a digest of the requirement list, so a change to the
 /// pins builds a fresh one. `uv` is used when present, else `venv` + `pip`.
 fn sdk_python_env(pyproject: &Path) -> Result<PathBuf, String> {
+    sdk_python_env_in(&std::env::temp_dir(), pyproject, uv_available())
+}
+
+/// [`sdk_python_env`] under `root`, building with `uv` or with `venv` + `pip`.
+fn sdk_python_env_in(root: &Path, pyproject: &Path, use_uv: bool) -> Result<PathBuf, String> {
     let text = std::fs::read_to_string(pyproject)
         .map_err(|error| format!("cannot read {}: {error}", pyproject.display()))?;
     let requirements = pyproject_requirements(&text);
@@ -14548,11 +14557,20 @@ fn sdk_python_env(pyproject: &Path) -> Result<PathBuf, String> {
     }
     let base = python_interpreter().ok_or("no python3/python on PATH")?;
     let key = sha256_hex(requirements.join("\n").as_bytes());
-    let venv = std::env::temp_dir().join(format!("crozier-sdk-env-{}", &key[..16]));
+    let venv = root.join(format!("crozier-sdk-env-{}", &key[..16]));
     let venv_py = venv_python(&venv);
     let ready = venv.join(".crozier-ready");
+    // Tests run in parallel processes and threads, and all of them want this
+    // one environment: whoever holds the lock builds it, the rest wait and then
+    // find it ready. A directory left without the marker is a build that died
+    // part-way, so it is cleared rather than built over.
+    let lock = hold_lock(&root.join(format!("crozier-sdk-env-{}.lock", &key[..16])))?;
     if venv_py.exists() && ready.is_file() {
         return Ok(venv_py);
+    }
+    if venv.exists() {
+        std::fs::remove_dir_all(&venv)
+            .map_err(|error| format!("cannot clear partial {}: {error}", venv.display()))?;
     }
     let run = |mut cmd: std::process::Command, what: &str| -> Result<(), String> {
         let output = cmd
@@ -14566,7 +14584,7 @@ fn sdk_python_env(pyproject: &Path) -> Result<PathBuf, String> {
             String::from_utf8_lossy(&output.stderr)
         ))
     };
-    if uv_available() {
+    if use_uv {
         let mut venv_cmd = std::process::Command::new("uv");
         venv_cmd.args(["venv", "--allow-existing"]).arg(&venv);
         run(venv_cmd, "uv venv")?;
@@ -14586,16 +14604,95 @@ fn sdk_python_env(pyproject: &Path) -> Result<PathBuf, String> {
     }
     std::fs::write(&ready, requirements.join("\n"))
         .map_err(|error| format!("cannot mark {} ready: {error}", venv.display()))?;
+    drop(lock);
     Ok(venv_py)
 }
 
+/// Open `path` and hold an exclusive lock on it until the returned file drops.
+/// The lock is the OS's, so it serializes threads and processes alike and is
+/// released if the holder dies.
+fn hold_lock(path: &Path) -> Result<std::fs::File, String> {
+    let file = std::fs::OpenOptions::new()
+        .create(true)
+        .truncate(false)
+        .write(true)
+        .open(path)
+        .map_err(|error| format!("cannot open lock {}: {error}", path.display()))?;
+    file.lock()
+        .map_err(|error| format!("cannot lock {}: {error}", path.display()))?;
+    Ok(file)
+}
+
+/// Concurrent tests share one cached SDK environment, so its first build is
+/// raced: several callers asking for the same fresh environment at once (as the
+/// refusal-gate journeys do under the parallel runner) each get a working
+/// interpreter, over both builders.
+#[test]
+fn sdk_python_env_survives_concurrent_first_use() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("api.yml");
+    std::fs::write(&spec, TINY_SPEC_WITH_OP).unwrap();
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let pyproject = sdk.join("pyproject.toml");
+    let builders: &[bool] = if uv_available() {
+        &[false, true]
+    } else {
+        &[false]
+    };
+    for &use_uv in builders {
+        let root = tempfile::tempdir().expect("env root");
+        let results: Vec<Result<PathBuf, String>> = std::thread::scope(|scope| {
+            let callers: Vec<_> = (0..4)
+                .map(|_| scope.spawn(|| sdk_python_env_in(root.path(), &pyproject, use_uv)))
+                .collect();
+            callers
+                .into_iter()
+                .map(|caller| caller.join().expect("caller panicked"))
+                .collect()
+        });
+        if results.iter().all(Result::is_err) && std::env::var_os("CI").is_none() {
+            if let Some(Err(reason)) = results.first() {
+                eprintln!("skipping the concurrent SDK env build: {reason}");
+            }
+            continue;
+        }
+        let builder = if use_uv { "uv" } else { "venv + pip" };
+        for result in &results {
+            let py = result
+                .as_ref()
+                .unwrap_or_else(|reason| panic!("a concurrent {builder} build failed: {reason}"));
+            let status = std::process::Command::new(py)
+                .args(["-c", "import mypy, pydantic, httpx"])
+                .status()
+                .expect("run the environment's interpreter");
+            assert!(
+                status.success(),
+                "{builder}: {} cannot import the SDK's pins",
+                py.display()
+            );
+        }
+    }
+}
+
 /// The `mypy` cache kept beside an SDK environment, so repeated runs re-check
-/// only what changed rather than the whole standard library and pydantic.
-fn sdk_mypy_cache(py: &Path) -> PathBuf {
-    py.parent()
+/// only what changed rather than the whole standard library and pydantic, and
+/// the lock a run holds while it uses it: concurrent `mypy` runs replacing the
+/// same cache files fail on Windows, so they take turns.
+fn sdk_mypy_cache(py: &Path) -> Result<(PathBuf, std::fs::File), String> {
+    let env = py
+        .parent()
         .and_then(Path::parent)
-        .map_or_else(std::env::temp_dir, Path::to_path_buf)
-        .join("mypy-cache")
+        .map_or_else(std::env::temp_dir, Path::to_path_buf);
+    let lock = hold_lock(&env.join("mypy-cache.lock"))?;
+    Ok((env.join("mypy-cache"), lock))
 }
 
 #[test]
@@ -14642,11 +14739,12 @@ fn a_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
             return;
         }
     };
+    let (mypy_cache, _cache_lock) = sdk_mypy_cache(&py).expect("lock the SDK's mypy cache");
     let output = std::process::Command::new(&py)
         .args(["-m", "mypy", "."])
         .current_dir(&sdk)
         .env("PYTHONDONTWRITEBYTECODE", "1")
-        .env("MYPY_CACHE_DIR", sdk_mypy_cache(&py))
+        .env("MYPY_CACHE_DIR", &mypy_cache)
         .output()
         .expect("run mypy over the generated SDK");
     let report = String::from_utf8_lossy(&output.stdout);
