@@ -221,7 +221,7 @@ fn every_status_in_one_run_with_json_and_diffs() {
         "compare: crozier.yml packaged: crozier generation finished in ",
         "compare: crozier.yml packaged: matched",
         "compare: crozier.yml edited: mismatched",
-        "compare: crozier.yml failing: could_not_check (the reference command exited with status 5:)",
+        "compare: crozier.yml failing: could_not_check (the reference command exited with status 5)",
         "crozier compare report",
         "Result: 1 generator(s) mismatched the reference (exit 3)",
     ] {
@@ -441,7 +441,14 @@ fn diff_file_names_are_unique_and_safe() {
     assert!(body.contains("Could not compare x: boom"));
     assert!(body.contains("--- reference/t\n+++ crozier/t\n"));
     assert_eq!(
-        clean_join(Path::new("/a"), Path::new("./b/./c.yml")),
-        PathBuf::from("/a/b/c.yml")
+        clean_join(Path::new("/no/such"), Path::new("./b/./c.yml")),
+        PathBuf::from("/no/such/b/c.yml")
+    );
+    let dir = tempfile::tempdir().unwrap();
+    let real = std::fs::canonicalize(dir.path()).unwrap();
+    std::fs::create_dir(real.join("sub")).unwrap();
+    assert_eq!(
+        clean_join(&real.join("sub"), Path::new("../api.yml")),
+        real.join("api.yml")
     );
 }

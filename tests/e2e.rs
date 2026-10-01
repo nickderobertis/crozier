@@ -11,6 +11,11 @@ use assert_cmd::Command;
 use crozier::parity::{self, Difference};
 use predicates::prelude::*;
 
+/// `crozier compare` journeys (a file under `tests/e2e/`, so cargo does not
+/// build it as a test binary of its own).
+#[path = "e2e/compare.rs"]
+mod compare;
+
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
 /// byte-for-byte today (paths relative to the output root). `unmatched` is the

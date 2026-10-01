@@ -229,7 +229,8 @@ impl Checker<'_> {
             self.painter.status(result.status, result.status.as_str())
         );
         if let Some(reason) = &result.reason {
-            line.push_str(&format!(" ({})", reason.lines().next().unwrap_or_default()));
+            let first = reason.lines().next().unwrap_or_default();
+            line.push_str(&format!(" ({})", first.trim_end_matches(':')));
         }
         progress(stderr, &line);
         self.results.push(result);
@@ -469,10 +470,18 @@ fn resolve(
     })
 }
 
-/// `base.join(path)` with `.` components dropped, so an absolute path handed to a
-/// reference command reads cleanly.
+/// `base.join(path)` as an absolute path that reads cleanly for a reference
+/// command: its directory resolved (so `..` and `.` are gone), its file name kept
+/// as written. Falls back to dropping `.` components when the directory does not
+/// exist.
 fn clean_join(base: &Path, path: &Path) -> PathBuf {
-    base.join(path)
+    let joined = base.join(path);
+    if let (Some(parent), Some(name)) = (joined.parent(), joined.file_name()) {
+        if let Ok(parent) = std::fs::canonicalize(parent) {
+            return parent.join(name);
+        }
+    }
+    joined
         .components()
         .filter(|c| !matches!(c, Component::CurDir))
         .collect()
