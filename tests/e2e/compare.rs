@@ -1005,8 +1005,11 @@ fn compare_reports_a_crozier_failure_after_a_good_reference_as_mismatched() {
 
 /// Every usage error of `compare` exits 2 with clap's usage text — clap's own,
 /// and combining `compare` with the global `--config` or `--no-config`.
+/// clap names the usage line after the binary's file name, which is
+/// `crozier.exe` on Windows, so the usage match allows that suffix.
 #[test]
 fn compare_usage_errors_exit_2() {
+    let usage = || predicates::str::is_match(r"Usage: crozier(\.exe)? compare").unwrap();
     let empty = tempfile::tempdir().unwrap();
     for args in [
         ["--config", "crozier.yml", "compare"].as_slice(),
@@ -1018,11 +1021,11 @@ fn compare_usage_errors_exit_2() {
             .assert()
             .code(2)
             .stderr(predicates::str::contains("pass a config file as a PATH"))
-            .stderr(predicates::str::contains("Usage: crozier compare"));
+            .stderr(usage());
     }
     compare_cmd(empty.path())
         .arg("--no-such-flag")
         .assert()
         .code(2)
-        .stderr(predicates::str::contains("Usage: crozier compare"));
+        .stderr(usage());
 }
