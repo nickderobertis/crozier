@@ -36,6 +36,7 @@ import sys
 import tempfile
 import time
 import textwrap
+import tomllib
 import unittest
 import unicodedata
 from collections import Counter
@@ -632,6 +633,33 @@ FROZEN_SEARCH_CONTRACT = (
 )
 
 
+HANDWRITTEN = REPO / "docs" / "openapi-surface" / "handwritten"
+
+
+def load_script(name: str):
+    """A `scripts/` module by file name, as the scripts load one another."""
+    spec = importlib.util.spec_from_file_location(f"census_test_{name.replace('-', '_')[:-3]}", REPO / "scripts" / name)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def handwritten_covers(base: Path = HANDWRITTEN) -> list[tuple[str, str, str | None]]:
+    """`(fixture, key, arm or None)` for every cover a hand-written fixture declares.
+
+    `handwritten_fixtures_match_fern_goldens` holds each `evidence.toml` to its
+    contract; the report only counts what the covers name.
+    """
+    covers = []
+    for evidence in sorted(base.glob("*/evidence.toml")):
+        with evidence.open("rb") as handle:
+            for cover in tomllib.load(handle).get("covers", []):
+                covers.append((evidence.parent.name, cover["key"], cover.get("arm")))
+    return covers
+
+
 def frozen_search_keys(contract: str) -> set[str]:
     """The keys the frozen witness-search-redo contract owns and reconciles."""
     owned = contract.split("## Owned keys", 1)[1] if "## Owned keys" in contract else ""
@@ -1000,7 +1028,9 @@ def completeness_failures(
     A proof is a `MANIFEST.tsv` row with a non-generation verdict, cited from the
     row's own evidence cell; a `measured` row is a byte comparison over a
     generated shape and settles nothing. A searched `gap` carries one line in its
-    own region file's `### Witness search (exhaustive)` compact table.
+    own region file's `### Witness search (exhaustive)` compact table, and so
+    does a `handwritten` row, whose fixture `handwritten_fixtures_match_fern_goldens`
+    gates: the failed search is what admitted it.
     """
     failures = []
     searched = {
@@ -1020,14 +1050,14 @@ def completeness_failures(
             )
         if proof:
             continue
-        if category != "gap":
+        if category not in ("gap", "handwritten"):
             failures.append(
                 f"{key} ({region}.md, `{category}`): lacks a MANIFEST.tsv row carrying a "
                 f"non-generation verdict, the only thing that settles a `{category}` row"
             )
         elif record is None:
             failures.append(
-                f"{key} ({region}.md, `gap`): lacks both halves — no MANIFEST.tsv row "
+                f"{key} ({region}.md, `{category}`): lacks both halves — no MANIFEST.tsv row "
                 f"carrying a non-generation verdict, and no Contract B search record under "
                 f"`{EXHAUSTIVE_SEARCH_HEADING}` in {region}.md"
             )
@@ -1845,7 +1875,10 @@ class GrammarContractTests(unittest.TestCase):
             for cells in rows_of
             if re.fullmatch(r"`(.+)`", cells[2])
         }
-        self.assertEqual(set(census.CONJUNCTIONS), derived & set(census.CONJUNCTIONS))
+        retired = set(census.RETIRED_CASE_CONJUNCTIONS)
+        self.assertLessEqual(retired, set(census.CONJUNCTIONS), "a retired spelling is still declared")
+        self.assertEqual(set(), retired & derived, "a retired conjunction is read off a live case")
+        self.assertEqual(set(census.CONJUNCTIONS) - retired, derived & set(census.CONJUNCTIONS))
         self.assertEqual(set(), derived - set(census.CONJUNCTIONS) - set(census.PREDICATES))
 
     # ------------------------------------------------------------------
@@ -1972,12 +2005,23 @@ class GrammarContractTests(unittest.TestCase):
                     "the digest",
                 )
 
-    def test_the_example_schema_definition_port_is_tied_to_its_rust_helper(self) -> None:
-        """Case 11's content predicate drifts when the Rust keyword set moves."""
-        self.assertEqual(
-            census.EXAMPLE_IS_SCHEMA_DEFINITION_DIGEST,
-            self.function_digest("example_is_schema_definition"),
-        )
+    def test_the_schema_shaped_reading_keeps_the_removed_helpers_truth_table(self) -> None:
+        """`schema.example:schema-shaped` without the Rust helper it ported.
+
+        `example_is_schema_definition` left `src/ir.rs` with the bare-object arm
+        that called it, so no digest can tie the reading to it any longer; these
+        are that helper's own unit-test cases, which the reading still answers.
+        """
+        for value in (
+            None, [], {}, {"field": "value"}, {"field": {}},
+            {"field": {"description": "only metadata"}},
+            {"good": {"type": "string"}, "bad": {}},
+        ):
+            with self.subTest(value=value):
+                self.assertFalse(census.example_is_schema_definition(value))
+        for keyword in ("type", "$ref", "properties", "allOf", "oneOf", "anyOf"):
+            with self.subTest(keyword=keyword):
+                self.assertTrue(census.example_is_schema_definition({"field": {keyword: {}}}))
 
     def test_the_digest_moves_when_a_branch_of_a_named_function_moves(self) -> None:
         """The check above, proved against a branch this case adds and removes.
@@ -2011,7 +2055,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             0: "zero", 1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
             9: "nine", 94: "ninety-four", 95: "ninety-five", 99: "ninety-nine",
-            103: "one-hundred-and-three",
+            103: "one-hundred-and-three", 106: "one-hundred-and-six",
             15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
             60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
@@ -6698,7 +6742,7 @@ class RankedBacklogTests(unittest.TestCase):
 
     DOC = REPO / "docs" / "openapi-surface-coverage.md"
     REGIONS = REPO / "docs" / "openapi-surface"
-    CATEGORIES = ("golden", "limitations", "gap")
+    CATEGORIES = ("golden", "limitations", "handwritten", "gap")
     SETTLEMENTS = ("FIXTURE", "PROBE", "UNREACHABLE")
     PROBE_KINDS = ("structural", "witness-supply")
     WITNESS_SEARCH = WITNESS_SEARCH_HEADING
@@ -6806,19 +6850,19 @@ class RankedBacklogTests(unittest.TestCase):
         stated = {}
         for line in self.section("### What the walk enumerated", "The walk enumerated").splitlines():
             row = re.match(
-                r"\| \[`([a-z0-9-]+)`\][^|]*\|" + r"\s*(\d+)\s*\|" * 7, line
+                r"\| \[`([a-z0-9-]+)`\][^|]*\|" + r"\s*(\d+)\s*\|" * 8, line
             )
             if row:
-                stated[row.group(1)] = [int(row.group(n)) for n in range(2, 9)]
+                stated[row.group(1)] = [int(row.group(n)) for n in range(2, 10)]
         self.assertEqual(6, len(stated), "the summary table no longer lists six regions")
         totals = re.search(
-            r"\| \*\*total\*\* \|" + r"\s*\*\*(\d+)\*\*\s*\|" * 7,
+            r"\| \*\*total\*\* \|" + r"\s*\*\*(\d+)\*\*\s*\|" * 8,
             self.section("### What the walk enumerated", "The walk enumerated"),
         )
         self.assertIsNotNone(totals, "the summary table no longer carries a total row")
         self.assertEqual(
             [sum(column) for column in zip(*stated.values())],
-            [int(totals.group(n)) for n in range(1, 8)],
+            [int(totals.group(n)) for n in range(1, 9)],
             "the total row is not the six region rows' own column sums",
         )
         for region, numbers in sorted(stated.items()):
@@ -6840,6 +6884,33 @@ class RankedBacklogTests(unittest.TestCase):
                 ]
                 self.assertEqual(counts, numbers)
 
+    def test_every_region_row_parser_reads_the_documented_categories(self) -> None:
+        """One category vocabulary: the entry table's, in precedence order.
+
+        Each script that parses region rows keeps its own copy, so a category
+        added to the index but not to a parser would leave that parser silently
+        skipping the new rows.
+        """
+        stated = re.search(r"^\| `category` \| exactly one of ((?:`[a-z]+`(?:, )?)+) \|$", self.doc, re.M)
+        self.assertIsNotNone(stated, "the entry table no longer states the category vocabulary")
+        documented = tuple(re.findall(r"`([a-z]+)`", stated.group(1)))
+        rules = re.findall(r"^\d+\. \*\*`([a-z]+)`\*\*", self.section("## The category rules", "## The settlement classes"), re.M)
+        self.assertEqual(documented, tuple(rules), "the category rules' precedence is not the entry table's order")
+        for name, categories in (
+            ("RankedBacklogTests", self.CATEGORIES),
+            ("scripts/golden-reach.py", self.golden_reach().CATEGORIES),
+            ("scripts/handwritten-fixtures.py", load_script("handwritten-fixtures.py").CATEGORIES),
+            ("scripts/witness-search-redo.py", load_script("witness-search-redo.py").CATEGORIES),
+        ):
+            with self.subTest(parser=name):
+                self.assertEqual(documented, tuple(categories))
+
+    def test_the_handwritten_gate_reads_the_gated_verdict_vocabularies(self) -> None:
+        """The hand-written gate's outcome and non-generation words are this suite's."""
+        gate = load_script("handwritten-fixtures.py")
+        self.assertEqual(set(SEARCH_OUTCOMES), set(gate.OUTCOMES))
+        self.assertEqual(NON_GENERATION_VERDICTS, gate.NON_GENERATION)
+
     def test_the_prose_totals_are_the_summary_tables_own_column_sums(self) -> None:
         """The narrated per-category and per-settlement totals are the table's own."""
         rows = list(self.entries.values())
@@ -6852,7 +6923,7 @@ class RankedBacklogTests(unittest.TestCase):
         narrated = [int(value.replace(",", "")) for value in re.findall(r"\*\*([\d,]+)\*\*", prose)]
         self.assertEqual(totals + [len(self.gaps(s)) for s in self.SETTLEMENTS], narrated)
         self.assertEqual(
-            totals[3],
+            totals[1 + self.CATEGORIES.index("gap")],
             sum(len(self.gaps(s)) for s in self.SETTLEMENTS),
             "the settlement classes do not partition the gap rows",
         )
@@ -6872,11 +6943,12 @@ class RankedBacklogTests(unittest.TestCase):
             for category in self.CATEGORIES
         }
         vendored = {path.parent.name for path in FIXTURES.glob("*/openapi.*")}
-        ledger = {reach.key: reach for _rank, reach in self.reach_ledger()}
+        ledger_rows = self.reach_ledger()
+        ledger = {reach.key: reach for _rank, reach in ledger_rows}
         manifest = manifest_rows(
             (self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8")
         )
-        byte_match = no_witness = proof = 0
+        byte_match = no_witness = proof = handwritten = 0
         for key, (_region, cells) in self.entries.items():
             category = cells[3].strip("`")
             if category == "golden":
@@ -6886,29 +6958,45 @@ class RankedBacklogTests(unittest.TestCase):
                 else:
                     self.assertFalse(witnesses, f"{key} rests on hand-authored targets alone")
                     no_witness += 1
+            elif category == "handwritten":
+                # Weaker proof than a real specification: its own count, never
+                # the byte-match one and never a non-generation proof.
+                handwritten += 1
             elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
                 proof += 1
+        unreached = {
+            (reach.key, spec) for _rank, reach in ledger_rows for spec, hit, _total in reach.sites if not hit
+        }
+        covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
         fixture = len(self.gaps("FIXTURE"))
         headline = " ".join(self.section("**What it says today.**", "**The denominator").split())
         stated = re.search(
-            r"enumerates (\d+) features\. By category, (\d+) are `golden`, (\d+) `limitations` "
-            r"and (\d+) `gap`\..*?\*\*(\d+) carry byte-match evidence against a registered "
-            r"real-world specification\.\*\*.*?\*\*(\d+) carry a committed Fern measurement of "
-            r"non-generation that crozier is byte-compared against\.\*\* These are the (\d+) "
-            r"`limitations` rows and the (\d+) `UNREACHABLE` `gap` rows\..*?\*\*(\d+) remain "
-            r"unproven\.\*\* (\d+) are the `FIXTURE` `gap` rows\..*?The other (\d+) are `golden` "
-            r"rows declared only by.*?(\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
+            r"enumerates (\d+) features\. By category, (\d+) are `golden`, (\d+) `limitations`, "
+            r"(\d+) `handwritten` and (\d+) `gap`\..*?\*\*(\d+) carry byte-match evidence against "
+            r"a registered real-world specification\.\*\*.*?\*\*(\d+) carry a committed Fern "
+            r"measurement of non-generation that crozier is byte-compared against\.\*\* These are "
+            r"the (\d+) `limitations` rows and the (\d+) `UNREACHABLE` `gap` rows\..*?\*\*(\d+) rest "
+            r"on a hand-written fixture, a weaker proof than a real specification\.\*\* These are "
+            r"the `handwritten` rows\..*?They are not among the (\d+) and never count as a "
+            r"real-specification match\. (\d+) of the (\d+) unreached arms below carry an arm-level "
+            r"hand-written fixture, and each such arm is still counted as unreached by real "
+            r"specifications\. - \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
+            r"rows\..*?The other (\d+) are `golden` rows declared only by.*?"
+            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
             headline,
         )
-        self.assertIsNotNone(stated, "the headline no longer states its three numbers")
+        self.assertIsNotNone(stated, "the headline no longer states its four numbers")
         unproven = fixture + no_witness
         expected = [
-            len(rows), categories["golden"], categories["limitations"], categories["gap"],
-            byte_match, proof, categories["limitations"], len(self.gaps("UNREACHABLE")),
-            unproven, fixture, no_witness, byte_match, proof, unproven, len(rows),
+            len(rows), categories["golden"], categories["limitations"], categories["handwritten"],
+            categories["gap"], byte_match, proof, categories["limitations"],
+            len(self.gaps("UNREACHABLE")), handwritten, byte_match, len(covered), len(unreached),
+            unproven, fixture, no_witness, byte_match, proof, handwritten, unproven, len(rows),
         ]
         self.assertEqual(expected, [int(value) for value in stated.groups()])
-        self.assertEqual(len(rows), byte_match + proof + unproven, "the three do not partition the walk")
+        self.assertEqual(
+            len(rows), byte_match + proof + handwritten + unproven, "the four do not partition the walk"
+        )
         self.assertEqual(
             proof, categories["limitations"] + len(self.gaps("UNREACHABLE")),
             "a committed proof is not exactly the `limitations` and `UNREACHABLE` rows",
@@ -7209,13 +7297,22 @@ class RankedBacklogTests(unittest.TestCase):
     NOT_EXHAUSTED = "does not pin\nthe whole of the branch's behaviour"
 
     def conjunction_rows(self) -> dict[str, tuple[str, list[str]]]:
-        """selector -> the one region row whose evidence cell cites it."""
+        """selector -> the one region row whose evidence cell cites it.
+
+        A `handwritten` row's evidence cell names its fixtures instead, by the
+        fixture contract, so it answers for the selector its key's search ran
+        on — the one `witness-search-keys.tsv` keeps for it.
+        """
+        tracked = load_script("witness-search-region-keys.py").tracked_selectors(
+            REPO / "docs" / "openapi-surface"
+        )
         found: dict[str, tuple[str, list[str]]] = {}
         for selector in census.CONJUNCTIONS:
             citing = [
                 (region, cells)
-                for region, cells in self.entries.values()
+                for key, (region, cells) in self.entries.items()
                 if f"`{selector}`" in cells[4]
+                or cells[3].strip("`") == "handwritten" and tracked.get(key) == selector
             ]
             self.assertEqual(
                 1, len(citing),
@@ -7349,6 +7446,8 @@ class RankedBacklogTests(unittest.TestCase):
         is a live code path rather than a shape somebody thought of.
         """
         for selector, (_region, cells) in sorted(self.conjunction_rows().items()):
+            if cells[3].strip("`") == "handwritten":
+                continue  # its fixture's covers, not its cell, carry the evidence
             with self.subTest(selector=selector):
                 named = [fn for fn in self.BLIND_FUNCTIONS if f"`{fn}`" in cells[4]]
                 self.assertEqual(
@@ -8409,6 +8508,12 @@ class RankedBacklogTests(unittest.TestCase):
         record states; the two counts before it are the ledger's own.
         """
         ledger = self.reach_ledger()
+        # The hand-written column: each fixture whose arm-level cover names the
+        # arm. It proves less than a real specification, so the arm stays here.
+        covering: dict[tuple[str, str], set[str]] = {}
+        for fixture, key, arm in handwritten_covers():
+            if arm:
+                covering.setdefault((key, arm), set()).add(fixture)
         expected = []
         for rank, reach in ledger:
             if not reach.unreached_sites:
@@ -8427,11 +8532,12 @@ class RankedBacklogTests(unittest.TestCase):
                 # No record is no search: the arm reads incomplete, and says why.
                 cell = f"`{SEARCH_INCOMPLETE}` — no arm search has run"
             expected.extend(
-                [str(rank), f"`{reach.key}`", f"`{spec}`", str(total), cell]
+                [str(rank), f"`{reach.key}`", f"`{spec}`", str(total), cell,
+                 ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—"]
                 for spec, hit, total in reach.sites
                 if not hit
             )
-        self.assertEqual(expected, self.reach_table(self.REACH_ARMS, 5))
+        self.assertEqual(expected, self.reach_table(self.REACH_ARMS, 6))
         flat = " ".join(self.section(self.REACH_ARMS).split("\n#", 1)[0].split())
         partial = sum(1 for _rank, reach in ledger if reach.unreached_sites)
         self.assertIn(f"**{len(ledger) - partial}** reach every handling site", flat)

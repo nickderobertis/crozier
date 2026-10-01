@@ -202,6 +202,46 @@ runtime/scaffolding metadata and `NOTICE` when the aggregate diff requires it.
 Use the exact resolved version shown in the run evidence on later reruns so a
 newly released Fern version cannot join the same repair cycle.
 
+### Flat goldens
+
+A fixture can also carry Fern's **flat** output as `expected-flat/`, beside its
+packaged `expected/`. That is the tree `fern generate --local` writes to a
+`local-file-system` output path without `--preview`, which crozier reproduces
+with `--layout flat` (see [`matching.md`](matching.md#the-flat-layout)).
+[`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt) declares every flat
+golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
+
+- **The script's layout option.** `scripts/generate-fern-fixture.sh --layout
+  flat <fixture> <pin>` runs that local-file-system generation, strips comments,
+  and installs the result atomically as `tests/fixtures/<fixture>/expected-flat/`.
+  It refuses a fixture `flat-goldens.txt` does not declare. It runs Fern with no
+  `FERN_TOKEN`, as the measurement did. The fixture's row in
+  `fern-generator-config.txt` supplies its settings, as for the packaged form.
+  `--layout packaged`, the default, is the unchanged `--preview` run into
+  `expected/`.
+- **Provenance** is the packaged form's with `"layout": "flat"` added: the
+  vendored-spec record the script writes, or the manifest record `fern-goldens`
+  writes for a `CORPUS.md` row. Packaged records carry no `layout` key, so no
+  packaged golden goes stale over it.
+- **Route A** for a hand-authored fixture: declare it in `flat-goldens.txt`, add
+  its `FLAT_GOLDENS` entry and `flat_goldens!` test in `tests/e2e.rs`, run the
+  script's flat mode at the pin, then measure with `just fixtures-gaps
+  <fixture>`. A flat golden whose directory has no spec names the fixture whose
+  vendored `openapi.yml` it uses in its row's second column
+  (`exhaustive-package-name|exhaustive`).
+- **Route B and the schedule** refresh the flat golden of every declared
+  `CORPUS.md` row in the same generation step as its packaged one, from the same
+  fetched spec. The flat golden has its own currency check. A row whose
+  packaged golden is current but whose flat one is stale regenerates only the
+  flat one. A failed flat refresh keeps the prior `expected-flat/` and still
+  publishes the packaged golden that succeeded. Publication commits an
+  `expected-flat/` tree only when it is complete and current. Comparison needs
+  no extra input: `just fixtures-diff <fixture>` reports the fixture's flat
+  golden after its packaged one.
+- **A fetched-spec flat test needs its `just test-corpus-match` line**, like its
+  packaged sibling. `every_registered_corpus_is_wired_into_the_gate` fails without
+  it.
+
 ### Moving a remote-`$ref` pin forward
 
 A corpus row whose document names another document by absolute URL is only
@@ -316,7 +356,9 @@ narrower human-readable diff after that aggregate pass, use
 Any fixture can carry fixture-owned non-default settings as a row in the shared
 table [`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt):
 the audience list, Crozier strict-audience identity, Fern `client_class_name`,
-and Fern `pydantic_config.extra_fields`. `scripts/generate-fern-fixture.sh` loads
+Fern `pydantic_config.extra_fields`, and the Fern workspace `organization` (the
+input that names the module, client and README the way crozier's
+`--package-name` does; see [`matching.md`](matching.md#the-flat-layout)). `scripts/generate-fern-fixture.sh` loads
 them by fixture name on both routes, so a `CORPUS.md` row is generated with them
 too — that is what lets a generator setting no OpenAPI document can express
 (`eos.local-extra-fields-forbid`, row 82) be pinned by a second row over an

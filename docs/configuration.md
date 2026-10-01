@@ -34,15 +34,15 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 
 - **CLI flags** — `--spec`, `--output`, `--package-name`, `--project-name`,
   `--client-class-name`, `--audience` (repeatable), `--audience-strict`,
-  `--fern-strict`, `--extra-fields`. These apply to a *single* generator; passing them while more
+  `--fern-strict`, `--extra-fields`, `--layout`. These apply to a *single* generator; passing them while more
   than one would run is an error (name one, or move the values into the config
   file).
 - **Environment** — `CROZIER_SPEC`, `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`,
   `CROZIER_PROJECT_NAME`, `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES`
   (comma-separated), `CROZIER_AUDIENCE_STRICT`, `CROZIER_FERN_STRICT`,
-  `CROZIER_EXTRA_FIELDS`. Empty
-  values count as unset. These are a global override layer applied to every
-  selected generator.
+  `CROZIER_EXTRA_FIELDS`, `CROZIER_LAYOUT`. Empty values count as unset; a value
+  outside a field's set (`CROZIER_LAYOUT=nested`) is an error naming the variable.
+  These are a global override layer applied to every selected generator.
 - **Config file** — a `generators.<name>` value beats the shared top-level value
   of the same field. `extra-fields` is **Python-generator-specific**: it lives
   only under a generator, never at the shared top level (a top-level
@@ -50,9 +50,36 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 - **Built-in defaults** — `package-name` defaults to a `snake_case` of the API
   title; `project-name` defaults to the package name; `client-class-name`
   defaults to `{PascalCase(package-name)}Api`; audiences default to empty (the
-  whole API); `fern-strict` defaults to `false`; `extra-fields` defaults to
-  `allow`. `spec` and `output` have no
-  default — a generator resolved without either is an actionable error.
+  whole API); `fern-strict` defaults to `false`; `extra-fields` defaults to `allow`; `layout` defaults to
+  `packaged`. `spec` and `output` have no default — a generator resolved without
+  either is an actionable error.
+
+So `layout` resolves as `--layout` > `CROZIER_LAYOUT` > `generators.<name>.layout`
+> top-level `layout` > `packaged`, and any other value from any layer is refused
+with an error naming the value and where it came from.
+
+## Output layout
+
+Fern writes one of two trees depending on how it is run, and `layout` picks the
+one crozier writes, so a team migrating from Fern sets the value that matches its
+Fern setup and gets the same files:
+
+| `layout` | crozier writes | Matches Fern's |
+| --- | --- | --- |
+| `packaged` (default) | A pip-installable package: `pyproject.toml`, `requirements.txt`, `README.md`, `CONTRIBUTING.md`, `reference.md`, `.fern/metadata.json`, `tests/`, and the modules under `src/<package-name>/` (with `py.typed` and `version.py`). | `fern generate --preview --output <dir>` |
+| `flat` | The package's modules directly under `output`, beside `README.md`, `CONTRIBUTING.md`, `reference.md`, `.fern/metadata.json` and `tests/`. No `pyproject.toml`, `requirements.txt`, `py.typed` or `version.py`. | a generator whose `output` is `location: local-file-system` with a `path` |
+
+The flat modules also differ slightly from their packaged form, as Fern's do: no
+`__version__` export, an aiohttp install hint naming the package rather than the
+project, and no `X-Fern-SDK-Name`/`X-Fern-SDK-Version` headers. A flat tree has
+no distribution, so `project-name` reaches none of its files.
+[`matching.md`](matching.md#the-flat-layout) lists every difference.
+
+Regenerating is idempotent in both layouts. `packaged` clears
+`<output>/src/<package-name>/` first; `flat` clears `output` itself, but only
+when it holds a previous generation (it has a `.fern/metadata.json`). It always
+keeps dot-entries such as `.git`. A directory without that file is written into
+and nothing in it is deleted.
 
 ## The config file
 
@@ -81,6 +108,7 @@ project-name: my-api
 audiences: [public]
 audience-strict: false
 fern-strict: false        # see "Strict Fern compatibility" below
+layout: packaged          # packaged|flat — see "Output layout"
 
 generators:
   python:
@@ -96,6 +124,8 @@ generators:
     extra-fields: allow        # allow|ignore|forbid — pydantic behavior for unknown
                                # response fields (Python-generator-specific; not a
                                # shared top-level field)
+    layout: flat               # packaged (Fern's --preview --output) | flat
+                               # (Fern's local-file-system output)
   admin:
     spec: ./admin-openapi.yml
     output: ./sdks/admin
@@ -149,7 +179,10 @@ generator `python`
   output           ./sdk/python                 (generator)
   package-name     (unset)                      (default)
   ...
+  layout           packaged                     (default)
 ```
+
+`layout` always shows the value a run would use, `packaged` when no layer sets it.
 
 ## Examples
 

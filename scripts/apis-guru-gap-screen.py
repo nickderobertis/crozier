@@ -67,6 +67,16 @@ def load_census():
 CENSUS = load_census()
 
 
+def load_region_keys():
+    path = REPO / "scripts/witness-search-region-keys.py"
+    spec = importlib.util.spec_from_file_location("gap_screen_region_keys", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def table_cells(line: str) -> list[str]:
     return [cell.strip() for cell in line.replace("\\|", "\0").strip().strip("|").split("|")]
 
@@ -75,6 +85,9 @@ def selectors_from_regions(regions: Path) -> dict[str, str]:
     """Derive the frozen search selectors, including keys since settled by a golden."""
     wanted = set(OWNED_KEYS)
     found: dict[str, str] = {}
+    # A `handwritten` row still has no real-specification witness, so it stays
+    # a screening target, with the selector its failed search ran on.
+    tracked = load_region_keys().tracked_selectors(regions)
     case_11_is_owned = False
     for path in sorted(regions.glob("*.md")):
         for line in path.read_text(encoding="utf-8").splitlines():
@@ -83,10 +96,19 @@ def selectors_from_regions(regions: Path) -> dict[str, str]:
                 continue
             key = cells[0].strip("` ")
             category = cells[3].strip("` ") if len(cells) == 8 else ""
-            if key == CASE_11_KEY and category in {"gap", "limitations", "golden"}:
+            if key == CASE_11_KEY and category in {"gap", "limitations", "golden", "handwritten"}:
                 case_11_is_owned = True
                 wanted.add(key)
             if key not in wanted:
+                continue
+            if category == "handwritten":
+                if key not in tracked:
+                    raise ValueError(
+                        f"{path}: handwritten row {key!r} has no selector in witness-search-keys.tsv; "
+                        "restore that file from git, or regenerate it with "
+                        "`scripts/witness-search-region-keys.py`"
+                    )
+                found[key] = tracked[key]
                 continue
             open_fixture = category == "gap" and "FIXTURE" in cells[7]
             settled_probe = (

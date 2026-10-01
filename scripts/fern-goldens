@@ -29,6 +29,11 @@ TAGS_URL = (
 STATE_FILE = ".crozier-fern-golden.json"
 KNOWN_FAILURE_FILE = "known-fern-failure.json"
 FIXTURE_ALIASES_FILE = "corpus-aliases.tsv"
+FLAT_GOLDENS_FILE = "flat-goldens.txt"
+PACKAGED = "packaged"
+FLAT = "flat"
+GOLDEN_DIRS = {PACKAGED: "expected", FLAT: "expected-flat"}
+"""Each layout's golden directory under `tests/fixtures/<fixture>/`."""
 VERSION_RE = re.compile(
     r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?"
 )
@@ -155,6 +160,44 @@ def load_fixture_aliases(root: Path) -> dict[str, str]:
     if not aliases:
         raise GoldensError(f"fixture alias file {path} has no aliases")
     return aliases
+
+
+def load_flat_goldens(root: Path) -> set[str]:
+    """The fixtures `tests/fixtures/flat-goldens.txt` declares a flat golden for.
+
+    Only a fixture whose flat golden generates from its own spec is returned: a
+    row naming another fixture's vendored document is a hand-authored golden this
+    tool never generates, and a CORPUS.md row cannot take its spec from anywhere
+    but its fetch.
+    """
+    path = root / "tests" / "fixtures" / FLAT_GOLDENS_FILE
+    if not path.exists():
+        return set()
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise GoldensError(f"could not read flat goldens {path}: {error}") from error
+    fixtures: set[str] = set()
+    seen: set[str] = set()
+    for line_number, line in enumerate(lines, start=1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        cells = line.split("|")
+        if len(cells) != 2:
+            raise GoldensError(
+                f"{path} line {line_number}: expected fixture and spec separated by one |"
+            )
+        try:
+            fixture = validate_fixture(cells[0])
+            spec = validate_fixture(cells[1]) if cells[1] else ""
+        except GoldensError as error:
+            raise GoldensError(f"{path} line {line_number}: {error}") from error
+        if fixture in seen:
+            raise GoldensError(f"{path} line {line_number}: duplicate flat golden {fixture!r}")
+        seen.add(fixture)
+        if not spec:
+            fixtures.add(fixture)
+    return fixtures
 
 
 MANIFEST_HEADER = [
@@ -351,7 +394,9 @@ def corpus_remote_ref_pins(root: Path, row: CorpusRow) -> list[dict[str, str]]:
     ]
 
 
-def expected_state(root: Path, row: CorpusRow, version: str) -> bytes:
+def expected_state(
+    root: Path, row: CorpusRow, version: str, layout: str = PACKAGED
+) -> bytes:
     state: dict[str, object] = {
         "fern_python_sdk_version": version,
         "corpus_spec_name": row.name,
@@ -376,6 +421,10 @@ def expected_state(root: Path, row: CorpusRow, version: str) -> bytes:
             {"path": member.path, "pinned_url": member.pinned_url, "sha256": member.sha256}
             for member in tree
         ]
+    # A flat golden records its layout; a packaged record keeps exactly the form
+    # it always had, so no packaged golden goes stale over this key.
+    if layout == FLAT:
+        state["layout"] = FLAT
     return (json.dumps(state, indent=2) + "\n").encode()
 
 
@@ -499,14 +548,22 @@ def extract_fern_failure_fingerprint(log_path: Path) -> dict[str, object]:
     }
 
 
-def is_current(root: Path, row: CorpusRow, version: str) -> bool:
-    expected = root / "tests" / "fixtures" / row.fixture / "expected"
+def is_complete_tree(golden: Path, layout: str) -> bool:
+    """Whether `golden` has the shape of its layout's Fern tree: the packaged
+    SDK's `src/`, or the flat tree's root `__init__.py` with no `src/`."""
+    if layout == FLAT:
+        return (golden / "__init__.py").is_file() and not (golden / "src").exists()
+    return (golden / "src").is_dir()
+
+
+def is_current(root: Path, row: CorpusRow, version: str, layout: str = PACKAGED) -> bool:
+    expected = root / "tests" / "fixtures" / row.fixture / GOLDEN_DIRS[layout]
     state = expected / STATE_FILE
     try:
         return (
             not expected.is_symlink()
-            and (expected / "src").is_dir()
-            and state.read_bytes() == expected_state(root, row, version)
+            and is_complete_tree(expected, layout)
+            and state.read_bytes() == expected_state(root, row, version, layout)
             and any(
                 path.is_file() and path.name != STATE_FILE
                 for path in expected.rglob("*")
@@ -602,8 +659,12 @@ def write_deterministic_archive(root: Path, fixtures: list[str], output: Path) -
     with output.open("wb") as raw:
         with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
             with tarfile.open(fileobj=compressed, mode="w") as archive:
-                for fixture in sorted(fixtures):
-                    base = root / "tests" / "fixtures" / fixture / "expected"
+                bases = [
+                    root / "tests" / "fixtures" / fixture / directory
+                    for fixture in sorted(fixtures)
+                    for directory in GOLDEN_DIRS.values()
+                ]
+                for base in (base for base in bases if base.is_dir()):
                     for path in [base, *sorted(base.rglob("*"))]:
                         relative = path.relative_to(root)
                         info = archive.gettarinfo(str(path), arcname=relative.as_posix())
@@ -628,6 +689,44 @@ def write_patch(root: Path, report: Path) -> None:
         (report / "fern-goldens.patch").write_text(result.stdout or "", encoding="utf-8")
 
 
+def generate_flat(
+    root: Path, generator: Path, row: CorpusRow, version: str, spec: Path, log_path: Path
+) -> None:
+    """Generate a row's flat golden and install it atomically, or raise.
+
+    A failure leaves the prior `expected-flat/` golden and its provenance intact.
+    """
+    fixture_dir = root / "tests" / "fixtures" / row.fixture
+    stage = Path(tempfile.mkdtemp(prefix=".fern-goldens-stage.", dir=fixture_dir))
+    try:
+        staged = stage / GOLDEN_DIRS[FLAT]
+        with log_path.open("w", encoding="utf-8") as log:
+            result = run_command(
+                [
+                    str(generator),
+                    "--layout",
+                    FLAT,
+                    row.fixture,
+                    version,
+                    str(spec),
+                    str(staged),
+                ],
+                cwd=root,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+            )
+        if result.returncode != 0:
+            raise GoldensError(f"flat generator exited {result.returncode}; see {log_path}")
+        if not is_complete_tree(staged, FLAT):
+            raise GoldensError(
+                f"generator returned success without a flat module tree; see {log_path}"
+            )
+        (staged / STATE_FILE).write_bytes(expected_state(root, row, version, FLAT))
+        atomic_replace_directory(staged, fixture_dir / GOLDEN_DIRS[FLAT])
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
+
+
 def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
     rows = load_manifest(root)
     version = validate_version(version_arg) if version_arg else resolve_latest_version(root)
@@ -645,6 +744,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
     generator = root / "scripts" / "generate-fern-fixture.sh"
     if not generator.is_file():
         raise GoldensError(f"missing Fern generator script: {generator}")
+    flat_goldens = load_flat_goldens(root)
 
     for row in selected:
         fixture_dir = root / "tests" / "fixtures" / row.fixture
@@ -657,66 +757,85 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                 raise GoldensError(
                     f"{known_failure.path} is stale because a complete current golden exists"
                 )
+            packaged_generated = False
             if known_failure is None and is_current(root, row, version):
-                current.append(row.fixture)
                 log_path.write_text(
                     f"current: {row.fixture} at {GENERATOR}:{version}\n", encoding="utf-8"
                 )
-                continue
-
-            fixture_dir.mkdir(parents=True, exist_ok=True)
-            stage = Path(tempfile.mkdtemp(prefix=".fern-goldens-stage.", dir=fixture_dir))
-            try:
-                staged_expected = stage / "expected"
-                with log_path.open("w", encoding="utf-8") as log:
-                    result = run_command(
-                        [
-                            str(generator),
-                            row.fixture,
-                            version,
-                            str(spec),
-                            str(staged_expected),
-                        ],
-                        cwd=root,
-                        stdout=log,
-                        stderr=subprocess.STDOUT,
-                    )
-                if result.returncode != 0:
-                    if known_failure is not None:
-                        if result.returncode != known_failure.exit_code:
-                            raise GoldensError(
-                                f"known upstream failure exit changed from "
-                                f"{known_failure.exit_code} to {result.returncode}; see {log_path}"
-                            )
-                        actual_fingerprint = extract_fern_failure_fingerprint(log_path)
-                        if actual_fingerprint != known_failure.fingerprint:
-                            raise GoldensError(
-                                f"known upstream failure fingerprint changed; see {log_path}"
-                            )
-                        known_upstream_failures.append(row.fixture)
-                        print(
-                            f"fern-goldens: warning: exact known upstream Fern failure "
-                            f"reproduced for {row.fixture} at {GENERATOR}:{version}"
+            else:
+                fixture_dir.mkdir(parents=True, exist_ok=True)
+                stage = Path(tempfile.mkdtemp(prefix=".fern-goldens-stage.", dir=fixture_dir))
+                try:
+                    staged_expected = stage / "expected"
+                    with log_path.open("w", encoding="utf-8") as log:
+                        result = run_command(
+                            [
+                                str(generator),
+                                row.fixture,
+                                version,
+                                str(spec),
+                                str(staged_expected),
+                            ],
+                            cwd=root,
+                            stdout=log,
+                            stderr=subprocess.STDOUT,
                         )
-                        continue
-                    raise GoldensError(f"generator exited {result.returncode}; see {log_path}")
-                if known_failure is not None:
-                    raise GoldensError(
-                        "registered known upstream failure unexpectedly succeeded; "
-                        f"preserved the prior golden and discarded staged output; see {log_path}"
+                    if result.returncode != 0:
+                        if known_failure is not None:
+                            if result.returncode != known_failure.exit_code:
+                                raise GoldensError(
+                                    f"known upstream failure exit changed from "
+                                    f"{known_failure.exit_code} to {result.returncode}; see {log_path}"
+                                )
+                            actual_fingerprint = extract_fern_failure_fingerprint(log_path)
+                            if actual_fingerprint != known_failure.fingerprint:
+                                raise GoldensError(
+                                    f"known upstream failure fingerprint changed; see {log_path}"
+                                )
+                            known_upstream_failures.append(row.fixture)
+                            print(
+                                f"fern-goldens: warning: exact known upstream Fern failure "
+                                f"reproduced for {row.fixture} at {GENERATOR}:{version}"
+                            )
+                            continue
+                        raise GoldensError(f"generator exited {result.returncode}; see {log_path}")
+                    if known_failure is not None:
+                        raise GoldensError(
+                            "registered known upstream failure unexpectedly succeeded; "
+                            f"preserved the prior golden and discarded staged output; see {log_path}"
+                        )
+                    if not (staged_expected / "src").is_dir() or not any(
+                        path.is_file() for path in staged_expected.rglob("*")
+                    ):
+                        raise GoldensError(
+                            f"generator returned success without a packaged src/ tree; see {log_path}"
+                        )
+                    (staged_expected / STATE_FILE).write_bytes(expected_state(root, row, version))
+                    atomic_replace_directory(staged_expected, fixture_dir / "expected")
+                    packaged_generated = True
+                    generated.append(row.fixture)
+                    print(f"fern-goldens: generated {row.fixture} at {GENERATOR}:{version}")
+                finally:
+                    shutil.rmtree(stage, ignore_errors=True)
+
+            # The flat golden refreshes beside the packaged one, from the same
+            # fetched spec and settings, whenever flat-goldens.txt declares it.
+            flat_generated = False
+            if row.fixture in flat_goldens:
+                flat_log = report / "generation-logs" / f"{row.fixture}.flat.log"
+                if is_current(root, row, version, FLAT):
+                    flat_log.write_text(
+                        f"current: {row.fixture} (flat) at {GENERATOR}:{version}\n",
+                        encoding="utf-8",
                     )
-                if not (staged_expected / "src").is_dir() or not any(
-                    path.is_file() for path in staged_expected.rglob("*")
-                ):
-                    raise GoldensError(
-                        f"generator returned success without a packaged src/ tree; see {log_path}"
-                    )
-                (staged_expected / STATE_FILE).write_bytes(expected_state(root, row, version))
-                atomic_replace_directory(staged_expected, fixture_dir / "expected")
+                else:
+                    generate_flat(root, generator, row, version, spec, flat_log)
+                    flat_generated = True
+                    print(f"fern-goldens: generated {row.fixture} (flat) at {GENERATOR}:{version}")
+            if flat_generated and not packaged_generated:
                 generated.append(row.fixture)
-                print(f"fern-goldens: generated {row.fixture} at {GENERATOR}:{version}")
-            finally:
-                shutil.rmtree(stage, ignore_errors=True)
+            if not (packaged_generated or flat_generated):
+                current.append(row.fixture)
         except (GoldensError, OSError) as error:
             failures.append(f"{row.fixture}: {error}")
             if not fixture_existed:
@@ -955,6 +1074,7 @@ def publish(root: Path, branch: str) -> int:
     if len(fixtures) != len(set(fixtures)):
         raise GoldensError("generation report contains duplicate fixture names")
     rows = {row.fixture: row for row in load_manifest(root)}
+    flat_goldens = load_flat_goldens(root)
     version_file = report / "fern-version.txt"
     version = validate_version(version_file.read_text(encoding="utf-8").strip())
     paths: list[str] = []
@@ -963,10 +1083,13 @@ def publish(root: Path, branch: str) -> int:
         row = rows.get(fixture)
         if row is None:
             raise GoldensError(f"successful fixture is no longer in CORPUS.md: {fixture}")
-        expected = root / "tests" / "fixtures" / fixture / "expected"
         if not is_current(root, row, version):
             raise GoldensError(f"successful fixture has no complete golden/state: {fixture}")
-        paths.append(f"tests/fixtures/{fixture}/expected")
+        paths.append(f"tests/fixtures/{fixture}/{GOLDEN_DIRS[PACKAGED]}")
+        # A flat golden publishes only once it is complete and current; one whose
+        # refresh failed keeps its prior committed tree untouched.
+        if fixture in flat_goldens and is_current(root, row, version, FLAT):
+            paths.append(f"tests/fixtures/{fixture}/{GOLDEN_DIRS[FLAT]}")
     if not paths:
         print("fern-goldens: nothing generated; publish is a no-op")
         return 0

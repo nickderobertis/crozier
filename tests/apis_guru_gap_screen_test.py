@@ -6,6 +6,7 @@ from __future__ import annotations
 import csv
 import gzip
 import json
+import re
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import subprocess
 import sys
@@ -13,6 +14,9 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from region_flip import flipped_regions  # noqa: E402 - the tests directory must enter sys.path first
 
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts/apis-guru-gap-screen.py"
@@ -427,13 +431,26 @@ components:
             "property-sole-anyof-struct-member": ("npq-registration",),
             "property-sole-oneof-closed-object-member": ("mistle-control-plane",),
         }
-        self.assertLessEqual(set(settled), owned)
+        # Keys whose exhausted search a hand-written fixture answered instead;
+        # they stay screening targets, since no real specification witnesses them.
+        handwritten = {
+            "annotated-ref-target-string-const": "inline-property-unions",
+            "oneof-array-variant-annotated-ref-item": "inline-oneof-variants",
+            "oneof-array-variant-anyof-discriminated-union-item": "inline-oneof-variants",
+            "oneof-array-variant-anyof-nullable-item": "inline-oneof-variants",
+            "oneof-bare-object-example-variant": "inline-oneof-variants",
+        }
+        self.assertLessEqual(set(settled) | set(handwritten), owned)
         self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])
         for key in owned:
             if key in settled:
                 self.assertEqual("golden", entries[key][3].strip("`"), key)
                 for fixture in settled[key]:
                     self.assertIn(f"`{fixture}`", entries[key][4], key)
+                self.assertEqual("", entries[key][7])
+            elif key in handwritten:
+                self.assertEqual("handwritten", entries[key][3].strip("`"), key)
+                self.assertIn(f"handwritten: {handwritten[key]};", entries[key][4], key)
                 self.assertEqual("", entries[key][7])
             else:
                 self.assertEqual("gap", entries[key][3].strip("`"), key)
@@ -672,6 +689,41 @@ components:
                 self.assertEqual(completed.stderr, expected)
                 self.assertEqual(completed.stdout, "")
                 self.assertFalse(output.exists())
+
+    def test_a_handwritten_row_stays_a_screening_target(self) -> None:
+        """A row a hand-written fixture covers still has no real-specification
+        witness, so the screen keeps its key, with the selector its search ran on."""
+        key = "annotated-ref-target-string-const"
+        regions = flipped_regions(self.root / "regions", key)
+        document = self.spec("hit.json", json.dumps({
+            "openapi": "3.0.0", "info": {"title": "A", "version": "1"},
+            "paths": {}, "components": {"schemas": {"Hit": {"anyOf": [{
+                "type": "array", "items": {"type": "object", "properties": {"x": {"type": "string"}}}
+            }]}}},
+        }))
+        index = self.index([("hit.example", "1", document)])
+        before, before_output = self.invoke(index, self.root / "before.tsv")
+        after, after_output = self.invoke(
+            index, self.root / "after.tsv", None, "--regions-dir", str(regions)
+        )
+        self.assertEqual(0, before.returncode, before.stderr)
+        self.assertEqual(0, after.returncode, after.stderr)
+        self.assertEqual(before_output.read_bytes(), after_output.read_bytes())
+
+        (regions / "witness-search-keys.tsv").unlink()
+        refused, output = self.invoke(
+            index, self.root / "refused.tsv", None, "--regions-dir", str(regions)
+        )
+        self.assertEqual(1, refused.returncode)
+        # The committed regions hold other `handwritten` rows too, and the
+        # refusal names whichever comes first; each lost its selector.
+        named = re.search(r"handwritten row '([a-z0-9-]+)' has no selector in witness-search-keys\.tsv",
+                          refused.stderr)
+        self.assertIsNotNone(named, refused.stderr)
+        self.assertTrue(any(
+            line.startswith(f"| {named[1]} |") and "| handwritten |" in line
+            for line in (regions / "schemas.md").read_text(encoding="utf-8").splitlines()), named[1])
+        self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

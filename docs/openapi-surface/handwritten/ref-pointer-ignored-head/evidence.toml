@@ -1,0 +1,11 @@
+# `Hidden` is declared but `x-fern-ignore`d, so the pointer walk reaches a head
+# that is gone; the cited record holds the measurements and the verdict's basis.
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "452fe88929436bb183c7705ad0813ff737ca47b5df6347ca61ce5738b1813b4a"
+
+[[covers]]
+key = "ref-pointer-undeclared-component-head"
+arm = 'src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-undeclared-component-head.md#witness-search-exhaustive"
+verdict = "exhausted"

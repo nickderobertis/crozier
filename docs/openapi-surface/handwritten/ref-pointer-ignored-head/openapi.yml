@@ -1,0 +1,33 @@
+openapi: 3.1.0
+info:
+  title: ref-pointer-ignored-head fixture
+  version: 1.0.0
+paths:
+  /holder:
+    get:
+      operationId: getHolder
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holder"
+components:
+  schemas:
+    Holder:
+      type: object
+      properties:
+        parts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hidden/allOf/0"
+        ghost:
+          $ref: "#/components/schemas/Missing"
+    Hidden:
+      x-fern-ignore: true
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string

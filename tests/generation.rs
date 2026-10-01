@@ -24,6 +24,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
     files
@@ -47,6 +48,7 @@ fn render_json(spec: &str) -> HashMap<String, String> {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
     .into_iter()
@@ -68,6 +70,7 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
     .into_iter()
@@ -590,6 +593,7 @@ fn generate_writes_files_to_disk() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .expect("generate succeeds");
     assert!(!files.is_empty());
@@ -615,6 +619,7 @@ fn default_package_name_derives_from_title() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/my_cool_api")));
@@ -1301,6 +1306,7 @@ fn empty_title_falls_back_to_client_package() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/client")));
@@ -1914,6 +1920,7 @@ fn api_key_scheme_without_name_is_rejected() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .expect_err("missing apiKey name must fail");
     assert!(err.to_string().contains("apiKey security scheme"));
@@ -1978,6 +1985,7 @@ fn client_class_name_overrides_derived_root_client_name() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
     .into_iter()
@@ -2104,6 +2112,7 @@ fn render_with_audiences_mode(
         audience_strict: strict,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
     files
@@ -6343,6 +6352,7 @@ fn default_package_name_sanitizes_title_punctuation_in_process() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
     assert!(files
@@ -13123,4 +13133,368 @@ fn zoonk_shaped_tagged_unions_aliases_and_nullable_responses_generate_like_fern(
         ),
         "{client}"
     );
+}
+
+/// Render [`RICH_SPEC`] with explicit names and layout.
+fn render_layout(
+    package: &str,
+    project: &str,
+    layout: crozier::settings::Layout,
+) -> HashMap<String, String> {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(&path, RICH_SPEC).unwrap();
+    render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some(package.to_string()),
+        project_name: Some(project.to_string()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        layout,
+    })
+    .expect("render succeeds")
+    .into_iter()
+    .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+    .collect()
+}
+
+#[test]
+fn flat_layout_is_the_packaged_tree_moved_to_the_root_minus_packaging() {
+    use crozier::settings::Layout;
+    let packaged = render_layout("acme", "acme-dist", Layout::Packaged);
+    let flat = render_layout("acme", "acme-dist", Layout::Flat);
+
+    // Packaging exists only in the packaged form.
+    for path in [
+        "pyproject.toml",
+        "requirements.txt",
+        "src/acme/py.typed",
+        "src/acme/version.py",
+    ] {
+        assert!(packaged.contains_key(path), "packaged lacks {path}");
+    }
+    for path in [
+        "pyproject.toml",
+        "requirements.txt",
+        "py.typed",
+        "version.py",
+    ] {
+        assert!(!flat.contains_key(path), "flat wrote {path}");
+    }
+    assert!(!flat.keys().any(|path| path.starts_with("src/")));
+
+    // Every other packaged file has a flat counterpart — modules moved from
+    // `src/acme/` to the root, root files where they were — and nothing else.
+    let mut expected_flat: Vec<String> = packaged
+        .keys()
+        .filter(|path| {
+            ![
+                "pyproject.toml",
+                "requirements.txt",
+                "src/acme/py.typed",
+                "src/acme/version.py",
+            ]
+            .contains(&path.as_str())
+        })
+        .map(|path| path.strip_prefix("src/acme/").unwrap_or(path).to_string())
+        .collect();
+    expected_flat.sort();
+    let mut flat_paths: Vec<String> = flat.keys().cloned().collect();
+    flat_paths.sort();
+    assert_eq!(flat_paths, expected_flat);
+    for root_file in [
+        "README.md",
+        "CONTRIBUTING.md",
+        "reference.md",
+        ".fern/metadata.json",
+        "tests/conftest.py",
+        "tests/test_aiohttp_autodetect.py",
+    ] {
+        assert!(flat.contains_key(root_file), "flat lacks {root_file}");
+    }
+
+    // (a) no `__version__` export from the flat root `__init__.py`.
+    assert!(packaged["src/acme/__init__.py"].contains("from .version import __version__"));
+    assert!(packaged["src/acme/__init__.py"].contains("\"__version__\""));
+    assert!(!flat["__init__.py"].contains("__version__"));
+
+    // (b) the aiohttp hint and its test name the package, not the distribution.
+    assert!(packaged["src/acme/_default_clients.py"].contains("pip install acme-dist[aiohttp]"));
+    assert!(flat["_default_clients.py"].contains("pip install acme[aiohttp]"));
+    assert!(
+        packaged["tests/test_aiohttp_autodetect.py"].contains("\"pip install acme-dist[aiohttp]\"")
+    );
+    assert!(flat["tests/test_aiohttp_autodetect.py"].contains("\"pip install acme[aiohttp]\""));
+
+    // (c) no SDK-identity headers in the flat client wrapper.
+    let packaged_wrapper = &packaged["src/acme/core/client_wrapper.py"];
+    assert!(packaged_wrapper.contains("\"X-Crozier-SDK-Name\": \"acme-dist\""));
+    assert!(packaged_wrapper.contains("\"X-Crozier-SDK-Version\""));
+    let flat_wrapper = &flat["core/client_wrapper.py"];
+    assert!(!flat_wrapper.contains("SDK-Name") && !flat_wrapper.contains("SDK-Version"));
+    assert!(flat_wrapper.contains("\"X-Crozier-Language\": \"Python\""));
+
+    // Every file those three differences do not touch is byte-identical.
+    let differing = [
+        "__init__.py",
+        "_default_clients.py",
+        "core/client_wrapper.py",
+        "tests/test_aiohttp_autodetect.py",
+    ];
+    for (path, contents) in &flat {
+        if differing.contains(&path.as_str()) {
+            continue;
+        }
+        let packaged_path = if packaged.contains_key(path) {
+            path.clone()
+        } else {
+            format!("src/acme/{path}")
+        };
+        assert_eq!(contents, &packaged[&packaged_path], "{path} differs");
+    }
+}
+
+#[test]
+fn aiohttp_hint_follows_ruffs_layout_for_the_name_length() {
+    use crozier::settings::Layout;
+    let hint = |files: &HashMap<String, String>, path: &str| files[path].clone();
+    let three_lines = |name: &str| {
+        format!(
+            "            raise RuntimeError(\n                \"To use the aiohttp client, install the aiohttp extra: pip install {name}[aiohttp]\"\n            )\n"
+        )
+    };
+
+    // Flat: a short name fits on one line, as Fern's ruff pass leaves it.
+    let short = hint(
+        &render_layout("acme", "acme", Layout::Flat),
+        "_default_clients.py",
+    );
+    assert!(short.contains(
+        "            raise RuntimeError(\"To use the aiohttp client, install the aiohttp extra: pip install acme[aiohttp]\")\n"
+    ));
+    // Packaged keeps the three-line call it has always written, for any name
+    // that fits it, so the layout setting changes no packaged output.
+    let packaged = |project: &str| {
+        hint(
+            &render_layout("acme", project, Layout::Packaged),
+            "src/acme/_default_clients.py",
+        )
+    };
+    assert!(packaged("acme").contains(&three_lines("acme")));
+    assert!(packaged("default_package_name").contains(&three_lines("default_package_name")));
+
+    // A name too long even for the split call splits the string too.
+    let long = packaged("fern_query-parameters-openapi");
+    assert!(long.contains(
+        "                \"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install fern_query-parameters-openapi[aiohttp]\"\n"
+    ));
+    assert!(long.lines().all(|line| line.len() <= 120));
+}
+
+/// Generate [`RICH_SPEC`] into `out` on disk, in the flat layout.
+fn generate_flat(out: &Path) -> Vec<crozier::GeneratedFile> {
+    let spec = out.with_extension("yml");
+    std::fs::write(&spec, RICH_SPEC).unwrap();
+    generate(GenerateArgs {
+        spec,
+        output: out.to_path_buf(),
+        package_name: Some("acme".to_string()),
+        project_name: None,
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Flat,
+    })
+    .expect("flat generate succeeds")
+}
+
+#[test]
+fn flat_regeneration_clears_a_previous_generation_but_keeps_dot_entries() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let out = dir.path().join("sdk");
+    generate_flat(&out);
+    assert!(out.join("types/widget.py").is_file());
+    assert!(out.join(".fern/metadata.json").is_file());
+    assert!(!out.join("src").exists() && !out.join("pyproject.toml").exists());
+
+    // A module the spec no longer produces, and entries crozier never writes.
+    std::fs::create_dir_all(out.join("dropped_tag")).unwrap();
+    std::fs::write(out.join("dropped_tag/client.py"), "x = 1\n").unwrap();
+    std::fs::write(out.join("stale.py"), "y = 2\n").unwrap();
+    std::fs::create_dir_all(out.join(".git")).unwrap();
+    std::fs::write(out.join(".git/HEAD"), "ref: main\n").unwrap();
+    std::fs::write(out.join(".fernignore"), "custom.py\n").unwrap();
+
+    generate_flat(&out);
+    assert!(!out.join("dropped_tag").exists(), "stale module survived");
+    assert!(!out.join("stale.py").exists(), "stale file survived");
+    assert!(out.join(".git/HEAD").is_file(), "a dot-entry was removed");
+    assert!(out.join(".fernignore").is_file(), "a dot-entry was removed");
+    assert!(out.join("types/widget.py").is_file());
+}
+
+#[test]
+fn flat_generation_into_a_foreign_directory_deletes_nothing() {
+    // No `.fern/metadata.json`: not a previous generation, so nothing is cleared.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let out = dir.path().join("sdk");
+    std::fs::create_dir_all(out.join("notes")).unwrap();
+    std::fs::write(out.join("notes/keep.txt"), "mine\n").unwrap();
+    std::fs::write(out.join("keep.py"), "z = 3\n").unwrap();
+    generate_flat(&out);
+    assert!(out.join("notes/keep.txt").is_file());
+    assert!(out.join("keep.py").is_file());
+    assert!(out.join("client.py").is_file());
+}
+
+#[cfg(unix)]
+#[test]
+fn flat_regeneration_surfaces_a_tree_it_cannot_clear() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().expect("tempdir");
+    let out = dir.path().join("sdk");
+    generate_flat(&out);
+    // A read-only directory inside the previous generation cannot be emptied.
+    let locked = out.join("locked");
+    std::fs::create_dir_all(&locked).unwrap();
+    std::fs::write(locked.join("f.py"), "").unwrap();
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o555)).unwrap();
+
+    let spec = out.with_extension("yml");
+    let err = generate(GenerateArgs {
+        spec,
+        output: out.clone(),
+        package_name: Some("acme".to_string()),
+        project_name: None,
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Flat,
+    })
+    .expect_err("an unclearable previous generation fails the run");
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755)).unwrap();
+    assert!(err.to_string().contains("could not write"), "{err}");
+    assert!(err.to_string().contains("locked"), "{err}");
+}
+
+#[test]
+fn flat_package_import_spacing_follows_where_ruff_finds_the_package() {
+    use crozier::settings::Layout;
+    let test_file = "tests/test_aiohttp_autodetect.py";
+    // Packaged: `src/<pkg>/` makes the package first-party, a section of its own.
+    let packaged = render_layout("acme", "acme", Layout::Packaged);
+    assert!(
+        packaged[test_file].contains("        import httpx_aiohttp\n\n        from acme.client")
+    );
+    // Flat: any package but `fern` is third-party to Fern's ruff, so no blank line.
+    let flat = render_layout("acme", "acme", Layout::Flat);
+    assert!(flat[test_file].contains("        import httpx_aiohttp\n        from acme.client"));
+    assert!(!flat[test_file].contains("        import httpx_aiohttp\n\n"));
+    // Flat `fern` is the exception Fern's `/fern` container makes resolvable.
+    let flat_fern = render_layout("fern", "fern", Layout::Flat);
+    assert!(
+        flat_fern[test_file].contains("        import httpx_aiohttp\n\n        from fern.client")
+    );
+}
+
+#[test]
+fn flat_readme_shield_names_the_organization_crozier_derives_from_the_package() {
+    use crozier::settings::Layout;
+    let spec = "openapi: 3.0.0\ninfo:\n  title: T\npaths:\n  /thing:\n    get:\n      operationId: getThing\n      responses:\n        '200':\n          description: OK\n";
+    let readme = |layout: Layout| {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("api.yml");
+        std::fs::write(&path, spec).unwrap();
+        render_files(GenerateArgs {
+            spec: path,
+            output: PathBuf::from("unused"),
+            package_name: Some("acme".to_string()),
+            project_name: None,
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+            layout,
+        })
+        .expect("render succeeds")
+        .into_iter()
+        .find(|file| file.path == Path::new("README.md"))
+        .expect("a README")
+        .contents
+    };
+    // Flat follows the organization, as Fern's flat `acme` tree does.
+    let flat = readme(Layout::Flat);
+    assert!(flat.starts_with("# Acme Python Library\n"), "{flat}");
+    assert!(flat.contains("utm_source=Acme%2FPython)"), "{flat}");
+    // Packaged keeps the shield it has always carried.
+    let packaged = readme(Layout::Packaged);
+    assert!(
+        packaged.starts_with("# Acme Python Library\n"),
+        "{packaged}"
+    );
+    assert!(packaged.contains("utm_source=Fern%2FPython)"), "{packaged}");
+}
+
+#[test]
+fn flat_output_carries_no_project_name() {
+    // A flat tree has no distribution: nothing in it may name the project, so two
+    // runs that differ only by project name write identical trees.
+    use crozier::settings::Layout;
+    let one = render_layout("acme", "acme-dist", Layout::Flat);
+    let other = render_layout("acme", "other-dist", Layout::Flat);
+    assert_eq!(one, other);
+    assert!(one.values().all(|contents| !contents.contains("acme-dist")));
+}
+
+#[cfg(unix)]
+#[test]
+fn flat_regeneration_removes_a_symlink_but_not_what_it_points_at() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let out = dir.path().join("sdk");
+    let elsewhere = dir.path().join("elsewhere");
+    std::fs::create_dir_all(&elsewhere).unwrap();
+    std::fs::write(elsewhere.join("keep.txt"), "not crozier's\n").unwrap();
+    generate_flat(&out);
+    std::os::unix::fs::symlink(&elsewhere, out.join("linked")).unwrap();
+
+    generate_flat(&out);
+    assert!(
+        !out.join("linked").exists(),
+        "the link inside the old tree is cleared"
+    );
+    assert!(
+        elsewhere.join("keep.txt").is_file(),
+        "its target is never followed"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().expect("tempdir");
+    let out = dir.path().join("sdk");
+    generate_flat(&out);
+    // Searchable but not listable: the marker is found, the entries are not.
+    std::fs::set_permissions(&out, std::fs::Permissions::from_mode(0o311)).unwrap();
+    let result = generate(GenerateArgs {
+        spec: out.with_extension("yml"),
+        output: out.clone(),
+        package_name: Some("acme".to_string()),
+        project_name: None,
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Flat,
+    });
+    std::fs::set_permissions(&out, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let err = result.expect_err("an unlistable previous generation fails the run");
+    assert!(err.to_string().contains("could not write"), "{err}");
+    assert!(err.to_string().contains("sdk"), "{err}");
 }

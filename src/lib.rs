@@ -69,6 +69,9 @@ pub struct GenerateArgs {
     /// refuses are registered in `docs/fern-refusals/`; none is evaluated yet,
     /// so today it refuses nothing crozier's default mode generates.
     pub fern_strict: bool,
+    /// Which tree to write: Fern's packaged SDK (the default) or its flat module
+    /// tree (see [`settings::Layout`]).
+    pub layout: settings::Layout,
 }
 
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
@@ -79,7 +82,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     // The config constructor validates the package name (a `PackageName`), so an
     // invalid, traversal-prone value can never reach the filesystem below.
-    let config = GenerateConfig::new(
+    let mut config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
         args.package_name,
@@ -88,11 +91,18 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         args.extra_fields,
         &doc.info.title,
     )?;
+    config.layout = args.layout;
     let ir = ir::build(&doc, &config);
     let files = emit::generate(&ir)?;
     // Regeneration is idempotent: clear the crozier-owned package tree first so a
     // schema or endpoint dropped from the spec does not leave an orphaned module.
-    emit::clean_package_tree(&config.output, config.package_name.as_str())?;
+    // In the flat layout that tree is the output root itself.
+    match config.layout {
+        settings::Layout::Packaged => {
+            emit::clean_package_tree(&config.output, config.package_name.as_str())?;
+        }
+        settings::Layout::Flat => emit::clean_flat_tree(&config.output)?,
+    }
     emit::write_files(&config.output, &files)?;
     Ok(files)
 }
@@ -103,7 +113,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
-    let config = GenerateConfig::new(
+    let mut config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
         args.package_name,
@@ -112,6 +122,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         args.extra_fields,
         &doc.info.title,
     )?;
+    config.layout = args.layout;
     let ir = ir::build(&doc, &config);
     emit::generate(&ir)
 }

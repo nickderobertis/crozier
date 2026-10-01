@@ -25,6 +25,7 @@ from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "scripts"))
+sys.path.insert(0, str(REPO / "tests"))
 import rate_limit_guard as guard_module  # noqa: E402 - scripts must enter sys.path first
 
 SPEC = importlib.util.spec_from_file_location(
@@ -2242,6 +2243,50 @@ components:
             "--check",
         ]
         subprocess.run(command, check=True, capture_output=True, text=True)
+
+
+class HandwrittenKeyDerivationTest(unittest.TestCase):
+    """A row a hand-written fixture covers stays a search target.
+
+    It still has no real-specification witness, and a real specification that
+    turns up supersedes the fixture, so `--derive-only` keeps its key with the
+    selector its failed search ran on.
+    """
+
+    def derive(self, evidence: Path, *extra: str) -> subprocess.CompletedProcess[str]:
+        evidence.mkdir()
+        return subprocess.run(
+            [sys.executable, str(REPO / "scripts/witness-search-github.py"), *SOURCE_COMMIT,
+             "--evidence", str(evidence), "--derive-only", *extra],
+            capture_output=True, text=True,
+        )
+
+    def test_a_flip_to_handwritten_moves_no_derived_key(self) -> None:
+        from region_flip import flipped_regions
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            key = "annotated-ref-target-string-const"
+            regions = flipped_regions(root / "regions", key)
+            before = self.derive(root / "before")
+            after = self.derive(root / "after", "--regions", str(regions))
+            self.assertEqual(0, before.returncode, before.stderr)
+            self.assertEqual(0, after.returncode, after.stderr)
+            self.assertIn(key, json.loads((root / "after" / "keys.json").read_text(encoding="utf-8"))["keys"])
+            self.assertEqual(
+                (root / "before" / "keys.json").read_bytes(), (root / "after" / "keys.json").read_bytes()
+            )
+            (regions / "witness-search-keys.tsv").unlink()
+            refused = self.derive(root / "refused", "--regions", str(regions))
+            self.assertNotEqual(0, refused.returncode)
+            # The committed regions hold other `handwritten` rows too, and the
+            # refusal names whichever comes first; each lost its selector.
+            named = re.search(r"schemas/([a-z0-9-]+): handwritten, and no selector in witness-search-keys\.tsv",
+                              refused.stderr)
+            self.assertIsNotNone(named, refused.stderr)
+            self.assertTrue(any(
+                line.startswith(f"| {named[1]} |") and "| handwritten |" in line
+                for line in (regions / "schemas.md").read_text(encoding="utf-8").splitlines()), named[1])
 
 
 if __name__ == "__main__":

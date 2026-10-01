@@ -1,0 +1,80 @@
+openapi: 3.1.0
+info:
+  title: ref-pointer-walk fixture
+  version: 1.0.0
+paths:
+  /holder:
+    get:
+      operationId: getHolder
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holder"
+components:
+  schemas:
+    Holder:
+      type: object
+      properties:
+        merged:
+          type: array
+          items:
+            $ref: "#/components/schemas/Composite/allOf/0"
+        chosen:
+          type: array
+          items:
+            $ref: "#/components/schemas/Choice/oneOf/1"
+        either:
+          type: array
+          items:
+            $ref: "#/components/schemas/Either/anyOf/0"
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/TagList/items/anyOf/0"
+        names:
+          type: array
+          items:
+            $ref: "#/components/schemas/Named/properties/absent"
+        ghost:
+          $ref: "#/components/schemas/Missing"
+    Composite:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+        - type: object
+          properties:
+            size:
+              type: integer
+    Choice:
+      oneOf:
+        - type: string
+        - type: object
+          properties:
+            code:
+              type: integer
+    Either:
+      anyOf:
+        - type: object
+          properties:
+            flag:
+              type: boolean
+        - type: integer
+    TagList:
+      type: array
+      items:
+        anyOf:
+          - type: object
+            properties:
+              tag:
+                type: string
+          - type: integer
+    Named:
+      type: object
+      properties:
+        label:
+          type: string

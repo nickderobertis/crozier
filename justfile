@@ -142,6 +142,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e twilio_messaging_v1_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e livepeer_ai_runner_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e eos_extra_fields_forbid_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e eos_extra_fields_forbid_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e med_anvisa_price_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sac_backend_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e kytos_sdntrace_cp_matches_fern_output
@@ -344,10 +345,12 @@ test-fern-probe-refusal:
 # Drives the real recipe under a SCOPE so it measures a handful of tests instead
 # of the whole corpus; the unmeasured thing would otherwise be the measurement.
 # Part of `check` (the recipe itself is not — it needs network and is slow).
+# The hand-written reach recipe is driven the same way, over temporary fixtures.
 # The golden-reach suite runs twice: the second time without `fcntl` and the
 # other POSIX-only modules, as on Windows, on every host.
 test-fixtures-coverage:
     python3 tests/fixtures_coverage_test.py
+    python3 tests/handwritten_reach_test.py
     python3 tests/golden_reach_test.py
     PYTHONPATH=tests/without-posix-modules python3 tests/golden_reach_test.py
 
@@ -445,6 +448,15 @@ golden-reach:
 # Re-join the last `just golden-reach` measurement after the site table changes.
 golden-reach-report:
     python3 scripts/golden-reach.py report --write
+
+# Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md):
+# how many regions of its arm an instrumented crozier run over that fixture's
+# openapi.yml alone executes, one run per fixture as `golden-reach` scopes one
+# golden test. Writes docs/openapi-surface/handwritten-reach.tsv. Outside
+# `check`, like `golden-reach`: it builds and runs crozier instrumented.
+# `--handwritten-dir DIR --ledger PATH` measure another tree into another file.
+handwritten-reach *args:
+    python3 scripts/handwritten-fixtures.py measure "$@"
 
 # Census which OpenAPI shapes the registered golden sources DECLARE — the input
 # to docs/openapi-surface-coverage.md, and the only measurement of what the

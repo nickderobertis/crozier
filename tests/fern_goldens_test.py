@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import textwrap
 import unittest
@@ -59,11 +60,28 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             import pathlib
             import sys
 
-            fixture, version, spec, destination = sys.argv[1:]
+            arguments = sys.argv[1:]
+            layout = "packaged"
+            if arguments[:1] == ["--layout"]:
+                layout = arguments[1]
+                arguments = arguments[2:]
+            fixture, version, spec, destination = arguments
             root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
             with (root / ".generator-calls").open("a", encoding="utf-8") as calls:
-                calls.write(f"{fixture} {version} {spec} {destination}\n")
+                prefix = "--layout flat " if layout == "flat" else ""
+                calls.write(f"{prefix}{fixture} {version} {spec} {destination}\n")
             output = pathlib.Path(destination)
+            if layout == "flat":
+                output.mkdir(parents=True)
+                if fixture in os.environ.get("FAIL_FLAT_FIXTURES", "").split(","):
+                    (output / "partial.py").write_text("partial\n")
+                    raise SystemExit(21)
+                if fixture in os.environ.get("PACKAGED_SHAPE_FLAT_FIXTURES", "").split(","):
+                    (output / "src" / "fern").mkdir(parents=True)
+                    (output / "src" / "fern" / "__init__.py").write_text("wrong shape\n")
+                    raise SystemExit(0)
+                (output / "__init__.py").write_text(f"flat {fixture}:{version}\n", encoding="utf-8")
+                raise SystemExit(0)
             (output / "src" / "fern").mkdir(parents=True)
             if fixture in os.environ.get("KNOWN_FAILURE_FIXTURES", "").split(","):
                 manifest = json.loads(
@@ -338,9 +356,138 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         path = self.root / ".compare-calls"
         return path.read_text(encoding="utf-8").splitlines() if path.exists() else []
 
-    def state(self, fixture: str) -> dict[str, str]:
-        path = self.root / "tests" / "fixtures" / fixture / "expected" / STATE
+    def state(self, fixture: str, golden: str = "expected") -> dict[str, str]:
+        path = self.root / "tests" / "fixtures" / fixture / golden / STATE
         return json.loads(path.read_text(encoding="utf-8"))
+
+    def write_flat_goldens(self, *rows: str) -> None:
+        (self.root / "tests" / "fixtures" / "flat-goldens.txt").write_text(
+            "# fixture|spec\n" + "".join(f"{row}\n" for row in rows), encoding="utf-8"
+        )
+
+    def tree(self, directory: Path) -> dict[str, bytes]:
+        return {
+            path.relative_to(directory).as_posix(): path.read_bytes()
+            for path in directory.rglob("*")
+            if path.is_file()
+        }
+
+    def test_a_declared_flat_golden_refreshes_beside_its_packaged_golden(self) -> None:
+        self.write_flat_goldens("alpha|")
+        flat = self.root / "tests" / "fixtures" / "alpha" / "expected-flat"
+
+        first = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("generated alpha at", first.stdout)
+        self.assertIn("generated alpha (flat) at", first.stdout)
+        self.assertIn("1 generated, 0 current, 0 failed", first.stdout)
+        packaged_call, flat_call = self.calls()
+        self.assertTrue(packaged_call.startswith("alpha 4.9.0 "), packaged_call)
+        self.assertTrue(packaged_call.endswith("/expected"), packaged_call)
+        self.assertTrue(flat_call.startswith("--layout flat alpha 4.9.0 "), flat_call)
+        self.assertTrue(flat_call.endswith("/expected-flat"), flat_call)
+        self.assertEqual((flat / "__init__.py").read_text(encoding="utf-8"), "flat alpha:4.9.0\n")
+        # The flat record is the packaged record plus its layout; the packaged
+        # record keeps exactly the form it always had.
+        packaged_state = self.state("alpha")
+        flat_state = self.state("alpha", "expected-flat")
+        self.assertNotIn("layout", packaged_state)
+        self.assertEqual(flat_state, {**packaged_state, "layout": "flat"})
+        with tarfile.open(self.root / ".local" / "fern-goldens" / "generated-goldens.tar.gz") as archive:
+            names = archive.getnames()
+        self.assertIn("tests/fixtures/alpha/expected-flat/__init__.py", names)
+        self.assertIn("tests/fixtures/alpha/expected/src/fern/version.py", names)
+
+        # Both current: nothing regenerates.
+        rerun = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("0 generated, 1 current", rerun.stdout)
+        self.assertEqual(len(self.calls()), 2)
+
+        # Only the flat golden stale: only it regenerates, and the fixture counts
+        # as generated so publication picks it up.
+        (flat / STATE).unlink()
+        flat_only = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("1 generated, 0 current", flat_only.stdout)
+        self.assertEqual(len(self.calls()), 3)
+        self.assertTrue(self.calls()[-1].startswith("--layout flat alpha 4.9.0 "))
+        self.assertEqual(
+            (self.root / ".local" / "fern-goldens" / "generated.txt").read_text(), "alpha\n"
+        )
+
+    def test_a_failed_flat_refresh_keeps_the_prior_flat_golden_and_the_new_packaged_one(self) -> None:
+        self.write_flat_goldens("alpha|")
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        flat = self.root / "tests" / "fixtures" / "alpha" / "expected-flat"
+        before = self.tree(flat)
+
+        for variables, message in (
+            ({"FAIL_FLAT_FIXTURES": "alpha"}, "flat generator exited 21"),
+            (
+                {"PACKAGED_SHAPE_FLAT_FIXTURES": "alpha"},
+                "generator returned success without a flat module tree",
+            ),
+        ):
+            failed = self.run_tool(
+                "generate", "--version", "4.10.0", "--fixture", "alpha", **variables
+            )
+            self.assertEqual(failed.returncode, 1, failed.stdout)
+            self.assertIn(f"alpha: {message}", failed.stderr)
+            self.assertEqual(self.tree(flat), before)
+            self.assertFalse(list(flat.parent.glob(".fern-goldens-stage.*")))
+            # The packaged golden that did succeed is installed and reported.
+            self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.10.0")
+            self.assertEqual(
+                (self.root / ".local" / "fern-goldens" / "generated.txt").read_text(), "alpha\n"
+            )
+            (self.root / "tests" / "fixtures" / "alpha" / "expected" / STATE).unlink()
+
+    def test_publish_commits_a_current_flat_golden_and_skips_a_stale_one(self) -> None:
+        self.write_flat_goldens("alpha|")
+        remote, _ = self.initialize_remote()
+
+        def published_paths() -> list[str]:
+            return subprocess.run(
+                ["git", f"--git-dir={remote}", "show", "--name-only", "--format=", "goldens/test"],
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout.split()
+
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.run_tool("publish", "--branch", "goldens/test", check=True)
+        paths = published_paths()
+        self.assertIn("tests/fixtures/alpha/expected-flat/__init__.py", paths)
+        self.assertIn(f"tests/fixtures/alpha/expected-flat/{STATE}", paths)
+        self.assertIn("tests/fixtures/alpha/expected/src/fern/version.py", paths)
+
+        # A later run whose flat refresh fails publishes the packaged golden alone.
+        failed = self.run_tool(
+            "generate", "--version", "4.10.0", "--fixture", "alpha", FAIL_FLAT_FIXTURES="alpha"
+        )
+        self.assertEqual(failed.returncode, 1)
+        self.run_tool("publish", "--branch", "goldens/test", check=True)
+        paths = published_paths()
+        self.assertIn("tests/fixtures/alpha/expected/src/fern/version.py", paths)
+        self.assertFalse([path for path in paths if "expected-flat" in path], paths)
+
+    def test_the_flat_goldens_table_is_validated_and_hand_authored_rows_are_skipped(self) -> None:
+        # A row naming another fixture's spec is a hand-authored golden this tool
+        # never generates, even when the row's name is a corpus fixture.
+        self.write_flat_goldens("alpha|beta")
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertEqual(len(self.calls()), 1)
+        self.assertFalse((self.root / "tests" / "fixtures" / "alpha" / "expected-flat").exists())
+
+        for rows, message in (
+            (("alpha",), "expected fixture and spec separated by one |"),
+            (("alpha|", "alpha|"), "duplicate flat golden 'alpha'"),
+            (("../alpha|",), "invalid fixture name"),
+            (("alpha|..",), "invalid fixture name"),
+        ):
+            self.write_flat_goldens(*rows)
+            result = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
+            self.assertEqual(result.returncode, 2, rows)
+            self.assertIn(message, result.stderr)
+        self.assertEqual(len(self.calls()), 1)
 
     def fixture_aliases(self) -> list[tuple[str, str]]:
         return [
@@ -1325,6 +1472,146 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             json.loads(invocation_record.read_text(encoding="utf-8")),
             {"CI": "true", "GITHUB_ACTIONS": "true"},
         )
+
+    def test_real_generator_script_flat_mode_installs_the_local_file_system_tree(self) -> None:
+        root = Path(self.temporary.name) / "flat repo"
+        scripts = root / "scripts"
+        fixtures = root / "tests" / "fixtures"
+        fake_bin = root / "fake bin"
+        target = root / "target" / "release"
+        for directory in (scripts, fixtures / "beta", fixtures / "gamma", fixtures / "delta", fake_bin, target):
+            directory.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
+        shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
+        for fixture in ("beta", "delta"):
+            (fixtures / fixture / "openapi.yml").write_text(f"openapi: 3.0.3 # {fixture}\n", encoding="utf-8")
+        (fixtures / "fern-generator-config.txt").write_text(
+            "beta||false|||acme\ngamma||false|AcmeClient||\n", encoding="utf-8"
+        )
+        # `gamma` has no spec of its own and borrows `beta`'s; `delta` is undeclared.
+        (fixtures / "flat-goldens.txt").write_text(
+            "# fixture|spec\nbeta|\ngamma|beta\n", encoding="utf-8"
+        )
+        record = root / "fern-invocation.json"
+        self.write_executable(
+            fake_bin / "fern",
+            r"""
+            #!/usr/bin/env python3
+            import json
+            import os
+            import pathlib
+            import sys
+
+            arguments = sys.argv[1:]
+            pathlib.Path(os.environ["FERN_RECORD"]).write_text(json.dumps({
+                "arguments": arguments,
+                "token": os.environ.get("FERN_TOKEN"),
+                "config": json.loads(pathlib.Path("fern.config.json").read_text()),
+                "generators": pathlib.Path("generators.yml").read_text(),
+                "spec": pathlib.Path("openapi/openapi.yml").read_text(),
+            }))
+            if "--preview" in arguments:
+                output = pathlib.Path(arguments[arguments.index("--output") + 1])
+                generated = output / "fern-python-sdk" / "src" / "fern"
+                generated.mkdir(parents=True)
+                (generated / "__init__.py").write_text("packaged\n", encoding="utf-8")
+                raise SystemExit(0)
+            # The local-file-system path generators.yml names, relative to fern/.
+            flat = pathlib.Path("..") / "generated" / "python"
+            if os.environ.get("FLAT_WRITES_SRC") == "1":
+                (flat / "src").mkdir(parents=True)
+            flat.mkdir(parents=True, exist_ok=True)
+            (flat / "__init__.py").write_text("flat-module-tree\n", encoding="utf-8")
+            (flat / ".fern").mkdir()
+            (flat / ".fern" / "metadata.json").write_text("{}\n", encoding="utf-8")
+            """,
+        )
+        self.write_executable(fake_bin / "docker", "#!/usr/bin/env bash\nexit 0\n")
+        self.write_executable(
+            target / "crozier",
+            r"""
+            #!/usr/bin/env python3
+            import pathlib
+            import sys
+
+            sys.stdout.buffer.write(pathlib.Path(sys.argv[2]).read_bytes())
+            """,
+        )
+        environment = self.environment(
+            CROZIER_FERN_NO_DOCKER_SHIM="1",
+            PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+            FERN_RECORD=str(record),
+            FERN_TOKEN="a-real-looking-token",
+        )
+
+        def run(*arguments: str, **extra: str) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                self.script_command(scripts / "generate-fern-fixture.sh", *arguments),
+                cwd=root,
+                env={**environment, **extra},
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        result = run("--layout", "flat", "beta", "5.20.0")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        invocation = json.loads(record.read_text(encoding="utf-8"))
+        # `fern generate --local` into the local-file-system path: no --preview,
+        # no --output, and no token, even one the caller exported.
+        self.assertEqual(invocation["arguments"], ["generate", "--group", "python-sdk", "--local", "--force"])
+        self.assertIsNone(invocation["token"])
+        self.assertEqual(invocation["config"]["organization"], "acme")
+        self.assertIn("location: local-file-system", invocation["generators"])
+        flat = fixtures / "beta" / "expected-flat"
+        self.assertEqual((flat / "__init__.py").read_text(encoding="utf-8"), "flat-module-tree\n")
+        self.assertTrue((flat / ".fern" / "metadata.json").is_file())
+        self.assertFalse((fixtures / "beta" / "expected").exists())
+        provenance = json.loads((flat / STATE).read_text(encoding="utf-8"))
+        self.assertEqual(provenance["layout"], "flat")
+        self.assertEqual(provenance["organization"], "acme")
+        self.assertEqual(provenance["fern_python_sdk_version"], "5.20.0")
+        self.assertEqual(provenance["vendored_spec_path"], "tests/fixtures/beta/openapi.yml")
+
+        # A golden without a spec generates from the one its row names.
+        result = run("--layout", "flat", "gamma", "5.20.0")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        invocation = json.loads(record.read_text(encoding="utf-8"))
+        self.assertEqual(invocation["spec"], "openapi: 3.0.3 # beta\n")
+        self.assertEqual(invocation["config"]["organization"], "fern")
+        self.assertIn("client_class_name: AcmeClient", invocation["generators"])
+        provenance = json.loads((fixtures / "gamma" / "expected-flat" / STATE).read_text(encoding="utf-8"))
+        self.assertEqual(provenance["vendored_spec_path"], "tests/fixtures/beta/openapi.yml")
+        self.assertEqual(provenance["client_class_name"], "AcmeClient")
+
+        # The default mode is still the packaged run, and its record has no layout.
+        result = run("beta", "5.20.0")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        invocation = json.loads(record.read_text(encoding="utf-8"))
+        self.assertIn("--preview", invocation["arguments"])
+        self.assertEqual(invocation["token"], "a-real-looking-token")
+        packaged = json.loads((fixtures / "beta" / "expected" / STATE).read_text(encoding="utf-8"))
+        self.assertNotIn("layout", packaged)
+
+        before = self.tree(flat)
+        for arguments, extra, message in (
+            (("--layout", "flat", "delta", "5.20.0"), {}, "not a declared flat golden"),
+            (("--layout", "sideways", "beta", "5.20.0"), {}, "invalid layout 'sideways'"),
+            (("--layout",), {}, "--layout needs a value"),
+            (
+                ("--layout", "flat", "beta", "5.20.0", "", str(fixtures / "beta" / "expected")),
+                {},
+                "final path segment must be expected-flat",
+            ),
+            (("--layout", "flat", "beta", "5.20.0"), {"ORGANIZATION": "Acme Corp"}, "invalid organization"),
+            (("--layout", "flat", "beta", "5.20.0"), {"FLAT_WRITES_SRC": "1"}, "no flat module tree"),
+        ):
+            refused = run(*arguments, **extra)
+            self.assertNotEqual(refused.returncode, 0, arguments)
+            self.assertIn(message, refused.stderr)
+        self.assertEqual(self.tree(flat), before)
+        self.assertFalse((fixtures / "delta" / "expected-flat").exists())
+        self.assertFalse(list((fixtures / "beta").glob(".fern-output.*")))
 
     def test_numbered_status_rows_below_the_manifest_are_skipped(self) -> None:
         """CORPUS.md's per-batch STATUS tables are numbered too, and are not rows.
