@@ -45,6 +45,10 @@ The north star: **`crozier`'s output, with comments stripped, equals Fern's
 output with comments stripped.** The whole registered corpus reaches it today.
 See [`docs/matching.md`](docs/matching.md) for the strategy, the fixture corpus,
 and why each shape generates the way it does.
+The byte-match rules are defined once, in `src/parity.rs`: the corpus gate and
+`crozier compare` (a user's migration check against their own reference SDK,
+[`docs/compare.md`](docs/compare.md)) both call them, so change a rule there or
+nowhere.
 
 Being a Fern drop-in extends to its `x-*` vendor extensions (audience labels,
 per-node ignore, …). The standing **dual-header policy**: read *both* the
