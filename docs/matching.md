@@ -84,7 +84,7 @@ requires each `unmatched` entry to *stay* divergent so a closed gap cannot linge
 as a suppression. Nothing in the mechanism can hide a file that starts diverging:
 adding a path to `unmatched` is a visible source change, and the reporter rejects
 an entry that already matches. Registration alone would not be enough — a corpus
-no test drives, or a fetched-spec corpus missing from `just test-corpus-match`,
+no test drives, or a committed-source corpus missing from `just test-corpus-match`,
 would skip silently everywhere — so
 `every_registered_corpus_is_wired_into_the_gate` derives both wirings from
 `tests/e2e.rs` and the `justfile` and fails when either is absent.
@@ -423,7 +423,7 @@ passes) and crozier's SDK round-trips live against it (`bunq.com` in
 `conftest.FIXTURES`; see the mock-side-skip note below). It is **fully
 byte-matched**: `bunq_matches_fern_output` walks and locks in the whole golden.
 Its guard
-mirrors apideck's — skip when the fetched spec is absent, enforce under
+mirrors apideck's — skip when the committed source is absent, enforce under
 `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
 **Fixed while landing bunq** (each guarded so the apideck/exhaustive/feature corpora
@@ -518,7 +518,7 @@ Fern generates it cleanly (`fern check`
 passes) and crozier consumes it without error, so it is a valid byte-match target.
 It is **fully byte-matched**: `bungie_matches_fern_output` locks in the entire
 golden by walking it.
-Its guard mirrors apideck's and bunq's — skip when the fetched spec is absent, enforce
+Its guard mirrors apideck's and bunq's — skip when the committed source is absent, enforce
 under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
 **Fixed while landing bungie** (each guarded so the apideck/bunq/exhaustive/feature
@@ -637,8 +637,8 @@ together as a batch of deliberately harder, feature-diverse targets. All five pa
 `fern check` (the prerequisite — Fern must accept the raw spec, and the largest raw
 public specs do not: `github.com`, `box.com`, and `atlassian.com-jira` each fail its
 gate, and `conjur.local` hits a ref-resolution error, so all four are out). Each
-`Corpus` is registered in `tests/e2e.rs` with the usual `link-ok` guard, so the
-offline `check` gate skips unfetched specs while
+`Corpus` is registered in `tests/e2e.rs` with the usual committed-source guard, so
+the offline `check` gate skips a missing committed source while
 `just test-corpus-match` enforces them. All five now match byte-for-byte.
 
 | corpus | shape it stresses |

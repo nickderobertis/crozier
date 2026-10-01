@@ -237,8 +237,8 @@ compares it. Row 224 is the one so far.
 ## Batch 2 — byte-matched (issue #77)
 
 Ten corpora were selected as the next Fern byte-match targets, chosen for OpenAPI
-shapes the prior corpora under-exercise. All are `link-ok` rows in the table above
-(specs fetched, not vendored); their goldens are workflow-managed.
+shapes the prior corpora under-exercise. All are rows in the table above, their
+sources committed under `corpus-sources/`; their goldens are workflow-managed.
 
 **Eight are now byte-matched byte-for-byte** — wired into `tests/e2e.rs` +
 `test-corpus-match`, with every generator fix on the `src/*.rs` side (no golden edited).
@@ -261,8 +261,8 @@ do not re-select them in a future batch.**
 
 ## Batch 3 — selected (issue #77)
 
-Thirteen `link-ok` corpora were approved for the next byte-match batch. All 13
-passed native `fern check`; their specs are fetched locally and are not vendored.
+Thirteen corpora were approved for the next byte-match batch. All 13 passed
+native `fern check`; their sources are committed under `corpus-sources/`.
 Fern goldens were generated successfully for 12 corpora, and all 12 are now
 byte-matched. `groundhog-day.com` failed Fern golden generation and is dropped.
 
