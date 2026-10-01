@@ -782,7 +782,6 @@ def tables() -> tuple[dict[str, str], list[str]]:
             counts[name] += 1
         strict = EMPTY
         if evaluated.intersection(names):
-            # `—` until one of the document's classes is evaluated.
             strict = result["crozier_strict_exit"]
             if not strict:
                 problems.append(f"{entry['key']}: not measured (crozier-strict); "
