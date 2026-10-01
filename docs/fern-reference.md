@@ -211,14 +211,14 @@ YAML
 
 # Fern stamps how it was invoked into .fern/metadata.json; crozier emits the
 # form a CI run records.
-export CI="${CI:-true}"
-export GITHUB_ACTIONS="${GITHUB_ACTIONS:-true}"
+export CI="${CI-true}"
+export GITHUB_ACTIONS="${GITHUB_ACTIONS-true}"
 
 cd "$work/fern"
 if [ "$layout" = packaged ]; then
   # `--preview` emits the packaged tree only with a non-empty token; nothing is
   # published, so a placeholder serves.
-  export FERN_TOKEN="${FERN_TOKEN:-preview-only-no-publish}"
+  export FERN_TOKEN="${FERN_TOKEN-preview-only-no-publish}"
   fern generate --group crozier-reference --local --preview --output "$out" --force >&2
 else
   # The flat tree is what a token-less local run writes, as measured.

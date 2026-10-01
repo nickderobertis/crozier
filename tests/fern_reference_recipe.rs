@@ -391,6 +391,19 @@ fn preset_variables_and_version_overrides_are_respected() {
 }
 
 #[test]
+fn preset_empty_variables_are_respected() {
+    let run = run(
+        &[("CI", ""), ("GITHUB_ACTIONS", ""), ("FERN_TOKEN", "")],
+        &[],
+    );
+    assert!(run.status.success(), "{}", run.stderr);
+    let recorded = run.recorded.expect("fern ran");
+    for name in ["CI", "GITHUB_ACTIONS", "FERN_TOKEN"] {
+        assert_eq!(recorded.env[name], "", "the recipe replaced set {name}");
+    }
+}
+
+#[test]
 fn values_the_recipe_cannot_reproduce_exit_without_running_fern() {
     for (overrides, named) in [
         (
