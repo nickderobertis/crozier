@@ -2136,7 +2136,7 @@ _ENUM_DEBURR_EXCEPTIONS = dict(zip(
 NAMING_PORT_DIGESTS = {
     "sanitize_identifier": "9da64b4ddcfd04c9",
     "digit_word": "4d705bf2bae3d676",
-    "enum_words": "e4d20db244630b00",
+    "enum_words": "c736aefc54fe1755",
     "whole_value_enum_words": "baffe48e924ec4a3",
     "numeric_enum_identifier": "34ad46d37aed1b81",
     "finalize_enum_ident": "2c40bdccda3bcf5f",
@@ -2211,11 +2211,12 @@ def enum_identifier(value: str) -> str:
         for char in folded
     )
     words = split_words(spaced)
-    # Only a *first* word that is a zero-led digit run keeps the legal fallback.
-    leading_zero = "_" in folded and bool(words) and (
+    value_leads_with_digit = bool(folded) and folded[0].isascii() and folded[0].isdigit()
+    # Only a member *name* led by a zero-led digit run keeps the legal fallback:
+    # a run the value itself starts with is spelled (`01_00_AM` is `ONE00AM`).
+    leading_zero = not value_leads_with_digit and "_" in folded and bool(words) and (
         len(words[0]) > 1 and words[0][0] == "0" and words[0].isascii() and words[0].isdigit()
     )
-    value_leads_with_digit = bool(folded) and folded[0].isascii() and folded[0].isdigit()
     if words:
         first = words[0]
         digits = len(first) - len(first.lstrip("0123456789"))
