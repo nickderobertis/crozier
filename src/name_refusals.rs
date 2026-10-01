@@ -17,6 +17,19 @@ pub(crate) fn validate(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
 }
 
 fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
+    for (route, _) in &doc.paths {
+        let mut placeholders = std::collections::HashSet::new();
+        for segment in route.split('{').skip(1) {
+            if let Some((name, _)) = segment.split_once('}') {
+                if !placeholders.insert(name) {
+                    return Err(Error::InvalidSpec {
+                        path: path.to_owned(),
+                        message: format!("duplicate-path-parameter: route {route} repeats path parameter {name:?}; give each path position a distinct name"),
+                    });
+                }
+            }
+        }
+    }
     for (name, schema) in &doc.components.schemas {
         check_schema(
             schema,

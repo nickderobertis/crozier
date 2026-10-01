@@ -15738,3 +15738,61 @@ fn scalar_singleton_body_enum_needs_no_member_but_nested_enums_do() {
         }
     }
 }
+
+#[test]
+fn repeated_path_names_refuse_and_distinct_positions_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/duplicate-path-parameter/probe.yml"),
+    )
+    .unwrap();
+    let document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+    let mut item = document["paths"]["/accounts/{account_id}/members/{account_id}"].clone();
+    item["get"]["parameters"]
+        .as_array_mut()
+        .unwrap()
+        .push(serde_json::json!({
+            "name": "member_id", "in": "path", "required": true, "schema": {"type": "string"}
+        }));
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        std::fs::write(&spec, &probe).unwrap();
+        let run = |refused: bool| {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            if refused {
+                command
+                    .assert()
+                    .code(1)
+                    .stderr(predicates::str::contains("duplicate-path-parameter"));
+                assert!(!output.exists());
+            } else {
+                command.assert().success();
+            }
+        };
+        run(true);
+        let mut recovered = document.clone();
+        recovered["paths"] =
+            serde_json::json!({"/accounts/{account_id}/members/{member_id}": item});
+        std::fs::write(&spec, serde_json::to_string(&recovered).unwrap()).unwrap();
+        run(false);
+        // A repeated declaration for one position is accepted by pinned Fern.
+        recovered["paths"] = serde_json::json!({"/accounts/{account_id}": {
+            "get": {"operationId": "getMember", "parameters": [
+                {"name": "account_id", "in": "path", "required": true, "schema": {"type": "string"}},
+                {"name": "account_id", "in": "path", "required": true, "schema": {"type": "string"}}
+            ], "responses": {"204": {"description": "Done"}}}
+        }});
+        std::fs::write(&spec, serde_json::to_string(&recovered).unwrap()).unwrap();
+        run(false);
+    }
+}

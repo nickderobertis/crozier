@@ -1,0 +1,40 @@
+exit=1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import probe, pkgutil, importlib; [importlib.import_module(m.name) for m in pkgutil.walk_packages(probe.__path__, probe.__name__ + ".")]; print("all SDK modules import: PASS")
+                                       ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1406, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-27/sdk-6b26beb70fb91ee1fd2e7ae1fb99b8b7b974be9a39d832e678e8da60a5f65123/src/probe/discussions/client.py", line 7, in <module>
+    from .raw_client import AsyncRawDiscussionsClient, RawDiscussionsClient
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-27/sdk-6b26beb70fb91ee1fd2e7ae1fb99b8b7b974be9a39d832e678e8da60a5f65123/src/probe/discussions/raw_client.py", line 40, in <module>
+    from .types.get_api_repo_type_namespace_repo_discussions_response import GetApiRepoTypeNamespaceRepoDiscussionsResponse
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-27/sdk-6b26beb70fb91ee1fd2e7ae1fb99b8b7b974be9a39d832e678e8da60a5f65123/src/probe/discussions/types/get_api_repo_type_namespace_repo_discussions_response.py", line 9, in <module>
+    from .get_api_repo_type_namespace_repo_discussions_response_discussions_item import (
+        GetApiRepoTypeNamespaceRepoDiscussionsResponseDiscussionsItem,
+    )
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-27/sdk-6b26beb70fb91ee1fd2e7ae1fb99b8b7b974be9a39d832e678e8da60a5f65123/src/probe/discussions/types/get_api_repo_type_namespace_repo_discussions_response_discussions_item.py", line 20, in <module>
+    from .get_api_repo_type_namespace_repo_discussions_response_discussions_item_top_reactions_item import (
+        GetApiRepoTypeNamespaceRepoDiscussionsResponseDiscussionsItemTopReactionsItem,
+    )
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-27/sdk-6b26beb70fb91ee1fd2e7ae1fb99b8b7b974be9a39d832e678e8da60a5f65123/src/probe/discussions/types/get_api_repo_type_namespace_repo_discussions_response_discussions_item_top_reactions_item.py", line 7, in <module>
+    from .get_api_repo_type_namespace_repo_discussions_response_discussions_item_top_reactions_item_reaction import (
+        GetApiRepoTypeNamespaceRepoDiscussionsResponseDiscussionsItemTopReactionsItemReaction,
+    )
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-27/sdk-6b26beb70fb91ee1fd2e7ae1fb99b8b7b974be9a39d832e678e8da60a5f65123/src/probe/discussions/types/get_api_repo_type_namespace_repo_discussions_response_discussions_item_top_reactions_item_reaction.py", line 10, in <module>
+    class GetApiRepoTypeNamespaceRepoDiscussionsResponseDiscussionsItemTopReactionsItemReaction(enum.StrEnum):
+    ...<37 lines>...
+                return _()
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-27/sdk-6b26beb70fb91ee1fd2e7ae1fb99b8b7b974be9a39d832e678e8da60a5f65123/src/probe/discussions/types/get_api_repo_type_namespace_repo_discussions_response_discussions_item_top_reactions_item_reaction.py", line 12, in GetApiRepoTypeNamespaceRepoDiscussionsResponseDiscussionsItemTopReactionsItemReaction
+    _ = "🚀"
+    ^
+  File "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/enum.py", line 391, in __setitem__
+    raise TypeError('%r already defined as %r' % (key, self[key]))
+TypeError: '_' already defined as '🔥'
