@@ -1,0 +1,367 @@
+CommandResponse:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+      description: The id of the command
+      x-order: 1
+    type:
+      $ref: "#/CommandType"
+      description: The type of command
+      x-order: 2
+    status:
+      $ref: "#/CommandStatus"
+      description: The status of the command
+      x-order: 3
+    source:
+      $ref: "#/CommandSource"
+      description: The source of the command
+      x-order: 4
+    inputs:
+      $ref: "#/CommandInputs"
+      description: The inputs of the command
+      x-order: 5
+    outputs:
+      $ref: "#/CommandOutputs"
+      description: The outputs of the command
+      x-order: 6
+    error:
+      type: string
+      nullable: true
+      description: The error of the command
+      x-order: 7
+    startedAt:
+      type: string
+      nullable: true
+      format: date-time
+      description: The start date of the command
+      x-order: 8
+    completedAt:
+      type: string
+      nullable: true
+      format: date-time
+      description: The completion date of the command
+      x-order: 9
+    createdAt:
+      type: string
+      format: date-time
+      description: The creation date of the command
+      x-order: 10
+    updatedAt:
+      type: string
+      format: date-time
+      description: The update date of the command
+      x-order: 11
+  required:
+    - id
+    - type
+    - status
+    - source
+    - inputs
+    - outputs
+    - error
+    - startedAt
+    - completedAt
+    - createdAt
+    - updatedAt
+
+CommandsListResponse:
+  type: object
+  properties:
+    totalItems:
+      type: integer
+      description: The total number of commands
+      example: 100
+    items:
+      type: array
+      items:
+        $ref: "#/CommandResponse"
+      description: The list of commands
+      x-order: 2
+  required:
+    - totalItems
+    - items
+
+CreateCommandRequest:
+  type: object
+  properties:
+    type:
+      $ref: "#/CommandType"
+      description: The type of command
+      x-order: 1
+    inputs:
+      $ref: "#/CommandInputs"
+      description: The inputs of the command
+      x-order: 2
+  required:
+    - type
+    - inputs
+
+CommandType:
+  type: string
+  enum:
+    - STOP_MOVEMENT
+    - MOVE_FORWARD
+    - MOVE_BACKWARD
+    - MOVE_TO
+    - CARGO_OPEN
+    - CARGO_CLOSE
+    - CARGO_LIFT
+    - CARGO_LOWER
+    - CARGO_CHECK_QR
+    - SCAN_LOCATION
+    - WAIT
+  description: The type of command
+  x-go-type: string
+
+CommandStatus:
+  type: string
+  enum:
+    - QUEUED
+    - PROCESSING
+    - CANCELING
+    - SUCCEEDED
+    - FAILED
+    - CANCELED
+  description: The status of the command
+  x-go-type: string
+
+CommandSource:
+  type: string
+  enum:
+    - CLOUD
+  description: The source of the command
+  x-go-type: string
+
+CommandInputs:
+  oneOf:
+    - $ref: "#/StopInputs"
+    - $ref: "#/MoveForwardInputs"
+    - $ref: "#/MoveBackwardInputs"
+    - $ref: "#/MoveToInputs"
+    - $ref: "#/CargoOpenInputs"
+    - $ref: "#/CargoCloseInputs"
+    - $ref: "#/CargoLiftInputs"
+    - $ref: "#/CargoLowerInputs"
+    - $ref: "#/CargoCheckQRInputs"
+    - $ref: "#/ScanLocationInputs"
+    - $ref: "#/WaitInputs"
+
+MotorSpeed:
+  type: integer
+  description: The speed of the motor
+  example: 100
+  minimum: 0
+  maximum: 100
+  x-go-type: uint8
+
+StopInputs:
+  type: object
+
+MoveForwardInputs:
+  type: object
+  properties:
+    motorSpeed:
+      $ref: "#/MotorSpeed"
+  required:
+    - motorSpeed
+
+MoveBackwardInputs:
+  type: object
+  properties:
+    motorSpeed:
+      $ref: "#/MotorSpeed"
+  required:
+    - motorSpeed
+
+MoveDirection:
+  type: string
+  enum:
+    - FORWARD
+    - BACKWARD
+  description: The direction when moving
+  x-go-type: string
+
+MoveToInputs:
+  type: object
+  properties:
+    location:
+      type: string
+      description: The location to move to
+      example: "1e8asj"
+    direction:
+      $ref: "#/MoveDirection"
+      description: The direction when moving
+      x-order: 2
+    motorSpeed:
+      $ref: "#/MotorSpeed"
+      x-order: 3
+  required:
+    - location
+    - direction
+    - motorSpeed
+
+CargoOpenInputs:
+  type: object
+  properties:
+    motorSpeed:
+      $ref: "#/MotorSpeed"
+  required:
+    - motorSpeed
+
+CargoCloseInputs:
+  type: object
+  properties:
+    motorSpeed:
+      $ref: "#/MotorSpeed"
+  required:
+    - motorSpeed
+
+CargoLiftInputs:
+  type: object
+  properties:
+    position:
+      type: integer
+      description: The position to lift the cargo
+      example: 100
+      x-order: 1
+      x-go-type: uint16
+    motorSpeed:
+      $ref: "#/MotorSpeed"
+      x-order: 2
+  required:
+    - position
+    - motorSpeed
+
+BottomObstacleTracking:
+  type: object
+  properties:
+    enterDistance:
+      type: integer
+      description: Start detecting obstacle when distance is below this value
+      example: 100
+      x-order: 1
+      x-go-type: uint16
+    exitDistance:
+      type: integer
+      description: Stop detecting obstacle when distance is above this value
+      example: 200
+      x-order: 2
+      x-go-type: uint16
+  required:
+    - enterDistance
+    - exitDistance
+
+CargoLowerInputs:
+  type: object
+  properties:
+    position:
+      type: integer
+      description: The position to lower the cargo
+      example: 100
+      x-order: 1
+      x-go-type: uint16
+    motorSpeed:
+      $ref: "#/MotorSpeed"
+    bottomObstacleTracking:
+      allOf:
+        - $ref: "#/BottomObstacleTracking"
+      description: This field is deprecated and will be removed in the future, use command config instead
+      deprecated: true
+  required:
+    - position
+    - motorSpeed
+
+CargoCheckQRInputs:
+  type: object
+  properties:
+    qrCode:
+      type: string
+      description: The QR code to check
+      example: "1e8asj"
+  required:
+    - qrCode
+
+ScanLocationInputs:
+  type: object
+
+WaitInputs:
+  type: object
+  properties:
+    durationMs:
+      type: integer
+      description: The duration in milliseconds
+      example: 1000
+  required:
+    - durationMs
+
+CommandOutputs:
+  oneOf:
+    - $ref: "#/StopOutputs"
+    - $ref: "#/MoveForwardOutputs"
+    - $ref: "#/MoveBackwardOutputs"
+    - $ref: "#/MoveToOutputs"
+    - $ref: "#/CargoOpenOutputs"
+    - $ref: "#/CargoCloseOutputs"
+    - $ref: "#/CargoLiftOutputs"
+    - $ref: "#/CargoLowerOutputs"
+    - $ref: "#/CargoCheckQROutputs"
+    - $ref: "#/ScanLocationOutputs"
+    - $ref: "#/WaitOutputs"
+
+StopOutputs:
+  type: object
+
+MoveForwardOutputs:
+  type: object
+
+MoveBackwardOutputs:
+  type: object
+
+MoveToOutputs:
+  type: object
+
+CargoOpenOutputs:
+  type: object
+
+CargoCloseOutputs:
+  type: object
+
+CargoLiftOutputs:
+  type: object
+
+CargoLowerOutputs:
+  type: object
+
+CargoCheckQROutputs:
+  type: object
+
+ScanLocationOutputs:
+  type: object
+  properties:
+    locations:
+      type: array
+      items:
+        $ref: "#/Location"
+  required:
+    - locations
+
+Location:
+  type: object
+  properties:
+    location:
+      type: string
+      description: The location (RFID tag)
+      example: "1uxa91o"
+    scannedAt:
+      type: string
+      format: date-time
+      description: The date and time when the location was scanned
+      example: "2025-04-18T12:00:00Z"
+  required:
+    - location
+    - scannedAt
+
+WaitOutputs:
+  type: object

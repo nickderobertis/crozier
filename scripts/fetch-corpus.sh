@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Fetch URL-backed corpus sources from tests/fixtures/CORPUS.md into the ignored cache.
+# Fetch registered corpus sources from their pinned tests/fixtures/CORPUS.md URLs
+# into the ignored cache. Rebuild tooling only: every gate reads the committed
+# copies under tests/fixtures/corpus-sources/ (scripts/corpus_sources.py).
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -18,7 +20,7 @@ Usage: scripts/fetch-corpus.sh [--dry-run] [--fixture NAME] [--if-missing] [DEST
 
   --fixture NAME  Fetch one canonical CORPUS.md row and print its local path.
   --if-missing    With --fixture, reuse a nonempty canonical cached spec.
-  --dry-run       Print matching link-ok rows without fetching them.
+  --dry-run       Print the matching registered rows without fetching them.
 USAGE
 }
 
@@ -57,13 +59,10 @@ done
 mkdir -p "$dest_root"
 
 found=0
-while IFS=$'\t' read -r name url ref decision; do
+while IFS=$'\t' read -r name url ref _; do
   [ -n "$name" ] || continue
   fixture="$(corpus_fixture_for "$name")"
   if [ -n "$selector" ] && [ "$selector" != "$name" ] && [ "$selector" != "$fixture" ]; then
-    continue
-  fi
-  if [ -z "$selector" ] && [ "$decision" != link-ok ]; then
     continue
   fi
   found=1
@@ -104,5 +103,5 @@ done < <(corpus_rows "$manifest")
 }
 
 if [ "$dry_run" -eq 0 ] && [ -z "$selector" ]; then
-  echo "fetch-corpus: fetched link-ok corpus sources into $dest_root" >&2
+  echo "fetch-corpus: fetched registered corpus sources into $dest_root" >&2
 fi

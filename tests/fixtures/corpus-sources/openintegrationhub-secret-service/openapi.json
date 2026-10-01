@@ -1,0 +1,1331 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "Secrets Service",
+    "description" : "Secrets service is used in the Open Integration Hub for managing secrets used in integration flows.",
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version" : "0.1.0"
+  },
+  "servers" : [ {
+    "url" : "https://skm.example.com"
+  } ],
+  "tags" : [
+    {
+    "name" : "Auth clients",
+    "description" : "Auth clients management"
+    }, {
+      "name" : "Callback",
+      "description" : "Callback for auth clients"
+    }, {
+      "name" : "Secrets",
+      "description" : "Secrets management"
+    }, {
+      "name" : "Misc",
+      "description" : "Miscellaneous operations not related to the service business logic"
+    } ]
+  ,
+  "security": [
+    {
+      "BearerToken": []
+    }
+  ],
+  "paths" : {
+    "/api/v1/auth-clients/" : {
+      "get" : {
+        "tags" : [ "Auth clients" ],
+        "summary" : "Retrieve all clients",
+        "description" : "Retrieve all clients created by the current user.",
+        "operationId" : "getClients",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/pageNumber"
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AuthClientEntry"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Auth clients" ],
+        "summary" : "Create a client",
+        "description" : "Create an client",
+        "operationId" : "createClient",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MutableAuthClient"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthClient"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/auth-clients/{clientId}" : {
+      "get" : {
+        "tags" : [ "Auth clients" ],
+        "summary" : "Find client by ID",
+        "description" : "Returns a client with given ID",
+        "operationId" : "getClientById",
+        "parameters" : [ {
+          "name" : "clientId",
+          "in" : "path",
+          "description" : "ID of the client to return",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example": "61719514a477890012b804b9"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "properties" : {
+                    "data" : {
+                      "$ref" : "#/components/schemas/AuthClient"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Auth clients" ],
+        "summary" : "Update a client",
+        "description" : "Update a client",
+        "operationId" : "updateClient",
+        "parameters" : [ {
+          "name" : "clientId",
+          "in" : "path",
+          "description" : "ID of the client to update",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MutableAuthClient"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "properties" : {
+                    "data" : {
+                      "$ref" : "#/components/schemas/AuthClient"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Client with given ID not found"
+          },
+          "405" : {
+            "description" : "Invalid input"
+          }
+        }
+      },
+      "delete": {
+        "tags" : [ "Auth clients" ],
+        "summary" : "Delete a client",
+        "description" : "Delete a client",
+        "operationId" : "deleteClient",
+        "parameters" : [ {
+          "name" : "clientId",
+          "in" : "path",
+          "description" : "ID of the client to delete",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "The auth client was deleted successfully"
+          },
+          "404" : {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/auth-clients/{clientId}/start-flow" : {
+      "post" : {
+        "tags" : [ "Auth clients" ],
+        "summary" : "Start an authorization flow",
+        "description" : "Can be done by any user",
+        "operationId" : "startPlatformAuthFlow",
+        "parameters" : [ {
+          "name" : "clientId",
+          "in" : "path",
+          "description" : "ID of the client to return",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example": "6171ad81a477890012b804c0"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AuthFlow"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "properties" : {
+                    "data" : {
+                      "properties" : {
+                        "authUrl" : {
+                          "type" : "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "405": {
+            "$ref": "#/components/responses/405MethodNotAllowed"
+          }
+        }
+      }
+    },
+    "/api/v1/callback" : {
+      "get" : {
+        "tags" : [ "Callback" ],
+        "summary" : "Invoked by Provider (redirect uri) or other services",
+        "description" : "Should be called by service only",
+        "operationId" : "callbackPlatformAuthFlow",
+        "parameters" : [ {
+          "name" : "code",
+          "in" : "query",
+          "description" : "Authorization code to obtain access token from provider",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "state",
+          "in" : "query",
+          "description" : "Base64Url encoded, contains auth flow id and meta data",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/secrets/" : {
+      "get" : {
+        "tags" : [ "Secrets" ],
+        "summary" : "Retrieve all secrets",
+        "description" : "Retrieve all secrets belonging to the current user.",
+        "operationId" : "getSecrets",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pageSize"
+          },
+          {
+            "$ref": "#/components/parameters/pageNumber"
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SecretEntry"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Secrets" ],
+        "summary" : "Create a secret",
+        "description" : "Create a secret",
+        "operationId" : "createSecret",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MutableSecret"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Secret"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/secrets/{secretId}" : {
+      "get" : {
+        "tags" : [ "Secrets" ],
+        "summary" : "Find secret by ID",
+        "description" : "Returns a secret with given ID",
+        "operationId" : "getSecretById",
+        "parameters" : [ {
+          "name" : "secretId",
+          "in" : "path",
+          "description" : "ID of secret to return",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example": "6170a3c465dbff001297f235"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Secret"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Unauthorized"
+          },
+          "404" : {
+            "description" : "Secret with given ID not found"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Secrets" ],
+        "summary" : "Delete a secret",
+        "description" : "Delete a secret",
+        "operationId" : "deleteSecret",
+        "parameters" : [ {
+          "name" : "secretId",
+          "in" : "path",
+          "description" : "ID of secret to delete",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example": "6170a3c465dbff001297f235"
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "The secret was deleted successfully"
+          },
+          "404" : {
+            "$ref": "#/components/responses/404NotFound"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Secrets" ],
+        "summary" : "Update a secret",
+        "description" : "Update a secret",
+        "operationId" : "updateSecret",
+        "parameters" : [ {
+          "name" : "secretId",
+          "in" : "path",
+          "description" : "ID of secret to update",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MutableSecret"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Secret"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "$ref": "#/components/responses/400BadRequest"
+          }
+        }
+      }
+    },
+    "/healthcheck" : {
+      "get" : {
+        "servers": [
+          {
+            "url": "https://skm.example.com",
+            "description": "The /healthcheck endpoint is the only one that doesn't have /api/v1"
+          }
+        ],
+        "tags" : [ "Misc" ],
+        "summary" : "Retrieve health status",
+        "description" : "Retrieve health status of the API.",
+        "operationId" : "performHealthcheck",
+        "responses" : {
+          "200" : {
+            "description" : "successful operation"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Owner" : {
+        "required" : [ "id", "type" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "example": "617082258803c70031f85b26"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Type of Owner entity, e.g. GROUP, TENANT, USER, etc.",
+            "example": "USER"
+          }
+        }
+      },
+      "MutableAuthClient" : {
+        "oneOf" : [ {
+          "$ref": "#/components/schemas/MutableOA1TwoLeggedClient"
+        }, {
+          "$ref": "#/components/schemas/MutableOA1ThreeLeggedClient"
+        }, {
+          "$ref": "#/components/schemas/MutableOA2AuthorizationCodeClient"
+        }, {
+          "$ref": "#/components/schemas/MutableSessionAuthClient"
+        } ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "OA1_TWO_LEGGED": "#/components/schemas/MutableOA1TwoLeggedClient",
+            "OA1_THREE_LEGGED": "#/components/schemas/MutableOA1ThreeLeggedClient",
+            "OA2_AUTHORIZATION_CODE": "#/components/schemas/MutableOA2AuthorizationCodeClient",
+            "SESSION_AUTH": "#/components/schemas/MutableSessionAuthClient"
+          }
+        }
+      },
+      "MutableOA1TwoLeggedClient" : {
+        "required" : ["name", "owners", "type", "consumerKey", "consumerSecret", "nonce", "signature", "signatureMethod" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "owners" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Owner"
+            }
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "OA1_TWO_LEGGED", "OA1_THREE_LEGGED", "OA2_AUTHORIZATION_CODE", "SESSION_AUTH" ]
+          },
+          "preprocessor": {
+            "type": "string"
+          },
+          "tenant": {
+            "type": "string"
+          },
+          "consumerKey" : {
+            "type" : "string"
+          },
+          "consumerSecret" : {
+            "type" : "string"
+          },
+          "nonce" : {
+            "type" : "string"
+          },
+          "signature" : {
+            "type" : "string"
+          },
+          "signatureMethod" : {
+            "type" : "string"
+          },
+          "verifier" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MutableOA1ThreeLeggedClient": {
+        "required": ["name", "owners", "type", "key", "secret", "redirectUri", "access"],
+        "properties": {
+          "name" : {
+            "type" : "string"
+          },
+          "owners" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Owner"
+            }
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "OA1_TWO_LEGGED", "OA1_THREE_LEGGED", "OA2_AUTHORIZATION_CODE", "SESSION_AUTH" ]
+          },
+          "preprocessor": {
+            "type": "string"
+          },
+          "tenant": {
+            "type": "string"
+          },
+          "appName": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          },
+          "nonce" : {
+            "type" : "string"
+          },
+          "signature" : {
+            "type" : "string"
+          },
+          "signatureMethod" : {
+            "type" : "string"
+          },
+          "endpoints": {
+            "type": "object",
+            "required": ["request", "authorize", "access"],
+            "properties": {
+              "request": {
+                "type": "string"
+              },
+              "authorize": {
+                "type": "string"
+              },
+              "access": {
+                "type": "string"
+              }
+            }
+          },
+          "redirectUri": {
+            "type": "string"
+          }
+        }
+      },
+      "MutableOA2AuthorizationCodeClient" : {
+        "required" : [ "name", "owners", "type", "clientId", "clientSecret", "redirectUri", "endpoints"],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "owners" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Owner"
+            }
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "OA1_TWO_LEGGED", "OA1_THREE_LEGGED", "OA2_AUTHORIZATION_CODE", "SESSION_AUTH" ]
+          },
+          "preprocessor": {
+            "type": "string"
+          },
+          "tenant": {
+            "type": "string"
+          },
+          "clientId" : {
+            "type" : "string",
+            "example": "292085223830.apps.googleusercontent.com"
+          },
+          "clientSecret" : {
+            "type" : "string",
+            "example": "F4B82757C43741436B195B28AF4AF"
+          },
+          "redirectUri" : {
+            "type" : "string",
+            "example": "http://localhost:9001/api/v1/callback"
+          },
+          "refreshWithScope": {
+            "type": "boolean",
+            "description": "If true, the predefinedScope and secret scope will be sent with the refresh_token request."
+          },
+          "endpoints" : {
+            "$ref" : "#/components/schemas/MutableOA2AuthorizationCodeClient_endpoints"
+          },
+          "predefinedScope": {
+            "type": "string"
+          }
+        }
+      },
+      "MutableOA2AuthorizationCodeClient_endpoints" : {
+        "type" : "object",
+        "required": ["auth", "token"],
+        "properties" : {
+          "auth" : {
+            "type" : "string"
+          },
+          "token" : {
+            "type" : "string"
+          },
+          "userinfo" : {
+            "type" : "string"
+          },
+          "revocation": {
+            "type": "string"
+          },
+          "endSession": {
+            "type": "string"
+          }
+        }
+      },
+      "MutableSessionAuthClient": {
+        "required": ["name", "owners", "type", "fields", "endpoints"],
+        "properties": {
+          "name" : {
+            "type" : "string"
+          },
+          "owners" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Owner"
+            }
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "OA1_TWO_LEGGED", "OA1_THREE_LEGGED", "OA2_AUTHORIZATION_CODE", "SESSION_AUTH" ]
+          },
+          "preprocessor": {
+            "type": "string"
+          },
+          "tenant": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionField"
+            }
+          },
+          "tokenPath": {
+            "type": "string"
+          },
+          "expirationPath": {
+            "type": "string"
+          },
+          "endpoints": {
+            "type": "object",
+            "required": ["auth"],
+            "properties": {
+              "auth": {
+                "$ref": "#/components/schemas/RequestConfig"
+              },
+              "verification": {
+                "$ref": "#/components/schemas/RequestConfig"
+              }
+            }
+          }
+        }
+      },
+      "AuthClient" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/OA1TwoLeggedClient"
+        }, {
+          "$ref": "#/components/schemas/OA1ThreeLeggedClient"
+        }, {
+          "$ref" : "#/components/schemas/OA2AuthorizationCodeClient"
+        }, {
+          "$ref": "#/components/schemas/SessionAuthClient"
+        } ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "OA1_TWO_LEGGED": "#/components/schemas/MutableOA1TwoLeggedClient",
+            "OA1_THREE_LEGGED": "#/components/schemas/MutableOA1ThreeLeggedClient",
+            "OA2_AUTHORIZATION_CODE": "#/components/schemas/MutableOA2AuthorizationCodeClient",
+            "SESSION_AUTH": "#/components/schemas/MutableSessionAuthClient"
+          }
+        }
+      },
+      "OA1TwoLeggedClient" : {
+        "allOf" : [{
+          "required" : [ "createdAt", "_id" ],
+          "type" : "object",
+          "properties" : {
+            "_id" : {
+              "type" : "string"
+            },
+            "createdAt" : {
+              "type" : "string",
+              "description" : "Client creation time",
+              "format" : "date-time"
+            },
+            "updatedAt" : {
+              "type" : "string",
+              "description" : "Client update time",
+              "format" : "date-time"
+            }
+          }
+        }, {
+          "$ref" : "#/components/schemas/MutableOA1TwoLeggedClient"
+        } ]
+      },
+      "OA1ThreeLeggedClient": {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/MutableOA1ThreeLeggedClient"
+        }, {
+          "required" : [ "createdAt", "_id" ],
+          "type" : "object",
+          "properties" : {
+            "_id" : {
+              "type" : "string"
+            },
+            "createdAt" : {
+              "type" : "string",
+              "description" : "Client creation time",
+              "format" : "date-time"
+            },
+            "updatedAt" : {
+              "type" : "string",
+              "description" : "Client update time",
+              "format" : "date-time"
+            }
+          }
+        } ]
+      },
+      "OA2AuthorizationCodeClient" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/MutableOA2AuthorizationCodeClient"
+        }, {
+          "required" : [ "createdAt", "_id" ],
+          "type" : "object",
+          "properties" : {
+            "_id" : {
+              "type" : "string",
+              "example": ""
+            },
+            "createdAt" : {
+              "type" : "string",
+              "description" : "Client creation time",
+              "format" : "date-time"
+            },
+            "updatedAt" : {
+              "type" : "string",
+              "description" : "Client update time",
+              "format" : "date-time"
+            }
+          }
+        } ]
+      },
+      "SessionAuthClient": {
+        "allOf": [ {
+          "$ref": "#/components/schemas/MutableSessionAuthClient"
+        }, {
+          "required" : [ "createdAt", "_id" ],
+          "type" : "object",
+          "properties" : {
+            "_id" : {
+              "type" : "string"
+            },
+            "createdAt" : {
+              "type" : "string",
+              "description" : "Client creation time",
+              "format" : "date-time"
+            },
+            "updatedAt" : {
+              "type" : "string",
+              "description" : "Client update time",
+              "format" : "date-time"
+            }
+          }
+        }]
+      },
+      "SessionField": {
+        "type": "object",
+        "required": ["key"],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RequestField": {
+        "type": "object",
+        "required": ["key"],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestConfig": {
+        "type": "object",
+        "required": ["requestFields", "authType", "url"],
+        "properties": {
+          "requestFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestField"
+            }
+          },
+          "label": {
+            "type": "string"
+          },
+          "authType": {
+            "type": "string",
+            "enum": ["HEADER_AUTH", "BODY_AUTH", "PARAMS_AUTH", "FORM_AUTH"]
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthClientEntry": {
+        "type": "object",
+        "required": ["_id", "name", "type"],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "616a3783d25a1e002b98f6e0"
+          },
+          "name": {
+            "type": "string",
+            "example": "My Auth Client"
+          },
+          "type": {
+            "type": "string",
+            "example": "OA2_AUTHORIZATION_CODE"
+          }
+        }
+      },
+      "MutableSecret" : {
+        "required" : [ "name", "type", "owners" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "Human readable secret name",
+            "example" : "My Secret"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : ["API_KEY", "OA1_TWO_LEGGED", "OA1_THREE_LEGGED", "OA2_AUTHORIZATION_CODE", "SIMPLE", "MIXED", "SESSION_AUTH"]
+          },
+          "value" : {
+            "discriminator" : {
+              "propertyName" : "type",
+              "mapping": {
+                "SIMPLE": "#/components/schemas/SimpleSecret",
+                "MIXED": "#/components/schemas/MixedSecret",
+                "API_KEY": "#/components/schemas/ApiKeySecret",
+                "SESSION_AUTH": "#/components/schemas/SessionAuthSecret",
+                "OA1_TWO_LEGGED": "#/components/schemas/OA1TwoLeggedSecret",
+                "OA1_THREE_LEGGED": "#/components/schemas/OA1ThreeLeggedSecret",
+                "OA2_AUTHORIZATION_CODE": "#/components/schemas/OA2AuthorizationCodeSecret"
+              }
+            },
+            "oneOf" : [ {
+              "$ref": "#/components/schemas/SimpleSecret"
+            }, {
+              "$ref": "#/components/schemas/MixedSecret"
+            }, {
+              "$ref": "#/components/schemas/ApiKeySecret"
+            }, {
+              "$ref": "#/components/schemas/SessionAuthSecret"
+            }, {
+              "$ref": "#/components/schemas/OA1TwoLeggedSecret"
+            }, {
+              "$ref": "#/components/schemas/OA1ThreeLeggedSecret"
+            }, {
+              "$ref": "#/components/schemas/OA2AuthorizationCodeSecret"
+            } ]
+          },
+          "owners" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Owner"
+            }
+          },
+          "tenant": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "lockedAt" : {
+            "type" : "string",
+            "description" : "Datetime (UTC) when the secret was locked. Relevant for 3legged-oauth-2 during acesstoken updates.",
+            "format" : "date-time"
+          },
+          "encryptedFields": {
+            "type": "array",
+            "items": {
+            }
+          },
+          "mixedProperties": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "Secret" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/MutableSecret"
+        }, {
+          "required" : [ "createdAt", "_id" ],
+          "type" : "object",
+          "properties" : {
+            "_id" : {
+              "type" : "string"
+            },
+            "createdAt" : {
+              "type" : "string",
+              "description" : "Secret creation time",
+              "format" : "date-time"
+            },
+            "updatedAt" : {
+              "type" : "string",
+              "description" : "Secret update time",
+              "format" : "date-time"
+            },
+            "value": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        } ]
+      },
+      "SimpleSecret" : {
+        "required" : [ "passphrase", "username" ],
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "type" : "string"
+          },
+          "passphrase" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MixedSecret" : {
+        "required": ["payload"],
+        "type" : "object",
+        "properties": {
+          "payload": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiKeySecret": {
+        "required": ["key"],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "headerName": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionAuthSecret": {
+        "required": ["authClientId"],
+        "type": "object",
+        "properties": {
+          "authClientId": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "inputFields": {}
+        }
+      },
+      "OA1TwoLeggedSecret": {
+        "type": "object",
+        "properties": {
+          "expiresAt": {
+            "type": "string"
+          }
+        }
+      },
+      "OA1ThreeLeggedSecret" : {
+        "required" : [ "authClientId", "accessToken", "accessTokenSecret" ],
+        "type" : "object",
+        "properties" : {
+          "authClientId" : {
+            "type" : "string",
+            "description" : "Id of the auth client this secret was created with"
+          },
+          "accessToken" : {
+            "type" : "string"
+          },
+          "accessTokenSecret" : {
+            "type" : "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "expires": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          }
+        }
+      },
+      "OA2AuthorizationCodeSecret" : {
+        "required" : ["authClientId", "accessToken", "expires"],
+        "type" : "object",
+        "properties" : {
+          "authClientId" : {
+            "type" : "string",
+            "description" : "Id of the auth client this secret was created with"
+          },
+          "refreshToken" : {
+            "type" : "string"
+          },
+          "accessToken" : {
+            "type" : "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "expires" : {
+            "type" : "string",
+            "description" : "Date object in UTC",
+            "format" : "date-time"
+          },
+          "externalId": {
+            "type": "string"
+          }
+        }
+      },
+      "SecretEntry": {
+        "type": "object",
+        "required": ["_id", "name", "type", "owner"],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "61708255c0587c002c49f68a"
+          },
+          "name": {
+            "type": "string",
+            "example": "My Simple Secret"
+          },
+          "type": {
+            "type": "string",
+            "example": "SIMPLE"
+          },
+          "owners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Owner"
+            }
+          }
+        }
+      },
+      "AuthFlow" : {
+        "type" : "object",
+        "properties" : {
+          "scope" : {
+            "type" : "string"
+          },
+          "secretName" : {
+            "type" : "string"
+          },
+          "successUrl" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Meta" : {
+        "type" : "object",
+        "properties" : {
+          "page" : {
+            "type" : "integer",
+            "example": 1
+          },
+          "perPage" : {
+            "type" : "integer",
+            "example": 10
+          },
+          "total" : {
+            "type" : "integer",
+            "example": 15
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "example": 2
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "pageSize": {
+        "name": "page[size]",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "default": 10
+        },
+        "description": "The number of results to return per page",
+        "required": false,
+        "style": "deepObject"
+      },
+      "pageNumber": {
+        "name": "page[number]",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "default": 1
+        },
+        "description": "The page number to return (not zero indexed)",
+        "required": false
+      }
+    },
+    "responses": {
+      "400BadRequest": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "401Unauthorized": {
+        "description": "Unauthorized operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "404NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "405MethodNotAllowed": {
+        "description": "Method not allowed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "500ServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "BearerToken": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

@@ -19,7 +19,7 @@ bootstrap:
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-corpus-sources test-corpus-sources lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -504,6 +504,27 @@ lint-corpus-remote-ref-pins:
 # takes a loopback socket and no external host. Part of `check`.
 test-corpus-remote-ref-pins:
     python3 tests/corpus_remote_ref_pins_test.py
+
+# Every registered corpus row's source document is committed under
+# tests/fixtures/corpus-sources/, recorded with the SHA-256 of the bytes fetched
+# at its pinned revision in tests/fixtures/corpus-sources.tsv, so no gate fetches
+# one. This is the offline gate over those copies: every row committed and
+# recorded, every byte at its digest, every multi-document file present, no
+# stray file. No network. Part of `check`.
+lint-corpus-sources:
+    python3 scripts/corpus_sources.py check
+
+# Boundary coverage for that gate and for the rebuild tooling below: the real
+# tree, a synthetic root broken one demand at a time, and `vendor`/`audit`
+# through the real fetch against a loopback server. Part of `check`.
+test-corpus-sources:
+    python3 tests/corpus_sources_test.py
+
+# Rebuild-only: `vendor --fixture NAME` fetches a row from its pinned URL and
+# commits its source (run it when a row is added or its pin moves); `audit`
+# re-fetches and compares without writing. Needs network; never part of a gate.
+corpus-sources *args:
+    python3 scripts/corpus_sources.py "$@"
 
 # The screening record for the widened admissible-licence rule,
 # docs/licence-rescreening.md: one line per candidate the six region files
