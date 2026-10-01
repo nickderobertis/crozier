@@ -2279,7 +2279,14 @@ class HandwrittenKeyDerivationTest(unittest.TestCase):
             (regions / "witness-search-keys.tsv").unlink()
             refused = self.derive(root / "refused", "--regions", str(regions))
             self.assertNotEqual(0, refused.returncode)
-            self.assertIn(f"schemas/{key}: handwritten, and no selector in witness-search-keys.tsv", refused.stderr)
+            # The committed regions hold other `handwritten` rows too, and the
+            # refusal names whichever comes first; each lost its selector.
+            named = re.search(r"schemas/([a-z0-9-]+): handwritten, and no selector in witness-search-keys\.tsv",
+                              refused.stderr)
+            self.assertIsNotNone(named, refused.stderr)
+            self.assertTrue(any(
+                line.startswith(f"| {named[1]} |") and "| handwritten |" in line
+                for line in (regions / "schemas.md").read_text(encoding="utf-8").splitlines()), named[1])
 
 
 if __name__ == "__main__":

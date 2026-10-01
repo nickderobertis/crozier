@@ -1,0 +1,39 @@
+openapi: 3.1.0
+info:
+  title: nested-array-elements fixture
+  version: 1.0.0
+paths:
+  /grids:
+    get:
+      operationId: getGrids
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grids"
+components:
+  schemas:
+    Grids:
+      type: object
+      properties:
+        mixed:
+          $ref: "#/components/schemas/MixedGrid"
+        blank:
+          $ref: "#/components/schemas/BlankGrid"
+    MixedGrid:
+      type: array
+      items:
+        type: array
+        items:
+          oneOf:
+            - type: string
+            - type: integer
+    BlankGrid:
+      type: array
+      items:
+        type: array
+        items:
+          type: object
+          properties: {}

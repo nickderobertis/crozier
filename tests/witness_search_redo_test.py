@@ -620,10 +620,23 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "ref-pointer-undeclared-component-head": "thrivecart",
             "ref-pointer-unnamed-segment": "auto-agent-protocol",
         }
+        # Keys whose exhausted search a hand-written fixture answered instead.
+        handwritten = {
+            "annotated-ref-target-string-const": "inline-property-unions",
+            "oneof-array-variant-annotated-ref-item": "inline-oneof-variants",
+            "oneof-array-variant-anyof-discriminated-union-item": "inline-oneof-variants",
+            "oneof-array-variant-anyof-nullable-item": "inline-oneof-variants",
+            "oneof-bare-object-example-variant": "inline-oneof-variants",
+        }
         for key, selector in keys.items():
             if key in settled_elsewhere:
                 self.assertEqual("golden", entries[key][3], key)
                 self.assertIn(settled_elsewhere[key], entries[key][4], key)
+                continue
+            if key in handwritten:
+                self.assertNotIn(selector, counts, key)
+                self.assertEqual("handwritten", entries[key][3], key)
+                self.assertIn(f"handwritten: {handwritten[key]};", entries[key][4], key)
                 continue
             self.assertEqual("golden" if selector in counts else "gap", entries[key][3], key)
         self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])
@@ -668,7 +681,10 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ("search: exhausted (", "search: exhausted, ", "its evidence cell must read"),
         ):
             with self.subTest(message=message):
-                schemas.write_text(flipped.replace(old, new, 1), encoding="utf-8")
+                # Other rows are `handwritten` too; break only this key's.
+                row = next(line for line in flipped.splitlines() if line.startswith(f"| {key} |"))
+                self.assertIn(old, row)
+                schemas.write_text(flipped.replace(row, row.replace(old, new, 1), 1), encoding="utf-8")
                 refused = reconcile(schemas)
                 self.assertNotEqual(0, refused.returncode)
                 self.assertIn(f"reconciliation: schemas.md row {key}: ", refused.stderr)
@@ -862,7 +878,19 @@ class WideWitnessTests(unittest.TestCase):
         root = self.work / 'history'
         root.mkdir()
         shutil.copyfile(CONTRACT, root / 'contract.md')
-        keys = list(json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys'])
+        # A `handwritten` row's baseline membership is read off the shards
+        # beside the contract, so the history carries them.
+        for shard in SHARDS:
+            shutil.copyfile(shard, root / shard.name)
+        # A `handwritten` key's membership follows this very candidates table,
+        # so a witness recorded for one would drop it; screen `gap` keys only.
+        handwritten = {
+            line.split('|')[1].strip() for line in
+            (REPO / 'docs/openapi-surface/schemas.md').read_text(encoding='utf-8').splitlines()
+            if line.startswith('| ') and '| handwritten |' in line
+        }
+        keys = [key for key in json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys']
+                if key not in handwritten]
         retained, discarded, absent = keys[:3]
         screens = ['passed: publisher grant', 'passed: pinned publisher', 'passed: generated SDK',
                    f'passed: retained first model; discarded keys: `{discarded}`']
@@ -1481,6 +1509,9 @@ class PostFreezeGapRowTests(unittest.TestCase):
         self.regions.mkdir()
         for name in self.REGION_NAMES:
             shutil.copyfile(REPO / 'docs/openapi-surface' / f'{name}.md', self.regions / f'{name}.md')
+        # A `handwritten` row keeps the selector its search ran on only here.
+        shutil.copyfile(REPO / 'docs/openapi-surface/witness-search-keys.tsv',
+                        self.regions / 'witness-search-keys.tsv')
         self.schemas = self.regions / 'schemas.md'
         self.frozen = dict(WitnessSearchRedoTests.contract_keys(self))
 

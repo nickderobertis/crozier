@@ -16,6 +16,72 @@ verdict: `exhausted` when nothing is outstanding, every declarer reaching
 the arm is screened, and none that passes every screen is left
 unregistered; `search-incomplete` otherwise.
 
+### The re-spelled arm: a structural basis, not a probed one
+
+The site above had no `=` prefix, so it selected the next brace block, the
+`while let Some(part) = next {` segment loop, not the head lookup it names.
+Every probe counted below measured that loop. The site is now spelled
+`src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]`,
+which holds exactly one counter region: the trailing `?` of
+`let mut schema = schemas.get(parts.next()?)?;`, the early return taken when the
+head names no component (`src/ir.rs` line 11377, columns 48 to 49, when
+measured). The plain line-only spelling was tried and rejected, because a head
+that resolves also executes that line: re-joined against the committed
+coverage, the goldens executed 5 of its 7 regions, which read the arm as reached
+while no golden takes the early return.
+
+The `exhausted` verdict below does not carry to the re-spelled arm by
+measurement. It carries by structure: `openapi::load` runs
+`normalize_unresolvable_schema_refs`, which degrades every `$ref` whose component
+head is undeclared to the unknown type before the IR exists, so no document's
+undeclared head reaches the lookup. The one path to the early return is a
+component the document does declare that `filter_ignored` then removes for
+`x-fern-ignore`, reached through a pointer the pointer normalization leaves
+standing (one ending on a composition member).
+
+The hand-written fixture
+[`ref-pointer-ignored-head`](../../handwritten/ref-pointer-ignored-head/) is
+that document. Measured on this site with an instrumented crozier: the fixture
+executes **1 of 1** regions, and the control below (the same document without
+`x-fern-ignore`) **0 of 1**. The fixture `ref-pointer-walk`, whose declared-head
+pointers used to cover this arm, reads 0 of 1, and the goldens 0 of 1. Fern CLI
+5.67.1 / python-sdk 5.20.0 generates from both documents.
+
+```yaml
+openapi: 3.1.0
+info:
+  title: ref-pointer-ignored-head fixture
+  version: 1.0.0
+paths:
+  /holder:
+    get:
+      operationId: getHolder
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holder"
+components:
+  schemas:
+    Holder:
+      type: object
+      properties:
+        parts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hidden/allOf/0"
+        ghost:
+          $ref: "#/components/schemas/Missing"
+    Hidden:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+```
+
 ### Witness search (exhaustive)
 
 | key | source | outcome | queries | walk | candidates | screens |

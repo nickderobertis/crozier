@@ -26,6 +26,10 @@ files:
     # input capacity; the probes and the code that produce and compare it remain
     # linted.
     - "docs/openapi-surface/probe-expected/**"
+    # The hand-written fixtures' Fern trees — the same vendored Fern output, the
+    # golden target each fixture's openapi.yml is byte-gated against, not
+    # crozier's code. The fixtures' openapi.yml and evidence.toml stay linted.
+    - "docs/openapi-surface/handwritten/*/fern-expected/**"
     # screencomp visual-docs artifacts — generated captures, not hand-written
     # code: the committed SVG screenshots (each ~370KB of base64-embedded font),
     # the animated GIF, the digest baseline, and the vendored binary font. They

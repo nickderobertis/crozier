@@ -1,0 +1,49 @@
+openapi: 3.1.0
+info:
+  title: inline-property-unions fixture
+  version: 1.0.0
+paths:
+  /record:
+    get:
+      operationId: getRecord
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  annotated:
+                    allOf:
+                      - $ref: "#/components/schemas/Choice"
+                      - description: annotated
+                  fixed:
+                    allOf:
+                      - $ref: "#/components/schemas/Fixed"
+                      - description: annotated
+                  closed:
+                    anyOf:
+                      - type: object
+                        additionalProperties: false
+                        properties:
+                          code:
+                            type: integer
+                  open:
+                    anyOf:
+                      - type: object
+                        properties:
+                          name:
+                            type: string
+components:
+  schemas:
+    Choice:
+      anyOf:
+        - type: string
+        - type: object
+          properties:
+            code:
+              type: integer
+    Fixed:
+      type: string
+      const: fixed
