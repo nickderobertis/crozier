@@ -43,6 +43,9 @@ docker pull fernapi/fern-python-sdk:5.20.0
 crozier compare
 ```
 
+In GitHub Actions, the [example workflow](github-action.md#migrating-from-fern)
+sets Fern up and writes an unchanged copy of the script for you.
+
 ## How each setting maps
 
 The script builds a temporary Fern workspace from the `CROZIER_REFERENCE_*`
