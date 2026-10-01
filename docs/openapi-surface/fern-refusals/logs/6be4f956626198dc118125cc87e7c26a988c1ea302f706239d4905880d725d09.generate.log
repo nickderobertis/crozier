@@ -1,0 +1,24 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> types -> ListValue -> extends -> Value
+                  __package__.yml
+                  [error] Objects can only extend other objects, and Value is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> RangeValue -> extends -> Value
+                  __package__.yml
+                  [error] Objects can only extend other objects, and Value is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> Rule -> extends -> Node
+                  __package__.yml
+                  [error] Objects can only extend other objects, and Node is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> SingleValue -> extends -> Value
+                  __package__.yml
+                  [error] Objects can only extend other objects, and Value is not an object.
+                  
+[api]: python-sdk Found 4 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

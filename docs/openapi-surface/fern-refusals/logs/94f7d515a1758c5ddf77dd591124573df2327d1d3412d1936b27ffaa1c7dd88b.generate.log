@@ -1,0 +1,80 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_append -> request -> body
+                  betaConversations.yml
+                  [error] Object has multiple properties named "stream":
+                    - <Inlined Request> -> stream
+                    - <Inlined Request> -> (extends) root.ConversationAppendRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_append
+                  betaConversations.yml
+                  [error] Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> stream
+                    - Body property: <Request Body> -> (extends) root.ConversationAppendRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_append_stream -> request -> body
+                  betaConversations.yml
+                  [error] Object has multiple properties named "stream":
+                    - <Inlined Request> -> stream
+                    - <Inlined Request> -> (extends) root.ConversationAppendRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_append_stream
+                  betaConversations.yml
+                  [error] Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> stream
+                    - Body property: <Request Body> -> (extends) root.ConversationAppendRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_restart -> request -> body
+                  betaConversations.yml
+                  [error] Object has multiple properties named "stream":
+                    - <Inlined Request> -> stream
+                    - <Inlined Request> -> (extends) root.ConversationRestartRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_restart
+                  betaConversations.yml
+                  [error] Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> stream
+                    - Body property: <Request Body> -> (extends) root.ConversationRestartRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_restart_stream -> request -> body
+                  betaConversations.yml
+                  [error] Object has multiple properties named "stream":
+                    - <Inlined Request> -> stream
+                    - <Inlined Request> -> (extends) root.ConversationRestartRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_restart_stream
+                  betaConversations.yml
+                  [error] Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> stream
+                    - Body property: <Request Body> -> (extends) root.ConversationRestartRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_start -> request -> body
+                  betaConversations.yml
+                  [error] Object has multiple properties named "stream":
+                    - <Inlined Request> -> stream
+                    - <Inlined Request> -> (extends) root.ConversationRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_start
+                  betaConversations.yml
+                  [error] Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> stream
+                    - Body property: <Request Body> -> (extends) root.ConversationRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_start_stream -> request -> body
+                  betaConversations.yml
+                  [error] Object has multiple properties named "stream":
+                    - <Inlined Request> -> stream
+                    - <Inlined Request> -> (extends) root.ConversationRequestBase -> stream
+                  
+[api]: python-sdk betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_start_stream
+                  betaConversations.yml
+                  [error] Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> stream
+                    - Body property: <Request Body> -> (extends) root.ConversationRequestBase -> stream
+                  
+[api]: python-sdk Found 12 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

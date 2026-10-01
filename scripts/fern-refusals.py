@@ -73,6 +73,7 @@ DOCUMENTS_HEADER = ("digest", "source", "locator", "revision", "recorded_by", "f
                     "fern_log", "classes", "crozier_exit", "crozier_files", "crozier_strict_exit")
 UNRETRIEVABLE_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "reason")
 GENERATED_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "fern_log", "findings")
+CONFIRMATIONS_HEADER = ("class", "digest", "publisher", "generate_exit", "generate_files", "generate_log")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = ("key", "digest", "unretrievable", "check_exit", "check_log", "generate_exit",
@@ -768,6 +769,113 @@ def cross_reference_problems() -> list[str]:
     return problems
 
 
+def publisher(locator: str) -> str:
+    """Who published a document: the API under an aggregation's tree, else the
+    repository owner, lower-cased and without a domain suffix (`Adyen` and
+    `adyen.com` are one publisher)."""
+    return re.sub(r"\.(com|io|org|net|dev|co|de|app|ai)$", "", _publisher(locator).lower())
+
+
+def _publisher(locator: str) -> str:
+    parts = urllib.parse.urlparse(locator).path.strip("/").split("/")
+    if parts[:2] in (["APIs-guru", "openapi-directory"], ["jentic", "jentic-public-apis"]):
+        tree = parts[3:]
+        tree = tree[2:] if tree[:2] == ["apis", "openapi"] else tree[1:]
+        return tree[0] if tree else parts[0]
+    return parts[1] if urllib.parse.urlparse(locator).hostname == "api.apis.guru" and len(parts) > 3 \
+        else parts[0]
+
+
+def confirmation_holds(row: dict[str, str], pattern: re.Pattern[str]) -> bool:
+    """Whether a real document's generation reproduces the refusal its class's probe measured."""
+    return row["generate_exit"] != "0" or row["generate_files"] == "0" or any(
+        pattern.match(message) for message in diagnostics(read_log(row["generate_log"])))
+
+
+def confirm(args: argparse.Namespace) -> int:
+    """Run `fern generate` on up to `--per-class` real documents carrying each class.
+
+    A document's generation is otherwise not run once its check names a class:
+    each class's probe shows the class stopping a generation. This samples the
+    population to confirm it — documents carrying only that class first, from
+    publishers not yet sampled, smallest first — reusing a generation `measure`
+    already took. The results land in `confirmations.tsv`, which `check` holds.
+    """
+    documents = read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    measured = {row["digest"]: row for row in read_measurements().values() if row["digest"]}
+    cached = {path.stem: path for path in (CACHE / "documents").glob("*") if path.is_file()}
+    path = confirmations_path()
+    kept = read_tsv(path, CONFIRMATIONS_HEADER) if path.is_file() else []
+    plan: list[tuple[str, dict[str, str]]] = []
+    for row in classes:
+        name = row["class"]
+        done = [confirmed for confirmed in kept if confirmed["class"] == name]
+        carrying = [doc for doc in documents if name in doc["classes"].split(",") and doc["digest"] in cached]
+        carrying.sort(key=lambda doc: (doc["classes"] != name, doc["digest"] not in measured
+                                       or not measured[doc["digest"]]["generate_exit"],
+                                       cached[doc["digest"]].stat().st_size))
+        publishers = {confirmed["publisher"] for confirmed in done}
+        chosen = {confirmed["digest"] for confirmed in done}
+        for doc in carrying:
+            if len(done) + sum(1 for planned, _ in plan if planned == name) >= args.per_class:
+                break
+            who = publisher(doc["locator"])
+            if who in publishers or doc["digest"] in chosen:
+                continue
+            publishers.add(who)
+            chosen.add(doc["digest"])
+            plan.append((name, dict(doc, publisher=who)))
+
+    def one(item: tuple[str, dict[str, str]]) -> dict[str, str]:
+        name, doc = item
+        digest = doc["digest"]
+        previous = measured.get(digest, {})
+        result = {key: previous[key] for key in ("generate_exit", "generate_files", "generate_log")} \
+            if previous.get("generate_exit") else fern_generate(cached[digest], digest, args.timeout)
+        return {"class": name, "digest": digest, "publisher": doc["publisher"], **result}
+
+    with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+        kept += list(pool.map(one, plan))
+    kept.sort(key=lambda row: (row["class"], row["digest"]))
+    path.write_text(tsv_text(CONFIRMATIONS_HEADER, kept), encoding="utf-8")
+    print(f"fern-refusals: {len(plan)} confirmation(s) taken, {len(kept)} on record")
+    return 0
+
+
+def confirmations_path() -> Path:
+    # The tests point this at a scratch copy to show `check` failing on a contradiction.
+    return Path(os.environ.get("CROZIER_FERN_REFUSALS_CONFIRMATIONS") or EVIDENCE / "confirmations.tsv")
+
+
+def confirmation_problems() -> list[str]:
+    """Every class carried by a document has a sampled real generation, and each reproduces the refusal."""
+    path = confirmations_path()
+    if not path.is_file():
+        return [f"{rel(path)} is missing; run `scripts/fern-refusals.py confirm`"]
+    confirmations = read_tsv(path, CONFIRMATIONS_HEADER)
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    documents = {row["digest"]: row for row in read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)}
+    patterns = {candidate.name: candidate.pattern for candidate in class_patterns(classes)}
+    problems = []
+    for row in confirmations:
+        doc = documents.get(row["digest"])
+        if row["class"] not in patterns or doc is None or row["class"] not in doc["classes"].split(","):
+            problems.append(f"confirmations.tsv {row['class']} {row['digest']}: names no documents.tsv row "
+                            "carrying that class; rerun `confirm` after `build`")
+        elif not (REPO / row["generate_log"]).is_file():
+            problems.append(f"confirmations.tsv {row['digest']}: its log {row['generate_log']} is not committed")
+        elif not confirmation_holds(row, patterns[row["class"]]):
+            problems.append(f"{row['class']}: Fern generates from {row['digest']} (exit 0, "
+                            f"{row['generate_files']} files), contradicting the class's probe; measure the "
+                            "class again, or make the phrase a finding")
+    for row in classes:
+        if row["documents"] != "0" and not any(confirmed["class"] == row["class"] for confirmed in confirmations):
+            problems.append(f"{row['class']}: no real document's generation confirms it; run "
+                            "`scripts/fern-refusals.py confirm`")
+    return problems
+
+
 def check(_args: argparse.Namespace) -> int:
     problems = []
     for name, header in (("classes.tsv", CLASSES_HEADER), ("documents.tsv", DOCUMENTS_HEADER),
@@ -779,7 +887,7 @@ def check(_args: argparse.Namespace) -> int:
             problems.append(f"docs/fern-refusals/{name}: the header must be exactly {chr(9).join(header)!r}")
     if problems:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
-    problems = cross_reference_problems()
+    problems = cross_reference_problems() + confirmation_problems()
     if problems:
         fail("\n  ".join(["the registry's tables disagree with each other "
                           "(run `scripts/fern-refusals.py build`, or restore the hand-edited one from git):",
@@ -928,6 +1036,11 @@ def main(argv: list[str] | None = None) -> int:
     f.add_argument("--jobs", type=int, default=6)
     f.add_argument("--timeout", type=int, default=900)
     f.set_defaults(run=finding)
+    c = sub.add_parser("confirm", help="sample each class's real documents through fern generate")
+    c.add_argument("--per-class", type=int, default=3)
+    c.add_argument("--jobs", type=int, default=6)
+    c.add_argument("--timeout", type=int, default=3600)
+    c.set_defaults(run=confirm)
     sub.add_parser("build", help="rewrite the tables from the committed inputs").set_defaults(run=build)
     sub.add_parser("check", help="fail when the tables drift from the inputs").set_defaults(run=check)
     args = parser.parse_args(argv)

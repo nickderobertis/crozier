@@ -1,0 +1,32 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk openapi/openapi.yml -> paths -> /test-cases/parameters/{duplicateParam} -> get
+                  openapi/openapi.yml
+                  [error] Parameters query parameter 'duplicateParam', path parameter 'duplicateParam' all normalize to 'duplicateParam' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /test-cases/reserved-keywords/{const} -> get
+                  openapi/openapi.yml
+                  [error] Parameters path parameter 'const', query parameter 'const' all normalize to 'const' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+[api]: python-sdk testCase.yml -> service -> endpoints -> export
+                  testCase.yml
+                  [error] Multiple request properties have the name const. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Path parameter "const"
+                    - Query Parameter "const"
+                  
+[api]: python-sdk testCase.yml -> service -> endpoints -> getDuplicateParameters
+                  testCase.yml
+                  [error] Multiple request properties have the name duplicateParam. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Path parameter "duplicateParam"
+                    - Query Parameter "duplicateParam"
+                  
+[api]: python-sdk __package__.yml -> types -> 123456
+                  __package__.yml
+                  [error] Type name must begin with a letter
+                  
+[api]: python-sdk Found 5 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

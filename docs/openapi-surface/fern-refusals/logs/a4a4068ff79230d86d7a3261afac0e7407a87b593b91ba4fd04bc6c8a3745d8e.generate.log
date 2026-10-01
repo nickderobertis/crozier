@@ -1,0 +1,28 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Skipping undefined parameter, undefined, in GET /customers/{customer_id}/credit-balances
+[api]: python-sdk Skipping undefined parameter, undefined, in GET /customers/{customer_id}
+[api]: python-sdk Skipping undefined parameter, undefined, in GET /discounts
+[api]: python-sdk Skipping undefined parameter, undefined, in GET /reports
+[api]: python-sdk v1Reports.yml -> types -> ReportFilters -> extends -> root.ReportFilterAdjustments
+                  v1Reports.yml
+                  [error] Objects can only extend other objects, and root.ReportFilterAdjustments is not an object.
+                  
+[api]: python-sdk v1Reports.yml -> types -> ReportFilters -> extends -> root.ReportFilterTransactions
+                  v1Reports.yml
+                  [error] Objects can only extend other objects, and root.ReportFilterTransactions is not an object.
+                  
+[api]: python-sdk v1Reports.yml -> types -> ReportType -> extends -> root.ReportTypeAdjustments
+                  v1Reports.yml
+                  [error] Objects can only extend other objects, and root.ReportTypeAdjustments is not an object.
+                  
+[api]: python-sdk v1Reports.yml -> types -> ReportType -> extends -> root.ReportTypeTransactions
+                  v1Reports.yml
+                  [error] Objects can only extend other objects, and root.ReportTypeTransactions is not an object.
+                  
+[api]: python-sdk Found 4 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,0 +1,355 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> errors -> BadGatewayError -> type
+                  __package__.yml
+                  [error] Example is missing required property "response.body.messages"
+                  
+[api]: python-sdk organizationMembers.yml -> service -> endpoints -> Members_delete
+                  organizationMembers.yml
+                  [error] Multiple request properties have the name member_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Path parameter "member_id"
+                    - Body property: <Request Body> -> member_id
+                  
+[api]: python-sdk ipAddressManagementAddressMaps.yml -> service -> endpoints -> addAnAccountMembershipToAnAddressMap
+                  ipAddressManagementAddressMaps.yml
+                  [error] Endpoint has duplicate path parameter: account_id.
+                  
+[api]: python-sdk hyperdrive.yml -> service -> endpoints -> create-hyperdrive -> examples[0] -> response
+                  hyperdrive.yml
+                  [error] Missing discriminant property ("disabled")
+                  
+[api]: python-sdk triggers.yml -> service -> endpoints -> createTrigger -> request -> body -> properties -> path_includes -> type
+                  triggers.yml
+                  [error] Default value for list type must be an array
+                  
+[api]: python-sdk hyperdrive.yml -> service -> endpoints -> get-hyperdrive -> examples[0] -> response
+                  hyperdrive.yml
+                  [error] Missing discriminant property ("disabled")
+                  
+[api]: python-sdk hyperdrive.yml -> service -> endpoints -> list-hyperdrive -> examples[0] -> response
+                  hyperdrive.yml
+                  [error] Missing discriminant property ("disabled")
+                  
+[api]: python-sdk zoneRatePlan.yml -> service -> endpoints -> listAvailableRatePlans -> examples[0] -> response
+                  zoneRatePlan.yml
+                  [error] Unexpected property "components"
+                  [error] Unexpected property "duration"
+                  [error] Unexpected property "frequency"
+                  [error] Unexpected property "name"
+                  
+[api]: python-sdk streamVideos.yml -> service -> endpoints -> listVideos -> examples[0] -> response
+                  streamVideos.yml
+                  [error] Expected example to be an object. Example is: "fc0a8dc887b16759bfd9ad922230a014"
+                  
+[api]: python-sdk hyperdrive.yml -> service -> endpoints -> patch-hyperdrive -> examples[0] -> response
+                  hyperdrive.yml
+                  [error] Missing discriminant property ("disabled")
+                  
+[api]: python-sdk event.yml -> service -> endpoints -> post_EventCreate
+                  event.yml
+                  [error] Multiple request properties resolve to the same generated name accountId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "account_id" (name: "account_id")
+                    - Body property: <Request Body> -> accountId (name: "accountId")
+                  
+[api]: python-sdk ipAddressManagementAddressMaps.yml -> service -> endpoints -> removeAnAccountMembershipFromAnAddressMap
+                  ipAddressManagementAddressMaps.yml
+                  [error] Endpoint has duplicate path parameter: account_id.
+                  
+[api]: python-sdk streamVideos.yml -> service -> endpoints -> retrieveVideoDetails -> examples[0] -> response
+                  streamVideos.yml
+                  [error] Expected example to be an object. Example is: "fc0a8dc887b16759bfd9ad922230a014"
+                  
+[api]: python-sdk dnsFirewall.yml -> service -> endpoints -> showDnsFirewallClusterReverseDns -> examples[0] -> response
+                  dnsFirewall.yml
+                  [error] Example is missing required property "response.body.result.errors"
+                  [error] Example is missing required property "response.body.result.messages"
+                  [error] Example is missing required property "response.body.result.success"
+                  [error] Unexpected property "ptr"
+                  
+[api]: python-sdk hyperdrive.yml -> service -> endpoints -> update-hyperdrive -> examples[0] -> response
+                  hyperdrive.yml
+                  [error] Missing discriminant property ("disabled")
+                  
+[api]: python-sdk wafPackages.yml -> service -> endpoints -> updateAWafPackage -> examples[0] -> response
+                  wafPackages.yml
+                  [error] Example is missing required property "response.body.errors"
+                  [error] Example is missing required property "response.body.messages"
+                  [error] Example is missing required property "response.body.success"
+                  
+[api]: python-sdk dnsFirewall.yml -> service -> endpoints -> updateDnsFirewallClusterReverseDns -> examples[0] -> response
+                  dnsFirewall.yml
+                  [error] Example is missing required property "response.body.result.errors"
+                  [error] Example is missing required property "response.body.result.messages"
+                  [error] Example is missing required property "response.body.result.success"
+                  [error] Unexpected property "ptr"
+                  
+[api]: python-sdk streamVideos.yml -> service -> endpoints -> updateVideoDetails -> examples[0] -> response
+                  streamVideos.yml
+                  [error] Expected example to be an object. Example is: "fc0a8dc887b16759bfd9ad922230a014"
+                  
+[api]: python-sdk streamVideos.yml -> service -> endpoints -> uploadVideosFromAUrl -> examples[0] -> response
+                  streamVideos.yml
+                  [error] Expected example to be an object. Example is: "fc0a8dc887b16759bfd9ad922230a014"
+                  
+[api]: python-sdk applications.yml -> types -> AlexandriaCreateApplicationRequestHostnames -> extends -> root.AlexandriaApplicationHostnames
+                  applications.yml
+                  [error] Objects can only extend other objects, and root.AlexandriaApplicationHostnames is not an object.
+                  
+[api]: python-sdk builds.yml -> types -> BuildsApiResponseErrorsItem
+                  builds.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in account.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in triggers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in workers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in __package__.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in account.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in builds.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in triggers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in workers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in __package__.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in account.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in builds.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in triggers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in workers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in __package__.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in account.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in builds.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in triggers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in workers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in __package__.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in account.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in builds.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in workers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in __package__.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in account.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in builds.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in triggers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in workers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in __package__.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in account.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in builds.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in triggers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in __package__.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in account.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in builds.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in triggers.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+                  [error] BuildsApiResponseErrorsItem is already declared in workers.yml
+                  
+[api]: python-sdk accountRulesets.yml -> types -> CreateAccountRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
+                  accountRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk accountRulesets.yml -> types -> CreateAccountRulesetRuleRequestPositionTwo -> extends -> root.RulesetsRulePosition
+                  accountRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk accountRulesets.yml -> types -> CreateAccountRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
+                  accountRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk zoneRulesets.yml -> types -> CreateZoneRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
+                  zoneRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk zoneRulesets.yml -> types -> CreateZoneRulesetRuleRequestPositionTwo -> extends -> root.RulesetsRulePosition
+                  zoneRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk zoneRulesets.yml -> types -> CreateZoneRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
+                  zoneRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> D1TimeTravelRestoreResponse
+                  __package__.yml
+                  [error] D1TimeTravelRestoreResponse is already declared in d1.yml
+                  
+[api]: python-sdk __package__.yml -> types -> DlpEntryUpdateType
+                  __package__.yml
+                  [error] DlpEntryUpdateType is already declared in dlpEntries.yml
+                  
+[api]: python-sdk __package__.yml -> types -> HealthchecksHttpConfig -> properties -> expected_codes -> type
+                  __package__.yml
+                  [error] Default value for list type must be an array
+                  
+[api]: python-sdk __package__.yml -> types -> LoadBalancingSessionAffinityAttributes -> properties -> headers -> type
+                  __package__.yml
+                  [error] Default value for list type must be an array
+                  
+[api]: python-sdk __package__.yml -> types -> PreconditionFailedErrorBody
+                  __package__.yml
+                  [error] Object has multiple properties named "errors":
+                    - PreconditionFailedErrorBody -> errors
+                    - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> errors
+                  [error] Object has multiple properties named "messages":
+                    - PreconditionFailedErrorBody -> messages
+                    - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> messages
+                  [error] Object has multiple properties named "success":
+                    - PreconditionFailedErrorBody -> success
+                    - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> success
+                  
+[api]: python-sdk __package__.yml -> types -> R2AddCustomDomainResponse
+                  __package__.yml
+                  [error] R2AddCustomDomainResponse is already declared in r2Bucket.yml
+                  
+[api]: python-sdk __package__.yml -> types -> R2ListCustomDomainsResponse
+                  __package__.yml
+                  [error] R2ListCustomDomainsResponse is already declared in r2Bucket.yml
+                  
+[api]: python-sdk presets.yml -> types -> RealtimekitPagingResponsePaging
+                  presets.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in meetings.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in recordings.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in __package__.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in meetings.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in presets.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in __package__.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in meetings.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in presets.yml
+                  [error] RealtimekitPagingResponsePaging is already declared in recordings.yml
+                  
+[api]: python-sdk smartShieldSettings.yml -> types -> SmartShieldGetSettingsResponse
+                  smartShieldSettings.yml
+                  [error] Object has multiple properties named "errors":
+                    - SmartShieldGetSettingsResponse -> errors
+                    - SmartShieldGetSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> errors
+                  [error] Object has multiple properties named "messages":
+                    - SmartShieldGetSettingsResponse -> messages
+                    - SmartShieldGetSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> messages
+                  [error] Object has multiple properties named "result":
+                    - SmartShieldGetSettingsResponse -> result
+                    - SmartShieldGetSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> result
+                  [error] Object has multiple properties named "success":
+                    - SmartShieldGetSettingsResponse -> success
+                    - SmartShieldGetSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> success
+                  
+[api]: python-sdk smartShieldSettings.yml -> types -> SmartShieldPatchSettingsResponse
+                  smartShieldSettings.yml
+                  [error] Object has multiple properties named "errors":
+                    - SmartShieldPatchSettingsResponse -> errors
+                    - SmartShieldPatchSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> errors
+                  [error] Object has multiple properties named "messages":
+                    - SmartShieldPatchSettingsResponse -> messages
+                    - SmartShieldPatchSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> messages
+                  [error] Object has multiple properties named "result":
+                    - SmartShieldPatchSettingsResponse -> result
+                    - SmartShieldPatchSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> result
+                  [error] Object has multiple properties named "success":
+                    - SmartShieldPatchSettingsResponse -> success
+                    - SmartShieldPatchSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> success
+                  
+[api]: python-sdk cacheReserveClear.yml -> types -> SmartshieldApiResponseCommonResult
+                  cacheReserveClear.yml
+                  [error] SmartshieldApiResponseCommonResult is already declared in smartShieldSettings.yml
+                  [error] SmartshieldApiResponseCommonResult is already declared in __package__.yml
+                  [error] SmartshieldApiResponseCommonResult is already declared in smartShieldSettings.yml
+                  [error] SmartshieldApiResponseCommonResult is already declared in cacheReserveClear.yml
+                  
+[api]: python-sdk __package__.yml -> types -> SmartshieldHttpConfig -> properties -> expected_codes -> type
+                  __package__.yml
+                  [error] Default value for list type must be an array
+                  
+[api]: python-sdk accountRulesets.yml -> types -> UpdateAccountRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
+                  accountRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk accountRulesets.yml -> types -> UpdateAccountRulesetRuleRequestPositionTwo -> extends -> root.RulesetsRulePosition
+                  accountRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk accountRulesets.yml -> types -> UpdateAccountRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
+                  accountRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk zoneRulesets.yml -> types -> UpdateZoneRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
+                  zoneRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk zoneRulesets.yml -> types -> UpdateZoneRulesetRuleRequestPositionTwo -> extends -> root.RulesetsRulePosition
+                  zoneRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk zoneRulesets.yml -> types -> UpdateZoneRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
+                  zoneRulesets.yml
+                  [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> VectorizeCreateMetadataIndexResponse
+                  __package__.yml
+                  [error] VectorizeCreateMetadataIndexResponse is already declared in vectorize.yml
+                  
+[api]: python-sdk __package__.yml -> types -> VectorizeDeleteMetadataIndexResponse
+                  __package__.yml
+                  [error] VectorizeDeleteMetadataIndexResponse is already declared in vectorize.yml
+                  
+[api]: python-sdk __package__.yml -> types -> VectorizeIndexInfoResponse
+                  __package__.yml
+                  [error] VectorizeIndexInfoResponse is already declared in vectorize.yml
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomApiResponseSingle -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomEventDetailsResponse -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomEventIdResponse -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomEventResponse -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomPreviewResponse -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomSingleResponse -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomStatusResponse -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomWaitingRoomIdResponse -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> WaitingroomZoneSettingsResponse -> extends -> WaitingroomApiResponseCommon
+                  __package__.yml
+                  [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+                  
+[api]: python-sdk Found 150 errors and 373 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

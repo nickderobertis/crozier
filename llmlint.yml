@@ -86,13 +86,15 @@ files:
     - "assets/scaffolding/default_clients.py.tmpl"
     - "assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
     # The Fern refusal population's evidence, written by scripts/fern-refusals.py
-    # `measure`/`probe`/`build`: Fern's own logs, the per-document measurements,
-    # and the three machine-written tables. None is authored source and the logs
-    # alone overflow the judge; the script, its test, classes.tsv, findings.tsv,
-    # the probes and the README stay linted.
+    # `measure`/`probe`/`confirm`/`build`: Fern's own logs, the per-document
+    # measurements, the sampled confirmations and the three machine-written
+    # tables. None is authored source and the logs alone overflow the judge; the
+    # script, its test, classes.tsv, findings.tsv, the probes and the README stay
+    # linted.
     - "docs/openapi-surface/fern-refusals/logs/**"
     - "docs/openapi-surface/fern-refusals/probe-logs/**"
     - "docs/openapi-surface/fern-refusals/measurements.jsonl"
+    - "docs/openapi-surface/fern-refusals/confirmations.tsv"
     - "docs/fern-refusals/documents.tsv"
     - "docs/fern-refusals/generated.tsv"
     - "docs/fern-refusals/unretrievable.tsv"

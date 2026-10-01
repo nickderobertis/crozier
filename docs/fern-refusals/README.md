@@ -105,9 +105,19 @@ A document is **refused** when its `fern generate` exits non-zero, writes
 nothing, or reports a refusal class over a document it did not parse (a false
 success). Its classes are the ones its `fern check` names when the check names
 any (`fern_stage` `check`), else the ones its generation names (`generate`).
-Every class's probe shows its phrase stopping `fern generate`, so a document
-whose check already names a class is not generated again to learn that. A
-document Fern generates from goes to `generated.tsv` instead.
+A document's generate outcome is **derived from its classes**, not measured
+document by document: each class's probe shows whether its phrase stops
+`fern generate` (a phrase that does not is a `check-only` finding), so a
+document whose check names a class is refused, and one whose check names only
+check-only findings goes to `generated.tsv`. `fern generate` was run on a
+document only where its check named no class (a check that passed, or one that
+reported a document it could not parse); those per-document results are kept in
+`measurements.jsonl`. The derivation is confirmed on the population: `confirm`
+runs `fern generate` on up to three real documents per class — documents
+carrying only that class first, from different publishers where they exist —
+into
+[`confirmations.tsv`](../openapi-surface/fern-refusals/confirmations.tsv), and
+`check` fails if any of them generates where its class says Fern refuses.
 
 `scripts/fern-refusals.py` builds the tables:
 
@@ -115,7 +125,8 @@ document Fern generates from goes to `generated.tsv` instead.
 scripts/fern-refusals.py select            # the population, offline
 cargo build --release --locked
 scripts/fern-refusals.py measure           # fetch, run Fern and crozier (network, Docker)
-scripts/fern-refusals.py build             # rewrite documents.tsv, unretrievable.tsv, classes.tsv counts
+scripts/fern-refusals.py build             # rewrite documents.tsv, generated.tsv, unretrievable.tsv, class counts
+scripts/fern-refusals.py confirm           # sample each class's real documents through fern generate
 scripts/fern-refusals.py check             # offline drift check; tests/fern_refusals_test.py runs it
 ```
 

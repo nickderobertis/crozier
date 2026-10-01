@@ -1,0 +1,8 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Unsupported OpenAPI version: 3.2.0
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.

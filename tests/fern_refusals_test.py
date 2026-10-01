@@ -27,14 +27,19 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "fern-refusals.py"
 REGISTRY = REPO / "docs" / "fern-refusals"
+CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmations.tsv"
 TABLES = ("classes.tsv", "documents.tsv", "generated.tsv", "unretrievable.tsv")
 
 
-def run(*args: str, registry: Path | None = None) -> subprocess.CompletedProcess[str]:
+def run(*args: str, registry: Path | None = None,
+        confirmations: Path | None = None) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ)
     env.pop("CROZIER_FERN_REFUSALS_REGISTRY", None)
+    env.pop("CROZIER_FERN_REFUSALS_CONFIRMATIONS", None)
     if registry is not None:
         env["CROZIER_FERN_REFUSALS_REGISTRY"] = str(registry)
+    if confirmations is not None:
+        env["CROZIER_FERN_REFUSALS_CONFIRMATIONS"] = str(confirmations)
     return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True, env=env,
                           cwd=REPO)
 
@@ -142,6 +147,29 @@ class Drift(unittest.TestCase):
         row[4] = "A phrase Fern never prints about <…>"
         write_rows(self.registry / "classes.tsv", table)
         self.assert_check_fails_naming("no single class or finding matches")
+
+    def test_a_sampled_generation_that_contradicts_its_class_fails(self) -> None:
+        confirmations = Path(self.scratch.name) / "confirmations.tsv"
+        table = rows(CONFIRMATIONS)
+        # The one population document Fern generates from stands in for a
+        # confirmation that its class's refusal does not reproduce.
+        generated = rows(REGISTRY / "generated.tsv")[1]
+        log = next(path for path in (REPO / "docs" / "openapi-surface" / "fern-refusals" / "logs").glob(
+            f"{generated[4]}.generate.log"))
+        table[1][3:6] = ["0", "40", log.relative_to(REPO).as_posix()]
+        write_rows(confirmations, table)
+        result = run("check", confirmations=confirmations)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(f"{table[1][0]}: Fern generates from {table[1][1]}", result.stderr)
+
+    def test_a_class_no_sampled_generation_confirms_fails(self) -> None:
+        confirmations = Path(self.scratch.name) / "confirmations.tsv"
+        table = rows(CONFIRMATIONS)
+        dropped = table[1][0]
+        write_rows(confirmations, [table[0], *(row for row in table[1:] if row[0] != dropped)])
+        result = run("check", confirmations=confirmations)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(f"{dropped}: no real document's generation confirms it", result.stderr)
 
 
 if __name__ == "__main__":
