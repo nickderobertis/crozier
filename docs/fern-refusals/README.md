@@ -137,7 +137,12 @@ class — in a scratch workspace outside any checkout, writing each log to
 [`../openapi-surface/fern-refusals/logs/`](../openapi-surface/fern-refusals/logs/)
 and the result to `measurements.jsonl` beside it. Fern runs with a 16 GB Node
 heap: at the default 4 GB the largest documents (the GitHub REST descriptions)
-report the host's memory rather than Fern's diagnostics. `build` classifies
+report the host's memory rather than Fern's diagnostics. Every
+`documents.tsv` row's `crozier_exit` and `crozier_files` were last re-measured
+by the release build after `main`'s `layout` setting merged, each run bounded at
+45 minutes and none reaching it: [`crozier-timings.tsv`](../openapi-surface/fern-refusals/crozier-timings.tsv)
+keeps each document's size, outcome and wall-clock seconds from that run, taken
+with up to eighteen measurement runs at once on a shared, loaded host. `build` classifies
 every diagnostic in a document's logs against `classes.tsv`'s and
 `findings.tsv`'s templates; one that matches no single template fails the
 build, so a new phrase becomes a class or a finding on purpose.
