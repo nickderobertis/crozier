@@ -43,7 +43,7 @@ split four ways:
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. They are not among the 465 and never count as a real-specification
-  match. 54 of the 59 unreached arms below carry an arm-level hand-written
+  match. 55 of the 60 unreached arms below carry an arm-level hand-written
   fixture, and each such arm is still counted as unreached by real
   specifications.
 - **0 remain unproven.** 0 are the `FIXTURE` `gap` rows. The eleven shapes
@@ -62,11 +62,12 @@ split four ways:
 
 465 + 66 + 11 + 0 = 542. `golden` is still not `golden`-exhausted.
 [Golden reach](#every-unreached-arm-and-its-search-verdict) counts 54 golden
-rows with at least one handling site no golden-only witness executes, 59 arms
-in all. The six-source searches of 58 of those arms read `exhausted`. The
-fifty-ninth, `discriminator-mapping`'s, reads `config-gated`: it runs only
-under an audience filter, which no search probe sets. One reached arm rests on
-a witness whose redistribution grant is disputed.
+rows with at least one handling site no golden-only witness executes, 60 arms
+in all. The six-source searches of 59 of those arms read `exhausted`. The
+sixtieth, `discriminator-mapping`'s, reads `config-gated`: it runs only
+under an audience filter, which no search probe sets. No arm rests on a witness
+whose redistribution grant is disputed: the one that did lost it when corpus row
+224 was withdrawn, and is counted among the 60.
 
 **What the census still cannot enumerate.** The 542 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
@@ -1863,7 +1864,7 @@ at least one handling site no golden-only witness executes: 60 unreached arms
 in all. Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources. 59 read `exhausted`: each
 of those arms' six-source searches owes nothing and found no registrable
-real-world document that executes it. The fifty-ninth, `discriminator-mapping`'s
+real-world document that executes it. The sixtieth, `discriminator-mapping`'s
 `collect_schema_refs` arm, reads `config-gated`, the one arm in its own
 category below. The remaining-gap searches ran four of
 them. Two are the `scalar_body` fallback of `format-idn-hostname` and
@@ -2024,10 +2025,11 @@ and 0 without. Fern keeps the subtypes only the `mapping` names. The
 real-specification route stays open: a corpus row registered with an audience
 over a document that declares a `discriminator`.
 
-**One reached arm rests on a disputed grant.** `ref-pointer-composition-index`'s
-`ref_to_class` pointer-walk site is reached only through corpus row 224,
-`codat-assess`. That row's bytes are Codat's `assess/1.0` description at
-`APIs-guru/openapi-directory` `f04b8d0b`, which
+**No arm rests on a disputed grant.** `ref-pointer-composition-index`'s
+`ref_to_class` pointer-walk site was reached only through corpus row 224,
+`codat-assess`: Codat's `assess/1.0` description at
+`APIs-guru/openapi-directory` `f04b8d0b`, registered under the aggregator's
+grant while
 [`witness-search-blocked-artifacts.tsv`](openapi-surface/witness-search-blocked-artifacts.tsv)
 lists the same bytes as grant-blocked for want of a publisher grant. Row 224 is
 withdrawn: its golden, its test and its corpus-match line are gone, and
