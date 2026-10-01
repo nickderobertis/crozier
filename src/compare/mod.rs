@@ -537,7 +537,7 @@ fn clean_join(base: &Path, path: &Path) -> PathBuf {
 }
 
 /// The variables a reference command receives on top of the inherited
-/// environment, in the order [`reference_env`] gives their values: where to
+/// environment, in the order `reference_env` gives their values: where to
 /// write, then the generator's resolved settings. The one source of the names:
 /// `docs/compare.md`'s table and the Fern recipe's tests are checked against it.
 pub const REFERENCE_VARIABLES: [&str; 11] = [
