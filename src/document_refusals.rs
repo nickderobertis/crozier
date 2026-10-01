@@ -25,6 +25,7 @@ enum Class {
     GeneratorMissingType,
     NamedTypeDefault,
     ExtensionReferenceCycle,
+    UnresolvedSchemaReference,
 }
 
 impl Class {
@@ -43,6 +44,7 @@ impl Class {
             Self::GeneratorMissingType => "generator-missing-type",
             Self::NamedTypeDefault => "named-type-default",
             Self::ExtensionReferenceCycle => "extension-reference-cycle",
+            Self::UnresolvedSchemaReference => "unresolved-schema-reference",
         }
     }
 }
@@ -755,6 +757,13 @@ fn check_bound_schemas(
                             &schema_element,
                         );
                     }
+                    check_schema_resolution(
+                        value,
+                        context,
+                        &schema_element,
+                        false,
+                        &mut std::collections::HashSet::new(),
+                    )?;
                     check_schema(value, context, &schema_element, location, seen)?;
                 } else if !matches!(
                     key.as_str(),
@@ -771,6 +780,92 @@ fn check_bound_schemas(
             }
         }
         _ => {}
+    }
+    Ok(())
+}
+
+fn check_schema_resolution(
+    schema: &serde_yaml_ng::Value,
+    context: &SchemaContext<'_>,
+    element: &str,
+    required: bool,
+    seen: &mut std::collections::HashSet<String>,
+) -> Result<()> {
+    if ignored_reference_node(schema) {
+        return Ok(());
+    }
+    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+        let Some(pointer) = reference.strip_prefix('#') else {
+            return Ok(());
+        };
+        let target = yaml_pointer(context.root, pointer);
+        let schema_reference = reference.strip_prefix("#/components/schemas/");
+        let unsupported_definition = schema_reference.is_some_and(|suffix| {
+            let mut parts = suffix.split('/').skip(1);
+            while let Some(part) = parts.next() {
+                match part {
+                    "definitions" | "$defs" => return true,
+                    "properties" | "patternProperties" | "dependentSchemas" | "allOf" | "oneOf"
+                    | "anyOf" | "prefixItems" => {
+                        parts.next();
+                    }
+                    _ => {}
+                }
+            }
+            false
+        });
+        if required && schema_reference.is_some() && (target.is_none() || unsupported_definition) {
+            return refusal(
+                context.path,
+                context.strict,
+                Class::UnresolvedSchemaReference,
+                &format!("{element} reference {reference}"),
+            );
+        }
+        if !unsupported_definition && seen.insert(reference.to_owned()) {
+            if let Some(target) = target {
+                check_schema_resolution(target, context, element, required, seen)?;
+            }
+        }
+        return Ok(());
+    }
+    if let Some(properties) = schema
+        .get("properties")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+    {
+        let required_fields = schema
+            .get("required")
+            .and_then(serde_yaml_ng::Value::as_sequence);
+        for (name, child) in properties {
+            let Some(name) = name.as_str() else { continue };
+            let required = required_fields
+                .is_some_and(|fields| fields.iter().any(|field| field.as_str() == Some(name)));
+            check_schema_resolution(
+                child,
+                context,
+                &format!("{element}/properties/{name}"),
+                required,
+                seen,
+            )?;
+        }
+    }
+    for key in ["items", "additionalProperties"] {
+        if let Some(child) = schema.get(key) {
+            check_schema_resolution(child, context, &format!("{element}/{key}"), false, seen)?;
+        }
+    }
+    for key in ["allOf", "oneOf", "anyOf"] {
+        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+            for (index, child) in children.iter().enumerate() {
+                check_schema_resolution(
+                    child,
+                    context,
+                    &format!("{element}/{key}/{index}"),
+                    false,
+                    seen,
+                )?;
+            }
+        }
     }
     Ok(())
 }

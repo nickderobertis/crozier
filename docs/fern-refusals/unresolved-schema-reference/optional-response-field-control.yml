@@ -1,0 +1,15 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /probe:
+    get:
+      operationId: getThing
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value: {$ref: '#/components/schemas/Missing'}

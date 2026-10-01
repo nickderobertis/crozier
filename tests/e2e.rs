@@ -16358,3 +16358,102 @@ fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
         }
     }
 }
+
+#[test]
+fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-schema-reference");
+    for case in [
+        "probe.yml",
+        "deep-definitions-field-control.yml",
+        "deep-defs-field-control.yml",
+        "required-response-field-control.yml",
+        "nullable-required-field-control.yml",
+        "nullable-root-control.yml",
+        "optional-known-child-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures(
+                "unresolved-schema-reference",
+                &run,
+                "reference #/components/schemas/",
+                strict,
+            );
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        std::fs::read_to_string(class.join("probe.yml"))
+            .unwrap()
+            .replace(
+                "      operationId: createContact",
+                "      x-crozier-ignore: true\n      operationId: createContact",
+            ),
+    )
+    .unwrap();
+    let mut accepted = vec![ignored];
+    let text = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    for spelling in ["x-fern-ignore", "x-crozier-ignore"] {
+        let spec = dir.path().join(format!("schema-{spelling}.yml"));
+        std::fs::write(
+            &spec,
+            text.replace(
+                "attributes: {$ref: '#/components/schemas/custom_attributes'}",
+                &format!("attributes: {{$ref: '#/components/schemas/custom_attributes', {spelling}: true}}"),
+            ),
+        )
+        .unwrap();
+        accepted.push(spec);
+    }
+    accepted.extend(
+        [
+            "defined-field-control.yml",
+            "deep-field-control.yml",
+            "missing-response-root-control.yml",
+            "missing-request-root-control.yml",
+            "unused-missing-field-control.yml",
+            "optional-field-control.yml",
+            "unused-required-field-control.yml",
+            "optional-response-field-control.yml",
+            "deep-response-root-control.yml",
+            "unused-deep-field-control.yml",
+            "explicit-optional-request-control.yml",
+            "required-array-control.yml",
+            "optional-deep-field-control.yml",
+            "definitions-property-name-control.yml",
+        ]
+        .map(|case| class.join(case)),
+    );
+    for spec in accepted {
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(
+            normal.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            normal.stderr
+        );
+        assert_eq!(
+            strict.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            strict.stderr
+        );
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
