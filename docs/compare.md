@@ -15,7 +15,7 @@ For each generator it:
 4. records the wall time of each side.
 
 ```sh
-crozier compare                       # search the working directory
+crozier compare                       # search the whole repository you are in
 crozier compare services/billing      # search one tree
 crozier compare ci/crozier.yml        # check one config file
 crozier compare --json report.json --diff-dir diffs
@@ -26,7 +26,10 @@ One way to produce a reference is the copy-paste
 
 ## Finding configs
 
-- **No path**: the working directory's tree is searched.
+- **No path**: the whole repository the working directory is in is searched —
+  its git top-level, or the working directory itself outside a git repository —
+  so a run from `repo/sub/` still finds `repo/other/crozier.yml`. The report's
+  `searched_paths` names that root.
 - **A directory**: its tree is searched. `.git` and anything git ignores
   (`.gitignore`, `.git/info/exclude`, the global excludes file) are skipped when
   the directory is inside a git work tree. Hidden config names such as
@@ -38,7 +41,8 @@ In each directory the config is the first of `crozier.yml`, `crozier.yaml`,
 `.crozier.yml`, `.crozier.yaml` present, the rule `crozier generate` applies.
 Each config's relative paths resolve against the config file's own directory,
 which is what running `crozier generate` in that directory does. `--config` and
-`--no-config` do not apply: pass a config file as a path instead.
+`--no-config` do not apply: combining either with `compare` is a usage error
+(exit 2); pass a config file as a path instead.
 
 Every generator a config declares is checked (the built-in `python` when it
 declares none). Its generation settings (`spec`, `package-name`, `layout`, …)
@@ -128,8 +132,8 @@ outside `$CROZIER_REFERENCE_OUTPUT` stays written.
 | Status | Meaning |
 | --- | --- |
 | `matched` | crozier's whole output tree equals the whole reference tree under the byte-match rules. |
-| `mismatched` | At least one file differs, or is only in the reference, or only in crozier's output. |
-| `could_not_check` | No comparison was made: the config could not be read or resolved, no reference command is configured, the command failed or left no usable reference, crozier could not generate, or a tree holds a symbolic link. The `reason` says which. |
+| `mismatched` | At least one file differs, or is only in the reference, or only in crozier's output; or the reference produced output and crozier's own generation failed, when `reason` carries crozier's error and `comparison` is null. |
+| `could_not_check` | The reference could not produce output to compare: the config could not be read or resolved (a spec crozier cannot read included, found before the command runs), no reference command is configured, the command failed or left no usable reference, or a tree holds a symbolic link. The `reason` says which. |
 
 Every generator is checked before the command exits; one failure never skips the
 rest.
@@ -145,8 +149,8 @@ reason, and the timings. When no config is found it says so.
 | Flag | Effect |
 | --- | --- |
 | `--reference-command <CMD>` | Use `<CMD>` for every generator, over any `reference.command`. |
-| `--json <PATH>` | Write the JSON report to `<PATH>`; `-` writes it to stdout (the human report stays on stderr). |
-| `--diff-dir <DIR>` | Write one normalized unified diff per mismatched generator into `<DIR>` (created if missing); the report and `comparison.diff_file` name each file. |
+| `--json <PATH>` | Write the JSON report to `<PATH>`; `-` writes it to stdout (the human report stays on stderr). The file is created before any reference command runs, so a target that cannot be written is refused then, with exit 1. |
+| `--diff-dir <DIR>` | Write one normalized unified diff per mismatched generator into `<DIR>` (created if missing); the report and `comparison.diff_file` name each file. A file that cannot be written does not stop the run: the report states it, `diff_file` stays null, and the command exits 1. |
 
 ### Colour
 
@@ -195,8 +199,8 @@ A config that cannot be read is one result with `generator: null`.
 | Exit | Meaning |
 | --- | --- |
 | `0` | Every checked generator matched, or nothing was checked. |
-| `1` | The command itself failed: a path argument that does not exist, an unwritable `--json` or `--diff-dir`. No report is written. |
-| `2` | Usage error (bad flags). |
+| `1` | The command itself failed. Before any reference runs — a path argument that does not exist, a `--json` target that cannot be written, a `--diff-dir` that cannot be created — no report is written. A `--diff-dir` file that cannot be written fails only at the end: every generator is still checked, both reports are written (the JSON's `exit_code` is the `0`, `3` or `4` its results give), and the human report states the failure. |
+| `2` | Usage error: bad flags, or `compare` combined with the global `--config` or `--no-config`. |
 | `3` | At least one generator mismatched. A mismatch dominates. |
 | `4` | No mismatch, but at least one generator could not be checked. |
 

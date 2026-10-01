@@ -299,7 +299,7 @@
           ]
         },
         "reason": {
-          "description": "Why the generator could not be checked; null otherwise.",
+          "description": "Why the generator could not be checked, or, for a mismatch with no\ncomparison, why crozier could not generate it; null otherwise.",
           "type": [
             "string",
             "null"

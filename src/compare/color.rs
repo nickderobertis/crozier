@@ -66,6 +66,12 @@ impl Painter {
         self.paint(color, text)
     }
 
+    /// `text` in the failure colour, red: a failure of the command itself.
+    #[must_use]
+    pub fn failure(self, text: &str) -> String {
+        self.paint(RED, text)
+    }
+
     fn paint(self, color: &str, text: &str) -> String {
         if self.enabled {
             format!("{color}{text}{RESET}")
@@ -140,5 +146,7 @@ mod tests {
         let off = Painter::new(false);
         assert_eq!(off.status(Status::Mismatched, "m"), "m");
         assert_eq!(off.exit(ExitStatus::Mismatched, "r"), "r");
+        assert_eq!(on.failure("r"), "\u{1b}[31mr\u{1b}[0m");
+        assert_eq!(off.failure("r"), "r");
     }
 }

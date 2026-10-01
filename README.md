@@ -138,7 +138,10 @@ error, printing the exact problem and a suggested fix.
 To check crozier against the SDK you generate today, before switching, run
 `crozier compare`: for every generator your `crozier.yml` files declare, it runs a
 reference command you configure, generates crozier's SDK, compares the two trees
-byte for byte (comments aside), and reports the time each side took. See
+after crozier's documented normalizations (comments, SDK-identity headers,
+`__init__.py` import order, generator metadata; see
+[`docs/matching.md`](docs/matching.md#how-the-comparison-works)), and reports the
+time each side took. See
 [`docs/compare.md`](docs/compare.md).
 
 ## Configuration

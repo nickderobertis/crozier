@@ -5,11 +5,10 @@
 
 use std::process::ExitCode;
 
-use clap::Parser;
-use crozier::cli::{execute, Cli};
+use crozier::cli::{execute, parse_args};
 
 fn main() -> ExitCode {
-    match Cli::try_parse() {
+    match parse_args(std::env::args_os()) {
         Ok(cli) => match execute(cli) {
             Ok(code) => ExitCode::from(code),
             Err(message) => {

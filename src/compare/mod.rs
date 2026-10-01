@@ -7,9 +7,11 @@
 //!
 //! Every generator is checked before the run ends: a config that cannot be read,
 //! a generator that cannot be resolved, a missing or failing reference command —
-//! each becomes a `could_not_check` result and the run goes on. Only a failure of
-//! the command itself (a missing path argument, an unwritable `--json` or
-//! `--diff-dir`) is an `Err`, which the binary turns into exit 1.
+//! each becomes a `could_not_check` result, and a reference crozier cannot
+//! generate a counterpart for becomes a `mismatched` one; the run goes on. Only a
+//! failure of the command itself (a missing path argument, a `--json` target or
+//! `--diff-dir` that cannot be created, a `--diff-dir` file that cannot be
+//! written) makes the binary exit 1.
 
 pub mod color;
 pub mod discover;
@@ -39,7 +41,8 @@ pub const NO_SHELL: &str = "reference commands run under `sh -c`, which crozier 
 /// What `crozier compare` was asked to do.
 #[derive(Debug, Clone, Default)]
 pub struct Options {
-    /// Files and directories to search; empty searches the working directory.
+    /// Files and directories to search; empty searches the
+    /// repository the working directory is in ([`discover::default_root`]).
     pub paths: Vec<PathBuf>,
     /// `--reference-command`: overrides every generator's `reference.command`.
     pub reference_command: Option<String>,
@@ -61,13 +64,16 @@ pub struct Io<'a> {
     pub shell_supported: bool,
 }
 
-/// Run `crozier compare` from `cwd`, returning the exit status (0, 3 or 4).
+/// Run `crozier compare` from `cwd`, returning the exit status: 0, 3 or 4, or 1
+/// when a `--diff-dir` file could not be written — every generator is still
+/// checked and both reports still written, and the human one states the failure.
 ///
 /// # Errors
 ///
-/// When the command itself fails — a path argument that does not exist, an
-/// unwritable `--json` or `--diff-dir` — with a message naming the problem. No
-/// report is written then.
+/// When the command itself fails before any reference command runs — a path
+/// argument that does not exist, a `--json` target that cannot be created, a
+/// `--diff-dir` that cannot be created — or when the JSON report cannot be
+/// written at the end, with a message naming the problem.
 pub fn run(options: &Options, cwd: &Path, io: &mut Io<'_>) -> Result<u8, String> {
     let painter = Painter::new(io.color);
     let configs = discover::discover(&options.paths, cwd)?;
@@ -93,6 +99,7 @@ pub fn run(options: &Options, cwd: &Path, io: &mut Io<'_>) -> Result<u8, String>
         shell_supported: io.shell_supported,
         diff_dir,
         results: Vec::new(),
+        diff_failures: Vec::new(),
     };
     for config in &configs {
         progress(io.stderr, &format!("found config {}", config.display));
@@ -100,7 +107,7 @@ pub fn run(options: &Options, cwd: &Path, io: &mut Io<'_>) -> Result<u8, String>
     }
 
     let searched = if options.paths.is_empty() {
-        vec![cwd.display().to_string()]
+        vec![discover::default_root(cwd).display().to_string()]
     } else {
         options
             .paths
@@ -108,12 +115,23 @@ pub fn run(options: &Options, cwd: &Path, io: &mut Io<'_>) -> Result<u8, String>
             .map(|p| p.display().to_string())
             .collect()
     };
-    let report = Report::new(searched, checker.results);
+    let report = Report::new(searched, std::mem::take(&mut checker.results));
     if let Some(target) = json_target {
         target.write(&report, io.stdout)?;
     }
     let _ = io.stderr.write_all(report.render(painter).as_bytes());
-    Ok(report.exit_code.into())
+    if checker.diff_failures.is_empty() {
+        return Ok(report.exit_code.into());
+    }
+    let mut failure = format!(
+        "{} --diff-dir file(s) could not be written, so the command exits 1:",
+        checker.diff_failures.len()
+    );
+    for message in &checker.diff_failures {
+        failure.push_str(&format!("\n  {message}"));
+    }
+    let _ = writeln!(io.stderr, "{}", painter.failure(&failure));
+    Ok(1)
 }
 
 /// Write one progress line to stderr.
@@ -121,8 +139,9 @@ fn progress(stderr: &mut dyn Write, line: &str) {
     let _ = writeln!(stderr, "compare: {line}");
 }
 
-/// Where `--json` goes, checked before any generator runs so an unwritable path
-/// fails fast.
+/// Where `--json` goes. A file target is created before any reference command
+/// runs, so a target that cannot be written fails the run before it spends
+/// anything, rather than after every reference has run.
 enum JsonTarget {
     Stdout,
     File { given: PathBuf, absolute: PathBuf },
@@ -134,13 +153,12 @@ impl JsonTarget {
             return Ok(JsonTarget::Stdout);
         }
         let absolute = cwd.join(given);
-        let parent = absolute.parent().unwrap_or(cwd);
-        if !parent.is_dir() || absolute.is_dir() {
-            return Err(format!(
-                "cannot write --json {}: its directory does not exist or it is a directory",
-                given.display()
-            ));
-        }
+        std::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(&absolute)
+            .map_err(|error| format!("cannot write --json {}: {error}", given.display()))?;
         Ok(JsonTarget::File {
             given: given.to_path_buf(),
             absolute,
@@ -169,6 +187,8 @@ struct Checker<'a> {
     /// `--diff-dir` as given, and absolute.
     diff_dir: Option<(PathBuf, PathBuf)>,
     results: Vec<GeneratorResult>,
+    /// `--diff-dir` files that could not be written, each with its error.
+    diff_failures: Vec<String>,
 }
 
 /// One generator, resolved from its config file alone.
@@ -194,7 +214,14 @@ impl Checker<'_> {
                     stderr,
                     &config.display,
                     None,
-                    could_not_check(config, None, None, None, error.to_string()),
+                    result_with_reason(
+                        Status::CouldNotCheck,
+                        config,
+                        None,
+                        None,
+                        None,
+                        error.to_string(),
+                    ),
                 );
                 return Ok(());
             }
@@ -251,7 +278,14 @@ impl Checker<'_> {
         let resolved = match resolve(file, name, config_path, config_dir, crozier_dir.path()) {
             Ok(resolved) => resolved,
             Err((spec, reason)) => {
-                return Ok(could_not_check(config, Some(name), spec, None, reason));
+                return Ok(result_with_reason(
+                    Status::CouldNotCheck,
+                    config,
+                    Some(name),
+                    spec,
+                    None,
+                    reason,
+                ));
             }
         };
         let spec = Some(resolved.args.spec.display().to_string());
@@ -261,7 +295,8 @@ impl Checker<'_> {
             file,
             self.options.reference_command.as_deref(),
         ) else {
-            return Ok(could_not_check(
+            return Ok(result_with_reason(
+                Status::CouldNotCheck,
                 config,
                 Some(name),
                 spec,
@@ -275,7 +310,8 @@ impl Checker<'_> {
                 exit_code: None,
                 diagnostic: None,
             };
-            return Ok(could_not_check(
+            return Ok(result_with_reason(
+                Status::CouldNotCheck,
                 config,
                 Some(name),
                 spec,
@@ -315,7 +351,14 @@ impl Checker<'_> {
             Ok(root) => root,
             Err(reason) => {
                 run.diagnostic = outcome.diagnostic();
-                let mut result = could_not_check(config, Some(name), spec, Some(run), reason);
+                let mut result = result_with_reason(
+                    Status::CouldNotCheck,
+                    config,
+                    Some(name),
+                    spec,
+                    Some(run),
+                    reason,
+                );
                 result.timing = Some(Timing::from_measurements(Some(reference_seconds), None));
                 return Ok(result);
             }
@@ -337,7 +380,9 @@ impl Checker<'_> {
                 stderr,
                 &format!("{label}: crozier generation failed in {crozier_seconds:.2}s"),
             );
-            let mut result = could_not_check(
+            // The reference produced output and crozier did not: a mismatch.
+            let mut result = result_with_reason(
+                Status::Mismatched,
                 config,
                 Some(name),
                 spec,
@@ -360,7 +405,8 @@ impl Checker<'_> {
         ) {
             Ok(differences) => differences,
             Err(error) => {
-                let mut result = could_not_check(
+                let mut result = result_with_reason(
+                    Status::CouldNotCheck,
                     config,
                     Some(name),
                     spec,
@@ -396,13 +442,15 @@ impl Checker<'_> {
             if let Some((given, absolute)) = &self.diff_dir {
                 let file_name = diff_file_name(self.results.len() + 1, &config.display, name);
                 let body = render_diff(&config.display, name, &differences);
-                std::fs::write(absolute.join(&file_name), body).map_err(|error| {
-                    format!(
-                        "could not write --diff-dir file {}: {error}",
-                        given.join(&file_name).display()
-                    )
-                })?;
-                comparison.diff_file = Some(given.join(&file_name).display().to_string());
+                let shown = given.join(&file_name).display().to_string();
+                match std::fs::write(absolute.join(&file_name), body) {
+                    Ok(()) => comparison.diff_file = Some(shown),
+                    Err(error) => {
+                        let message = format!("could not write --diff-dir file {shown}: {error}");
+                        progress(stderr, &format!("{label}: {message}"));
+                        self.diff_failures.push(message);
+                    }
+                }
             }
         }
         Ok(GeneratorResult {
@@ -418,8 +466,9 @@ impl Checker<'_> {
     }
 }
 
-/// A `could_not_check` result with nothing measured.
-fn could_not_check(
+/// A result with `status` that carries only a reason: no comparison, nothing measured.
+fn result_with_reason(
+    status: Status,
     config: &FoundConfig,
     generator: Option<&str>,
     spec: Option<String>,
@@ -427,7 +476,7 @@ fn could_not_check(
     reason: String,
 ) -> GeneratorResult {
     GeneratorResult {
-        status: Status::CouldNotCheck,
+        status,
         config_file: config.display.clone(),
         generator: generator.map(str::to_string),
         spec,
@@ -1018,6 +1067,133 @@ mod tests {
         assert_eq!(run.code, Ok(4));
         assert!(run.stderr.contains(NO_SHELL), "{}", run.stderr);
         assert!(!run.stderr.contains("reference command starting"));
+    }
+
+    /// A read-only directory under `parent`, or `None` when this process writes
+    /// through one anyway (it runs as root), which would prove nothing.
+    #[cfg(unix)]
+    fn read_only_dir(parent: &Path, name: &str) -> Option<PathBuf> {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = parent.join(name);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o555)).unwrap();
+        let probe = dir.join(".probe");
+        if std::fs::write(&probe, "").is_ok() {
+            let _ = std::fs::remove_file(probe);
+            return None;
+        }
+        Some(dir)
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn an_unwritable_json_target_is_refused_before_any_reference_runs() {
+        let repo = tempfile::tempdir().unwrap();
+        let root = repo.path();
+        let marker = root.join("reference-ran");
+        write(
+            root,
+            "crozier.yml",
+            &format!(
+                "generators:\n  packaged:\n{}    reference:\n      command: touch '{}'\n",
+                golden_settings("packaged"),
+                marker.display()
+            ),
+        );
+        let Some(locked) = read_only_dir(root, "locked") else {
+            return;
+        };
+        let options = Options {
+            json: Some(locked.join("report.json")),
+            ..Options::default()
+        };
+        let run = compare(&options, root, false, true);
+        let error = run.code.unwrap_err();
+        assert!(error.starts_with("cannot write --json "), "{error}");
+        assert!(!marker.exists(), "a reference ran before the refusal");
+        assert!(run.stderr.is_empty(), "{}", run.stderr);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_diff_file_that_cannot_be_written_still_checks_and_reports_everything() {
+        let repo = tempfile::tempdir().unwrap();
+        let root = repo.path();
+        write(
+            root,
+            "crozier.yml",
+            &format!(
+                "generators:\n  edited:\n{}    reference:\n      command: {} && echo changed >> \"$CROZIER_REFERENCE_OUTPUT/README.md\"\n  matched:\n{}    reference:\n      command: {}\n",
+                golden_settings("packaged"),
+                copy_golden("expected"),
+                golden_settings("packaged"),
+                copy_golden("expected"),
+            ),
+        );
+        let Some(diffs) = read_only_dir(root, "diffs") else {
+            return;
+        };
+        let options = Options {
+            json: Some(PathBuf::from("report.json")),
+            diff_dir: Some(diffs),
+            ..Options::default()
+        };
+        let run = compare(&options, root, true, true);
+        assert_eq!(run.code, Ok(1), "{}", run.stderr);
+        assert!(
+            run.stderr.contains("crozier compare report"),
+            "{}",
+            run.stderr
+        );
+        assert!(
+            run.stderr.contains(
+                "\u{1b}[31m1 --diff-dir file(s) could not be written, so the command exits 1:\n  could not write --diff-dir file "
+            ),
+            "{}",
+            run.stderr
+        );
+        let report = read_report(&root.join("report.json"));
+        assert_eq!(report.exit_code, report::ExitStatus::Mismatched);
+        let edited = result_for(&report, "crozier.yml", Some("edited"));
+        assert_eq!(edited.status, Status::Mismatched);
+        assert_eq!(edited.comparison.as_ref().unwrap().diff_file, None);
+        assert_eq!(
+            result_for(&report, "crozier.yml", Some("matched")).status,
+            Status::Matched
+        );
+    }
+
+    #[test]
+    fn a_crozier_failure_after_a_good_reference_is_a_mismatch() {
+        let repo = tempfile::tempdir().unwrap();
+        let root = repo.path();
+        write(
+            root,
+            "openapi.yml",
+            &std::fs::read_to_string(fixture("openapi.yml")).unwrap(),
+        );
+        // The reference succeeds, then leaves the spec unreadable, so crozier's
+        // own generation of the same generator fails after it.
+        write(
+            root,
+            "crozier.yml",
+            &format!(
+                "spec: ./openapi.yml\npackage-name: fern\ngenerators:\n  python:\n    reference:\n      command: {} && echo garbage > openapi.yml\n",
+                copy_golden("expected")
+            ),
+        );
+        let run = compare(&Options::default(), root, true, true);
+        assert_eq!(run.code, Ok(3), "{}", run.stderr);
+        assert!(
+            run.stderr.contains(
+                "compare: crozier.yml python: \u{1b}[31mmismatched\u{1b}[0m (crozier could not generate"
+            ),
+            "{}",
+            run.stderr
+        );
+        assert!(run
+            .stderr
+            .contains("crozier produced no SDK, so no speed-up"));
     }
 
     #[test]

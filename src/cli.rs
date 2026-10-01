@@ -104,7 +104,8 @@ struct ConfigCmd {
 #[derive(Parser)]
 struct CompareCmd {
     /// Crozier config files to check, or directories to search for them (`.git`
-    /// and git-ignored paths are skipped). Omit to search the working directory.
+    /// and git-ignored paths are skipped). Omit to search the whole repository
+    /// the working directory is in (its git top-level).
     paths: Vec<PathBuf>,
 
     /// The command that writes each generator's reference SDK (run under
@@ -199,6 +200,35 @@ impl GenerateCmd {
     }
 }
 
+/// Parse an argument list, refusing every usage error as clap does — including
+/// `compare` combined with the global `--config`/`--no-config`, which clap's
+/// derive cannot express — so each one exits 2 with clap's usage text.
+///
+/// # Errors
+///
+/// The usage error, ready for [`clap::Error::exit`].
+pub fn parse_args<I, T>(args: I) -> std::result::Result<Cli, clap::Error>
+where
+    I: IntoIterator<Item = T>,
+    T: Into<std::ffi::OsString> + Clone,
+{
+    let cli = Cli::try_parse_from(args)?;
+    if matches!(cli.command, Some(Command::Compare(_))) && (!cli.config.is_empty() || cli.no_config)
+    {
+        let mut command = <Cli as clap::CommandFactory>::command();
+        command.build();
+        let compare = command
+            .find_subcommand_mut("compare")
+            .expect("compare is a subcommand");
+        return Err(compare.error(
+            clap::error::ErrorKind::ArgumentConflict,
+            "`compare` finds its configs from its PATHS; pass a config file as a PATH \
+             instead of --config/--no-config",
+        ));
+    }
+    Ok(cli)
+}
+
 /// Parse an explicit argument list and run — the in-process entry point used by
 /// tests. Returns `Ok` on success or a human-readable error string.
 pub fn run_from<I, T>(args: I) -> std::result::Result<(), String>
@@ -206,7 +236,7 @@ where
     I: IntoIterator<Item = T>,
     T: Into<std::ffi::OsString> + Clone,
 {
-    let cli = Cli::try_parse_from(args).map_err(|e| e.to_string())?;
+    let cli = parse_args(args).map_err(|e| e.to_string())?;
     run(cli)
 }
 
@@ -221,30 +251,21 @@ pub fn run(cli: Cli) -> std::result::Result<(), String> {
 }
 
 /// Dispatch a parsed CLI, returning the process exit status on success (`0`,
-/// or `compare`'s `3`/`4`) or a human-readable error string, which the binary
-/// reports with exit `1`.
+/// or `compare`'s `3`/`4`, or its `1` when a `--diff-dir` file could not be
+/// written) or a human-readable error string, which the binary reports with
+/// exit `1`. Parse with [`parse_args`], which refuses every usage error.
 pub fn execute(cli: Cli) -> std::result::Result<u8, String> {
     if let Some(Command::Compare(cmd)) = &cli.command {
-        return do_compare(cmd, &cli.config, cli.no_config);
+        return do_compare(cmd);
     }
     run_other(cli).map(|()| 0)
 }
 
 /// Run `crozier compare` against the real process: its working directory,
 /// environment, and standard streams.
-fn do_compare(
-    cmd: &CompareCmd,
-    config_paths: &[PathBuf],
-    no_config: bool,
-) -> std::result::Result<u8, String> {
+/// (`--config`/`--no-config` were refused by [`parse_args`].)
+fn do_compare(cmd: &CompareCmd) -> std::result::Result<u8, String> {
     use std::io::IsTerminal;
-    if !config_paths.is_empty() || no_config {
-        return Err(
-            "`compare` finds its configs from its PATHS; pass a config file as a PATH \
-             instead of --config/--no-config"
-                .to_string(),
-        );
-    }
     let cwd = std::env::current_dir()
         .map_err(|e| format!("could not read the working directory: {e}"))?;
     let options = crate::compare::Options {
@@ -443,6 +464,21 @@ fn resolve_config_paths(config_paths: &[PathBuf], env_config: Option<String>) ->
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn compare_with_config_or_no_config_is_a_usage_error() {
+        for args in [
+            ["crozier", "--config", "a.yml", "compare"].as_slice(),
+            ["crozier", "--no-config", "compare"].as_slice(),
+        ] {
+            let error = parse_args(args).err().unwrap();
+            assert_eq!(error.exit_code(), 2);
+            assert_eq!(error.kind(), clap::error::ErrorKind::ArgumentConflict);
+            assert!(error.to_string().contains("pass a config file as a PATH"));
+        }
+        assert!(parse_args(["crozier", "compare"]).is_ok());
+        assert!(parse_args(["crozier", "--no-config", "generate"]).is_ok());
+    }
 
     #[test]
     fn docs_compare_flag_table_is_compares_own_flags() {

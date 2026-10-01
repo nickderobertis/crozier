@@ -6,6 +6,8 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use predicates::prelude::*;
+
 use super::crozier;
 
 /// The fixture whose committed packaged and flat goldens the references copy:
@@ -740,4 +742,234 @@ fn the_schema_checker_rejects_a_report_that_breaks_the_contract() {
     ] {
         assert!(joined.contains(want), "missing {want:?} in:\n{joined}");
     }
+}
+
+/// A small git repository: the fixture spec, a reference script that copies
+/// the packaged golden (editing it when given `edit`), and `crozier.yml` at
+/// `config_rel` declaring `generators` (YAML lines at two-space indent).
+#[cfg(unix)]
+fn small_repo(config_rel: &str, generators: &str) -> tempfile::TempDir {
+    let repo = tempfile::tempdir().expect("repo tempdir");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yml",
+        &std::fs::read_to_string(fixture_root().join("openapi.yml")).unwrap(),
+    );
+    write_script(
+        root,
+        "scripts/reference.sh",
+        &format!(
+            "cp -R '{}'/expected/. \"$CROZIER_REFERENCE_OUTPUT\"\n\
+             if [ \"${{1:-}}\" = edit ]; then echo 'an edited line' >> \"$CROZIER_REFERENCE_OUTPUT/README.md\"; fi\n",
+            fixture_root().display()
+        ),
+    );
+    let up = "../".repeat(config_rel.matches('/').count());
+    write(
+        root,
+        config_rel,
+        &format!(
+            "spec: ./{up}openapi.yml\n{}reference:\n  command: ./{up}scripts/reference.sh\ngenerators:\n{generators}",
+            golden_naming("")
+        ),
+    );
+    repo
+}
+
+/// Whether this process can still write into a directory it made read-only (it
+/// runs as root), which would make a permission-denied journey unprovable.
+#[cfg(unix)]
+fn permissions_bind(dir: &Path) -> bool {
+    let probe = dir.join(".probe");
+    let bound = std::fs::write(&probe, "").is_err();
+    let _ = std::fs::remove_file(&probe);
+    bound
+}
+
+#[cfg(unix)]
+fn read_only(dir: &Path) {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::create_dir_all(dir).unwrap();
+    std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o555)).unwrap();
+}
+
+/// With no paths, `compare` searches the whole repository the working directory
+/// is in — so run from one subdirectory it still finds a config in another — and
+/// the report names that root. Explicit paths still narrow.
+#[cfg(unix)]
+#[test]
+fn compare_with_no_paths_searches_the_whole_repository() {
+    let repo = small_repo("other/crozier.yml", "  python: {}\n");
+    let root = repo.path();
+    write(root, "sub/notes.txt", "a subdirectory with no config\n");
+    let assert = compare_cmd(&root.join("sub"))
+        .args(["--json", "-"])
+        .assert()
+        .code(0)
+        .stderr(predicates::str::contains("found config other/crozier.yml"));
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    assert_eq!(
+        result(&report, "other/crozier.yml", "python")["status"],
+        "matched"
+    );
+    let searched = report["searched_paths"].as_array().unwrap();
+    assert_eq!(searched.len(), 1);
+    assert_eq!(
+        std::fs::canonicalize(searched[0].as_str().unwrap()).unwrap(),
+        std::fs::canonicalize(root).unwrap()
+    );
+
+    // An explicit path keeps narrowing to its own tree.
+    compare_cmd(&root.join("sub"))
+        .arg(".")
+        .assert()
+        .code(0)
+        .stderr(predicates::str::contains("No crozier config was found"));
+}
+
+/// A `--json` target that cannot be written is refused with exit 1 before any
+/// reference command runs, so a run never spends every reference and then
+/// discards the result.
+#[cfg(unix)]
+#[test]
+fn compare_refuses_an_unwritable_json_target_before_any_reference_runs() {
+    let outputs = tempfile::tempdir().unwrap();
+    let marker = outputs.path().join("reference-ran");
+    let repo = small_repo(
+        "crozier.yml",
+        &format!(
+            "  python:\n    reference:\n      command: touch '{}'\n",
+            marker.display()
+        ),
+    );
+    let locked = outputs.path().join("locked");
+    read_only(&locked);
+    if !permissions_bind(&locked) {
+        eprintln!("skipped: this process writes through read-only directories");
+        return;
+    }
+    compare_cmd(repo.path())
+        .arg("--json")
+        .arg(locked.join("report.json"))
+        .assert()
+        .code(1)
+        .stderr(predicates::str::contains("cannot write --json"))
+        .stderr(predicates::str::contains("reference command starting").not());
+    assert!(!marker.exists(), "a reference ran before the refusal");
+}
+
+/// A `--diff-dir` file that cannot be written does not stop the run: every
+/// generator is still checked, both reports are still written, the human one
+/// states the failure, and the command exits 1.
+#[cfg(unix)]
+#[test]
+fn compare_still_checks_and_reports_when_a_diff_file_cannot_be_written() {
+    let repo = small_repo(
+        "crozier.yml",
+        "  edited:\n    reference:\n      command: ./scripts/reference.sh edit\n  \
+         also-edited:\n    reference:\n      command: ./scripts/reference.sh edit\n  matched: {}\n",
+    );
+    let outputs = tempfile::tempdir().unwrap();
+    let diffs = outputs.path().join("diffs");
+    read_only(&diffs);
+    if !permissions_bind(&diffs) {
+        eprintln!("skipped: this process writes through read-only directories");
+        return;
+    }
+    let json = outputs.path().join("report.json");
+    let assert = compare_cmd(repo.path())
+        .arg("--diff-dir")
+        .arg(&diffs)
+        .arg("--json")
+        .arg(&json)
+        .assert()
+        .code(1);
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+    assert!(stderr.contains("crozier compare report"), "{stderr}");
+    assert!(
+        stderr.contains("2 --diff-dir file(s) could not be written, so the command exits 1:"),
+        "{stderr}"
+    );
+    assert_eq!(
+        stderr.matches("could not write --diff-dir file").count(),
+        4,
+        "{stderr}"
+    );
+    let report: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&json).unwrap()).unwrap();
+    validate_against_committed_schema(&report);
+    for generator in ["edited", "also-edited"] {
+        let edited = result(&report, "crozier.yml", generator);
+        assert_eq!(edited["status"], "mismatched");
+        assert_eq!(edited["comparison"]["diff_file"], serde_json::Value::Null);
+    }
+    assert_eq!(
+        result(&report, "crozier.yml", "matched")["status"],
+        "matched"
+    );
+}
+
+/// When the reference produced output and crozier's own generation fails — here
+/// because `ruff`, which crozier formats with, is not on `PATH` — the generator
+/// is mismatched, with crozier's error as the reason.
+#[cfg(unix)]
+#[test]
+fn compare_reports_a_crozier_failure_after_a_good_reference_as_mismatched() {
+    let repo = small_repo(
+        "crozier.yml",
+        "  python:\n    reference:\n      command: echo reference > \"$CROZIER_REFERENCE_OUTPUT/README.md\"\n",
+    );
+    // A PATH holding only `sh`: the reference command needs nothing else.
+    let bin = tempfile::tempdir().unwrap();
+    std::os::unix::fs::symlink("/bin/sh", bin.path().join("sh")).unwrap();
+    let json = bin.path().join("report.json");
+    compare_cmd(repo.path())
+        .env("PATH", bin.path())
+        .arg("--json")
+        .arg(&json)
+        .assert()
+        .code(3)
+        .stderr(predicates::str::contains(
+            "compare: crozier.yml python: crozier generation failed",
+        ))
+        .stderr(predicates::str::contains("\u{1b}").not());
+    let report: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&json).unwrap()).unwrap();
+    validate_against_committed_schema(&report);
+    let python = result(&report, "crozier.yml", "python");
+    assert_eq!(python["status"], "mismatched");
+    assert_eq!(python["comparison"], serde_json::Value::Null);
+    let reason = python["reason"].as_str().unwrap();
+    assert!(
+        reason.starts_with("crozier could not generate: "),
+        "{reason}"
+    );
+    assert!(reason.contains("ruff"), "{reason}");
+    assert_eq!(report["exit_code"], 3);
+}
+
+/// Every usage error of `compare` exits 2 with clap's usage text — clap's own,
+/// and combining `compare` with the global `--config` or `--no-config`.
+#[test]
+fn compare_usage_errors_exit_2() {
+    let empty = tempfile::tempdir().unwrap();
+    for args in [
+        ["--config", "crozier.yml", "compare"].as_slice(),
+        ["--no-config", "compare"].as_slice(),
+    ] {
+        crozier()
+            .current_dir(empty.path())
+            .args(args)
+            .assert()
+            .code(2)
+            .stderr(predicates::str::contains("pass a config file as a PATH"))
+            .stderr(predicates::str::contains("Usage: crozier compare"));
+    }
+    compare_cmd(empty.path())
+        .arg("--no-such-flag")
+        .assert()
+        .code(2)
+        .stderr(predicates::str::contains("Usage: crozier compare"));
 }

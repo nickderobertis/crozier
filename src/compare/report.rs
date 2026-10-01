@@ -226,7 +226,8 @@ pub struct GeneratorResult {
     /// nothing ran.
     #[schemars(required, transform = nullable)]
     pub timing: Option<Timing>,
-    /// Why the generator could not be checked; null otherwise.
+    /// Why the generator could not be checked, or, for a mismatch with no
+    /// comparison, why crozier could not generate it; null otherwise.
     #[schemars(required, transform = nullable)]
     pub reason: Option<String>,
 }
@@ -466,7 +467,9 @@ fn render_result(out: &mut String, result: &GeneratorResult, painter: Painter) {
             (Some(r), Some(c)) => {
                 timing_line(r, c, timing.speedup, timing.saved_seconds.unwrap_or(r - c))
             }
-            (Some(r), None) => format!("reference {r:.2}s; crozier did not run, so no speed-up"),
+            (Some(r), None) => {
+                format!("reference {r:.2}s; crozier produced no SDK, so no speed-up")
+            }
             (None, Some(c)) => format!("crozier {c:.2}s; the reference did not run"),
             (None, None) => "nothing ran".to_string(),
         };
@@ -621,7 +624,7 @@ mod tests {
             "    only in crozier (1):\n      c.py",
             "    diff: diffs/001.diff",
             "reference 2.00s, crozier 0.50s, speed-up 4.00x, saved 1.50s",
-            "reference 1.00s; crozier did not run, so no speed-up",
+            "reference 1.00s; crozier produced no SDK, so no speed-up",
             "    reason: the reference command failed\n            line two",
             "other/crozier.yml\n  (config): could_not_check",
             "Totals: 0 matched, 1 mismatched, 2 could not check",

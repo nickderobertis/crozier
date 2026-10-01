@@ -1,6 +1,7 @@
 //! Which crozier configs a `crozier compare` run checks.
 //!
-//! - No path: search the working directory.
+//! - No path: search the whole repository the working directory is in — its git
+//!   top-level — or the working directory itself when it is not in one.
 //! - A directory: search its tree. `.git` and anything git ignores are skipped
 //!   (when the directory is inside a git work tree), but hidden config names such
 //!   as `.crozier.yml` are still found. In each directory the config is the first
@@ -23,7 +24,7 @@ pub struct FoundConfig {
     pub path: PathBuf,
 }
 
-/// The configs under `paths` (the working directory `cwd` when empty), in
+/// The configs under `paths` (the [`default_root`] of `cwd` when empty), in
 /// argument order and then path order, each once.
 ///
 /// # Errors
@@ -32,7 +33,7 @@ pub struct FoundConfig {
 pub fn discover(paths: &[PathBuf], cwd: &Path) -> Result<Vec<FoundConfig>, String> {
     let mut found = Vec::new();
     let mut seen = HashSet::new();
-    let implicit = [PathBuf::from(".")];
+    let implicit = [default_root(cwd)];
     let roots = if paths.is_empty() {
         &implicit[..]
     } else {
@@ -40,6 +41,12 @@ pub fn discover(paths: &[PathBuf], cwd: &Path) -> Result<Vec<FoundConfig>, Strin
     };
     for given in roots {
         let absolute = cwd.join(given);
+        // The implicit root is named by its configs' paths relative to it.
+        let given = if paths.is_empty() {
+            Path::new(".")
+        } else {
+            given.as_path()
+        };
         if std::fs::metadata(&absolute).is_err() {
             return Err(format!("path not found: {}", given.display()));
         }
@@ -69,6 +76,37 @@ pub fn discover(paths: &[PathBuf], cwd: &Path) -> Result<Vec<FoundConfig>, Strin
         }
     }
     Ok(found)
+}
+
+/// Where a run with no paths searches: the top-level of the git work tree `cwd`
+/// is in, or `cwd` itself when it is in none (or git is unavailable).
+#[must_use]
+pub fn default_root(cwd: &Path) -> PathBuf {
+    git(cwd, &["rev-parse", "--show-toplevel"])
+        .map(|out| {
+            String::from_utf8_lossy(&out)
+                .trim_end_matches(['\n', '\r'])
+                .to_string()
+        })
+        .filter(|top| !top.is_empty())
+        .map_or_else(|| cwd.to_path_buf(), PathBuf::from)
+}
+
+/// `git -C dir <args>`'s stdout when it exits 0. The directory decides, not a
+/// repository a calling hook points at, so git's location variables are dropped.
+fn git(dir: &Path, args: &[&str]) -> Option<Vec<u8>> {
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(dir)
+        .args(args)
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
+        .stdin(Stdio::null())
+        .stderr(Stdio::null())
+        .output()
+        .ok()?;
+    output.status.success().then_some(output.stdout)
 }
 
 /// Every config under `root`, as `/`-separated paths relative to it, sorted:
@@ -103,28 +141,17 @@ fn configs_in_tree(root: &Path) -> Vec<String> {
 /// The files git does not ignore under `root` (tracked or not), relative to it,
 /// when `root` is inside a git work tree and git is available; `None` otherwise.
 fn git_visible_files(root: &Path) -> Option<Vec<String>> {
-    let output = Command::new("git")
-        .arg("-C")
-        .arg(root)
-        .args([
+    let stdout = git(
+        root,
+        &[
             "ls-files",
             "-z",
             "--cached",
             "--others",
             "--exclude-standard",
-        ])
-        // The searched tree decides, not a repository a calling hook points at.
-        .env_remove("GIT_DIR")
-        .env_remove("GIT_WORK_TREE")
-        .env_remove("GIT_INDEX_FILE")
-        .stdin(Stdio::null())
-        .stderr(Stdio::null())
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        return None;
-    }
-    let text = String::from_utf8_lossy(&output.stdout);
+        ],
+    )?;
+    let text = String::from_utf8_lossy(&stdout);
     Some(
         text.split('\0')
             .filter(|rel| !rel.is_empty())
@@ -173,6 +200,38 @@ mod tests {
 
     fn displays(found: &[FoundConfig]) -> Vec<&str> {
         found.iter().map(|f| f.display.as_str()).collect()
+    }
+
+    #[test]
+    fn no_paths_search_the_git_top_level_or_else_the_working_directory() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = std::fs::canonicalize(dir.path()).unwrap();
+        // Outside any repository: the working directory itself.
+        assert_eq!(default_root(&root), root);
+
+        let status = Command::new("git")
+            .args(["init", "-q"])
+            .current_dir(&root)
+            .env_remove("GIT_DIR")
+            .env_remove("GIT_WORK_TREE")
+            .env_remove("GIT_INDEX_FILE")
+            .status()
+            .unwrap();
+        assert!(status.success());
+        touch(&root, "other/crozier.yml");
+        std::fs::create_dir_all(root.join("sub")).unwrap();
+        let sub = root.join("sub");
+        assert_eq!(
+            std::fs::canonicalize(default_root(&sub)).unwrap(),
+            root,
+            "a subdirectory searches its repository's top level"
+        );
+        assert_eq!(
+            displays(&discover(&[], &sub).unwrap()),
+            ["other/crozier.yml"]
+        );
+        // An explicit path still narrows.
+        assert!(discover(&[PathBuf::from(".")], &sub).unwrap().is_empty());
     }
 
     #[test]
