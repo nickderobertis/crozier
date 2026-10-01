@@ -333,6 +333,7 @@ struct SchemaContext<'a> {
     strict: bool,
     names: indexmap::IndexMap<String, bool>,
     default_names: indexmap::IndexMap<String, bool>,
+    missing_header_types: std::collections::HashSet<String>,
 }
 
 fn schema_declaration_names(
@@ -640,6 +641,78 @@ fn check_named_type_defaults(
     Ok(())
 }
 
+fn missing_header_types(root: &serde_yaml_ng::Value) -> std::collections::HashSet<String> {
+    let mut total = 0usize;
+    let mut headers: indexmap::IndexMap<String, (usize, String)> = indexmap::IndexMap::new();
+    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+        for (route, item) in paths {
+            let Some(route) = route.as_str() else {
+                continue;
+            };
+            for method in [
+                "get", "put", "post", "delete", "options", "head", "patch", "trace",
+            ] {
+                let Some(operation) = item.get(method) else {
+                    continue;
+                };
+                if ignored_reference_node(operation) {
+                    continue;
+                }
+                total += 1;
+                // An operation crozier cannot read fails its own loader later.
+                let Ok(parsed) =
+                    serde_yaml_ng::from_value::<crate::openapi::Operation>(operation.clone())
+                else {
+                    continue;
+                };
+                let request_ctx = &crate::ir::request_context(&parsed, method, route);
+                let mut in_operation = std::collections::HashSet::new();
+                for parameters in [item.get("parameters"), operation.get("parameters")]
+                    .into_iter()
+                    .flatten()
+                {
+                    let Some(parameters) = parameters.as_sequence() else {
+                        continue;
+                    };
+                    for parameter in parameters {
+                        let parameter = parameter
+                            .get("$ref")
+                            .and_then(serde_yaml_ng::Value::as_str)
+                            .and_then(|reference| reference.strip_prefix('#'))
+                            .and_then(|pointer| yaml_pointer(root, pointer))
+                            .unwrap_or(parameter);
+                        if ignored_reference_node(parameter)
+                            || parameter.get("in").and_then(serde_yaml_ng::Value::as_str)
+                                != Some("header")
+                        {
+                            continue;
+                        }
+                        let Some(name) =
+                            parameter.get("name").and_then(serde_yaml_ng::Value::as_str)
+                        else {
+                            continue;
+                        };
+                        if !in_operation.insert(name) {
+                            continue;
+                        }
+                        let declaration = crate::ir::request_parameter_type_name(request_ctx, name);
+                        let entry = headers.entry(name.to_owned()).or_insert((0, declaration));
+                        entry.0 += 1;
+                    }
+                }
+            }
+        }
+    }
+    let declarations = schema_declaration_names(root, true, named_default_unsupported);
+    headers
+        .into_iter()
+        .filter_map(|(name, (count, declaration))| {
+            (total > 0 && count * 4 >= total * 3 && !declarations.contains_key(&declaration))
+                .then_some(name)
+        })
+        .collect()
+}
+
 fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -> Result<()> {
     let context = SchemaContext {
         root,
@@ -649,6 +722,7 @@ fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool
             schema_is_model(schema, root, &mut Vec::new())
         }),
         default_names: schema_declaration_names(root, true, named_default_unsupported),
+        missing_header_types: missing_header_types(root),
     };
     if let Some(schemas) = root
         .get("components")
@@ -753,7 +827,8 @@ fn check_bound_schemas(
                     if node.get("in").and_then(serde_yaml_ng::Value::as_str) == Some("header")
                         // llmlint: ignore[contracts_have_one_source_or_a_drift_gate] These are Fern's inline-header declaration exceptions, measured in generator-missing-type/evaluation-logs/fern-*-header.log, not SDK transport ownership. In particular Authorization is a per-method SDK parameter without an auth scheme (ir::is_auth_managed_header), while Fern declares its inline enum successfully. Changing SDK header ownership must not change this refusal classification; the CLI controls preserve all three measured exceptions.
                         && name.is_some_and(|name| {
-                            !["Authorization", "User-Agent", "Content-Type"]
+                            context.missing_header_types.contains(name)
+                                && !["Authorization", "User-Agent", "Content-Type"]
                                 .iter()
                                 .any(|exception| name.eq_ignore_ascii_case(exception))
                         })

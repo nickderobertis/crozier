@@ -2534,7 +2534,7 @@ fn build_endpoint(
     // types Fern synthesizes for the request: nested inline bodies and, below,
     // inline enums on request parameters.
     let pascal_ctx = endpoint_pascal_context(op, http_method, path);
-    let request_ctx = format!("{pascal_ctx}Request");
+    let request_ctx = request_context(op, http_method, path);
     let mut path_params: Vec<PathParam> = op
         .parameters
         .iter()
@@ -6292,7 +6292,7 @@ impl InlineHoister<'_> {
     fn hoist_param_enum(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
         if schema.reference.is_none() {
             if let Some(values) = string_enum_values(schema) {
-                let name = format!("{request_ctx}{}", naming::param_class_name(param));
+                let name = request_parameter_type_name(request_ctx, param);
                 // Fern 5.20 imports positional `x-enum-varnames` on model
                 // properties, but an inline query parameter derives its enum
                 // members from the wire values (Raybot's `status` parameter).
@@ -6307,7 +6307,7 @@ impl InlineHoister<'_> {
                 return TypeRef::Named(name);
             }
             if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
-                let name = format!("{request_ctx}{}", naming::param_class_name(param));
+                let name = request_parameter_type_name(request_ctx, param);
                 let non_null: Vec<&Schema> = members
                     .iter()
                     .filter(|member| {
@@ -6417,14 +6417,13 @@ impl InlineHoister<'_> {
                 }));
                 return wrap(TypeRef::Named(name));
             }
-            if let Some(array) = self.hoist_array_item_enum(
-                &format!("{request_ctx}{}", naming::param_class_name(param)),
-                schema,
-            ) {
+            if let Some(array) =
+                self.hoist_array_item_enum(&request_parameter_type_name(request_ctx, param), schema)
+            {
                 return array;
             }
             if is_object_type(schema) && is_inline_struct(schema) {
-                let name = format!("{request_ctx}{}", naming::param_class_name(param));
+                let name = request_parameter_type_name(request_ctx, param);
                 self.hoist_object(&name, schema);
                 return TypeRef::Named(name);
             }
@@ -7520,6 +7519,18 @@ fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> Stri
     } else {
         naming::sanitize_identifier(&naming::to_pascal_case(id))
     }
+}
+
+/// The `{Ctx}Request` scope Fern names an operation's synthesized request types
+/// under. Shared with `document_refusals`, which predicts the inline header
+/// declarations it names.
+pub(crate) fn request_context(op: &Operation, http_method: &str, url: &str) -> String {
+    format!("{}Request", endpoint_pascal_context(op, http_method, url))
+}
+
+/// The type Fern hoists for an inline enum or union on request parameter `param`.
+pub(crate) fn request_parameter_type_name(request_ctx: &str, param: &str) -> String {
+    format!("{request_ctx}{}", naming::param_class_name(param))
 }
 
 /// Fern's fallback endpoint name for an operation that declares neither an

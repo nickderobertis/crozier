@@ -16165,6 +16165,11 @@ fn inline_header_enum_refusal_recovers_with_a_named_schema() {
         "inferred-type-control.yml",
         "const-header-control.yml",
         "two-operations-control.yml",
+        "three-of-four-control.yml",
+        "second-declaration-control.yml",
+        "referenced-header-control.yml",
+        "path-header-control.yml",
+        "ignored-operation-control.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -16193,6 +16198,14 @@ fn inline_header_enum_refusal_recovers_with_a_named_schema() {
     }
     for case in [
         "named-enum-control.yml",
+        "partial-header-control.yml",
+        "two-of-three-control.yml",
+        "implicit-declaration-control.yml",
+        "first-declaration-control.yml",
+        "fallback-declared-control.yml",
+        "fallback-partial-control.yml",
+        "sdk-method-declared-control.yml",
+        "sdk-method-partial-control.yml",
         "authorization-header-control.yml",
         "user-agent-header-control.yml",
         "content-type-header-control.yml",
@@ -16204,6 +16217,22 @@ fn inline_header_enum_refusal_recovers_with_a_named_schema() {
         assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
         assert!(!normal.files.is_empty());
         assert_eq!(normal.files, strict.files);
+        // Tie the refusal's inferred declaration name to actual SDK emission,
+        // including both alternate naming branches, without changing SDK output.
+        let declaration = match case {
+            "partial-header-control.yml" => Some("list_agents_request_api_version.py"),
+            "fallback-partial-control.yml" => Some("get_agents_request_api_version.py"),
+            "sdk-method-partial-control.yml" => Some("fetch_agents_request_api_version.py"),
+            _ => None,
+        };
+        if let Some(declaration) = declaration {
+            assert!(
+                normal.files.iter().any(|file| Path::new(file)
+                    .file_name()
+                    .is_some_and(|name| name == declaration)),
+                "{case}: inferred declaration name drifted from the SDK"
+            );
+        }
         for file in &normal.files {
             assert_eq!(
                 std::fs::read(normal.target.join(file)).unwrap(),
