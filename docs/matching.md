@@ -1370,9 +1370,9 @@ Two enum members that sanitize to the same identifier are disambiguated with a
 
 **A multi-digit leading token Fern cannot name** (`_01_00_AM` → Fern's `0100Am`,
 which it *rejects* with "not suitable for code generation") is refused by crozier
-too, in every mode: it is the `enum-name-unsuitable` class of
-[`fern-refusals/`](fern-refusals/README.md), whose evaluation found crozier's
-underscore-led fallback members not a usable SDK surface. The
+too, in every mode: it is the `enum-name-unsuitable` refusal class, whose
+evaluation found crozier's underscore-led fallback members not a usable SDK
+surface. The
 `enum_sanitization_generates_valid_python` e2e asserts the refusal beside the
 shapes Fern does generate from.
 
