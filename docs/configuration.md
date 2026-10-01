@@ -139,8 +139,8 @@ Unknown fields and unknown generator types are rejected at parse time, with the
 offending file's path in the error. Generators run in declaration order.
 
 <!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires this page to link the compare reference; human readers reach configuration.md from the README, not through AGENTS.md, and this is the one place the page sends them to the command's own reference. -->
-The `reference` block (one key, `command`) is read only by
-[`crozier compare`](compare.md): it names the command that produces each
+Only [`crozier compare`](compare.md) reads the `reference` block (one key,
+`command`): it names the command that produces each
 generator's reference SDK. It resolves as `--reference-command` >
 `generators.<name>.reference.command` > top-level `reference.command`, with no
 environment variable and no default, and `crozier generate` ignores it.

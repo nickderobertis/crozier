@@ -109,11 +109,10 @@ config` shows the resolved `reference.command` with its source.
   itself, or its single subdirectory when it holds exactly one entry and that
   entry is a directory.
   <!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires this page to link configuration.md for the layout setting rather than restate it; human readers reach compare.md from the README, not through AGENTS.md. -->
-- The reference is expected to have the layout the generator's `layout` setting
-  names (`packaged` or `flat`, see
-  [`configuration.md`](configuration.md#output-layout)). crozier generates its
-  side with that layout and compares the whole reference tree with its whole
-  output tree. It does not detect the reference's layout, so a reference in the
+- The generator's [`layout` setting](configuration.md#output-layout) names
+  the layout the reference is expected to have (`packaged` or `flat`). crozier
+  generates its side with that layout and compares the whole reference tree
+  with its whole output tree. It does not detect the reference's layout, so a reference in the
   other layout is reported as `mismatched`. The report names the layout compared.
 - A non-zero exit, or a reference that is empty or ambiguous (several
   directories and no file), is `could_not_check`, carrying the command's exit
