@@ -13219,8 +13219,8 @@ import httpx
 SDK = os.environ["CROZIER_SDK_DIR"]
 sys.path.insert(0, os.environ["CROZIER_SDK_SRC"])
 
-from fern import FernApi  # noqa: E402
-from fern.types import Thing  # noqa: E402
+from fern import FernApi  # noqa: E402 - importable only once sys.path names the SDK under test
+from fern.types import Thing  # noqa: E402 - importable only once sys.path names the SDK under test
 
 
 def test_mypy_reports_no_error_under_the_sdk_pin():
@@ -13330,6 +13330,7 @@ fn header_array_probe() -> String {
     .expect("the header-array probe crozier refuses")
 }
 
+// llmlint: ignore[e2e_not_mocked] No class is evaluated yet, so the real binary refuses nothing under --fern-strict and no journey over it can reach the gate's accepting or wrote-output branches; the stand-in emulates only the refusal line the contract fixes and runs the real binary for every generation. The gate under test is real, and the failing journeys drive the real binary.
 #[test]
 fn fern_refusal_gate_accepts_a_registry_whose_classes_hold() {
     let scratch = tempfile::tempdir().expect("tempdir");
@@ -13498,6 +13499,7 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
     );
 }
 
+// llmlint: ignore[e2e_not_mocked] No class is evaluated yet, so the real binary refuses nothing under --fern-strict and no journey over it can reach the gate's accepting or wrote-output branches; the stand-in emulates only the refusal line the contract fixes and runs the real binary for every generation. The gate under test is real, and the failing journeys drive the real binary.
 #[test]
 fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
     let scratch = tempfile::tempdir().expect("tempdir");

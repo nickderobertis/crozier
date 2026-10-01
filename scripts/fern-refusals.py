@@ -112,12 +112,10 @@ def tsv_text(header: tuple[str, ...], rows: Iterable[dict[str, str]]) -> str:
         cells = [str(row[column]) for column in header]
         for cell in cells:
             if "\t" in cell or "\n" in cell:
-                fail(f"a cell holds a tab or newline: {cell!r}")
+                fail(f"a cell holds a tab or newline: {cell!r}; remove it from the record or class row "
+                     "it came from, then rerun `build`")
         lines.append("\t".join(cells))
     return "\n".join(lines) + "\n"
-
-
-# --- selection ---------------------------------------------------------------
 
 
 def raw_url(repository: str, commit: str, path: str) -> str:
@@ -207,14 +205,16 @@ def population() -> list[dict[str, Any]]:
             elif source in enumerations:
                 hit = enumerations[source].get(row["candidate"])
                 if hit is None:
-                    fail(f"{record}: {row['candidate']} is in no {source} enumeration row")
+                    fail(f"{record}: {row['candidate']} is in no {source} enumeration row; restore "
+                         f"golden-reach-witnesses/{source}/enumeration.tsv.gz from git, or re-walk the source")
                 entries.append({"digest": hit["sha256"], "source": source,
                                 "locator": enumerated_locator(source, hit), "revision": hit["revision"],
                                 "records": {record}})
             else:
                 hit = candidates[source].get(row["candidate"])
                 if hit is None:
-                    fail(f"{record}: {row['candidate']} is in no {source} candidates.jsonl row")
+                    fail(f"{record}: {row['candidate']} is in no {source} candidates.jsonl row; restore "
+                         f"golden-reach-witnesses/{source}/candidates.jsonl from git")
                 entries.append({"digest": hit["sha256"], "source": source,
                                 "locator": raw_url(hit["repository"], hit["commit"], hit["path"]),
                                 "revision": hit["commit"], "records": {record}})
@@ -237,9 +237,6 @@ def select(_args: argparse.Namespace) -> int:
         print("\t".join([entry["key"], entry["source"], entry["locator"] or EMPTY, entry["revision"] or EMPTY,
                          ";".join(sorted(entry["records"]))]))
     return 0
-
-
-# --- measurement -------------------------------------------------------------
 
 
 def _load(name: str, path: Path) -> Any:
@@ -512,9 +509,6 @@ def write_measurements(done: dict[str, dict[str, str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("".join(json.dumps(done[key], sort_keys=True) + "\n" for key in sorted(done)),
                     encoding="utf-8")
-
-
-# --- classification and the tables ------------------------------------------
 
 
 API_LINE = re.compile(r"\[api\]: (?:python-sdk )?(?:fernapi/fern-python-sdk )?(.*)")
@@ -877,7 +871,8 @@ def finding(args: argparse.Namespace) -> int:
                  "probe; a refusal is a class, not a finding")
         if row["kind"] == "check-only" and not any(
                 template_pattern(row["diagnostic"]).match(message) for message in diagnostics(check_log)):
-            fail(f"{name}: `fern check` printed no diagnostic matching its template")
+            fail(f"{name}: `fern check` printed no diagnostic matching its template; correct the template "
+                 f"or the probe, reading {rel(EVIDENCE / 'probe-logs')}/{name}.check.log")
         row.update(check_exit=check_exit, generate_exit=generate_exit)
 
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
