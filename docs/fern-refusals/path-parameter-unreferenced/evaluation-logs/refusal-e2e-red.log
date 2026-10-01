@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.39s
+────────────
+ Nextest run ID 7cfe2b63-fe3d-4199-b332-87649202fa32 with nextest profile: default
+    Starting 1 test across 1 binary (432 tests and 6 binaries skipped)
+        FAIL [   0.069s] (1/1) crozier::e2e unreferenced_path_parameter_recovers_when_placeholder_is_added
+  stdout ───
+
+    running 1 test
+    test unreferenced_path_parameter_recovers_when_placeholder_is_added ... FAILED
+
+    failures:
+
+    failures:
+        unreferenced_path_parameter_recovers_when_placeholder_is_added
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 432 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'unreferenced_path_parameter_recovers_when_placeholder_is_added' (3518433) panicked at tests/e2e.rs:15653:9:
+    path-parameter-unreferenced: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.072s] 1 test run: 0 passed, 1 failed, 432 skipped
+        FAIL [   0.069s] (1/1) crozier::e2e unreferenced_path_parameter_recovers_when_placeholder_is_added
+error: test run failed

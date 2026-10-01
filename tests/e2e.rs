@@ -15628,6 +15628,20 @@ fn path_without_leading_slash_recovers_with_valid_path() {
     let spec = dir.path().join("openapi.yml");
     let text = std::fs::read_to_string(probe).unwrap();
     std::fs::write(&spec, text.replace("  things:", "  /things:")).unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        text.replace(
+            "      operationId:",
+            "      x-fern-ignore: true\n      operationId:",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &ignored, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
     let normal = refusal_run(&crozier, &spec, false).unwrap();
     let strict = refusal_run(&crozier, &spec, true).unwrap();
     assert_eq!(normal.code, Some(0), "{}", normal.stderr);
@@ -15639,5 +15653,78 @@ fn path_without_leading_slash_recovers_with_valid_path() {
             std::fs::read(normal.target.join(file)).unwrap(),
             std::fs::read(strict.target.join(file)).unwrap()
         );
+    }
+}
+
+#[test]
+fn unreferenced_path_parameter_recovers_when_placeholder_is_added() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("path-parameter-unreferenced/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "path-parameter-unreferenced",
+            &run,
+            "GET /things parameter id",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(probe).unwrap();
+    std::fs::write(&spec, text.replace("  /things:", "  /things/{id}:")).unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        text.replace(
+            "      operationId:",
+            "      x-crozier-ignore: true\n      operationId:",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &ignored, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+    let normal = refusal_run(&crozier, &spec, false).unwrap();
+    let strict = refusal_run(&crozier, &spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn shared_referenced_path_parameter_recovers_with_placeholder() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = "openapi: 3.0.3\ninfo: {title: Probe, version: '1'}\npaths:\n  /things:\n    parameters:\n      - {$ref: '#/components/parameters/ThingId'}\n    get:\n      operationId: listThings\n      responses: {'204': {description: Empty}}\ncomponents:\n  parameters:\n    ThingId:\n      name: id\n      in: path\n      required: true\n      schema: {type: string}\n";
+    std::fs::write(&spec, text).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures(
+            "path-parameter-unreferenced",
+            &run,
+            "GET /things parameter id",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    std::fs::write(&spec, text.replace("  /things:", "  /things/{id}:")).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
     }
 }

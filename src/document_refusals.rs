@@ -15,6 +15,7 @@ enum Class {
     EndpointAuthUndefined,
     UnresolvedReference,
     PathWithoutLeadingSlash,
+    PathParameterUnreferenced,
 }
 
 impl Class {
@@ -25,6 +26,7 @@ impl Class {
             Self::EndpointAuthUndefined => "endpoint-auth-undefined",
             Self::UnresolvedReference => "unresolved-reference",
             Self::PathWithoutLeadingSlash => "path-without-leading-slash",
+            Self::PathParameterUnreferenced => "path-parameter-unreferenced",
         }
     }
 }
@@ -84,7 +86,10 @@ pub fn check_reference_file(path: &Path, strict: bool) -> Result<()> {
                 "get", "put", "post", "delete", "options", "head", "patch", "trace",
             ]
             .iter()
-            .any(|method| item.get(method).is_some());
+            .any(|method| {
+                item.get(method)
+                    .is_some_and(|operation| !ignored_reference_node(operation))
+            });
             if has_operation && !route.starts_with('/') && !route.starts_with("x-") {
                 return refusal(
                     path,
@@ -92,6 +97,58 @@ pub fn check_reference_file(path: &Path, strict: bool) -> Result<()> {
                     Class::PathWithoutLeadingSlash,
                     &format!("paths/{route}"),
                 );
+            }
+        }
+    }
+    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+        for (route, item) in paths {
+            let Some(route) = route.as_str() else {
+                continue;
+            };
+            for method in [
+                "get", "put", "post", "delete", "options", "head", "patch", "trace",
+            ] {
+                let Some(operation) = item.get(method) else {
+                    continue;
+                };
+                if ignored_reference_node(operation) {
+                    continue;
+                }
+                let shared = item
+                    .get("parameters")
+                    .and_then(serde_yaml_ng::Value::as_sequence);
+                let local = operation
+                    .get("parameters")
+                    .and_then(serde_yaml_ng::Value::as_sequence);
+                for parameter in shared
+                    .into_iter()
+                    .flatten()
+                    .chain(local.into_iter().flatten())
+                {
+                    let parameter = parameter
+                        .get("$ref")
+                        .and_then(serde_yaml_ng::Value::as_str)
+                        .and_then(|reference| reference.strip_prefix('#'))
+                        .and_then(|pointer| yaml_pointer(&root, pointer))
+                        .unwrap_or(parameter);
+                    if parameter.get("in").and_then(serde_yaml_ng::Value::as_str) == Some("path") {
+                        if let Some(name) =
+                            parameter.get("name").and_then(serde_yaml_ng::Value::as_str)
+                        {
+                            if !route.contains(&format!("{{{name}}}")) {
+                                return refusal(
+                                    path,
+                                    strict,
+                                    Class::PathParameterUnreferenced,
+                                    &format!(
+                                        "{} {route} parameter {name}",
+                                        method.to_ascii_uppercase()
+                                    ),
+                                );
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -233,6 +290,18 @@ impl<'de> serde::Deserialize<'de> for ReferenceDocument {
     }
 }
 
+fn ignored_reference_node(value: &serde_yaml_ng::Value) -> bool {
+    // Keep the dual-header decision in the existing canonical accessor.
+    let mut extensions = serde_yaml_ng::Mapping::new();
+    for name in ["x-crozier-ignore", "x-fern-ignore"] {
+        if let Some(value) = value.get(name) {
+            extensions.insert(serde_yaml_ng::Value::String(name.into()), value.clone());
+        }
+    }
+    serde_yaml_ng::from_value::<crate::openapi::Schema>(serde_yaml_ng::Value::Mapping(extensions))
+        .is_ok_and(|schema| schema.ignored())
+}
+
 fn check_reference_objects(
     value: &serde_yaml_ng::Value,
     root: &serde_yaml_ng::Value,
@@ -243,16 +312,7 @@ fn check_reference_objects(
     use serde_yaml_ng::Value;
     match value {
         Value::Mapping(mapping) => {
-            // Read the extension through the existing canonical accessor.
-            let mut extensions = serde_yaml_ng::Mapping::new();
-            for name in ["x-crozier-ignore", "x-fern-ignore"] {
-                if let Some(value) = value.get(name) {
-                    extensions.insert(Value::String(name.into()), value.clone());
-                }
-            }
-            if serde_yaml_ng::from_value::<crate::openapi::Schema>(Value::Mapping(extensions))
-                .is_ok_and(|schema| schema.ignored())
-            {
+            if ignored_reference_node(value) {
                 return Ok(());
             }
             if let Some(reference) = value.get("$ref").and_then(Value::as_str) {

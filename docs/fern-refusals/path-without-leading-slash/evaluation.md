@@ -26,10 +26,16 @@ requirements on its population and is `refuse` in both modes. Further
 representatives cannot qualify the class under the dispatch's conjunction
 rule. The SDK's enum is not repaired, and its path is not rewritten.
 
-The detector checks actual operations under path keys without a leading
-slash, leaving extension entries and non-operation Path Items alone. The
+The detector checks non-ignored operations under path keys without a leading
+slash, leaving extension entries, ignored operations and non-operation Path Items alone. The
 [real CLI recovery journey was observed failing before the detector](evaluation-logs/refusal-e2e-red.log).
 Adding the missing slash restores generation with identical bytes in both
 modes. [All four population documents](evaluation-logs/population-refusals.jsonl)
 were retrieved at their digests and refused in both modes with exit 1, no
 files, one class/element diagnostic, and the strict cause when applicable.
+
+The [pinned Fern check and generation](evaluation-logs/fern-ignored-path.log)
+accept the malformed path when its only operation has `x-fern-ignore: true`,
+writing 28 Python files. An added CLI recovery assertion was [observed
+failing](evaluation-logs/ignored-path-e2e-red.log) before the raw detector
+respected the canonical ignore accessor; it now preserves this accepted case.
