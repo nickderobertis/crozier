@@ -19,7 +19,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 HEADER = ["fixture", "key", "site", "regions_executed", "regions"]
-ARM = "src/ir.rs::scalar_body[=^ {12}_ => return None]"
+ARM = r'src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]'
 DOCUMENT = """openapi: 3.0.3
 info:
   title: sample
@@ -44,7 +44,7 @@ digest = "{zero}"
 
 [[covers]]
 key = "format-email"
-arm = "{arm}"
+arm = '{arm}'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/format-email.md#witness-search-exhaustive"
 verdict = "exhausted"
 """
@@ -57,7 +57,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
         declared = "              format: email\n" if email else ""
         (directory / "openapi.yml").write_text(DOCUMENT.format(format=declared), encoding="utf-8")
         (directory / "evidence.toml").write_text(
-            EVIDENCE.format(zero="0" * 64, arm=arm.replace("\\", "\\\\")), encoding="utf-8"
+            EVIDENCE.format(zero="0" * 64, arm=arm), encoding="utf-8"
         )
 
     def run_recipe(self, base: Path, ledger: Path) -> subprocess.CompletedProcess[str]:

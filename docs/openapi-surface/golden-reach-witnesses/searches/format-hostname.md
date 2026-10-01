@@ -55,3 +55,21 @@ search on its own.
 #### Candidates passing every screen
 
 - **Declined** (`github-code-search`): `Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3` — not a real-world specification: a test fixture written to exercise a tool — `Gk0Wk/openapi-thrift` at `5114458f49ab086773073f37864ff2431da495e3`, `tests/fixtures/apifox-boundary-lab.export.openapi.json`: it sits in the repository's `tests/fixtures/` directory, and its `info.description` calls it a `Baseline import file for APIFox boundary testing`
+
+### Successor arm
+
+Commit `63c6be587` repaired a divergence the hand-written fixture
+[`format-scalar-bodies`](../../handwritten/format-scalar-bodies/) found: crozier
+dropped an endpoint whose request body is a scalar `type: string` with format
+`hostname`, where Fern 5.20.0 generates it. The arm searched for above,
+`src/ir.rs::scalar_body[=^ {12}_ => return None]`, no longer handles that input.
+Its successor for this row is `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]`, the arm that emits the body as `str` with the JSON content-type header, as Fern does for `email`, `hostname`, `ipv4`, `password` and `uri`.
+
+The verdict above carries over to the successor. On `63c6be587`, a document
+reaches the successor for this row only through a scalar string body of format
+`hostname`, and on build `4828cc2b93f0`, which every probe above ran, that same body
+reached the searched arm: the path from the request body to `scalar_body` is
+unchanged between the two builds, and only the arm the format lands on moved. So
+the documents reaching the successor for this row are a subset of those that
+reached the searched arm. The six-source search found no registrable document
+reaching the searched arm, so none reaches the successor.
