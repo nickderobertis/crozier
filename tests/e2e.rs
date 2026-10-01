@@ -15487,7 +15487,14 @@ fn declared_parameter_names_deconflict_refusals_without_repairing_generation() {
                 assert!(output.join("pyproject.toml").is_file());
             } else {
                 assert_eq!(result.status.code(), Some(1), "{stderr}");
-                assert!(stderr.contains("Duplicate keyword argument"), "{stderr}");
+                // ruff words this per version ("Duplicate parameter" at the
+                // pinned .ruff-version, "Duplicate keyword argument" later).
+                assert!(
+                    stderr.contains("with ruff failed")
+                        && stderr.contains("Duplicate")
+                        && stderr.contains("\"account_id\""),
+                    "{stderr}"
+                );
                 assert!(!output.exists());
             }
         }
