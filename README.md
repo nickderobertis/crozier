@@ -215,6 +215,63 @@ they are rejected when more than one would run — name one, or set the values i
 `crozier.yml`. See [`docs/configuration.md`](docs/configuration.md) for the full
 reference.
 
+## Migrating from Fern
+
+A repository can move from Fern's Python generator to crozier one generator at a
+time, checking each against Fern before it switches. Before step 1, bring the
+Fern generator to the version crozier certifies; that and the other steps a
+migration may still need are in
+[`docs/migrating-from-fern.md`](docs/migrating-from-fern.md).
+
+**1. Add crozier config beside the Fern config**, one generator at a time. Save
+your copy of the [Fern reference recipe](docs/fern-reference.md) and name it as
+`reference.command`. Set `layout` to how that generator's Fern output was
+written: `flat` for a `local-file-system` output `path` (point `output` where that
+tree lives), `packaged` (the default) for `fern generate --preview --output`:
+
+<!-- migration-e2e: config -->
+```yaml
+# crozier.yml, at the repository root beside fern/
+generators:
+  python:
+    spec: ./fern/openapi/openapi.yml
+    output: ./sdks/python          # the generator's local-file-system path
+    package-name: acme             # fern.config.json's organization
+    layout: flat
+    reference:
+      command: ./scripts/fern-reference.sh
+```
+
+**2. Compare until every generator matches**, locally and in CI with the
+[GitHub Action](docs/github-action.md):
+
+<!-- migration-e2e: compare -->
+```sh
+crozier compare
+```
+
+It checks only generators that have crozier config, so the ones still on Fern do
+not fail it. crozier does not track what is left; list the Python generators
+your Fern config still runs:
+
+<!-- migration-e2e: remaining -->
+```sh
+grep -rn --include=generators.yml 'fernapi/fern-python-sdk' .
+```
+
+[`docs/compare.md`](docs/compare.md) covers the report, exit statuses, JSON
+report, timings and the reference-command contract.
+
+**3. Switch the build** from `fern generate` to crozier:
+
+<!-- migration-e2e: generate -->
+```sh
+crozier generate python
+```
+
+**4. Remove that generator** (its `fernapi/fern-python-sdk` entry) from
+`generators.yml`. TypeScript and other generators stay on Fern.
+
 ## Development
 
 The command surface is a small set of `just` recipes:
