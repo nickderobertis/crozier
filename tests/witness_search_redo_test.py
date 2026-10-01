@@ -620,9 +620,16 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "ref-pointer-undeclared-component-head": "thrivecart",
             "ref-pointer-unnamed-segment": "auto-agent-protocol",
         }
-        # Keys whose exhausted search a hand-written fixture answered instead.
+        # Keys whose exhausted or search-incomplete search a hand-written
+        # fixture answered instead.
         handwritten = {
             "annotated-ref-target-string-const": "inline-property-unions",
+            "array-item-inheritance-union": "array-item-inheritance-union",
+            "array-item-pointer-walk-oneof": "array-item-pointer-walk-oneof",
+            "property-sole-anyof-composed-member": "property-sole-anyof-composed-member",
+            "property-sole-anyof-empty-object-member": "property-sole-anyof-empty-object-member",
+            "property-sole-oneof-composed-member": "property-sole-oneof-composed-member",
+            "property-sole-oneof-empty-object-member": "property-sole-oneof-empty-object-member",
             "oneof-array-variant-annotated-ref-item": "inline-oneof-variants",
             "oneof-array-variant-anyof-discriminated-union-item": "inline-oneof-variants",
             "oneof-array-variant-anyof-nullable-item": "inline-oneof-variants",
