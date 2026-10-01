@@ -1028,7 +1028,9 @@ def completeness_failures(
     A proof is a `MANIFEST.tsv` row with a non-generation verdict, cited from the
     row's own evidence cell; a `measured` row is a byte comparison over a
     generated shape and settles nothing. A searched `gap` carries one line in its
-    own region file's `### Witness search (exhaustive)` compact table.
+    own region file's `### Witness search (exhaustive)` compact table, and so
+    does a `handwritten` row, whose fixture `handwritten_fixtures_match_fern_goldens`
+    gates: the failed search is what admitted it.
     """
     failures = []
     searched = {
@@ -1048,14 +1050,14 @@ def completeness_failures(
             )
         if proof:
             continue
-        if category != "gap":
+        if category not in ("gap", "handwritten"):
             failures.append(
                 f"{key} ({region}.md, `{category}`): lacks a MANIFEST.tsv row carrying a "
                 f"non-generation verdict, the only thing that settles a `{category}` row"
             )
         elif record is None:
             failures.append(
-                f"{key} ({region}.md, `gap`): lacks both halves — no MANIFEST.tsv row "
+                f"{key} ({region}.md, `{category}`): lacks both halves — no MANIFEST.tsv row "
                 f"carrying a non-generation verdict, and no Contract B search record under "
                 f"`{EXHAUSTIVE_SEARCH_HEADING}` in {region}.md"
             )
@@ -1873,7 +1875,10 @@ class GrammarContractTests(unittest.TestCase):
             for cells in rows_of
             if re.fullmatch(r"`(.+)`", cells[2])
         }
-        self.assertEqual(set(census.CONJUNCTIONS), derived & set(census.CONJUNCTIONS))
+        retired = set(census.RETIRED_CASE_CONJUNCTIONS)
+        self.assertLessEqual(retired, set(census.CONJUNCTIONS), "a retired spelling is still declared")
+        self.assertEqual(set(), retired & derived, "a retired conjunction is read off a live case")
+        self.assertEqual(set(census.CONJUNCTIONS) - retired, derived & set(census.CONJUNCTIONS))
         self.assertEqual(set(), derived - set(census.CONJUNCTIONS) - set(census.PREDICATES))
 
     # ------------------------------------------------------------------
@@ -2000,12 +2005,23 @@ class GrammarContractTests(unittest.TestCase):
                     "the digest",
                 )
 
-    def test_the_example_schema_definition_port_is_tied_to_its_rust_helper(self) -> None:
-        """Case 11's content predicate drifts when the Rust keyword set moves."""
-        self.assertEqual(
-            census.EXAMPLE_IS_SCHEMA_DEFINITION_DIGEST,
-            self.function_digest("example_is_schema_definition"),
-        )
+    def test_the_schema_shaped_reading_keeps_the_removed_helpers_truth_table(self) -> None:
+        """`schema.example:schema-shaped` without the Rust helper it ported.
+
+        `example_is_schema_definition` left `src/ir.rs` with the bare-object arm
+        that called it, so no digest can tie the reading to it any longer; these
+        are that helper's own unit-test cases, which the reading still answers.
+        """
+        for value in (
+            None, [], {}, {"field": "value"}, {"field": {}},
+            {"field": {"description": "only metadata"}},
+            {"good": {"type": "string"}, "bad": {}},
+        ):
+            with self.subTest(value=value):
+                self.assertFalse(census.example_is_schema_definition(value))
+        for keyword in ("type", "$ref", "properties", "allOf", "oneOf", "anyOf"):
+            with self.subTest(keyword=keyword):
+                self.assertTrue(census.example_is_schema_definition({"field": {keyword: {}}}))
 
     def test_the_digest_moves_when_a_branch_of_a_named_function_moves(self) -> None:
         """The check above, proved against a branch this case adds and removes.
@@ -2039,7 +2055,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             0: "zero", 1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
             9: "nine", 94: "ninety-four", 95: "ninety-five", 99: "ninety-nine",
-            103: "one-hundred-and-three",
+            103: "one-hundred-and-three", 106: "one-hundred-and-six",
             15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
             60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
@@ -7281,13 +7297,22 @@ class RankedBacklogTests(unittest.TestCase):
     NOT_EXHAUSTED = "does not pin\nthe whole of the branch's behaviour"
 
     def conjunction_rows(self) -> dict[str, tuple[str, list[str]]]:
-        """selector -> the one region row whose evidence cell cites it."""
+        """selector -> the one region row whose evidence cell cites it.
+
+        A `handwritten` row's evidence cell names its fixtures instead, by the
+        fixture contract, so it answers for the selector its key's search ran
+        on — the one `witness-search-keys.tsv` keeps for it.
+        """
+        tracked = load_script("witness-search-region-keys.py").tracked_selectors(
+            REPO / "docs" / "openapi-surface"
+        )
         found: dict[str, tuple[str, list[str]]] = {}
         for selector in census.CONJUNCTIONS:
             citing = [
                 (region, cells)
-                for region, cells in self.entries.values()
+                for key, (region, cells) in self.entries.items()
                 if f"`{selector}`" in cells[4]
+                or cells[3].strip("`") == "handwritten" and tracked.get(key) == selector
             ]
             self.assertEqual(
                 1, len(citing),
@@ -7421,6 +7446,8 @@ class RankedBacklogTests(unittest.TestCase):
         is a live code path rather than a shape somebody thought of.
         """
         for selector, (_region, cells) in sorted(self.conjunction_rows().items()):
+            if cells[3].strip("`") == "handwritten":
+                continue  # its fixture's covers, not its cell, carry the evidence
             with self.subTest(selector=selector):
                 named = [fn for fn in self.BLIND_FUNCTIONS if f"`{fn}`" in cells[4]]
                 self.assertEqual(

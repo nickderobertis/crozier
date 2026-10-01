@@ -1,0 +1,119 @@
+openapi: 3.1.0
+info:
+  title: nested-array-discriminated-unions fixture
+  version: 1.0.0
+paths:
+  /grids:
+    get:
+      operationId: getGrids
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grids"
+components:
+  schemas:
+    Grids:
+      type: object
+      properties:
+        explicit:
+          $ref: "#/components/schemas/ExplicitGrid"
+        inferred:
+          $ref: "#/components/schemas/InferredGrid"
+        inferredAny:
+          $ref: "#/components/schemas/InferredAnyGrid"
+        inherited:
+          $ref: "#/components/schemas/InheritedGrid"
+        pet:
+          $ref: "#/components/schemas/Pet"
+    Pet:
+      anyOf:
+        - $ref: "#/components/schemas/Cat"
+        - $ref: "#/components/schemas/Dog"
+      discriminator:
+        propertyName: kind
+    ExplicitGrid:
+      type: array
+      items:
+        type: array
+        items:
+          oneOf:
+            - $ref: "#/components/schemas/Cat"
+            - $ref: "#/components/schemas/Dog"
+          discriminator:
+            propertyName: kind
+            mapping:
+              cat: "#/components/schemas/Cat"
+              dog: "#/components/schemas/Dog"
+    InferredGrid:
+      type: array
+      items:
+        type: array
+        items:
+          oneOf:
+            - $ref: "#/components/schemas/Cat"
+            - $ref: "#/components/schemas/Dog"
+    InferredAnyGrid:
+      type: array
+      items:
+        type: array
+        items:
+          anyOf:
+            - $ref: "#/components/schemas/Cat"
+            - $ref: "#/components/schemas/Dog"
+    InheritedGrid:
+      type: array
+      items:
+        type: array
+        items:
+          $ref: "#/components/schemas/Animal"
+    Animal:
+      type: object
+      properties:
+        kind:
+          type: string
+      required:
+        - kind
+      discriminator:
+        propertyName: kind
+        mapping:
+          bird: "#/components/schemas/Bird"
+          fish: "#/components/schemas/Fish"
+    Bird:
+      allOf:
+        - $ref: "#/components/schemas/Animal"
+        - type: object
+          properties:
+            wingspan:
+              type: number
+    Fish:
+      allOf:
+        - $ref: "#/components/schemas/Animal"
+        - type: object
+          properties:
+            fins:
+              type: integer
+    Cat:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - cat
+        lives:
+          type: integer
+      required:
+        - kind
+    Dog:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - dog
+        breed:
+          type: string
+      required:
+        - kind

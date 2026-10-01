@@ -1,0 +1,65 @@
+# The `type: object` member with an object example is the evidence that
+# removed `example_is_schema_definition`: Fern types it `Dict[str, Any]`
+# here, and did in every other placement measured at this pin: an inline
+# request-body `oneOf` (plain, with `title`, with `description`, and with
+# 3.1 `examples`), a `oneOf` under an inline property, and a component union
+# (the measured probe `oneof-bare-object-example-variant`).
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "9f9a0f007cc4dea6d58bcccf8d7711b020b6cabfa9a65e901b5bd01e4227780e"
+
+[[covers]]
+key = "oneof-array-variant-annotated-ref-item"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-array-variant-anyof-discriminated-union-item"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-array-variant-anyof-nullable-item"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-bare-object-example-variant"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-anyof-variant"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-anyof-variant.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-array-variant-anyof-item"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-anyof-item.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-string-const-variant"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "annotated-ref-shape"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/annotated-ref-shape.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-array-variant-closed-object-item"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-closed-object-item.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-closed-empty-object-variant"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-closed-empty-object-variant.md#witness-search-exhaustive"
+verdict = "exhausted"

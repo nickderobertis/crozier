@@ -1,0 +1,15 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "29ae23bb3c5b9129a2116367d5dd9a33528c79f966465e72a28356d21a72fb92"
+
+[[covers]]
+key = "items-oneof-element"
+arm = 'src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/items-oneof-element.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "array-item-empty-object"
+arm = 'src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-empty-object.md#witness-search-exhaustive"
+verdict = "exhausted"
