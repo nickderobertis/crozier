@@ -43,7 +43,7 @@ split four ways:
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. They are not among the 465 and never count as a real-specification
-  match. 53 of the 59 unreached arms below carry an arm-level hand-written
+  match. 54 of the 60 unreached arms below carry an arm-level hand-written
   fixture, and each such arm is still counted as unreached by real
   specifications.
 - **6 remain unproven.** 6 are the `FIXTURE` `gap` rows. Each is a shape Fern
@@ -60,10 +60,11 @@ split four ways:
 
 465 + 66 + 5 + 6 = 542. `golden` is still not `golden`-exhausted.
 [Golden reach](#every-unreached-arm-and-its-search-verdict) counts 54 golden
-rows with at least one handling site no golden-only witness executes, 59 arms
-in all. The six-source searches of 58 of those arms read `exhausted`; the
-fifty-ninth, `discriminator-mapping`'s, has no arm search yet. One reached arm
-rests on a witness whose redistribution grant is disputed.
+rows with at least one handling site no golden-only witness executes, 60 arms
+in all. The searches of 59 of those arms read `exhausted`; the sixtieth,
+`discriminator-mapping`'s, has no arm search yet. No arm rests on a witness
+whose redistribution grant is disputed: the one that did lost it when corpus row
+224 was withdrawn, and is counted among the 60.
 
 **What the census still cannot enumerate.** The 542 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
@@ -1706,9 +1707,9 @@ unreached by any Fern-accepted document.
 
 | rank | key | region | unreached sites | unreached regions | witnesses | disposition |
 |---:|---|---|---:|---:|---:|---|
-| 1 | `ref-pointer-composition-index` | `schemas` | **3** | **45** | **4** | owned — see the table below |
+| 1 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **3** | owned — see the table below |
 | 2 | `anyof-discriminated-union` | `schemas` | **2** | **45** | **13** | owned — see the table below |
-| 3 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **5** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-properties.md) |
+| 3 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **4** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-properties.md) |
 | 4 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-items.md) |
 | 5 | `oneof-anyof-variant` | `schemas` | **1** | **69** | **3** | open — searched by `search-remaining-gaps`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-anyof-variant.md) |
 | 6 | `anyof-oneof-variant` | `schemas` | **1** | **64** | **3** | owned — see the table below |
@@ -1741,8 +1742,8 @@ unreached by any Fern-accepted document.
 | 33 | `http-negotiate` | `security` | **1** | **5** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/http-negotiate.md) |
 | 34 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-items.md) |
 | 35 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **5** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-leading-zero-member.md) |
-| 36 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **195** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/mutually-recursive-graph.md) |
-| 37 | `recursive-graph` | `schemas` | **1** | **2** | **195** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/recursive-graph.md) |
+| 36 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **194** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/mutually-recursive-graph.md) |
+| 37 | `recursive-graph` | `schemas` | **1** | **2** | **194** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/recursive-graph.md) |
 | 38 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — see the table below |
 | 39 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-empty-identifier-member.md) |
 | 40 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-leading-digit-identifier.md) |
@@ -1858,11 +1859,11 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 The golden rows split in two. **411** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **54** carry
-at least one handling site no golden-only witness executes: 59 unreached arms
+at least one handling site no golden-only witness executes: 60 unreached arms
 in all. Every one is named below with the verdict its linked arm-search record
-states under Contract B's six declared sources. 58 read `exhausted`: each
+states under Contract B's six declared sources. 59 read `exhausted`: each
 of those arms' six-source searches owes nothing and found no registrable
-real-world document that executes it. The fifty-ninth, `discriminator-mapping`'s
+real-world document that executes it. The sixtieth, `discriminator-mapping`'s
 `collect_schema_refs` arm, reads `search-incomplete` because no arm search has
 run for it. The remaining-gap searches ran four of
 them. Two are the `scalar_body` fallback of `format-idn-hostname` and
@@ -1893,7 +1894,10 @@ fixtures cover 17 arms: `format-scalar-bodies` the thirteen `format-*` rows'
 arm, and one `http-*-unrequired` fixture for each of `auth_model`'s
 `Auth::None` fallback rows. The changes below took one arm off the count, from
 60 to 59 after the [`example` arm's removal](#the-example-arm-removed-as-a-proven-divergence)
-took it from 61 to 60, and each is stated here rather than left to the ledger:
+took it from 61 to 60, and each is stated here rather than left to the ledger.
+Withdrawing corpus row 224 then put `ref_to_class`'s composition-index walk back
+on the count, for 60; *No arm rests on a disputed grant*, after the table, says
+why. The changes that took the arm off:
 
 - **Three divergences, repaired and proven on the corpus goldens.** Commit
   `35afbf97a` names the member of `01_00_AM` `ONE00AM` as Fern does, not
@@ -2021,8 +2025,7 @@ extensions' objects is declared by another golden-bearing source. The
 #### The `example` arm, removed as a proven divergence
 
 The table had 61 arms across 55 rows until `example`'s one unreached site,
-`src/ir.rs::example_is_schema_definition`, left it: 60 arms across 54 rows, until
-row 224's withdrawal added `ref_to_class`'s composition-index walk: 61. That
+`src/ir.rs::example_is_schema_definition`, left it: 60 arms across 54 rows. That
 helper's only caller was the `InlineHoister::hoist_union_variant` disjunct that
 hoisted a bare `type: object` union member carrying a concrete object example
 into a named model. Fern at CLI 5.67.1 and python-sdk 5.20.0 never does. It types
