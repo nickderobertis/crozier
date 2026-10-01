@@ -132,8 +132,10 @@ crozier generate python \
 - `--audience` (repeatable) / `--audience-strict` — prune generation to
   `x-crozier-audiences`.
 
-crozier exits `0` on success (with a one-line summary on stderr) and `1` on any
-error, printing the exact problem and a suggested fix.
+crozier exits `0` on success (with a one-line summary on stderr), `1` on an
+error, printing the exact problem and a suggested fix, and `2` on a usage error
+(a bad flag or argument). `crozier compare` adds `3` and `4` for its results
+([`docs/compare.md`](docs/compare.md#exit-statuses)).
 
 To check crozier against the SDK you generate today, before switching, run
 `crozier compare`: for every generator your `crozier.yml` files declare, it runs a
