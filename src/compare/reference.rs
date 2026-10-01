@@ -184,14 +184,19 @@ mod tests {
             "CROZIER_REFERENCE_GENERATOR".to_string(),
             "python".to_string(),
         )];
+        // The working directory is proven by a relative write landing in `dir`,
+        // not by comparing `pwd`: Windows' `sh` prints its own spelling of a path.
         let outcome = run(
-            "printf '%s %s' \"$CROZIER_REFERENCE_GENERATOR\" \"$(pwd)\"; echo oops >&2",
+            "printf '%s' \"$CROZIER_REFERENCE_GENERATOR\"; echo here > written-here; echo oops >&2",
             dir.path(),
             &env,
         );
         assert!(outcome.succeeded(), "{outcome:?}");
-        let cwd = std::fs::canonicalize(dir.path()).unwrap();
-        assert_eq!(outcome.stdout, format!("python {}", cwd.display()));
+        assert_eq!(outcome.stdout, "python");
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("written-here")).unwrap(),
+            "here\n"
+        );
         assert_eq!(outcome.status_text(), "exit 0");
         assert_eq!(outcome.diagnostic().as_deref(), Some("oops"));
         assert!(outcome.seconds >= 0.0);
