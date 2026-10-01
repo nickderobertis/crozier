@@ -83,12 +83,11 @@ required leg (`live-e2e`, aggregated into `gate`).
 - **Vendored synthetic seeds** (`exhaustive`, …): the spec is committed at
   `tests/fixtures/<name>/openapi.yml`. `exhaustive` is the deliberately
   complicated seed.
-- **`link-ok` real-world corpus** (`apideck.com-crm`; `bunq.com`, the at-scale
+- **Committed real-world corpus** (`apideck.com-crm`; `bunq.com`, the at-scale
   target and the one fixture that sets `strict_coverage=False`): a real API from
-  `tests/fixtures/CORPUS.md`. Its licence permits redistribution but, per the
-  corpus policy, **only the generated Fern golden is vendored — not the spec**.
+  `tests/fixtures/CORPUS.md`. Both the source and Fern golden are committed.
   The `Fixture.spec_url` points at the pinned upstream URL, and the harness
-  fetches the spec (with retries) at run time. This is the proof that crozier's
+  reads the committed source at run time. This is the proof that crozier's
   parameter/response `$ref` resolution and Fern-matching method naming hold up on
   a messy real-world document, not just curated seeds.
 

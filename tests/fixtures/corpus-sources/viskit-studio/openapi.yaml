@@ -1,0 +1,4461 @@
+components:
+  schemas:
+    AssetDeleteResponse:
+      properties:
+        asset_id:
+          title: Asset Id
+          type: string
+        deleted:
+          title: Deleted
+          type: boolean
+        file_deleted:
+          title: File Deleted
+          type: boolean
+      required:
+        - asset_id
+        - deleted
+        - file_deleted
+      title: AssetDeleteResponse
+      type: object
+    AssetEditContext:
+      properties:
+        asset_id:
+          title: Asset Id
+          type: string
+        image_id:
+          title: Image Id
+          type: string
+        image_url:
+          title: Image Url
+          type: string
+        target:
+          additionalProperties:
+            type: string
+          title: Target
+          type: object
+      required:
+        - asset_id
+        - image_id
+        - image_url
+        - target
+      title: AssetEditContext
+      type: object
+    AssetListResponse:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/AssetOut'
+          title: Items
+          type: array
+        total:
+          title: Total
+          type: integer
+      required:
+        - items
+        - total
+      title: AssetListResponse
+      type: object
+    AssetOut:
+      properties:
+        download_url:
+          title: Download Url
+          type: string
+        id:
+          title: Id
+          type: string
+        image_id:
+          title: Image Id
+          type: string
+        image_url:
+          title: Image Url
+          type: string
+        metadata:
+          additionalProperties: true
+          title: Metadata
+          type: object
+        name:
+          title: Name
+          type: string
+        output_kind:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Output Kind
+        source_image_ref:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Source Image Ref
+        source_job_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Source Job Id
+        source_output_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Source Output Id
+        template_ref:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Template Ref
+      required:
+        - id
+        - name
+        - image_id
+        - image_url
+        - download_url
+      title: AssetOut
+      type: object
+    ComplianceOut:
+      properties:
+        advisory:
+          title: Advisory
+          type: boolean
+        locale:
+          title: Locale
+          type: string
+        score:
+          title: Score
+          type: integer
+        violations:
+          items:
+            $ref: '#/components/schemas/ViolationOut'
+          title: Violations
+          type: array
+      required:
+        - score
+        - violations
+        - advisory
+        - locale
+      title: ComplianceOut
+      type: object
+    ConfigStateResponse:
+      properties:
+        sha256:
+          title: Sha256
+          type: string
+        yaml:
+          title: Yaml
+          type: string
+      required:
+        - yaml
+        - sha256
+      title: ConfigStateResponse
+      type: object
+    CopyTemplateRequest:
+      properties:
+        name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Name
+        source_ref:
+          title: Source Ref
+          type: string
+      required:
+        - source_ref
+      title: CopyTemplateRequest
+      type: object
+    CreateEndpointRequest:
+      properties:
+        adapter:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Adapter
+        api_key:
+          title: Api Key
+          type: string
+        base_url:
+          title: Base Url
+          type: string
+        model:
+          title: Model
+          type: string
+        name:
+          title: Name
+          type: string
+        protocol:
+          enum:
+            - openai_compatible
+            - anthropic_compatible
+            - image_generation
+          title: Protocol
+          type: string
+      required:
+        - protocol
+        - base_url
+        - model
+        - name
+        - api_key
+      title: CreateEndpointRequest
+      type: object
+    DeleteKitImageResponse:
+      properties:
+        deleted:
+          title: Deleted
+          type: boolean
+        file_deleted:
+          title: File Deleted
+          type: boolean
+        image_id:
+          title: Image Id
+          type: string
+        kit_id:
+          title: Kit Id
+          type: integer
+      required:
+        - kit_id
+        - image_id
+        - deleted
+        - file_deleted
+      title: DeleteKitImageResponse
+      type: object
+    DetailSectionIn:
+      properties:
+        id:
+          enum:
+            - M1
+            - M2
+            - M3
+            - M4
+            - M5
+            - M6
+            - M7
+            - M8
+            - M9
+          title: Id
+          type: string
+        three_piece:
+          $ref: '#/components/schemas/ThreePieceIn'
+      required:
+        - id
+        - three_piece
+      title: DetailSectionIn
+      type: object
+    DetailSectionOut:
+      properties:
+        id:
+          enum:
+            - M1
+            - M2
+            - M3
+            - M4
+            - M5
+            - M6
+            - M7
+            - M8
+            - M9
+          title: Id
+          type: string
+        three_piece:
+          $ref: '#/components/schemas/ThreePieceOut'
+      required:
+        - id
+        - three_piece
+      title: DetailSectionOut
+      type: object
+    EditAccepted:
+      properties:
+        job_id:
+          title: Job Id
+          type: string
+      required:
+        - job_id
+      title: EditAccepted
+      type: object
+    EditRequest:
+      properties:
+        kit_id:
+          anyOf:
+            - pattern: ^[A-Za-z0-9_-]{1,64}$
+              type: string
+            - type: 'null'
+          description: Optional kit id for local edit context; safe-character allowlist keeps sidecar references portable.
+          title: Kit Id
+        mask_box:
+          additionalProperties:
+            type: integer
+          description: x,y,w,h
+          title: Mask Box
+          type: object
+        new_text:
+          title: New Text
+          type: string
+      required:
+        - mask_box
+        - new_text
+      title: EditRequest
+      type: object
+    EditResultCreate:
+      properties:
+        metadata:
+          additionalProperties: true
+          title: Metadata
+          type: object
+        result_data_url:
+          maxLength: 14000000
+          title: Result Data Url
+          type: string
+        source_image_ref:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Source Image Ref
+      required:
+        - result_data_url
+      title: EditResultCreate
+      type: object
+    EditResultOut:
+      properties:
+        edit_result_ref:
+          title: Edit Result Ref
+          type: string
+        result_url:
+          title: Result Url
+          type: string
+        status:
+          title: Status
+          type: string
+      required:
+        - edit_result_ref
+        - result_url
+        - status
+      title: EditResultOut
+      type: object
+    EditorProjectResponse:
+      properties:
+        checksum:
+          title: Checksum
+          type: string
+        created_at:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Created At
+        document:
+          additionalProperties: true
+          title: Document
+          type: object
+        document_schema_version:
+          title: Document Schema Version
+          type: integer
+        image_id:
+          title: Image Id
+          type: string
+        project_id:
+          title: Project Id
+          type: string
+        revision:
+          title: Revision
+          type: integer
+        source_image_ref:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Source Image Ref
+        updated_at:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Updated At
+      required:
+        - image_id
+        - project_id
+        - document_schema_version
+        - revision
+        - checksum
+        - document
+      title: EditorProjectResponse
+      type: object
+    EditorProjectSaveRequest:
+      properties:
+        document:
+          additionalProperties: true
+          description: Versioned ViskitEditorDocument JSON object
+          title: Document
+          type: object
+        expected_revision:
+          anyOf:
+            - minimum: 1
+              type: integer
+            - type: 'null'
+          description: Optimistic concurrency guard; 409 when it differs from stored revision.
+          title: Expected Revision
+        source_image_ref:
+          anyOf:
+            - maxLength: 120
+              pattern: ^[A-Za-z0-9_-]+$
+              type: string
+            - type: 'null'
+          description: Optional source_images.id backing this project import.
+          title: Source Image Ref
+      required:
+        - document
+      title: EditorProjectSaveRequest
+      type: object
+    EndpointSecretResponse:
+      properties:
+        api_key:
+          title: Api Key
+          type: string
+      required:
+        - api_key
+      title: EndpointSecretResponse
+      type: object
+    EndpointStanza:
+      properties:
+        adapter:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Adapter
+        api_key_env:
+          title: Api Key Env
+          type: string
+        base_url:
+          title: Base Url
+          type: string
+        model:
+          title: Model
+          type: string
+        protocol:
+          title: Protocol
+          type: string
+      required:
+        - protocol
+        - base_url
+        - api_key_env
+        - model
+      title: EndpointStanza
+      type: object
+    ExtractRequest:
+      properties:
+        description:
+          anyOf:
+            - maxLength: 2000
+              type: string
+            - type: 'null'
+          title: Description
+        image_url:
+          maxLength: 12000000
+          title: Image Url
+          type: string
+      required:
+        - image_url
+      title: ExtractRequest
+      type: object
+    ExtractResponse:
+      properties:
+        brand:
+          $ref: '#/components/schemas/FieldInference'
+        brand_color_hex:
+          $ref: '#/components/schemas/FieldInference'
+        category:
+          $ref: '#/components/schemas/FieldInference'
+        name:
+          anyOf:
+            - $ref: '#/components/schemas/FieldInference'
+            - type: 'null'
+        price:
+          anyOf:
+            - $ref: '#/components/schemas/FieldInference'
+            - type: 'null'
+        product_type:
+          $ref: '#/components/schemas/FieldInference'
+        selling_points:
+          items:
+            $ref: '#/components/schemas/FieldInference'
+          title: Selling Points
+          type: array
+      required:
+        - name
+        - brand
+        - category
+        - product_type
+        - price
+        - brand_color_hex
+        - selling_points
+      title: ExtractResponse
+      type: object
+    FieldInference:
+      properties:
+        confidence:
+          maximum: 1
+          minimum: 0
+          title: Confidence
+          type: number
+        reasoning:
+          title: Reasoning
+          type: string
+        value:
+          title: Value
+      required:
+        - value
+        - confidence
+        - reasoning
+      title: FieldInference
+      type: object
+    GenerateRequest:
+      properties:
+        brand_color_hex:
+          pattern: ^#[0-9A-Fa-f]{6}$
+          title: Brand Color Hex
+          type: string
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        retrieved_bestseller_ids:
+          items:
+            type: integer
+          title: Retrieved Bestseller Ids
+          type: array
+        spec:
+          $ref: '#/components/schemas/SpecIn'
+        style_prompt:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Style Prompt
+        template_scheme_ref:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Template Scheme Ref
+        template_slot_overrides:
+          additionalProperties:
+            type: string
+          title: Template Slot Overrides
+          type: object
+      required:
+        - spec
+        - brand_color_hex
+        - locale
+      title: GenerateRequest
+      type: object
+    GenerateResponse:
+      properties:
+        abort_reason:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Abort Reason
+        color_lock_summary:
+          additionalProperties:
+            type: integer
+          title: Color Lock Summary
+          type: object
+        compliance_path:
+          title: Compliance Path
+          type: string
+        cost_path:
+          title: Cost Path
+          type: string
+        db_kit_id:
+          title: Db Kit Id
+          type: integer
+        kit_id:
+          title: Kit Id
+          type: string
+        needs_review:
+          title: Needs Review
+          type: boolean
+        png_paths:
+          items:
+            type: string
+          title: Png Paths
+          type: array
+      required:
+        - kit_id
+        - db_kit_id
+        - png_paths
+        - compliance_path
+        - cost_path
+        - color_lock_summary
+        - needs_review
+      title: GenerateResponse
+      type: object
+    GenerationJobCreate:
+      properties:
+        client_job_id:
+          anyOf:
+            - maxLength: 120
+              type: string
+            - type: 'null'
+          title: Client Job Id
+        locale:
+          default: zh
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        marketing_kit_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Marketing Kit Id
+        outputs:
+          items:
+            $ref: '#/components/schemas/GenerationOutputCreate'
+          maxItems: 100
+          minItems: 1
+          title: Outputs
+          type: array
+        planner_payload:
+          additionalProperties: true
+          title: Planner Payload
+          type: object
+        source_image_ref:
+          title: Source Image Ref
+          type: string
+        user_prompt:
+          default: ''
+          maxLength: 20000
+          title: User Prompt
+          type: string
+      required:
+        - source_image_ref
+        - outputs
+      title: GenerationJobCreate
+      type: object
+    GenerationJobCreated:
+      properties:
+        job_id:
+          title: Job Id
+          type: string
+        output_count:
+          title: Output Count
+          type: integer
+        status:
+          enum:
+            - planned
+            - queued
+            - running
+            - stopping
+            - stopped
+            - succeeded
+            - failed
+            - partial
+            - interrupted
+          title: Status
+          type: string
+      required:
+        - job_id
+        - status
+        - output_count
+      title: GenerationJobCreated
+      type: object
+    GenerationJobListResponse:
+      properties:
+        jobs:
+          items:
+            $ref: '#/components/schemas/GenerationJobOut'
+          title: Jobs
+          type: array
+        limit:
+          title: Limit
+          type: integer
+        offset:
+          title: Offset
+          type: integer
+        total:
+          title: Total
+          type: integer
+      required:
+        - jobs
+        - total
+        - limit
+        - offset
+      title: GenerationJobListResponse
+      type: object
+    GenerationJobOut:
+      properties:
+        cancel_requested:
+          title: Cancel Requested
+          type: boolean
+        client_job_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Client Job Id
+        created_at:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Created At
+        error_message:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Error Message
+        finished_at:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Finished At
+        id:
+          title: Id
+          type: string
+        locale:
+          title: Locale
+          type: string
+        marketing_kit_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Marketing Kit Id
+        outputs:
+          items:
+            $ref: '#/components/schemas/GenerationOutputOut'
+          title: Outputs
+          type: array
+        planner_payload:
+          additionalProperties: true
+          title: Planner Payload
+          type: object
+        source_image_ref:
+          title: Source Image Ref
+          type: string
+        started_at:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Started At
+        status:
+          enum:
+            - planned
+            - queued
+            - running
+            - stopping
+            - stopped
+            - succeeded
+            - failed
+            - partial
+            - interrupted
+          title: Status
+          type: string
+        updated_at:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Updated At
+        user_prompt:
+          title: User Prompt
+          type: string
+      required:
+        - id
+        - client_job_id
+        - status
+        - cancel_requested
+        - source_image_ref
+        - user_prompt
+        - locale
+        - marketing_kit_id
+        - planner_payload
+        - created_at
+        - updated_at
+        - started_at
+        - finished_at
+        - error_message
+        - outputs
+      title: GenerationJobOut
+      type: object
+    GenerationJobStartResponse:
+      properties:
+        job_id:
+          title: Job Id
+          type: string
+        scheduled:
+          title: Scheduled
+          type: boolean
+        status:
+          enum:
+            - planned
+            - queued
+            - running
+            - stopping
+            - stopped
+            - succeeded
+            - failed
+            - partial
+            - interrupted
+          title: Status
+          type: string
+      required:
+        - job_id
+        - status
+        - scheduled
+      title: GenerationJobStartResponse
+      type: object
+    GenerationJobStopResponse:
+      properties:
+        cancel_requested:
+          title: Cancel Requested
+          type: boolean
+        job_id:
+          title: Job Id
+          type: string
+        status:
+          enum:
+            - planned
+            - queued
+            - running
+            - stopping
+            - stopped
+            - succeeded
+            - failed
+            - partial
+            - interrupted
+          title: Status
+          type: string
+      required:
+        - job_id
+        - status
+        - cancel_requested
+      title: GenerationJobStopResponse
+      type: object
+    GenerationOutputCreate:
+      properties:
+        aspect_ratio:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Aspect Ratio
+        destination_type:
+          default: asset
+          enum:
+            - kit_slot
+            - asset
+          title: Destination Type
+          type: string
+        height:
+          default: 1024
+          exclusiveMinimum: 0
+          maximum: 4096
+          title: Height
+          type: integer
+        marketing_kit_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Marketing Kit Id
+        output_key:
+          pattern: ^[A-Za-z0-9][A-Za-z0-9_-]{0,80}$
+          title: Output Key
+          type: string
+        output_kind:
+          default: custom
+          enum:
+            - product_main
+            - white_bg
+            - solid_bg
+            - banner
+            - poster
+            - hero
+            - detail
+            - custom
+          title: Output Kind
+          type: string
+        prompt:
+          maxLength: 20000
+          minLength: 1
+          title: Prompt
+          type: string
+        slot_id:
+          anyOf:
+            - pattern: ^[HM][1-9]$
+              type: string
+            - type: 'null'
+          title: Slot Id
+        template_name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Template Name
+        template_ref:
+          title: Template Ref
+          type: string
+        width:
+          default: 1024
+          exclusiveMinimum: 0
+          maximum: 4096
+          title: Width
+          type: integer
+      required:
+        - output_key
+        - template_ref
+        - prompt
+      title: GenerationOutputCreate
+      type: object
+    GenerationOutputOut:
+      properties:
+        aspect_ratio:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Aspect Ratio
+        asset_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Asset Id
+        destination_type:
+          title: Destination Type
+          type: string
+        error_message:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Error Message
+        height:
+          title: Height
+          type: integer
+        id:
+          title: Id
+          type: string
+        image_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Image Id
+        image_url:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Image Url
+        marketing_kit_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Marketing Kit Id
+        output_key:
+          title: Output Key
+          type: string
+        output_kind:
+          title: Output Kind
+          type: string
+        prompt:
+          title: Prompt
+          type: string
+        slot_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Slot Id
+        sort_order:
+          title: Sort Order
+          type: integer
+        status:
+          title: Status
+          type: string
+        template_name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Template Name
+        template_ref:
+          title: Template Ref
+          type: string
+        width:
+          title: Width
+          type: integer
+      required:
+        - id
+        - output_key
+        - output_kind
+        - template_ref
+        - template_name
+        - aspect_ratio
+        - width
+        - height
+        - prompt
+        - status
+        - destination_type
+        - marketing_kit_id
+        - slot_id
+        - asset_id
+        - image_id
+        - image_url
+        - error_message
+        - sort_order
+      title: GenerationOutputOut
+      type: object
+    GenerationPlanItemOut:
+      properties:
+        aspect_ratio:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Aspect Ratio
+        destination_type:
+          default: asset
+          enum:
+            - kit_slot
+            - asset
+          title: Destination Type
+          type: string
+        enabled:
+          default: true
+          title: Enabled
+          type: boolean
+        id:
+          title: Id
+          type: string
+        output_kind:
+          title: Output Kind
+          type: string
+        reason:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Reason
+        slot_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Slot Id
+        template_name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Template Name
+        template_ref:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Template Ref
+        title:
+          title: Title
+          type: string
+      required:
+        - id
+        - output_kind
+        - title
+      title: GenerationPlanItemOut
+      type: object
+    GenerationPlanOut:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/GenerationPlanItemOut'
+          title: Items
+          type: array
+        plan_id:
+          title: Plan Id
+          type: string
+        plan_source:
+          enum:
+            - explicit
+            - recommended
+            - fallback
+            - manual
+          title: Plan Source
+          type: string
+        planner_note:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Planner Note
+        planner_payload:
+          additionalProperties: true
+          title: Planner Payload
+          type: object
+        requires_confirmation:
+          title: Requires Confirmation
+          type: boolean
+        source_image_ref:
+          title: Source Image Ref
+          type: string
+        user_prompt:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: User Prompt
+      required:
+        - plan_id
+        - source_image_ref
+        - plan_source
+        - requires_confirmation
+        - items
+      title: GenerationPlanOut
+      type: object
+    GenerationPlanRequest:
+      properties:
+        explicit_template_refs:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: 'null'
+          title: Explicit Template Refs
+        kit_client_id:
+          title: Kit Client Id
+          type: string
+        locale:
+          default: zh
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        product:
+          $ref: '#/components/schemas/ProductProfileIn'
+        source_image_ref:
+          title: Source Image Ref
+          type: string
+        user_prompt:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: User Prompt
+      required:
+        - kit_client_id
+        - source_image_ref
+        - product
+      title: GenerationPlanRequest
+      type: object
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    HeroSectionIn:
+      properties:
+        id:
+          enum:
+            - H1
+            - H2
+            - H3
+            - H4
+            - H5
+          title: Id
+          type: string
+        three_piece:
+          $ref: '#/components/schemas/ThreePieceIn'
+      required:
+        - id
+        - three_piece
+      title: HeroSectionIn
+      type: object
+    HeroSectionOut:
+      properties:
+        id:
+          enum:
+            - H1
+            - H2
+            - H3
+            - H4
+            - H5
+          title: Id
+          type: string
+        three_piece:
+          $ref: '#/components/schemas/ThreePieceOut'
+      required:
+        - id
+        - three_piece
+      title: HeroSectionOut
+      type: object
+    KitListItem:
+      properties:
+        asset_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Asset Id
+        category:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Category
+        created_at:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Created At
+        id:
+          title: Id
+          type: integer
+        image_ids:
+          anyOf:
+            - items:
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              type: array
+            - type: 'null'
+          title: Image Ids
+        locale:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Locale
+        name:
+          title: Name
+          type: string
+        name_en:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Name En
+        score:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Score
+        sku:
+          title: Sku
+          type: string
+        source_type:
+          default: kit
+          enum:
+            - kit
+            - asset
+          title: Source Type
+          type: string
+        status:
+          title: Status
+          type: string
+        thumbs:
+          items:
+            anyOf:
+              - type: string
+              - type: 'null'
+          title: Thumbs
+          type: array
+        updated_at:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Updated At
+      required:
+        - id
+        - sku
+        - name
+        - name_en
+        - status
+        - score
+        - locale
+        - thumbs
+      title: KitListItem
+      type: object
+    KitListResponse:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/KitListItem'
+          title: Items
+          type: array
+        total:
+          title: Total
+          type: integer
+      required:
+        - items
+        - total
+      title: KitListResponse
+      type: object
+    KitMetaResponse:
+      description: Side-car payload for kit detail and the EPIC-9 Catalog drawer.
+      properties:
+        compliance:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Compliance
+        cost:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Cost
+        db_kit_id:
+          title: Db Kit Id
+          type: integer
+        kit_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Kit Id
+        retrieved_bestseller_ids:
+          items:
+            type: integer
+          title: Retrieved Bestseller Ids
+          type: array
+        spec:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Spec
+        spec_markdown:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Spec Markdown
+      required:
+        - db_kit_id
+        - retrieved_bestseller_ids
+      title: KitMetaResponse
+      type: object
+    OcrResponse:
+      properties:
+        available:
+          default: true
+          title: Available
+          type: boolean
+        boxes:
+          items:
+            $ref: '#/components/schemas/TextBoxOut'
+          title: Boxes
+          type: array
+        engine:
+          title: Engine
+          type: string
+        unavailable_reason:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Unavailable Reason
+        version:
+          title: Version
+          type: string
+      required:
+        - boxes
+        - engine
+        - version
+      title: OcrResponse
+      type: object
+    OnboardingNeededResponse:
+      properties:
+        needs_onboarding:
+          title: Needs Onboarding
+          type: boolean
+      required:
+        - needs_onboarding
+      title: OnboardingNeededResponse
+      type: object
+    PreviewRequest:
+      properties:
+        brand_color_hex:
+          default: '#C4513A'
+          pattern: ^#[0-9A-Fa-f]{6}$
+          title: Brand Color Hex
+          type: string
+        copy:
+          default: 新品上市
+          title: Copy
+          type: string
+        design_note:
+          default: keep product centered with premium spacing
+          title: Design Note
+          type: string
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        sample_brand:
+          default: 示例品牌
+          title: Sample Brand
+          type: string
+        sample_category:
+          default: 服饰
+          title: Sample Category
+          type: string
+        sample_name:
+          default: 示例商品
+          title: Sample Name
+          type: string
+        style_prompt:
+          default: warm minimalist studio, soft daylight
+          title: Style Prompt
+          type: string
+        template_ref:
+          title: Template Ref
+          type: string
+        visual:
+          default: single product hero image, clean ecommerce composition
+          title: Visual
+          type: string
+      required:
+        - template_ref
+        - locale
+      title: PreviewRequest
+      type: object
+    PreviewResponse:
+      properties:
+        cost_usd:
+          title: Cost Usd
+          type: number
+        png_path:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Png Path
+        prompt:
+          title: Prompt
+          type: string
+      required:
+        - prompt
+        - png_path
+        - cost_usd
+      title: PreviewResponse
+      type: object
+    ProbeCandidateRequest:
+      properties:
+        adapter:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Adapter
+        api_key:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Api Key
+        api_key_env:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Api Key Env
+        base_url:
+          title: Base Url
+          type: string
+        protocol:
+          enum:
+            - openai_compatible
+            - anthropic_compatible
+            - image_generation
+          title: Protocol
+          type: string
+      required:
+        - protocol
+        - base_url
+      title: ProbeCandidateRequest
+      type: object
+    ProbeCandidateResponse:
+      properties:
+        error:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Error
+        latency_ms:
+          title: Latency Ms
+          type: integer
+        models:
+          items:
+            type: string
+          title: Models
+          type: array
+        ok:
+          title: Ok
+          type: boolean
+      required:
+        - ok
+        - latency_ms
+        - models
+      title: ProbeCandidateResponse
+      type: object
+    ProductProfileIn:
+      properties:
+        brand:
+          default: ''
+          title: Brand
+          type: string
+        brand_color_hex:
+          default: ''
+          title: Brand Color Hex
+          type: string
+        category:
+          default: ''
+          title: Category
+          type: string
+        name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Name
+        price:
+          anyOf:
+            - type: number
+            - type: 'null'
+          title: Price
+        product_type:
+          default: ''
+          title: Product Type
+          type: string
+        selling_points:
+          items:
+            type: string
+          title: Selling Points
+          type: array
+      title: ProductProfileIn
+      type: object
+    ProviderHealthRow:
+      properties:
+        base_url:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Base Url
+        endpoint_id:
+          title: Endpoint Id
+          type: string
+        last_check:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Last Check
+        latency_ms:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Latency Ms
+        role:
+          title: Role
+          type: string
+        status:
+          anyOf:
+            - enum:
+                - ok
+                - warn
+                - error
+              type: string
+            - type: 'null'
+          title: Status
+        unbound:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: 'null'
+          title: Unbound
+      required:
+        - endpoint_id
+        - role
+        - base_url
+        - status
+        - latency_ms
+        - last_check
+      title: ProviderHealthRow
+      type: object
+    ProviderProbeResponse:
+      properties:
+        rows:
+          items:
+            $ref: '#/components/schemas/ProviderProbeRow'
+          title: Rows
+          type: array
+      required:
+        - rows
+      title: ProviderProbeResponse
+      type: object
+    ProviderProbeRow:
+      properties:
+        error:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Error
+        latency_ms:
+          title: Latency Ms
+          type: integer
+        models:
+          items:
+            type: string
+          title: Models
+          type: array
+        ok:
+          title: Ok
+          type: boolean
+        role:
+          title: Role
+          type: string
+      required:
+        - role
+        - ok
+        - latency_ms
+        - models
+      title: ProviderProbeRow
+      type: object
+    ProvidersSummaryResponse:
+      properties:
+        brand_color:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Brand Color
+        default_locale:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Default Locale
+        endpoints_count:
+          title: Endpoints Count
+          type: integer
+        export_preset:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Export Preset
+        monthly_cap_usd:
+          anyOf:
+            - type: number
+            - type: 'null'
+          title: Monthly Cap Usd
+      required:
+        - endpoints_count
+        - monthly_cap_usd
+        - brand_color
+        - default_locale
+        - export_preset
+      title: ProvidersSummaryResponse
+      type: object
+    QueueJob:
+      properties:
+        current_stage:
+          title: Current Stage
+          type: string
+        eta_ms:
+          title: Eta Ms
+          type: integer
+        kit_id:
+          title: Kit Id
+          type: string
+        locale:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Locale
+        name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Name
+        sku:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Sku
+        stages:
+          items:
+            enum:
+              - done
+              - active
+              - queued
+            type: string
+          title: Stages
+          type: array
+      required:
+        - kit_id
+        - sku
+        - name
+        - locale
+        - stages
+        - current_stage
+        - eta_ms
+      title: QueueJob
+      type: object
+    SaveEndpointsRequest:
+      properties:
+        expected_sha256:
+          title: Expected Sha256
+          type: string
+        new_yaml:
+          title: New Yaml
+          type: string
+      required:
+        - new_yaml
+        - expected_sha256
+      title: SaveEndpointsRequest
+      type: object
+    SaveEndpointsResponse:
+      properties:
+        new_sha256:
+          title: New Sha256
+          type: string
+        registry_rebooted:
+          default: true
+          title: Registry Rebooted
+          type: boolean
+        warning:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Warning
+      required:
+        - new_sha256
+      title: SaveEndpointsResponse
+      type: object
+    SaveImageRequest:
+      properties:
+        edit_result_ref:
+          pattern: ^edit-result:[A-Za-z0-9_-]{1,64}$
+          title: Edit Result Ref
+          type: string
+        mode:
+          enum:
+            - replace
+            - copy
+          title: Mode
+          type: string
+      required:
+        - edit_result_ref
+        - mode
+      title: SaveImageRequest
+      type: object
+    SaveImageResponse:
+      properties:
+        asset_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Asset Id
+        image_id:
+          title: Image Id
+          type: string
+        image_url:
+          title: Image Url
+          type: string
+        mode:
+          enum:
+            - replace
+            - copy
+          title: Mode
+          type: string
+        replaced:
+          title: Replaced
+          type: boolean
+      required:
+        - mode
+        - image_id
+        - image_url
+        - replaced
+      title: SaveImageResponse
+      type: object
+    SchemePayload:
+      properties:
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        enabled:
+          default: true
+          title: Enabled
+          type: boolean
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        name:
+          minLength: 1
+          title: Name
+          type: string
+        slots:
+          items:
+            $ref: '#/components/schemas/SchemeSlot'
+          maxItems: 14
+          minItems: 14
+          title: Slots
+          type: array
+      required:
+        - locale
+        - name
+        - slots
+      title: SchemePayload
+      type: object
+    SchemeSlot:
+      properties:
+        slot_id:
+          enum:
+            - H1
+            - H2
+            - H3
+            - H4
+            - H5
+            - M1
+            - M2
+            - M3
+            - M4
+            - M5
+            - M6
+            - M7
+            - M8
+            - M9
+          title: Slot Id
+          type: string
+        template_ref:
+          title: Template Ref
+          type: string
+      required:
+        - slot_id
+        - template_ref
+      title: SchemeSlot
+      type: object
+    SchemeSummary:
+      properties:
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        editable:
+          default: true
+          title: Editable
+          type: boolean
+        enabled:
+          default: true
+          title: Enabled
+          type: boolean
+        id:
+          title: Id
+          type: string
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        name:
+          title: Name
+          type: string
+        slots:
+          items:
+            $ref: '#/components/schemas/SchemeSlot'
+          title: Slots
+          type: array
+        source:
+          default: custom
+          enum:
+            - built_in
+            - custom
+          title: Source
+          type: string
+      required:
+        - id
+        - name
+        - locale
+        - slots
+      title: SchemeSummary
+      type: object
+    SellingPointIn:
+      properties:
+        evidence:
+          title: Evidence
+          type: string
+        priority:
+          enum:
+            - high
+            - medium
+            - low
+          title: Priority
+          type: string
+        title:
+          title: Title
+          type: string
+      required:
+        - title
+        - priority
+        - evidence
+      title: SellingPointIn
+      type: object
+    SettingsResponse:
+      description: Post-write snapshot of the 4 workspace-level fields.
+      properties:
+        brand_color:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Brand Color
+        default_locale:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Default Locale
+        export_preset:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Export Preset
+        monthly_cap_usd:
+          anyOf:
+            - type: number
+            - type: 'null'
+          title: Monthly Cap Usd
+      required:
+        - brand_color
+        - default_locale
+        - monthly_cap_usd
+        - export_preset
+      title: SettingsResponse
+      type: object
+    SettingsUpdate:
+      description: All four fields optional — only the provided keys get merged.
+      properties:
+        brand_color:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Brand Color
+        default_locale:
+          anyOf:
+            - enum:
+                - zh
+                - en
+              type: string
+            - type: 'null'
+          title: Default Locale
+        export_preset:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Export Preset
+        monthly_cap_usd:
+          anyOf:
+            - minimum: 0
+              type: number
+            - type: 'null'
+          title: Monthly Cap Usd
+      title: SettingsUpdate
+      type: object
+    SkuMetaIn:
+      properties:
+        brand:
+          title: Brand
+          type: string
+        category:
+          title: Category
+          type: string
+        name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Name
+        price:
+          title: Price
+          type: number
+        product_type:
+          enum:
+            - blue_hat
+            - sports
+            - general_food
+            - other
+          title: Product Type
+          type: string
+        sku:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Sku
+      required:
+        - brand
+        - category
+        - product_type
+        - price
+      title: SkuMetaIn
+      type: object
+    SourceImageImportIn:
+      properties:
+        image_id:
+          maxLength: 160
+          minLength: 1
+          title: Image Id
+          type: string
+      required:
+        - image_id
+      title: SourceImageImportIn
+      type: object
+    SourceImageImportOut:
+      properties:
+        data_url:
+          title: Data Url
+          type: string
+        mime_type:
+          title: Mime Type
+          type: string
+        preview_url:
+          title: Preview Url
+          type: string
+        sha256:
+          title: Sha256
+          type: string
+        size_bytes:
+          title: Size Bytes
+          type: integer
+        source_image_ref:
+          title: Source Image Ref
+          type: string
+      required:
+        - source_image_ref
+        - preview_url
+        - mime_type
+        - size_bytes
+        - sha256
+        - data_url
+      title: SourceImageImportOut
+      type: object
+    SourceImageOut:
+      properties:
+        mime_type:
+          title: Mime Type
+          type: string
+        preview_url:
+          title: Preview Url
+          type: string
+        sha256:
+          title: Sha256
+          type: string
+        size_bytes:
+          title: Size Bytes
+          type: integer
+        source_image_ref:
+          title: Source Image Ref
+          type: string
+      required:
+        - source_image_ref
+        - preview_url
+        - mime_type
+        - size_bytes
+        - sha256
+      title: SourceImageOut
+      type: object
+    Sparks:
+      properties:
+        compliance:
+          items:
+            type: number
+          title: Compliance
+          type: array
+        cost:
+          items:
+            type: number
+          title: Cost
+          type: array
+        kits:
+          items:
+            type: integer
+          title: Kits
+          type: array
+      required:
+        - kits
+        - compliance
+        - cost
+      title: Sparks
+      type: object
+    SpecIn:
+      properties:
+        detail_sections:
+          items:
+            $ref: '#/components/schemas/DetailSectionIn'
+          maxItems: 9
+          minItems: 9
+          title: Detail Sections
+          type: array
+        hero_sections:
+          items:
+            $ref: '#/components/schemas/HeroSectionIn'
+          maxItems: 5
+          minItems: 5
+          title: Hero Sections
+          type: array
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        selling_points:
+          items:
+            $ref: '#/components/schemas/SellingPointIn'
+          minItems: 1
+          title: Selling Points
+          type: array
+        sku_meta:
+          $ref: '#/components/schemas/SkuMetaIn'
+      required:
+        - locale
+        - sku_meta
+        - selling_points
+        - hero_sections
+        - detail_sections
+      title: SpecIn
+      type: object
+    SpecOut:
+      properties:
+        detail_sections:
+          items:
+            $ref: '#/components/schemas/DetailSectionOut'
+          maxItems: 9
+          minItems: 9
+          title: Detail Sections
+          type: array
+        hero_sections:
+          items:
+            $ref: '#/components/schemas/HeroSectionOut'
+          maxItems: 5
+          minItems: 5
+          title: Hero Sections
+          type: array
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        selling_points:
+          items:
+            $ref: '#/components/schemas/SellingPointIn'
+          title: Selling Points
+          type: array
+        sku_meta:
+          $ref: '#/components/schemas/SkuMetaIn'
+      required:
+        - locale
+        - sku_meta
+        - selling_points
+        - hero_sections
+        - detail_sections
+      title: SpecOut
+      type: object
+    SpecRequest:
+      properties:
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        selling_points:
+          items:
+            $ref: '#/components/schemas/SellingPointIn'
+          minItems: 1
+          title: Selling Points
+          type: array
+        sku_meta:
+          $ref: '#/components/schemas/SkuMetaIn'
+      required:
+        - sku_meta
+        - selling_points
+        - locale
+      title: SpecRequest
+      type: object
+    SpecResponse:
+      properties:
+        compliance:
+          $ref: '#/components/schemas/ComplianceOut'
+        spec:
+          $ref: '#/components/schemas/SpecOut'
+        spec_markdown:
+          title: Spec Markdown
+          type: string
+      required:
+        - spec_markdown
+        - spec
+        - compliance
+      title: SpecResponse
+      type: object
+    StoreSecretRequest:
+      properties:
+        api_key:
+          title: Api Key
+          type: string
+        name:
+          title: Name
+          type: string
+        role:
+          title: Role
+          type: string
+      required:
+        - role
+        - name
+        - api_key
+      title: StoreSecretRequest
+      type: object
+    StoreSecretResponse:
+      properties:
+        api_key_env:
+          title: Api Key Env
+          type: string
+      required:
+        - api_key_env
+      title: StoreSecretResponse
+      type: object
+    TemplatePayload:
+      properties:
+        category:
+          default: lifestyle
+          enum:
+            - hero
+            - detail_m3
+            - lifestyle
+            - short_video
+            - amazon_hero
+          title: Category
+          type: string
+        category_tips:
+          additionalProperties:
+            type: string
+          title: Category Tips
+          type: object
+        defaults:
+          additionalProperties:
+            type: string
+          title: Defaults
+          type: object
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        enabled:
+          default: true
+          title: Enabled
+          type: boolean
+        examples:
+          items:
+            type: string
+          title: Examples
+          type: array
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        name:
+          minLength: 1
+          title: Name
+          type: string
+        prompt_template:
+          additionalProperties:
+            type: string
+          minProperties: 1
+          title: Prompt Template
+          type: object
+        supports_image_reference:
+          default: false
+          title: Supports Image Reference
+          type: boolean
+        tags:
+          items:
+            type: string
+          title: Tags
+          type: array
+        variants:
+          additionalProperties: true
+          title: Variants
+          type: object
+      required:
+        - locale
+        - name
+        - prompt_template
+      title: TemplatePayload
+      type: object
+    TemplateSummary:
+      properties:
+        category:
+          enum:
+            - hero
+            - detail_m3
+            - lifestyle
+            - short_video
+            - amazon_hero
+          title: Category
+          type: string
+        copyable:
+          default: true
+          title: Copyable
+          type: boolean
+        defaults:
+          anyOf:
+            - additionalProperties:
+                type: string
+              type: object
+            - type: 'null'
+          title: Defaults
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        editable:
+          default: false
+          title: Editable
+          type: boolean
+        enabled:
+          default: true
+          title: Enabled
+          type: boolean
+        examples:
+          items:
+            type: string
+          title: Examples
+          type: array
+        id:
+          title: Id
+          type: string
+        locale:
+          enum:
+            - zh
+            - en
+          title: Locale
+          type: string
+        name:
+          title: Name
+          type: string
+        name_en:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Name En
+        prompt_template:
+          anyOf:
+            - additionalProperties:
+                type: string
+              type: object
+            - type: 'null'
+          title: Prompt Template
+        source:
+          default: built_in
+          enum:
+            - built_in
+            - custom
+          title: Source
+          type: string
+        tags:
+          items:
+            type: string
+          title: Tags
+          type: array
+        thumbnail_url:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Thumbnail Url
+      required:
+        - id
+        - name
+        - category
+        - tags
+        - locale
+        - description
+        - thumbnail_url
+      title: TemplateSummary
+      type: object
+    TemplateUpdate:
+      properties:
+        category:
+          anyOf:
+            - enum:
+                - hero
+                - detail_m3
+                - lifestyle
+                - short_video
+                - amazon_hero
+              type: string
+            - type: 'null'
+          title: Category
+        category_tips:
+          anyOf:
+            - additionalProperties:
+                type: string
+              type: object
+            - type: 'null'
+          title: Category Tips
+        defaults:
+          anyOf:
+            - additionalProperties:
+                type: string
+              type: object
+            - type: 'null'
+          title: Defaults
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        enabled:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Enabled
+        examples:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: 'null'
+          title: Examples
+        name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Name
+        prompt_template:
+          anyOf:
+            - additionalProperties:
+                type: string
+              type: object
+            - type: 'null'
+          title: Prompt Template
+        supports_image_reference:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Supports Image Reference
+        tags:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: 'null'
+          title: Tags
+        variants:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Variants
+      title: TemplateUpdate
+      type: object
+    TextBoxOut:
+      properties:
+        confidence:
+          title: Confidence
+          type: number
+        h:
+          title: H
+          type: integer
+        text:
+          title: Text
+          type: string
+        w:
+          title: W
+          type: integer
+        x:
+          title: X
+          type: integer
+        'y':
+          title: 'Y'
+          type: integer
+      required:
+        - x
+        - 'y'
+        - w
+        - h
+        - text
+        - confidence
+      title: TextBoxOut
+      type: object
+    ThreePieceIn:
+      properties:
+        copy:
+          title: Copy
+          type: string
+        design_note:
+          title: Design Note
+          type: string
+        visual:
+          title: Visual
+          type: string
+      required:
+        - visual
+        - copy
+        - design_note
+      title: ThreePieceIn
+      type: object
+    ThreePieceOut:
+      description: |-
+        Output mirror of ThreePieceIn in kits.py.
+
+        Uses validation_alias + serialization_alias on ``copy_text`` so the public
+        JSON key is ``copy`` (matching the SpecIn contract) while the Python
+        field name avoids shadowing ``BaseModel.copy()``.
+      properties:
+        copy:
+          title: Copy
+          type: string
+        design_note:
+          title: Design Note
+          type: string
+        visual:
+          title: Visual
+          type: string
+      required:
+        - visual
+        - copy
+        - design_note
+      title: ThreePieceOut
+      type: object
+    UpdateEndpointRequest:
+      properties:
+        adapter:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Adapter
+        api_key:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Api Key
+        base_url:
+          title: Base Url
+          type: string
+        model:
+          title: Model
+          type: string
+        name:
+          title: Name
+          type: string
+        protocol:
+          enum:
+            - openai_compatible
+            - anthropic_compatible
+            - image_generation
+          title: Protocol
+          type: string
+      required:
+        - protocol
+        - base_url
+        - model
+        - name
+      title: UpdateEndpointRequest
+      type: object
+    ValidationError:
+      properties:
+        ctx:
+          title: Context
+          type: object
+        input:
+          title: Input
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+      type: object
+    ViolationOut:
+      properties:
+        location:
+          title: Location
+          type: string
+        matched_text:
+          title: Matched Text
+          type: string
+        rule_id:
+          title: Rule Id
+          type: string
+        severity:
+          enum:
+            - hard_block
+            - warning
+            - advisory
+          title: Severity
+          type: string
+        suggestion:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Suggestion
+      required:
+        - rule_id
+        - severity
+        - location
+        - matched_text
+      title: ViolationOut
+      type: object
+    WeeklyMetricsResponse:
+      properties:
+        api_spend_usd_mtd:
+          title: Api Spend Usd Mtd
+          type: number
+        avg_compliance:
+          anyOf:
+            - type: number
+            - type: 'null'
+          title: Avg Compliance
+        avg_manual_edit_min:
+          anyOf:
+            - type: number
+            - type: 'null'
+          title: Avg Manual Edit Min
+        kits_this_week:
+          title: Kits This Week
+          type: integer
+        sparks:
+          $ref: '#/components/schemas/Sparks'
+      required:
+        - kits_this_week
+        - avg_compliance
+        - avg_manual_edit_min
+        - api_spend_usd_mtd
+        - sparks
+      title: WeeklyMetricsResponse
+      type: object
+info:
+  title: Viskit Studio API
+  version: 0.1.0
+openapi: 3.1.0
+paths:
+  /api/assets:
+    get:
+      operationId: list_assets_api_assets_get
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 50
+            title: Limit
+            type: integer
+        - in: query
+          name: offset
+          required: false
+          schema:
+            default: 0
+            title: Offset
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetListResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Assets
+      tags:
+        - assets
+  /api/assets/{asset_id}:
+    delete:
+      operationId: delete_asset_api_assets__asset_id__delete
+      parameters:
+        - in: path
+          name: asset_id
+          required: true
+          schema:
+            title: Asset Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDeleteResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Asset
+      tags:
+        - assets
+  /api/assets/{asset_id}/download:
+    get:
+      operationId: download_asset_api_assets__asset_id__download_get
+      parameters:
+        - in: path
+          name: asset_id
+          required: true
+          schema:
+            title: Asset Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Download Asset
+      tags:
+        - assets
+  /api/assets/{asset_id}/edit:
+    post:
+      operationId: get_asset_edit_context_api_assets__asset_id__edit_post
+      parameters:
+        - in: path
+          name: asset_id
+          required: true
+          schema:
+            title: Asset Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetEditContext'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Asset Edit Context
+      tags:
+        - assets
+  /api/assets/{asset_id}/image:
+    get:
+      operationId: get_asset_image_api_assets__asset_id__image_get
+      parameters:
+        - in: path
+          name: asset_id
+          required: true
+          schema:
+            title: Asset Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Asset Image
+      tags:
+        - assets
+  /api/generation/jobs:
+    get:
+      description: Return recent durable generation jobs as queue/history records.
+      operationId: list_generation_jobs_api_generation_jobs_get
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 50
+            maximum: 100
+            minimum: 1
+            title: Limit
+            type: integer
+        - in: query
+          name: offset
+          required: false
+          schema:
+            default: 0
+            minimum: 0
+            title: Offset
+            type: integer
+        - in: query
+          name: status
+          required: false
+          schema:
+            anyOf:
+              - enum:
+                  - planned
+                  - queued
+                  - running
+                  - stopping
+                  - stopped
+                  - succeeded
+                  - failed
+                  - partial
+                  - interrupted
+                type: string
+              - type: 'null'
+            title: Status
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationJobListResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Generation Jobs
+      tags:
+        - generation-jobs
+    post:
+      operationId: create_generation_job_api_generation_jobs_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerationJobCreate'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationJobCreated'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Generation Job
+      tags:
+        - generation-jobs
+  /api/generation/jobs/kits/{marketing_kit_id}/slots/{slot_id}/image:
+    get:
+      operationId: get_kit_slot_output_image_api_generation_jobs_kits__marketing_kit_id__slots__slot_id__image_get
+      parameters:
+        - in: path
+          name: marketing_kit_id
+          required: true
+          schema:
+            title: Marketing Kit Id
+            type: integer
+        - in: path
+          name: slot_id
+          required: true
+          schema:
+            title: Slot Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Kit Slot Output Image
+      tags:
+        - generation-jobs
+  /api/generation/jobs/{job_id}:
+    get:
+      operationId: get_generation_job_api_generation_jobs__job_id__get
+      parameters:
+        - in: path
+          name: job_id
+          required: true
+          schema:
+            title: Job Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationJobOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Generation Job
+      tags:
+        - generation-jobs
+  /api/generation/jobs/{job_id}/events:
+    get:
+      operationId: generation_job_events_api_generation_jobs__job_id__events_get
+      parameters:
+        - in: path
+          name: job_id
+          required: true
+          schema:
+            title: Job Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Generation Job Events
+      tags:
+        - generation-jobs
+  /api/generation/jobs/{job_id}/outputs/{output_id}/image:
+    get:
+      operationId: get_generation_output_image_api_generation_jobs__job_id__outputs__output_id__image_get
+      parameters:
+        - in: path
+          name: job_id
+          required: true
+          schema:
+            title: Job Id
+            type: string
+        - in: path
+          name: output_id
+          required: true
+          schema:
+            title: Output Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Generation Output Image
+      tags:
+        - generation-jobs
+  /api/generation/jobs/{job_id}/start:
+    post:
+      operationId: start_generation_job_api_generation_jobs__job_id__start_post
+      parameters:
+        - in: path
+          name: job_id
+          required: true
+          schema:
+            title: Job Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationJobStartResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Start Generation Job
+      tags:
+        - generation-jobs
+  /api/generation/jobs/{job_id}/stop:
+    post:
+      operationId: stop_generation_job_api_generation_jobs__job_id__stop_post
+      parameters:
+        - in: path
+          name: job_id
+          required: true
+          schema:
+            title: Job Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationJobStopResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Stop Generation Job
+      tags:
+        - generation-jobs
+  /api/generation/plan:
+    post:
+      description: |-
+        Create the initial editable output plan for the generation workflow.
+
+        This endpoint intentionally owns the compatibility/default planning
+        contract so the frontend can fail loudly when the backend route is broken
+        instead of silently manufacturing a local plan.
+      operationId: create_generation_plan_api_generation_plan_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerationPlanRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationPlanOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Generation Plan
+      tags:
+        - generation-plan
+  /api/images/{image_id}/bytes:
+    get:
+      operationId: get_image_bytes_api_images__image_id__bytes_get
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Image Bytes
+      tags:
+        - editor
+  /api/images/{image_id}/edit:
+    post:
+      operationId: start_edit_api_images__image_id__edit_post
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditRequest'
+        required: true
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditAccepted'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Start Edit
+      tags:
+        - editor
+  /api/images/{image_id}/edit-results:
+    post:
+      operationId: create_edit_result_api_images__image_id__edit_results_post
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditResultCreate'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditResultOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Edit Result
+      tags:
+        - editor
+  /api/images/{image_id}/edit-results/{edit_result_ref}/image:
+    get:
+      operationId: get_edit_result_image_api_images__image_id__edit_results__edit_result_ref__image_get
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+        - in: path
+          name: edit_result_ref
+          required: true
+          schema:
+            title: Edit Result Ref
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Edit Result Image
+      tags:
+        - editor
+  /api/images/{image_id}/edit/events:
+    get:
+      operationId: edit_events_api_images__image_id__edit_events_get
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+        - in: query
+          name: job_id
+          required: true
+          schema:
+            title: Job Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Edit Events
+      tags:
+        - editor
+  /api/images/{image_id}/ocr:
+    post:
+      operationId: ocr_image_api_images__image_id__ocr_post
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OcrResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Ocr Image
+      tags:
+        - editor
+  /api/images/{image_id}/project:
+    get:
+      description: Return the saved Viskit editor project JSON for a canonical image id.
+      operationId: get_editor_project_api_images__image_id__project_get
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditorProjectResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Editor Project
+      tags:
+        - editor
+    put:
+      description: Create or replace the persisted project JSON for a canonical image id.
+      operationId: put_editor_project_api_images__image_id__project_put
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditorProjectSaveRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditorProjectResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Put Editor Project
+      tags:
+        - editor
+  /api/images/{image_id}/project/export:
+    get:
+      description: Download the saved editor project as project JSON.
+      operationId: export_editor_project_api_images__image_id__project_export_get
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Export Editor Project
+      tags:
+        - editor
+  /api/images/{image_id}/project/import:
+    post:
+      description: Import project JSON into the persisted editor state for this image.
+      operationId: import_editor_project_api_images__image_id__project_import_post
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditorProjectSaveRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditorProjectResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Import Editor Project
+      tags:
+        - editor
+  /api/images/{image_id}/save:
+    post:
+      description: Persist an edit result via an explicit replace-or-copy choice.
+      operationId: save_edited_image_api_images__image_id__save_post
+      parameters:
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveImageRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveImageResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Save Edited Image
+      tags:
+        - editor
+  /api/kits:
+    get:
+      description: |-
+        Return kits joined with their product catalog row, paginated & filtered.
+
+        ``thumbs`` is the concatenation of up-to-5 hero png_paths (slot 1..5) and
+        up-to-9 detail png_paths (M1..M9) — 14 slots total, NULL-padded for any
+        missing rows.  Callers render placeholder cells for NULL entries.
+
+        Standalone generated assets are also returned as catalog entries with
+        ``source_type='asset'`` so non-kit generations remain visible in Catalog.
+
+        ``recent=true`` preserves the Dashboard contract by returning kit rows
+        only. Catalog calls leave ``recent`` false and receive kit plus asset rows.
+
+        ``recent`` is otherwise advisory; sort defaults to ``created_at DESC`` to preserve
+        the EPIC-7 Dashboard call shape (``?recent=true&limit=6``).  Catalog
+        (EPIC-8) passes ``offset``, ``status``, ``locale``, ``min_score``,
+        ``category``, ``sort``, ``order`` for filtered/paginated views.
+      operationId: list_kits_api_kits_get
+      parameters:
+        - in: query
+          name: recent
+          required: false
+          schema:
+            default: false
+            title: Recent
+            type: boolean
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 6
+            maximum: 100
+            minimum: 1
+            title: Limit
+            type: integer
+        - in: query
+          name: offset
+          required: false
+          schema:
+            default: 0
+            minimum: 0
+            title: Offset
+            type: integer
+        - in: query
+          name: status
+          required: false
+          schema:
+            anyOf:
+              - maxLength: 32
+                type: string
+              - type: 'null'
+            title: Status
+        - in: query
+          name: locale
+          required: false
+          schema:
+            anyOf:
+              - maxLength: 8
+                type: string
+              - type: 'null'
+            title: Locale
+        - in: query
+          name: min_score
+          required: false
+          schema:
+            anyOf:
+              - maximum: 100
+                minimum: 0
+                type: integer
+              - type: 'null'
+            title: Min Score
+        - in: query
+          name: category
+          required: false
+          schema:
+            anyOf:
+              - maxLength: 64
+                type: string
+              - type: 'null'
+            title: Category
+        - in: query
+          name: sku
+          required: false
+          schema:
+            anyOf:
+              - maxLength: 64
+                type: string
+              - type: 'null'
+            title: Sku
+        - in: query
+          name: sort
+          required: false
+          schema:
+            default: created_at
+            enum:
+              - created_at
+              - updated_at
+              - score
+            title: Sort
+            type: string
+        - in: query
+          name: order
+          required: false
+          schema:
+            default: desc
+            enum:
+              - asc
+              - desc
+            title: Order
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KitListResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Kits
+      tags:
+        - imagegen
+  /api/kits/_warmup/extract:
+    get:
+      description: |-
+        Prime the vision provider connection so the first /extract call is warm.
+
+        Deliberately uses probe(timeout=5) — a 5s deviation from the 30s default
+        because this is a best-effort fire-and-forget warmup; we swallow all
+        failures and always return 204 so the frontend never sees an error.
+      operationId: warmup_extract_api_kits__warmup_extract_get
+      responses:
+        '204':
+          description: Successful Response
+      summary: Warmup Extract
+      tags:
+        - extract
+  /api/kits/{db_kit_id}/images/{image_id}:
+    delete:
+      description: Remove a generated image from a catalog kit slot and delete its PNG.
+      operationId: delete_generated_image_api_kits__db_kit_id__images__image_id__delete
+      parameters:
+        - in: path
+          name: db_kit_id
+          required: true
+          schema:
+            title: Db Kit Id
+            type: integer
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteKitImageResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Generated Image
+      tags:
+        - imagegen
+  /api/kits/{db_kit_id}/meta:
+    get:
+      description: Read result sidecars for *db_kit_id*; 404 if the kit root is unknown.
+      operationId: get_kit_meta_api_kits__db_kit_id__meta_get
+      parameters:
+        - in: path
+          name: db_kit_id
+          required: true
+          schema:
+            title: Db Kit Id
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KitMetaResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Kit Meta
+      tags:
+        - imagegen
+  /api/kits/{kit_id}/events:
+    get:
+      description: |-
+        Stream per-image status events for *kit_id* as text/event-stream.
+
+        Returns 404 when the kit_id has never been published to the bus
+        (callers can use this as a "kit not started" signal).  Each line
+        conforms to the SSE wire format::
+
+            data: {"image_id": "H1", "status": "color_locked", "progress": 0,
+                   "brand_color_locked": true}
+      operationId: get_kit_events_api_kits__kit_id__events_get
+      parameters:
+        - in: path
+          name: kit_id
+          required: true
+          schema:
+            title: Kit Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Kit Events
+      tags:
+        - imagegen
+  /api/kits/{kit_id}/extract:
+    post:
+      description: |-
+        Extract per-field inferences from a product image.
+
+        Uses the vision provider (registry role "vision"); falls back to "llm" if
+        the vision role is unavailable (R2 mitigation).
+
+        Reserved-prefix guard: POST to kit_id='_warmup' returns 404 — defensive
+        against POST collision with the GET /_warmup/extract warmup endpoint.
+      operationId: extract_api_kits__kit_id__extract_post
+      parameters:
+        - in: path
+          name: kit_id
+          required: true
+          schema:
+            title: Kit Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtractRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Extract
+      tags:
+        - extract
+  /api/kits/{kit_id}/generate:
+    post:
+      description: Generate the 14-image kit for *kit_id*.
+      operationId: post_generate_api_kits__kit_id__generate_post
+      parameters:
+        - in: path
+          name: kit_id
+          required: true
+          schema:
+            title: Kit Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Post Generate
+      tags:
+        - imagegen
+  /api/kits/{kit_id}/images/{image_id}:
+    get:
+      description: Serve a generated kit image by public kit id and slot id.
+      operationId: get_generated_image_api_kits__kit_id__images__image_id__get
+      parameters:
+        - in: path
+          name: kit_id
+          required: true
+          schema:
+            title: Kit Id
+            type: string
+        - in: path
+          name: image_id
+          required: true
+          schema:
+            title: Image Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Generated Image
+      tags:
+        - imagegen
+  /api/kits/{kit_id}/spec:
+    post:
+      description: Generate the marketing spec for *kit_id* under the requested locale.
+      operationId: create_spec_api_kits__kit_id__spec_post
+      parameters:
+        - in: path
+          name: kit_id
+          required: true
+          schema:
+            title: Kit Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Spec
+      tags:
+        - copywriter
+  /api/metrics/weekly:
+    get:
+      description: Aggregate live metrics — current-ISO-week kits + 12-week sparklines.
+      operationId: get_weekly_metrics_api_metrics_weekly_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyMetricsResponse'
+          description: Successful Response
+      summary: Get Weekly Metrics
+      tags:
+        - metrics
+  /api/onboarding/needed:
+    get:
+      description: Return whether onboarding is needed for this workspace.
+      operationId: get_onboarding_needed_api_onboarding_needed_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingNeededResponse'
+          description: Successful Response
+      summary: Get Onboarding Needed
+      tags:
+        - onboarding
+  /api/providers/config-state:
+    get:
+      description: |-
+        Return the on-disk YAML body and its SHA-256 checksum.
+
+        Kept for legacy/admin tools that need an explicit config-body save path.
+        Bootstrapping the live config file is a lifespan concern
+        (``apps.api.main._bootstrap_config_if_missing``), so this route is
+        side-effect-free; if the file truly doesn't exist, 404.
+      operationId: get_config_state_api_providers_config_state_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigStateResponse'
+          description: Successful Response
+      summary: Get Config State
+      tags:
+        - providers
+  /api/providers/endpoints:
+    post:
+      description: Save the new config YAML body.  ADR-010 v2 lock+checksum semantics.
+      operationId: save_endpoints_api_providers_endpoints_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveEndpointsRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveEndpointsResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Save Endpoints
+      tags:
+        - providers
+  /api/providers/endpoints/{role}:
+    delete:
+      description: |-
+        Remove a role's stanza from config.yaml and re-boot the registry.
+
+        Read-modify-write under the same lock+checksum protocol as POST.  Missing
+        role → 404.  Required roles (``REQUIRED_ROLES``) → 409; deleting them
+        would crash the next startup with ERR-PROV-001.  Use PUT to swap settings.
+      operationId: delete_endpoint_api_providers_endpoints__role__delete
+      parameters:
+        - in: path
+          name: role
+          required: true
+          schema:
+            title: Role
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveEndpointsResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Endpoint
+      tags:
+        - providers
+    get:
+      description: Return the structured stanza for *role* so the UI can prefill the edit modal.
+      operationId: get_endpoint_api_providers_endpoints__role__get
+      parameters:
+        - in: path
+          name: role
+          required: true
+          schema:
+            title: Role
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointStanza'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Endpoint
+      tags:
+        - providers
+    post:
+      description: Create a single role stanza without exposing YAML editing to the UI.
+      operationId: create_endpoint_api_providers_endpoints__role__post
+      parameters:
+        - in: path
+          name: role
+          required: true
+          schema:
+            title: Role
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEndpointRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveEndpointsResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Endpoint
+      tags:
+        - providers
+    put:
+      description: |-
+        Replace a single role's stanza.
+
+        ``api_key`` semantics: ``None``, empty string, and whitespace-only all
+        mean "preserve the existing env-var binding on disk".  Any other value
+        is persisted to the secrets store and the YAML's ``api_key_env`` is
+        rewritten to the derived env name.  To explicitly unbind, DELETE the
+        role and re-POST.
+      operationId: update_endpoint_api_providers_endpoints__role__put
+      parameters:
+        - in: path
+          name: role
+          required: true
+          schema:
+            title: Role
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEndpointRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveEndpointsResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Update Endpoint
+      tags:
+        - providers
+  /api/providers/endpoints/{role}/secret:
+    get:
+      description: |-
+        Return the locally saved secret for *role*.
+
+        Only keys saved through ``data/secrets.json`` are revealable.  If the
+        endpoint is backed by a shell/environment variable, the UI can still probe
+        it via ``api_key_env`` but the plaintext value is not exposed here.
+      operationId: get_endpoint_secret_api_providers_endpoints__role__secret_get
+      parameters:
+        - in: path
+          name: role
+          required: true
+          schema:
+            title: Role
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointSecretResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Endpoint Secret
+      tags:
+        - providers
+  /api/providers/health:
+    get:
+      description: |-
+        Per-role health snapshot derived from ``app.state.registry``.
+
+        Latency probes are not yet implemented (status/latency_ms stubbed to
+        None).  When a known role has no binding, the row carries the role
+        name in ``unbound`` so the frontend can render the warning chip.
+      operationId: get_provider_health_api_providers_health_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProviderHealthRow'
+                title: Response Get Provider Health Api Providers Health Get
+                type: array
+          description: Successful Response
+      summary: Get Provider Health
+      tags:
+        - providers
+  /api/providers/models:
+    get:
+      description: |-
+        Probe registry-bound adapter model catalogs.
+
+        Each adapter hits its own ``/models`` endpoint (OpenAI: ``{base_url}/models``,
+        Anthropic: ``{base_url}/v1/models``). Passing ``?role=llm`` probes just one
+        role so the UI can test a row without waiting for every configured backend.
+      operationId: list_provider_models_api_providers_models_get
+      parameters:
+        - in: query
+          name: role
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Role
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderProbeResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Provider Models
+      tags:
+        - providers
+  /api/providers/probe:
+    post:
+      description: |-
+        Probe a candidate (un-registered) endpoint and return its model catalog.
+
+        Accepts either an existing ``api_key_env`` name (looked up via
+        ``os.environ``) or an inline ``api_key`` (used directly for the probe but
+        never persisted).  The inline path lets the AddEndpointModal probe a
+        freshly-pasted key before the operator commits to saving it.
+
+        Adapter contract: ``probe()`` never raises — failures surface as
+        ``ok=False`` with an ``error`` string.
+      operationId: probe_candidate_api_providers_probe_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProbeCandidateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeCandidateResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Probe Candidate
+      tags:
+        - providers
+  /api/providers/secrets:
+    post:
+      description: |-
+        Persist an API key to the gitignored secrets store + inject into env.
+
+        Derives a deterministic env-var name from ``role`` + ``name`` so the
+        operator never has to invent one.  The plaintext key lives only in
+        ``data/secrets.json`` (gitignored); ``config.yaml`` continues to store
+        only the env-var name per ADR-011.
+      operationId: store_secret_api_providers_secrets_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreSecretRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreSecretResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Store Secret
+      tags:
+        - providers
+  /api/providers/summary:
+    get:
+      description: Summary of the on-disk ``config.yaml``.
+      operationId: get_provider_summary_api_providers_summary_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvidersSummaryResponse'
+          description: Successful Response
+      summary: Get Provider Summary
+      tags:
+        - providers
+  /api/queue/active:
+    get:
+      description: Return the snapshot of active kits.  Empty list when idle.
+      operationId: get_active_queue_api_queue_active_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/QueueJob'
+                title: Response Get Active Queue Api Queue Active Get
+                type: array
+          description: Successful Response
+      summary: Get Active Queue
+      tags:
+        - queue
+  /api/settings:
+    post:
+      description: |-
+        Read-modify-write the 4 workspace-level options into config.yaml.
+
+        Retries up to ``_MAX_CHECKSUM_RETRIES`` times if the config drifted
+        underneath us (concurrent provider save).  Inode-changed is treated
+        identically to checksum-mismatch.
+      operationId: post_settings_api_settings_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Post Settings
+      tags:
+        - settings
+  /api/source-images:
+    post:
+      operationId: create_source_image_api_source_images_post
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceImageOut'
+          description: Successful Response
+      summary: Create Source Image
+      tags:
+        - source-images
+  /api/source-images/from-image:
+    post:
+      operationId: create_source_image_from_existing_api_source_images_from_image_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceImageImportIn'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceImageImportOut'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Source Image From Existing
+      tags:
+        - source-images
+  /api/source-images/{source_image_ref}/image:
+    get:
+      operationId: get_source_image_api_source_images__source_image_ref__image_get
+      parameters:
+        - in: path
+          name: source_image_ref
+          required: true
+          schema:
+            title: Source Image Ref
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Source Image
+      tags:
+        - source-images
+  /api/templates:
+    get:
+      operationId: get_templates_api_templates_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TemplateSummary'
+                title: Response Get Templates Api Templates Get
+                type: array
+          description: Successful Response
+      summary: Get Templates
+      tags:
+        - templates
+    post:
+      operationId: create_template_api_templates_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplatePayload'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateSummary'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Template
+      tags:
+        - templates
+  /api/templates/copy:
+    post:
+      operationId: copy_template_api_templates_copy_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyTemplateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateSummary'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Copy Template
+      tags:
+        - templates
+  /api/templates/managed:
+    get:
+      operationId: get_managed_templates_api_templates_managed_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TemplateSummary'
+                title: Response Get Managed Templates Api Templates Managed Get
+                type: array
+          description: Successful Response
+      summary: Get Managed Templates
+      tags:
+        - templates
+  /api/templates/preview:
+    post:
+      operationId: preview_template_api_templates_preview_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Preview Template
+      tags:
+        - templates
+  /api/templates/schemes:
+    get:
+      operationId: list_schemes_api_templates_schemes_get
+      parameters:
+        - in: query
+          name: locale
+          required: false
+          schema:
+            default: zh
+            enum:
+              - zh
+              - en
+            title: Locale
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SchemeSummary'
+                title: Response List Schemes Api Templates Schemes Get
+                type: array
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Schemes
+      tags:
+        - templates
+    post:
+      operationId: create_scheme_api_templates_schemes_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemePayload'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemeSummary'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Scheme
+      tags:
+        - templates
+  /api/templates/{template_ref}:
+    delete:
+      operationId: delete_template_api_templates__template_ref__delete
+      parameters:
+        - in: path
+          name: template_ref
+          required: true
+          schema:
+            title: Template Ref
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: boolean
+                title: Response Delete Template Api Templates  Template Ref  Delete
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Template
+      tags:
+        - templates
+    patch:
+      operationId: update_template_api_templates__template_ref__patch
+      parameters:
+        - in: path
+          name: template_ref
+          required: true
+          schema:
+            title: Template Ref
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateUpdate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateSummary'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Update Template
+      tags:
+        - templates
+  /health:
+    get:
+      description: Probe the configured database with a 2s timeout.
+      operationId: health_health_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Health

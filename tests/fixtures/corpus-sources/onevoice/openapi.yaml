@@ -1,0 +1,3736 @@
+openapi: 3.0.3
+info:
+  title: OneVoice API
+  version: 1.0.0
+  description: |
+    Consolidated OpenAPI contract covering both the api service
+    (services/api, port 8080, base `/api/v1`) and the orchestrator service
+    (services/orchestrator, port 8090, no version prefix).
+
+    Default security: `cookieAuth` (access_token cookie). Public endpoints
+    declare `security: []`. Cluster-internal endpoints declare
+    `security: [{mtls: []}]` and live on the mTLS listener — the public
+    reverse proxy MUST drop matching prefixes.
+
+    Orchestrator endpoints carry a per-operation `servers:` override so
+    they document the cluster-internal base URL (`http://orchestrator:8090`)
+    while the rest of the spec remains under `/api/v1`. The whole spec is
+    one file for code-generator simplicity.
+
+    Error envelope diverges by endpoint:
+      - Free-form messages use `{"error":"<string>"}` (`ErrorResponse`).
+      - Machine-routable failures use `{"code":"<code>"}`
+        (`CodeErrorResponse`) — frontend i18n routes on the `code` field.
+      - The internal billing endpoints use `BillingErrorResponse`
+        (a distinct shape with both `error` and `detail`).
+
+    Streaming responses (chat / resume / tasks-stream) document themselves
+    as `text/event-stream` with a string schema for the raw frame bytes
+    and a vendor `x-sse-events` extension mapping event-type discriminator
+    values to per-event JSON schemas. Generators that ignore the extension
+    can still consume `SSEEvent` (oneOf union under components.schemas).
+servers:
+- url: /api/v1
+  description: Public api service (services/api, port 8080).
+security:
+- cookieAuth: []
+tags:
+- name: auth
+  description: Authentication, password reset, email verification, locale.
+- name: business
+  description: Business CRUD + schedule + voice-tone + logo + tool-approvals + description-template.
+- name: integrations
+  description: Per-business integration list + connect helpers (Telegram, VK).
+- name: oauth
+  description: OAuth helpers and callbacks (VK, Yandex.Business, Google).
+- name: consents
+  description: Policy reconsent + ledger + PDN withdrawal.
+- name: user-deletion
+  description: 30-day soft-delete grace flow.
+- name: members
+  description: Business membership rows.
+- name: roles
+  description: System + custom RBAC roles.
+- name: invitations
+  description: Single-use invitation tokens.
+- name: permissions
+  description: RBAC permission registry.
+- name: audit
+  description: Business audit log with cursor pagination.
+- name: telemetry
+  description: Frontend telemetry ingest.
+- name: chat
+  description: Chat-proxy SSE + HITL resume + tools registry.
+- name: hitl
+  description: Human-in-the-loop tool approval surface.
+- name: hitl-resume
+  description: Post-approval continuation of a paused chat turn.
+- name: conversations
+  description: Conversation CRUD + move/pin/unpin/messages.
+- name: posts
+  description: Posts read surface.
+- name: content-templates
+  description: Organization-wide reusable post and review-reply templates.
+- name: reviews
+  description: Reviews list/get/reply + cross-business refresh.
+- name: projects
+  description: Project CRUD + cascade delete.
+- name: tasks
+  description: Agent-task list + SSE lifecycle stream.
+- name: search
+  description: Full-text conversation/message search.
+- name: titler
+  description: Auto-titler regenerate trigger.
+- name: internal
+  description: Cluster-only endpoints (mTLS). Not exposed publicly.
+- name: landing
+  description: Public marketing-landing capture — closed-beta waitlist + fake-door channel votes.
+paths:
+  /auth/login:
+    $ref: paths/auth.yaml#/~1auth~1login
+  /auth/logout:
+    $ref: paths/auth.yaml#/~1auth~1logout
+  /auth/refresh:
+    $ref: paths/auth.yaml#/~1auth~1refresh
+  /auth/me:
+    $ref: paths/auth.yaml#/~1auth~1me
+  /auth/register:
+    $ref: paths/auth.yaml#/~1auth~1register
+  /auth/password-reset/request:
+    $ref: paths/auth.yaml#/~1auth~1password-reset~1request
+  /auth/password-reset/confirm:
+    $ref: paths/auth.yaml#/~1auth~1password-reset~1confirm
+  /auth/verify-email/confirm:
+    $ref: paths/auth.yaml#/~1auth~1verify-email~1confirm
+  /auth/verify-email/resend:
+    $ref: paths/auth.yaml#/~1auth~1verify-email~1resend
+  /auth/email-before-verify:
+    $ref: paths/auth.yaml#/~1auth~1email-before-verify
+  /auth/password:
+    $ref: paths/auth.yaml#/~1auth~1password
+  /auth/locale:
+    $ref: paths/auth.yaml#/~1auth~1locale
+  /auth/consents:
+    $ref: paths/consents.yaml#/~1auth~1consents
+  /users/me/consents:
+    $ref: paths/consents.yaml#/~1users~1me~1consents
+  /users/me/consents/pdn/withdraw:
+    $ref: paths/consents.yaml#/~1users~1me~1consents~1pdn~1withdraw
+  /users/me:
+    $ref: paths/user_deletion.yaml#/~1users~1me
+  /users/me/restore:
+    $ref: paths/user_deletion.yaml#/~1users~1me~1restore
+  /platforms:
+    $ref: paths/integrations.yaml#/~1platforms
+  /businesses/{id}/integrations:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations
+  /businesses/{id}/integrations/verify:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations~1verify
+  /businesses/{id}/integrations/{integrationId}:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations~1{integrationId}
+  /businesses/{id}/integrations/vk/connect:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations~1vk~1connect
+  /businesses/{id}/integrations/vk/{integrationId}/refresh-name:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations~1vk~1{integrationId}~1refresh-name
+  /businesses/{id}/integrations/telegram/verify:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations~1telegram~1verify
+  /businesses/{id}/integrations/telegram/connect:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations~1telegram~1connect
+  /businesses/{id}/integrations/telegram/refresh:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations~1telegram~1refresh
+  /businesses/{id}/integrations/telegram/owner-link:
+    $ref: paths/integrations.yaml#/~1businesses~1{id}~1integrations~1telegram~1owner-link
+  /businesses:
+    $ref: paths/business.yaml#/~1businesses
+  /businesses/{id}:
+    $ref: paths/business.yaml#/~1businesses~1{id}
+  /businesses/{id}/restore:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1restore
+  /businesses/{id}/schedule:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1schedule
+  /businesses/{id}/voice-tone:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1voice-tone
+  /businesses/{id}/logo:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1logo
+  /businesses/{id}/tool-approvals:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1tool-approvals
+  /businesses/{id}/description-template:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1description-template
+  /businesses/{id}/voice-profile:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1voice-profile
+  /businesses/{id}/review-autopilot:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1review-autopilot
+  /businesses/{id}/owner-brief:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1owner-brief
+  /businesses/{id}/drift-alerts:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1drift-alerts
+  /businesses/{id}/integrations/vk/auth-url:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1vk~1auth-url
+  /businesses/{id}/integrations/vk/communities:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1vk~1communities
+  /businesses/{id}/integrations/vk/community-auth-url:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1vk~1community-auth-url
+  /businesses/{id}/integrations/yandex_business/auth-url:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1yandex_business~1auth-url
+  /businesses/{id}/integrations/google_business/auth-url:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1google_business~1auth-url
+  /businesses/{id}/integrations/google_business/locations:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1google_business~1locations
+  /businesses/{id}/integrations/google_business/select-location:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1google_business~1select-location
+  /businesses/{id}/integrations/yandex_business/probe:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1yandex_business~1probe
+  /businesses/{id}/integrations/yandex_business/companies:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1yandex_business~1companies
+  /businesses/{id}/integrations/yandex_business/connect:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1yandex_business~1connect
+  /businesses/{id}/integrations/yandex_business/connect-delegated:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1yandex_business~1connect-delegated
+  /businesses/{id}/integrations/yandex_business/verify-access:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1yandex_business~1verify-access
+  /businesses/{id}/integrations/yandex_business/delegated-config:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1yandex_business~1delegated-config
+  /businesses/{id}/integrations/yandex_business/{integrationId}/refresh-name:
+    $ref: paths/oauth.yaml#/~1businesses~1{id}~1integrations~1yandex_business~1{integrationId}~1refresh-name
+  /oauth/vk/callback:
+    $ref: paths/oauth.yaml#/~1oauth~1vk~1callback
+  /oauth/vk/community-callback:
+    $ref: paths/oauth.yaml#/~1oauth~1vk~1community-callback
+  /oauth/yandex_business/callback:
+    $ref: paths/oauth.yaml#/~1oauth~1yandex_business~1callback
+  /oauth/google_business/callback:
+    $ref: paths/oauth.yaml#/~1oauth~1google_business~1callback
+  /permissions:
+    $ref: paths/permissions.yaml#/~1permissions
+  /businesses/{id}/me/permissions:
+    $ref: paths/permissions.yaml#/~1businesses~1{id}~1me~1permissions
+  /businesses/{id}/members:
+    $ref: paths/members.yaml#/~1businesses~1{id}~1members
+  /businesses/{id}/members/{userId}:
+    $ref: paths/members.yaml#/~1businesses~1{id}~1members~1{userId}
+  /businesses/{id}/roles:
+    $ref: paths/roles.yaml#/~1businesses~1{id}~1roles
+  /businesses/{id}/roles/{roleId}:
+    $ref: paths/roles.yaml#/~1businesses~1{id}~1roles~1{roleId}
+  /businesses/{id}/invitations:
+    $ref: paths/invitations.yaml#/~1businesses~1{id}~1invitations
+  /businesses/{id}/invitations/{inviteId}:
+    $ref: paths/invitations.yaml#/~1businesses~1{id}~1invitations~1{inviteId}
+  /invitations/{token}:
+    $ref: paths/invitations.yaml#/~1invitations~1{token}
+  /invitations/{token}/accept:
+    $ref: paths/invitations.yaml#/~1invitations~1{token}~1accept
+  /businesses/{id}/audit-logs:
+    $ref: paths/audit.yaml#/~1businesses~1{id}~1audit-logs
+  /telemetry:
+    $ref: paths/telemetry.yaml#/~1telemetry
+  /businesses/{id}/telemetry:
+    $ref: paths/telemetry.yaml#/~1businesses~1{id}~1telemetry
+  /landing-events:
+    $ref: paths/landing.yaml#/~1landing-events
+  /waitlist:
+    $ref: paths/landing.yaml#/~1waitlist
+  /channel-votes:
+    $ref: paths/landing.yaml#/~1channel-votes
+  /businesses/{id}/chat/{conversationID}:
+    $ref: paths/chat.yaml#/~1businesses~1{id}~1chat~1{conversationID}
+  /businesses/{id}/chat/{conversationID}/resume:
+    $ref: paths/chat.yaml#/~1businesses~1{id}~1chat~1{conversationID}~1resume
+  /chat/{conversationID}:
+    $ref: paths/chat.yaml#/~1chat~1{conversationID}
+  /chat/{conversationID}/resume:
+    $ref: paths/chat.yaml#/~1chat~1{conversationID}~1resume
+  /businesses/{id}/conversations/{conversationID}/pending-tool-calls/{batch_id}/resolve:
+    $ref: paths/hitl.yaml#/~1businesses~1{id}~1conversations~1{conversationID}~1pending-tool-calls~1{batch_id}~1resolve
+  /businesses/{id}/tools:
+    $ref: paths/hitl.yaml#/~1businesses~1{id}~1tools
+  /businesses/{id}/conversations:
+    $ref: paths/conversations.yaml#/~1businesses~1{id}~1conversations
+  /businesses/{id}/conversations/{conversationID}:
+    $ref: paths/conversations.yaml#/~1businesses~1{id}~1conversations~1{conversationID}
+  /businesses/{id}/conversations/{conversationID}/messages:
+    $ref: paths/conversations.yaml#/~1businesses~1{id}~1conversations~1{conversationID}~1messages
+  /businesses/{id}/conversations/{conversationID}/move:
+    $ref: paths/conversations.yaml#/~1businesses~1{id}~1conversations~1{conversationID}~1move
+  /businesses/{id}/conversations/{conversationID}/pin:
+    $ref: paths/conversations.yaml#/~1businesses~1{id}~1conversations~1{conversationID}~1pin
+  /businesses/{id}/conversations/{conversationID}/unpin:
+    $ref: paths/conversations.yaml#/~1businesses~1{id}~1conversations~1{conversationID}~1unpin
+  /businesses/{id}/conversations/{conversationID}/regenerate-title:
+    $ref: paths/titler.yaml#/~1businesses~1{id}~1conversations~1{conversationID}~1regenerate-title
+  /businesses/{id}/projects:
+    $ref: paths/projects.yaml#/~1businesses~1{id}~1projects
+  /businesses/{id}/projects/{projectID}:
+    $ref: paths/projects.yaml#/~1businesses~1{id}~1projects~1{projectID}
+  /businesses/{id}/projects/{projectID}/conversation-count:
+    $ref: paths/projects.yaml#/~1businesses~1{id}~1projects~1{projectID}~1conversation-count
+  /businesses/{id}/posts:
+    $ref: paths/posts.yaml#/~1businesses~1{id}~1posts
+  /businesses/{id}/posts/{postID}:
+    $ref: paths/posts.yaml#/~1businesses~1{id}~1posts~1{postID}
+  /businesses/{id}/content-templates:
+    $ref: paths/content_templates.yaml#/~1businesses~1{id}~1content-templates
+  /businesses/{id}/content-templates/{templateId}:
+    $ref: paths/content_templates.yaml#/~1businesses~1{id}~1content-templates~1{templateId}
+  /businesses/{id}/content-templates/{templateId}/render:
+    $ref: paths/content_templates.yaml#/~1businesses~1{id}~1content-templates~1{templateId}~1render
+  /businesses/{id}/content-templates/from-post/{postId}:
+    $ref: paths/content_templates.yaml#/~1businesses~1{id}~1content-templates~1from-post~1{postId}
+  /businesses/{id}/content-templates/from-review/{reviewId}:
+    $ref: paths/content_templates.yaml#/~1businesses~1{id}~1content-templates~1from-review~1{reviewId}
+  /reviews/refresh:
+    $ref: paths/reviews.yaml#/~1reviews~1refresh
+  /businesses/{id}/reviews:
+    $ref: paths/reviews.yaml#/~1businesses~1{id}~1reviews
+  /businesses/{id}/reviews/sla:
+    $ref: paths/reviews.yaml#/~1businesses~1{id}~1reviews~1sla
+  /businesses/{id}/delegation-metrics:
+    $ref: paths/reviews.yaml#/~1businesses~1{id}~1delegation-metrics
+  /businesses/{id}/presence-health:
+    $ref: paths/presence_health.yaml#/~1businesses~1{id}~1presence-health
+  /businesses/{id}/recap/latest:
+    $ref: paths/weekly_value_recap.yaml#/~1businesses~1{id}~1recap~1latest
+  /businesses/{id}/reviews/{reviewID}:
+    $ref: paths/reviews.yaml#/~1businesses~1{id}~1reviews~1{reviewID}
+  /businesses/{id}/reviews/{reviewID}/reply:
+    $ref: paths/reviews.yaml#/~1businesses~1{id}~1reviews~1{reviewID}~1reply
+  /businesses/{id}/reviews/{reviewID}/reply/retry:
+    $ref: paths/reviews.yaml#/~1businesses~1{id}~1reviews~1{reviewID}~1reply~1retry
+  /businesses/{id}/tasks:
+    $ref: paths/tasks.yaml#/~1businesses~1{id}~1tasks
+  /businesses/{id}/tasks/stream:
+    $ref: paths/tasks.yaml#/~1businesses~1{id}~1tasks~1stream
+  /businesses/{id}/tasks/{taskId}:
+    $ref: paths/tasks.yaml#/~1businesses~1{id}~1tasks~1{taskId}
+  /businesses/{id}/tasks/{taskId}/retry:
+    $ref: paths/tasks.yaml#/~1businesses~1{id}~1tasks~1{taskId}~1retry
+  /businesses/{id}/tasks/{taskId}/rerun:
+    $ref: paths/tasks.yaml#/~1businesses~1{id}~1tasks~1{taskId}~1rerun
+  /businesses/{id}/search:
+    $ref: paths/search.yaml#/~1businesses~1{id}~1search
+  /businesses/{id}/channel-requests:
+    $ref: paths/business.yaml#/~1businesses~1{id}~1channel-requests
+  /internal/draft-reply:
+    $ref: paths/internal.yaml#/~1internal~1draft-reply
+  /internal/tools:
+    $ref: paths/internal.yaml#/~1internal~1tools
+  /internal/tools/names:
+    $ref: paths/internal.yaml#/~1internal~1tools~1names
+  /tokens:
+    $ref: paths/internal.yaml#/~1tokens
+  /billing/usage_logs:
+    $ref: paths/internal.yaml#/~1billing~1usage_logs
+  /billing/daily_spend:
+    $ref: paths/internal.yaml#/~1billing~1daily_spend
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: |
+        Access-token cookie set by /auth/login. The orchestrator delegates
+        cookie validation to services/api's chat_proxy facade, so this
+        scheme also documents the public contract for orchestrator
+        endpoints reached through that proxy.
+    mtls:
+      type: mutualTLS
+      description: |
+        Cluster-only mutual TLS. The public reverse proxy MUST drop any
+        request matching an mTLS-protected prefix (/internal/*, /tokens,
+        /billing/*) — application-level checks supplement the network
+        boundary but do not replace it.
+  parameters:
+    BusinessIDPath:
+      name: id
+      in: path
+      required: true
+      description: Business UUID. Non-members receive 404 (not 403).
+      schema:
+        type: string
+        format: uuid
+    IntegrationIDPath:
+      name: integrationId
+      in: path
+      required: true
+      description: Integration UUID.
+      schema:
+        type: string
+        format: uuid
+    UserIDPath:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RoleIDPath:
+      name: roleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    InvitationTokenPath:
+      name: token
+      in: path
+      required: true
+      description: Raw single-use invitation token. Server hashes before lookup.
+      schema:
+        type: string
+  responses:
+    Unauthorized:
+      description: Missing or expired access token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BusinessNotFound:
+      description: Business not found or caller is not a member (masked).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Internal failure (`internal_server_error`).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CodeErrorResponse'
+  schemas:
+    ErrorResponse:
+      description: Plain-text error envelope; emitted by writeJSONError.
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+    CodeErrorResponse:
+      description: |
+        Machine-routable error envelope; emitted by writeJSONCodeError.
+        Frontend resolves `code` to a localized message via i18n catalog.
+      type: object
+      required:
+      - code
+      properties:
+        code:
+          type: string
+    BillingErrorResponse:
+      description: |
+        Error envelope used by the internal billing endpoints. `error`
+        values map to pkg/billingclient sentinels.
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+        detail:
+          type: string
+    ValidationErrorResponse:
+      description: |
+        Field-level validation error envelope; emitted by writeValidationError.
+        `error` carries a localized summary; `fields` maps field name to
+        localized per-field message keyed by validator/v10 tag.
+      type: object
+      required:
+      - error
+      - fields
+      properties:
+        error:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+    PasswordResetErrorResponse:
+      description: |
+        Discriminated error envelope emitted by writePasswordResetError.
+        `code` is one of `reset_token_invalid` / `reset_token_expired` /
+        `password_too_weak`; `message` is a server-localized RU string the
+        frontend renders as-is when no i18n catalog entry matches.
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    InvitationStateErrorResponse:
+      description: |
+        410-gone envelope emitted by writeInvitationStateError. `error`
+        is always the literal "gone"; `reason` discriminates the cause
+        (`expired` / `revoked` / `accepted` / `unknown`) for the
+        frontend refusal matrix. `unknown` is the safe default for
+        ErrInvitationNotFound — uniform 410 defends against token
+        existence enumeration.
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+        reason:
+          type: string
+    LoginRequest:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    LoginResponse:
+      type: object
+      required:
+      - user
+      - accessToken
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken:
+          type: string
+    RefreshTokenResponse:
+      type: object
+      required:
+      - user
+      - accessToken
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken:
+          type: string
+    MeResponse:
+      description: |
+        Flattened user payload plus verification banner, deletion grace,
+        and reconsent fields.
+      allOf:
+      - $ref: '#/components/schemas/User'
+      - type: object
+        required:
+        - emailVerified
+        properties:
+          emailVerified:
+            type: boolean
+          emailVerificationDeadline:
+            type: string
+            format: date-time
+          accountDeletion:
+            $ref: '#/components/schemas/AccountDeletionInfo'
+          requiresReconsent:
+            $ref: '#/components/schemas/RequiresReconsentInfo'
+    AccountDeletionInfo:
+      type: object
+      required:
+      - requestedAt
+      - scheduledDeletionAt
+      - canRestoreUntil
+      properties:
+        requestedAt:
+          type: string
+          format: date-time
+        scheduledDeletionAt:
+          type: string
+          format: date-time
+        canRestoreUntil:
+          type: string
+          format: date-time
+    RequiresReconsentInfo:
+      type: object
+      required:
+      - policies
+      properties:
+        policies:
+          type: array
+          items:
+            type: object
+            required:
+            - slug
+            - oldVersion
+            - newVersion
+            - sha256
+            properties:
+              slug:
+                type: string
+              oldVersion:
+                type: string
+              newVersion:
+                type: string
+              sha256:
+                type: string
+    User:
+      type: object
+      required:
+      - id
+      - email
+      - name
+      - preferred_locale
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        preferred_locale:
+          type: string
+          enum:
+          - ru
+          - en
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RegisterRequest:
+      type: object
+      required:
+      - email
+      - password
+      - name
+      - consents
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        consents:
+          $ref: '#/components/schemas/RegisterConsents'
+    RegisterConsents:
+      type: object
+      description: |
+        Per-slug version map submitted with /auth/register. The handler enforces
+        version-equality (vs `legalconfig.*Version`) and returns 400
+        consent_required listing the missing slugs, so individual fields are
+        NOT marked `required` at the schema level — a missing field is treated
+        as a stale consent, not a schema violation.
+      properties:
+        tos:
+          type: string
+        privacy:
+          type: string
+        pdn:
+          type: string
+    RequestPasswordResetRequest:
+      type: object
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          format: email
+    ConfirmPasswordResetRequest:
+      type: object
+      required:
+      - token
+      - newPassword
+      properties:
+        token:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          minLength: 8
+    VerifyConfirmRequest:
+      type: object
+      required:
+      - token
+      properties:
+        token:
+          type: string
+          minLength: 20
+    EmailBeforeVerifyRequest:
+      type: object
+      required:
+      - newEmail
+      properties:
+        newEmail:
+          type: string
+          format: email
+    ChangePasswordRequest:
+      type: object
+      required:
+      - currentPassword
+      - newPassword
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+    UpdatePreferredLocaleRequest:
+      type: object
+      required:
+      - locale
+      properties:
+        locale:
+          type: string
+          enum:
+          - ru
+          - en
+    UpdateProfileRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+    StatusOKResponse:
+      description: |
+        `{status:"ok"}` envelope used by ChangePassword. Distinct from
+        `StatusOkResponse` (camelCase variant) used by review reply and
+        review-refresh handlers.
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+    StatusOkResponse:
+      description: |
+        `{status:"ok"}` envelope used by reviewReply and refreshReviews.
+        Enum-pinned variant of `StatusOKResponse`.
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+    ConsentRequiredResponse:
+      type: object
+      required:
+      - code
+      - missing
+      properties:
+        code:
+          type: string
+          enum:
+          - consent_required
+        missing:
+          type: array
+          items:
+            type: string
+    ReconsentRequest:
+      type: object
+      required:
+      - policies
+      properties:
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReconsentPolicy'
+    ReconsentPolicy:
+      type: object
+      required:
+      - slug
+      - version
+      properties:
+        slug:
+          type: string
+        version:
+          type: string
+        sha256:
+          type: string
+    VersionMismatchResponse:
+      type: object
+      required:
+      - code
+      - currentVersion
+      properties:
+        code:
+          type: string
+          enum:
+          - version_mismatch
+        currentVersion:
+          type: string
+    ListConsentsResponse:
+      type: object
+      required:
+      - consents
+      properties:
+        consents:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentRecord'
+    ConsentRecord:
+      description: |
+        Per-policy consent ledger row returned by GET /users/me/consents.
+        `withdrawnAt` is optional (`omitempty`): the field is OMITTED from
+        the JSON envelope when the row is active. Frontend treats a missing
+        `withdrawnAt` as "consent still in force". `sha256` is also optional
+        (early ledger rows may not carry the policy hash).
+      type: object
+      required:
+      - slug
+      - version
+      - acceptedAt
+      properties:
+        slug:
+          type: string
+        version:
+          type: string
+        sha256:
+          type: string
+        acceptedAt:
+          type: string
+          format: date-time
+        withdrawnAt:
+          type: string
+          format: date-time
+    DeleteAccountRequest:
+      type: object
+      required:
+      - password
+      properties:
+        password:
+          type: string
+          minLength: 1
+    SoleOwnerResponse:
+      type: object
+      required:
+      - code
+      - businesses
+      properties:
+        code:
+          type: string
+          enum:
+          - sole_owner_of_businesses
+        businesses:
+          type: array
+          items:
+            $ref: '#/components/schemas/SoleOwnerBusinessEntry'
+    SoleOwnerBusinessEntry:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    PendingDeletionResponse:
+      type: object
+      required:
+      - code
+      - deletionDate
+      - restoreUrl
+      properties:
+        code:
+          type: string
+          enum:
+          - account_pending_deletion
+          - business_pending_deletion
+        deletionDate:
+          type: string
+        restoreUrl:
+          type: string
+    Platform:
+      type: object
+      required:
+      - id
+      - status
+      properties:
+        id:
+          type: string
+        status:
+          $ref: '#/components/schemas/PlatformStatus'
+    PlatformStatus:
+      type: string
+      enum:
+      - active
+      - coming_soon
+      - oauth_not_configured
+    Business:
+      type: object
+      required:
+      - id
+      - name
+      - settings
+      - createdAt
+      - updatedAt
+      properties:
+        hasFirstSuccessfulAction:
+          type: boolean
+          readOnly: true
+          description: Whether the organization has a persisted completed platform tool task or text-only assistant answer with an explicit successful outcome across its entire history, or a successfully generated review draft or confirmed review reply dispatch. Imported replies and ambiguous review attempts do not count. Ambiguous historical turns do not count; organization ID backfills never assign success. Authoritative on GET business profile.
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        website:
+          type: string
+          nullable: true
+        description:
+          type: string
+        logoUrl:
+          type: string
+        settings:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    BusinessMembershipSummary:
+      type: object
+      required:
+      - id
+      - name
+      - role
+      - status
+      - joined_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/BusinessMembershipRoleRef'
+        status:
+          type: string
+        deletion_pending_until:
+          type: string
+          format: date-time
+          description: Present for pending-deletion organizations, including the last organization. Restore via POST /businesses/{id}/restore before this deadline; ordinary organization reads remain unavailable.
+        joined_at:
+          type: string
+          format: date-time
+    BusinessMembershipRoleRef:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    CreateBusinessRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        category:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        phone:
+          type: string
+          maxLength: 255
+        website:
+          type: string
+          maxLength: 255
+          nullable: true
+        description:
+          type: string
+          maxLength: 2000
+    UpdateBusinessRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        category:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        phone:
+          type: string
+          maxLength: 255
+        website:
+          type: string
+          maxLength: 255
+          nullable: true
+        description:
+          type: string
+          maxLength: 2000
+    UpdateScheduleRequest:
+      type: object
+      properties:
+        schedule:
+          description: Free-form per-day schedule blob.
+        specialDates:
+          description: Optional special-date overrides.
+    UpdateVoiceToneRequest:
+      type: object
+      properties:
+        tones:
+          type: array
+          items:
+            type: string
+    UpdateDescriptionTemplateRequest:
+      type: object
+      properties:
+        descriptionTemplate:
+          type: string
+          maxLength: 1024
+          description: |
+            Free-text template with single-brace placeholders drawn from the
+            allowed set (name, category, address, phone, website, hours,
+            description). A non-empty value fully replaces the platform
+            description; an empty string clears the override.
+    DescriptionTemplateResponse:
+      type: object
+      required:
+      - descriptionTemplate
+      - placeholders
+      properties:
+        descriptionTemplate:
+          type: string
+          description: Stored template override; empty string when unset.
+        placeholders:
+          type: array
+          description: Allowed placeholder names the template may reference.
+          items:
+            type: string
+    UpdateVoiceProfileRequest:
+      type: object
+      properties:
+        voiceProfile:
+          type: string
+          maxLength: 400
+          description: |
+            Free-form brand-voice profile (do/don't phrases, emoji policy,
+            short exemplars) that governs the AI chat loop and the review
+            drafter. A non-empty value is stored verbatim; an empty string
+            clears the override.
+    VoiceProfileResponse:
+      type: object
+      required:
+      - voiceProfile
+      properties:
+        voiceProfile:
+          type: string
+          description: Stored brand-voice profile; empty string when unset.
+    UpdateReviewAutopilotRequest:
+      type: object
+      required:
+      - minRating
+      properties:
+        enabled:
+          type: boolean
+          description: |
+            Opt-in switch for the review-reply autopilot. When true, a positive
+            drafted reply on a direct-API platform (Telegram/VK) is auto-published;
+            Yandex.Business, negative, and needs_review replies always stay pending
+            for manual approval. Absent is treated as false (disabled).
+        minRating:
+          type: integer
+          minimum: 4
+          maximum: 5
+          description: |
+            The minimum star rating that may be auto-published. Bounded to the
+            positive range so the floor can only be raised (e.g. 5-star-only) and
+            can never be lowered to auto-publish a negative or neutral review.
+    ReviewAutopilotResponse:
+      type: object
+      required:
+      - enabled
+      - minRating
+      properties:
+        enabled:
+          type: boolean
+          description: Whether the review-reply autopilot is enabled (default false).
+        minRating:
+          type: integer
+          description: |
+            The minimum star rating that may be auto-published (default 4 when
+            unset; always at least 4).
+    OwnerBriefResponse:
+      type: object
+      required:
+      - enabled
+      - weekday
+      - hour
+      properties:
+        enabled:
+          type: boolean
+          description: |
+            Whether the proactive weekly owner-brief DM is enabled. Default-on:
+            true when the business never set a preference.
+        weekday:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: Weekday the brief fires on (0=Sunday .. 6=Saturday).
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+          description: Hour-of-day (0-23) the brief fires at.
+        lastSent:
+          type: string
+          description: |
+            ISO year-week ("<year>-W<week>") of the last successful send; absent
+            when a brief has never been sent.
+    UpdateOwnerBriefRequest:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: |
+            Enable or disable the weekly owner-brief DM. Setting false is the
+            one-tap opt-out. Absent leaves the enabled flag unchanged.
+        weekday:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: Weekday the brief fires on (0=Sunday .. 6=Saturday).
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+          description: Hour-of-day (0-23) the brief fires at.
+    DriftAlertSettings:
+      type: object
+      required: [enabled, locale]
+      properties:
+        enabled:
+          type: boolean
+          description: Whether private drift notifications are enabled. Defaults to false.
+        locale:
+          type: string
+          enum: [ru, en]
+    UpdateDriftAlertSettingsRequest:
+      type: object
+      required: [locale]
+      properties:
+        enabled:
+          type: boolean
+        locale:
+          type: string
+          enum: [ru, en]
+    UploadLogoRequest:
+      type: object
+      required:
+      - logo
+      properties:
+        logo:
+          type: string
+          format: binary
+    ToolApprovalsResponse:
+      type: object
+      required:
+      - toolApprovals
+      properties:
+        toolApprovals:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ToolFloor'
+    UpdateToolApprovalsRequest:
+      type: object
+      required:
+      - toolApprovals
+      properties:
+        toolApprovals:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ToolFloor'
+    ToolFloor:
+      type: string
+      enum:
+      - auto
+      - manual
+      - forbidden
+      description: |
+        Per-tool HITL floor (strictness: auto < manual < forbidden).
+        Business-level approvals only persist `auto` / `manual`;
+        `forbidden` is reserved for tool-registry defaults.
+    Integration:
+      type: object
+      required:
+      - id
+      - businessId
+      - platform
+      - status
+      - externalId
+      - metadata
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        platform:
+          type: string
+        status:
+          type: string
+        externalId:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        tokenExpiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AuthURLResponse:
+      type: object
+      required:
+      - url
+      properties:
+        url:
+          type: string
+    VKCommunity:
+      type: object
+      required:
+      - id
+      - name
+      - screen_name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        screen_name:
+          type: string
+        photo_50:
+          type: string
+        members_count:
+          type: integer
+    GoogleLocationsResponse:
+      type: object
+      required:
+      - locations
+      properties:
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoogleLocationRef'
+    GoogleLocationRef:
+      type: object
+      required:
+      - account_name
+      - location_name
+      - title
+      properties:
+        account_name:
+          type: string
+        location_name:
+          type: string
+        title:
+          type: string
+    GoogleSelectLocationRequest:
+      type: object
+      required:
+      - account_id
+      - location_id
+      properties:
+        account_id:
+          type: string
+        location_id:
+          type: string
+    YandexCookiesRequest:
+      type: object
+      required:
+      - cookies
+      properties:
+        cookies:
+          type: string
+    YandexProbeResponse:
+      type: object
+      required:
+      - ok
+      properties:
+        ok:
+          type: boolean
+        format:
+          type: string
+        session_valid:
+          type: boolean
+        username:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        error:
+          type: string
+    YandexCompaniesResponse:
+      type: object
+      required:
+      - companies
+      properties:
+        companies:
+          type: array
+          items:
+            $ref: '#/components/schemas/YandexCompanyEntry'
+    YandexCompanyEntry:
+      type: object
+      required:
+      - permalink
+      - name
+      properties:
+        permalink:
+          type: string
+        name:
+          type: string
+    ConnectYandexRequest:
+      type: object
+      required:
+      - cookies
+      properties:
+        cookies:
+          type: string
+        permalink:
+          type: string
+        business_name:
+          type: string
+    ConnectDelegatedYandexRequest:
+      type: object
+      description: >-
+        Connect a Yandex organization via delegated-representative access. The
+        owner supplies only their organization permalink (or a Maps/Sprav URL);
+        no customer credential is captured. Exactly one of permalink or maps_url
+        must be provided.
+      properties:
+        permalink:
+          type: string
+          description: Numeric Yandex organization permalink.
+        maps_url:
+          type: string
+          description: A pasted Yandex Maps/Sprav URL to extract the permalink from.
+        business_name:
+          type: string
+    VerifyYandexAccessRequest:
+      type: object
+      required:
+      - permalink
+      properties:
+        permalink:
+          type: string
+          description: Numeric Yandex organization permalink to verify shared access against.
+    VerifyYandexAccessResponse:
+      type: object
+      required:
+      - access_verified
+      properties:
+        access_verified:
+          type: boolean
+          description: True when the shared representative session can reach and edit the org.
+    YandexDelegatedConfigResponse:
+      type: object
+      required:
+      - available
+      - rep_login
+      properties:
+        available:
+          type: boolean
+          description: >-
+            True when delegated-representative access is provisioned on this
+            deployment (both the shared representative login and the shared
+            session are configured). When false, the delegated connect flow is
+            unavailable and clients should fall back to cookie paste.
+        rep_login:
+          type: string
+          description: >-
+            The shared representative Yandex login owners must add as a
+            representative to their organization. Empty when not configured.
+    RefreshStartedResponse:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - refresh_started
+    ConnectVKRequest:
+      type: object
+      required:
+      - access_token
+      properties:
+        access_token:
+          type: string
+        group_id:
+          type: string
+    ConnectTelegramRequest:
+      type: object
+      required:
+      - channel_id
+      properties:
+        channel_id:
+          type: string
+        telegram_user_id:
+          type: string
+    RefreshTelegramRequest:
+      type: object
+      required:
+      - channel_id
+      properties:
+        channel_id:
+          type: string
+    TelegramOwnerLinkResponse:
+      type: object
+      required:
+      - start_url
+      - expires_in_seconds
+      properties:
+        start_url:
+          type: string
+          description: >-
+            A one-time Telegram deep link the business admin opens or forwards to
+            the owner. Tapping it delivers "/start <token>" to the bot; the first
+            authentic tapper within the TTL becomes the verified owner. Single-use.
+        expires_in_seconds:
+          type: integer
+          description: Seconds until the deep link expires.
+    RefreshTelegramResponse:
+      type: object
+      required:
+      - linked_chat_id
+      - linked_group_status
+      - channel_title
+      properties:
+        linked_chat_id:
+          type: integer
+          format: int64
+        linked_group_status:
+          type: string
+          enum:
+          - ok
+          - bot_not_member
+          - no_linked_group
+        channel_title:
+          type: string
+    IntegrationHealth:
+      type: object
+      description: >-
+        Per-integration connection-liveness verdict computed synchronously by the
+        verify endpoint. Distinct from the composite presence-health score.
+      required:
+      - platform
+      - externalId
+      - status
+      - reasonCode
+      - checkedAt
+      properties:
+        platform:
+          type: string
+        externalId:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - degraded
+          - broken
+          - unknown
+        reasonCode:
+          type: string
+          description: >-
+            Stable machine code resolved to human copy on the client
+            (e.g. tg_not_admin, vk_wall_scope_missing, yandex_session_expired,
+            ok, inconclusive).
+        checkedAt:
+          type: string
+          format: date-time
+    VerifyIntegrationsResponse:
+      type: object
+      description: >-
+        Result of a manual verify/repair pass: the async profile re-push has been
+        started, and the synchronously-computed per-integration health array.
+      required:
+      - started
+      - health
+      properties:
+        started:
+          type: boolean
+          description: The async re-push + drift reschedule was triggered.
+        health:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrationHealth'
+    TelegramLoginRequest:
+      type: object
+      additionalProperties: true
+      required:
+      - hash
+      - auth_date
+      properties:
+        hash:
+          type: string
+        auth_date:
+          oneOf:
+          - type: string
+          - type: integer
+        id:
+          type: integer
+          format: int64
+        first_name:
+          type: string
+        last_name:
+          type: string
+        username:
+          type: string
+        photo_url:
+          type: string
+    TelegramLoginVerifiedResponse:
+      type: object
+      required:
+      - verified
+      - user
+      properties:
+        verified:
+          type: boolean
+        user:
+          type: object
+          additionalProperties: true
+    Permission:
+      type: object
+      required:
+      - name
+      - description
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    PermissionGroup:
+      type: object
+      required:
+      - resource
+      - permissions
+      properties:
+        resource:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+    PermissionRegistryResponse:
+      type: object
+      required:
+      - groups
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionGroup'
+    MyPermissionsResponse:
+      type: object
+      required:
+      - permissions
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+    Member:
+      type: object
+      required:
+      - user
+      - role
+      - status
+      - joined_at
+      - invited_by
+      - invited_at
+      properties:
+        user:
+          type: object
+          required:
+          - id
+          - email
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+              format: email
+            name:
+              type: string
+        role:
+          type: object
+          required:
+          - id
+          - name
+          - permissions
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            permissions:
+              type: array
+              items:
+                type: string
+        status:
+          type: string
+        joined_at:
+          type: string
+          format: date-time
+        invited_by:
+          type: string
+          format: uuid
+          nullable: true
+        invited_at:
+          type: string
+          format: date-time
+          nullable: true
+    UpdateMemberRoleRequest:
+      type: object
+      required:
+      - role_id
+      properties:
+        role_id:
+          type: string
+          format: uuid
+    UpdateMemberRoleResponse:
+      type: object
+      required:
+      - business_id
+      - user_id
+      - role_id
+      - status
+      properties:
+        business_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        role_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        role_changed_at:
+          type: string
+          format: date-time
+          nullable: true
+        role_changed_by:
+          type: string
+          format: uuid
+          nullable: true
+    Role:
+      type: object
+      required:
+      - id
+      - business_id
+      - name
+      - description
+      - permissions
+      - is_system
+      properties:
+        id:
+          type: string
+          format: uuid
+        business_id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        is_system:
+          type: boolean
+        member_count:
+          type: integer
+    CreateRoleRequest:
+      type: object
+      required:
+      - name
+      - permissions
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        permissions:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+    UpdateRoleRequest:
+      allOf:
+      - $ref: '#/components/schemas/CreateRoleRequest'
+    CreateInvitationRequest:
+      type: object
+      required:
+      - role_id
+      properties:
+        role_id:
+          type: string
+          format: uuid
+        expires_in:
+          type: integer
+          minimum: 3600
+          maximum: 2592000
+    CreateInvitationResponse:
+      type: object
+      required:
+      - id
+      - token
+      - role_id
+      - expires_at
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        token:
+          type: string
+        role_id:
+          type: string
+          format: uuid
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    PendingInvitation:
+      type: object
+      required:
+      - id
+      - role_id
+      - role_name
+      - expires_at
+      - created_at
+      - created_by
+      properties:
+        id:
+          type: string
+          format: uuid
+        role_id:
+          type: string
+          format: uuid
+        role_name:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: object
+          required:
+          - id
+          - email
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+              format: email
+    InvitationPreview:
+      type: object
+      required:
+      - business_id
+      - business_name
+      - role_id
+      - role_name
+      - expires_at
+      properties:
+        business_id:
+          type: string
+          format: uuid
+        business_name:
+          type: string
+        role_id:
+          type: string
+          format: uuid
+        role_name:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    AcceptInvitationResponse:
+      type: object
+      required:
+      - business_id
+      - role_id
+      properties:
+        business_id:
+          type: string
+          format: uuid
+        role_id:
+          type: string
+          format: uuid
+    AuditAction:
+      type: string
+      enum:
+      - rbac.role_granted
+      - rbac.member_removed
+      - rbac.role_created
+      - rbac.role_updated
+      - rbac.role_deleted
+      - rbac.invitation_created
+      - rbac.invitation_revoked
+      - rbac.invitation_accepted
+      - auth.login_success
+      - auth.login_failed
+      - auth.logout
+      - auth.password_changed
+      - auth.user_registered
+      - integration.connected
+      - integration.disconnected
+      - integration.token_rotated
+      - integration.token_decrypted
+      - integration.metadata_updated
+      - integration.external_id_updated
+      - integration.token_expired
+      - integration.deleted
+      - business.created
+      - business.updated
+      - business.deletion_requested
+      - business.deletion_canceled
+      - business.not_owner_blocked
+      - business.self_deleted
+      - project.created
+      - project.updated
+      - project.deleted
+      - rpa.scope_violation
+      - rpa.review_replied
+      - rpa.post_published
+      - rpa.photo_uploaded
+      - rpa.info_updated
+      - rpa.hours_updated
+      - platform.post_published
+      - platform.dm_sent
+      - platform.review_replied
+      - review.auto_replied
+      - hitl.approval_resolved
+    AuditEvent:
+      type: object
+      required:
+      - id
+      - action
+      - action_category
+      - resource
+      - business_id
+      - actor_id
+      - actor_email
+      - actor_display_name
+      - details
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          $ref: '#/components/schemas/AuditAction'
+        action_category:
+          type: string
+          enum:
+          - rbac
+          - auth
+          - integration
+          - business
+          - project
+          - rpa
+          - platform
+          - review
+          - hitl
+          - other
+        resource:
+          type: string
+        business_id:
+          type: string
+          format: uuid
+          nullable: true
+        actor_id:
+          type: string
+          format: uuid
+          nullable: true
+        actor_email:
+          type: string
+          format: email
+          nullable: true
+        actor_display_name:
+          type: string
+          nullable: true
+        details:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+    AuditLogListResponse:
+      type: object
+      required:
+      - items
+      - next_cursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+        next_cursor:
+          type: string
+          nullable: true
+    TelemetryEvent:
+      type: object
+      required:
+      - eventType
+      - page
+      - action
+      - timestamp
+      properties:
+        eventType:
+          type: string
+          enum:
+          - page_view
+          - api_error
+          - chat_send
+          - button_click
+          - activation
+          - approval
+          - value_recap
+        page:
+          type: string
+        action:
+          type: string
+        correlationId:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        timestamp:
+          type: string
+    WeeklyValueRecap:
+      type: object
+      description: Counts of completed operations for one closed Monday-to-Monday UTC week.
+      required:
+      - id
+      - weekStart
+      - weekEnd
+      - publishedPosts
+      - dispatchedReviewReplies
+      - completedSyncs
+      - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        weekStart:
+          type: string
+          format: date-time
+        weekEnd:
+          type: string
+          format: date-time
+        publishedPosts:
+          type: integer
+          minimum: 0
+        dispatchedReviewReplies:
+          type: integer
+          minimum: 0
+        completedSyncs:
+          type: integer
+          minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+    InternalTokenResponse:
+      type: object
+      required:
+      - integration_id
+      - platform
+      - external_id
+      - access_token
+      properties:
+        integration_id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+        external_id:
+          type: string
+        access_token:
+          type: string
+        user_token:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        user_token_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+    UsageLog:
+      type: object
+      required:
+      - business_id
+      - user_id
+      - model
+      - provider
+      - input_tokens
+      - output_tokens
+      - provider_cost_usd
+      - commission_usd
+      - user_cost_usd
+      - user_tier
+      properties:
+        id:
+          type: string
+          format: uuid
+        business_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        conversation_id:
+          type: string
+        request_id:
+          type: string
+        model:
+          type: string
+        provider:
+          type: string
+        input_tokens:
+          type: integer
+          minimum: 0
+        output_tokens:
+          type: integer
+          minimum: 0
+        cache_read_tokens:
+          type: integer
+          minimum: 0
+        cache_creation_tokens:
+          type: integer
+          minimum: 0
+        provider_cost_usd:
+          type: number
+          format: double
+        commission_usd:
+          type: number
+          format: double
+        user_cost_usd:
+          type: number
+          format: double
+        user_tier:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    DailySpendResponse:
+      type: object
+      required:
+      - daily_spend_usd
+      properties:
+        daily_spend_usd:
+          type: number
+          format: double
+    ChatTurnRequest:
+      type: object
+      properties:
+        message:
+          type: string
+        model:
+          type: string
+        locale:
+          type: string
+          description: >-
+            BCP-47 language tag (e.g. "ru", "en") for the LLM response
+            language. Takes precedence over the Accept-Language header, which
+            browsers cannot set on fetch. Empty falls back to Accept-Language.
+        selected_platforms:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          description: >-
+            Optional closed guided-compose publication scope. Omission preserves
+            ordinary chat behavior; when present, only these freshly active
+            platform integrations may be offered or dispatched.
+          items:
+            type: string
+            enum:
+            - telegram
+            - vk
+            - yandex_business
+    SSEConcurrencyError:
+      type: object
+      required:
+      - code
+      - retry_after_s
+      properties:
+        code:
+          type: string
+          enum:
+          - sse_concurrency_exceeded
+        retry_after_s:
+          type: integer
+    HITLResolveRequest:
+      type: object
+      required:
+      - decisions
+      properties:
+        decisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/HITLDecisionInput'
+    HITLDecisionInput:
+      type: object
+      required:
+      - id
+      - action
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+          enum:
+          - approve
+          - edit
+          - reject
+        edited_args:
+          type: object
+          additionalProperties: true
+        reject_reason:
+          type: string
+    HITLResolveResponse:
+      type: object
+      required:
+      - batch_id
+      - resolved_at
+      - decisions
+      properties:
+        batch_id:
+          type: string
+        resolved_at:
+          type: string
+          format: date-time
+        decisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/HITLResolvedCall'
+    HITLResolvedCall:
+      type: object
+      required:
+      - id
+      - action
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+          enum:
+          - approve
+          - edit
+          - reject
+        reason:
+          type: string
+    HITLShapeMismatchError:
+      type: object
+      required:
+      - error
+      - missing
+      properties:
+        error:
+          type: string
+          enum:
+          - shape mismatch
+        missing:
+          type: array
+          items:
+            type: string
+    HITLFieldNotEditableError:
+      type: object
+      required:
+      - error
+      - editable
+      properties:
+        error:
+          type: string
+        editable:
+          type: array
+          items:
+            type: string
+    HITLNonScalarFieldError:
+      type: object
+      required:
+      - error
+      - tool
+      properties:
+        error:
+          type: string
+        tool:
+          type: string
+    HITLRejectReasonTooLongError:
+      type: object
+      required:
+      - error
+      - max
+      properties:
+        error:
+          type: string
+          enum:
+          - reject_reason too long
+        max:
+          type: integer
+    HITLBatchResolvingError:
+      type: object
+      required:
+      - error
+      - retry_after_ms
+      - reason
+      properties:
+        error:
+          type: string
+          enum:
+          - batch resolving
+        retry_after_ms:
+          type: integer
+        reason:
+          type: string
+          enum:
+          - concurrent resolve in progress
+    HITLExpiredError:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+          enum:
+          - approval_expired
+    HITLAlreadyResolvedError:
+      type: object
+      required:
+      - error
+      - reason
+      properties:
+        error:
+          type: string
+          enum:
+          - batch already resolved
+        reason:
+          type: string
+          enum:
+          - already_resolved
+    ToolEntry:
+      description: |
+        Locale-resolved tool registry projection returned by the api
+        service's hitlGetTools (cached 5 minutes). The `floor` here is the
+        wire-effective HITL floor — `auto` or `manual`. Distinct from
+        `ToolRegistryEntry` which is the orchestrator's internal-only
+        projection that may carry `forbidden`.
+      type: object
+      required:
+      - name
+      - displayName
+      - platform
+      - floor
+      - editableFields
+      - description
+      - userDescription
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        displayNameKey:
+          type: string
+        platform:
+          type: string
+        floor:
+          type: string
+          enum:
+          - auto
+          - manual
+        editableFields:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        userDescription:
+          type: string
+    Conversation:
+      type: object
+      required:
+      - id
+      - userId
+      - businessId
+      - title
+      - titleStatus
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          nullable: true
+        title:
+          type: string
+          description: Empty with titleStatus auto marks a settled fallback; localize from createdAt at display time.
+        preview:
+          type: string
+          readOnly: true
+          maxLength: 161
+          description: Computed on conversation list responses from the latest nonblank user or assistant message, ordered by createdAt then message ID descending. Unicode whitespace is collapsed before truncation to 160 code points plus an ellipsis. Empty for chats without readable messages. Other conversation endpoints do not populate this field.
+        titleStatus:
+          type: string
+          enum:
+          - auto_pending
+          - auto
+          - manual
+        pinnedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastMessageAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateConversationRequest:
+      type: object
+      required:
+      - title
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        projectId:
+          type: string
+          nullable: true
+    UpdateConversationRequest:
+      type: object
+      required:
+      - title
+      properties:
+        title:
+          type: string
+          maxLength: 200
+    MoveConversationRequest:
+      type: object
+      properties:
+        projectId:
+          type: string
+          nullable: true
+    Message:
+      type: object
+      required:
+      - id
+      - conversationId
+      - role
+      - content
+      - createdAt
+      properties:
+        id:
+          type: string
+        conversationId:
+          type: string
+        role:
+          type: string
+          enum:
+          - user
+          - assistant
+          - system
+        content:
+          type: string
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageAttachment'
+        toolCalls:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageToolCall'
+        toolResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageToolResult'
+        metadata:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          description: Complete denotes a successful turn; error denotes a failed stream, including partial text. An absent legacy status is not proof of success.
+        errorCode:
+          type: string
+          description: Machine-readable stream error code; STREAM_ERROR when no upstream code is supplied.
+        createdAt:
+          type: string
+          format: date-time
+    MessageAttachment:
+      type: object
+      required:
+      - type
+      - url
+      - mimeType
+      - name
+      properties:
+        type:
+          type: string
+        url:
+          type: string
+        mimeType:
+          type: string
+        name:
+          type: string
+    MessageToolCall:
+      type: object
+      required:
+      - id
+      - name
+      - arguments
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        arguments:
+          type: object
+          additionalProperties: true
+        approvalId:
+          type: string
+        status:
+          type: string
+    MessageToolResult:
+      type: object
+      required:
+      - toolCallId
+      - content
+      - isError
+      properties:
+        toolCallId:
+          type: string
+        content:
+          type: object
+          additionalProperties: true
+        isError:
+          type: boolean
+        code:
+          type: string
+    ChatView:
+      type: object
+      required:
+      - messages
+      - pendingApprovals
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        pendingApprovals:
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingApproval'
+    PendingApproval:
+      type: object
+      required:
+      - batchId
+      - messageId
+      - calls
+      - status
+      - createdAt
+      properties:
+        batchId:
+          type: string
+        messageId:
+          type: string
+        calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingApprovalCall'
+        status:
+          type: string
+          enum:
+          - pending
+          - resolving
+          - expired
+          - unavailable
+          description: Unavailable means the batch was physically removed; it does not assert whether the tool executed.
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+          description: Approval deadline; absent for an unavailable batch that has already been physically removed.
+    PendingApprovalCall:
+      type: object
+      required:
+      - callId
+      - toolName
+      - args
+      - editableFields
+      properties:
+        callId:
+          type: string
+        toolName:
+          type: string
+        args:
+          type: object
+          additionalProperties: true
+        editableFields:
+          type: array
+          items:
+            type: string
+    TitlerConflictError:
+      type: object
+      required:
+      - error
+      - message
+      properties:
+        error:
+          type: string
+          enum:
+          - title_is_manual
+          - title_in_flight
+          - title_state_changed
+        message:
+          type: string
+    TitlerDisabledError:
+      type: object
+      required:
+      - error
+      - message
+      properties:
+        error:
+          type: string
+          enum:
+          - titler_disabled
+        message:
+          type: string
+    Project:
+      type: object
+      required:
+      - id
+      - businessId
+      - name
+      - whitelistMode
+      - allowedTools
+      - quickActions
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        systemPrompt:
+          type: string
+          maxLength: 4000
+        whitelistMode:
+          type: string
+          enum:
+          - inherit
+          - all
+          - explicit
+          - none
+        allowedTools:
+          type: array
+          items:
+            type: string
+        approvalOverrides:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+            - auto
+            - manual
+        quickActions:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProjectRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        systemPrompt:
+          type: string
+          maxLength: 4000
+        whitelistMode:
+          type: string
+          enum:
+          - inherit
+          - all
+          - explicit
+          - none
+        allowedTools:
+          type: array
+          items:
+            type: string
+        approvalOverrides:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+            - auto
+            - manual
+            - inherit
+        quickActions:
+          type: array
+          items:
+            type: string
+    ProjectDeleteResponse:
+      type: object
+      required:
+      - deletedConversations
+      - deletedMessages
+      properties:
+        deletedConversations:
+          type: integer
+        deletedMessages:
+          type: integer
+    ProjectConversationCountResponse:
+      type: object
+      required:
+      - count
+      properties:
+        count:
+          type: integer
+    Post:
+      type: object
+      required:
+      - id
+      - businessId
+      - content
+      - status
+      - createdAt
+      properties:
+        id:
+          type: string
+        businessId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        mediaUrls:
+          type: array
+          items:
+            type: string
+        platformResults:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PostPlatformResult'
+        status:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        broadcastGroupId:
+          type: string
+          description: >-
+            Groups posts fanned out by one cross-platform broadcast turn.
+            Posts sharing a non-empty value were created together; absent for
+            standalone posts and records that predate the field.
+        createdAt:
+          type: string
+          format: date-time
+    ContentTemplate:
+      type: object
+      required: [id, businessId, createdBy, name, kind, body, placeholders, createdAt, updatedAt]
+      properties:
+        id: {type: string, format: uuid}
+        businessId: {type: string, format: uuid}
+        createdBy: {type: string, format: uuid}
+        name: {type: string, minLength: 1, maxLength: 80}
+        kind: {type: string, enum: [post, review_reply]}
+        body: {type: string, minLength: 1, maxLength: 16384}
+        placeholders:
+          type: array
+          maxItems: 10
+          uniqueItems: true
+          items: {type: string, pattern: '^[A-Za-z][A-Za-z0-9_]{0,31}$'}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    ContentTemplateRequest:
+      type: object
+      required: [name, kind, body, placeholders]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 80}
+        kind: {type: string, enum: [post, review_reply]}
+        body: {type: string, minLength: 1, maxLength: 16384}
+        placeholders:
+          type: array
+          maxItems: 10
+          uniqueItems: true
+          items: {type: string, pattern: '^[A-Za-z][A-Za-z0-9_]{0,31}$'}
+    CreateContentTemplateFromSourceRequest:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 80}
+    RenderContentTemplateRequest:
+      type: object
+      required: [values]
+      properties:
+        values:
+          type: object
+          additionalProperties: {type: string, maxLength: 512}
+    RenderContentTemplateResponse:
+      type: object
+      required: [content]
+      properties:
+        content: {type: string, maxLength: 16384}
+    PostPlatformResult:
+      type: object
+      required:
+      - postId
+      - url
+      - status
+      properties:
+        postId:
+          type: string
+        url:
+          type: string
+        status:
+          type: string
+        error:
+          type: string
+    PostListResponse:
+      type: object
+      required:
+      - posts
+      - total
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        total:
+          type: integer
+    Review:
+      type: object
+      required:
+      - id
+      - businessId
+      - platform
+      - externalId
+      - authorName
+      - rating
+      - text
+      - replyStatus
+      - createdAt
+      properties:
+        id:
+          type: string
+        businessId:
+          type: string
+          format: uuid
+        platform:
+          type: string
+        externalId:
+          type: string
+        authorName:
+          type: string
+        rating:
+          type: integer
+        text:
+          type: string
+        replyText:
+          type: string
+        replyStatus:
+          type: string
+          enum:
+          - pending
+          - replied
+          - error
+        platformMeta:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        draftReply:
+          type: string
+        draftStatus:
+          type: string
+          enum:
+          - generating
+          - ready
+          - failed
+        draftGeneratedAt:
+          type: string
+          format: date-time
+        draftError:
+          type: string
+    ReviewListResponse:
+      type: object
+      required:
+      - reviews
+      - total
+      properties:
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+        total:
+          type: integer
+    ReviewUnansweredBuckets:
+      type: object
+      description: Unanswered reviews partitioned by age (created_at -> now).
+      required:
+      - lt24h
+      - h24to72
+      - gt72h
+      properties:
+        lt24h:
+          type: integer
+          description: Unanswered under 24 hours old.
+        h24to72:
+          type: integer
+          description: Unanswered between 24 and 72 hours old.
+        gt72h:
+          type: integer
+          description: Unanswered over 72 hours old.
+    ReviewSLAResponse:
+      type: object
+      description: >-
+        Aggregate-only response-SLA metrics. No author, review text, or reply
+        text is carried; platform identifiers are the only non-numeric values.
+      required:
+      - total
+      - unanswered
+      - answered
+      - buckets
+      - targetHours
+      - medianResponseHours
+      - averageResponseHours
+      - measuredResponses
+      - percentAnsweredWithinTarget
+      - oldestUnansweredHours
+      - platforms
+      properties:
+        total:
+          type: integer
+          description: Total reviews for the business.
+        unanswered:
+          type: integer
+          description: Reviews whose reply_status is not "replied".
+        answered:
+          type: integer
+          description: Reviews whose reply_status is "replied".
+        buckets:
+          $ref: '#/components/schemas/ReviewUnansweredBuckets'
+        targetHours:
+          type: integer
+          description: Answered-within-target window in hours the rate was computed against.
+        medianResponseHours:
+          type: number
+          description: >-
+            Median response latency in hours (created_at -> replied_at) over
+            measured responses only.
+        averageResponseHours:
+          type: number
+          description: >-
+            Average response latency in hours (created_at -> replied_at) over
+            measured responses only.
+        measuredResponses:
+          type: integer
+          description: >-
+            Replied reviews carrying a replied_at (the denominator behind the
+            median / average / within-target rate).
+        percentAnsweredWithinTarget:
+          type: number
+          description: >-
+            Share of measured responses answered within targetHours, in [0,1].
+        oldestUnansweredHours:
+          type: number
+          nullable: true
+          description: >-
+            Age in hours of the oldest unanswered review, or null when every
+            review is answered.
+        platforms:
+          type: array
+          description: >-
+            Per-platform medians over the same full measured response set.
+            Platforms without a valid replied_at sample are omitted.
+          items:
+            $ref: '#/components/schemas/ReviewPlatformSLA'
+    ReviewDelegationWeek:
+      type: object
+      required: [weekStart, replied, acceptedUnedited, edited, unknown]
+      properties:
+        weekStart: {type: string, format: date-time}
+        replied: {type: integer}
+        acceptedUnedited: {type: integer}
+        edited: {type: integer}
+        unknown: {type: integer}
+    ReviewDelegationMetrics:
+      type: object
+      description: >-
+        Aggregate feedback on saved draft replies with replied_at in the recent
+        weekly interval. Unknown counts timestamped replies without an edit
+        signal. Legacy rows missing replied_at cannot be assigned to a week and
+        are excluded from all totals.
+      required: [from, to, replied, acceptedUnedited, edited, unknown, measurable, weeks]
+      properties:
+        from: {type: string, format: date-time}
+        to: {type: string, format: date-time}
+        replied: {type: integer}
+        acceptedUnedited: {type: integer}
+        edited: {type: integer}
+        unknown: {type: integer}
+        measurable: {type: integer, description: acceptedUnedited plus edited; the denominator for known-feedback shares.}
+        weeks:
+          type: array
+          maxItems: 8
+          items: {$ref: '#/components/schemas/ReviewDelegationWeek'}
+    ReviewPlatformSLA:
+      type: object
+      required:
+      - platform
+      - medianResponseHours
+      - measuredResponses
+      properties:
+        platform:
+          type: string
+        medianResponseHours:
+          type: number
+        measuredResponses:
+          type: integer
+    PresenceSubScores:
+      type: object
+      description: >-
+        The four normalized 0-100 presence-health dimensions. rating, sla, and
+        coverage are null in the empty state (no reviews); sync is null when the
+        business has no connected-channel sync signal (the sync dimension is
+        dropped and the other weights renormalize).
+      required:
+      - ratingScore
+      - slaScore
+      - coverageScore
+      - syncScore
+      properties:
+        ratingScore:
+          type: integer
+          nullable: true
+          description: Average star rating normalized to 0-100. Null when no rated reviews.
+        slaScore:
+          type: integer
+          nullable: true
+          description: Percent answered within target normalized to 0-100. Null when no measurable responses.
+        coverageScore:
+          type: integer
+          nullable: true
+          description: Answered share (replied / total) as 0-100. Null when no reviews.
+        syncScore:
+          type: integer
+          nullable: true
+          description: Connected-channel sync health as 0-100. Null when no sync signal exists.
+    PresenceWeights:
+      type: object
+      description: >-
+        The weight set the composite was computed under. When the sync dimension
+        is dropped the other three renormalize over 0.90, so these fractions
+        reflect the mix actually used rather than the nominal weights.
+      required:
+      - rating
+      - sla
+      - coverage
+      - sync
+      properties:
+        rating:
+          type: number
+          description: Weight applied to ratingScore.
+        sla:
+          type: number
+          description: Weight applied to slaScore.
+        coverage:
+          type: number
+          description: Weight applied to coverageScore.
+        sync:
+          type: number
+          description: Weight applied to syncScore (0 when the sync dimension was dropped).
+    PresenceRecommendation:
+      type: object
+      description: >-
+        The single next-action nudge — the weakest present sub-score area, a
+        localized message key the client resolves, and the composite points
+        recovering that area to 100 would add.
+      required:
+      - area
+      - message
+      - potentialGain
+      properties:
+        area:
+          type: string
+          enum: [rating, sla, coverage, sync]
+          description: The composite dimension this recommendation targets.
+        message:
+          type: string
+          description: i18n message key the client resolves to a localized fix suggestion.
+        potentialGain:
+          type: integer
+          description: >-
+            Composite points recovering this area to 100 would add
+            (round(weight_of_area * (100 - subScore))).
+    PresenceHealthResponse:
+      type: object
+      description: >-
+        Read-only composite presence-health score. Aggregate-only: no author,
+        review text, or reply text is carried — numbers only. composite and
+        trendDelta are null when there is not yet enough data.
+      required:
+      - composite
+      - trendDelta
+      - subScores
+      - weights
+      - topRecommendation
+      - computedAt
+      properties:
+        composite:
+          type: integer
+          nullable: true
+          description: The weighted 0-100 composite. Null in the empty state (no reviews).
+        trendDelta:
+          type: integer
+          nullable: true
+          description: >-
+            composite minus the most-recent prior-week snapshot's composite.
+            Null when no prior-week snapshot exists.
+        subScores:
+          $ref: '#/components/schemas/PresenceSubScores'
+        weights:
+          $ref: '#/components/schemas/PresenceWeights'
+        topRecommendation:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/PresenceRecommendation'
+          description: The single next-action nudge. Null in the empty state.
+        computedAt:
+          type: string
+          format: date-time
+          description: When the score was computed.
+    ReplyToReviewRequest:
+      type: object
+      required:
+      - replyText
+      properties:
+        replyText:
+          type: string
+    AgentTask:
+      type: object
+      required:
+      - id
+      - businessId
+      - type
+      - status
+      - platform
+      - createdAt
+      properties:
+        id:
+          type: string
+        businessId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        displayName:
+          type: string
+        displayNameKey:
+          type: string
+        status:
+          type: string
+        platform:
+          type: string
+        input:
+          description: Free-form per-task input payload.
+        output:
+          description: Free-form per-task output payload.
+        error:
+          type: string
+        errorCode:
+          type: string
+        originConversationId:
+          type: string
+          description: Exact originating conversation, present only when it is live and owned by the requesting user.
+        verificationStatus:
+          type: string
+          enum: [pending, running, verified, mismatch, unverifiable, error, unsupported]
+        verificationFields:
+          type: array
+          items: {type: string}
+        verificationMismatches:
+          type: array
+          items: {type: string}
+        verificationErrorCode:
+          type: string
+        verificationCheckedAt:
+          type: string
+          format: date-time
+        verificationCanRerun:
+          type: boolean
+          description: Server-authoritative eligibility for another readonly verification.
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    AgentTaskListResponse:
+      type: object
+      required:
+      - tasks
+      - total
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentTask'
+        total:
+          type: integer
+    SearchResult:
+      type: object
+      required:
+      - conversationId
+      - matchCount
+      - score
+      properties:
+        titleStatus:
+          type: string
+          enum: [auto_pending, auto, manual]
+          x-enum-varnames: [SearchTitleAutoPending, SearchTitleAuto, SearchTitleManual]
+          description: Present for title hits; manual titles must always be displayed verbatim.
+        createdAt:
+          type: string
+          format: date-time
+          description: Conversation creation time for display-time fallback localization.
+        conversationId:
+          type: string
+        title:
+          type: string
+        projectId:
+          type: string
+          nullable: true
+        snippet:
+          type: string
+        matchCount:
+          type: integer
+        topMessageId:
+          type: string
+        score:
+          type: number
+          format: double
+        marks:
+          type: array
+          items:
+            type: array
+            minItems: 2
+            maxItems: 2
+            items:
+              type: integer
+        lastMessageAt:
+          type: string
+          format: date-time
+          nullable: true
+    ChatRequest:
+      type: object
+      required:
+      - message
+      properties:
+        model:
+          type: string
+        message:
+          type: string
+        business_id:
+          type: string
+          format: uuid
+        business_name:
+          type: string
+        business_category:
+          type: string
+        business_address:
+          type: string
+        business_phone:
+          type: string
+        business_website:
+          type: string
+        business_description:
+          type: string
+        business_voice_tone:
+          type: array
+          items:
+            type: string
+        active_integrations:
+          type: array
+          items:
+            type: string
+        selected_platforms:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - telegram
+            - vk
+            - yandex_business
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatHistoryEntry'
+        project_id:
+          type: string
+        project_name:
+          type: string
+        project_system_prompt:
+          type: string
+        project_whitelist_mode:
+          type: string
+          enum:
+          - inherit
+          - all
+          - explicit
+          - none
+          - ''
+        project_allowed_tools:
+          type: array
+          items:
+            type: string
+        user_id:
+          type: string
+        message_id:
+          type: string
+        tier:
+          type: string
+        business_approvals:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ToolFloor'
+        project_approval_overrides:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ToolFloor'
+        locale:
+          type: string
+    ChatHistoryEntry:
+      type: object
+      required:
+      - role
+      - content
+      properties:
+        role:
+          type: string
+          enum:
+          - system
+          - user
+          - assistant
+          - tool
+        content:
+          type: string
+    ResumeRequest:
+      type: object
+      properties:
+        business_approvals:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ToolFloor'
+        project_approval_overrides:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ToolFloor'
+        active_integrations:
+          type: array
+          items:
+            type: string
+        whitelist_mode:
+          type: string
+          enum:
+          - inherit
+          - all
+          - explicit
+          - none
+          - ''
+        allowed_tools:
+          type: array
+          items:
+            type: string
+        model:
+          type: string
+        tier:
+          type: string
+    DraftReplyRequest:
+      type: object
+      required:
+      - reviewText
+      - businessId
+      - platform
+      - rating
+      properties:
+        businessId:
+          type: string
+        businessName:
+          type: string
+        businessCategory:
+          type: string
+        businessDescription:
+          type: string
+        platform:
+          type: string
+        reviewText:
+          type: string
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 5
+        authorName:
+          type: string
+        examples:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftReplyExample'
+    DraftReplyExample:
+      type: object
+      required:
+      - reviewText
+      - replyText
+      properties:
+        reviewText:
+          type: string
+        replyText:
+          type: string
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 5
+    DraftReplyResponse:
+      type: object
+      required:
+      - draftReply
+      properties:
+        draftReply:
+          type: string
+        provider:
+          type: string
+        model:
+          type: string
+    ToolNamesResponse:
+      type: object
+      required:
+      - names
+      properties:
+        names:
+          type: array
+          items:
+            type: string
+    ToolRegistryEntry:
+      description: |
+        Orchestrator's internal tool registry projection. The `floor` may
+        carry `forbidden` (in addition to `auto` / `manual`); the api side
+        uses `ToolEntry` (auto/manual only).
+      type: object
+      required:
+      - name
+      - displayName
+      - platform
+      - floor
+      - editableFields
+      - description
+      - userDescription
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        displayNameKey:
+          type: string
+        platform:
+          type: string
+        floor:
+          $ref: '#/components/schemas/ToolFloor'
+        editableFields:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        userDescription:
+          type: string
+    SSEEvent:
+      description: |
+        Discriminated union over the per-type SSE event schemas. `type`
+        is the discriminator. Wire envelope is `data: <json>\n\n`.
+      oneOf:
+      - $ref: '#/components/schemas/SSEEventText'
+      - $ref: '#/components/schemas/SSEEventToolCall'
+      - $ref: '#/components/schemas/SSEEventToolResult'
+      - $ref: '#/components/schemas/SSEEventToolRejected'
+      - $ref: '#/components/schemas/SSEEventApprovalRequired'
+      - $ref: '#/components/schemas/SSEEventDone'
+      - $ref: '#/components/schemas/SSEEventError'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/SSEEventText'
+          tool_call: '#/components/schemas/SSEEventToolCall'
+          tool_result: '#/components/schemas/SSEEventToolResult'
+          tool_rejected: '#/components/schemas/SSEEventToolRejected'
+          tool_approval_required: '#/components/schemas/SSEEventApprovalRequired'
+          done: '#/components/schemas/SSEEventDone'
+          error: '#/components/schemas/SSEEventError'
+    SSEEventText:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - text
+        content:
+          type: string
+    SSEEventToolCall:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - tool_call
+        tool_call_id:
+          type: string
+        tool_name:
+          type: string
+        tool_display_name:
+          type: string
+        tool_display_name_key:
+          type: string
+        tool_args:
+          type: object
+          additionalProperties: true
+    SSEEventToolResult:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - tool_result
+        tool_call_id:
+          type: string
+        tool_name:
+          type: string
+        tool_display_name:
+          type: string
+        tool_display_name_key:
+          type: string
+        result:
+          description: Tool reply payload (any JSON).
+          nullable: true
+        error:
+          type: string
+    SSEEventToolRejected:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - tool_rejected
+        tool_call_id:
+          type: string
+        tool_name:
+          type: string
+        tool_display_name:
+          type: string
+        tool_display_name_key:
+          type: string
+        error:
+          type: string
+    SSEEventApprovalRequired:
+      type: object
+      required:
+      - type
+      - batch_id
+      - calls
+      properties:
+        type:
+          type: string
+          enum:
+          - tool_approval_required
+        batch_id:
+          type: string
+        calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalCall'
+    SSEEventDone:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - done
+        content:
+          type: string
+    SSEEventError:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - error
+        code:
+          type: string
+        content:
+          type: string
+    ApprovalCall:
+      type: object
+      required:
+      - call_id
+      - tool_name
+      - args
+      - editable_fields
+      - floor
+      properties:
+        call_id:
+          type: string
+        tool_name:
+          type: string
+        args:
+          type: object
+          additionalProperties: true
+        editable_fields:
+          type: array
+          items:
+            type: string
+        floor:
+          $ref: '#/components/schemas/ToolFloor'
+    ChannelRequestChannel:
+      type: string
+      description: |
+        A not-yet-supported channel a business is expressing demand for.
+        Backs a fake-door affordance so pull is measured before the channel
+        is built.
+      enum:
+      - avito
+      - wildberries
+      - ozon
+      - 2gis
+      - other
+    CreateChannelRequestRequest:
+      type: object
+      required:
+      - channel
+      properties:
+        channel:
+          type: string
+          description: |
+            A not-yet-supported channel a business is expressing demand for.
+          enum:
+          - avito
+          - wildberries
+          - ozon
+          - 2gis
+          - other
+        note:
+          type: string
+          maxLength: 280
+    ChannelDemandCount:
+      type: object
+      required:
+      - channel
+      - count
+      properties:
+        channel:
+          $ref: '#/components/schemas/ChannelRequestChannel'
+        count:
+          type: integer
+    ChannelDemandSummary:
+      type: object
+      required:
+      - channels
+      properties:
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChannelDemandCount'
+    LandingEventRequest:
+      type: object
+      required: [cta, path]
+      properties:
+        cta:
+          type: string
+          enum: [hero-waitlist, hero-register, nav-register, nav-login, pricing-free-register, pricing-pro-waitlist, waitlist-success-register]
+        path:
+          type: string
+          minLength: 1
+          maxLength: 1024
+          description: Local pathname starting with a single slash, without query or fragment.
+    TelegramConnectError:
+      type: object
+      required: [error, reason]
+      properties:
+        error:
+          type: string
+        reason:
+          type: string
+          description: Stable Telegram connection failure reason.
+    WaitlistRequest:
+      type: object
+      description: |
+        Public closed-beta waitlist signup submitted from the marketing
+        landing. Only email and the processing-consent flag are required; the
+        segmentation fields are optional. Enums are inlined (not $ref) so the
+        generated struct carries validate:oneof tags.
+      required:
+      - email
+      - consent
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        sphere:
+          type: string
+          description: Optional organization-sphere segment.
+          enum:
+          - cafe
+          - beauty
+          - services
+          - retail
+          - other
+        pain:
+          type: string
+          description: Optional strongest-pain segment.
+          enum:
+          - reviews
+          - posts
+          - card
+        source:
+          type: string
+          enum: [landing, billing, business-limit]
+          description: Optional latest signup source; omitted values preserve existing attribution.
+        plan:
+          type: string
+          enum: [pro]
+          description: Optional requested plan; omitted values preserve existing interest.
+        consent:
+          type: boolean
+          description: |
+            Must be true — the visitor ticked the personal-data-processing
+            consent checkbox. A false or absent value fails validation.
+    PublicChannelVoteRequest:
+      type: object
+      description: |
+        Public fake-door vote for a not-yet-supported channel, cast from the
+        marketing landing by an unauthenticated visitor. Measures anonymous
+        top-of-funnel demand; distinct from the business-scoped
+        CreateChannelRequestRequest.
+      required:
+      - channel
+      properties:
+        channel:
+          type: string
+          enum:
+          - whatsapp
+          - avito
+          - 2gis
+          - other
+        note:
+          type: string
+          maxLength: 280

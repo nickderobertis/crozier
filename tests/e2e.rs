@@ -967,21 +967,18 @@ fn corpus_has_comparable_golden(c: &Corpus, expected: &Path) -> Result<bool, Str
     Err("fixture has no expected/ golden tree".to_string())
 }
 
-/// The OpenAPI spec a corpus generates from. A vendored corpus ships its
-/// `openapi.yml`; a `link-ok` corpus (`tests/fixtures/CORPUS.md`, spec not
-/// redistributed) is fetched into `.local/corpus/<api>/openapi.<source suffix>`
-/// by `scripts/fetch-corpus.sh` — `None` when that fetch has not run.
+/// The committed OpenAPI source used by a registered corpus.
 fn corpus_spec(api: &str) -> Option<PathBuf> {
     let vendored = fixture_dir(api).join("openapi.yml");
     if vendored.exists() {
         return Some(vendored);
     }
-    let fetched = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(".local/corpus")
+    let committed = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/corpus-sources")
         .join(api);
     ["openapi.json", "openapi.yaml", "openapi.yml"]
         .into_iter()
-        .map(|name| fetched.join(name))
+        .map(|name| committed.join(name))
         .find(|path| path.exists())
         .or_else(|| {
             let interpreter = if cfg!(windows) { "python" } else { "python3" };
@@ -997,7 +994,7 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
                 return None;
             }
             let relative = String::from_utf8(output.stdout).ok()?;
-            let path = fetched.join(relative.trim());
+            let path = committed.join(relative.trim());
             path.is_file().then_some(path)
         })
 }
@@ -3286,7 +3283,8 @@ fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
 /// identically.
 fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
     let out = tempfile::tempdir().expect("tempdir");
-    corpus_command(c, out.path())
+    let (mut command, _source) = corpus_command(c, out.path());
+    command
         .assert()
         .success()
         .stderr(predicate::str::contains("generated"));
@@ -3297,12 +3295,27 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
 /// command without assert_cmd's fail-fast assertion so one broken corpus cannot
 /// hide differences in its siblings. It never passes `--no-config`: `just
 /// test-corpus-match-strict` turns strict Fern compatibility on through
-/// `CROZIER_FERN_STRICT`, which `--no-config` would silently drop.
-fn corpus_command(c: &Corpus, output: &Path) -> Command {
+/// `CROZIER_FERN_STRICT`, which `--no-config` would silently drop. Keep the
+/// returned source directory alive until the subprocess finishes; then dropping
+/// it removes the staged copies.
+fn corpus_command(c: &Corpus, output: &Path) -> (Command, tempfile::TempDir) {
+    let staged = tempfile::tempdir().expect("source staging directory");
+    let prepared = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" })
+        .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/corpus_sources.py"))
+        .args(["prepare", "--fixture", c.api, "--output"])
+        .arg(staged.path())
+        .output()
+        .expect("prepare committed corpus source");
+    assert!(
+        prepared.status.success(),
+        "{}",
+        String::from_utf8_lossy(&prepared.stderr)
+    );
+    let spec = String::from_utf8(prepared.stdout).expect("source path is UTF-8");
     let mut command = crozier();
     command
         .args(["generate", "--spec"])
-        .arg(corpus_spec(c.api).unwrap_or_else(|| fixture_dir(c.api).join("openapi.yml")))
+        .arg(spec.trim())
         .arg("--output")
         .arg(output)
         .args([
@@ -3319,12 +3332,13 @@ fn corpus_command(c: &Corpus, output: &Path) -> Command {
                 .flat_map(|n| ["--client-class-name", n]),
         )
         .args(c.extra_fields.iter().flat_map(|e| ["--extra-fields", e]));
-    command
+    (command, staged)
 }
 
 fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
     let out = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
-    let result = corpus_command(c, out.path())
+    let (mut command, _source) = corpus_command(c, out.path());
+    let result = command
         .output()
         .map_err(|error| format!("could not run crozier: {error}"))?;
     let stderr = String::from_utf8_lossy(&result.stderr);
@@ -3372,8 +3386,8 @@ fn exhaustive_matches_fern_output_byte_for_byte() {
     assert_corpus_matches(&EXHAUSTIVE);
 }
 
-/// `apideck.com-crm`: a real-world `link-ok` corpus API (issue #77). Its OpenAPI
-/// spec is fetched, not vendored (`corpus_spec`); its full Fern golden is
+/// `apideck.com-crm`: a real-world committed corpus API (issue #77). Its OpenAPI
+/// spec is committed (`corpus_spec`); its full Fern golden is
 /// committed and reproduced byte-for-byte.
 const APIDECK_CRM: Corpus = Corpus {
     api: "apideck.com-crm",
@@ -3397,29 +3411,27 @@ const APIDECK_HRIS: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Enforce the real-world apideck byte-match. The spec is `link-ok` (fetched by
-/// `scripts/fetch-corpus.sh` into `.local/corpus`, not vendored), so this **skips**
-/// when the spec is absent — including the offline `check` gate, which never
-/// fetches — and **fails** when `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg
-/// fetches the spec, then sets it), so the enforced leg can never silently no-op.
+/// Enforce the real-world Apideck byte-match against its committed source.
 #[test]
 fn apideck_crm_matches_fern_output() {
     if corpus_spec(APIDECK_CRM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the apideck corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the apideck committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping apideck byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping apideck byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&APIDECK_CRM);
 }
 
-/// `bunq.com`: a large real-world `link-ok` corpus API (issue #77) — one sub-client
+/// `bunq.com`: a large real-world committed corpus API (issue #77) — one sub-client
 /// per tag over ~10× apideck's surface (docs/matching.md holds the measured
 /// endpoint/schema/tag counts), the pipeline's at-scale stress target. Its
-/// OpenAPI spec is fetched, not vendored (`corpus_spec`); its full Fern golden is
+/// OpenAPI spec is committed (`corpus_spec`); its full Fern golden is
 /// committed and crozier reproduces the entire golden byte-for-byte. Its empty
 /// `unmatched` list makes any future divergence fail by default.
 const BUNQ: Corpus = Corpus {
@@ -3433,10 +3445,10 @@ const BUNQ: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `bungie.net`: a real-world `link-ok` corpus API (issue #77) chosen as the
+/// `bungie.net`: a real-world committed corpus API (issue #77) chosen as the
 /// schema-heavy counterpart to endpoint-heavy bunq — 869 component schemas across
 /// only 13 tags. Fern accepts the raw spec cleanly and crozier consumes it without
-/// error; its OpenAPI spec is fetched, not vendored (`corpus_spec`), and crozier
+/// error; its OpenAPI spec is committed (`corpus_spec`), and crozier
 /// now reproduces the committed Fern golden byte-for-byte.
 const BUNGIE: Corpus = Corpus {
     api: "bungie.net",
@@ -3450,13 +3462,12 @@ const BUNGIE: Corpus = Corpus {
 };
 
 // ---------------------------------------------------------------------------
-// Five additional real-world `link-ok` corpora (issue #77), added together as a
+// Five additional real-world committed corpora (issue #77), added together as a
 // batch of harder, feature-diverse targets. Each passes `fern check` cleanly (the
 // prerequisite — Fern must accept the raw spec first); their Fern golden `expected/`
 // trees are workflow-managed. All five reproduce their goldens byte-for-byte, so
 // each `unmatched` list is empty and any future divergence fails by default. The
-// offline `check` gate skips every one of these (their specs are fetched, not
-// vendored); `just test-corpus-match` enforces them.
+// offline `check` gate and `just test-corpus-match` both read committed sources.
 // ---------------------------------------------------------------------------
 
 /// `anchore.io`: the Anchore Engine API server — the largest clean component-schema
@@ -4242,18 +4253,16 @@ fn every_unmatched_entry_exists_in_its_own_golden() {
 
 #[test]
 fn bunq_matches_fern_output() {
-    // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
-    // when it is absent — including the offline `check` gate — and **fails** when
-    // `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg fetches first, then sets
-    // it), so the enforced leg can never silently no-op. Bunq is fully matched, so
-    // its empty opt-out list makes the entire golden tree mandatory.
+    // An empty opt-out list makes the entire committed golden mandatory.
     if corpus_spec(BUNQ.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the bunq corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the bunq committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping bunq byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping bunq byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&BUNQ);
@@ -4261,39 +4270,33 @@ fn bunq_matches_fern_output() {
 
 #[test]
 fn bungie_matches_fern_output() {
-    // `link-ok` like apideck and bunq: the spec is fetched (not vendored), so this
-    // **skips** when it is absent — including the offline `check` gate — and
-    // **fails** when `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg fetches
-    // first, then sets it), so the enforced leg can never silently no-op.
-    // Bungie's empty opt-out list enforces the full schema-heavy golden once the
-    // spec has been fetched.
     if corpus_spec(BUNGIE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the bungie corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the bungie committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping bungie byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping bungie byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&BUNGIE);
 }
 
-// The five batch corpora below share the bunq/bungie test shape: `link-ok` (spec
-// fetched, not vendored) so each **skips** offline — including the `check` gate — and
-// **fails** when `CROZIER_REQUIRE_CORPUS` is set without a fetched spec, so an
-// enforced leg can never silently no-op. Each measured `unmatched` list contains
-// only residual divergences and shrinks as those generator gaps close.
+// Each batch corpus compares its complete golden using committed sources.
 
 #[test]
 fn anchore_matches_fern_output() {
     if corpus_spec(ANCHORE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the anchore corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the anchore committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping anchore byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping anchore byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&ANCHORE);
@@ -4304,10 +4307,12 @@ fn apache_airflow_matches_fern_output() {
     if corpus_spec(APACHE_AIRFLOW.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the apache corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the apache committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping apache byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping apache byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&APACHE_AIRFLOW);
@@ -4318,10 +4323,10 @@ fn discourse_matches_fern_output() {
     if corpus_spec(DISCOURSE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the discourse corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the discourse committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping discourse byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!("skipping discourse byte-match: committed source missing (run just lint-corpus-sources)");
         return;
     }
     assert_corpus_matches(&DISCOURSE);
@@ -4332,10 +4337,12 @@ fn appwrite_server_matches_fern_output() {
     if corpus_spec(APPWRITE_SERVER.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the appwrite corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the appwrite committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping appwrite byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping appwrite byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&APPWRITE_SERVER);
@@ -4346,10 +4353,12 @@ fn apicurio_matches_fern_output() {
     if corpus_spec(APICURIO.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the apicurio corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the apicurio committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping apicurio byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping apicurio byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&APICURIO);
@@ -4360,10 +4369,10 @@ fn gambitcomm_mimic_matches_fern_output() {
     if corpus_spec(GAMBITCOMM_MIMIC.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the gambitcomm corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the gambitcomm committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping gambitcomm byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!("skipping gambitcomm byte-match: committed source missing (run just lint-corpus-sources)");
         return;
     }
     assert_corpus_matches(&GAMBITCOMM_MIMIC);
@@ -4374,7 +4383,7 @@ fn dnd5eapi_matches_fern_output() {
     if corpus_spec(DND5EAPI.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the dnd5eapi corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the dnd5eapi committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4386,7 +4395,7 @@ fn apache_qakka_matches_fern_output() {
     if corpus_spec(APACHE_QAKKA.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the apache-qakka corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the apache-qakka committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4398,7 +4407,7 @@ fn authentiqio_matches_fern_output() {
     if corpus_spec(AUTHENTIQIO.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the authentiqio corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the authentiqio committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4410,7 +4419,7 @@ fn etsi_mec010_2_matches_fern_output() {
     if corpus_spec(ETSI_MEC010_2.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the ETSI MEC 010-2 corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the ETSI MEC 010-2 committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4422,7 +4431,7 @@ fn apideck_webhook_matches_fern_output() {
     if corpus_spec(APIDECK_WEBHOOK.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Webhook corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Webhook committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4434,7 +4443,7 @@ fn apideck_vault_matches_fern_output() {
     if corpus_spec(APIDECK_VAULT.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Vault corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Vault committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4446,7 +4455,7 @@ fn airbyte_config_matches_fern_output() {
     if corpus_spec(AIRBYTE_CONFIG.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Airbyte Config corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Airbyte Config committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4458,7 +4467,7 @@ fn bintable_matches_fern_output() {
     if corpus_spec(BINTABLE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Bintable corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Bintable committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4470,7 +4479,7 @@ fn apis_guru_matches_fern_output() {
     if corpus_spec(APIS_GURU.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the APIs.guru corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the APIs.guru committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4482,7 +4491,7 @@ fn color_pizza_matches_fern_output() {
     if corpus_spec(COLOR_PIZZA.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Color Pizza corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Color Pizza committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4494,7 +4503,7 @@ fn byautomata_io_matches_fern_output() {
     if corpus_spec(BYAUTOMATA_IO.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the By Automata corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the By Automata committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4506,7 +4515,7 @@ fn apideck_proxy_matches_fern_output() {
     if corpus_spec(APIDECK_PROXY.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Proxy corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Proxy committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4518,7 +4527,7 @@ fn apideck_connector_matches_fern_output() {
     if corpus_spec(APIDECK_CONNECTOR.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Connector corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Connector committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4530,7 +4539,7 @@ fn apideck_ecommerce_matches_fern_output() {
     if corpus_spec(APIDECK_ECOMMERCE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecommerce corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecommerce committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4542,7 +4551,7 @@ fn apideck_issue_tracking_matches_fern_output() {
     if corpus_spec(APIDECK_ISSUE_TRACKING.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Issue Tracking corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Issue Tracking committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4554,7 +4563,7 @@ fn appwrite_client_matches_fern_output() {
     if corpus_spec(APPWRITE_CLIENT.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Appwrite Client corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Appwrite Client committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4566,7 +4575,7 @@ fn apideck_file_storage_matches_fern_output() {
     if corpus_spec(APIDECK_FILE_STORAGE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck File Storage corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck File Storage committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4578,7 +4587,7 @@ fn apideck_hris_matches_fern_output() {
     if corpus_spec(APIDECK_HRIS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck HRIS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck HRIS committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4590,7 +4599,7 @@ fn apideck_accounting_matches_fern_output() {
     if corpus_spec(APIDECK_ACCOUNTING.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Accounting corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Accounting committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4602,7 +4611,7 @@ fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     if corpus_spec(CALORIENINJAS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the CalorieNinjas corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the CalorieNinjas committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4630,7 +4639,7 @@ fn eos_matches_fern_output() {
     if corpus_spec(EOS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the EOS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the EOS committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4642,7 +4651,7 @@ fn apideck_sms_matches_fern_output() {
     if corpus_spec(APIDECK_SMS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck SMS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck SMS committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4654,7 +4663,7 @@ fn apideck_ecosystem_matches_fern_output() {
     if corpus_spec(APIDECK_ECOSYSTEM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecosystem corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecosystem committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4666,7 +4675,7 @@ fn apideck_customer_support_matches_fern_output() {
     if corpus_spec(APIDECK_CUSTOMER_SUPPORT.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Customer Support corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Customer Support committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4678,7 +4687,7 @@ fn apideck_lead_matches_fern_output() {
     if corpus_spec(APIDECK_LEAD.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Lead corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Lead committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4690,7 +4699,7 @@ fn apache_org_airflow_matches_fern_output() {
     if corpus_spec(APACHE_ORG_AIRFLOW.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apache Airflow corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apache Airflow committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4702,7 +4711,7 @@ fn openfigi_com_matches_fern_output() {
     if corpus_spec(OPENFIGI.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the OpenFIGI corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the OpenFIGI committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4714,7 +4723,7 @@ fn twilio_voice_v1_matches_fern_output() {
     if corpus_spec(TWILIO_VOICE_V1.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Twilio Voice v1 corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Twilio Voice v1 committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4726,7 +4735,7 @@ fn microcks_local_matches_fern_output() {
     if corpus_spec(MICROCKS_LOCAL.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Microcks corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Microcks committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4738,7 +4747,7 @@ fn redhat_catalog_inventory_matches_fern_output() {
     if corpus_spec(REDHAT_CATALOG_INVENTORY.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Red Hat Catalog Inventory corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Red Hat Catalog Inventory committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4750,7 +4759,7 @@ fn xero_payroll_au_matches_fern_output() {
     if corpus_spec(XERO_PAYROLL_AU.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Xero Payroll AU corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Xero Payroll AU committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4762,7 +4771,7 @@ fn traccar_matches_fern_output() {
     if corpus_spec(TRACCAR.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Traccar corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Traccar committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4774,7 +4783,7 @@ fn reverb_com_matches_fern_output() {
     if corpus_spec(REVERB_COM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Reverb corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Reverb committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4786,7 +4795,7 @@ fn maif_otoroshi_matches_fern_output() {
     if corpus_spec(MAIF_OTOROSHI.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the MAIF Otoroshi corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the MAIF Otoroshi committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4798,7 +4807,7 @@ fn portfoliooptimizer_io_matches_fern_output() {
     if corpus_spec(PORTFOLIOOPTIMIZER_IO.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Portfolio Optimizer corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Portfolio Optimizer committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4810,7 +4819,7 @@ fn openbanking_org_uk_account_info_openapi_matches_fern_output() {
     if corpus_spec(OPENBANKING_ORG_UK_ACCOUNT_INFO_OPENAPI.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Open Banking account info corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Open Banking account info committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4822,7 +4831,7 @@ fn netbox_dev_matches_fern_output() {
     if corpus_spec(NETBOX_DEV.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the NetBox corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the NetBox committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7182,7 +7191,7 @@ fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck ATS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck ATS committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7194,7 +7203,7 @@ fn buildrelay_matches_fern_output() {
     if corpus_spec(BUILDRELAY.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the BuildRelay corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the BuildRelay committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7206,7 +7215,7 @@ fn tlon_notes_matches_fern_output() {
     if corpus_spec(TLON_NOTES.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Tlon Notes corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Tlon Notes committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7215,292 +7224,292 @@ fn tlon_notes_matches_fern_output() {
 
 #[test]
 fn twilio_messaging_v1_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TWILIO_MESSAGING_V1);
+    assert_committed_corpus_matches(&TWILIO_MESSAGING_V1);
 }
 
 #[test]
 fn livepeer_ai_runner_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LIVEPEER_AI_RUNNER);
+    assert_committed_corpus_matches(&LIVEPEER_AI_RUNNER);
 }
 
 #[test]
 fn eos_extra_fields_forbid_matches_fern_output() {
-    assert_link_ok_corpus_matches(&EOS_EXTRA_FIELDS_FORBID);
+    assert_committed_corpus_matches(&EOS_EXTRA_FIELDS_FORBID);
 }
 
 #[test]
 fn med_anvisa_price_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MED_ANVISA_PRICE);
+    assert_committed_corpus_matches(&MED_ANVISA_PRICE);
 }
 
 #[test]
 fn sac_backend_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SAC_BACKEND);
+    assert_committed_corpus_matches(&SAC_BACKEND);
 }
 
 #[test]
 fn kytos_sdntrace_cp_matches_fern_output() {
-    assert_link_ok_corpus_matches(&KYTOS_SDNTRACE_CP);
+    assert_committed_corpus_matches(&KYTOS_SDNTRACE_CP);
 }
 
 #[test]
 fn withsecure_gdpr_subject_rights_matches_fern_output() {
-    assert_link_ok_corpus_matches(&WITHSECURE_GDPR_SUBJECT_RIGHTS);
+    assert_committed_corpus_matches(&WITHSECURE_GDPR_SUBJECT_RIGHTS);
 }
 
 #[test]
 fn prometheus_x_edge_computing_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PROMETHEUS_X_EDGE_COMPUTING);
+    assert_committed_corpus_matches(&PROMETHEUS_X_EDGE_COMPUTING);
 }
 
 #[test]
 fn exa_gate_matches_fern_output() {
-    assert_link_ok_corpus_matches(&EXA_GATE);
+    assert_committed_corpus_matches(&EXA_GATE);
 }
 
 #[test]
 fn amazonaws_com_cloudfront_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AMAZONAWS_COM_CLOUDFRONT);
+    assert_committed_corpus_matches(&AMAZONAWS_COM_CLOUDFRONT);
 }
 
 #[test]
 fn khoainats_matches_fern_output() {
-    assert_link_ok_corpus_matches(&KHOAINATS);
+    assert_committed_corpus_matches(&KHOAINATS);
 }
 
 #[test]
 fn helios_verifiable_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HELIOS_VERIFIABLE_API);
+    assert_committed_corpus_matches(&HELIOS_VERIFIABLE_API);
 }
 
 #[test]
 fn eozilla_matches_fern_output() {
-    assert_link_ok_corpus_matches(&EOZILLA);
+    assert_committed_corpus_matches(&EOZILLA);
 }
 
 #[test]
 fn openepcis_dpp_ready_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENEPCIS_DPP_READY);
+    assert_committed_corpus_matches(&OPENEPCIS_DPP_READY);
 }
 
 #[test]
 fn ndw_accessibility_map_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NDW_ACCESSIBILITY_MAP);
+    assert_committed_corpus_matches(&NDW_ACCESSIBILITY_MAP);
 }
 
 #[test]
 fn marimo_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MARIMO);
+    assert_committed_corpus_matches(&MARIMO);
 }
 
 #[test]
 fn blackadi_oauth2_matches_fern_output() {
-    assert_link_ok_corpus_matches(&BLACKADI_OAUTH2);
+    assert_committed_corpus_matches(&BLACKADI_OAUTH2);
 }
 
 #[test]
 fn mosip_esignet_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MOSIP_ESIGNET);
+    assert_committed_corpus_matches(&MOSIP_ESIGNET);
 }
 
 #[test]
 fn openbankingproject_ch_kundenbeziehung_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG);
+    assert_committed_corpus_matches(&OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG);
 }
 
 #[test]
 fn cyberark_conjur_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CYBERARK_CONJUR_API);
+    assert_committed_corpus_matches(&CYBERARK_CONJUR_API);
 }
 
 #[test]
 fn adyen_report_notification_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ADYEN_REPORT_NOTIFICATION);
+    assert_committed_corpus_matches(&ADYEN_REPORT_NOTIFICATION);
 }
 
 #[test]
 fn adyen_managed_risk_notification_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ADYEN_MANAGED_RISK_NOTIFICATION);
+    assert_committed_corpus_matches(&ADYEN_MANAGED_RISK_NOTIFICATION);
 }
 
 #[test]
 fn go_kratos_casbin_admin_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GO_KRATOS_CASBIN_ADMIN);
+    assert_committed_corpus_matches(&GO_KRATOS_CASBIN_ADMIN);
 }
 
 #[test]
 fn descope_authzcache_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DESCOPE_AUTHZCACHE);
+    assert_committed_corpus_matches(&DESCOPE_AUTHZCACHE);
 }
 
 #[test]
 fn swagger_petstore_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SWAGGER_PETSTORE);
+    assert_committed_corpus_matches(&SWAGGER_PETSTORE);
 }
 
 #[test]
 fn cyclonedx_transparency_exchange_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
+    assert_committed_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
 }
 
 #[test]
 fn adyen_capital_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ADYEN_CAPITAL);
+    assert_committed_corpus_matches(&ADYEN_CAPITAL);
 }
 
 #[test]
 fn apivideo_android_uploader_matches_fern_output() {
-    assert_link_ok_corpus_matches(&APIVIDEO_ANDROID_UPLOADER);
+    assert_committed_corpus_matches(&APIVIDEO_ANDROID_UPLOADER);
 }
 
 #[test]
 fn truefoundry_trueforge_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE);
+    assert_committed_corpus_matches(&TRUEFOUNDRY_TRUEFORGE);
 }
 
 #[test]
 fn volview_backend_contract_matches_fern_output() {
-    assert_link_ok_corpus_matches(&VOLVIEW_BACKEND_CONTRACT);
+    assert_committed_corpus_matches(&VOLVIEW_BACKEND_CONTRACT);
 }
 
 #[test]
 fn osparc_simcore_webserver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OSPARC_SIMCORE_WEBSERVER);
+    assert_committed_corpus_matches(&OSPARC_SIMCORE_WEBSERVER);
 }
 
 #[test]
 fn helixdb_http_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HELIXDB_HTTP_API);
+    assert_committed_corpus_matches(&HELIXDB_HTTP_API);
 }
 
 #[test]
 fn flowdapt_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FLOWDAPT);
+    assert_committed_corpus_matches(&FLOWDAPT);
 }
 
 #[test]
 fn k8s_container_service_provider_matches_fern_output() {
-    assert_link_ok_corpus_matches(&K8S_CONTAINER_SERVICE_PROVIDER);
+    assert_committed_corpus_matches(&K8S_CONTAINER_SERVICE_PROVIDER);
 }
 
 #[test]
 fn daniweb_connect_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DANIWEB_CONNECT);
+    assert_committed_corpus_matches(&DANIWEB_CONNECT);
 }
 
 #[test]
 fn chaingateway_io_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CHAINGATEWAY_IO);
+    assert_committed_corpus_matches(&CHAINGATEWAY_IO);
 }
 
 #[test]
 fn hubspot_events_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HUBSPOT_EVENTS);
+    assert_committed_corpus_matches(&HUBSPOT_EVENTS);
 }
 
 #[test]
 fn paloalto_remote_networks_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_REMOTE_NETWORKS);
+    assert_committed_corpus_matches(&PALOALTO_REMOTE_NETWORKS);
 }
 
 #[test]
 fn openintegrationhub_secret_service_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENINTEGRATIONHUB_SECRET_SERVICE);
+    assert_committed_corpus_matches(&OPENINTEGRATIONHUB_SECRET_SERVICE);
 }
 
 #[test]
 fn strapi_rest_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&STRAPI_REST_API);
+    assert_committed_corpus_matches(&STRAPI_REST_API);
 }
 
 #[test]
 fn listennotes_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LISTENNOTES);
+    assert_committed_corpus_matches(&LISTENNOTES);
 }
 
 #[test]
 fn vtex_pricing_matches_fern_output() {
-    assert_link_ok_corpus_matches(&VTEX_PRICING);
+    assert_committed_corpus_matches(&VTEX_PRICING);
 }
 
 #[test]
 fn aws_importexport_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AWS_IMPORTEXPORT);
+    assert_committed_corpus_matches(&AWS_IMPORTEXPORT);
 }
 
 #[test]
 fn openbanking_brasil_directory_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENBANKING_BRASIL_DIRECTORY);
+    assert_committed_corpus_matches(&OPENBANKING_BRASIL_DIRECTORY);
 }
 
 #[test]
 fn api_openverse_org_matches_fern_output() {
-    assert_link_ok_corpus_matches(&API_OPENVERSE_ORG);
+    assert_committed_corpus_matches(&API_OPENVERSE_ORG);
 }
 
 #[test]
 fn discord_com_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DISCORD_COM);
+    assert_committed_corpus_matches(&DISCORD_COM);
 }
 
 #[test]
 fn braintrust_dev_matches_fern_output() {
-    assert_link_ok_corpus_matches(&BRAINTRUST_DEV);
+    assert_committed_corpus_matches(&BRAINTRUST_DEV);
 }
 
 #[test]
 fn agco_ats_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AGCO_ATS);
+    assert_committed_corpus_matches(&AGCO_ATS);
 }
 
 #[test]
 fn torrentarr_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TORRENTARR);
+    assert_committed_corpus_matches(&TORRENTARR);
 }
 
 #[test]
 fn svix_webhooks_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SVIX_WEBHOOKS);
+    assert_committed_corpus_matches(&SVIX_WEBHOOKS);
 }
 
 #[test]
 fn komga_matches_fern_output() {
-    assert_link_ok_corpus_matches(&KOMGA);
+    assert_committed_corpus_matches(&KOMGA);
 }
 
 #[test]
 fn short_io_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SHORT_IO);
+    assert_committed_corpus_matches(&SHORT_IO);
 }
 
 #[test]
 fn webflow_v2_matches_fern_output() {
-    assert_link_ok_corpus_matches(&WEBFLOW_V2);
+    assert_committed_corpus_matches(&WEBFLOW_V2);
 }
 
 #[test]
 fn loris_dataquery_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LORIS_DATAQUERY);
+    assert_committed_corpus_matches(&LORIS_DATAQUERY);
 }
 
 #[test]
 fn sftpgo_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SFTPGO);
+    assert_committed_corpus_matches(&SFTPGO);
 }
 
 #[test]
 fn googleapis_servicebroker_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GOOGLEAPIS_SERVICEBROKER);
+    assert_committed_corpus_matches(&GOOGLEAPIS_SERVICEBROKER);
 }
 
 #[test]
 fn audiobookshelf_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AUDIOBOOKSHELF);
+    assert_committed_corpus_matches(&AUDIOBOOKSHELF);
 }
 
 #[test]
 fn steaminputdb_matches_fern_output() {
-    assert_link_ok_corpus_matches(&STEAMINPUTDB);
+    assert_committed_corpus_matches(&STEAMINPUTDB);
 }
 
 #[test]
@@ -7508,7 +7517,7 @@ fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Square corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Square committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7520,7 +7529,7 @@ fn amazonaws_com_cloudformation_matches_fern_output() {
     if corpus_spec(AMAZONAWS_COM_CLOUDFORMATION.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the AWS CloudFormation corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the AWS CloudFormation committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7532,7 +7541,7 @@ fn redocly_com_museum_matches_fern_output() {
     if corpus_spec(REDOCLY_COM_MUSEUM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Redocly Museum corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Redocly Museum committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7544,18 +7553,18 @@ fn http_toolkit_matches_fern_output() {
     if corpus_spec(HTTP_TOOLKIT.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the HTTP Toolkit corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the HTTP Toolkit committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
     assert_corpus_matches(&HTTP_TOOLKIT);
 }
 
-fn assert_link_ok_corpus_matches(corpus: &Corpus) {
+fn assert_committed_corpus_matches(corpus: &Corpus) {
     if corpus_spec(corpus.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the {} corpus spec is not fetched; run scripts/fetch-corpus.sh first",
+            "CROZIER_REQUIRE_CORPUS is set but the {} committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source",
             corpus.api
         );
         return;
@@ -7565,118 +7574,118 @@ fn assert_link_ok_corpus_matches(corpus: &Corpus) {
 
 #[test]
 fn folio_mod_authtoken_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FOLIO_MOD_AUTHTOKEN);
+    assert_committed_corpus_matches(&FOLIO_MOD_AUTHTOKEN);
 }
 
 #[test]
 fn raybot_matches_fern_output() {
-    assert_link_ok_corpus_matches(&RAYBOT);
+    assert_committed_corpus_matches(&RAYBOT);
 }
 
 #[test]
 fn paloalto_cspm_alerts_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_CSPM_ALERTS);
+    assert_committed_corpus_matches(&PALOALTO_CSPM_ALERTS);
 }
 
 #[test]
 fn paloalto_cspm_reports_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_CSPM_REPORTS);
+    assert_committed_corpus_matches(&PALOALTO_CSPM_REPORTS);
 }
 
 #[test]
 fn paloalto_cspm_search_manager_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_CSPM_SEARCH_MANAGER);
+    assert_committed_corpus_matches(&PALOALTO_CSPM_SEARCH_MANAGER);
 }
 
 #[test]
 fn thrivecart_matches_fern_output() {
-    assert_link_ok_corpus_matches(&THRIVECART);
+    assert_committed_corpus_matches(&THRIVECART);
 }
 
 #[test]
 fn frankfurter_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FRANKFURTER);
+    assert_committed_corpus_matches(&FRANKFURTER);
 }
 
 #[test]
 fn worldcoin_signup_sequencer_matches_fern_output() {
-    assert_link_ok_corpus_matches(&WORLDCOIN_SIGNUP_SEQUENCER);
+    assert_committed_corpus_matches(&WORLDCOIN_SIGNUP_SEQUENCER);
 }
 
 #[test]
 fn electric_sql_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ELECTRIC_SQL);
+    assert_committed_corpus_matches(&ELECTRIC_SQL);
 }
 
 #[test]
 fn tamoss_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TAMOSS);
+    assert_committed_corpus_matches(&TAMOSS);
 }
 
 #[test]
 fn slurmdb_rest_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SLURMDB_REST);
+    assert_committed_corpus_matches(&SLURMDB_REST);
 }
 
 #[test]
 fn nimisampo_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NIMISAMPO);
+    assert_committed_corpus_matches(&NIMISAMPO);
 }
 
 #[test]
 fn free5gc_pdu_session_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FREE5GC_PDU_SESSION);
+    assert_committed_corpus_matches(&FREE5GC_PDU_SESSION);
 }
 
 #[test]
 fn sigstore_rekor_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SIGSTORE_REKOR);
+    assert_committed_corpus_matches(&SIGSTORE_REKOR);
 }
 
 #[test]
 fn letta_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LETTA);
+    assert_committed_corpus_matches(&LETTA);
 }
 
 #[test]
 fn free5gc_namf_communication_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FREE5GC_NAMF_COMMUNICATION);
+    assert_committed_corpus_matches(&FREE5GC_NAMF_COMMUNICATION);
 }
 
 #[test]
 fn openlinksw_osdb_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENLINKSW_OSDB);
+    assert_committed_corpus_matches(&OPENLINKSW_OSDB);
 }
 
 #[test]
 fn ziptax_node_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZIPTAX_NODE);
+    assert_committed_corpus_matches(&ZIPTAX_NODE);
 }
 
 #[test]
 fn nexmo_messages_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NEXMO_MESSAGES);
+    assert_committed_corpus_matches(&NEXMO_MESSAGES);
 }
 
 #[test]
 fn deepsearch_ds_v2_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DEEPSEARCH_DS_V2);
+    assert_committed_corpus_matches(&DEEPSEARCH_DS_V2);
 }
 
 #[test]
 fn mindee_ocr_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MINDEE_OCR);
+    assert_committed_corpus_matches(&MINDEE_OCR);
 }
 
 #[test]
 fn opencodeui_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENCODEUI);
+    assert_committed_corpus_matches(&OPENCODEUI);
 }
 
 /// One golden test per feature target, named like every other corpus's, so each
 /// target's Fern golden is compared on its own and the `golden-only` tier of
 /// `just fixtures-coverage` (every `*matches_fern_output*` test) counts it: a
-/// feature target's `expected/` tree is Fern's output exactly as a fetched
+/// feature target's `expected/` tree is Fern's output exactly as a real-world
 /// corpus's is. Every target walks its complete expected tree; only measured
 /// residual paths in `unmatched` are exempted and reverse-checked.
 macro_rules! feature_target_goldens {
@@ -7690,6 +7699,7 @@ macro_rules! feature_target_goldens {
 
         /// The `api` of every feature target a golden test above drives.
         const FEATURE_TARGET_GOLDEN_TESTS: &[&str] = &[$($api),*];
+        const FEATURE_TARGET_GOLDEN_NAMES: &[(&str, &str)] = &[$((stringify!($test), $api)),*];
     };
 }
 
@@ -7830,7 +7840,8 @@ fn try_generate_flat(golden: &FlatGolden) -> Result<Option<tempfile::TempDir>, S
         return Ok(None);
     }
     let out = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
-    let result = corpus_command(corpus, out.path())
+    let (mut command, _source) = corpus_command(corpus, out.path());
+    let result = command
         .args(["--layout", "flat"])
         .output()
         .map_err(|error| format!("could not run crozier: {error}"))?;
@@ -7861,7 +7872,7 @@ fn assert_flat_golden_matches(fixture: &str) {
     else {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the {fixture} corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the {fixture} committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     };
@@ -8492,8 +8503,8 @@ fn a_known_fern_failure_registration_cannot_excuse_anything_else() {
 }
 
 /// Registration only becomes coverage when something *runs* it. A `Corpus` that
-/// no test drives, or a fetched-spec corpus missing from `just test-corpus-match`,
-/// would skip silently in every gate — so a reintroduced residual would go
+/// no test drives, or a committed-source corpus missing from `just test-corpus-match`,
+/// would miss the explicit corpus recipe — so a reintroduced residual would go
 /// unnoticed exactly where the corpus is supposed to catch it. Both wirings are
 /// derived from the sources themselves, so adding a corpus without them fails
 /// here rather than years later.
@@ -8504,10 +8515,16 @@ fn every_registered_corpus_is_wired_into_the_gate() {
 
     let mut enforced = std::collections::BTreeSet::new();
     for corpus in registered_diff_corpora() {
-        // Feature targets are driven one test each by `feature_target_goldens!`
-        // (held to the set by `every_feature_target_has_its_own_golden_test`),
-        // and their specs are vendored, so they need no per-corpus wiring.
-        if FEATURE_TARGETS.iter().any(|t| t.api == corpus.api) {
+        if let Some((test, _)) = FEATURE_TARGET_GOLDEN_NAMES
+            .iter()
+            .find(|(_, api)| *api == corpus.api)
+        {
+            assert!(
+                recipe.iter().any(|listed| listed == test),
+                "{}: {test} is missing from just test-corpus-match",
+                corpus.api
+            );
+            enforced.insert((*test).to_string());
             continue;
         }
         let constant = corpus_constant_for(source, corpus.api).unwrap_or_else(|| {
@@ -8522,32 +8539,19 @@ fn every_registered_corpus_is_wired_into_the_gate() {
                 corpus.api
             )
         });
-        if fixture_dir(corpus.api).join("openapi.yml").exists() {
-            continue;
-        }
         assert!(
             recipe.contains(&test),
-            "{}: {test} is missing from `just test-corpus-match`, so CI would skip its fetched spec",
+            "{}: {test} is missing from `just test-corpus-match`, so CI would omit its committed source",
             corpus.api
         );
         enforced.insert(test);
     }
-    // A flat golden over a fetched spec needs the same CI wiring as its
+    // A flat golden needs the same corpus-recipe wiring as its
     // packaged sibling, or the corpus leg would skip it too.
     for (test, fixture) in FLAT_GOLDEN_TESTS {
-        let golden = FLAT_GOLDENS
-            .iter()
-            .find(|golden| golden.fixture == *fixture)
-            .expect("a flat test drives a registered flat golden");
-        if fixture_dir(flat_golden_corpus(golden).api)
-            .join("openapi.yml")
-            .exists()
-        {
-            continue;
-        }
         assert!(
             recipe.iter().any(|listed| listed == test),
-            "{fixture}: {test} is missing from `just test-corpus-match`, so CI would skip its fetched spec"
+            "{fixture}: {test} is missing from `just test-corpus-match`, so CI would omit its committed source"
         );
         enforced.insert((*test).to_string());
     }
@@ -8603,7 +8607,7 @@ fn corpus_constant_for(source: &str, api: &str) -> Option<String> {
 fn corpus_test_for(source: &str, constant: &str) -> Option<String> {
     const DRIVERS: [&str; 3] = [
         "assert_corpus_matches(&",
-        "assert_link_ok_corpus_matches(&",
+        "assert_committed_corpus_matches(&",
         "known_fern_failure(&",
     ];
     let mut current = None;
@@ -13303,7 +13307,7 @@ fn relative_schema_refs_report_missing_files_pointers_and_wrong_shapes() {
 
 #[test]
 fn paypal_catalog_products_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PAYPAL_CATALOG_PRODUCTS);
+    assert_committed_corpus_matches(&PAYPAL_CATALOG_PRODUCTS);
 }
 
 #[test]
@@ -13362,272 +13366,272 @@ fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
 
 #[test]
 fn truefoundry_trueforge_5adde28_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE_5ADDE28);
+    assert_committed_corpus_matches(&TRUEFOUNDRY_TRUEFORGE_5ADDE28);
 }
 
 #[test]
 fn fergus_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FERGUS);
+    assert_committed_corpus_matches(&FERGUS);
 }
 
 #[test]
 fn groupe_psa_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GROUPE_PSA);
+    assert_committed_corpus_matches(&GROUPE_PSA);
 }
 
 #[test]
 fn timelyapp_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TIMELYAPP);
+    assert_committed_corpus_matches(&TIMELYAPP);
 }
 
 #[test]
 fn nextgen_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NEXTGEN);
+    assert_committed_corpus_matches(&NEXTGEN);
 }
 
 #[test]
 fn auto_agent_protocol_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AUTO_AGENT_PROTOCOL);
+    assert_committed_corpus_matches(&AUTO_AGENT_PROTOCOL);
 }
 
 #[test]
 fn skool_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SKOOL);
+    assert_committed_corpus_matches(&SKOOL);
 }
 
 #[test]
 fn spendesk_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SPENDESK);
+    assert_committed_corpus_matches(&SPENDESK);
 }
 
 #[test]
 fn billie_matches_fern_output() {
-    assert_link_ok_corpus_matches(&BILLIE);
+    assert_committed_corpus_matches(&BILLIE);
 }
 
 #[test]
 fn alma_france_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ALMA_FRANCE);
+    assert_committed_corpus_matches(&ALMA_FRANCE);
 }
 
 #[test]
 fn outreach_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OUTREACH);
+    assert_committed_corpus_matches(&OUTREACH);
 }
 
 #[test]
 fn tally_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TALLY);
+    assert_committed_corpus_matches(&TALLY);
 }
 
 #[test]
 fn billie_entry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&BILLIE_ENTRY);
+    assert_committed_corpus_matches(&BILLIE_ENTRY);
 }
 
 #[test]
 fn skool_entry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SKOOL_ENTRY);
+    assert_committed_corpus_matches(&SKOOL_ENTRY);
 }
 
 #[test]
 fn timelyapp_entry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TIMELYAPP_ENTRY);
+    assert_committed_corpus_matches(&TIMELYAPP_ENTRY);
 }
 
 #[test]
 fn cradl_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CRADL);
+    assert_committed_corpus_matches(&CRADL);
 }
 
 #[test]
 fn zulip_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZULIP);
+    assert_committed_corpus_matches(&ZULIP);
 }
 
 #[test]
 fn zulip_jentic_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZULIP_JENTIC);
+    assert_committed_corpus_matches(&ZULIP_JENTIC);
 }
 
 #[test]
 fn zulip_jentic_entry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZULIP_JENTIC_ENTRY);
+    assert_committed_corpus_matches(&ZULIP_JENTIC_ENTRY);
 }
 
 #[test]
 fn milvus_restful_v2_3_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MILVUS_RESTFUL_V2_3);
+    assert_committed_corpus_matches(&MILVUS_RESTFUL_V2_3);
 }
 
 #[test]
 fn milvus_restful_v2_4_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MILVUS_RESTFUL_V2_4);
+    assert_committed_corpus_matches(&MILVUS_RESTFUL_V2_4);
 }
 
 #[test]
 fn ramu_shogi_matches_fern_output() {
-    assert_link_ok_corpus_matches(&RAMU_SHOGI);
+    assert_committed_corpus_matches(&RAMU_SHOGI);
 }
 
 #[test]
 fn langchain_agent_protocol_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LANGCHAIN_AGENT_PROTOCOL);
+    assert_committed_corpus_matches(&LANGCHAIN_AGENT_PROTOCOL);
 }
 
 #[test]
 fn hse_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HSE);
+    assert_committed_corpus_matches(&HSE);
 }
 
 #[test]
 fn milvus_vector_operations_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MILVUS_VECTOR_OPERATIONS);
+    assert_committed_corpus_matches(&MILVUS_VECTOR_OPERATIONS);
 }
 
 #[test]
 fn mistle_control_plane_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MISTLE_CONTROL_PLANE);
+    assert_committed_corpus_matches(&MISTLE_CONTROL_PLANE);
 }
 
 #[test]
 fn osparc_payments_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OSPARC_PAYMENTS);
+    assert_committed_corpus_matches(&OSPARC_PAYMENTS);
 }
 
 #[test]
 fn huatuo_node_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HUATUO_NODE);
+    assert_committed_corpus_matches(&HUATUO_NODE);
 }
 
 #[test]
 fn huatuo_server_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HUATUO_SERVER);
+    assert_committed_corpus_matches(&HUATUO_SERVER);
 }
 
 #[test]
 fn viskit_studio_matches_fern_output() {
-    assert_link_ok_corpus_matches(&VISKIT_STUDIO);
+    assert_committed_corpus_matches(&VISKIT_STUDIO);
 }
 
 #[test]
 fn embedpdf_cloudpdf_matches_fern_output() {
-    assert_link_ok_corpus_matches(&EMBEDPDF_CLOUDPDF);
+    assert_committed_corpus_matches(&EMBEDPDF_CLOUDPDF);
 }
 
 #[test]
 fn npq_registration_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NPQ_REGISTRATION);
+    assert_committed_corpus_matches(&NPQ_REGISTRATION);
 }
 
 #[test]
 fn sim_logs_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SIM_LOGS);
+    assert_committed_corpus_matches(&SIM_LOGS);
 }
 
 #[test]
 fn sim_tables_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SIM_TABLES);
+    assert_committed_corpus_matches(&SIM_TABLES);
 }
 
 #[test]
 fn vellum_gateway_matches_fern_output() {
-    assert_link_ok_corpus_matches(&VELLUM_GATEWAY);
+    assert_committed_corpus_matches(&VELLUM_GATEWAY);
 }
 
 #[test]
 fn dot_ai_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DOT_AI);
+    assert_committed_corpus_matches(&DOT_AI);
 }
 
 #[test]
 fn paloalto_code_technologies_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_CODE_TECHNOLOGIES);
+    assert_committed_corpus_matches(&PALOALTO_CODE_TECHNOLOGIES);
 }
 
 #[test]
 fn marimo_plugins_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MARIMO_PLUGINS);
+    assert_committed_corpus_matches(&MARIMO_PLUGINS);
 }
 
 #[test]
 fn otoroshi_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OTOROSHI);
+    assert_committed_corpus_matches(&OTOROSHI);
 }
 
 #[test]
 fn standrig_matches_fern_output() {
-    assert_link_ok_corpus_matches(&STANDRIG);
+    assert_committed_corpus_matches(&STANDRIG);
 }
 
 #[test]
 fn mockserver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MOCKSERVER);
+    assert_committed_corpus_matches(&MOCKSERVER);
 }
 
 #[test]
 fn ideaconsult_enanomapper_matches_fern_output() {
-    assert_link_ok_corpus_matches(&IDEACONSULT_ENANOMAPPER);
+    assert_committed_corpus_matches(&IDEACONSULT_ENANOMAPPER);
 }
 
 #[test]
 fn openaire_graph_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENAIRE_GRAPH);
+    assert_committed_corpus_matches(&OPENAIRE_GRAPH);
 }
 
 #[test]
 fn qredence_fleet_rlm_matches_fern_output() {
-    assert_link_ok_corpus_matches(&QREDENCE_FLEET_RLM);
+    assert_committed_corpus_matches(&QREDENCE_FLEET_RLM);
 }
 
 #[test]
 fn fiware_context_generator_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FIWARE_CONTEXT_GENERATOR);
+    assert_committed_corpus_matches(&FIWARE_CONTEXT_GENERATOR);
 }
 
 #[test]
 fn hasura_metadata_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HASURA_METADATA);
+    assert_committed_corpus_matches(&HASURA_METADATA);
 }
 
 #[test]
 fn zoonk_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZOONK);
+    assert_committed_corpus_matches(&ZOONK);
 }
 
 #[test]
 fn peopledatalabs_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PEOPLEDATALABS);
+    assert_committed_corpus_matches(&PEOPLEDATALABS);
 }
 
 #[test]
 fn adyen_acs_notification_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ADYEN_ACS_NOTIFICATION);
+    assert_committed_corpus_matches(&ADYEN_ACS_NOTIFICATION);
 }
 
 #[test]
 fn nexmo_conversation_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NEXMO_CONVERSATION);
+    assert_committed_corpus_matches(&NEXMO_CONVERSATION);
 }
 
 #[test]
 fn googleapis_monitoring_v1_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
+    assert_committed_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
 }
 
 #[test]
 fn docu_goapiserver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DOCU_GOAPISERVER);
+    assert_committed_corpus_matches(&DOCU_GOAPISERVER);
 }
 
 #[test]
 fn onevoice_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ONEVOICE);
+    assert_committed_corpus_matches(&ONEVOICE);
 }
 
 #[test]
 fn xfsc_oidc_identity_resolver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
+    assert_committed_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
 }
 
 // ---------------------------------------------------------------------------

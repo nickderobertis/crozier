@@ -1,0 +1,1595 @@
+openapi: 3.0.3
+
+info:
+  title: API del Sistema SAC de Clasificación de Solicitudes Académicas
+  description: |
+    API REST para el proyecto universitario SAC (Sistema de Atención y Clasificación).
+    Centraliza las solicitudes académicas, las clasifica y prioriza, asigna personal,
+    rastrea todo el ciclo de vida y mantiene un historial auditable.
+
+    ## Autenticación
+    Todos los endpoints (excepto login) requieren un token JWT Bearer válido.
+
+    ## Roles
+    | Rol            | Permisos                           |
+    |----------------|------------------------------------|
+    | ADMINISTRADOR  | Acceso total a todos los recursos  |
+    | GESTOR         | Gestionar solicitudes y asignaciones |
+    | SOLICITANTE      | Acceso de solo lectura a solicitudes |
+
+    ## Ciclo de Vida de Solicitudes
+    ```
+    REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA
+    ```
+    Cualquier otra transición retorna `400 Bad Request`. Las solicitudes cerradas no pueden modificarse.
+
+    ## Reglas de Prioridad
+
+    | Condición                              | Prioridad |
+    |----------------------------------------|-----------|
+    | CANCELACION cerca de fecha límite       | ALTA      |
+    | HOMOLOGACION                           | ALTA      |
+    | REGISTRO durante período de matrícula   | ALTA      |
+    | CUPOS sin cupos disponibles            | ALTA      |
+    | CONSULTA                               | BAJA      |
+    | Por defecto                            | MEDIA     |
+
+  version: 1.0.0
+  contact:
+    name: Equipo de Desarrollo SAC
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor de desarrollo local
+
+tags:
+  - name: Solicitudes
+    description: Gestión de solicitudes académicas
+  - name: Usuarios
+    description: Gestión de usuarios y autenticación
+  - name: IA
+    description: |
+      Endpoints opcionales de asistencia mediante Inteligencia Artificial (RF-09, RF-10, RF-11).
+      El sistema opera con plena funcionalidad sin estos servicios. Si el modelo de lenguaje
+      externo no está disponible, estos endpoints retornan `503 Service Unavailable` sin
+      afectar ninguna otra funcionalidad de la API.
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ─────────────────────────────────────────────
+  #  SOLICITUDES
+  # ─────────────────────────────────────────────
+
+  /api/v1/solicitudes:
+    post:
+      tags: [Solicitudes]
+      summary: Crear una nueva solicitud académica
+      description: |
+        Registra una nueva solicitud académica en el sistema con estado `REGISTRADA`.
+        **Rol requerido:** `GESTOR`
+      operationId: crearSolicitud
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearSolicitudBody'
+            example:
+              solicitanteNombre: 'María González'
+              solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+              solicitanteTelefono: '3001234567'
+              solicitanteIdentificacion: '1094567890'
+              asunto: 'Cancelación de Cálculo II por motivos médicos'
+              descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica que me impide asistir antes del cierre del período.'
+              canalOrigen: SAC
+      responses:
+        '201':
+          description: Solicitud creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudResponse'
+              example:
+                id: 1
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                tipo: null
+                prioridad: null
+                notaClasificacion: null
+                estado: REGISTRADA
+                resolucion: null
+                notasCierre: null
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+    get:
+      tags: [Solicitudes]
+      summary: Listar solicitudes con filtros y paginación
+      description: |
+        Retorna una lista paginada de solicitudes académicas. Soporta filtrado por estado,
+        tipo, prioridad y usuario asignado.
+        **Rol requerido:** `SOLICITANTE`
+      operationId: listarSolicitudes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          description: Filtrar por estado de solicitud
+          schema:
+            $ref: '#/components/schemas/EstadoSolicitud'
+        - name: tipo
+          in: query
+          required: false
+          description: Filtrar por tipo de solicitud
+          schema:
+            $ref: '#/components/schemas/TipoSolicitud'
+        - name: prioridad
+          in: query
+          required: false
+          description: Filtrar por nivel de prioridad
+          schema:
+            $ref: '#/components/schemas/Prioridad'
+        - name: responsable
+          in: query
+          required: false
+          description: Filtrar por ID del usuario asignado
+          schema:
+            type: integer
+            format: int64
+            example: 5
+        - name: page
+          in: query
+          required: false
+          description: Número de página (basado en cero)
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            example: 0
+        - name: size
+          in: query
+          required: false
+          description: Número de elementos por página
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: sort
+          in: query
+          required: false
+          description: 'Campo y dirección de ordenamiento (ej. fechaHoraRegistro,desc)'
+          schema:
+            type: string
+            example: 'fechaHoraRegistro,desc'
+      responses:
+        '200':
+          description: Lista paginada de solicitudes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudesPaginadasResponse'
+              example:
+                content:
+                  - id: 1
+                    solicitanteNombre: 'María González'
+                    solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                    solicitanteTelefono: '3001234567'
+                    solicitanteIdentificacion: '1094567890'
+                    asunto: 'Cancelación de Cálculo II por motivos médicos'
+                    descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
+                    canalOrigen: SAC
+                    fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                    tipo: CANCELACION
+                    prioridad: ALTA
+                    notaClasificacion: 'CANCELACION cerca de fecha límite'
+                    estado: CLASIFICADA
+                    resolucion: null
+                    notasCierre: null
+                  - id: 2
+                    solicitanteNombre: 'Carlos Pérez'
+                    solicitanteCorreo: 'carlos.perez@uniquindio.edu.co'
+                    solicitanteTelefono: '3109876543'
+                    solicitanteIdentificacion: '1094000002'
+                    asunto: 'Consulta sobre horario académico'
+                    descripcion: 'Necesito saber el horario de atención de la oficina de registro.'
+                    canalOrigen: EMAIL
+                    fechaHoraRegistro: '2026-03-01T11:00:00Z'
+                    tipo: CONSULTA
+                    prioridad: BAJA
+                    notaClasificacion: 'CONSULTA por defecto es BAJA'
+                    estado: REGISTRADA
+                    resolucion: null
+                    notasCierre: null
+                pagina: 0
+                tamaño: 20
+                totalElementos: 2
+                totalPaginas: 1
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/solicitudes/{id}:
+    get:
+      tags: [Solicitudes]
+      summary: Obtener detalle de solicitud por ID
+      description: |
+        Retorna el detalle completo de una solicitud académica.
+        **Rol requerido:** `SOLICITANTE`
+      operationId: obtenerSolicitudPorId
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      responses:
+        '200':
+          description: Detalle de la solicitud
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudResponse'
+              example:
+                id: 1
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                tipo: CANCELACION
+                prioridad: ALTA
+                notaClasificacion: 'CANCELACION cerca de fecha límite'
+                estado: CLASIFICADA
+                resolucion: null
+                notasCierre: null
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/solicitudes/{id}/clasificar:
+    patch:
+      tags: [Solicitudes]
+      summary: Clasificar y priorizar una solicitud
+      description: |
+        Establece el tipo, prioridad y justificación de prioridad para una solicitud.
+        Cambia el estado a `CLASIFICADA`.
+        **Rol requerido:** `GESTOR`
+      operationId: clasificarSolicitud
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClasificarSolicitudBody'
+            example:
+              tipo: CANCELACION
+              prioridad: ALTA
+              notaClasificacion: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
+      responses:
+        '200':
+          description: Solicitud clasificada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudResponse'
+              example:
+                id: 1
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                tipo: CANCELACION
+                prioridad: ALTA
+                notaClasificacion: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
+                estado: CLASIFICADA
+                resolucion: null
+                notasCierre: null
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/solicitudes/{id}/estado:
+    patch:
+      tags: [Solicitudes]
+      summary: Cambiar estado de solicitud
+      description: |
+        Transiciona una solicitud a un nuevo estado siguiendo el ciclo de vida válido:
+        `REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA`.
+        Cualquier transición inválida retorna `400 Bad Request`.
+        **Rol requerido:** `GESTOR`
+      operationId: cambiarEstadoSolicitud
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CambiarEstadoBody'
+            example:
+              nuevoEstado: EN_ATENCION
+              observacion: 'La solicitud está siendo atendida por el personal asignado'
+      responses:
+        '200':
+          description: Estado cambiado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudResponse'
+              example:
+                id: 1
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                tipo: CANCELACION
+                prioridad: ALTA
+                notaClasificacion: 'CANCELACION cerca de fecha límite'
+                estado: EN_ATENCION
+                resolucion: null
+                notasCierre: null
+        '400':
+          description: Transición de estado inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: '2026-03-01T12:00:00Z'
+                status: 400
+                error: Solicitud Incorrecta
+                message: 'Transición de estado inválida de REGISTRADA a EN_ATENCION'
+                path: /api/v1/solicitudes/1/estado
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/solicitudes/{id}/asignar:
+    post:
+      tags: [Solicitudes]
+      summary: Asignar un usuario responsable a una solicitud
+      description: |
+        Asigna un usuario como la persona responsable de una solicitud.
+        El usuario debe estar activo.
+        **Rol requerido:** `GESTOR`
+      operationId: asignarResponsable
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsignarResponsableBody'
+            example:
+              usuarioId: 5
+      responses:
+        '201':
+          description: Usuario asignado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsignacionResponse'
+              example:
+                id: 10
+                solicitudId: 1
+                usuarioId: 5
+                fechaAsignacion: '2026-03-01T14:00:00Z'
+                activa: true
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/solicitudes/{id}/cerrar:
+    patch:
+      tags: [Solicitudes]
+      summary: Cerrar una solicitud
+      description: |
+        Cierra una solicitud. La solicitud debe estar en estado `ATENDIDA`.
+        Se requiere una observación de cierre. Una vez cerrada, la solicitud no puede modificarse.
+        **Rol requerido:** `GESTOR`
+      operationId: cerrarSolicitud
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CerrarSolicitudBody'
+            example:
+              resolucion: 'Se aprobó la cancelación de Cálculo II por el comité académico.'
+              notasCierre: 'Solicitud resuelta – cancelación aprobada por el comité académico'
+      responses:
+        '200':
+          description: Solicitud cerrada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudResponse'
+              example:
+                id: 1
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                tipo: CANCELACION
+                prioridad: ALTA
+                notaClasificacion: 'CANCELACION cerca de fecha límite'
+                estado: CERRADA
+                resolucion: 'Se aprobó la cancelación de Cálculo II por el comité académico.'
+                notasCierre: 'Solicitud resuelta satisfactoriamente'
+        '400':
+          description: La solicitud no está en estado ATENDIDA o falta observación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: '2026-03-01T16:00:00Z'
+                status: 400
+                error: Solicitud Incorrecta
+                message: 'No se puede cerrar la solicitud – estado actual es EN_ATENCION, se esperaba ATENDIDA'
+                path: /api/v1/solicitudes/1/cerrar
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/solicitudes/{id}/historial:
+    get:
+      tags: [Solicitudes]
+      summary: Obtener historial completo de auditoría de una solicitud
+      description: |
+        Retorna el rastro de auditoría completo de todas las acciones realizadas en una solicitud,
+        ordenado cronológicamente.
+        **Rol requerido:** `SOLICITANTE`
+      operationId: obtenerHistorialSolicitud
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      responses:
+        '200':
+          description: Lista de entradas del historial
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HistorialResponse'
+              example:
+                - id: 1
+                  fechaHora: '2026-03-01T10:30:00Z'
+                  accion: 'REGISTRO'
+                  usuarioResponsable: 'jgarcia'
+                  observaciones: 'Solicitud creada vía portal SAC'
+                - id: 2
+                  fechaHora: '2026-03-01T11:00:00Z'
+                  accion: 'CLASIFICACION'
+                  usuarioResponsable: 'jgarcia'
+                  observaciones: 'Clasificada como CANCELACION con prioridad ALTA'
+                - id: 3
+                  fechaHora: '2026-03-01T14:00:00Z'
+                  accion: 'ASIGNACION'
+                  usuarioResponsable: 'mrodriguez'
+                  observaciones: 'Asignada a mrodriguez para gestión'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  # ─────────────────────────────────────────────
+  #  USUARIOS
+  # ─────────────────────────────────────────────
+
+  /api/v1/usuarios/login:
+    post:
+      tags: [Usuarios]
+      summary: Autenticar usuario y obtener JWT
+      description: |
+        Endpoint público. Valida credenciales y retorna un token JWT Bearer
+        con el rol del usuario codificado.
+      operationId: iniciarSesion
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IniciarSesionBody'
+            example:
+              nombreUsuario: 'jgarcia'
+              contrasena: 'S3cur3P@ss!'
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IniciarSesionResponse'
+              example:
+                token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                tipo: 'Bearer'
+                nombreUsuario: 'jgarcia'
+                rol: GESTOR
+                expiraEn: 3600
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: '2026-03-01T09:00:00Z'
+                status: 401
+                error: No Autorizado
+                message: 'Nombre de usuario o contraseña inválidos'
+                path: /api/v1/usuarios/login
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/usuarios/signup:
+    post:
+      tags: [Usuarios]
+      summary: Registrarse como solicitante
+      description: |
+        Endpoint público. Permite a cualquier persona registrarse con rol `SOLICITANTE`.
+        El rol es asignado automáticamente por el sistema.
+      operationId: registrarSolicitante
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupBody'
+            example:
+              nombreCompleto: 'Carlos Pérez'
+              nombreUsuario: 'cperez'
+              contrasena: 'MiClave@2026'
+              email: 'carlos.perez@uniquindio.edu.co'
+      responses:
+        '201':
+          description: Cuenta de solicitante creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+              example:
+                id: 20
+                nombreCompleto: 'Carlos Pérez'
+                nombreUsuario: 'cperez'
+                email: 'carlos.perez@uniquindio.edu.co'
+                rol: SOLICITANTE
+                activo: true
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/usuarios:
+    get:
+      tags: [Usuarios]
+      summary: Listar todos los usuarios activos
+      description: |
+        Retorna una lista de todos los usuarios activos del sistema.
+        **Rol requerido:** `ADMINISTRADOR`
+      operationId: listarUsuarios
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuarios activos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsuarioResponse'
+              example:
+                - id: 1
+                  nombreCompleto: 'Administrador del Sistema'
+                  nombreUsuario: 'admin'
+                  email: 'admin@uniquindio.edu.co'
+                  rol: ADMINISTRADOR
+                  activo: true
+                - id: 5
+                  nombreCompleto: 'Juan García'
+                  nombreUsuario: 'jgarcia'
+                  email: 'juan.garcia@uniquindio.edu.co'
+                  rol: GESTOR
+                  activo: true
+                - id: 8
+                  nombreCompleto: 'María Rodríguez'
+                  nombreUsuario: 'mrodriguez'
+                  email: 'maria.rodriguez@uniquindio.edu.co'
+                  rol: SOLICITANTE
+                  activo: true
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+    post:
+      tags: [Usuarios]
+      summary: Crear un nuevo usuario
+      description: |
+        Crea una nueva cuenta de usuario en el sistema.
+        **Rol requerido:** `ADMINISTRADOR`
+      operationId: crearUsuario
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearUsuarioBody'
+            example:
+              nombreCompleto: 'Ana Pérez'
+              nombreUsuario: 'aperez'
+              contrasena: 'N3wUs3r@2026'
+              email: 'ana.perez@uniquindio.edu.co'
+              rol: GESTOR
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+              example:
+                id: 12
+                nombreCompleto: 'Ana Pérez'
+                nombreUsuario: 'aperez'
+                email: 'ana.perez@uniquindio.edu.co'
+                rol: GESTOR
+                activo: true
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/usuarios/{id}/estado:
+    patch:
+      tags: [Usuarios]
+      summary: Activar o desactivar un usuario
+      description: |
+        Cambia el estado activo de una cuenta de usuario.
+        **Rol requerido:** `ADMINISTRADOR`
+      operationId: cambiarEstadoUsuario
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+            example: 5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CambiarEstadoUsuarioBody'
+            example:
+              activo: false
+      responses:
+        '200':
+          description: Estado del usuario actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+              example:
+                id: 5
+                nombreCompleto: 'Juan García'
+                nombreUsuario: 'jgarcia'
+                email: 'juan.garcia@uniquindio.edu.co'
+                rol: GESTOR
+                activo: false
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  # ─────────────────────────────────────────────
+  #  IA – ASISTENTE OPCIONAL (RF-09, RF-10, RF-11)
+  # ─────────────────────────────────────────────
+
+  /api/v1/ia/sugerir-clasificacion:
+    post:
+      tags: [IA]
+      summary: Sugerir tipo y prioridad de una solicitud (RF-10)
+      description: |
+        Analiza el texto descriptivo de una solicitud y sugiere el tipo de solicitud y su
+        nivel de prioridad utilizando un modelo de lenguaje externo (LLM).
+
+        **Importante:** Las sugerencias deben ser confirmadas o ajustadas por un usuario
+        humano antes de aplicarse al sistema. El sistema opera con plena funcionalidad
+        sin este endpoint (RF-11).
+
+        **Rol requerido:** `GESTOR`
+      operationId: sugerirClasificacion
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SugerirClasificacionRequest'
+            example:
+              descripcion: 'Necesito cancelar Cálculo II porque tuve una cirugía y no puedo asistir antes del cierre del período.'
+      responses:
+        '200':
+          description: Sugerencias de clasificación generadas exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SugerirClasificacionResponse'
+              example:
+                tipoSugerido: CANCELACION
+                prioridadSugerida: ALTA
+                justificacion: 'El texto menciona cancelación de asignatura con urgencia médica y proximidad al cierre del período.'
+                confianza: 0.91
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '503':
+          description: Servicio de IA no disponible – el sistema principal sigue operando con normalidad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IaNoDisponibleResponse'
+              example:
+                timestamp: '2026-03-01T10:30:00Z'
+                status: 503
+                error: Servicio No Disponible
+                message: 'El servicio de IA no está disponible en este momento. Clasifique la solicitud manualmente.'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/ia/solicitudes/{id}/resumen:
+    get:
+      tags: [IA]
+      summary: Generar resumen textual de una solicitud (RF-09)
+      description: |
+        Genera un resumen textual del estado actual y el historial completo de una solicitud
+        utilizando un modelo de lenguaje externo (LLM), para facilitar la comprensión rápida
+        del caso por parte de los responsables.
+
+        **Importante:** Este endpoint es completamente opcional. El sistema opera con
+        plena funcionalidad sin él (RF-11). Si el LLM no está disponible, se retorna
+        `503 Service Unavailable` y se puede consultar el historial directamente mediante
+        `GET /api/v1/solicitudes/{id}/historial`.
+
+        **Rol requerido:** `SOLICITANTE`
+      operationId: generarResumenSolicitud
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      responses:
+        '200':
+          description: Resumen generado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumenSolicitudResponse'
+              example:
+                idSolicitud: 1
+                resumen: >
+                  La solicitud de cancelación de Cálculo II fue registrada el 01/03/2026 por el
+                  estudiante 1094000001 a través del canal SAC. Fue clasificada con prioridad ALTA
+                  dado el impacto académico y la proximidad al cierre del período. Actualmente
+                  está en atención por el gestor jgarcia. Se han registrado 3 acciones en el historial.
+                generadoEn: '2026-03-01T12:00:00Z'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '503':
+          description: Servicio de IA no disponible – el sistema principal sigue operando con normalidad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IaNoDisponibleResponse'
+              example:
+                timestamp: '2026-03-01T12:00:00Z'
+                status: 503
+                error: Servicio No Disponible
+                message: 'El servicio de IA no está disponible en este momento. Consulte el historial directamente.'
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+# ─────────────────────────────────────────────────
+#  COMPONENTES
+# ─────────────────────────────────────────────────
+
+components:
+  # ── Esquemas de Seguridad ─────────────────────
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtenido de POST /api/v1/usuarios/login
+
+  # ── Parámetros Reutilizables ──────────────────
+
+  parameters:
+    IdSolicitud:
+      name: id
+      in: path
+      required: true
+      description: ID único de solicitud
+      schema:
+        type: integer
+        format: int64
+        example: 1
+
+  # ── Esquemas ──────────────────────────────────
+
+  schemas:
+    # ── Enums ─────────────────────────────────
+
+    TipoSolicitud:
+      type: string
+      description: Tipo de solicitud académica
+      enum:
+        - REGISTRO
+        - HOMOLOGACION
+        - CANCELACION
+        - CUPOS
+        - CONSULTA
+
+    CanalOrigen:
+      type: string
+      description: Canal de origen por el cual se recibió la solicitud
+      enum:
+        - CSU
+        - EMAIL
+        - WEB
+        - SAC
+        - TELEFONICO
+        - PRESENCIAL
+
+    Prioridad:
+      type: string
+      description: Nivel de prioridad asignado a la solicitud
+      enum:
+        - ALTA
+        - MEDIA
+        - BAJA
+
+    EstadoSolicitud:
+      type: string
+      description: |
+        Estado actual en el ciclo de vida de la solicitud.
+        Transiciones válidas: REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA
+      enum:
+        - REGISTRADA
+        - CLASIFICADA
+        - EN_ATENCION
+        - ATENDIDA
+        - CERRADA
+
+    RolUsuario:
+      type: string
+      description: Rol de usuario que determina los permisos
+      enum:
+        - ADMINISTRADOR
+        - GESTOR
+        - SOLICITANTE
+
+    # ── Cuerpos de Solicitud ──────────────────
+
+    CrearSolicitudBody:
+      type: object
+      description: Payload para crear una nueva solicitud académica
+      required:
+        - solicitanteNombre
+        - solicitanteCorreo
+        - solicitanteTelefono
+        - solicitanteIdentificacion
+        - asunto
+        - descripcion
+        - canalOrigen
+      properties:
+        solicitanteNombre:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nombre completo del solicitante
+          example: 'María González'
+        solicitanteCorreo:
+          type: string
+          format: email
+          maxLength: 100
+          description: Correo electrónico del solicitante
+          example: 'maria.gonzalez@uniquindio.edu.co'
+        solicitanteTelefono:
+          type: string
+          minLength: 7
+          maxLength: 20
+          description: Número de teléfono del solicitante
+          example: '3001234567'
+        solicitanteIdentificacion:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Número de identificación del solicitante
+          example: '1094567890'
+        asunto:
+          type: string
+          minLength: 5
+          maxLength: 200
+          description: Asunto o título breve de la solicitud
+          example: 'Solicitud de homologación de materias'
+        descripcion:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          description: Descripción detallada de la solicitud académica
+          example: 'Deseo homologar las materias Cálculo I y Álgebra Lineal que cursé en mi universidad anterior'
+        canalOrigen:
+          $ref: '#/components/schemas/CanalOrigen'
+
+    ClasificarSolicitudBody:
+      type: object
+      description: Payload para clasificar y establecer prioridad de una solicitud
+      required:
+        - tipo
+        - prioridad
+        - notaClasificacion
+      properties:
+        tipo:
+          $ref: '#/components/schemas/TipoSolicitud'
+        prioridad:
+          $ref: '#/components/schemas/Prioridad'
+        notaClasificacion:
+          type: string
+          minLength: 5
+          maxLength: 500
+          description: Nota o justificación para la clasificación y prioridad asignada
+          example: 'Solicitud de homologación con documentación completa'
+
+    CambiarEstadoBody:
+      type: object
+      description: Payload para transicionar una solicitud a un nuevo estado
+      required:
+        - nuevoEstado
+      properties:
+        nuevoEstado:
+          $ref: '#/components/schemas/EstadoSolicitud'
+        nota:
+          type: string
+          maxLength: 1000
+          description: Nota opcional sobre el cambio de estado
+          example: 'Iniciando atención de la solicitud'
+
+    AsignarResponsableBody:
+      type: object
+      description: Payload para asignar un usuario responsable a una solicitud
+      required:
+        - responsableId
+      properties:
+        responsableId:
+          type: integer
+          format: int64
+          description: ID del usuario a asignar como responsable
+          example: 2
+        notaAsignacion:
+          type: string
+          maxLength: 500
+          description: Nota opcional sobre la asignación
+          example: 'Asignación por experiencia en homologaciones'
+
+    CerrarSolicitudBody:
+      type: object
+      description: Payload para cerrar una solicitud (requiere resolución y notas de cierre)
+      required:
+        - resolucion
+      properties:
+        resolucion:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          description: Resolución obligatoria explicando cómo se resolvió la solicitud
+          example: 'Se aprobó la homologación de las materias Cálculo I y Álgebra Lineal. El estudiante debe presentar los certificados en la oficina de registro.'
+        notasCierre:
+          type: string
+          maxLength: 1000
+          description: Notas adicionales opcionales sobre el cierre
+          example: 'Solicitud resuelta satisfactoriamente'
+
+    IniciarSesionBody:
+      type: object
+      description: Credenciales para autenticación de usuario
+      required:
+        - nombreUsuario
+        - contrasena
+      properties:
+        nombreUsuario:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Nombre de usuario
+          example: 'admin'
+        contrasena:
+          type: string
+          minLength: 8
+          maxLength: 100
+          format: password
+          description: Contraseña del usuario
+          example: 'admin123'
+
+    CrearUsuarioBody:
+      type: object
+      description: Payload para crear una nueva cuenta de usuario
+      required:
+        - nombreCompleto
+        - nombreUsuario
+        - contrasena
+        - email
+        - rol
+      properties:
+        nombreCompleto:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nombre completo del usuario
+          example: 'Juan Pérez García'
+        nombreUsuario:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Nombre de usuario único
+          example: 'juanperez'
+        contrasena:
+          type: string
+          minLength: 8
+          maxLength: 100
+          format: password
+          description: Contraseña (será encriptada del lado del servidor)
+          example: 'password123'
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          description: Correo electrónico del usuario
+          example: 'juan.perez@uniquindio.edu.co'
+        rol:
+          $ref: '#/components/schemas/RolUsuario'
+
+    SignupBody:
+      type: object
+      description: Payload para auto-registro como solicitante (rol asignado automáticamente)
+      required:
+        - nombreCompleto
+        - nombreUsuario
+        - contrasena
+        - email
+      properties:
+        nombreCompleto:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nombre completo del solicitante
+          example: 'Carlos Pérez'
+        nombreUsuario:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Nombre de usuario único
+          example: 'cperez'
+        contrasena:
+          type: string
+          minLength: 8
+          maxLength: 100
+          format: password
+          description: Contraseña (será encriptada del lado del servidor)
+          example: 'MiClave@2026'
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          description: Correo electrónico del solicitante
+          example: 'carlos.perez@uniquindio.edu.co'
+
+    CambiarEstadoUsuarioBody:
+      type: object
+      description: Payload para activar o desactivar un usuario
+      required:
+        - activo
+      properties:
+        activo:
+          type: boolean
+          description: true para activar, false para desactivar
+          example: false
+
+    # ── Esquemas de Respuesta ─────────────────
+
+    SolicitudResponse:
+      type: object
+      description: Representación completa de una solicitud académica
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID único de la solicitud
+          example: 1
+        solicitanteNombre:
+          type: string
+          description: Nombre completo del solicitante
+          example: 'María González'
+        solicitanteCorreo:
+          type: string
+          description: Correo electrónico del solicitante
+          example: 'maria.gonzalez@uniquindio.edu.co'
+        solicitanteTelefono:
+          type: string
+          description: Número de teléfono del solicitante
+          example: '3001234567'
+        solicitanteIdentificacion:
+          type: string
+          description: Número de identificación del solicitante
+          example: '1094567890'
+        asunto:
+          type: string
+          description: Asunto o título de la solicitud
+          example: 'Solicitud de homologación de materias'
+        descripcion:
+          type: string
+          description: Descripción detallada de la solicitud
+          example: 'Deseo homologar las materias Cálculo I y Álgebra Lineal que cursé en mi universidad anterior'
+        canalOrigen:
+          $ref: '#/components/schemas/CanalOrigen'
+        fechaHoraRegistro:
+          type: string
+          format: date-time
+          description: Timestamp cuando fue registrada la solicitud
+          example: '2026-03-01T10:30:00Z'
+        tipo:
+          $ref: '#/components/schemas/TipoSolicitud'
+          nullable: true
+        prioridad:
+          $ref: '#/components/schemas/Prioridad'
+          nullable: true
+        notaClasificacion:
+          type: string
+          nullable: true
+          description: Nota de clasificación y justificación de la prioridad
+          example: 'Solicitud de homologación con documentación completa'
+        estado:
+          $ref: '#/components/schemas/EstadoSolicitud'
+        resolucion:
+          type: string
+          nullable: true
+          description: Resolución de la solicitud (solo presente cuando estado es CERRADA)
+          example: null
+        notasCierre:
+          type: string
+          nullable: true
+          description: Notas adicionales del cierre (solo presente cuando estado es CERRADA)
+          example: null
+
+    SolicitudesPaginadasResponse:
+      type: object
+      description: Wrapper de respuesta paginada para solicitudes
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/SolicitudResponse'
+        pagina:
+          type: integer
+          description: Número de página actual (basado en cero)
+          example: 0
+        tamaño:
+          type: integer
+          description: Número de elementos por página
+          example: 20
+        totalElementos:
+          type: integer
+          format: int64
+          description: Número total de registros que coinciden
+          example: 42
+        totalPaginas:
+          type: integer
+          description: Número total de páginas
+          example: 3
+
+    HistorialResponse:
+      type: object
+      description: Entrada única del historial de auditoría para una solicitud
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID único de la entrada del historial
+          example: 1
+        fechaHora:
+          type: string
+          format: date-time
+          description: Timestamp de la acción
+          example: '2026-03-01T10:30:00Z'
+        accion:
+          type: string
+          description: Descripción de la acción realizada
+          example: 'REGISTRO'
+        usuarioResponsable:
+          type: string
+          description: Nombre de usuario que realizó la acción
+          example: 'jgarcia'
+        observaciones:
+          type: string
+          description: Observaciones adicionales sobre la acción
+          example: 'Solicitud creada vía portal SAC'
+
+    AsignacionResponse:
+      type: object
+      description: Representación de una asignación solicitud-a-usuario
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID único de la asignación
+          example: 10
+        solicitudId:
+          type: integer
+          format: int64
+          description: ID de la solicitud asignada
+          example: 1
+        usuarioId:
+          type: integer
+          format: int64
+          description: ID del usuario asignado
+          example: 5
+        fechaAsignacion:
+          type: string
+          format: date-time
+          description: Timestamp de la asignación
+          example: '2026-03-01T14:00:00Z'
+        activa:
+          type: boolean
+          description: Si esta asignación está actualmente activa
+          example: true
+
+    UsuarioResponse:
+      type: object
+      description: Información del usuario (la contraseña nunca se expone)
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID único del usuario
+          example: 5
+        nombreCompleto:
+          type: string
+          description: Nombre completo del usuario
+          example: 'Juan García'
+        nombreUsuario:
+          type: string
+          description: Nombre de usuario
+          example: 'jgarcia'
+        email:
+          type: string
+          description: Correo electrónico del usuario
+          example: 'juan.garcia@uniquindio.edu.co'
+        rol:
+          $ref: '#/components/schemas/RolUsuario'
+        activo:
+          type: boolean
+          description: Si la cuenta del usuario está activa
+          example: true
+
+    IniciarSesionResponse:
+      type: object
+      description: Respuesta de autenticación JWT
+      properties:
+        token:
+          type: string
+          description: Token de acceso JWT
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        tipo:
+          type: string
+          description: Tipo de token
+          example: 'Bearer'
+        nombreUsuario:
+          type: string
+          description: Nombre de usuario autenticado
+          example: 'admin'
+        rol:
+          $ref: '#/components/schemas/RolUsuario'
+        expiraEn:
+          type: integer
+          description: Tiempo de expiración del token en segundos
+          example: 3600
+
+    ErrorResponse:
+      type: object
+      description: Cuerpo de respuesta de error estándar
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp de ocurrencia del error
+          example: '2026-03-01T12:00:00Z'
+        status:
+          type: integer
+          description: Código de estado HTTP
+          example: 400
+        error:
+          type: string
+          description: Frase de razón del error HTTP
+          example: 'Solicitud Incorrecta'
+        message:
+          type: string
+          description: Mensaje de error detallado
+          example: 'Transición de estado inválida de REGISTRADA a EN_ATENCION'
+        path:
+          type: string
+          description: Ruta de solicitud que causó el error
+          example: '/api/v1/solicitudes/1/estado'
+
+    # ── Esquemas de IA (Opcionales – RF-09, RF-10, RF-11) ─────────────
+
+    SugerirClasificacionRequest:
+      type: object
+      description: |
+        Cuerpo de la petición para sugerir tipo y prioridad de una solicitud mediante IA (RF-10).
+        El campo `descripcion` es el texto libre ingresado por el usuario que el LLM analizará.
+      required:
+        - descripcion
+      properties:
+        descripcion:
+          type: string
+          description: Texto descriptivo de la solicitud a analizar por el modelo de lenguaje
+          minLength: 10
+          maxLength: 2000
+          example: 'Necesito cancelar Cálculo II porque tuve una cirugía y no puedo asistir antes del cierre del período.'
+
+    SugerirClasificacionResponse:
+      type: object
+      description: |
+        Sugerencias de tipo y prioridad generadas por IA (RF-10).
+        Estas sugerencias deben ser confirmadas o ajustadas por un usuario humano antes de aplicarse.
+      properties:
+        tipoSugerido:
+          allOf:
+            - $ref: '#/components/schemas/TipoSolicitud'
+          description: Tipo de solicitud sugerido por el modelo de lenguaje
+        prioridadSugerida:
+          allOf:
+            - $ref: '#/components/schemas/Prioridad'
+          description: Prioridad sugerida por el modelo de lenguaje
+        justificacion:
+          type: string
+          description: Explicación del razonamiento del modelo de lenguaje
+          example: 'El texto menciona cancelación de asignatura con urgencia médica y proximidad al cierre del período.'
+        confianza:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Nivel de confianza del modelo (0.0 – 1.0). Orientativo para el usuario.
+          example: 0.91
+
+    ResumenSolicitudResponse:
+      type: object
+      description: Resumen textual de una solicitud generado por IA (RF-09)
+      properties:
+        idSolicitud:
+          type: integer
+          format: int64
+          description: ID de la solicitud resumida
+          example: 1
+        resumen:
+          type: string
+          description: Resumen narrativo del estado e historial completo de la solicitud
+          example: 'La solicitud fue registrada el 01/03/2026 y actualmente está en atención.'
+        generadoEn:
+          type: string
+          format: date-time
+          description: Marca de tiempo de cuando fue generado el resumen
+          example: '2026-03-01T12:00:00Z'
+
+    IaNoDisponibleResponse:
+      type: object
+      description: |
+        Respuesta retornada cuando el servicio de IA externo no está disponible (RF-11).
+        El resto del sistema continúa operando con normalidad; el usuario debe realizar
+        la acción correspondiente de forma manual.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Momento en que se produjo el error
+          example: '2026-03-01T12:00:00Z'
+        status:
+          type: integer
+          description: Código HTTP de la respuesta
+          example: 503
+        error:
+          type: string
+          description: Descripción breve del error
+          example: Servicio No Disponible
+        message:
+          type: string
+          description: Mensaje de orientación para el usuario
+          example: 'El servicio de IA no está disponible en este momento. Opere de forma manual.'
+
+  # ── Respuestas Reutilizables ──────────────────
+
+  responses:
+    SolicitudIncorrecta:
+      description: Solicitud Incorrecta – Entrada inválida o violación de regla de negocio
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 400
+            error: Solicitud Incorrecta
+            message: 'Falla en validación: descripcion no debe estar en blanco'
+            path: /api/v1/solicitudes
+
+    NoAutorizado:
+      description: No Autorizado – Token JWT faltante o inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 401
+            error: No Autorizado
+            message: 'Se requiere autenticación completa para acceder a este recurso'
+            path: /api/v1/solicitudes
+
+    Prohibido:
+      description: Prohibido – Permisos de rol insuficientes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 403
+            error: Prohibido
+            message: 'Acceso denegado – rol SOLICITANTE no puede realizar esta acción'
+            path: /api/v1/solicitudes
+
+    NoEncontrado:
+      description: No Encontrado – El recurso no existe
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 404
+            error: No Encontrado
+            message: 'Solicitud con ID 999 no encontrada'
+            path: /api/v1/solicitudes/999
+
+    ErrorInterno:
+      description: Error Interno del Servidor – Falla inesperada
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 500
+            error: Error Interno del Servidor
+            message: 'Ocurrió un error inesperado. Por favor intente de nuevo más tarde.'
+            path: /api/v1/solicitudes

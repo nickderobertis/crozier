@@ -1,0 +1,21 @@
+get:
+  summary: Get all error codes
+  operationId: getErrorCodes
+  description: Get all error codes
+  tags:
+    - error-codes
+  responses:
+    "200":
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "../components/schemas/error-code.yml#/ErrorCodeResponse"
+    "400":
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yml#/ErrorResponse"

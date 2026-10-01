@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Raybot API
+  description: >-
+    The Raybot API
+  license:
+    url: https://opensource.org/licenses/MIT
+    name: MIT
+servers:
+  - url: /api/v1
+security: []
+paths:
+  /version:
+    $ref: "./paths/version.yml"
+  /health:
+    $ref: "./paths/health.yml"
+  /error-codes:
+    $ref: "./paths/error-codes.yml"
+  /configs/log:
+    $ref: "./paths/configs@log.yml"
+  /configs/hardware:
+    $ref: "./paths/configs@hardware.yml"
+  /configs/cloud:
+    $ref: "./paths/configs@cloud.yml"
+  /configs/http:
+    $ref: "./paths/configs@http.yml"
+  /configs/wifi:
+    $ref: "./paths/configs@wifi.yml"
+  /configs/command:
+    $ref: "./paths/configs@command.yml"
+  /configs/monitoring/battery:
+    $ref: "./paths/configs@monitoring@battery.yml"
+  /system/info:
+    $ref: "./paths/system@info.yml"
+  /system/status:
+    $ref: "./paths/system@status.yml"
+  /system/reboot:
+    $ref: "./paths/system@reboot.yml"
+  /system/stop-emergency:
+    $ref: "./paths/system@stop-emergency.yml"
+  /robot-state:
+    $ref: "./paths/robot-state.yml"
+  /states/limit-switch:
+    $ref: "./paths/states@limit-switch.yml"
+  /peripherals/serials:
+    $ref: "./paths/peripherals@serials.yml"
+  /commands/{commandId}:
+    $ref: "./paths/commands@{commandId}.yml"
+  /commands:
+    $ref: "./paths/commands.yml"
+  /commands/processing:
+    $ref: "./paths/commands@processing.yml"
+  /commands/processing/cancel:
+    $ref: "./paths/commands@processing@cancel.yml"
+  /alarms:
+    $ref: "./paths/alarms.yml"
+  /alarms/{alarmId}/deactivate:
+    $ref: "./paths/alarms@{alarmId}@deactivate.yml"

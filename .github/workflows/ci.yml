@@ -132,14 +132,12 @@ jobs:
       # builds the release binary the suite drives.
       - name: Live e2e
         run: just test-live-e2e
-      # Enforce the real-world corpus byte-match here too: this leg already has the
-      # network to fetch the `link-ok` specs (the offline `check` gate cannot), so it
-      # byte-compares crozier's output against the committed Fern goldens.
+      # Byte-compare against Fern using committed sources, including reference trees.
+      # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] This task requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
       - name: Corpus byte-match
-        run: just test-corpus-match
-      # The arm search's YAML fallback, held to the census's stdlib loader over the
-      # same fetched corpus; it needs uv for the search's pinned ruamel.yaml.
-      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] It reads only public raw.githubusercontent.com bytes pinned by commit and digest, as the corpus byte-match step above it does in this same network leg, which exists so the offline `check` gate never fetches; the fallback agreement the search's census rests on would otherwise go unchecked.
+        run: just test-corpus-offline
+      # Registered corpus sources and the parser samples are committed; this fetches no specification.
+      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This existing parser-agreement tier needs uv to install the pinned ruamel.yaml, so it stays in the separate live-e2e job; it reads only committed specifications and loopback servers.
       - name: Census fallback agreement
         run: just test-census-fallback
 

@@ -426,7 +426,7 @@ impl Resolver<'_> {
                     schema.reference = Some(format!("#/components/schemas/{name}"));
                     return Ok(());
                 }
-                if let Some(name) = self.import_remote_document(&reference, source)? {
+                if let Some(name) = self.import_external_document(&reference, source)? {
                     schema.reference = Some(format!("#/components/schemas/{name}"));
                     return Ok(());
                 }
@@ -485,18 +485,19 @@ impl Resolver<'_> {
         self.import_pointer_at_path(path, name, &format!("/{name}"), None, reference)
     }
 
-    /// A reference naming a whole remote JSON Schema document — MockServer's
+    /// A reference naming a whole external JSON Schema document — MockServer's
     /// `$ref: http://json-schema.org/draft-04/schema` — is that document imported
     /// as one component named after its file (`schema`), as Fern names it, with
     /// each `#/definitions/<name>` it points at imported beside it and `#` read as
     /// the document itself. A reference into a fragment keeps Helios's
-    /// root-document pointer semantics instead.
-    fn import_remote_document(
+    /// root-document pointer semantics instead. Local copies use the same
+    /// import and naming rules as their remote originals.
+    fn import_external_document(
         &mut self,
         reference: &str,
         source: &DocumentLocation,
     ) -> Result<Option<String>> {
-        let Some((address, fragment)) = split_remote(reference) else {
+        let Some((address, fragment)) = split_external(reference) else {
             return Ok(None);
         };
         if !(fragment.is_empty() || fragment == "/") {

@@ -173,20 +173,19 @@ match, and never a generated `expected/` tree — and prints one row per
 `(selector, fixture, count)`.
 
 ```
-just surface-census                                # every registered source (fetches first)
+just surface-census                                # every registered source (committed copies)
 just surface-census --selector pathItem.trace      # one feature: who declares it, how often
 just surface-census --fixture apideck.com-crm --json
 ```
 
-The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 204 `link-ok` documents
-`scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
-[`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
-is a hard failure rather than a silent zero, because a source that reports nothing
-and a source that declares nothing are the two answers this document must never
-confuse. `just test-surface-census` drives the same script offline over the
-vendored half and is part of `just check`, so the gate keeps the instrument honest
-without needing the network.
+Every registered source is committed: the 32 original
+`tests/fixtures/<name>/openapi.*` documents and the remaining sources under
+`tests/fixtures/corpus-sources/`, including every referenced file. Pinned URLs in
+[`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md) are rebuild provenance;
+`corpus-sources.tsv` records each file's digest. A missing source is a hard failure
+rather than a silent zero. `just test-surface-census` drives the same script
+without fetching; `just test-corpus-offline` also drives the complete census
+recipe with sockets denied and no ignored cache.
 
 ### The selector grammar
 

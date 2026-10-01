@@ -1,0 +1,632 @@
+LogConfig:
+  type: object
+  properties:
+    file:
+      $ref: "#/LogFileHandler"
+      x-order: 1
+    console:
+      $ref: "#/LogConsoleHandler"
+      x-order: 2
+  required:
+    - file
+    - console
+
+LogFileHandler:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: true
+      description: Whether to enable the file log
+      x-order: 1
+    path:
+      type: string
+      example: "logs/raybot.log"
+      description: The path to the file log
+      x-order: 2
+    rotationCount:
+      type: integer
+      example: 10
+      description: The number of log files to keep
+      x-order: 3
+    level:
+      type: string
+      enum:
+        - DEBUG
+        - INFO
+        - WARN
+        - ERROR
+      example: "DEBUG"
+      description: The global log level for the application
+      x-order: 4
+      x-go-type: string
+    format:
+      type: string
+      enum:
+        - JSON
+        - TEXT
+      example: "JSON"
+      description: The log format for the application
+      x-order: 5
+      x-go-type: string
+  required:
+    - enable
+    - path
+    - rotationCount
+    - level
+    - format
+
+LogConsoleHandler:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: true
+      description: Whether to enable the console log
+      x-order: 1
+    level:
+      type: string
+      enum:
+        - DEBUG
+        - INFO
+        - WARN
+        - ERROR
+      example: "DEBUG"
+      description: The global log level for the application
+      x-order: 2
+      x-go-type: string
+    format:
+      type: string
+      enum:
+        - JSON
+        - TEXT
+      example: "JSON"
+      description: The log format for the application
+      x-order: 3
+      x-go-type: string
+  required:
+    - enable
+    - level
+    - format
+
+HardwareConfig:
+  type: object
+  properties:
+    esp:
+      $ref: "#/ESPConfig"
+      x-order: 1
+    pic:
+      $ref: "#/PICConfig"
+      x-order: 2
+    leds:
+      $ref: "#/LedsConfig"
+      x-order: 3
+  required:
+    - esp
+    - pic
+    - leds
+
+PICConfig:
+  type: object
+  properties:
+    serial:
+      $ref: "#/SerialConfig"
+      x-order: 1
+    enableAck:
+      type: boolean
+      example: true
+      description: Whether to enable the command ACK
+      x-order: 2
+    commandAckTimeout:
+      type: number
+      example: 1
+      description: The timeout for the command ACK in milliseconds
+      x-order: 3
+      x-go-type: int
+    resetPin:
+      type: string
+      example: "59"
+      description: The pin number for the reset pin
+      x-order: 4
+  required:
+    - serial
+    - enableAck
+    - commandAckTimeout
+    - resetPin
+
+ESPConfig:
+  type: object
+  properties:
+    serial:
+      $ref: "#/SerialConfig"
+      x-order: 1
+    enableAck:
+      type: boolean
+      example: true
+      description: Whether to enable the command ACK
+      x-order: 2
+    commandAckTimeout:
+      type: number
+      example: 1
+      description: The timeout for the command ACK in milliseconds
+      x-order: 3
+      x-go-type: int
+  required:
+    - serial
+    - enableAck
+    - commandAckTimeout
+
+SerialConfig:
+  type: object
+  properties:
+    port:
+      type: string
+      example: "/dev/ttyUSB0"
+      description: The port name for the serial connection
+      x-order: 1
+    baudRate:
+      type: integer
+      example: 9600
+      description: The baud rate for the serial connection
+      x-order: 2
+    dataBits:
+      type: integer
+      example: 8
+      description: The data bits for the serial connection
+      x-order: 3
+    stopBits:
+      type: number
+      format: double
+      example: 1
+      description: The stop bits for the serial connection
+      x-order: 4
+      x-go-type: float64
+    parity:
+      type: string
+      enum:
+        - NONE
+        - EVEN
+        - ODD
+      example: "NONE"
+      description: The parity for the serial connection
+      x-order: 5
+      x-go-type: string
+    readTimeout:
+      type: number
+      example: 1
+      description: The read timeout for the serial connection in seconds
+      x-order: 6
+      minimum: 0
+      x-go-type: int
+  required:
+    - port
+    - baudRate
+    - dataBits
+    - stopBits
+    - parity
+    - readTimeout
+
+CloudConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: true
+      description: Whether to enable the cloud service
+      x-order: 1
+    address:
+      type: string
+      example: "localhost:50051"
+      description: The address for the cloud service
+      x-order: 2
+    token:
+      type: string
+      example: "4d24e88b41374b34a54806c0124b4052"
+      description: The token for the cloud service
+      x-order: 3
+  required:
+    - enable
+    - address
+    - token
+
+HTTPConfig:
+  type: object
+  properties:
+    port:
+      type: integer
+      example: 8000
+      description: The port for the HTTP server
+      x-order: 1
+    swagger:
+      type: boolean
+      example: true
+      description: Whether to enable the Swagger UI
+      x-order: 2
+  required:
+    - port
+    - swagger
+
+WifiConfig:
+  type: object
+  properties:
+    ap:
+      $ref: "#/APConfig"
+    sta:
+      $ref: "#/STAConfig"
+  required:
+    - ap
+    - sta
+
+APConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: true
+      description: Whether to enable the AP mode
+      x-order: 1
+    ssid:
+      type: string
+      example: "raybot"
+      description: The SSID for the AP mode
+      x-order: 2
+    password:
+      type: string
+      example: "password"
+      description: The password for the AP mode
+      x-order: 3
+    ip:
+      type: string
+      example: "192.168.1.1"
+      description: The IP address for the AP mode
+      x-order: 4
+  required:
+    - enable
+    - ssid
+    - password
+    - ip
+
+STAConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: true
+      description: Whether to enable the STA mode
+      x-order: 1
+    ssid:
+      type: string
+      example: "raybot"
+      description: The SSID for the wifi connection
+      x-order: 2
+    password:
+      type: string
+      example: "password"
+      description: The password for the wifi connection
+      x-order: 3
+    ip:
+      type: string
+      format: ipv4
+      example: "192.168.1.100/24"
+      description: The IP address for the wifi connection
+      x-order: 4
+  required:
+    - enable
+    - ssid
+    - password
+    - ip
+
+CommandConfig:
+  type: object
+  properties:
+    cargoLift:
+      $ref: "#/CargoLiftConfig"
+    cargoLower:
+      $ref: "#/CargoLowerConfig"
+  required:
+    - cargoLift
+    - cargoLower
+
+CargoLiftConfig:
+  type: object
+  properties:
+    stableReadCount:
+      type: integer
+      example: 3
+      description: The number of stable reads required to consider the lift position reached
+      x-order: 1
+      x-go-type: uint8
+  required:
+    - stableReadCount
+
+CargoLowerConfig:
+  type: object
+  properties:
+    stableReadCount:
+      type: integer
+      example: 3
+      description: The number of stable reads required to consider the lower position reached
+      x-order: 1
+      x-go-type: uint8
+    bottomObstacleTracking:
+      $ref: "#/ObstacleTracking"
+      x-order: 2
+  required:
+    - stableReadCount
+    - bottomObstacleTracking
+
+ObstacleTracking:
+  type: object
+  properties:
+    enterDistance:
+      type: integer
+      example: 20
+      description: The distance to consider the obstacle present (cm)
+      x-order: 1
+      x-go-type: uint16
+    exitDistance:
+      type: integer
+      example: 30
+      description: The distance to consider the obstacle cleared (cm)
+      x-order: 2
+      x-go-type: uint16
+  required:
+    - enterDistance
+    - exitDistance
+
+MonitoringConfig:
+  type: object
+  properties:
+    battery:
+      $ref: "#/BatteryMonitoringConfig"
+      x-order: 1
+  required:
+    - battery
+
+BatteryMonitoringConfig:
+  type: object
+  properties:
+    voltageLow:
+      $ref: "#/BatteryVoltageLowConfig"
+      x-order: 1
+    voltageHigh:
+      $ref: "#/BatteryVoltageHighConfig"
+      x-order: 2
+    cellVoltageHigh:
+      $ref: "#/BatteryCellVoltageHighConfig"
+      x-order: 3
+    cellVoltageLow:
+      $ref: "#/BatteryCellVoltageLowConfig"
+      x-order: 4
+    cellVoltageDiff:
+      $ref: "#/BatteryCellVoltageDiffConfig"
+      x-order: 5
+    currentHigh:
+      $ref: "#/BatteryCurrentHighConfig"
+      x-order: 6
+    tempHigh:
+      $ref: "#/BatteryTempHighConfig"
+      x-order: 7
+    percentLow:
+      $ref: "#/BatteryPercentLowConfig"
+      x-order: 8
+    healthLow:
+      $ref: "#/BatteryHealthLowConfig"
+      x-order: 9
+  required:
+    - voltageLow
+    - voltageHigh
+    - cellVoltageHigh
+    - cellVoltageLow
+    - cellVoltageDiff
+    - currentHigh
+    - tempHigh
+    - percentLow
+    - healthLow
+
+BatteryVoltageLowConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery voltage low monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 14.0
+      description: The threshold voltage value for low battery voltage alert (V)
+      x-order: 2
+      minimum: 0
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+BatteryVoltageHighConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery voltage high monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 18.0
+      description: The threshold voltage value for high battery voltage alert (V)
+      x-order: 2
+      minimum: 0
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+BatteryCellVoltageHighConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery cell voltage high monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 4.3
+      description: The threshold voltage value for high battery cell voltage alert (V)
+      x-order: 2
+      minimum: 0
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+BatteryCellVoltageLowConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery cell voltage low monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 3.8
+      description: The threshold voltage value for low battery cell voltage alert (V)
+      x-order: 2
+      minimum: 0
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+BatteryCellVoltageDiffConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery cell voltage difference monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 0.5
+      description: The threshold voltage difference between cells for alert (V)
+      x-order: 2
+      minimum: 0
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+BatteryCurrentHighConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery current high monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 6.0
+      description: The threshold current value for high battery current alert (A)
+      x-order: 2
+      minimum: 0
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+BatteryTempHighConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery temperature high monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 60.0
+      description: The threshold temperature value for high battery temperature alert (°C)
+      x-order: 2
+      minimum: 0
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+BatteryPercentLowConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery percentage low monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 20.0
+      description: The threshold percentage value for low battery percentage alert (%)
+      x-order: 2
+      minimum: 0
+      maximum: 100
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+BatteryHealthLowConfig:
+  type: object
+  properties:
+    enable:
+      type: boolean
+      example: false
+      description: Whether to enable battery health low monitoring
+      x-order: 1
+    threshold:
+      type: number
+      format: double
+      example: 60.0
+      description: The threshold health value for low battery health alert (%)
+      x-order: 2
+      minimum: 0
+      maximum: 100
+      x-go-type: float64
+  required:
+    - enable
+    - threshold
+
+LedsConfig:
+  type: object
+  properties:
+    system:
+      $ref: "#/LedConfig"
+      x-order: 1
+    alert:
+      $ref: "#/LedConfig"
+      x-order: 2
+  required:
+    - system
+    - alert
+
+LedConfig:
+  type: object
+  properties:
+    pin:
+      type: string
+      example: "GPIO2"
+      description: The GPIO pin for the LED
+      x-order: 1
+  required:
+    - pin
+
