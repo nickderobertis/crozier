@@ -14147,6 +14147,36 @@ fn service_auth_refusal_recovers_when_security_is_removed() {
 }
 
 #[test]
+fn unsupported_version_refusal_recovers_with_openapi_31() {
+    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let probe = registry.join("unsupported-openapi-version/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures =
+            refused_failures("unsupported-openapi-version", &run, "openapi 3.2.0", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    std::fs::write(&repaired, text.replace("openapi: 3.2.0", "openapi: 3.1.0")).unwrap();
+    let normal = refusal_run(&crozier, &repaired, false).unwrap();
+    let strict = refusal_run(&crozier, &repaired, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap(),
+            "{file}"
+        );
+    }
+}
+
+#[test]
 fn endpoint_auth_refusal_recovers_when_security_is_removed() {
     let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
     let probe = registry.join("endpoint-auth-undefined/probe.yml");
@@ -14182,6 +14212,34 @@ fn endpoint_auth_refusal_recovers_when_security_is_removed() {
             "{file}"
         );
     }
+}
+
+#[test]
+fn inherited_auth_in_a_mixed_service_names_the_private_endpoint() {
+    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let text = std::fs::read_to_string(registry.join("service-auth-undefined/probe.yml")).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let probe = dir.path().join("openapi.yml");
+    let text = text.replace(
+        "components:\n",
+        "  /public:\n    get:\n      operationId: publicProbe\n      security: []\n      responses:\n        '204': {description: No Content}\ncomponents:\n",
+    );
+    std::fs::write(&probe, &text).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "endpoint-auth-undefined",
+            &run,
+            "GET /probe security/session",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    std::fs::write(&probe, text.replace("security:\n  - session: []\n", "")).unwrap();
+    let run = refusal_run(&crozier, &probe, true).unwrap();
+    assert_eq!(run.code, Some(0), "{}", run.stderr);
+    assert!(!run.files.is_empty());
 }
 
 /// The whole gate over the committed registry, each `generate` class's

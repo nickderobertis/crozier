@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.42s
+────────────
+ Nextest run ID 81101f3e-5f2d-43d6-891a-41d232238e0a with nextest profile: default
+    Starting 1 test across 2 binaries (281 tests and 5 binaries skipped)
+        FAIL [   0.023s] (1/1) crozier document_refusals::tests::openapi_32_is_refused_but_30_and_31_are_accepted
+  stdout ───
+
+    running 1 test
+    test document_refusals::tests::openapi_32_is_refused_but_30_and_31_are_accepted ... FAILED
+
+    failures:
+
+    failures:
+        document_refusals::tests::openapi_32_is_refused_but_30_and_31_are_accepted
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 281 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'document_refusals::tests::openapi_32_is_refused_but_30_and_31_are_accepted' (2987366) panicked at src/document_refusals.rs:92:67:
+    called `Result::unwrap_err()` on an `Ok` value: ()
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.027s] 1 test run: 0 passed, 1 failed, 281 skipped
+        FAIL [   0.023s] (1/1) crozier document_refusals::tests::openapi_32_is_refused_but_30_and_31_are_accepted
+error: test run failed

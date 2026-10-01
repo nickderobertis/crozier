@@ -40,7 +40,9 @@ security conformance is made. Their nonzero mypy counts already require
 `refuse` under the evaluation rule.
 
 The detector checks document-wide nonempty security on a service with actual
-operations when no supported authentication scheme was imported. An unused
+operations when no supported authentication scheme was imported and every
+operation in that service requires authentication. A service mixing public and
+private operations keeps authentication on its private endpoints instead. An unused
 cookie scheme is allowed, as is a supported scheme declared after it. A tree
 of unresolved Path Item references creates no service: the accepted OneVoice
 golden is a witness for that distinction. The probe is refused in both modes,

@@ -77,6 +77,7 @@ pub struct GenerateArgs {
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
+    document_refusals::check_version_file(&args.spec, args.fern_strict)?;
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
@@ -111,6 +112,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
 /// Render the files for a spec without writing them — used by tests to compare
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
+    document_refusals::check_version_file(&args.spec, args.fern_strict)?;
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);

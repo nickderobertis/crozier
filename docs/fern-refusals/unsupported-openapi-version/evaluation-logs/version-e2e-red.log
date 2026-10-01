@@ -1,0 +1,18 @@
+
+running 1 test
+test unsupported_version_refusal_recovers_with_openapi_31 ... FAILED
+
+failures:
+
+---- unsupported_version_refusal_recovers_with_openapi_31 stdout ----
+
+thread 'unsupported_version_refusal_recovers_with_openapi_31' (3141673) panicked at tests/e2e.rs:14157:9:
+unsupported-openapi-version: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    unsupported_version_refusal_recovers_with_openapi_31
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 426 filtered out; finished in 0.07s
+
