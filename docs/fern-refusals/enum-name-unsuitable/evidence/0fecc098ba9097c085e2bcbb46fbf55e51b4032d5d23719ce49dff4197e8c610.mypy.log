@@ -1,0 +1,4 @@
+exit=1
+src/probe/raw_client.py:82: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/probe/raw_client.py:162: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+Found 2 errors in 1 file (checked 36 source files)

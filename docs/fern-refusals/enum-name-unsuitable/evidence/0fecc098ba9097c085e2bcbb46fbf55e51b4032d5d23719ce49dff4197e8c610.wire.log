@@ -1,0 +1,2 @@
+exit=0
+POST /get-account-list parses accountType=종합-00 and serializes that exact alias/value; generated identifier _00 adds a leading underscore

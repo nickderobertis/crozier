@@ -93,11 +93,23 @@ fn check_schema(schema: &Schema, location: &str, path: &Path) -> Result<()> {
             }
             let member = crate::naming::enum_member_name(value);
             let bare_number = !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit());
-            if member == "_" || (bare_number && member.starts_with('_')) {
+            if (member == "_" && !value.is_ascii()) || (bare_number && member.starts_with('_')) {
                 return Err(Error::InvalidSpec {
                     path: path.to_owned(),
                     message: format!(
                         "enum-value-unnameable: {location} enum value {value:?}; declare a usable name with x-crozier-enum"
+                    ),
+                });
+            }
+            let starts_with_unspelled_digit = !value.starts_with(|ch: char| ch.is_ascii_digit())
+                && value
+                    .trim_start_matches(|ch: char| !ch.is_alphanumeric())
+                    .starts_with(|ch: char| ch.is_ascii_digit());
+            if member.starts_with('_') || starts_with_unspelled_digit {
+                return Err(Error::InvalidSpec {
+                    path: path.to_owned(),
+                    message: format!(
+                        "enum-name-unsuitable: {location} enum value {value:?}; declare a usable name with x-crozier-enum"
                     ),
                 });
             }
@@ -135,7 +147,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn numeric_names_refuse_only_unspellable_values_without_an_override() {
+    fn enum_name_refusals_respect_value_shapes_types_and_declared_names() {
         for (value, refused) in [
             ("10080", true),
             ("10001+", false),
@@ -146,6 +158,10 @@ mod tests {
             ("UNDEFINED", false),
             ("緊急", true),
             ("!!!", true),
+            ("#0094FF", true),
+            ("+1", true),
+            ("_1", true),
+            ("종합-00", true),
         ] {
             let schema: Schema = serde_json::from_value(serde_json::json!({
                 "type": "string", "enum": [value]

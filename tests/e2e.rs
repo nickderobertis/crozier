@@ -15434,8 +15434,13 @@ fn unnameable_enum_refusal_preserves_output_and_recovers_with_declared_name() {
         assert_eq!(run.status.code(), Some(1));
         let stderr = String::from_utf8(run.stderr).unwrap();
         assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        let class = if first.is_ascii() {
+            "enum-name-unsuitable"
+        } else {
+            "enum-value-unnameable"
+        };
         assert!(
-            stderr.contains("enum-value-unnameable") && stderr.contains("fern-strict"),
+            stderr.contains(class) && stderr.contains("fern-strict"),
             "{stderr}"
         );
         assert!(
