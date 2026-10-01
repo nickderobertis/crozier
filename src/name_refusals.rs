@@ -474,6 +474,29 @@ fn check_schema_names(
     schemas: &indexmap::IndexMap<String, Schema>,
     check_enum: bool,
 ) -> Result<()> {
+    let nullable_base = schema.all_of.iter().flatten().any(|member| {
+        member
+            .reference
+            .as_deref()
+            .and_then(|reference| reference.strip_prefix("#/components/schemas/"))
+            .and_then(|name| schemas.get(name))
+            .is_some_and(|base| base.nullable == Some(true))
+    });
+    if nullable_base {
+        let mut fields = Vec::new();
+        request_properties(
+            schema,
+            schemas,
+            &mut std::collections::HashSet::new(),
+            &mut fields,
+        );
+        let mut seen = std::collections::HashSet::new();
+        for field in fields {
+            if !seen.insert(field) {
+                return Err(Error::InvalidSpec { path: path.to_owned(), message: format!("object-property-name-collision: {location} property {field:?} redeclares a nullable inherited property; give the declarations distinct names") });
+            }
+        }
+    }
     let explicit = schema.discriminator.as_ref().filter(|_| {
         schema
             .ty

@@ -21,7 +21,7 @@ list-default-not-array	documents	check	1	Default value for list type must be an 
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	unevaluated	—	—
 named-type-default	documents	check	1	Default values are not supported for the named type	10	unevaluated	—	—
 object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	114	unevaluated	—	—
-object-property-name-collision	names	check	1	Object has multiple properties named <…>:	41	unevaluated	—	—
+object-property-name-collision	names	check	1	Object has multiple properties named <…>:	41	refuse	#/components/schemas/FileConflict property sha1	41/41
 path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	29	unevaluated	—	—
 path-without-leading-slash	documents	check	1	Path must start with a slash.	4	unevaluated	—	—
 request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	29	refuse	GET /accounts parameters "account_id" and "accountId"	29/29

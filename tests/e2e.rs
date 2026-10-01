@@ -16258,3 +16258,46 @@ fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
         .assert()
         .success();
 }
+
+#[test]
+fn nullable_inherited_property_collisions_refuse_and_nonnullable_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/object-property-name-collision/probe.yml"
+    ))
+    .unwrap();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(
+            stderr.contains("object-property-name-collision"),
+            "{stderr}"
+        );
+        assert!(stderr.contains("sha1"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"]["schemas"]["FileMini"]["nullable"] = serde_json::json!(false);
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}

@@ -1,0 +1,18 @@
+command: npx --yes fern-api@5.67.1 check
+exit=1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> createFile -> request -> body
+        issue: Object has multiple properties named "sha1":
+  - <Inlined Request> -> sha1
+  - <Inlined Request> -> (extends) FileMini -> sha1
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> createFile
+        issue: Multiple request properties have the name sha1. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> sha1
+  - Body property: <Request Body> -> (extends) FileMini -> sha1
+
+Found 2 errors and 0 warnings in <n> seconds.
