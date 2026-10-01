@@ -88,6 +88,37 @@ fn the_recipe_defaults_to_the_certified_pair_and_parses() {
         .success());
 }
 
+/// Every version the page states outside the script — the certified-pair prose,
+/// the measurement note, the `docker pull` tag — is the pair
+/// `assets/scaffolding/metadata.json` records. (`0.0.1` is the version Fern stamps
+/// on a publishable repository, which the page describes, not a pair.)
+#[test]
+fn every_version_the_page_states_is_the_certified_pair() {
+    let page = std::fs::read_to_string(root().join("docs/fern-reference.md")).unwrap();
+    let metadata: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(root().join("assets/scaffolding/metadata.json")).unwrap(),
+    )
+    .unwrap();
+    let cli = metadata["cliVersion"].as_str().unwrap();
+    let generator = metadata["generatorVersion"].as_str().unwrap();
+    assert!(page.contains(&format!("**Fern CLI {cli}**")));
+    assert!(page.contains(&format!("Measured with Fern CLI {cli} and")));
+    assert!(page.contains(&format!(
+        "docker pull fernapi/fern-python-sdk:{generator}\n"
+    )));
+    let versions = page
+        .split(|c: char| !(c.is_ascii_digit() || c == '.'))
+        .map(|token| token.trim_matches('.'))
+        .filter(|token| token.split('.').count() == 3 && token.split('.').all(|p| !p.is_empty()));
+    for version in versions {
+        assert!(
+            [cli, generator, "0.0.1"].contains(&version),
+            "docs/fern-reference.md states version {version}, not the certified pair \
+             {cli} / {generator}"
+        );
+    }
+}
+
 /// What the stand-in `fern` recorded: its arguments, the environment variables
 /// the page speaks of, and the workspace it ran in.
 struct Recorded {

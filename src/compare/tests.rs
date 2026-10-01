@@ -1,6 +1,7 @@
 //! In-process tests of `crozier compare` over real temporary repositories, the
 //! committed fixture specs and goldens, and real `sh` reference commands.
 
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
 use super::*;
@@ -314,6 +315,72 @@ fn the_documented_reference_variables_are_the_ones_crozier_exports() {
         documented, exported,
         "docs/compare.md's variable table must list REFERENCE_VARIABLES, in order"
     );
+}
+
+/// Every property name and string `enum`/`const` value in `schema`, at any depth.
+fn schema_words(
+    schema: &serde_json::Value,
+    names: &mut BTreeSet<String>,
+    values: &mut BTreeSet<String>,
+) {
+    match schema {
+        serde_json::Value::Object(map) => {
+            if let Some(serde_json::Value::Object(properties)) = map.get("properties") {
+                names.extend(properties.keys().cloned());
+            }
+            if let Some(serde_json::Value::String(value)) = map.get("const") {
+                values.insert(value.clone());
+            }
+            if let Some(serde_json::Value::Array(options)) = map.get("enum") {
+                values.extend(
+                    options
+                        .iter()
+                        .filter_map(|v| v.as_str().map(str::to_string)),
+                );
+            }
+            for value in map.values() {
+                schema_words(value, names, values);
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for item in items {
+                schema_words(item, names, values);
+            }
+        }
+        _ => {}
+    }
+}
+
+#[test]
+fn the_documented_report_shape_names_the_schemas_fields_and_values() {
+    let page =
+        std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/compare.md"))
+            .unwrap();
+    let block = page
+        .split("\n```text\nschema_version:")
+        .nth(1)
+        .and_then(|rest| rest.split("\n```\n").next())
+        .map(|rest| format!("schema_version:{rest}"))
+        .expect("docs/compare.md holds the report shape");
+    let (mut names, mut values) = (BTreeSet::new(), BTreeSet::new());
+    schema_words(&crate::schema::compare_report(), &mut names, &mut values);
+    // Quoted words are enum values; bare words, apart from the type names, are
+    // field names.
+    let (mut documented_names, mut documented_values) = (BTreeSet::new(), BTreeSet::new());
+    for (index, part) in block.split('"').enumerate() {
+        if index % 2 == 1 {
+            documented_values.insert(part.to_string());
+            continue;
+        }
+        documented_names.extend(
+            part.split(|c: char| !(c.is_ascii_lowercase() || c == '_'))
+                .filter(|word| !word.is_empty())
+                .filter(|word| !["string", "integer", "number", "null"].contains(word))
+                .map(str::to_string),
+        );
+    }
+    assert_eq!(documented_names, names, "field names");
+    assert_eq!(documented_values, values, "enum values");
 }
 
 #[test]
