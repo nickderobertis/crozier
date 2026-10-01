@@ -429,9 +429,11 @@ jobs:
   # and verify job, so `@v0` never resolves to a release whose artifacts failed
   # to publish. A skipped job (a registry whose token is not set) is fine; a
   # failed one is not, and neither is a failed upload to the GitHub Release. The
-  # decision itself — derive the major, skip pre-releases and older releases —
-  # is scripts/update-major-tag.sh's, driven over real repositories by
-  # tests/e2e/major_tag.rs. The exact `vX.Y.Z` tag stays as release-plz cut it.
+  # decision itself — derive the major, skip pre-releases (by the Release's
+  # `prerelease` flag as well as by the tag's spelling) and older releases — is
+  # scripts/update-major-tag.sh's, driven over real repositories, through this
+  # step's own `run:` and `env:`, by tests/e2e/major_tag.rs. The exact `vX.Y.Z`
+  # tag stays as release-plz cut it.
   major-tag:
     needs:
       - upload
@@ -457,4 +459,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Move the floating major tag onto this release
-        run: bash scripts/update-major-tag.sh --tag "$GITHUB_REF_NAME"
+        env:
+          # `true` for a Release flagged as a pre-release, whatever its tag.
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: bash scripts/update-major-tag.sh --tag "$GITHUB_REF_NAME" --prerelease "$PRERELEASE"

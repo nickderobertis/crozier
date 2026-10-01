@@ -11,9 +11,11 @@
 # refuses to do, because a floating ref is resolved by consumers who never see
 # this run:
 #
-#   * a pre-release (`v1.0.0-rc.1`) or build-metadata tag (`v1.0.0+build.3`)
-#     leaves the major tag alone — `@v1` must mean the newest stable release,
-#     not whatever was cut last;
+#   * a pre-release leaves the major tag alone — `@v1` must mean the newest
+#     stable release, not whatever was cut last. That is a GitHub Release
+#     flagged as one (`--prerelease true`, from the release event), whatever its
+#     tag, and any pre-release (`v1.0.0-rc.1`) or build-metadata
+#     (`v1.0.0+build.3`) tag;
 #   * an OLDER release than the newest one with that major leaves it alone too.
 #     Re-cutting `v0.1.4` after `v0.1.10` shipped (a re-run, or a patch off an
 #     old branch) would otherwise walk every `@v0` consumer backwards.
@@ -26,13 +28,14 @@
 # Quiet on success: one line naming what moved, or what it deliberately did not.
 #
 # Usage:
-#   update-major-tag.sh --tag vX.Y.Z [--remote NAME]
+#   update-major-tag.sh --tag vX.Y.Z --prerelease true|false [--remote NAME]
 set -euo pipefail
 
 remote="origin"
 tag=""
+prerelease=""
 
-usage="run 'update-major-tag.sh --tag vX.Y.Z [--remote NAME]'"
+usage="run 'update-major-tag.sh --tag vX.Y.Z --prerelease true|false [--remote NAME]'"
 
 fail() {
   echo "update-major-tag: $1" >&2
@@ -51,6 +54,11 @@ while [ "$#" -gt 0 ]; do
     --tag)
       need_value "$@"
       tag="$2"
+      shift 2
+      ;;
+    --prerelease)
+      need_value "$@"
+      prerelease="$2"
       shift 2
       ;;
     --remote)
@@ -72,6 +80,16 @@ if [ -z "$tag" ]; then
   fail "no release tag given" "$usage"
 fi
 
+# Required, and only `true` or `false`: a guess would move `@v0` onto a flagged
+# pre-release whenever the release event's flag failed to arrive.
+case "$prerelease" in
+  true | false) ;;
+  *)
+    fail "--prerelease is '$prerelease', not true or false" \
+      "pass the Release's prerelease flag: \${{ github.event.release.prerelease }} in the release workflow, or false by hand for a stable release"
+    ;;
+esac
+
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
   fail "not inside a git repository" "run this from a checkout of the repository being released"
 fi
@@ -82,6 +100,11 @@ fi
 if ! printf '%s' "$tag" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'; then
   fail "release tag '$tag' is not a vX.Y.Z version tag" \
     "release-plz tags vX.Y.Z; a Release cut by hand with any other tag is not one this pipeline built"
+fi
+
+if [ "$prerelease" = true ]; then
+  echo "update-major-tag: the $tag Release is flagged as a pre-release; the floating major tag still points at the newest stable release."
+  exit 0
 fi
 
 # `v1.0.0-rc.1` and `v1.0.0+build.3` are both releases the floating major must
