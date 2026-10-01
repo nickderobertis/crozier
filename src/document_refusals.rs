@@ -14,6 +14,7 @@ enum Class {
     ServiceAuthUndefined,
     EndpointAuthUndefined,
     UnresolvedReference,
+    PathWithoutLeadingSlash,
 }
 
 impl Class {
@@ -23,6 +24,7 @@ impl Class {
             Self::ServiceAuthUndefined => "service-auth-undefined",
             Self::EndpointAuthUndefined => "endpoint-auth-undefined",
             Self::UnresolvedReference => "unresolved-reference",
+            Self::PathWithoutLeadingSlash => "path-without-leading-slash",
         }
     }
 }
@@ -73,6 +75,26 @@ pub fn check_reference_file(path: &Path, strict: bool) -> Result<()> {
     else {
         return Ok(());
     };
+    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+        for (route, item) in paths {
+            let Some(route) = route.as_str() else {
+                continue;
+            };
+            let has_operation = [
+                "get", "put", "post", "delete", "options", "head", "patch", "trace",
+            ]
+            .iter()
+            .any(|method| item.get(method).is_some());
+            if has_operation && !route.starts_with('/') && !route.starts_with("x-") {
+                return refusal(
+                    path,
+                    strict,
+                    Class::PathWithoutLeadingSlash,
+                    &format!("paths/{route}"),
+                );
+            }
+        }
+    }
     if let Some(components) = root.get("components") {
         for name in [
             "securitySchemes",

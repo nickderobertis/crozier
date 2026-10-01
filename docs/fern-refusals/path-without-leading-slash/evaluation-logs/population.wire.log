@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "<stdin>", line 6, in <module>
+  File "<scratch>/population-sdks/path-without-leading-slash/6cfc658fe510e051684d34217dfa4fc0745e19097440a3337cd08fea5b10a90e/src/fern/client.py", line 100, in pso2
+    from .pso2.client import Pso2Client
+  File "<scratch>/population-sdks/path-without-leading-slash/6cfc658fe510e051684d34217dfa4fc0745e19097440a3337cd08fea5b10a90e/src/fern/pso2/client.py", line 9, in <module>
+    from .raw_client import AsyncRawPso2Client, RawPso2Client
+  File "<scratch>/population-sdks/path-without-leading-slash/6cfc658fe510e051684d34217dfa4fc0745e19097440a3337cd08fea5b10a90e/src/fern/pso2/raw_client.py", line 14, in <module>
+    from .types.em_req_event_type import EmReqEventType
+  File "<scratch>/population-sdks/path-without-leading-slash/6cfc658fe510e051684d34217dfa4fc0745e19097440a3337cd08fea5b10a90e/src/fern/pso2/types/em_req_event_type.py", line 10, in <module>
+    class EmReqEventType(enum.StrEnum):
+  File "<scratch>/population-sdks/path-without-leading-slash/6cfc658fe510e051684d34217dfa4fc0745e19097440a3337cd08fea5b10a90e/src/fern/pso2/types/em_req_event_type.py", line 12, in EmReqEventType
+    _ = "ライブ"
+    ^
+  File "/usr/lib/python3.12/enum.py", line 443, in __setitem__
+    raise TypeError('%r already defined as %r' % (key, self[key]))
+TypeError: '_' already defined as '緊急'

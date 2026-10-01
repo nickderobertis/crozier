@@ -15612,3 +15612,32 @@ fn ignored_security_reference_uses_canonical_precedence_through_cli() {
         }
     }
 }
+
+#[test]
+fn path_without_leading_slash_recovers_with_valid_path() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("path-without-leading-slash/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures("path-without-leading-slash", &run, "paths/things", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(probe).unwrap();
+    std::fs::write(&spec, text.replace("  things:", "  /things:")).unwrap();
+    let normal = refusal_run(&crozier, &spec, false).unwrap();
+    let strict = refusal_run(&crozier, &spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
