@@ -9458,35 +9458,25 @@ fn enum_sanitization_generates_valid_python() {
     // Issue #50: enum member names and `visit()` parameters are derived from the
     // raw wire values, so a value that is not already a bare identifier once
     // produced Python that failed the final `ruff format` and discarded the whole
-    // SDK. This spec packs the crashing shapes into one enum — a Python keyword
-    // (`global`), punctuation + a leading digit (`0: Active`), and the
-    // digit-leading value `_01_00_AM` that Fern itself rejects (so it has no
-    // byte-match fixture) — plus a `type: string` enum whose values are all
-    // integers. Generation must succeed and every module must compile.
-    let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+    // SDK. This spec packs the crashing shapes Fern generates from into one
+    // document — a Python keyword (`global`) and a `type: string` enum whose
+    // values are all integers. Generation must succeed and every module must
+    // compile. The digit-run value `_01_00_AM`, which Fern rejects, is refused
+    // instead (the `enum-name-unsuitable` class, asserted below).
+    let spec = "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        \
          - { name: size, in: query, required: false, schema: { type: string, enum: [100, 125] } }\n      \
          responses:\n        '200': { description: OK, content: { application/json: { schema: \
          { $ref: '#/components/schemas/Widget' } } } }\ncomponents:\n  schemas:\n    Widget:\n      \
-         type: object\n      properties:\n        scope: { $ref: '#/components/schemas/WidgetScope' }\n        \
-         hour: { $ref: '#/components/schemas/WidgetHour' }\n    WidgetScope:\n      type: string\n      \
-         enum: [\"global\", \"practice\"]\n    WidgetHour:\n      type: string\n      \
-         enum: [\"_01_00_AM\", \"_12_00_PM\"]\n",
-    );
-    // The keyword value's `visit` parameter is keyword-escaped, and the leading
-    // digit that Fern rejects is prefixed into a legal identifier by crozier.
+         type: object\n      properties:\n        scope: { $ref: '#/components/schemas/WidgetScope' }\n    \
+         WidgetScope:\n      type: string\n      enum: [\"global\", \"practice\"]\n";
+    let (_dir, out) = generate_ok(spec);
+    // The keyword value's `visit` parameter is keyword-escaped.
     let scope = std::fs::read_to_string(out.join("src/acme/types/widget_scope.py"))
         .expect("WidgetScope enum is generated");
     assert!(
         scope.contains("global_: typing.Callable"),
         "keyword value → keyword-escaped visit param: {scope}"
-    );
-    let hour = std::fs::read_to_string(out.join("src/acme/types/widget_hour.py"))
-        .expect("WidgetHour enum is generated");
-    assert!(
-        hour.contains("_01_00_AM = \"_01_00_AM\""),
-        "digit-leading member is prefixed into a legal identifier: {hour}"
     );
     // The type-mismatched enum (string type, integer values) drops its members and
     // falls back to the base `str` type rather than emitting an empty enum class.
@@ -9496,6 +9486,31 @@ fn enum_sanitization_generates_valid_python() {
         raw.contains("size: typing.Optional[str] = None"),
         "a type-mismatched string enum falls back to str: {raw}"
     );
+
+    // Adding the digit-run enum Fern refuses turns the same document into a
+    // refusal: exit 1, nothing written, the class and value named on stderr.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        format!(
+            "{spec}    WidgetHour:\n      type: string\n      enum: [\"_01_00_AM\", \"_12_00_PM\"]\n"
+        ),
+    )
+    .unwrap();
+    let refused = dir.path().join("out");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&path)
+        .arg("--output")
+        .arg(&refused)
+        .args(["--package-name", "acme"])
+        .assert()
+        .code(1)
+        .stderr(predicates::str::contains(
+            "enum-name-unsuitable: #/components/schemas/WidgetHour enum value \"_01_00_AM\"",
+        ));
+    assert!(!refused.exists(), "a refused document writes nothing");
 }
 
 #[test]
