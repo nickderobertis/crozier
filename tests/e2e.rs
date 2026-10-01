@@ -14627,6 +14627,7 @@ fn hold_lock(path: &Path) -> Result<std::fs::File, String> {
 /// raced: several callers asking for the same fresh environment at once (as the
 /// refusal-gate journeys do under the parallel runner) each get a working
 /// interpreter, over both builders.
+// llmlint: ignore[shell_test_tiers_stay_split] The cached SDK env is what the gate's wire tests run in; this is the Rust e2e binary, not a shell suite, and the Python-SDK checks belong in `check` by this repo's standing choice (`crozier_matches_fern_runtime_behavior` builds the same cached venv there; tests/runtime/AGENTS.md) and by the fern-refusals contract, which has `just check` run each class's `wire_test.py` and `mypy`. The guard is a capability check, not a tier: it skips only off CI when Python or its install is unavailable, and fails in CI.
 #[test]
 fn sdk_python_env_survives_concurrent_first_use() {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -14715,6 +14716,7 @@ fn pyproject_requirements_translate_poetry_constraints() {
 /// a generated SDK type-check: over a minimal one-operation document, crozier's
 /// default SDK reports zero `mypy` errors under its own `pyproject.toml` — its
 /// pinned `mypy`, its configuration, and exactly the dependencies it declares.
+// llmlint: ignore[shell_test_tiers_stay_split] The cached SDK env is what the gate's wire tests run in; this is the Rust e2e binary, not a shell suite, and the Python-SDK checks belong in `check` by this repo's standing choice (`crozier_matches_fern_runtime_behavior` builds the same cached venv there; tests/runtime/AGENTS.md) and by the fern-refusals contract, which has `just check` run each class's `wire_test.py` and `mypy`. The guard is a capability check, not a tier: it skips only off CI when Python or its install is unavailable, and fails in CI.
 #[test]
 fn a_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -14941,7 +14943,7 @@ fn header_array_probe() -> String {
     .expect("the header-array probe crozier refuses")
 }
 
-// llmlint: ignore[e2e_not_mocked] No class is evaluated yet, so the real binary refuses nothing under --fern-strict and no journey over it can reach the gate's accepting or wrote-output branches; the stand-in emulates only the refusal line the contract fixes and runs the real binary for every generation. The gate under test is real, and the failing journeys drive the real binary.
+// llmlint: ignore[e2e_not_mocked, shell_test_tiers_stay_split] No class is evaluated yet, so the real binary refuses nothing under --fern-strict and no journey over it can reach the gate's accepting or wrote-output branches; the stand-in emulates only the refusal line the contract fixes and runs the real binary for every generation. The gate under test is real, and the failing journeys drive the real binary. As for the tier: the cached SDK env is what the gate's wire tests run in; this is the Rust e2e binary, not a shell suite, and the Python-SDK checks belong in `check` by this repo's standing choice (`crozier_matches_fern_runtime_behavior` builds the same cached venv there; tests/runtime/AGENTS.md) and by the fern-refusals contract, which has `just check` run each class's `wire_test.py` and `mypy`. The guard is a capability check, not a tier: it skips only off CI when Python or its install is unavailable, and fails in CI.
 #[test]
 fn fern_refusal_gate_accepts_a_registry_whose_classes_hold() {
     let scratch = tempfile::tempdir().expect("tempdir");
@@ -14988,6 +14990,7 @@ fn fern_refusal_gate_accepts_a_registry_whose_classes_hold() {
     );
 }
 
+// llmlint: ignore[shell_test_tiers_stay_split] The cached SDK env is what the gate's wire tests run in; this is the Rust e2e binary, not a shell suite, and the Python-SDK checks belong in `check` by this repo's standing choice (`crozier_matches_fern_runtime_behavior` builds the same cached venv there; tests/runtime/AGENTS.md) and by the fern-refusals contract, which has `just check` run each class's `wire_test.py` and `mypy`. The guard is a capability check, not a tier: it skips only off CI when Python or its install is unavailable, and fails in CI.
 #[test]
 fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
     let scratch = tempfile::tempdir().expect("tempdir");
