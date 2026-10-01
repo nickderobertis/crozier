@@ -203,7 +203,9 @@ fn evaluate(value: &str, tag: &str, prerelease: bool) -> String {
         // GitHub renders a boolean in `env` as `true` or `false`.
         "github.event.release.prerelease" => prerelease.to_string(),
         "github.event.release.tag_name" | "github.ref_name" => tag.to_string(),
-        other => panic!("release.yml's major-tag step reads `{other}`, which a release event does not carry"),
+        other => panic!(
+            "release.yml's major-tag step reads `{other}`, which a release event does not carry"
+        ),
     }
 }
 
@@ -525,7 +527,11 @@ fn an_argument_without_its_value_is_a_usage_error() {
             "{args:?} was rejected without saying what to pass: {error}"
         );
     }
-    assert_eq!(origin.commit_of("v0"), None, "a refused flag still moved v0");
+    assert_eq!(
+        origin.commit_of("v0"),
+        None,
+        "a refused flag still moved v0"
+    );
 }
 
 /// The tag the release job moves is the release's own commit: this asserts the script is the only thing that decides it, by running it from

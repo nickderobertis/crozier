@@ -3,7 +3,9 @@
 //! the composite action does — `bash <script>` with the step's `env` — against
 //! the real `crozier` binary and real repository layouts, with `RUNNER_TEMP`,
 //! `GITHUB_OUTPUT` and `GITHUB_STEP_SUMMARY` pointed at temporary files. Only the
-//! runner is stood in for; nothing between the script and the CLI is.
+//! runner is stood in for; nothing between the script and the CLI is. The last
+//! journey reads `action.yml` itself and runs its steps through those scripts
+//! with exactly the `env:` and step outputs it declares.
 //!
 //! The reference commands are small committed or written scripts that copy a
 //! committed golden, alter it, or refuse: a reference command is just a command,
@@ -408,13 +410,18 @@ fn a_paths_block_scalar_checks_every_listed_path() {
     assert_eq!(run.output("exit-code"), "0");
     for config in ["first", "second", "third"] {
         assert!(
-            run.summary
-                .contains(&format!("| ✅ matched | <code>{config}/crozier.yml</code> |")),
+            run.summary.contains(&format!(
+                "| ✅ matched | <code>{config}/crozier.yml</code> |"
+            )),
             "{config} was not checked:\n{}",
             run.summary
         );
     }
-    assert!(!run.summary.contains("other/crozier.yml"), "{}", run.summary);
+    assert!(
+        !run.summary.contains("other/crozier.yml"),
+        "{}",
+        run.summary
+    );
     assert_eq!(run.final_status, 0);
 }
 
@@ -1077,4 +1084,400 @@ fn ruff_is_installed_at_its_pinned_version_only_when_absent() {
     let run = install(repo_root(), "v0.0.80", Some(&mirror), &env);
     assert_eq!(run.status, 0, "{}", run.stderr);
     assert!(!record.exists());
+}
+
+// action.yml itself, step by step. The tests above set each script's
+// environment by hand, so they cannot see a renamed `env:` key or a broken
+// `steps.<id>.outputs.<name>` reference in action.yml. This one reads
+// action.yml and runs its steps as the runner does: each `run:` under the
+// shell GitHub gives it, with exactly the `env:` the step declares, evaluated
+// against the `with:` inputs (or their declared defaults) and the outputs the
+// earlier steps wrote; each `if:` evaluated the same way; and the `uses:`
+// upload resolved to the artifact name and path it would upload. Every
+// reference must resolve to a value something wrote: an expression naming an
+// input action.yml does not declare, or an output its step never wrote, fails
+// the test where GitHub would quietly read an empty string.
+
+/// One `steps.<id>.outputs.<name>` / `inputs.<name>` reference, resolved.
+fn reference(
+    expression: &str,
+    inputs: &BTreeMap<String, String>,
+    steps: &BTreeMap<String, BTreeMap<String, String>>,
+) -> String {
+    if let Some(name) = expression.strip_prefix("inputs.") {
+        return inputs
+            .get(name)
+            .unwrap_or_else(|| {
+                panic!("action.yml reads `{expression}`, an input it does not declare")
+            })
+            .clone();
+    }
+    let parts: Vec<&str> = expression.split('.').collect();
+    match parts.as_slice() {
+        ["steps", id, "outputs", name] => steps
+            .get(*id)
+            .unwrap_or_else(|| {
+                panic!("action.yml reads `{expression}`, but no earlier step has id `{id}`")
+            })
+            .get(*name)
+            .unwrap_or_else(|| {
+                panic!("action.yml reads `{expression}`, but step `{id}` wrote no `{name}` output")
+            })
+            .clone(),
+        _ => panic!("action.yml reads `{expression}`, which this test does not model"),
+    }
+}
+
+/// The text of `${{ … }}`, or `None` for a literal.
+fn expression(value: &str) -> Option<&str> {
+    let value = value.trim();
+    if !value.contains("${{") {
+        return None;
+    }
+    Some(
+        value
+            .strip_prefix("${{")
+            .and_then(|rest| rest.strip_suffix("}}"))
+            .unwrap_or_else(|| panic!("not one expression: {value}"))
+            .trim(),
+    )
+}
+
+/// A value action.yml gives a step: a literal, or one reference.
+fn evaluate(
+    value: &str,
+    inputs: &BTreeMap<String, String>,
+    steps: &BTreeMap<String, BTreeMap<String, String>>,
+) -> String {
+    match expression(value) {
+        None => value.to_string(),
+        Some(expression) => reference(expression, inputs, steps),
+    }
+}
+
+/// A step's `if:`: a `&&` of `<reference> == '<literal>'` or `!=` terms, the
+/// only form action.yml uses. No `if:` is `success()`: run while nothing
+/// before has failed.
+fn condition(
+    value: Option<&str>,
+    failed: bool,
+    inputs: &BTreeMap<String, String>,
+    steps: &BTreeMap<String, BTreeMap<String, String>>,
+) -> bool {
+    let Some(value) = value else {
+        return !failed;
+    };
+    let text = expression(value).unwrap_or(value.trim());
+    !failed
+        && text.split(" && ").all(|term| {
+            let (left, equal, right) = if let Some((l, r)) = term.split_once(" != ") {
+                (l, false, r)
+            } else if let Some((l, r)) = term.split_once(" == ") {
+                (l, true, r)
+            } else {
+                panic!("an `if:` term this test does not model: {term}")
+            };
+            let literal = right
+                .trim()
+                .strip_prefix('\'')
+                .and_then(|r| r.strip_suffix('\''))
+                .unwrap_or_else(|| panic!("not a quoted literal: {right}"));
+            (reference(left.trim(), inputs, steps) == literal) == equal
+        })
+}
+
+/// What running action.yml left behind.
+struct ComposedRun {
+    /// The action's outputs, as its `outputs:` resolve them.
+    outputs: BTreeMap<String, String>,
+    summary: String,
+    /// `(name, path)` of each artifact the upload step would upload.
+    uploads: Vec<(String, String)>,
+    /// The ids, or names, of the steps that ran, in order.
+    ran: Vec<String>,
+    /// The status the last step that ran ended with: the action's own.
+    final_status: i32,
+    log: String,
+    _runner_temp: tempfile::TempDir,
+}
+
+/// Run action.yml's steps from `workspace`, as a workflow step `uses:` it with
+/// `with` (YAML, as a workflow writes it), the action's checkout being this
+/// repository and `ambient` the job's own environment.
+fn run_action_yml(workspace: &Path, with: &str, ambient: &[(String, String)]) -> ComposedRun {
+    let action: serde_yaml_ng::Value =
+        serde_yaml_ng::from_str(&std::fs::read_to_string(repo_root().join("action.yml")).unwrap())
+            .unwrap();
+    let with: serde_yaml_ng::Value = serde_yaml_ng::from_str(with).unwrap();
+    let declared = action["inputs"].as_mapping().unwrap();
+    for key in with.as_mapping().unwrap().keys() {
+        assert!(
+            declared.contains_key(key),
+            "action.yml declares no input {key:?}"
+        );
+    }
+    let inputs: BTreeMap<String, String> = declared
+        .iter()
+        .map(|(name, spec)| {
+            let name = name.as_str().unwrap();
+            let value = with
+                .get(name)
+                .or_else(|| spec.get("default"))
+                .and_then(serde_yaml_ng::Value::as_str)
+                .unwrap_or("");
+            (name.to_string(), value.to_string())
+        })
+        .collect();
+
+    let runner_temp = tempfile::tempdir().unwrap();
+    let summary_file = runner_temp.path().join("step-summary");
+    std::fs::write(&summary_file, "").unwrap();
+    let mut steps: BTreeMap<String, BTreeMap<String, String>> = BTreeMap::new();
+    let mut uploads = Vec::new();
+    let mut ran = Vec::new();
+    let mut log = String::new();
+    let mut failed = false;
+    let mut final_status = 0;
+
+    for (index, step) in action["runs"]["steps"]
+        .as_sequence()
+        .unwrap()
+        .iter()
+        .enumerate()
+    {
+        let id = step.get("id").and_then(serde_yaml_ng::Value::as_str);
+        let label = id
+            .or_else(|| step.get("name").and_then(serde_yaml_ng::Value::as_str))
+            .unwrap()
+            .to_string();
+        let when = step.get("if").and_then(serde_yaml_ng::Value::as_str);
+        if !condition(when, failed, &inputs, &steps) {
+            continue;
+        }
+        ran.push(label.clone());
+
+        if let Some(uses) = step.get("uses").and_then(serde_yaml_ng::Value::as_str) {
+            assert!(
+                uses.starts_with("actions/upload-artifact@"),
+                "a `uses:` step this test does not model: {uses}"
+            );
+            let with = &step["with"];
+            let field = |key: &str| evaluate(with[key].as_str().unwrap(), &inputs, &steps);
+            uploads.push((field("name"), field("path")));
+            continue;
+        }
+
+        let run = step["run"].as_str().unwrap();
+        assert_eq!(step["shell"].as_str(), Some("bash"), "{label}");
+        let script = runner_temp.path().join(format!("step-{index}.sh"));
+        std::fs::write(&script, run).unwrap();
+        let output_file = runner_temp.path().join(format!("output-{index}"));
+        std::fs::write(&output_file, "").unwrap();
+        // GitHub's `shell: bash`: `bash --noprofile --norc -eo pipefail {0}`.
+        let mut command = Command::new(bash());
+        command
+            .args(["--noprofile", "--norc", "-eo", "pipefail"])
+            .arg(&script)
+            .current_dir(workspace)
+            .env("GITHUB_ACTION_PATH", repo_root())
+            .env("RUNNER_TEMP", runner_temp.path())
+            .env("GITHUB_OUTPUT", &output_file)
+            .env("GITHUB_STEP_SUMMARY", &summary_file);
+        // Only what a step's `env:` declares may carry its values.
+        for key in [
+            "NO_COLOR",
+            "CLICOLOR_FORCE",
+            "GITHUB_PATH",
+            "RUNNER_OS",
+            "CROZIER_VERSION",
+            "CROZIER_RELEASE_BASE_URL",
+            "CROZIER_CHECKSUM_BASE_URL",
+            "VERSION",
+            "CROZIER",
+            "COMPARE_PATHS",
+            "REFERENCE_COMMAND",
+            "EXIT_CODE",
+        ] {
+            command.env_remove(key);
+        }
+        for (key, value) in ambient {
+            command.env(key, value);
+        }
+        if let Some(env) = step.get("env").and_then(serde_yaml_ng::Value::as_mapping) {
+            for (key, value) in env {
+                command.env(
+                    key.as_str().unwrap(),
+                    evaluate(value.as_str().unwrap(), &inputs, &steps),
+                );
+            }
+        }
+        let out = command.output().unwrap();
+        log.push_str(&String::from_utf8_lossy(&out.stderr));
+        final_status = out.status.code().expect("the step exited");
+        failed = final_status != 0;
+        if let Some(id) = id {
+            steps.insert(
+                id.to_string(),
+                parse_outputs(&std::fs::read_to_string(&output_file).unwrap()),
+            );
+        }
+    }
+
+    let outputs = action["outputs"]
+        .as_mapping()
+        .unwrap()
+        .iter()
+        .map(|(name, spec)| {
+            (
+                name.as_str().unwrap().to_string(),
+                evaluate(spec["value"].as_str().unwrap(), &inputs, &steps),
+            )
+        })
+        .collect();
+    ComposedRun {
+        outputs,
+        summary: std::fs::read_to_string(&summary_file).unwrap(),
+        uploads,
+        ran,
+        final_status,
+        log,
+        _runner_temp: runner_temp,
+    }
+}
+
+/// action.yml end to end: the install step installs the release `version`
+/// names from a mirror, the compare step runs that binary over the two configs
+/// a block-scalar `paths` lists with the `reference-command` given, the upload
+/// step resolves to the diff directory under the artifact name given, and the
+/// last step ends the action with the CLI's status. Each input reaches its
+/// script only through the `env:` key action.yml declares, and each step reads
+/// the one before only through its outputs: the workspace holds a config no
+/// path lists, configs whose own reference command refuses, a `crozier` on
+/// PATH that is not the installed one, and a mirror holding only the requested
+/// release — so a renamed key or a broken reference changes what is checked or
+/// fails a step, and this test with it.
+#[test]
+fn action_yml_wires_its_inputs_and_steps_through_the_real_scripts() {
+    let reference = format!(
+        "#!/bin/sh\nset -eu\ncp -R '{}/.' \"$CROZIER_REFERENCE_OUTPUT\"\n\
+         if [ \"$(basename \"$PWD\")\" = altered ]; then\n\
+         \x20 echo 'A line the reference has and crozier does not.' >> \"$CROZIER_REFERENCE_OUTPUT/README.md\"\nfi\n",
+        golden("expected").display(),
+    );
+    // The configs' own reference command refuses: only the input's matches.
+    let config = format!("spec: ../openapi.yml\n{NAMING}reference:\n  command: ../refuse.sh\n");
+    let repo = layout(&[
+        ("reference.sh", &reference),
+        (
+            "refuse.sh",
+            "#!/bin/sh\necho 'not the input reference command' >&2\nexit 9\n",
+        ),
+        ("unaltered/crozier.yml", &config),
+        ("altered/crozier.yml", &config),
+        // Not listed, so never checked: it would fail if it were.
+        ("unlisted/crozier.yml", "spec: ./missing.yml\n"),
+    ]);
+
+    // A `crozier` on PATH that is not the installed binary: the compare step
+    // must run the one the install step's `bin` output names.
+    let decoy = tempfile::tempdir().unwrap();
+    write_executable(
+        decoy.path(),
+        "crozier",
+        "#!/bin/sh\necho 'the crozier on PATH ran, not the installed one' >&2\nexit 99\n",
+    );
+    let path = std::env::join_paths(
+        std::iter::once(decoy.path().to_path_buf())
+            .chain(std::env::split_paths(&std::env::var_os("PATH").unwrap())),
+    )
+    .unwrap();
+    // The action's own Cargo.toml names a release the mirror does not hold, so
+    // only the `version` input reaching the install step installs anything.
+    let mirror = Mirror::new(&["v0.0.1"]);
+    let mut ambient: Vec<(String, String)> = mirror
+        .env()
+        .into_iter()
+        .map(|(key, value)| (key.to_string(), value))
+        .collect();
+    ambient.push(("PATH".to_string(), path.into_string().unwrap()));
+
+    let command = repo.path().join("reference.sh");
+    let with = format!(
+        "version: v0.0.1\n\
+         paths: |\n  unaltered\n  altered\n\
+         reference-command: '{}'\n\
+         diff-artifact-name: parity-diffs\n",
+        command.display()
+    );
+    let run = run_action_yml(repo.path(), &with, &ambient);
+
+    assert_eq!(
+        run.ran,
+        [
+            "install",
+            "compare",
+            "Upload the diffs",
+            "Report the result"
+        ],
+        "{}",
+        run.log
+    );
+    assert_eq!(run.outputs["matched"], "1", "{}", run.log);
+    assert_eq!(run.outputs["mismatched"], "1");
+    assert_eq!(run.outputs["could-not-check"], "0");
+    assert_eq!(run.outputs["exit-code"], "3");
+    let report: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&run.outputs["report-path"]).unwrap())
+            .unwrap();
+    assert_eq!(report["exit_code"], 3);
+    for key in [
+        "total-reference-seconds",
+        "total-crozier-seconds",
+        "total-speedup",
+        "total-saved-seconds",
+    ] {
+        assert!(
+            run.outputs[key].parse::<f64>().is_ok(),
+            "`{key}` is not a number: {:?}",
+            run.outputs[key]
+        );
+    }
+
+    // The upload resolves to the compare step's diff directory, which holds
+    // the one mismatch's diff, under the name the input gave.
+    assert_eq!(run.uploads.len(), 1);
+    let (name, path) = &run.uploads[0];
+    assert_eq!(name, "parity-diffs");
+    let diffs: Vec<String> = std::fs::read_dir(path)
+        .unwrap_or_else(|e| panic!("the upload path {path:?} is not the diff directory: {e}"))
+        .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+        .collect();
+    assert_eq!(diffs.len(), 1, "{diffs:?}");
+    assert!(diffs[0].contains("altered"), "{diffs:?}");
+
+    let summary = &run.summary;
+    assert!(
+        summary.contains("❌ **1 generator(s) mismatched the reference.**"),
+        "{summary}"
+    );
+    let command_cell = format!("<code>{}</code>", command.display());
+    for (mark, config) in [("✅ matched", "unaltered"), ("❌ mismatched", "altered")] {
+        let row = format!("| {mark} | <code>{config}/crozier.yml</code> |");
+        let line = summary
+            .lines()
+            .find(|line| line.starts_with(&row))
+            .unwrap_or_else(|| panic!("no row {row}\n{summary}"));
+        assert!(line.contains(&command_cell), "{line}");
+    }
+    assert!(!summary.contains("unlisted"), "{summary}");
+
+    // The install step installed the release, and the decoy never ran.
+    assert!(!run.log.contains("the crozier on PATH ran"), "{}", run.log);
+    assert!(
+        run.log
+            .contains("crozier compare: a generator mismatched its reference (exit 3)"),
+        "{}",
+        run.log
+    );
+    assert_eq!(run.final_status, 3);
 }
