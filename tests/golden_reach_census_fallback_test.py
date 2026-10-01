@@ -130,6 +130,18 @@ class FallbackAgreementTests(unittest.TestCase):
                 path = sample_document(row["url"], row["sha256"])
                 self.assertEqual(row["sha256"], hashlib.sha256(path.read_bytes()).hexdigest())
 
+    def test_notice_attributes_exactly_the_committed_samples(self) -> None:
+        with SAMPLE.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t"))
+        notice = (REPO / "NOTICE").read_text(encoding="utf-8")
+        block = notice.split("Census-fallback sample documents are committed under", 1)[1].split("\n\n", 2)[1]
+        attributed = [entry.split()[:3] for entry in block.split("  * ")[1:]]
+        expected = []
+        for row in rows:
+            owner, repository, commit, path = row["url"].removeprefix("https://raw.githubusercontent.com/").split("/", 3)
+            expected.append([f"{owner}/{repository}@{commit}", path, row["license"]])
+        self.assertEqual(expected, [[repo, path, licence.strip("(),")] for repo, path, licence in attributed])
+
     def test_a_missing_or_drifted_sample_is_refused_with_its_next_action(self) -> None:
         global COMMITTED
         url = "https://raw.githubusercontent.com/example/specs/0123456789abcdef0123456789abcdef01234567/api.yaml"
