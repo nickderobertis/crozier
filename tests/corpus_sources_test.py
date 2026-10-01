@@ -138,14 +138,23 @@ class TheCommittedTreeHolds(unittest.TestCase):
                 "test-corpus-match:\n    mkdir -p .local/corpus/generated\n    false\n\n"
                 "surface-census:\n    true\n"
             )
+            # The warm step fetches locked crates: give the root a package with
+            # none, so it succeeds offline and the failing recipe is reached.
+            (root / "Cargo.toml").write_text('[package]\nname = "synthetic"\nversion = "0.0.0"\n')
+            (root / "src").mkdir()
+            (root / "src/lib.rs").write_text("")
+            subprocess.run(["cargo", "generate-lockfile", "--offline"], cwd=root, check=True,
+                           capture_output=True)
             tests = root / "tests"
             tests.mkdir()
             script = tests / "corpus_offline_test.py"
             shutil.copy2(REPO / "tests/corpus_offline_test.py", script)
             completed = subprocess.run(
-                [sys.executable, str(script)], cwd=root, capture_output=True, text=True,
+                [sys.executable, str(script), "OfflineCorpusRecipes.test_real_recipes_without_network_or_cache"],
+                cwd=root, capture_output=True, text=True,
             )
             self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
+            self.assertIn("mkdir -p .local/corpus/generated", completed.stderr)
             self.assertNotIn("Directory not empty", completed.stderr)
             self.assertEqual("original cached bytes", marker.read_text())
             self.assertFalse((cache / "generated").exists())
