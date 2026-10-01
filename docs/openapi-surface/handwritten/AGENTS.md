@@ -42,6 +42,14 @@ These keys, and nothing else:
   stream, computed exactly as
   [Contract A](../../openapi-surface-coverage.md#what-a-committed-proof-of-non-generation-is)
   computes a tree digest.
+- `audiences` (list of strings, optional): the audience filter the fixture is
+  generated for. Fern's workspace carries the list under the `python-sdk`
+  group's `audiences:` (`FERN_AUDIENCES` in `scripts/generate-fern-fixture.sh`),
+  and the gate and `just handwritten-reach` pass each name to crozier as
+  `--audience`. Absent, both generate the whole API. It exists for an arm only an
+  audience filter runs, such as `discriminator-mapping`'s `collect_schema_refs`
+  arm. Label every operation, because Fern drops an unlabelled one and crozier's
+  default keeps it.
 - One or more `[[covers]]` tables, each with:
   - `key` (string): a region-row key, spelled as its region file spells it.
   - `arm` (string, optional): a handling site exactly as
@@ -53,10 +61,11 @@ These keys, and nothing else:
   - `search` (string): `<repo-relative path>#<anchor>` of the committed search
     record whose verdict the cover cites. The anchor is GitHub's for a heading of
     that file, and the record is that heading's section.
-  - `verdict` (string): `exhausted` or `search-incomplete`, the verdict that
-    record states for this key: every table line of the section whose first cell
-    is the key states it, and no other outcome. An arm-level cover's record also
-    names its arm in a code span.
+  - `verdict` (string): `exhausted`, `search-incomplete` or `config-gated`, the
+    verdict that record states for this key: every table line of the section
+    whose first cell is the key states it, and no other outcome. An arm-level
+    cover's record also names its arm in a code span. A `config-gated` cover is
+    arm-level, and its fixture declares the setting its record says gates the arm.
   - `renewed` (string): required exactly when `verdict` is `search-incomplete`.
     The repo-relative path of a renewed-search record with a table line whose
     first cell is the key and one of whose cells reads `none-registrable`.
@@ -99,6 +108,18 @@ fixture's `openapi.yml` alone, the way `scripts/golden-reach.py measure` scopes
 one golden test. `just handwritten-reach` writes it; like `just golden-reach`
 it stays outside `just check`. `golden-reach.tsv` and the golden-only tier never
 read a fixture.
+
+A fixture that declares `audiences` is also measured without them. For each of
+its arm-level covers, `just handwritten-reach` writes both runs to
+[`../handwritten-config-gates.tsv`](../handwritten-config-gates.tsv), with the
+same sort and one more column:
+
+```
+fixture	key	site	setting	regions_executed	regions
+```
+
+`setting` is `audiences=<name>[,<name>…]` for the run with them and `-` for
+the run without. This pair is the measured gate a `config-gated` record cites.
 
 ## The gate
 
