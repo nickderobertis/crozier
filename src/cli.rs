@@ -445,6 +445,36 @@ mod tests {
     use super::*;
 
     #[test]
+    fn docs_compare_flag_table_is_compares_own_flags() {
+        use clap::CommandFactory;
+        let cli = Cli::command();
+        let compare = cli.find_subcommand("compare").unwrap();
+        let flags: Vec<String> = compare
+            .get_arguments()
+            .filter(|arg| !arg.is_global_set())
+            .filter_map(|arg| {
+                let long = arg.get_long()?;
+                let value = arg.get_value_names()?.first()?.to_string();
+                Some(format!("--{long} <{value}>"))
+            })
+            .collect();
+        let page = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/compare.md"),
+        )
+        .unwrap();
+        let documented: Vec<&str> = page
+            .lines()
+            .filter_map(|line| line.strip_prefix("| `--"))
+            .map(|rest| &rest[..rest.find('`').unwrap()])
+            .collect();
+        let flags: Vec<&str> = flags.iter().map(|f| &f[2..]).collect();
+        assert_eq!(
+            documented, flags,
+            "docs/compare.md's flag table must list `crozier compare`'s flags, in order"
+        );
+    }
+
+    #[test]
     fn config_flag_beats_env_which_beats_discovery() {
         let flag = [PathBuf::from("a.yml"), PathBuf::from("b.yml")];
         // `--config` wins outright, ignoring the environment.
