@@ -42,8 +42,8 @@ expect differences, at least in `.fern/metadata.json`, which records the version
 
 The `fern` launcher runs the CLI version a workspace's `fern.config.json` names
 ([What you need](fern-reference.md#what-you-need)), and only the certified pair is
-known to match ([Certified versions](fern-reference.md#certified-versions)). The recipe writes the
-certified `5.67.1` into the workspace it builds. A team that adapts it to run in
+known to match ([Certified versions](fern-reference.md#certified-versions)).
+The recipe writes the certified `5.67.1` into the workspace it builds. A team that adapts it to run in
 its own Fern workspace pins that file's `version` to the same release, never
 `*` or a range, so the reference does not move under it.
 
@@ -93,9 +93,10 @@ Edits a build applies after generation (to `core/http_client.py`,
 `core/serialization.py`, a return annotation in `__init__.py`, …) stay the
 team's: `crozier compare` checks the generators' output before any patch, so
 keep the patch step after `crozier generate` as it was after `fern generate`.
-crozier's output equals Fern's apart from comments
-([`matching.md`](matching.md)), so a patch that applied to Fern's output applies
-to crozier's unless its context lines include a comment.
+crozier's output equals Fern's under the byte-match rules, which set aside
+comments and a few normalized lines
+([`matching.md`](matching.md#how-the-comparison-works)), so a patch that applied
+to Fern's output applies to crozier's unless its context lines are among those.
 
 ### Find Fern setups that scripts create
 
