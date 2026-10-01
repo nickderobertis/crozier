@@ -207,7 +207,7 @@ Read it in this order when choosing the next fixture:
    *lines* the moment the match head runs; each arm is its own counter region.
    The crate emits no branch records at all, so regions are the closest branch
    proxy available — treat the region column as the real number.
-4. **Scope while iterating.** The unscoped run fetches the corpus and measures it
+4. **Scope while iterating.** The unscoped run reads the committed corpus and measures it
    all; `just fixtures-coverage 'test(/frankfurter/) or test(/wrap::/)'` reruns in
    seconds. Every tier must still select at least one test, or the recipe refuses.
 
