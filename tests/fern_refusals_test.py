@@ -213,5 +213,51 @@ class MissingInputs(unittest.TestCase):
             "docs/openapi-surface/golden-reach-witnesses/github-code-search/candidates.jsonl")
 
 
+class MalformedInputs(unittest.TestCase):
+    """A committed JSONL record `select` reads that is malformed fails naming
+    the file, the line and what it lacks, never with a traceback. Like
+    `MissingInputs`, it runs from a scratch checkout of what `select` reads."""
+
+    CANDIDATES = tuple(f"docs/openapi-surface/golden-reach-witnesses/{source}/candidates.jsonl"
+                       for source in ("github-code-search", "sourcegraph"))
+    SCREENS = "docs/openapi-surface/scratch-search/screens.jsonl"
+
+    def select_over(self, edit: tuple[str, str]) -> subprocess.CompletedProcess[str]:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            for relative in ("scripts/fern-refusals.py", *MissingInputs.INPUTS, *self.CANDIDATES):
+                (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(REPO / relative, root / relative)
+            relative, line = edit
+            target = root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            existing = target.read_text(encoding="utf-8") if target.exists() else ""
+            target.write_text(existing + line + "\n", encoding="utf-8")
+            numbered = len((existing + line).splitlines())
+            env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
+            result = subprocess.run([sys.executable, str(root / "scripts" / "fern-refusals.py"), "select"],
+                                    capture_output=True, text=True, env=env, cwd=root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn(f"{relative} line {numbered} ", result.stderr)
+        return result
+
+    def test_a_screen_without_its_verdict_names_the_line(self) -> None:
+        result = self.select_over((self.SCREENS, '{"source": "scratch"}'))
+        self.assertIn("lacks fern; restore it from git", result.stderr)
+
+    def test_a_failed_screen_without_its_location_names_what_it_lacks(self) -> None:
+        result = self.select_over((self.SCREENS, '{"fern": "failed: check", "source": "scratch"}'))
+        self.assertIn("lacks repository, commit, path; restore it from git", result.stderr)
+
+    def test_a_candidate_without_its_digest_names_the_line(self) -> None:
+        result = self.select_over((self.CANDIDATES[0], '{"repository": "o/r", "path": "a.yml", "commit": "c"}'))
+        self.assertIn("lacks sha256; restore it from git", result.stderr)
+
+    def test_a_record_that_is_not_json_names_the_line(self) -> None:
+        result = self.select_over((self.SCREENS, "{not json"))
+        self.assertIn("is not JSON", result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

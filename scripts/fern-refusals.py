@@ -104,6 +104,29 @@ def require(path: Path) -> Path:
     return path
 
 
+def lacking(path: Path, number: int, row: dict[str, Any], fields: tuple[str, ...]) -> None:
+    """Fail naming the record line of `path` that does not carry every one of `fields`."""
+    missing = [field for field in fields if field not in row]
+    if missing:
+        fail(f"{rel(path)} line {number} lacks {', '.join(missing)}; restore it from git")
+
+
+def read_jsonl(path: Path, fields: tuple[str, ...]) -> list[tuple[int, dict[str, Any]]]:
+    """Each line of a committed JSONL record, numbered, as an object carrying
+    `fields`: a malformed line fails naming the file and line, never a traceback."""
+    rows = []
+    for number, line in enumerate(require(path).read_text(encoding="utf-8").splitlines(), 1):
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as error:
+            fail(f"{rel(path)} line {number} is not JSON ({error.msg}); restore it from git")
+        if not isinstance(row, dict):
+            fail(f"{rel(path)} line {number} is not a JSON object; restore it from git")
+        lacking(path, number, row, fields)
+        rows.append((number, row))
+    return rows
+
+
 def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
     require(path)
     with path.open(encoding="utf-8", newline="") as handle:
@@ -173,8 +196,7 @@ def searched_candidates(source: str) -> dict[str, dict[str, Any]]:
     # commit and sha256 are read.
     path = SURFACE / "golden-reach-witnesses" / source / "candidates.jsonl"
     found = {}
-    for line in require(path).read_text(encoding="utf-8").splitlines():
-        row = json.loads(line)
+    for _number, row in read_jsonl(path, ("repository", "path", "commit", "sha256")):
         found[f"{row['repository']}:{row['path']}@{row['commit']}"] = row
     return found
 
@@ -216,11 +238,11 @@ def population() -> list[Entry]:
     for screens in sorted(SURFACE.glob("**/screens.jsonl")):
         source = screens.parent.name
         record = rel(screens)
-        for line in screens.read_text(encoding="utf-8").splitlines():
-            row = json.loads(line)
+        for number, row in read_jsonl(screens, ("fern",)):
             if not failed(row["fern"]):
                 continue
             if "candidate" not in row:
+                lacking(screens, number, row, ("source", "repository", "commit", "path"))
                 logs = [rel(screens.parent / log) for log in row.get("fern_logs", [])]
                 entries.append({"digest": row.get("sha256", ""), "source": row["source"],
                                 "locator": raw_url(row["repository"], row["commit"], row["path"]),
@@ -436,7 +458,11 @@ def read_measurements() -> dict[str, dict[str, str]]:
     path = EVIDENCE / "measurements.jsonl"
     if not path.is_file():
         return {}
-    return {row["key"]: upgraded(row) for row in map(json.loads, path.read_text(encoding="utf-8").splitlines())}
+    rows = read_jsonl(path, ("key",))
+    for number, row in rows:
+        if "fern_stage" in row:
+            lacking(path, number, row, ("fern_exit", "fern_log"))
+    return {row["key"]: upgraded(row) for _number, row in rows}
 
 
 def ran_out_below_the_heap(log: str) -> bool:
