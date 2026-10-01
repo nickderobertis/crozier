@@ -15372,3 +15372,154 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
         failures.join("\n")
     );
 }
+
+/// Refusal happens before touching an existing SDK; an explicit document name
+/// recovers generation without changing the declared enum wire value.
+#[test]
+fn unnameable_enum_refusal_preserves_output_and_recovers_with_declared_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let output = dir.path().join("sdk");
+    std::fs::create_dir(&output).unwrap();
+    std::fs::write(output.join("keep.txt"), "existing SDK").unwrap();
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/enum-value-unnameable/probe.yml"),
+    )
+    .unwrap();
+    std::fs::write(&spec, &probe).unwrap();
+    for strict in [false, true] {
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe"]);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let run = command.output().unwrap();
+        assert_eq!(run.status.code(), Some(1));
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains("enum-value-unnameable"), "{stderr}");
+        if strict {
+            assert!(stderr.contains("fern-strict"), "{stderr}");
+        }
+        assert!(
+            stderr.contains("Minutes") && stderr.contains("10080"),
+            "{stderr}"
+        );
+        assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+        assert_eq!(
+            std::fs::read_to_string(output.join("keep.txt")).unwrap(),
+            "existing SDK"
+        );
+    }
+    std::fs::write(
+        &spec,
+        probe.replace(
+            "      enum:",
+            "      x-crozier-enum:\n        '10080': {name: WEEK}\n        '20160': {name: FORTNIGHT}\n      enum:",
+        ),
+    )
+    .unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .args(["--package-name", "probe", "--fern-strict"])
+        .assert()
+        .success();
+    let module = std::fs::read_to_string(output.join("src/probe/types/minutes.py")).unwrap();
+    assert!(module.contains("WEEK = \"10080\""), "{module}");
+    assert!(module.contains("FORTNIGHT = \"20160\""), "{module}");
+}
+
+#[test]
+fn inline_unnameable_enums_report_their_operation_and_recover() {
+    let enum_schema = serde_json::json!({"type": "string", "enum": ["10080", "20160"]});
+    for (kind, location) in [
+        ("parameter", "GET /probe parameter mode"),
+        ("parameter-content", "GET /probe parameter mode"),
+        ("body", "GET /probe request body/items/additionalProperties"),
+        (
+            "response",
+            "GET /probe response 200/oneOf/0/allOf/0/anyOf/0",
+        ),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.json");
+        let output = dir.path().join("sdk");
+        let mut operation = serde_json::json!({
+            "operationId": "probe",
+            "responses": {"204": {"description": "No content"}}
+        });
+        match kind {
+            "parameter" => {
+                operation["parameters"] = serde_json::json!([
+                    {"name": "mode", "in": "query", "schema": enum_schema}
+                ]);
+            }
+            "parameter-content" => {
+                operation["parameters"] = serde_json::json!([
+                    {"name": "mode", "in": "query", "content": {
+                        "application/json": {"schema": enum_schema}
+                    }}
+                ]);
+            }
+            "body" => {
+                operation["requestBody"] = serde_json::json!({"content": {
+                    "application/json": {"schema": {"type": "array", "items": {
+                        "type": "object", "additionalProperties": enum_schema
+                    }}}
+                }});
+            }
+            "response" => {
+                operation["responses"] = serde_json::json!({"200": {
+                    "description": "Enum result", "content": {"application/json": {
+                        "schema": {"oneOf": [{"allOf": [{"anyOf": [enum_schema]}]}]}
+                    }}
+                }});
+            }
+            _ => unreachable!(),
+        }
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"get": operation}}
+        });
+        let text = serde_json::to_string(&document).unwrap();
+        std::fs::write(&spec, &text).unwrap();
+        let run = crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe"])
+            .output()
+            .unwrap();
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(run.status.code(), Some(1), "{kind}: {stderr}");
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains("enum-value-unnameable"), "{stderr}");
+        assert!(stderr.contains(location), "{kind}: {stderr}");
+        assert!(stderr.contains("10080"), "{stderr}");
+        assert!(!output.exists(), "{kind}: refusal created output");
+        std::fs::write(
+            &spec,
+            text.replace("10080", "9999").replace("20160", "9000"),
+        )
+        .unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe", "--fern-strict"])
+            .assert()
+            .success();
+        assert!(output.join("pyproject.toml").is_file(), "{kind}");
+    }
+}

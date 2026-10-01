@@ -1,0 +1,4 @@
+baseline=2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+locator=https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/swaggerhub.koscom/advisory-contract-info/1.0.0/meta/import/input-bundle.json
+exit=0
+generated 46 files into <scratch>/sdk-f57ffad87f0ea2e4a14ba030f7d24c5c5dbcd285805400c3d01433e26927e35f

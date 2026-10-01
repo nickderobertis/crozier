@@ -1,0 +1,4 @@
+Induced pre-detector failure at baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+Assertion: exit == 1 and stderr names enum-value-unnameable
+Observed: exit=0; SDK written
+Result: assertion fails for intended reason (baseline generates)

@@ -1,0 +1,28 @@
+exit=1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import probe, pkgutil, importlib; modules = list(pkgutil.walk_packages(probe.__path__, probe.__name__ + ".")); [importlib.import_module(m.name) for m in modules]; print("all SDK modules imported:", len(modules))
+                                                                                                                    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1406, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "<scratch>/sdk-f57ffad87f0ea2e4a14ba030f7d24c5c5dbcd285805400c3d01433e26927e35f/src/probe/client.py", line 10, in <module>
+    from .raw_client import AsyncRawProbeApi, RawProbeApi
+  File "<scratch>/sdk-f57ffad87f0ea2e4a14ba030f7d24c5c5dbcd285805400c3d01433e26927e35f/src/probe/raw_client.py", line 13, in <module>
+    from .types.advisory_contract_info_request_advisory_contract_type import AdvisoryContractInfoRequestAdvisoryContractType
+  File "<scratch>/sdk-f57ffad87f0ea2e4a14ba030f7d24c5c5dbcd285805400c3d01433e26927e35f/src/probe/types/advisory_contract_info_request_advisory_contract_type.py", line 10, in <module>
+    class AdvisoryContractInfoRequestAdvisoryContractType(enum.StrEnum):
+    ...<19 lines>...
+                return _()
+  File "<scratch>/sdk-f57ffad87f0ea2e4a14ba030f7d24c5c5dbcd285805400c3d01433e26927e35f/src/probe/types/advisory_contract_info_request_advisory_contract_type.py", line 12, in AdvisoryContractInfoRequestAdvisoryContractType
+    _ = "갱신"
+    ^
+  File "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/enum.py", line 391, in __setitem__
+    raise TypeError('%r already defined as %r' % (key, self[key]))
+TypeError: '_' already defined as '신규'

@@ -20,6 +20,7 @@ pub mod config;
 pub mod emit;
 pub mod error;
 pub mod ir;
+mod name_refusals;
 pub mod naming;
 pub mod normalize;
 pub mod openapi;
@@ -80,6 +81,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
+    name_refusals::validate(&doc, &args.spec, args.fern_strict)?;
     // The config constructor validates the package name (a `PackageName`), so an
     // invalid, traversal-prone value can never reach the filesystem below.
     let mut config = GenerateConfig::new(
@@ -113,6 +115,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
+    name_refusals::validate(&doc, &args.spec, args.fern_strict)?;
     let mut config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
