@@ -16,6 +16,11 @@ use predicates::prelude::*;
 #[path = "e2e/compare.rs"]
 mod compare;
 
+/// The "Migrating from Fern" guide's workflow, run from its own code blocks.
+#[cfg(unix)]
+#[path = "e2e/migration.rs"]
+mod migration;
+
 /// The GitHub Action's scripts (`scripts/action/`) over a real `crozier`.
 #[cfg(unix)]
 #[path = "e2e/action.rs"]
