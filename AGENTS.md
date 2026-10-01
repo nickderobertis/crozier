@@ -106,7 +106,8 @@ Use the `just` recipes; do not hand-roll equivalents.
   Separate from the offline `check`; CI's `sdk-env` matrix job runs it, gated.
 - `just test-corpus-match` — byte-compare every registered corpus against Fern
   using committed sources. `just test-corpus-offline` proves it, its strict form,
-  the census and the refusal-class gate with sockets denied and no cache; CI runs this in its live-e2e leg.
+  the census, the refusal-class gate and the census-fallback samples with sockets
+  denied and no cache; CI runs this in its live-e2e leg.
 - `just corpus-sources vendor` / `audit` — rebuild-only source fetch/verification;
   pinned URLs are provenance. `just lint-corpus-sources` checks every committed
   file's SHA-256 offline. See `tests/fixtures/corpus-sources.tsv`.

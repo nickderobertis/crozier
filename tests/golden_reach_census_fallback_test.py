@@ -10,13 +10,15 @@ in for, so this suite holds it to two things over a committed sample:
 * on every registered-corpus YAML source the stdlib loader reads, the census's
   object-model walk counts exactly the same selectors over both readings;
 * on one real document of each form only ruamel.yaml reads —
-  `tests/data/census-fallback-sample.tsv`, pinned by commit and digest — the
+  `tests/data/census-fallback-sample.tsv`, pinned by commit, digest and licence,
+  each committed under `tests/data/census-fallback-sample/` — the
   stdlib loader refuses it and the fallback reading counts the declarations the
   document visibly makes. A form the stdlib loader has since learned
   (`STDLIB_READS`) keeps its sample, now read by both loaders identically.
 
-It needs the pinned parser and, for a sample document not yet cached, the
-network: run it as `just test-census-fallback`, which CI's `live-e2e` leg does.
+It needs the pinned parser but never the network: every sample is read from its
+committed copy. Run it as `just test-census-fallback`, which CI's `live-e2e` leg
+does.
 The registered-corpus census and `just check` never use the fallback.
 """
 
@@ -27,13 +29,13 @@ import hashlib
 import importlib.util
 import os
 import sys
+import tempfile
 import unittest
-import urllib.request
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SAMPLE = REPO / "tests" / "data" / "census-fallback-sample.tsv"
-CACHE = REPO / ".local" / "census-fallback-sample"
+COMMITTED = REPO / "tests" / "data" / "census-fallback-sample"
 
 
 def _load(name: str, path: Path):
@@ -56,16 +58,16 @@ def registered_yaml_sources() -> list[Path]:
 
 
 def sample_document(url: str, sha256: str) -> Path:
-    """A sample document's bytes at its pinned digest, fetched once into `.local/`."""
-    suffix = Path(url).suffix
-    path = CACHE / f"{sha256}{suffix}"
+    """A sample document's committed copy, held to its pinned digest."""
+    path = COMMITTED / f"{sha256}{Path(url).suffix}"
     if not path.is_file():
-        with urllib.request.urlopen(url, timeout=60) as response:  # noqa: S310 - a pinned https raw URL
-            data = response.read()
-        if hashlib.sha256(data).hexdigest() != sha256:
-            raise AssertionError(f"{url} is not the pinned {sha256}")
-        CACHE.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(data)
+        raise AssertionError(
+            f"{path.relative_to(REPO)} is not committed; re-vendor it from its pinned URL "
+            f"with `curl -fsSL {url} -o {path.relative_to(REPO)}` and commit it"
+        )
+    measured = hashlib.sha256(path.read_bytes()).hexdigest()
+    if measured != sha256:
+        raise AssertionError(f"{path.relative_to(REPO)} is {measured}, not the pinned {sha256} of {url}")
     return path
 
 
@@ -80,7 +82,7 @@ class FallbackAgreementTests(unittest.TestCase):
         sources = registered_yaml_sources()
         self.assertTrue(sources, "no registered YAML source to compare the loaders on")
         if os.environ.get("CROZIER_REQUIRE_CORPUS") and not (REPO / "tests" / "fixtures" / "corpus-sources").is_dir():
-            self.fail("the link-ok corpus is unfetched; run scripts/fetch-corpus.sh")
+            self.fail("the committed corpus sources are missing; run just lint-corpus-sources")
         for path in sources:
             with self.subTest(source=str(path.relative_to(REPO))):
                 stdlib = search.CENSUS.load_document(path)
@@ -115,6 +117,39 @@ class FallbackAgreementTests(unittest.TestCase):
                 declared = dict(pair.split("=") for pair in row["declares"].split(";"))
                 self.assertEqual({selector: int(n) for selector, n in declared.items()},
                                  {selector: counts.get(selector, 0) for selector in declared})
+
+    def test_every_sample_is_committed_at_its_pinned_digest_with_its_licence(self) -> None:
+        with SAMPLE.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t"))
+        expected = {f"{row['sha256']}{Path(row['url']).suffix}" for row in rows}
+        self.assertEqual(expected, {path.name for path in COMMITTED.iterdir()})
+        for row in rows:
+            with self.subTest(form=row["form"]):
+                self.assertTrue(row["license"].strip(), "record the repository licence the sample is committed under")
+                self.assertTrue(row["url"].startswith("https://raw.githubusercontent.com/"), row["url"])
+                path = sample_document(row["url"], row["sha256"])
+                self.assertEqual(row["sha256"], hashlib.sha256(path.read_bytes()).hexdigest())
+
+    def test_a_missing_or_drifted_sample_is_refused_with_its_next_action(self) -> None:
+        global COMMITTED
+        url = "https://raw.githubusercontent.com/example/specs/0123456789abcdef0123456789abcdef01234567/api.yaml"
+        data = b"openapi: 3.0.0\n"
+        pinned = hashlib.sha256(data).hexdigest()
+        original = COMMITTED
+        with tempfile.TemporaryDirectory(dir=REPO / "tests" / "data") as directory:
+            COMMITTED = Path(directory)
+            try:
+                with self.assertRaises(AssertionError) as missing:
+                    sample_document(url, pinned)
+                self.assertIn(f"curl -fsSL {url} -o", str(missing.exception))
+                (COMMITTED / f"{pinned}.yaml").write_bytes(data + b"# drifted\n")
+                with self.assertRaises(AssertionError) as drifted:
+                    sample_document(url, pinned)
+                self.assertIn(f"not the pinned {pinned}", str(drifted.exception))
+                (COMMITTED / f"{pinned}.yaml").write_bytes(data)
+                self.assertEqual(data, sample_document(url, pinned).read_bytes())
+            finally:
+                COMMITTED = original
 
     def test_the_pin_is_the_one_the_inline_metadata_installs(self) -> None:
         header = (REPO / "scripts" / "golden-reach-search.py").read_text(encoding="utf-8").split('"""', 1)[0]

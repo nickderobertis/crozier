@@ -397,15 +397,18 @@ test-fixtures-coverage:
     PYTHONPATH=tests/without-posix-modules python3 tests/golden_reach_test.py
 
 # The arm search's YAML fallback against the census's stdlib loader: identical
-# counts on every registered YAML source, and each refused form's pinned sample
-# read as what it declares. Then the witness-search re-census CLI over temporary
-# ledgers, a loopback GitHub and Sourcegraph, and the same pinned parser.
-# Outside `check` — it needs the pinned ruamel.yaml (read from each script's own
-# inline metadata) and the network for the parser-only sample; CI's
-# live-e2e leg runs it.
-test-census-fallback:
+# counts on every registered YAML source, and each refused form's committed sample
+# (`tests/data/census-fallback-sample/`) read as what it declares. Fetches no
+# specification; `test-corpus-offline` runs it with sockets denied.
+test-census-fallback-samples:
     python3 scripts/corpus_sources.py check
     CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_census_fallback_test.py
+
+# The samples above, then the arm search and the witness-search re-census CLI
+# over temporary ledgers, a loopback GitHub and Sourcegraph, and the same pinned
+# parser. Outside `check` — it needs the pinned ruamel.yaml (read from each
+# script's own inline metadata); CI's live-e2e leg runs it.
+test-census-fallback: test-census-fallback-samples
     CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_test.py
     uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/witness-search-recensus.py)" python3 tests/witness_search_recensus_test.py
 
@@ -569,8 +572,9 @@ lint-corpus-sources:
 test-corpus-sources:
     python3 tests/corpus_sources_test.py
 
-# Linux CI proof: run the real byte-match and census recipes with sockets denied
-# and the ignored corpus cache absent. Does not fetch a specification.
+# Linux CI proof: run the real byte-match, census, refusal and census-fallback
+# sample recipes with sockets denied and the ignored corpus caches absent. Does
+# not fetch a specification (uv installs the pinned parser first).
 test-corpus-offline:
     python3 tests/corpus_offline_test.py
 

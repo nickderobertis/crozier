@@ -136,8 +136,8 @@ jobs:
       # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] This task requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
       - name: Corpus byte-match
         run: just test-corpus-offline
-      # Registered corpus sources are local; parser-only samples remain pinned remote inputs.
-      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This existing parser-agreement tier needs six pinned non-corpus YAML samples; it stays in the separate live-e2e job. It never downloads registered corpus sources.
+      # Registered corpus sources and the parser samples are committed; this fetches no specification.
+      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This existing parser-agreement tier needs uv to install the pinned ruamel.yaml, so it stays in the separate live-e2e job; it reads only committed specifications and loopback servers.
       - name: Census fallback agreement
         run: just test-census-fallback
 

@@ -408,7 +408,7 @@ byte-for-byte too. Its source and referenced documents are committed under
 `tests/fixtures/corpus-sources/`, with every file's digest recorded and checked.
 Its `apideck_crm_matches_fern_output` test reads those copies, and
 `just test-corpus-offline` proves the byte-match (default and strict), census
-and refusal-class recipes run with sockets denied and no ignored corpus cache. Reaching it exercised, on a messy
+refusal-class and census-fallback-sample recipes run with sockets denied and no ignored corpus cache. Reaching it exercised, on a messy
 real-world document, the `$ref` parameter/response resolution, Fern-matching method
 naming, ubiquitous-header promotion, inline-schema hoisting, and worked-example
 value synthesis (spec `example`s, shown only for a plain-scalar required-and-not-

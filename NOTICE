@@ -25,6 +25,26 @@ under tests/fixtures/corpus-sources/. Their per-file pinned provenance and SHA-2
 are recorded in tests/fixtures/corpus-sources.tsv. The per-document licence
 attributions below apply to these sources as well as their generated fixtures.
 
+Census-fallback sample documents are committed under
+tests/data/census-fallback-sample/, one file per row of
+tests/data/census-fallback-sample.tsv, which records each file's pinned source
+URL, SHA-256 and repository licence. They are used unmodified, only to hold the
+census's YAML fallback reader to the stdlib loader:
+
+  * Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf
+    yaml/BalancePlatformNegativeBalanceCompensationWarningNotification-v1.yaml (MIT)
+  * PaloAltoNetworks/pan.dev@4e989cdd4bbda669dc73c0d3f5db90bb4989bee3
+    openapi-specs/dlp/ReportsAPI.yaml (MIT)
+  * lissy93/dashy@6d7a394da71d083e719e32f3e365fa99fec320c2
+    services/endpoints/api/openapi.yml (MIT)
+  * ktorio/ktor-init-tools@790e8b389ae9aed630eea72a73181a3a5b725977
+    ktor-generator/src/jvmTest/resources/openapi.yaml (Apache-2.0, granted by the
+    repository's LICENSE at that commit; Copyright 2018 JetBrains s.r.o.)
+  * jjojala/tupal@4bd8d8d8219055df324c4d655b95b7fe7f940d8f
+    web/openapi.yaml (GPL-3.0)
+  * endoflife-date/endoflife.date@040306d5791ab1673d298a43d5bb57c2b8564f45
+    api_v1/openapi.yml (MIT)
+
 Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(c)):
 
   * Source: fern-api/fern, commit 3a471b03d4778f291849adc03bacfcd40340fc26.

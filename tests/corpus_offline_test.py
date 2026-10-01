@@ -7,6 +7,7 @@ import ctypes
 import errno
 import os
 import platform
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -42,14 +43,17 @@ def deny_network() -> None:
                      "network-denial proof uses Linux seccomp")
 class OfflineCorpusRecipes(unittest.TestCase):
     def test_real_recipes_without_network_or_cache(self) -> None:
-        cache = REPO / ".local/corpus"
+        # The registered corpus cache, and the cache the census-fallback samples
+        # were once fetched into: neither may exist or come back.
+        caches = (REPO / ".local/corpus", REPO / ".local/census-fallback-sample")
         with tempfile.TemporaryDirectory(dir=REPO / ".local") as directory:
-            hidden = Path(directory) / "cache"
-            had_cache = cache.exists()
-            if had_cache:
-                cache.rename(hidden)
+            hidden = [Path(directory) / f"cache-{index}" for index in range(len(caches))]
+            held = [cache.exists() for cache in caches]
+            for cache, aside, present in zip(caches, hidden, held):
+                if present:
+                    cache.rename(aside)
             try:
-                self.assertFalse(cache.exists())
+                self.assertFalse(any(cache.exists() for cache in caches))
                 probe = subprocess.run(
                     [sys.executable, str(Path(__file__).resolve()), "--deny-network",
                      sys.executable, "-c", "import socket; socket.socket()"],
@@ -57,25 +61,38 @@ class OfflineCorpusRecipes(unittest.TestCase):
                 )
                 self.assertNotEqual(0, probe.returncode)
                 self.assertIn("Operation not permitted", probe.stderr)
+                # The fallback samples need the pinned parser: install that
+                # package (never a specification) while the network is up, so
+                # the denied run below resolves it from uv's cache alone.
+                pin = REPO / "scripts/golden-reach-search.py"
+                if pin.is_file():
+                    dependency = re.search(r'^# dependencies = \["(.*)"\]$', pin.read_text(encoding="utf-8"), re.M)
+                    warm = subprocess.run(
+                        ["uv", "run", "--no-project", "--with", dependency.group(1), "python3", "-c", ""],
+                        cwd=REPO, capture_output=True, text=True,
+                    )
+                    self.assertEqual(0, warm.returncode, warm.stderr)
                 for recipe in ("test-corpus-match", "test-corpus-match-strict", "surface-census",
-                               "test-fern-refusals"):
+                               "test-fern-refusals", "test-census-fallback-samples"):
                     with self.subTest(recipe=recipe):
                         result = subprocess.run(
                             [sys.executable, str(Path(__file__).resolve()), "--deny-network",
                              "just", recipe], cwd=REPO, capture_output=True, text=True,
                             # A user-level sccache daemon needs a socket; the repo
                             # build contract has no wrapper and works offline.
-                            env={**os.environ, "RUSTC_WRAPPER": ""},
+                            env={**os.environ, "RUSTC_WRAPPER": "", "UV_OFFLINE": "1"},
                         )
                         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-                        self.assertFalse(cache.exists(), "recipe recreated the corpus cache")
+                        for cache in caches:
+                            self.assertFalse(cache.exists(), f"recipe recreated {cache.relative_to(REPO)}")
             finally:
                 # A failing recipe can create a new cache. Move that test output
-                # aside before restoring the caller's original directory.
-                if cache.exists():
-                    cache.rename(Path(directory) / "unexpected-cache")
-                if had_cache:
-                    hidden.rename(cache)
+                # aside before restoring the caller's original directories.
+                for index, (cache, aside, present) in enumerate(zip(caches, hidden, held)):
+                    if cache.exists():
+                        cache.rename(Path(directory) / f"unexpected-cache-{index}")
+                    if present:
+                        aside.rename(cache)
 
 
 if __name__ == "__main__":
