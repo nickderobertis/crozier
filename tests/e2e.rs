@@ -16,6 +16,11 @@ use predicates::prelude::*;
 #[path = "e2e/compare.rs"]
 mod compare;
 
+/// `scripts/update-major-tag.sh`, the release's floating major tag.
+#[cfg(unix)]
+#[path = "e2e/major_tag.rs"]
+mod major_tag;
+
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
 /// byte-for-byte today (paths relative to the output root). `unmatched` is the
