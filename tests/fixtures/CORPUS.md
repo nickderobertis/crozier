@@ -21,6 +21,11 @@ the gate the moment one of their entries starts matching — so a residual is
 enumerated work, never a suppression. The measured state is `tests/e2e.rs`;
 re-measure with `just fixtures-gaps`.
 
+A row withdrawn from the corpus leaves the table below, keeping its number, for a
+*withdrawn* table under the batch that registered it, whose `decision` reads
+`withdrawn` and whose last column says why; no recipe fetches it and no test
+compares it. Row 224 is the one so far.
+
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 1 | `6-dot-authentiqio.appspot.com` | api-guru | https://api.apis.guru/v2/specs/6-dot-authentiqio.appspot.com/6/openapi.json | `6` | Apache 2.0 | link-ok | Authentiq API |
@@ -213,7 +218,6 @@ re-measure with `just fixtures-gaps`.
 | 221 | `marimo-plugins` | github-raw | https://raw.githubusercontent.com/marimo-team/marimo/433386f4573e4ad77a22439db68276e6196d3307/frontend/plugins.openapi.yaml | `433386f4573e4ad77a22439db68276e6196d3307` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | marimo plugin contracts 1.0.0; the publisher's own description, declaring `anyof-array-variant-struct-item` |
 | 222 | `otoroshi` | github-raw | https://raw.githubusercontent.com/MAIF/otoroshi/e912f12c40eaf6de0cdda2e8c43db5cf226a301d/otoroshi/conf/schemas/openapi.json | `e912f12c40eaf6de0cdda2e8c43db5cf226a301d` | Apache-2.0 (the publisher repository's pinned `LICENCE`; the document's `info.license` is Apache 2.0) | link-ok | Otoroshi Admin API 16.12.0-dev as its repository pins it (a different document from row 59's APIs.guru 1.5.0-dev); declaring `ref-pointer-undeclared-component-head` |
 | 223 | `nexmo-conversation` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/conversation/2.0.1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`) | link-ok | The Vonage (Nexmo) Conversation API 2.0.1; `$ref` pointers into a component's composition members and nested properties |
-| 224 | `codat-assess` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/assess/1.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`) | withdrawn | **Withdrawn for a disputed redistribution grant** — see *Row 224 withdrawn* below. Codat Assess 1.0; `$ref` pointers into a sibling `definitions` map's composition members |
 | 225 | `googleapis-monitoring-v1` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/monitoring/v1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | Creative Commons Attribution 3.0 (the document's own `info.license`, Google's grant over its own description; the aggregating repository is CC0-1.0) | link-ok | Google Cloud Monitoring API v1 (dashboards); enum members with leading zeros |
 | 226 | `docu-goapiserver` | github-raw | https://raw.githubusercontent.com/JuaniGit/docu-goapiserver/45632ead37e9915e251896ae62e378ba738f0529/openapi.yaml | `45632ead37e9915e251896ae62e378ba738f0529` | MIT (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | link-ok | Primula Tracker API V3 (OpenAPI 3.1); an `anyOf` variant that is itself an `anyOf` |
 | 227 | `onevoice` | github-raw | https://raw.githubusercontent.com/f1xgun/onevoice/5dab014aaf878650bbf19aea528f72a0fe265e35/docs/api/spec/openapi.yaml | `5dab014aaf878650bbf19aea528f72a0fe265e35` | MIT (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | link-ok | OneVoice API 1.0.0; a `mutualTLS` security scheme beside a supported one |
@@ -1244,6 +1248,10 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
   joins them (`load_ag_rpc_…`).
 
 ### Row 224 withdrawn
+
+| # | name | method | source | pinned ref | license | decision | withdrawn because |
+|---:|---|---|---|---|---|---|---|
+| 224 | `codat-assess` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/assess/1.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`) | withdrawn | its only grant is the aggregator's, and `docs/openapi-surface/witness-search-blocked-artifacts.tsv` refuses these bytes for want of a publisher grant. Codat Assess 1.0; `$ref` pointers into a sibling `definitions` map's composition members |
 
 Row 224 registered Codat's `assess/1.0` description at `APIs-guru/openapi-directory`
 `f04b8d0b` under the aggregator's own grant, while

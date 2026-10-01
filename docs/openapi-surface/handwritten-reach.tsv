@@ -1,1 +1,2 @@
 fixture	key	site	regions_executed	regions
+composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19

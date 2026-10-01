@@ -43,7 +43,7 @@ split four ways:
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. They are not among the 465 and never count as a real-specification
-  match. 0 of the 61 unreached arms below carry an arm-level hand-written
+  match. 1 of the 62 unreached arms below carry an arm-level hand-written
   fixture, and each such arm is still counted as unreached by real
   specifications.
 - **11 remain unproven.** 11 are the `FIXTURE` `gap` rows. Each is a shape Fern
@@ -58,10 +58,11 @@ split four ways:
 
 465 + 66 + 0 + 11 = 542. `golden` is still not `golden`-exhausted.
 [Golden reach](#every-unreached-arm-and-its-search-verdict) counts 55 golden
-rows with at least one handling site no golden-only witness executes, 61 arms
-in all. The six-source searches of all 61 arms, across the 55 rows, read
-`exhausted`. One reached arm rests on a witness whose redistribution
-grant is disputed.
+rows with at least one handling site no golden-only witness executes, 62 arms
+in all. The six-source searches of all 62 arms, across the 55 rows, read
+`exhausted`. The one arm whose only witness rested on a disputed
+redistribution grant lost it when that corpus row was withdrawn, and a
+hand-written fixture covers it instead.
 
 **What the census still cannot enumerate.** The 542 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
@@ -173,7 +174,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 205 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 204 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -1349,7 +1350,8 @@ the committed Fern measurement it was settled on as a cross-reference.
 The remaining-gap searches register corpus rows 301 to 306
 (`ideaconsult-enanomapper`, `openaire-graph`, `qredence-fleet-rlm`,
 `fiware-context-generator`, `hasura-metadata` and `zoonk`), bringing the walk to
-237 sources (32 vendored plus 205 `link-ok`). Rows 301 and 302 are the first
+237 sources (32 vendored plus 205 `link-ok`); withdrawing row 224 (`codat-assess`)
+for its disputed grant leaves 236 (32 vendored plus 204 `link-ok`). Rows 301 and 302 are the first
 golden-only witnesses of `operation-external-docs` and `xml-attribute`, which
 [Golden rows with no golden-only witness](#golden-rows-with-no-golden-only-witness)
 listed until then. Rows 303 to 305 declare `schema.oneOf>schema.anyOf` and move
@@ -1698,10 +1700,10 @@ unreached by any Fern-accepted document.
 
 | rank | key | region | unreached sites | unreached regions | witnesses | disposition |
 |---:|---|---|---:|---:|---:|---|
-| 1 | `ref-pointer-composition-index` | `schemas` | **3** | **45** | **4** | owned — see the table below |
+| 1 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **3** | owned — see the table below |
 | 2 | `anyof-discriminated-union` | `schemas` | **2** | **29** | **13** | owned — see the table below |
 | 3 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **2** | **11** | **2** | owned — see the table below |
-| 4 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **5** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-properties.md) |
+| 4 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **4** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-properties.md) |
 | 5 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-items.md) |
 | 6 | `oneof-anyof-variant` | `schemas` | **1** | **69** | **3** | open — searched by `search-remaining-gaps`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-anyof-variant.md) |
 | 7 | `anyof-oneof-variant` | `schemas` | **1** | **64** | **3** | owned — see the table below |
@@ -1709,7 +1711,7 @@ unreached by any Fern-accepted document.
 | 9 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **41** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-anyof-item.md) |
 | 10 | `items-oneof-element` | `schemas` | **1** | **23** | **21** | owned — see the table below |
 | 11 | `oneof-string-const-variant` | `schemas` | **1** | **22** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md) |
-| 12 | `example` | `schemas` | **1** | **20** | **99** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/example.md) |
+| 12 | `example` | `schemas` | **1** | **20** | **98** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/example.md) |
 | 13 | `annotated-ref-shape` | `schemas` | **1** | **18** | **12** | owned — see the table below |
 | 14 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **17** | **9** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-oneof-discriminated-union.md) |
 | 15 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **16** | **1** | owned — see the table below |
@@ -1727,7 +1729,7 @@ unreached by any Fern-accepted document.
 | 27 | `anyof-array-variant-anyof-nullable-item` | `schemas` | **1** | **8** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-anyof-nullable-item.md) |
 | 28 | `anyof-array-variant-oneof-nullable-item` | `schemas` | **1** | **8** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-oneof-nullable-item.md) |
 | 29 | `inheritance-discriminated-union` | `schemas` | **1** | **8** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/inheritance-discriminated-union.md) |
-| 30 | `non-identifier-operation-id` | `document-paths` | **1** | **8** | **178** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/non-identifier-operation-id.md) |
+| 30 | `non-identifier-operation-id` | `document-paths` | **1** | **8** | **177** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/non-identifier-operation-id.md) |
 | 31 | `property-sole-anyof-closed-object-member` | `schemas` | **1** | **8** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/property-sole-anyof-closed-object-member.md) |
 | 32 | `property-sole-anyof-struct-member` | `schemas` | **1** | **8** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/property-sole-anyof-struct-member.md) |
 | 33 | `array-item-pointer-walk-properties` | `schemas` | **1** | **6** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-properties.md) |
@@ -1736,8 +1738,8 @@ unreached by any Fern-accepted document.
 | 36 | `http-negotiate` | `security` | **1** | **5** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/http-negotiate.md) |
 | 37 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-items.md) |
 | 38 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **5** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-leading-zero-member.md) |
-| 39 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **195** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/mutually-recursive-graph.md) |
-| 40 | `recursive-graph` | `schemas` | **1** | **2** | **195** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/recursive-graph.md) |
+| 39 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **194** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/mutually-recursive-graph.md) |
+| 40 | `recursive-graph` | `schemas` | **1** | **2** | **194** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/recursive-graph.md) |
 | 41 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-empty-identifier-member.md) |
 | 42 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-leading-digit-identifier.md) |
 | 43 | `format-duration` | `schemas` | **1** | **1** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/format-duration.md) |
@@ -1751,7 +1753,7 @@ unreached by any Fern-accepted document.
 | 51 | `format-regex` | `schemas` | **1** | **1** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/format-regex.md) |
 | 52 | `format-time` | `schemas` | **1** | **1** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/format-time.md) |
 | 53 | `format-uri` | `schemas` | **1** | **1** | **57** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/format-uri.md) |
-| 54 | `format-uri-reference` | `schemas` | **1** | **1** | **3** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/format-uri-reference.md) |
+| 54 | `format-uri-reference` | `schemas` | **1** | **1** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/format-uri-reference.md) |
 | 55 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — see the table below |
 
 #### The rows this measurement's first pass owned
@@ -1851,9 +1853,9 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 The golden rows split in two. **410** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **55** carry
-at least one handling site no golden-only witness executes: 61 unreached arms
+at least one handling site no golden-only witness executes: 62 unreached arms
 in all. Every one is named below with the verdict its linked arm-search record
-states under Contract B's six declared sources. All 61 read `exhausted`: each
+states under Contract B's six declared sources. All 62 read `exhausted`: each
 of those arms' six-source searches owes nothing and found no registrable
 real-world document that executes it. The remaining-gap searches ran four of
 them. Two are the `scalar_body` fallback of `format-idn-hostname` and
@@ -1880,6 +1882,7 @@ moves an arm fails the gate until the table follows.
 
 | rank | key | unreached arm | regions | search verdict | hand-written fixture |
 |---:|---|---|---:|---|---|
+| 1 | `ref-pointer-composition-index` | `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` | 19 | `exhausted` | `composition-index-pointer` |
 | 1 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | — |
 | 1 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | — |
 | 1 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | — |
@@ -1942,28 +1945,35 @@ moves an arm fails the gate until the table follows.
 | 54 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` | — |
 | 55 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` | — |
 
-**One reached arm rests on a disputed grant.** `ref-pointer-composition-index`'s
-`ref_to_class` pointer-walk site is reached only through corpus row 224,
-`codat-assess`. That row's bytes are Codat's `assess/1.0` description at
-`APIs-guru/openapi-directory` `f04b8d0b`, which
+**No arm rests on a disputed grant.** `ref-pointer-composition-index`'s
+`ref_to_class` pointer-walk site was reached only through corpus row 224,
+`codat-assess`: Codat's `assess/1.0` description at
+`APIs-guru/openapi-directory` `f04b8d0b`, registered under the aggregator's
+grant while
 [`witness-search-blocked-artifacts.tsv`](openapi-surface/witness-search-blocked-artifacts.tsv)
-lists as grant-blocked: no evidenced publisher grant, the aggregator's CC0
-admitted. Row 224 registered the same bytes under that aggregator grant, so the
-two records disagree. This arm's match is therefore recorded as resting on a
-witness whose redistribution grant is disputed, not as settled. The licensing
-decision is the user's. At the feature level nothing rests on row 224 alone.
-The 2026-09-28 walk finds every selector a region row cites that `codat-assess`
-declares declared by another golden-bearing source too, and the ledger lists
-three other witnesses for `ref-pointer-composition-index` and four for
-`ref-pointer-nested-properties`. Seven selectors are declared by
-`codat-assess` alone: `schema.definitions`, `schema.format=ISO4217` and five
-vendor extensions. No row rests on any of them. The first two back no row. The
-extension rows classify by the object an extension hangs off, and each of those
-five objects' extensions is declared by another golden-bearing source too.
+lists the same bytes as grant-blocked for want of a publisher grant. Row 224 is
+withdrawn: its golden, its test and its corpus-match line are gone, and
+`tests/fixtures/CORPUS.md` records why. [The replacement
+search](openapi-surface/withdrawn-witnesses/codat-assess.md#replacement-search)
+read Codat's own publication (no licence), every real declarer of
+`schema.$ref:composition-index` the committed arm searches name, and their six
+sources, and reads `exhausted`: no document reaches the walk and passes all three
+corpus screens. So the arm is unreached by any real specification
+([the table above](#every-unreached-arm-and-its-search-verdict) counts it), and
+the hand-written fixture `composition-index-pointer` covers it at arm level, its
+Fern tree byte-matched. That fixture is how crozier learned that Fern types a
+pointer ending on a composition member as unknown. Every other row and selector
+`codat-assess` declared keeps a golden-bearing witness: the ledger lists three for
+`ref-pointer-composition-index`, four for `ref-pointer-nested-properties` and one,
+`auto-agent-protocol`, for `ref-pointer-unnamed-segment`. The seven selectors it
+alone declared — `schema.definitions`, `schema.format=ISO4217` and five vendor
+extensions — back no row: the first two back none, and each of the five
+extensions' objects is declared by another golden-bearing source. The
+2026-09-28 evidence cells that listed it no longer do.
 
 #### Rows resting on one document
 
-**55** golden rows rest on one document: a single golden-only witness declares
+**56** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -2022,6 +2032,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `operation-external-docs` | `document-paths` | `ideaconsult-enanomapper` |
 | `property-sole-oneof-closed-object-member` | `schemas` | `mistle-control-plane` |
 | `range-3XX` | `bodies-media` | `osparc-simcore-webserver` |
+| `ref-pointer-unnamed-segment` | `schemas` | `auto-agent-protocol` |
 | `unevaluated-properties` | `schemas` | `tamoss` |
 | `xml-attribute` | `schemas` | `openaire-graph` |
 | `xml-wrapped` | `schemas` | `swagger-petstore` |
@@ -2640,7 +2651,7 @@ functions named in each verdict are counted from that union.
 | `src/` file | printed | by tier | ranked gaps pointing at it | verdict |
 |---|---:|---:|---|---|
 | `src/settings.rs` | 862 | all-e2e 433, non-e2e 429 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 433 of the 447. |
-| `src/ir.rs` | 429 | all-e2e 111, non-e2e 318 | 11 (after PayPal settled `anyof-sole-member`, `fergus` settled `anyof-anyof-variant`, corpus rows 144 to 164 settled `annotated-ref-target-composed`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`, `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`, `ref-pointer-undeclared-component-head` and `ref-pointer-unnamed-segment`, and corpus rows 167 to 179 settled ten more of this file's rows and `oauth2-password`, whose `oauth_scope_enum` fallback is here: eleven branches the instrument passes named that no golden-bearing source declares; corpus rows 303 to 305 settled `oneof-anyof-variant`, the nested-composition re-derivation's row, and row 306 `oneof-closed-empty-object-variant`, the case the repair of rows 168 and 169 added) | **Still blind, and why: three reasons, each measured.** On the 2026-09-28 run the file's union is 405 regions, led by `variant_ref` 64, `field_type_ref` 54, `hoist_union_variant` 53, `resolve_schema_pointer` 49, `ordinal_word` 23, `example_is_schema_definition` 20, `hoist_array_item_type` 15, `path_group` 15, `ref_to_class` 12, `prop_type_ref` 10, `error_class_name` 8, `nested_array_element` 7 and `pointer_has_unnamed_segment` 7. **First, the eleven ranked `FIXTURE` gaps point here.** Each names a branch of `hoist_union_variant`, `prop_type_ref`, `nested_array_element` or `resolve_schema_pointer` that no golden-bearing registered source declares, and each search reads `exhausted` or `search-incomplete` ([the escalation](#generated-shapes-with-no-registrable-witness)). A registered witness is the only thing that would reach those arms. **Second, golden rows' unreached arms sit here.** Most of [the 61 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file, including `resolve_schema_pointer`'s three composition arms, which no golden reaches since the loader copies a pointer into the component where it is used. Their six-source searches read `exhausted`. **Third, the two largest blocks are outside the case analysis.** `variant_ref` and `field_type_ref` hold 118 regions and are not among the six functions [the case table](#the-six-blind-regions-of-srcirrs-case-by-case) turns into selectors, so no row names their branches. That is the first entry of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). |
+| `src/ir.rs` | 429 | all-e2e 111, non-e2e 318 | 11 (after PayPal settled `anyof-sole-member`, `fergus` settled `anyof-anyof-variant`, corpus rows 144 to 164 settled `annotated-ref-target-composed`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`, `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`, `ref-pointer-undeclared-component-head` and `ref-pointer-unnamed-segment`, and corpus rows 167 to 179 settled ten more of this file's rows and `oauth2-password`, whose `oauth_scope_enum` fallback is here: eleven branches the instrument passes named that no golden-bearing source declares; corpus rows 303 to 305 settled `oneof-anyof-variant`, the nested-composition re-derivation's row, and row 306 `oneof-closed-empty-object-variant`, the case the repair of rows 168 and 169 added) | **Still blind, and why: three reasons, each measured.** On the 2026-09-28 run the file's union is 405 regions, led by `variant_ref` 64, `field_type_ref` 54, `hoist_union_variant` 53, `resolve_schema_pointer` 49, `ordinal_word` 23, `example_is_schema_definition` 20, `hoist_array_item_type` 15, `path_group` 15, `ref_to_class` 12, `prop_type_ref` 10, `error_class_name` 8, `nested_array_element` 7 and `pointer_has_unnamed_segment` 7. **First, the eleven ranked `FIXTURE` gaps point here.** Each names a branch of `hoist_union_variant`, `prop_type_ref`, `nested_array_element` or `resolve_schema_pointer` that no golden-bearing registered source declares, and each search reads `exhausted` or `search-incomplete` ([the escalation](#generated-shapes-with-no-registrable-witness)). A registered witness is the only thing that would reach those arms. **Second, golden rows' unreached arms sit here.** Most of [the 62 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file, including `resolve_schema_pointer`'s three composition arms, which no golden reaches since the loader copies a pointer into the component where it is used. Their six-source searches read `exhausted`. **Third, the two largest blocks are outside the case analysis.** `variant_ref` and `field_type_ref` hold 118 regions and are not among the six functions [the case table](#the-six-blind-regions-of-srcirrs-case-by-case) turns into selectors, so no row names their branches. That is the first entry of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). |
 | `src/emit.rs` | 405 | all-e2e 135, non-e2e 270 | none | **Still blind, and why: a probe-settled shape and example rendering the census cannot enumerate.** On the 2026-09-28 run the union is 286 regions. 125 of them are the object-typed path parameter block: `path_object_value` 39, `without_recording` 31, `path_object_required_fields` 26, `path_field_render` 19 and `path_object_documented` 10. They are driven by `parameter-style-simple-path-object`, a `limitations` row settled by its committed `absent-tree` proof. The final reconciliation's scan of every golden-bearing source found no `style: simple` path parameter over an object schema, so no golden can reach that code until one is registered. Most of the rest is example rendering: `build_example_inner` 19, `header_first_query_example` 16, `raw_type_str_ctx` 13, `named_value_inner` 10, `flat` 9, `url_arg` 9 and `value_from_example` 7. Its branches switch on generated types or on example content, which are entries 2 and 3 of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). The last named block is `append_request_call_args` 12. |
 | `src/cli.rs` | 290 | all-e2e 131, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
 | `src/refs.rs` | 249 | all-e2e 115, non-e2e 134 | none | **Still blind, and why: the failure paths and tree walks of cross-document resolution.** On the 2026-09-28 run the union is 150 regions: `from_reference` 34, `resolve_path_item` 22, `document` 18, `resolve_reference` 16, `resolve_parameter` 12, `resolve_schema` 11, `pointer` 9, `curl_fetch` 7, `error` 7, `import_pointer_at_path` 7, `import_remote_document` 3. The two registered pinned trees, FOLIO row 139 and Raybot row 140, reach part of each function. What stays blind is chiefly the error arms, a reference that fails to load or resolve, which a document Fern generates from does not take. The rest is reference forms no pinned tree declares. That is entry 6 of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage): shapes reached through references beyond the pinned trees are not counted, so no row names them. |
