@@ -1,0 +1,26 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "0d0d6bae5a3b54fe267c77bb36d8d21c0d21a725ea5d1783c2091164c24ea1e5"
+
+[[covers]]
+key = "annotated-ref-target-string-const"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "annotated-ref-target-anyof"
+arm = 'src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/annotated-ref-target-anyof.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "property-sole-anyof-closed-object-member"
+arm = 'src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/property-sole-anyof-closed-object-member.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "property-sole-anyof-struct-member"
+arm = 'src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/property-sole-anyof-struct-member.md#witness-search-exhaustive"
+verdict = "exhausted"

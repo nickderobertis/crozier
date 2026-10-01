@@ -10575,6 +10575,267 @@
     }
    },
    "body": {}
+  },
+  "du-nested-anyof-untyped-enum": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-oneof-variant-anyof-untyped-enum": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-anyof-untyped-enum": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-anyof-untyped-enum": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "anyOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind"
+     }
+    }
+   }
   }
  },
  "cases": [
@@ -11553,7 +11814,7 @@
    "branch": "nested_array_element case 2, discriminated_union returning Some over the anyOf head",
    "select": {
     "du-nested-anyof-inferred": {
-     "form": "the inferred spelling over $ref members, the only spelling an anyOf head reaches",
+     "form": "the inferred spelling over $ref members",
      "arms": [
       "nested_array_element:2"
      ]
@@ -11575,6 +11836,12 @@
      "arms": [
       "nested_array_element:2"
      ]
+    },
+    "du-nested-anyof-with-discriminator": {
+     "form": "a discriminator written beside the anyOf, which discriminated_union reads as though none were written, so the members' `type: string` tags discriminate it as they do without one (Fern's `Pet` in the hand-written `nested-array-discriminated-unions` fixture)",
+     "arms": [
+      "nested_array_element:2"
+     ]
     }
    },
    "near": {
@@ -11587,13 +11854,6 @@
       "none": "the union is a request-body property, so prop_type_ref takes it and nested_array_element is never entered"
      }
     },
-    "du-nested-anyof-with-discriminator": {
-     "part": "schema.anyOf:discriminated-union: a discriminator written beside an anyOf with no oneOf, which discriminated_union refuses outright",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MatrixItemItem)"
-     }
-    },
     "du-nested-anyof-untagged-member": {
      "part": "schema.anyOf:discriminated-union: one resolved member carries no discriminable value",
      "arms": [],
@@ -11603,6 +11863,13 @@
     },
     "du-nested-plain-anyof": {
      "part": "schema.anyOf:discriminated-union: an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    },
+    "du-nested-anyof-untyped-enum": {
+     "part": "schema.anyOf:discriminated-union: the same discriminator over members whose one-member `enum` tags declare no `type: string`, which Fern leaves an ordinary union (Marimo's `DetectedDataSource.hidesWhen`)",
      "arms": [],
      "entered": {
       "declaration": "Alias(MatrixItemItem)"
@@ -11783,6 +12050,12 @@
      "arms": [
       "hoist_union_variant:4"
      ]
+    },
+    "du-oneof-variant-anyof-with-discriminator": {
+     "form": "a discriminator written beside the anyOf, which discriminated_union reads as though none were written, so the members' `type: string` tags discriminate it (Fern's `Pet` in the hand-written `nested-array-discriminated-unions` fixture)",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
     }
    },
    "near": {
@@ -11800,13 +12073,6 @@
       "none": "the variant enters hoist_union_variant and its type list names string first, so it falls to the closing base_type_ref, which coins nothing at all to be a witness"
      }
     },
-    "du-oneof-variant-anyof-with-discriminator": {
-     "part": "schema.items>schema.anyOf:discriminated-union: anyof with discriminator",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
-     }
-    },
     "du-oneof-variant-anyof-untagged-member": {
      "part": "schema.items>schema.anyOf:discriminated-union: anyof untagged member",
      "arms": [],
@@ -11816,6 +12082,13 @@
     },
     "du-oneof-variant-plain-anyof": {
      "part": "schema.items>schema.anyOf:discriminated-union: plain anyof",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-oneof-variant-anyof-untyped-enum": {
+     "part": "schema.anyOf:discriminated-union: the same discriminator over members whose one-member `enum` tags declare no `type: string`, which Fern leaves an ordinary union (Marimo's `DetectedDataSource.hidesWhen`)",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestChoiceOneItem)"
@@ -11931,6 +12204,12 @@
      "arms": [
       "hoist_union_variant:4"
      ]
+    },
+    "du-anyof-variant-anyof-with-discriminator": {
+     "form": "a discriminator written beside the anyOf, which discriminated_union reads as though none were written, so the members' `type: string` tags discriminate it (Fern's `Pet` in the hand-written `nested-array-discriminated-unions` fixture)",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
     }
    },
    "near": {
@@ -11948,13 +12227,6 @@
       "none": "the variant enters hoist_union_variant and its type list names string first, so it falls to the closing base_type_ref, which coins nothing at all to be a witness"
      }
     },
-    "du-anyof-variant-anyof-with-discriminator": {
-     "part": "schema.items>schema.anyOf:discriminated-union: anyof with discriminator",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
-     }
-    },
     "du-anyof-variant-anyof-untagged-member": {
      "part": "schema.items>schema.anyOf:discriminated-union: anyof untagged member",
      "arms": [],
@@ -11964,6 +12236,13 @@
     },
     "du-anyof-variant-plain-anyof": {
      "part": "schema.items>schema.anyOf:discriminated-union: plain anyof",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-anyof-variant-anyof-untyped-enum": {
+     "part": "schema.anyOf:discriminated-union: the same discriminator over members whose one-member `enum` tags declare no `type: string`, which Fern leaves an ordinary union (Marimo's `DetectedDataSource.hidesWhen`)",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestChoiceOneItem)"
@@ -12144,6 +12423,12 @@
      "arms": [
       "prop_type_ref:13"
      ]
+    },
+    "du-prop-anyof-with-discriminator": {
+     "form": "a discriminator written beside the anyOf, which discriminated_union reads as though none were written, so the members' `type: string` tags discriminate it (Fern's `Pet` in the hand-written `nested-array-discriminated-unions` fixture)",
+     "arms": [
+      "prop_type_ref:13"
+     ]
     }
    },
    "near": {
@@ -12152,13 +12437,6 @@
      "arms": [],
      "entered": {
       "none": "the union is a named component, so add_named builds it and no property reaches prop_type_ref"
-     }
-    },
-    "du-prop-anyof-with-discriminator": {
-     "part": "schema.anyOf:discriminated-union: a discriminator written beside an anyOf with no oneOf, which discriminated_union refuses outright",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestPet)"
      }
     },
     "du-prop-anyof-untagged-member": {
@@ -12170,6 +12448,13 @@
     },
     "du-prop-plain-anyof": {
      "part": "schema.anyOf:discriminated-union: an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-anyof-untyped-enum": {
+     "part": "schema.anyOf:discriminated-union: the same discriminator over members whose one-member `enum` tags declare no `type: string`, which Fern leaves an ordinary union (Marimo's `DetectedDataSource.hidesWhen`)",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestPet)"
@@ -12289,13 +12574,6 @@
       "declaration": "Alias(MakeThingRequestPet)"
      }
     },
-    "du-prop-anyof-with-discriminator": {
-     "part": "the anyOf head with a discriminator, which the oneOf reading does not count and discriminated_union refuses",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestPet)"
-     }
-    },
     "du-prop-referenced-preserved-message-type": {
      "part": "schema.oneOf:discriminated-union: a `message_type` value `preserve_const_discriminant` keeps, which `src/ir.rs` refuses to read as a tag",
      "arms": [],
@@ -12312,6 +12590,13 @@
     },
     "du-prop-referenced-unsupported-name": {
      "part": "schema.oneOf:discriminated-union: a shared tag property naming none of the four `src/ir.rs` supports for a union that references components",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-anyof-untyped-enum": {
+     "part": "the anyOf head, which the oneOf reading does not count; its untyped `enum` tags also leave it an ordinary union",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestPet)"
@@ -12350,16 +12635,15 @@
      "arms": [
       "prop_type_ref:13"
      ]
+    },
+    "du-prop-anyof-with-discriminator": {
+     "form": "a discriminator written beside the anyOf, which discriminated_union reads as though none were written, so the members' `type: string` tags discriminate it (Fern's `Pet` in the hand-written `nested-array-discriminated-unions` fixture)",
+     "arms": [
+      "prop_type_ref:13"
+     ]
     }
    },
    "near": {
-    "du-prop-anyof-with-discriminator": {
-     "part": "a discriminator written beside the anyOf, which discriminated_union refuses outright",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestPet)"
-     }
-    },
     "du-prop-anyof-untagged-member": {
      "part": "one resolved member carries no discriminable value",
      "arms": [],
@@ -12369,6 +12653,13 @@
     },
     "du-prop-plain-anyof": {
      "part": "an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-anyof-untyped-enum": {
+     "part": "schema.anyOf:discriminated-union: the same discriminator over members whose one-member `enum` tags declare no `type: string`, which Fern leaves an ordinary union (Marimo's `DetectedDataSource.hidesWhen`)",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestPet)"

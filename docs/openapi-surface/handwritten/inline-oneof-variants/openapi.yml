@@ -1,0 +1,82 @@
+openapi: 3.1.0
+info:
+  title: inline-oneof-variants fixture
+  version: 1.0.0
+paths:
+  /variants:
+    get:
+      operationId: getVariants
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - anyOf:
+                      - type: string
+                      - type: integer
+                  - type: string
+                    const: fixed
+                  - type: array
+                    items:
+                      anyOf:
+                        - type: string
+                        - type: boolean
+                  - type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Target"
+                        - description: annotated
+                  - type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      properties:
+                        code:
+                          type: integer
+                  - type: object
+                    properties: {}
+                    additionalProperties: false
+                  - type: array
+                    items:
+                      anyOf:
+                        - type: string
+                        - type: "null"
+                  - type: array
+                    items:
+                      anyOf:
+                        - $ref: "#/components/schemas/Cat"
+                        - $ref: "#/components/schemas/Dog"
+                  - type: object
+                    example:
+                      name: sample
+components:
+  schemas:
+    Target:
+      type: object
+      properties:
+        name:
+          type: string
+    Cat:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - cat
+        lives:
+          type: integer
+      required:
+        - kind
+    Dog:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - dog
+        breed:
+          type: string
+      required:
+        - kind

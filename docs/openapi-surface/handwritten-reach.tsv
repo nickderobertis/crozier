@@ -1,18 +1,37 @@
 fixture	key	site	regions_executed	regions
-format-scalar-bodies	format-duration	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
-format-scalar-bodies	format-hostname	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
-format-scalar-bodies	format-idn-hostname	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-format-scalar-bodies	format-ipv4	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
-format-scalar-bodies	format-iri	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-format-scalar-bodies	format-json-pointer	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-format-scalar-bodies	format-password	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
-format-scalar-bodies	format-regex	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-format-scalar-bodies	format-time	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-format-scalar-bodies	format-uri	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
-format-scalar-bodies	format-uri-reference	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-format-scalar-bodies	format-uri-template	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-http-dpop-unrequired	http-dpop	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
-http-mutual-unrequired	http-mutual	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
-http-negotiate-unrequired	http-negotiate	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
-x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2
+inline-anyof-variants	anyof-allof-variant	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]	11	11
+inline-anyof-variants	anyof-array-variant-annotated-ref-item	src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]	14	15
+inline-anyof-variants	anyof-array-variant-anyof-nullable-item	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	6	8
+inline-anyof-variants	anyof-array-variant-closed-object-item	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	13	13
+inline-anyof-variants	anyof-array-variant-composed-item	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	13	13
+inline-anyof-variants	anyof-array-variant-oneof-nullable-item	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	6	8
+inline-anyof-variants	anyof-oneof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	45	64
+inline-oneof-variants	annotated-ref-shape	src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]	14	15
+inline-oneof-variants	oneof-anyof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	45	64
+inline-oneof-variants	oneof-array-variant-anyof-item	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	41	41
+inline-oneof-variants	oneof-array-variant-closed-object-item	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	13	13
+inline-oneof-variants	oneof-closed-empty-object-variant	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]	11	11
+inline-oneof-variants	oneof-string-const-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]	15	15
+inline-property-unions	annotated-ref-target-anyof	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	5	6
+inline-property-unions	property-sole-anyof-closed-object-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
+inline-property-unions	property-sole-anyof-struct-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
+nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]	9	9
+nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
+nested-array-discriminated-unions	array-item-anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
+nested-array-discriminated-unions	array-item-oneof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
+nested-array-discriminated-unions	inheritance-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
+nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
+nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
+nested-array-elements	items-oneof-element	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]	21	21
+ref-pointer-ignored-head	ref-pointer-undeclared-component-head	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	1	1
+ref-pointer-walk	array-item-pointer-walk-allof	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	7	11
+ref-pointer-walk	array-item-pointer-walk-anyof	src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	7	11
+ref-pointer-walk	array-item-pointer-walk-items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	2	3
+ref-pointer-walk	array-item-pointer-walk-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6
+ref-pointer-walk	ref-pointer-composition-index	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	7	11
+ref-pointer-walk	ref-pointer-composition-index	src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	7	11
+ref-pointer-walk	ref-pointer-composition-index	src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]	7	11
+ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::ref_to_class["items" => \{]	3	3
+ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	2	3
+ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::ref_to_class["properties" if index]	4	4
+ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6

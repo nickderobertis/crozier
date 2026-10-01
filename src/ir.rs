@@ -5492,6 +5492,32 @@ impl InlineHoister<'_> {
         Some(TypeRef::Named(name.to_string()))
     }
 
+    /// [`Self::hoist_named_copy`] of an annotated `$ref`'s target, made the way
+    /// the component builder makes its use-site copy, so the annotation documents
+    /// the copy: the hand-written `inline-oneof-variants` fixture's array member
+    /// annotates `Target` with a description, and Fern's `…ThreeItem` carries it.
+    fn hoist_annotated_copy(
+        &mut self,
+        name: &str,
+        target: &Schema,
+        description: Option<&str>,
+    ) -> Option<TypeRef> {
+        let schemas = self.schemas?;
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
+        };
+        let element = builder.use_site_copy(name, target, description);
+        if builder.types.is_empty() {
+            return None;
+        }
+        self.out.extend(builder.types);
+        Some(element)
+    }
+
     /// Hoist an inline union used as a top-level response array item. Fern coins
     /// `{Operation}ResponseItem` and exposes the response as a list of that alias.
     fn hoist_response_array_item_union(
@@ -5812,18 +5838,20 @@ impl InlineHoister<'_> {
                 // `anyOf: [$ref ProjectScoreType, {items: allOf[$ref
                 // ProjectScoreType, {title}]}]` and Fern's list element is a
                 // `GetProjectScoreRequestScoreTypeOneItem` of its own.
-                if let Some(target) = self
+                if let Some((target, description)) = self
                     .schemas
                     .zip(described_all_of_ref(item))
-                    .and_then(|(schemas, (reference, _))| {
-                        resolve_ref_from_schemas(schemas, reference)
+                    .and_then(|(schemas, (reference, description))| {
+                        Some((resolve_ref_from_schemas(schemas, reference)?, description))
                     })
-                    .cloned()
+                    .map(|(target, description)| (target.clone(), description))
                 {
                     observed_arm!("hoist_union_variant:6");
                     let variant_name = variant_class_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
-                    if let Some(element) = self.hoist_named_copy(&item_name, &target) {
+                    if let Some(element) =
+                        self.hoist_annotated_copy(&item_name, &target, description)
+                    {
                         return TypeRef::List(Box::new(element));
                     }
                 }
@@ -5880,11 +5908,10 @@ impl InlineHoister<'_> {
             }
         }
         if is_inline_object(variant)
+            // A bare `type: object` member is a map to Fern whatever example it
+            // carries (the hand-written `inline-oneof-variants` fixture), so only
+            // a member declaring structure is hoisted.
             || is_declared_empty_object(variant)
-            || is_bare_object(variant)
-                && schema_example(variant).is_some_and(|example| {
-                    example.is_object() && !example_is_schema_definition(example)
-                })
         {
             let name = variant_class_name(parent, index, variant, siblings);
             self.hoist_object(&name, variant);
@@ -7929,8 +7956,13 @@ fn inferred_discriminant_property_with(
             .iter()
             .map(|variant| {
                 let field = variant.properties.get(property)?;
-                let singleton_enum =
-                    string_enum_values(field).is_some_and(|values| values.len() == 1);
+                // An `anyOf` member's one-member `enum` tags it only when the tag
+                // declares `type: string`: Fern discriminates the hand-written
+                // `nested-array-discriminated-unions` fixture's `Pet` over typed
+                // `kind` tags, and leaves Marimo's `DetectedDataSource.hidesWhen`,
+                // whose members write a bare `enum: [dialect]`, an ordinary union.
+                let singleton_enum = !untyped_any_of_enum_tag(schema, field)
+                    && string_enum_values(field).is_some_and(|values| values.len() == 1);
                 // A member that spells its tag as a required one-member `enum`
                 // discriminates whether or not the union also references
                 // components: braintrust's `CreateProjectAutomation.config` mixes
@@ -7987,6 +8019,18 @@ fn inferred_discriminant_property_with(
     })
 }
 
+/// A one-member `enum` tag on an `anyOf` member that declares no `type: string`,
+/// which Fern does not discriminate on: Marimo's FastAPI-emitted `enum:
+/// [dialect]` tags leave its unions ordinary, where the hand-written
+/// `nested-array-discriminated-unions` fixture's typed `kind` tags do not. A
+/// `const` tag is another spelling and is not read by this.
+fn untyped_any_of_enum_tag(union: &Schema, tag: &Schema) -> bool {
+    union.one_of.is_none()
+        && union.any_of.is_some()
+        && tag.enum_values.is_some()
+        && !is_string_type(tag)
+}
+
 fn inferred_union_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
@@ -8007,6 +8051,9 @@ fn inferred_union_discriminant_property(
                     .any(|required| required == "type")
                     .then(|| variant.properties.get("type"))
                     .flatten()
+                    // The `anyOf` rule of `inferred_discriminant_property_with`:
+                    // Marimo's `changes` items tag an `anyOf` with a bare `enum`.
+                    .filter(|tag| !untyped_any_of_enum_tag(schema, tag))
                     .and_then(discriminant_value)
             })
             .collect();
@@ -9594,11 +9641,18 @@ impl Builder<'_> {
         if schema.one_of.is_none() && schema.any_of.is_none() {
             return self.inheritance_discriminated_union(name, module, schema, docstring);
         }
-        // Fern applies an explicit OpenAPI discriminator to `oneOf`, but treats
-        // `anyOf` as an ordinary union even when generators such as FastAPI emit
-        // a sibling discriminator block (Marimo's `KnownUnions` properties).
+        // Fern applies an explicit OpenAPI discriminator to `oneOf` alone. An
+        // `anyOf` beside one is discriminated exactly as it would be without it,
+        // by the tags its members declare: Marimo's `KnownUnions` properties,
+        // whose FastAPI-emitted discriminator sits over untyped `enum` tags, stay
+        // ordinary unions, and the hand-written `nested-array-discriminated-unions`
+        // fixture's `Pet`, over `type: string` tags, is `Pet_Cat` | `Pet_Dog`.
         if schema.discriminator.is_some() && schema.one_of.is_none() {
-            return None;
+            let undiscriminated = Schema {
+                discriminator: None,
+                ..schema.clone()
+            };
+            return self.discriminated_union(name, module, &undiscriminated, docstring);
         }
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
         // A lone inline member is the schema's own shape, not a union to infer a
@@ -10280,9 +10334,24 @@ impl Builder<'_> {
                             .then(|| resolve_schema_pointer(self.schemas, reference))
                             .flatten()
                     });
-                    if items.reference.as_deref().is_some_and(|reference| {
-                        reference.contains("/oneOf/") || reference.contains("/anyOf/")
-                    }) {
+                    // A pointer left standing by `openapi::normalize_schema_pointer_refs`
+                    // ends on a composition member or names nothing, and either is an
+                    // unknown element to Fern: the `array-item-pointer-walk-*` probes
+                    // for `oneOf` and `anyOf`, and the hand-written `ref-pointer-walk`
+                    // fixture for an `allOf` member and a property its target lacks.
+                    let unresolved_pointer = resolved_items.is_none()
+                        && items.reference.as_deref().is_some_and(|reference| {
+                            reference
+                                .strip_prefix("#/components/schemas/")
+                                .is_some_and(|pointer| pointer.contains('/'))
+                        });
+                    if unresolved_pointer
+                        || items.reference.as_deref().is_some_and(|reference| {
+                            reference.contains("/oneOf/")
+                                || reference.contains("/anyOf/")
+                                || reference.contains("/allOf/")
+                        })
+                    {
                         return sequence_of(prop_schema, TypeRef::Primitive(Prim::Any));
                     }
                     // A nullable component used as an array item remains nullable in
@@ -11542,24 +11611,6 @@ fn is_bare_object(schema: &Schema) -> bool {
         && schema.all_of.is_none()
         && schema.additional_properties.is_none()
         && is_object_type(schema)
-}
-
-/// Whether an object example describes the shape of arbitrary values rather than
-/// providing a concrete object instance. OpenAPI documents sometimes use
-/// `{ "field": { "type": ... } }` as an example for a free-form schema; Fern
-/// keeps those declarations as map aliases instead of coining empty models.
-fn example_is_schema_definition(example: &serde_json::Value) -> bool {
-    let Some(values) = example.as_object() else {
-        return false;
-    };
-    !values.is_empty()
-        && values.values().all(|value| {
-            value.as_object().is_some_and(|definition| {
-                ["type", "$ref", "properties", "allOf", "oneOf", "anyOf"]
-                    .iter()
-                    .any(|key| definition.contains_key(*key))
-            })
-        })
 }
 
 /// An inline (not `$ref`) object with *declared structure* — properties (including
@@ -14488,25 +14539,6 @@ mod tests {
     }
 
     #[test]
-    fn schema_definition_examples_require_nonempty_schema_shaped_objects() {
-        for value in [
-            serde_json::json!(null),
-            serde_json::json!([]),
-            serde_json::json!({}),
-            serde_json::json!({ "field": "value" }),
-            serde_json::json!({ "field": {} }),
-            serde_json::json!({ "field": { "description": "only metadata" } }),
-            serde_json::json!({ "good": { "type": "string" }, "bad": {} }),
-        ] {
-            assert!(!super::example_is_schema_definition(&value), "{value}");
-        }
-        for keyword in ["type", "$ref", "properties", "allOf", "oneOf", "anyOf"] {
-            let value = serde_json::json!({ "field": { keyword: {} } });
-            assert!(super::example_is_schema_definition(&value), "{keyword}");
-        }
-    }
-
-    #[test]
     fn variant_names_follow_ferns_unique_subtype_names() {
         // A one-member union takes its discriminant value.
         let enum_variant = schema(serde_json::json!({
@@ -16133,6 +16165,8 @@ mod tests {
             hoister.hoist_union_variant("Choice", 0, &referenced, &[]),
             TypeRef::Named("Base".to_string())
         );
+        // A bare object member is a map whatever example it carries, as Fern
+        // types it in the hand-written `inline-oneof-variants` fixture.
         let bare_with_instance = schema(serde_json::json!({
             "type": "object",
             "example": { "value": "sample" }
@@ -16144,7 +16178,10 @@ mod tests {
                 &bare_with_instance,
                 std::slice::from_ref(&bare_with_instance),
             ),
-            TypeRef::Named("ChoiceOne".to_string())
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any))
+            )
         );
         assert_eq!(
             hoister.hoist_union_variant(
@@ -18397,7 +18434,7 @@ mod tests {
              case names one the file does not write"
         );
         assert_eq!(
-            312, drives,
+            317, drives,
             "the number of drives the twenty-nine cases make"
         );
     }
