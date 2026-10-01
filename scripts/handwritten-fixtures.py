@@ -44,11 +44,21 @@ REGIONS = Path("docs") / "openapi-surface"
 HANDWRITTEN = REGIONS / "handwritten"
 REACH_LEDGER = REGIONS / "handwritten-reach.tsv"
 REACH_HEADER = ("fixture", "key", "site", "regions_executed", "regions")
+# The measured configuration gate: for each arm-level cover of a fixture that
+# declares a generation setting, the arm's reach with that setting and without it.
+GATE_LEDGER = REGIONS / "handwritten-config-gates.tsv"
+GATE_HEADER = ("fixture", "key", "site", "setting", "regions_executed", "regions")
+UNSET = "-"
 CATEGORIES = ("golden", "limitations", "handwritten", "gap")
 LAYOUT = ("evidence.toml", "fern-expected", "openapi.yml")
 TOP_LEVEL = ("covers", "digest", "fern_cli_version", "fern_python_sdk_version")
+# Optional generation settings: absent, crozier and Fern generate the whole API.
+OPTIONAL_TOP_LEVEL = ("audiences",)
 COVER_FIELDS = ("arm", "key", "renewed", "search", "verdict")
-VERDICTS = ("exhausted", "search-incomplete")
+VERDICTS = ("exhausted", "search-incomplete", "config-gated")
+# A verdict only an arm-search record states, beside the settlement rule's
+# outcomes: the arm runs only under a generation setting no search probe sets.
+ARM_VERDICTS = ("config-gated",)
 # Every word a search record states as an outcome, so a key row stating a
 # different one than the cover cites is read as a disagreement, and the
 # non-generation verdicts that make a row `limitations`. RankedBacklogTests holds
@@ -99,6 +109,7 @@ class Fixture(NamedTuple):
     fern_python_sdk_version: str
     digest: str
     covers: tuple[Cover, ...]
+    audiences: tuple[str, ...]
 
 
 def table_cells(line: str) -> list[str]:
@@ -133,14 +144,26 @@ def read_evidence(directory: Path) -> tuple[Fixture | None, list[str]]:
     except tomllib.TOMLDecodeError as error:
         return None, [f"{name}: evidence.toml is not TOML ({error}); repair its syntax"]
     failures = []
-    if sorted(data) != sorted(TOP_LEVEL):
+    if not set(TOP_LEVEL) <= set(data) <= set(TOP_LEVEL) | set(OPTIONAL_TOP_LEVEL):
         failures.append(
             f"{name}: evidence.toml carries keys {sorted(data)}; the contract admits exactly "
-            f"{sorted(TOP_LEVEL)} — remove or add keys until they match"
+            f"{sorted(TOP_LEVEL)}, and optionally {sorted(OPTIONAL_TOP_LEVEL)} — remove or add keys "
+            "until they match"
         )
     for field in ("fern_cli_version", "fern_python_sdk_version", "digest"):
         if field in data and not isinstance(data[field], str):
             failures.append(f"{name}: evidence.toml `{field}` is not a string")
+    audiences = data.get("audiences", [])
+    if "audiences" in data and (
+        not isinstance(audiences, list)
+        or not audiences
+        or not all(isinstance(audience, str) and audience.strip() == audience and audience for audience in audiences)
+    ):
+        failures.append(
+            f"{name}: evidence.toml `audiences` is {audiences!r}; it is a non-empty list of audience "
+            "names, the same list Fern's generator group was given — or remove it to generate the whole API"
+        )
+        audiences = []
     covers: list[Cover] = []
     raw = data.get("covers", [])
     if not isinstance(raw, list) or not raw:
@@ -168,8 +191,9 @@ def read_evidence(directory: Path) -> tuple[Fixture | None, list[str]]:
         verdict = table["verdict"]
         if verdict not in VERDICTS:
             failures.append(
-                f"{where} (`{table['key']}`): verdict `{verdict}` is not `exhausted` or "
-                "`search-incomplete`; only a failed search admits a hand-written fixture"
+                f"{where} (`{table['key']}`): verdict `{verdict}` is not `exhausted`, "
+                "`search-incomplete` or `config-gated`; only a failed search, or an arm no search "
+                "can reach, admits a hand-written fixture"
             )
         if verdict == "search-incomplete" and "renewed" not in table:
             failures.append(
@@ -190,6 +214,7 @@ def read_evidence(directory: Path) -> tuple[Fixture | None, list[str]]:
         str(data.get("fern_python_sdk_version", "")),
         str(data.get("digest", "")),
         tuple(covers),
+        tuple(audiences),
     )
     return fixture, failures
 
@@ -248,7 +273,7 @@ def verdict_failures(base: Path, reference: str, key: str, verdict: str) -> list
     if section is None:
         return [f"its search anchor does not resolve: {error}"]
     rows = key_rows(section, key)
-    stated = {cell.strip("`") for cells in rows for cell in cells if cell.strip("`") in OUTCOMES}
+    stated = {cell.strip("`") for cells in rows for cell in cells if cell.strip("`") in (*OUTCOMES, *ARM_VERDICTS)}
     if not rows or stated != {verdict}:
         return [
             f"the record `{reference}` states {sorted(stated) or 'no verdict'} for `{key}`, "
@@ -320,6 +345,66 @@ def read_reach_ledger(path: Path) -> tuple[list[tuple[str, str, str, int, int]],
     return rows, failures
 
 
+def setting_of(fixture: Fixture) -> str:
+    """The generation setting a fixture declares, as the gate ledger spells it."""
+    return f"audiences={','.join(fixture.audiences)}" if fixture.audiences else UNSET
+
+
+def read_gate_ledger(path: Path) -> tuple[list[tuple[str, str, str, str, int, int]], list[str]]:
+    """`handwritten-config-gates.tsv`: its header, its rows and their order."""
+    name = path.name
+    if not path.is_file():
+        return [], [f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just handwritten-reach`"]
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or tuple(lines[0].split("\t")) != GATE_HEADER:
+        return [], [f"{name}: the header line must be exactly {'<TAB>'.join(GATE_HEADER)}; run `just handwritten-reach`"]
+    rows, failures = [], []
+    for number, line in enumerate(lines[1:], start=2):
+        fields = line.split("\t")
+        if len(fields) != len(GATE_HEADER) or not fields[4].isdigit() or not fields[5].isdigit():
+            failures.append(f"{name} line {number}: not six tab-separated fields ending in two counts; run `just handwritten-reach`")
+            continue
+        rows.append((fields[0], fields[1], fields[2], fields[3], int(fields[4]), int(fields[5])))
+    keys = [row[:4] for row in rows]
+    if keys != sorted(keys) or len(keys) != len(set(keys)):
+        failures.append(f"{name}: rows are not sorted by fixture, key, site and setting with none twice; run `just handwritten-reach`")
+    return rows, failures
+
+
+def gate_ledger_failures(
+    fixtures: dict[str, Fixture], rows: list[tuple[str, str, str, str, int, int]]
+) -> list[str]:
+    """Each arm-level cover of a fixture declaring a setting is measured with and without it.
+
+    A `config-gated` cover's fixture must declare the setting its record says
+    gates the arm, so the pair shows the arm run with it and not without it.
+    """
+    failures = []
+    expected = set()
+    for name, fixture in sorted(fixtures.items()):
+        for cover in fixture.covers:
+            where = f"{name}: cover `{cover.key}`" + (f" arm `{cover.arm}`" if cover.arm else "")
+            if cover.verdict == "config-gated" and (cover.arm is None or not fixture.audiences):
+                failures.append(
+                    f"{where}: a `config-gated` cover is arm-level and its fixture declares the setting "
+                    "that gates the arm — add `arm` and the setting, or cite a search verdict"
+                )
+            if cover.arm is not None and fixture.audiences:
+                expected |= {(name, cover.key, cover.arm, setting_of(fixture)), (name, cover.key, cover.arm, UNSET)}
+    measured = {row[:4] for row in rows}
+    for missing in sorted(expected - measured):
+        failures.append(
+            f"handwritten-config-gates.tsv: no row for `{missing[0]}` `{missing[1]}` `{missing[2]}` with setting "
+            f"`{missing[3]}` — run `just handwritten-reach`"
+        )
+    for extra in sorted(measured - expected):
+        failures.append(
+            f"handwritten-config-gates.tsv: the row `{extra[0]}` `{extra[1]}` `{extra[2]}` `{extra[3]}` names no "
+            "live arm-level cover of a fixture declaring that setting — run `just handwritten-reach`"
+        )
+    return failures
+
+
 def corpus_rows(root: Path) -> set[str]:
     """Every numbered `CORPUS.md` row's name, whatever its decision."""
     manifest = root / "tests" / "fixtures" / "CORPUS.md"
@@ -389,6 +474,8 @@ def gate(root: Path) -> dict[str, Any]:
     reach_rows, found = read_reach_ledger(root / REACH_LEDGER)
     failures += found
     measured = {(f, k, s): (executed, total) for f, k, s, executed, total in reach_rows}
+    gate_rows, found = read_gate_ledger(root / GATE_LEDGER)
+    failures += found + gate_ledger_failures(fixtures, gate_rows)
     engine = census()
 
     feature_covers: dict[str, list[tuple[str, Cover]]] = {}
@@ -494,6 +581,7 @@ def gate(root: Path) -> dict[str, Any]:
                 "fern_cli_version": fixture.fern_cli_version,
                 "fern_python_sdk_version": fixture.fern_python_sdk_version,
                 "digest": fixture.digest,
+                "audiences": list(fixture.audiences),
             }
             for name, fixture in fixtures.items()
         },
@@ -568,15 +656,18 @@ def measure(args: argparse.Namespace) -> int:
     repo_root: Path = args.repo_root
     base: Path = args.handwritten_dir or repo_root / HANDWRITTEN
     ledger: Path = args.ledger or repo_root / REACH_LEDGER
+    gates: Path = args.gates or repo_root / GATE_LEDGER
     if not base.is_dir():
         raise SystemExit(f"handwritten-reach: {base} is not a directory; pass --handwritten-dir or restore it")
     reach = golden_reach()
     sites = reach.read_sites_table(repo_root / REGIONS / "golden-reach-sites.tsv")
     planned: list[tuple[str, Cover]] = []
+    declared: dict[str, Fixture] = {}
     for entry in sorted(p for p in base.iterdir() if p.is_dir()):
         fixture, failures = read_evidence(entry)
         if failures or fixture is None:
             raise SystemExit("handwritten-reach: " + "; ".join(failures))
+        declared[entry.name] = fixture
         for cover in fixture.covers:
             if cover.arm is None:
                 continue
@@ -588,24 +679,42 @@ def measure(args: argparse.Namespace) -> int:
             reach.resolve_site(cover.arm, repo_root)
             planned.append((entry.name, cover))
     rows: list[tuple[str, str, str, int, int]] = []
+    gate_rows: list[tuple[str, str, str, str, int, int]] = []
     if planned:
         crozier = instrumented_crozier(repo_root, reach)
         profdata, llvm_cov = reach._llvm_tool("llvm-profdata"), reach._llvm_tool("llvm-cov")
         runs: dict[str, tuple[dict, dict]] = {}
         for name in sorted({name for name, _cover in planned}):
-            runs[name] = scoped_run(base / name / "openapi.yml", crozier, profdata, llvm_cov, repo_root, reach)
-        for name, cover in planned:
-            universe, hit = runs[name]
-            site = reach.resolve_site(cover.arm, repo_root)
+            runs[name] = scoped_run(
+                base / name / "openapi.yml", declared[name].audiences, crozier, profdata, llvm_cov, repo_root, reach
+            )
+        # A fixture declaring a setting is measured without it too: the control
+        # half of the configuration gate its covers' records rest on.
+        controls = {
+            name: scoped_run(base / name / "openapi.yml", (), crozier, profdata, llvm_cov, repo_root, reach)
+            for name in sorted({name for name, _cover in planned if declared[name].audiences})
+        }
+
+        def reached(run: tuple[dict, dict], arm: str) -> tuple[int, int]:
+            universe, hit = run
+            site = reach.resolve_site(arm, repo_root)
             regions = {tuple(r) for r in universe.get(site.file, []) if site.holds(r)}
-            executed = regions & {tuple(r) for r in hit.get(site.file, [])}
-            rows.append((name, cover.key, cover.arm, len(executed), len(regions)))
+            return len(regions & {tuple(r) for r in hit.get(site.file, [])}), len(regions)
+
+        for name, cover in planned:
+            rows.append((name, cover.key, cover.arm, *reached(runs[name], cover.arm)))
+            if name in controls:
+                gate_rows.append((name, cover.key, cover.arm, setting_of(declared[name]), *reached(runs[name], cover.arm)))
+                gate_rows.append((name, cover.key, cover.arm, UNSET, *reached(controls[name], cover.arm)))
     rows.sort(key=lambda row: row[:3])
-    ledger.write_text(
-        "\n".join(["\t".join(REACH_HEADER)] + ["\t".join(map(str, row)) for row in rows]) + "\n",
-        encoding="utf-8",
-    )
-    print(f"handwritten-reach: measured {len(rows)} arm-level cover(s) into {ledger}")
+    gate_rows.sort(key=lambda row: row[:4])
+    for path, header, lines in ((ledger, REACH_HEADER, rows), (gates, GATE_HEADER, gate_rows)):
+        path.write_text(
+            "\n".join(["\t".join(header)] + ["\t".join(map(str, row)) for row in lines]) + "\n",
+            encoding="utf-8",
+        )
+    print(f"handwritten-reach: measured {len(rows)} arm-level cover(s) into {ledger}, "
+          f"{len(gate_rows) // 2} configuration gate(s) into {gates}")
     return 0
 
 
@@ -623,13 +732,17 @@ def instrumented_crozier(repo_root: Path, reach: Any) -> Path:
     return crozier
 
 
-def scoped_run(spec: Path, crozier: Path, profdata: str, llvm_cov: str, repo_root: Path, reach: Any) -> tuple[dict, dict]:
-    """(every production region, the executed ones) of one crozier run over `spec` alone."""
+def scoped_run(
+    spec: Path, audiences: tuple[str, ...], crozier: Path, profdata: str, llvm_cov: str, repo_root: Path, reach: Any
+) -> tuple[dict, dict]:
+    """(every production region, the executed ones) of one crozier run over `spec` alone,
+    filtered to the fixture's `audiences` as the gate generates it."""
     with tempfile.TemporaryDirectory(prefix="handwritten-reach-") as scratch:
         raw = Path(scratch)
         run = subprocess.run(
             [str(crozier), "generate", "python", "--spec", str(spec), "--output", str(raw / "sdk"),
-             "--package-name", "fern", "--project-name", "default_package_name"],
+             "--package-name", "fern", "--project-name", "default_package_name",
+             *(argument for audience in audiences for argument in ("--audience", audience))],
             cwd=repo_root, capture_output=True, text=True,
             env=dict(os.environ, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
         )
@@ -654,6 +767,7 @@ def main(argv: list[str] | None = None) -> int:
     m = sub.add_parser("measure", help="instrumented crozier per fixture; write handwritten-reach.tsv")
     m.add_argument("--handwritten-dir", type=Path, help="fixture directory (default: the committed one)")
     m.add_argument("--ledger", type=Path, help="ledger to write (default: the committed one)")
+    m.add_argument("--gates", type=Path, help="configuration-gate ledger to write (default: the committed one)")
     args = parser.parse_args(argv)
     if args.command == "gate":
         json.dump(gate(args.repo_root), sys.stdout, indent=1)

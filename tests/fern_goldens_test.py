@@ -12,6 +12,7 @@ import tarfile
 import tempfile
 import textwrap
 import unittest
+import unittest.mock
 from pathlib import Path
 
 
@@ -33,6 +34,19 @@ KNOWN_FAILURE = (
 class FernGoldensBoundaryTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
+        # Newer git detaches the auto-maintenance that `commit` and `fetch` start
+        # (`maintenance.auto`) and the auto-gc a bare remote's `receive-pack`
+        # starts (`receive.autoGc`), so either can still be writing under a temp
+        # repo's `.git/` while `tearDown` removes it ("Directory not empty"). A
+        # global config file, unlike `GIT_CONFIG_COUNT`, also reaches the
+        # `receive-pack` a local push spawns. Every git these tests run inherits it.
+        git_config = Path(self.temporary.name) / "gitconfig"
+        git_config.write_text(
+            "[maintenance]\n\tauto = false\n[receive]\n\tautoGc = false\n", encoding="utf-8"
+        )
+        environment = unittest.mock.patch.dict(os.environ, {"GIT_CONFIG_GLOBAL": str(git_config)})
+        environment.start()
+        self.addCleanup(environment.stop)
         self.root = Path(self.temporary.name) / "repo"
         (self.root / "scripts").mkdir(parents=True)
         (self.root / "tests" / "fixtures").mkdir(parents=True)

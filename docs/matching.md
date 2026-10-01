@@ -1246,7 +1246,11 @@ byte-match target like the rest of the corpus.
   crozier's own `x-crozier-audiences` extension marks for that audience — plus
   operations with *no* audience label, which survive any filter — and emits only the
   **transitive `$ref` closure** of the surviving operations'
-  parameter/request/response schemas ([`openapi::filter_by_audience`]). Every other
+  parameter/request/response schemas ([`openapi::filter_by_audience`]). The closure
+  follows a `discriminator`'s `mapping` too. Fern keeps a subtype that only the
+  mapping names, as the hand-written fixture
+  [`discriminator-mapping-audience`](openapi-surface/handwritten/discriminator-mapping-audience/)
+  shows. Every other
   `components.schemas` entry, even an unlabelled one no surviving operation reaches,
   is dropped, so each audience SDK is self-contained. Per the [dual-header
   extension policy](#fern-compatible-extension-policy) crozier reads **both**

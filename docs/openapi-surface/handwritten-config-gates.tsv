@@ -1,0 +1,3 @@
+fixture	key	site	setting	regions_executed	regions
+discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	-	0	9
+discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	audiences=public	9	9

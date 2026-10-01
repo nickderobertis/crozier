@@ -439,6 +439,13 @@ components:
             "oneof-array-variant-anyof-discriminated-union-item": "inline-oneof-variants",
             "oneof-array-variant-anyof-nullable-item": "inline-oneof-variants",
             "oneof-bare-object-example-variant": "inline-oneof-variants",
+            # Search-incomplete keys the renewed search found `none-registrable`.
+            "array-item-inheritance-union": "array-item-inheritance-union",
+            "array-item-pointer-walk-oneof": "array-item-pointer-walk-oneof",
+            "property-sole-anyof-composed-member": "property-sole-anyof-composed-member",
+            "property-sole-anyof-empty-object-member": "property-sole-anyof-empty-object-member",
+            "property-sole-oneof-composed-member": "property-sole-oneof-composed-member",
+            "property-sole-oneof-empty-object-member": "property-sole-oneof-empty-object-member",
         }
         self.assertLessEqual(set(settled) | set(handwritten), owned)
         self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])
