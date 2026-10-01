@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Ledger API
+  version: 1.0.0
+  description: >-
+    Hand-written for crozier's hand-written fixture category. Its `$ref`
+    pointers pass through a composition index: one names an `allOf` member of a
+    schema kept in a component's `definitions` map, one names a `oneOf` member
+    of a component directly.
+paths:
+  /companies/{companyId}/accounts/{accountId}:
+    parameters:
+      - $ref: '#/components/parameters/companyId'
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Accounts]
+      operationId: get-account
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+  /companies/{companyId}/categorised-accounts:
+    parameters:
+      - $ref: '#/components/parameters/companyId'
+    get:
+      tags: [Accounts]
+      operationId: list-categorised-accounts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategorisedAccount'
+  /companies/{companyId}/drawings:
+    parameters:
+      - $ref: '#/components/parameters/companyId'
+    get:
+      tags: [Drawings]
+      operationId: get-drawing
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drawing'
+  /companies/{companyId}/reports/download:
+    parameters:
+      - $ref: '#/components/parameters/companyId'
+    get:
+      tags: [Reports]
+      operationId: get-report
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+    post:
+      tags: [Reports]
+      operationId: download-report
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+        '404':
+          description: Not found
+  /webhooks/accounts:
+    get:
+      tags: [Webhooks]
+      operationId: accounts-updated
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsWebhook'
+components:
+  parameters:
+    companyId:
+      name: companyId
+      in: path
+      required: true
+      schema:
+        description: Unique identifier for a company.
+        format: uuid
+        type: string
+  schemas:
+    AccountCategory:
+      type: object
+      properties:
+        levels:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+    Account:
+      title: Account
+      type: object
+      definitions:
+        category:
+          title: Account category
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AccountCategory'
+            - title: Modified date
+              type: object
+              properties:
+                modifiedDate:
+                  type: string
+                  format: date-time
+                  description: When the category was last modified.
+      properties:
+        id:
+          type: string
+        category:
+          $ref: '#/components/schemas/Account/definitions/category'
+    CategorisedAccount:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Account/definitions/category/allOf/1'
+        - title: Source modified date
+          type: object
+          properties:
+            sourceModifiedDate:
+              type: string
+              format: date-time
+    Shape:
+      oneOf:
+        - title: Circle
+          type: object
+          properties:
+            radius:
+              type: number
+        - title: Square
+          type: object
+          properties:
+            side:
+              type: number
+    Drawing:
+      type: object
+      properties:
+        name:
+          type: string
+        firstShape:
+          $ref: '#/components/schemas/Shape/oneOf/0'
+    AccountsWebhook:
+      type: object
+      properties:
+        companyId:
+          $ref: '#/components/parameters/companyId/schema'

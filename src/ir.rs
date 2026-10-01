@@ -12534,9 +12534,14 @@ fn union_variants(schema: &Schema) -> Option<(Vec<TypeRef>, bool)> {
 
 /// Whether a component pointer walks through a segment no generated type is
 /// named by — the residual arm of [`ref_to_class`]'s walk, such as a `$defs`
-/// member. Fern types such a pointer as unknown: the Auto Agent Protocol points
-/// at `#/components/schemas/DealerInformation/$defs/rooftop`, and its golden's
-/// `rooftops` is `List[Any]`.
+/// member — or ends on one, as a pointer ending on a composition member's
+/// index does, which that walk gives no name. Fern types such a pointer as
+/// unknown: the Auto Agent Protocol points at
+/// `#/components/schemas/DealerInformation/$defs/rooftop`, and its golden's
+/// `rooftops` is `List[Any]`; the hand-written
+/// `composition-index-pointer` fixture's `Drawing.firstShape` points at
+/// `#/components/schemas/Shape/oneOf/0`, and its Fern tree's field is
+/// `Optional[Any]`, not `Shape`.
 fn pointer_has_unnamed_segment(reference: &str) -> bool {
     let Some(pointer) = reference.strip_prefix("#/components/schemas/") else {
         return false;
@@ -12547,6 +12552,7 @@ fn pointer_has_unnamed_segment(reference: &str) -> bool {
         match parts[index] {
             "properties" if index + 1 < parts.len() => index += 2,
             "items" => index += 1,
+            "allOf" | "oneOf" | "anyOf" if index + 2 >= parts.len() => return true,
             "allOf" | "oneOf" | "anyOf" => index += 2,
             _ => return true,
         }
