@@ -57,6 +57,34 @@ files:
     - "docs/openapi-surface/golden-reach-witnesses/**/*.tsv"
     - "docs/openapi-surface/golden-reach-witnesses/**/*.jsonl"
     - "docs/openapi-surface/golden-reach-witnesses/**/*.gz"
+    # Vendored Fern runtime — Fern 5.20.0's own SDK support code, emitted verbatim
+    # into every generated SDK (assets/README.md says which files and how they
+    # were changed), not crozier's own code, so it is never LLM-judged; the
+    # byte-match and the zero-error mypy test gate it. Its `# type: ignore`
+    # pragmas are Fern's, kept at the lines Fern carries them, and a reason or a
+    # directive beside each would ship in every SDK. The crozier-assembled
+    # `client_wrapper.py` and every other asset stay linted.
+    - "assets/core/__init__.py"
+    - "assets/core/api_error.py"
+    - "assets/core/datetime_utils.py"
+    - "assets/core/enum.py"
+    - "assets/core/file.py"
+    - "assets/core/force_multipart.py"
+    - "assets/core/http_client.py"
+    - "assets/core/http_response.py"
+    - "assets/core/jsonable_encoder.py"
+    - "assets/core/logging.py"
+    - "assets/core/pagination.py"
+    - "assets/core/parse_error.py"
+    - "assets/core/pydantic_utilities.py"
+    - "assets/core/query_encoder.py"
+    - "assets/core/remove_none_from_dict.py"
+    - "assets/core/request_options.py"
+    - "assets/core/serialization.py"
+    - "assets/core/http_sse/**"
+    - "assets/scaffolding/conftest.py"
+    - "assets/scaffolding/default_clients.py.tmpl"
+    - "assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
     # The Fern refusal population's evidence, written by scripts/fern-refusals.py
     # `measure`/`probe`/`build`: Fern's own logs, the per-document measurements,
     # and the three machine-written tables. None is authored source and the logs

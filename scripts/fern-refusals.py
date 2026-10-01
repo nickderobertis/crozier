@@ -763,7 +763,9 @@ def check(_args: argparse.Namespace) -> int:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
     problems = cross_reference_problems()
     if problems:
-        fail("\n  ".join(["the registry's tables disagree with each other:", *problems]))
+        fail("\n  ".join(["the registry's tables disagree with each other "
+                          "(run `scripts/fern-refusals.py build`, or restore the hand-edited one from git):",
+                          *problems]))
     written, problems = tables()
     for name, text in written.items():
         if (REGISTRY / name).read_text(encoding="utf-8") != text:

@@ -17,8 +17,15 @@ version.
 - **Source:** produced by `fernapi/fern-python-sdk:5.20.0` over the managed Corpus
   fixtures via `scripts/generate-fern-fixture.sh`.
 - **Change made (Apache-2.0 §4(c)):** Python comments are stripped with the same
-  string-safe normalizer used for fixtures. The auth-shaped `client_wrapper.py`
-  is assembled by Crozier and is not one of the verbatim runtime assets.
+  string-safe normalizer used for fixtures, except Fern's `# type: ignore`
+  pragmas, which stay at the lines Fern's own output carries them so a generated
+  SDK type-checks clean under its pinned `mypy`. The auth-shaped
+  `client_wrapper.py` is assembled by Crozier and is not one of the verbatim
+  runtime assets.
+- **Judged lint:** the verbatim runtime files here, and the three Python
+  scaffolding copies below, are excluded from `llmlint` in `llmlint.yml` as
+  vendored Fern output, as `tests/fixtures/**` is; the byte-match and the
+  generated-SDK `mypy` test gate them instead.
 
 ## `scaffolding/` — Fern's project-root files (Apache-2.0)
 
@@ -34,7 +41,9 @@ generated tests. Like `core/`, these are emitted into every generated SDK.
   package name, and version are replaced with the `@@CROZIER_SDK_NAME@@`,
   `@@CROZIER_PACKAGE@@`, and `@@CROZIER_SDK_VERSION@@` placeholders. The default
   client and generated test templates use the name placeholders for valid custom
-  package imports. Non-Python files are not comment-stripped.
+  package imports; `conftest.py`, `default_clients.py.tmpl` and
+  `test_aiohttp_autodetect.py.tmpl` are otherwise Fern's verbatim, `# type:
+  ignore` pragmas included. Non-Python files are not comment-stripped.
 
 ### `scaffolding/README.md.tmpl` — Fern's generated README (Apache-2.0)
 

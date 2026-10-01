@@ -271,7 +271,7 @@ test-corpus-match:
 # setting travels by `CROZIER_FERN_STRICT`, which every corpus run reads because
 # none passes `--no-config`; the first line proves crozier sees it from here.
 test-corpus-match-strict:
-    CROZIER_FERN_STRICT=true cargo run --locked --quiet -- config python | grep -Eq '^  fern-strict +true +\(env\)$'
+    CROZIER_FERN_STRICT=true cargo run --locked --quiet -- config python | grep -Eq '^  fern-strict +true +\(env\)$' || { echo "test-corpus-match-strict: crozier config did not report fern-strict true from CROZIER_FERN_STRICT; check that no crozier.yml or CROZIER_CONFIG overrides it here" >&2; exit 1; }
     CROZIER_FERN_STRICT=true just test-corpus-match
 
 # Format the codebase in place.
