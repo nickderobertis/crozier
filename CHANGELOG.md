@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.90](https://github.com/nickderobertis/crozier/compare/v0.0.89...v0.0.90) - 2026-10-01
+
+### Other
+
+- *(readme)* add a verified Migrating from Fern guide ([#336](https://github.com/nickderobertis/crozier/pull/336))
+
 ## [0.0.89](https://github.com/nickderobertis/crozier/compare/v0.0.88...v0.0.89) - 2026-10-01
 
 ### Added
