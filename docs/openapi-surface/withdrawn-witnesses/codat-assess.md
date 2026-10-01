@@ -7,9 +7,8 @@ lists the same bytes as grant-blocked: no evidenced publisher redistribution
 grant, and the aggregator's grant alone does not suffice. It was the only witness
 reaching `ref-pointer-composition-index`'s `ref_to_class` pointer-walk site,
 `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` — case 4 of the
-`ref_to_class` case table in
-[`../../openapi-surface-coverage.md`](../../openapi-surface-coverage.md): a `$ref`
-whose pointer passes through an `allOf`, `oneOf` or `anyOf` index. The row is
+coverage report's `ref_to_class` case table: a `$ref` whose pointer passes
+through an `allOf`, `oneOf` or `anyOf` index. The row is
 withdrawn (`tests/fixtures/CORPUS.md`, *Row 224 withdrawn*), and this record is the
 search for a real specification to take its place.
 
