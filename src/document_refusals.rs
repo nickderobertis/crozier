@@ -954,7 +954,9 @@ fn check_schema_resolution(
     }
     for key in ["allOf", "oneOf", "anyOf"] {
         if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
-            for (index, child) in children.iter().enumerate() {
+            // Fern resolves only a union's first member's required fields.
+            let members = if key == "allOf" { children.len() } else { 1 };
+            for (index, child) in children.iter().enumerate().take(members) {
                 check_schema_resolution(
                     child,
                     context,

@@ -62,3 +62,18 @@ class. The measurement uses a preserved build of the finished detector.
 The [CLI assertion fails with only the required-field resolution predicate disabled](evaluation-logs/refusal-e2e-induced-red.log),
 writing 36 files for the probe instead of refusing. This deliberately records
 an induced earlier state; the finished source restores the predicate.
+
+The corpus byte-match exposed an overbroad union walk on Tally, whose required
+`payload` names an absent schema inside `MultipleChoiceBlock`, the 23rd member
+of its `Block` union. Pinned Fern resolves only a union's first member there:
+an unresolved required field in the [first `oneOf` member](evaluation-logs/fern-union-first-member.log)
+or [first `anyOf` member](evaluation-logs/fern-anyof-first-member.log) still
+fails, while one in a [later `oneOf` member](evaluation-logs/fern-union-second-member.log),
+[a later inline member](evaluation-logs/fern-union-inline-second-member.log) or
+[a later `anyOf` member](evaluation-logs/fern-anyof-second-member.log) checks
+and generates cleanly. The detector now follows only the first `oneOf` or
+`anyOf` member, and every `allOf` member. The [CLI assertion fails with only
+that rule removed](evaluation-logs/union-member-e2e-induced-red.log), refusing
+the later-member control. Remeasured with the corrected detector, all 49
+population documents still refuse in both modes; one is now first diagnosed
+as `heap-exhausted` rather than by the narrowed inline-header check.

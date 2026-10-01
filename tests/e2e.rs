@@ -16432,6 +16432,8 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
         "nullable-required-field-control.yml",
         "nullable-root-control.yml",
         "optional-known-child-control.yml",
+        "union-first-member-control.yml",
+        "anyof-first-member-control.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -16487,6 +16489,9 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
             "required-array-control.yml",
             "optional-deep-field-control.yml",
             "definitions-property-name-control.yml",
+            "union-second-member-control.yml",
+            "union-inline-second-member-control.yml",
+            "anyof-second-member-control.yml",
         ]
         .map(|case| class.join(case)),
     );
