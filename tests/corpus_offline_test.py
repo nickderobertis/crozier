@@ -57,7 +57,8 @@ class OfflineCorpusRecipes(unittest.TestCase):
                 )
                 self.assertNotEqual(0, probe.returncode)
                 self.assertIn("Operation not permitted", probe.stderr)
-                for recipe in ("test-corpus-match", "surface-census"):
+                for recipe in ("test-corpus-match", "test-corpus-match-strict", "surface-census",
+                               "test-fern-refusals"):
                     with self.subTest(recipe=recipe):
                         result = subprocess.run(
                             [sys.executable, str(Path(__file__).resolve()), "--deny-network",

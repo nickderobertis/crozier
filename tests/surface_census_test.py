@@ -2380,18 +2380,18 @@ class GrammarContractTests(unittest.TestCase):
                 )
 
     def test_the_stated_corpus_sizes_are_the_measured_ones(self) -> None:
-        """31 vendored / 93 link-ok / 124 registered is restated in prose; measure it."""
-        vendored = census.registered_sources(FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", True)
+        """The original-fixture / corpus-sources split is restated in prose; measure it."""
+        original = census.registered_sources(FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", True)
         registered = census.registered_sources(FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", False)
-        counts = (len(vendored), len(registered) - len(vendored), len(registered))
+        counts = (len(original), len(registered) - len(original), len(registered))
         doc = self.DOC.read_text(encoding="utf-8")
-        stated = re.search(
-            r"the (\d+) vendored\n`tests/fixtures/<name>/openapi\.\*` documents, and the (\d+) `link-ok`", doc
-        )
+        stated = re.search(r"the (\d+) original\n`tests/fixtures/<name>/openapi\.\*` documents", doc)
         self.assertIsNotNone(stated, "the instrument section no longer states the corpus split")
-        self.assertEqual(counts[:2], (int(stated.group(1)), int(stated.group(2))))
+        self.assertEqual(counts[0], int(stated.group(1)))
         script = SCRIPT.read_text(encoding="utf-8")
-        in_script = re.search(r"and (\d+) of the (\d+) registered sources are `link-ok`", script)
+        in_script = re.search(
+            r"and (\d+) of the (\d+) registered sources live in `corpus-sources/`", script
+        )
         self.assertIsNotNone(in_script, "the script's docstring no longer states the corpus split")
         self.assertEqual(
             (counts[1], counts[2]), (int(in_script.group(1)), int(in_script.group(2)))
@@ -2549,7 +2549,7 @@ class CensusReportTests(unittest.TestCase):
         completed = run("--vendored-only", "--selector", "operation.callbacks")
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
-        self.assertIn("32 vendored", completed.stderr)
+        self.assertIn("32 original fixtures", completed.stderr)
 
     def test_a_valued_selector_reports_one_member_of_a_closed_set(self) -> None:
         completed = run("--vendored-only", "--selector", "parameter.in=cookie")
@@ -6560,7 +6560,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         """The unscoped vendored run — the exact invocation that never returned."""
         completed = run("--vendored-only")
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertIn("32 vendored", completed.stderr)
+        self.assertIn("32 original fixtures", completed.stderr)
         self.assertGreater(len(rows(completed)), 100)
 
     def test_a_flow_mapping_parses_to_its_entries_not_a_list_of_its_keys(self) -> None:
