@@ -376,6 +376,48 @@ fn every_generator_matching_passes_the_action() {
     assert_eq!(run.final_status, 0);
 }
 
+/// `paths` written the usual YAML way for a list — a block scalar, one path per
+/// line, as a workflow's `with:` hands it over — names every path it lists, not
+/// only the first: three configs listed, three generators checked, and the
+/// unlisted fourth never is.
+#[test]
+fn a_paths_block_scalar_checks_every_listed_path() {
+    let with: serde_yaml_ng::Value =
+        serde_yaml_ng::from_str("paths: |\n  first\n  second/crozier.yml\n  third\n").unwrap();
+    let paths = with["paths"].as_str().unwrap();
+    assert_eq!(paths, "first\nsecond/crozier.yml\nthird\n");
+
+    let reference = format!(
+        "#!/bin/sh\nset -eu\ncp -R '{}/.' \"$CROZIER_REFERENCE_OUTPUT\"\n",
+        golden("expected").display(),
+    );
+    let config = format!("spec: ../openapi.yml\n{NAMING}reference:\n  command: ../reference.sh\n");
+    let repo = layout(&[
+        ("reference.sh", &reference),
+        ("first/crozier.yml", &config),
+        ("second/crozier.yml", &config),
+        ("third/crozier.yml", &config),
+        // Not listed, so never checked: it would fail if it were.
+        ("other/crozier.yml", "spec: ./missing.yml\n"),
+    ]);
+    let run = run_action(repo.path(), &[("COMPARE_PATHS", paths)]);
+
+    assert_eq!(run.output("matched"), "3", "{}", run.summary);
+    assert_eq!(run.output("mismatched"), "0");
+    assert_eq!(run.output("could-not-check"), "0");
+    assert_eq!(run.output("exit-code"), "0");
+    for config in ["first", "second", "third"] {
+        assert!(
+            run.summary
+                .contains(&format!("| ✅ matched | <code>{config}/crozier.yml</code> |")),
+            "{config} was not checked:\n{}",
+            run.summary
+        );
+    }
+    assert!(!run.summary.contains("other/crozier.yml"), "{}", run.summary);
+    assert_eq!(run.final_status, 0);
+}
+
 /// Only could-not-check: a refusing reference command and a generator with no
 /// command at all. Nothing mismatched, so no diff is uploaded, and the action
 /// fails with 4.

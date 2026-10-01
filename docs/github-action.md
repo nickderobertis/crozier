@@ -24,7 +24,7 @@ produces the reference. For a team moving from Fern, the
 
 | Input | Default | Meaning |
 | --- | --- | --- |
-| `paths` | empty: the whole repository | Whitespace-separated crozier config files, or directories to search for them, as `crozier compare [PATHS...]` takes. |
+| `paths` | empty: the whole repository | crozier config files, or directories to search for them, as `crozier compare [PATHS...]` takes: separated by spaces, or one per line in a `paths: \|` block. |
 | `reference-command` | empty: each config's `reference.command` | The command that writes each generator's reference SDK, used for every generator found (`--reference-command`). It runs under `sh -c` from each config file's directory, with the `CROZIER_REFERENCE_*` environment `crozier compare` gives every reference command. |
 | `diff-artifact-name` | `crozier-compare-diffs` | Name of the artifact the per-generator diffs are uploaded as when anything mismatched. |
 | `version` | empty: the release the action's own ref names | Empty installs `v<version>` for the `[package] version` in the action's own `Cargo.toml` — at `@vX.Y.Z` that is `vX.Y.Z`, at `@v0` the release `v0` points at — and fails, naming this input, when that file cannot be read; it never falls back to the latest release. Otherwise a release tag such as `v0.1.0`, `latest` for the newest release, or `local` to build the action's own source with `cargo`. |
