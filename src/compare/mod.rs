@@ -202,8 +202,7 @@ impl Checker<'_> {
     /// Check every generator `config` declares, appending one result each (or one
     /// for the config when it cannot be read).
     fn check_config(&mut self, config: &FoundConfig, stderr: &mut dyn Write) -> Result<(), String> {
-        let config_path =
-            std::fs::canonicalize(&config.path).unwrap_or_else(|_| config.path.clone());
+        let config_path = canonicalize(&config.path).unwrap_or_else(|_| config.path.clone());
         let config_dir = config_path
             .parent()
             .map_or_else(|| PathBuf::from("."), Path::to_path_buf);
@@ -519,6 +518,43 @@ fn resolve(
     })
 }
 
+/// `std::fs::canonicalize`, as a path a user reads: on Windows, without the
+/// `\\?\` verbatim prefix it puts on a drive path, which the report and the
+/// reference command's environment would otherwise carry.
+fn canonicalize(path: &Path) -> std::io::Result<PathBuf> {
+    std::fs::canonicalize(path).map(without_verbatim_prefix)
+}
+
+/// `path` with a verbatim drive prefix (`\\?\C:\…`) rewritten to the plain
+/// drive form (`C:\…`) when the plain form names the same file: short enough
+/// for the classic path limit. Any other path, and every path off Windows, is
+/// returned as it is.
+#[cfg(windows)]
+fn without_verbatim_prefix(path: PathBuf) -> PathBuf {
+    use std::path::Prefix;
+    let mut components = path.components();
+    let Some(Component::Prefix(prefix)) = components.next() else {
+        return path;
+    };
+    let Prefix::VerbatimDisk(disk) = prefix.kind() else {
+        return path;
+    };
+    if components.next() != Some(Component::RootDir) {
+        return path;
+    }
+    let plain = PathBuf::from(format!("{}:\\", char::from(disk))).join(components.as_path());
+    if plain.as_os_str().len() < 260 {
+        plain
+    } else {
+        path
+    }
+}
+
+#[cfg(not(windows))]
+fn without_verbatim_prefix(path: PathBuf) -> PathBuf {
+    path
+}
+
 /// `base.join(path)` as an absolute path that reads cleanly for a reference
 /// command: its directory resolved (so `..` and `.` are gone), its file name kept
 /// as written. Falls back to dropping `.` components when the directory does not
@@ -526,7 +562,7 @@ fn resolve(
 fn clean_join(base: &Path, path: &Path) -> PathBuf {
     let joined = base.join(path);
     if let (Some(parent), Some(name)) = (joined.parent(), joined.file_name()) {
-        if let Ok(parent) = std::fs::canonicalize(parent) {
+        if let Ok(parent) = canonicalize(parent) {
             return parent.join(name);
         }
     }
@@ -775,10 +811,14 @@ mod tests {
             (timing.saved_seconds.unwrap() - (r - c)).abs() < 1e-9,
             "{timing:?}"
         );
+        // The spec is reported as the code resolves it: its directory
+        // canonicalized, with no Windows verbatim prefix.
+        let spec_dir = canonicalize(&fixture("")).unwrap();
         assert_eq!(
             packaged.spec,
-            Some(fixture("openapi.yml").display().to_string())
+            Some(spec_dir.join("openapi.yml").display().to_string())
         );
+        assert!(!packaged.spec.as_deref().unwrap().starts_with(r"\\?\"));
 
         let flat = result_for(&report, "crozier.yml", Some("flat"));
         assert_eq!(flat.status, Status::Matched);
@@ -794,7 +834,13 @@ mod tests {
         assert_eq!(comparison.only_in_reference, ["extra.txt"]);
         assert_eq!(comparison.only_in_crozier, ["reference.md"]);
         let diff_file = comparison.diff_file.as_ref().unwrap();
-        assert_eq!(diff_file, "diffs/003-crozier.yml-edited.diff");
+        assert_eq!(
+            diff_file,
+            &Path::new("diffs")
+                .join("003-crozier.yml-edited.diff")
+                .display()
+                .to_string()
+        );
         let diff = std::fs::read_to_string(root.join(diff_file)).unwrap();
         assert!(
             diff.contains("--- reference/README.md\n+++ crozier/README.md\n"),
@@ -867,6 +913,11 @@ mod tests {
         assert!(!run.stderr.contains('\u{1b}'));
     }
 
+    // Unix only: the `sh` contract this pins (`pwd`, the exported variables) is
+    // one crozier offers only on Linux and macOS; on Windows every generator is
+    // could-not-check (`NO_SHELL`), and an MSYS `sh` there prints `pwd` in its own
+    // `/d/...` form.
+    #[cfg(unix)]
     #[test]
     fn the_reference_command_receives_resolved_settings_with_defaults() {
         let repo = tempfile::tempdir().unwrap();
@@ -1027,6 +1078,20 @@ mod tests {
         assert_eq!(documented_values, values, "enum values");
     }
 
+    /// A generator whose reference holds a symbolic link, which the byte-match
+    /// walk refuses. Unix only: creating a link on Windows needs a privilege CI
+    /// runners lack, and an MSYS `ln -s` there copies instead of linking.
+    fn linked_generator() -> String {
+        if cfg!(unix) {
+            format!(
+                "  linked:\n{}    reference:\n      command: ln -s /etc/hostname \"$CROZIER_REFERENCE_OUTPUT/link\"\n",
+                golden_settings("packaged")
+            )
+        } else {
+            String::new()
+        }
+    }
+
     #[test]
     fn a_refused_spec_a_bad_reference_tree_and_no_shell_are_could_not_check() {
         let repo = tempfile::tempdir().unwrap();
@@ -1037,9 +1102,9 @@ mod tests {
         root,
         "crozier.yml",
         &format!(
-            "generators:\n  refused:\n    spec: {}\n    reference:\n      command: touch \"$CROZIER_REFERENCE_OUTPUT/x\"\n  linked:\n{}    reference:\n      command: ln -s /etc/hostname \"$CROZIER_REFERENCE_OUTPUT/link\"\n  badtitle:\n    spec: {}\n    package-name: ../escape\n",
+            "generators:\n  refused:\n    spec: {}\n    reference:\n      command: touch \"$CROZIER_REFERENCE_OUTPUT/x\"\n{}  badtitle:\n    spec: {}\n    package-name: ../escape\n",
             refused.display(),
-            golden_settings("packaged"),
+            linked_generator(),
             fixture("openapi.yml").display(),
         ),
     );
@@ -1059,6 +1124,7 @@ mod tests {
         };
         // A document crozier refuses is reported with crozier's own diagnostic.
         assert!(reason_of("refused").contains("unsupported array schema"));
+        #[cfg(unix)]
         assert!(reason_of("linked").contains("the trees could not be compared"));
         assert!(reason_of("badtitle").contains("could not read the generator's settings"));
 
@@ -1307,6 +1373,35 @@ mod tests {
         assert!(body.contains("Binary files differ: bin (reference 1 bytes, crozier 2 bytes)"));
         assert!(body.contains("Could not compare x: boom"));
         assert!(body.contains("--- reference/t\n+++ crozier/t\n"));
+    }
+
+    #[test]
+    fn canonicalize_resolves_without_a_verbatim_prefix() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir(dir.path().join("sub")).unwrap();
+        let resolved = canonicalize(&dir.path().join("sub/../sub")).unwrap();
+        assert!(!resolved.display().to_string().starts_with(r"\\?\"));
+        assert_eq!(
+            std::fs::canonicalize(&resolved).unwrap(),
+            std::fs::canonicalize(dir.path().join("sub")).unwrap()
+        );
+        assert!(canonicalize(&dir.path().join("absent")).is_err());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_verbatim_drive_path_reads_as_a_plain_one() {
+        assert_eq!(
+            without_verbatim_prefix(PathBuf::from(r"\\?\D:\a\crozier\openapi.yml")),
+            PathBuf::from(r"D:\a\crozier\openapi.yml")
+        );
+        // A share, or a plain form past the classic length limit, stays verbatim.
+        let share = PathBuf::from(r"\\?\UNC\server\share\api.yml");
+        assert_eq!(without_verbatim_prefix(share.clone()), share);
+        let long = PathBuf::from(format!(r"\\?\C:\{}", "a".repeat(300)));
+        assert_eq!(without_verbatim_prefix(long.clone()), long);
+        let plain = PathBuf::from(r"C:\already\plain");
+        assert_eq!(without_verbatim_prefix(plain.clone()), plain);
     }
 
     #[test]

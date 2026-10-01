@@ -153,6 +153,9 @@ fn result<'a>(
         .unwrap_or_else(|| panic!("no result for {config} {generator}: {report:#}"))
 }
 
+// Unix only: crozier runs reference commands under `sh` on Linux and macOS;
+// on Windows it runs none (`compare_on_windows_runs_no_reference_command`).
+#[cfg(unix)]
 #[test]
 fn compare_checks_every_generator_and_reports_each_status() {
     let repo = migration_repo();
@@ -310,6 +313,9 @@ fn compare_checks_every_generator_and_reports_each_status() {
     );
 }
 
+// Unix only: crozier runs reference commands under `sh` on Linux and macOS;
+// on Windows it runs none (`compare_on_windows_runs_no_reference_command`).
+#[cfg(unix)]
 #[test]
 fn compare_narrows_to_a_directory_or_a_file() {
     let repo = migration_repo();
@@ -363,6 +369,39 @@ fn compare_narrows_to_a_directory_or_a_file() {
     assert_eq!(report["results"].as_array().unwrap().len(), 1);
 }
 
+/// On Windows crozier runs no reference command: every generator is
+/// could-not-check, naming why, the run exits 4, and the tree is unchanged.
+#[cfg(windows)]
+#[test]
+fn compare_on_windows_runs_no_reference_command() {
+    let repo = migration_repo();
+    let root = repo.path();
+    let before = snapshot(root);
+    let out = compare_cmd(root).args(["--json", "-"]).output().unwrap();
+    let stderr = String::from_utf8(out.stderr).unwrap();
+    assert_eq!(out.status.code(), Some(4), "{stderr}");
+    assert_eq!(snapshot(root), before);
+    let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    validate_against_committed_schema(&report);
+    assert_eq!(
+        report["counts"],
+        serde_json::json!({"matched": 0, "mismatched": 0, "could_not_check": 7})
+    );
+    let packaged = result(&report, "crozier.yml", "packaged");
+    assert_eq!(
+        packaged["reference"]["command"],
+        "./scripts/reference.sh expected"
+    );
+    let reason = packaged["reason"].as_str().unwrap();
+    assert!(reason.contains("does not support on Windows"), "{reason}");
+    let unconfigured = result(&report, "services/billing/.crozier.yml", "unconfigured");
+    assert!(unconfigured["reason"]
+        .as_str()
+        .unwrap()
+        .contains("`reference.command`"));
+    assert!(!stderr.contains("reference command starting"), "{stderr}");
+}
+
 #[test]
 fn compare_with_nothing_found_or_a_missing_path() {
     let empty = tempfile::tempdir().unwrap();
@@ -398,7 +437,8 @@ fn compare_with_nothing_found_or_a_missing_path() {
 /// The reference command receives exactly the generator's resolved settings
 /// from its config file, defaults included — and `CROZIER_*` generation
 /// variables in the caller's environment change neither what crozier generates
-/// nor what the command receives.
+/// nor what the command receives. Unix only, as above.
+#[cfg(unix)]
 #[test]
 fn compare_hands_the_config_files_settings_to_the_reference_command() {
     let repo = tempfile::tempdir().unwrap();
@@ -529,6 +569,9 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
     assert!(!output_dir.starts_with(&root.display().to_string()));
 }
 
+// Unix only: crozier runs reference commands under `sh` on Linux and macOS;
+// on Windows it runs none (`compare_on_windows_runs_no_reference_command`).
+#[cfg(unix)]
 #[test]
 fn compare_colours_statuses_only_when_the_rule_says_so() {
     let repo = migration_repo();
