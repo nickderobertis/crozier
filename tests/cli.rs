@@ -542,3 +542,35 @@ fn write_failure_surfaces_error() {
     .unwrap_err();
     assert!(err.contains("could not write"), "{err}");
 }
+
+#[test]
+fn compare_dispatches_with_its_own_exit_statuses() {
+    // Nothing to check under an empty directory: exit 0.
+    let empty = tempfile::tempdir().unwrap();
+    run_from(["crozier", "compare", empty.path().to_str().unwrap()]).expect("nothing to check");
+
+    // A generator with no reference command is could-not-check: exit 4, which
+    // `run` reports as an error carrying the status.
+    let repo = tempfile::tempdir().unwrap();
+    std::fs::write(repo.path().join("api.yml"), SPEC).unwrap();
+    std::fs::write(repo.path().join("crozier.yml"), "spec: ./api.yml\n").unwrap();
+    let err = run_from(["crozier", "compare", repo.path().to_str().unwrap()]).unwrap_err();
+    assert_eq!(err, "exited with status 4");
+
+    // A missing path is the command itself failing.
+    let missing = repo.path().join("absent");
+    let err = run_from(["crozier", "compare", missing.to_str().unwrap()]).unwrap_err();
+    assert!(err.starts_with("path not found: "), "{err}");
+
+    // `compare` finds configs from its paths, not from --config/--no-config.
+    for flag in [
+        ["--config", "crozier.yml"].as_slice(),
+        ["--no-config"].as_slice(),
+    ] {
+        let mut args = vec!["crozier"];
+        args.extend_from_slice(flag);
+        args.push("compare");
+        let err = run_from(args).unwrap_err();
+        assert!(err.contains("pass a config file as a PATH"), "{err}");
+    }
+}
