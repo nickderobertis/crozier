@@ -99,7 +99,8 @@ immutable commit holds is pinned by its recorded digest (`revision` is
 by a rule rather than a list, so the population carries the revision
 `dropped-sources.tsv` names for it. Fourteen `DROPPED` rows name a document
 without ever recording the ref that was screened; they are in
-`unretrievable.tsv` with what later searches did record.
+`unretrievable.tsv` with what later searches did record, and the ref the
+`letta` row names answers 404.
 
 A document is **refused** when its `fern generate` exits non-zero, writes
 nothing, or reports a refusal class over a document it did not parse (a false
@@ -156,6 +157,15 @@ refuses. Both keep Fern's logs under
   never parsed. With the referenced document placed beside the probe,
   `fern check` resolves it and passes, so the class is a reference Fern cannot
   follow, not the scheme.
+- **The generator's own crashes** are classes too, measured in `fern generate`
+  after a clean check: `generator-lint-failure` (the generated package fails
+  `ruff check`, e.g. two union variants or a method and a sub-client given one
+  Python name), `generator-missing-type` (a `KeyError` over a type Fern named
+  but never emitted, e.g. an inline enum header), and
+  `generated-file-name-too-long`. The `Failed to format …` lines printed before
+  a lint failure only say which snippet did not parse; they were never seen
+  without the failure they precede. `heap-exhausted` is Fern's check running
+  out of a 16 GB heap on a document a few hundred kilobytes long.
 - **Contract A's refusal rows** (`header-array`, `header-object`,
   `nonascii-operationId`, `ref-pointer-unnamed-segment` in
   [`../openapi-surface/probe-expected/MANIFEST.tsv`](../openapi-surface/probe-expected/MANIFEST.tsv))

@@ -528,12 +528,15 @@ def diagnostics(log: str) -> list[str]:
     a generation prints it after `[error]`; a document Fern never parsed is an
     `[api]:` line naming what it could not resolve or the exception it hit; and
     a generator container that exits non-zero prints, under `Container execution
-    failed`, the Python exception or the formatting or lint command it died in.
-    The bare `Failed to parse openapi document <title>` that heads such a failure
+    failed`, the Python exception or the lint command it died in — the
+    `Failed to format …`/`ParseError` lines before a lint failure only say which
+    snippet did not parse, and count only when nothing fatal follows them. The
+    bare `Failed to parse openapi document <title>` that heads such a failure
     counts only when nothing more specific follows it, and a schema Fern merely
     coerces to `unknown` is a warning, not a refusal.
     """
     found: list[str] = []
+    formatting: list[str] = []
     lines = log.splitlines()
     in_container = False
     for line in lines:
@@ -541,7 +544,10 @@ def diagnostics(log: str) -> list[str]:
         message = ""
         if text.startswith("[api]:"):
             in_container = "Container execution failed" in text
-        elif in_container and re.match(r"(\w+(Error|Exception): |Failed to format |Failed to run command: )", text):
+        elif in_container and re.match(r"(Failed to format |ParseError: )", text):
+            if text not in formatting:
+                formatting.append(text)
+        elif in_container and re.match(r"(\w+(Error|Exception): |Failed to run command: )", text):
             message = text
         if text.startswith("issue: "):
             message = text[len("issue: "):]
@@ -557,7 +563,7 @@ def diagnostics(log: str) -> list[str]:
         if message.strip() and message not in found:
             found.append(message)
     specific = [message for message in found if not message.startswith("Failed to parse openapi document")]
-    return specific or found
+    return specific or found or formatting
 
 
 # Every class's and finding's template by name, for `most_specific`.

@@ -70,14 +70,19 @@ class CommittedTables(unittest.TestCase):
         selected = [line.split("\t") for line in result.stdout.splitlines()[1:]]
         keys = [row[0] for row in selected]
         self.assertEqual(len(keys), len(set(keys)))
-        documents = {row[0] for row in rows(REGISTRY / "documents.tsv")[1:]}
-        generated = {row[4] for row in rows(REGISTRY / "generated.tsv")[1:]}
+        refused = rows(REGISTRY / "documents.tsv")[1:]
+        documents = {row[0] for row in refused} | {row[2] for row in refused}
+        generated = {row[4] for row in rows(REGISTRY / "generated.tsv")[1:]} | \
+            {row[1] for row in rows(REGISTRY / "generated.tsv")[1:]}
         unretrievable = rows(REGISTRY / "unretrievable.tsv")[1:]
         listed = {row[1] for row in unretrievable}
-        self.assertFalse(documents & generated, "a document is both refused and generated")
+        self.assertFalse({row[0] for row in refused} & generated, "a document is both refused and generated")
         for key, _source, locator, *_ in selected:
             with self.subTest(key=key):
-                self.assertTrue(key in documents or key in generated or locator in listed or key in listed,
+                # A document is named by its digest, or by its locator where no
+                # record gave a digest; one no record located is named by its key.
+                self.assertTrue(key in documents | generated or locator in documents | generated | listed
+                                or key in listed,
                                 f"{key} is in none of documents.tsv, generated.tsv and unretrievable.tsv")
 
 
@@ -136,7 +141,7 @@ class Drift(unittest.TestCase):
         row = max(table[1:], key=lambda row: int(row[5]))
         row[4] = "A phrase Fern never prints about <…>"
         write_rows(self.registry / "classes.tsv", table)
-        self.assert_check_fails_naming("no single class matches")
+        self.assert_check_fails_naming("no single class or finding matches")
 
 
 if __name__ == "__main__":
