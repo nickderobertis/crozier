@@ -1,0 +1,5 @@
+Baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b. Generated public client over HTTPX transport.
+declared array tags default: string all
+missing tags response: {}
+explicit list response: {'tags': ['first', 'second']}
+requests: [{"method": "GET", "url": "https://example.test/probe"}, {"method": "GET", "url": "https://example.test/probe"}]

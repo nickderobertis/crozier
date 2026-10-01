@@ -1,0 +1,7 @@
+Baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; population 1c1156cfd31816c502a507ef632e8f1f0c5254707c5bc7386f31942c1d4898e9
+declared array segments malformed default; parsed empty trigger: {}
+omitted segments response: None
+requests: [{"method": "PUT", "url": "https://example.test/workflows/1/messages/2", "body": {"trigger": {}}}]
+explicit list response: None
+requests: [{"method": "PUT", "url": "https://example.test/workflows/1/messages/2", "body": {"trigger": {}}}, {"method": "PUT", "url": "https://example.test/workflows/1/messages/2", "body": {"trigger": {"segments": [{"id": 3}]}}}]
+declared list parses: {'segments': [{'id': 4}]}

@@ -20,6 +20,7 @@ enum Class {
     PathParameterUnreferenced,
     UndefinedComponentReference,
     DefaultNotValidForType,
+    ListDefaultNotArray,
 }
 
 impl Class {
@@ -33,6 +34,7 @@ impl Class {
             Self::PathParameterUnreferenced => "path-parameter-unreferenced",
             Self::UndefinedComponentReference => "undefined-component-reference",
             Self::DefaultNotValidForType => "default-not-valid-for-type",
+            Self::ListDefaultNotArray => "list-default-not-array",
         }
     }
 }
@@ -202,6 +204,7 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
 enum SchemaLocation {
     Type,
     Field,
+    Parameter,
     Query,
 }
 
@@ -304,7 +307,7 @@ fn check_bound_schema_defaults(
                 if key == "schema" {
                     let location = match node.get("in").and_then(serde_yaml_ng::Value::as_str) {
                         Some("query") => SchemaLocation::Query,
-                        Some(_) => SchemaLocation::Field,
+                        Some(_) => SchemaLocation::Parameter,
                         None => SchemaLocation::Type,
                     };
                     let name = node.get("name").and_then(serde_yaml_ng::Value::as_str);
@@ -387,6 +390,17 @@ fn check_schema_defaults(
         .get("default")
         .filter(|value| !value.is_null() && !matches!(location, SchemaLocation::Type))
     {
+        if matches!(location, SchemaLocation::Field)
+            && schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("array")
+            && default.as_sequence().is_none()
+        {
+            return refusal(
+                path,
+                strict,
+                Class::ListDefaultNotArray,
+                &format!("{element} default {default:?}"),
+            );
+        }
         let invalid = match schema.get("type").and_then(serde_yaml_ng::Value::as_str) {
             Some("integer") => default.as_f64().is_none_or(|value| value.fract() != 0.0),
             Some("number") => default.as_f64().is_none(),

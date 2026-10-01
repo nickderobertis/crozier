@@ -16051,3 +16051,54 @@ fn primitive_default_refusal_recovers_with_declared_types() {
         }
     }
 }
+
+#[test]
+fn list_default_refusal_recovers_with_an_array() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("list-default-not-array");
+    for case in ["probe.yml", "boolean-default-control.yml"] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures(
+                "list-default-not-array",
+                &run,
+                "Thing/properties/tags",
+                strict,
+            );
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &class.join("header-array-control.yml"), strict).unwrap();
+        assert_eq!(run.code, Some(1));
+        assert!(run.files.is_empty());
+        assert!(
+            run.stderr
+                .contains("header parameter `value` has an unsupported array schema"),
+            "{}",
+            run.stderr
+        );
+        assert!(!run.stderr.contains(": list-default-not-array:"));
+    }
+    for case in [
+        "valid-list-control.yml",
+        "null-list-control.yml",
+        "unused-array-control.yml",
+        "query-array-control.yml",
+    ] {
+        let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
+        let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
