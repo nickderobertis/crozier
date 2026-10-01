@@ -16,6 +16,11 @@ use predicates::prelude::*;
 #[path = "e2e/compare.rs"]
 mod compare;
 
+/// The GitHub Action's scripts (`scripts/action/`) over a real `crozier`.
+#[cfg(unix)]
+#[path = "e2e/action.rs"]
+mod action;
+
 /// `scripts/update-major-tag.sh`, the release's floating major tag.
 #[cfg(unix)]
 #[path = "e2e/major_tag.rs"]
