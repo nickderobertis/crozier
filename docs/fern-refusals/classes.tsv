@@ -32,6 +32,6 @@ type-name-collision	names	check	1	<…> is already declared in <…>	104	unevalu
 type-name-not-letter-led	names	check	1	Type name must begin with a letter	6	unevaluated	—	—
 type-not-defined	documents	check	1	<…> is not defined.	6	unevaluated	—	—
 undefined-component-reference	documents	check	0	<…> is undefined	3	unevaluated	—	—
-unresolved-reference	documents	check	0	Failed to resolve <…>	42	unevaluated	—	—
+unresolved-reference	documents	check	0	Failed to resolve <…>	42	refuse	components/securitySchemes/BearerAuth	42/42
 unresolved-schema-reference	documents	check	0	Unexpected error: Failed to resolve schema reference: <…>	49	unevaluated	—	—
 unsupported-openapi-version	documents	check	1	Unsupported OpenAPI version: <…>	20	refuse	openapi 3.2.0	20/20

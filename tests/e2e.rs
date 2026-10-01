@@ -15500,3 +15500,115 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
         failures.join("\n")
     );
 }
+
+/// An unresolved security Reference Object is refused before auth normalization;
+/// replacing it with the declared bearer scheme restores identical SDK bytes.
+#[test]
+fn unresolved_security_reference_recovers_with_inline_scheme() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "components/securitySchemes/BearerAuth",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(probe).unwrap();
+    std::fs::write(
+        &repaired,
+        text.replace(
+            "      $ref: './components.yaml#/components/securitySchemes/BearerAuth'",
+            "      type: http\n      scheme: bearer",
+        ),
+    )
+    .unwrap();
+    let normal = refusal_run(&crozier, &repaired, false).unwrap();
+    let strict = refusal_run(&crozier, &repaired, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn noncomponent_response_reference_recovers_when_inlined() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = "openapi: 3.0.3\ninfo: {title: Probe, version: '1'}\npaths:\n  /probe:\n    get:\n      operationId: probe\n      responses:\n        204: {description: Empty}\n        401: {$ref: '#/$defs/Denied'}\n$defs:\n  Denied: {description: Unauthorized}\n";
+    std::fs::write(&spec, text).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "paths//probe/get/responses/401",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    std::fs::write(
+        &spec,
+        text.replace("{$ref: '#/$defs/Denied'}", "{description: Unauthorized}"),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+}
+
+#[test]
+fn ignored_security_reference_uses_canonical_precedence_through_cli() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference/probe.yml");
+    let text = std::fs::read_to_string(probe)
+        .unwrap()
+        .replace("security:\n  - BearerAuth: []\n", "");
+    for (extensions, refused) in [
+        ("x-crozier-ignore: true\n      x-fern-ignore: false", false),
+        ("x-crozier-ignore: false\n      x-fern-ignore: true", true),
+    ] {
+        std::fs::write(
+            &spec,
+            text.replace(
+                "BearerAuth:\n",
+                &format!("BearerAuth:\n      {extensions}\n"),
+            ),
+        )
+        .unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            if refused {
+                let failures = refused_failures(
+                    "unresolved-reference",
+                    &run,
+                    "components/securitySchemes/BearerAuth",
+                    strict,
+                );
+                assert!(failures.is_empty(), "{}", failures.join("\n"));
+            } else {
+                assert_eq!(run.code, Some(0), "{}", run.stderr);
+                assert!(!run.files.is_empty());
+            }
+        }
+    }
+}

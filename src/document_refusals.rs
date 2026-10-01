@@ -8,6 +8,25 @@ use std::path::Path;
 use crate::openapi::{HttpAuthScheme, OpenApi, ParameterLocation, SecuritySchemeType};
 use crate::{Error, Result};
 
+#[derive(Clone, Copy)]
+enum Class {
+    UnsupportedOpenapiVersion,
+    ServiceAuthUndefined,
+    EndpointAuthUndefined,
+    UnresolvedReference,
+}
+
+impl Class {
+    fn id(self) -> &'static str {
+        match self {
+            Self::UnsupportedOpenapiVersion => "unsupported-openapi-version",
+            Self::ServiceAuthUndefined => "service-auth-undefined",
+            Self::EndpointAuthUndefined => "endpoint-auth-undefined",
+            Self::UnresolvedReference => "unresolved-reference",
+        }
+    }
+}
+
 /// Version refusal precedes normalizations that might themselves reject a new
 /// OpenAPI construct. Other parse/read errors retain the loader's diagnostics.
 pub fn check_version_file(path: &Path, strict: bool) -> Result<()> {
@@ -37,12 +56,274 @@ pub fn check_version_file(path: &Path, strict: bool) -> Result<()> {
     Ok(())
 }
 
+/// Inspect Reference Objects before normalization can replace or discard them.
+/// Schema and Path Item references have separate Fern behavior and are excluded.
+pub fn check_reference_file(path: &Path, strict: bool) -> Result<()> {
+    if !path.extension().and_then(|s| s.to_str()).is_some_and(|s| {
+        ["json", "yaml", "yml"]
+            .iter()
+            .any(|ext| s.eq_ignore_ascii_case(ext))
+    }) {
+        return Ok(());
+    }
+    let Ok(text) = std::fs::read_to_string(path) else {
+        return Ok(());
+    };
+    let Ok(root) = serde_yaml_ng::from_str::<ReferenceDocument>(&text).map(|document| document.0)
+    else {
+        return Ok(());
+    };
+    if let Some(components) = root.get("components") {
+        for name in [
+            "securitySchemes",
+            "responses",
+            "requestBodies",
+            "parameters",
+            "headers",
+        ] {
+            if let Some(value) = components.get(name) {
+                check_reference_objects(value, &root, path, strict, &format!("components/{name}"))?;
+            }
+        }
+    }
+    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+        for (route, item) in paths {
+            let Some(route) = route.as_str() else {
+                continue;
+            };
+            for name in [
+                "get",
+                "put",
+                "post",
+                "delete",
+                "options",
+                "head",
+                "patch",
+                "trace",
+                "parameters",
+            ] {
+                if let Some(value) = item.get(name) {
+                    check_reference_objects(
+                        value,
+                        &root,
+                        path,
+                        strict,
+                        &format!("paths/{route}/{name}"),
+                    )?;
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+// Schema numeric bounds can exceed u64 in refused documents. Preserve the
+// reference structure without requiring the SDK loader to accept those bounds.
+struct ReferenceDocument(serde_yaml_ng::Value);
+
+impl<'de> serde::Deserialize<'de> for ReferenceDocument {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = ReferenceDocument;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str("an OpenAPI reference document")
+            }
+            fn visit_unit<E: serde::de::Error>(self) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(serde_yaml_ng::Value::Null))
+            }
+            fn visit_bool<E: serde::de::Error>(
+                self,
+                value: bool,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(value.into()))
+            }
+            fn visit_i64<E: serde::de::Error>(
+                self,
+                value: i64,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(value.into()))
+            }
+            fn visit_u64<E: serde::de::Error>(
+                self,
+                value: u64,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(value.into()))
+            }
+            fn visit_i128<E: serde::de::Error>(
+                self,
+                _value: i128,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(serde_yaml_ng::Value::Null))
+            }
+            fn visit_u128<E: serde::de::Error>(
+                self,
+                _value: u128,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(serde_yaml_ng::Value::Null))
+            }
+            fn visit_f64<E: serde::de::Error>(
+                self,
+                value: f64,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(value.into()))
+            }
+            fn visit_str<E: serde::de::Error>(
+                self,
+                value: &str,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(value.into()))
+            }
+            fn visit_string<E: serde::de::Error>(
+                self,
+                value: String,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(ReferenceDocument(value.into()))
+            }
+            fn visit_seq<A: serde::de::SeqAccess<'de>>(
+                self,
+                mut sequence: A,
+            ) -> std::result::Result<Self::Value, A::Error> {
+                let mut values = Vec::new();
+                while let Some(ReferenceDocument(value)) = sequence.next_element()? {
+                    values.push(value);
+                }
+                Ok(ReferenceDocument(serde_yaml_ng::Value::Sequence(values)))
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                mut map: A,
+            ) -> std::result::Result<Self::Value, A::Error> {
+                let mut values = serde_yaml_ng::Mapping::new();
+                while let Some((ReferenceDocument(key), ReferenceDocument(value))) =
+                    map.next_entry()?
+                {
+                    if values.insert(key, value).is_some() {
+                        return Err(serde::de::Error::custom("duplicate document key"));
+                    }
+                }
+                Ok(ReferenceDocument(serde_yaml_ng::Value::Mapping(values)))
+            }
+        }
+        deserializer.deserialize_any(Visitor)
+    }
+}
+
+fn check_reference_objects(
+    value: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    path: &Path,
+    strict: bool,
+    element: &str,
+) -> Result<()> {
+    use serde_yaml_ng::Value;
+    match value {
+        Value::Mapping(mapping) => {
+            // Read the extension through the existing canonical accessor.
+            let mut extensions = serde_yaml_ng::Mapping::new();
+            for name in ["x-crozier-ignore", "x-fern-ignore"] {
+                if let Some(value) = value.get(name) {
+                    extensions.insert(Value::String(name.into()), value.clone());
+                }
+            }
+            if serde_yaml_ng::from_value::<crate::openapi::Schema>(Value::Mapping(extensions))
+                .is_ok_and(|schema| schema.ignored())
+            {
+                return Ok(());
+            }
+            if let Some(reference) = value.get("$ref").and_then(Value::as_str) {
+                let expected = [
+                    ("/securitySchemes/", "securitySchemes"),
+                    ("/responses/", "responses"),
+                    ("/requestBodies/", "requestBodies"),
+                    ("/requestBody", "requestBodies"),
+                    ("/parameters/", "parameters"),
+                    ("/headers/", "headers"),
+                ]
+                .into_iter()
+                .filter_map(|(marker, kind)| element.rfind(marker).map(|index| (index, kind)))
+                .max_by_key(|(index, _)| *index)
+                .map(|(_, kind)| kind);
+                let missing = if let Some(pointer) = reference.strip_prefix('#') {
+                    !reference.starts_with("#/components/parameters/")
+                        && (expected.is_some_and(|kind| {
+                            !reference.starts_with(&format!("#/components/{kind}/"))
+                        }) || yaml_pointer(root, pointer).is_none())
+                } else if let Some((file, _)) = reference.split_once('#') {
+                    !file.contains("://")
+                        && !path
+                            .parent()
+                            .unwrap_or_else(|| Path::new("."))
+                            .join(file)
+                            .is_file()
+                } else {
+                    false
+                };
+                if missing {
+                    return refusal(
+                        path,
+                        strict,
+                        Class::UnresolvedReference,
+                        &format!("{element}: {reference}"),
+                    );
+                }
+            }
+            for (key, child) in mapping {
+                let key = if let Some(key) = key.as_str() {
+                    key.to_owned()
+                } else if let Some(key) = key.as_i64() {
+                    key.to_string()
+                } else {
+                    continue;
+                };
+                if matches!(
+                    key.as_str(),
+                    "schema" | "schemas" | "example" | "examples" | "default" | "enum" | "const"
+                ) || key.starts_with("x-")
+                {
+                    continue;
+                }
+                check_reference_objects(child, root, path, strict, &format!("{element}/{key}"))?;
+            }
+        }
+        Value::Sequence(values) => {
+            for (index, child) in values.iter().enumerate() {
+                check_reference_objects(child, root, path, strict, &format!("{element}/{index}"))?;
+            }
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+fn yaml_pointer<'a>(
+    root: &'a serde_yaml_ng::Value,
+    pointer: &str,
+) -> Option<&'a serde_yaml_ng::Value> {
+    if pointer.is_empty() {
+        return Some(root);
+    }
+    let mut value = root;
+    for token in pointer.strip_prefix('/')?.split('/') {
+        let token = token.replace("~1", "/").replace("~0", "~");
+        value = match value {
+            serde_yaml_ng::Value::Sequence(sequence) => {
+                sequence.get(token.parse::<usize>().ok()?)?
+            }
+            _ => value.get(token.as_str())?,
+        };
+    }
+    Some(value)
+}
+
 fn check_version(version: &str, path: &Path, strict: bool) -> Result<()> {
     if version.starts_with("3.") && !version.starts_with("3.0.") && !version.starts_with("3.1.") {
         return refusal(
             path,
             strict,
-            "unsupported-openapi-version",
+            Class::UnsupportedOpenapiVersion,
             &format!("openapi {version}"),
         );
     }
@@ -52,6 +333,7 @@ fn check_version(version: &str, path: &Path, strict: bool) -> Result<()> {
 /// Reject an evaluated class before rendering or writing an SDK.
 pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     check_version(&doc.openapi, path, strict)?;
+    // The imported_auth_agrees_with_sdk_ir test reconciles this predicate with the actual importer.
     let imported_auth = doc.components.security_schemes.values().any(|scheme| {
         (scheme.ty == SecuritySchemeType::ApiKey
             && scheme.location == Some(ParameterLocation::Header))
@@ -78,6 +360,7 @@ pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     // operation in that service requires it. A public operation leaves the
     // private operations' requirements on the endpoints instead.
     let mut groups = std::collections::BTreeMap::<Vec<String>, bool>::new();
+    // llmlint: ignore[contracts_have_one_source_or_a_drift_gate] These are Fern importer services, not SDK modules. IR endpoint_module intentionally flattens a tag when its operationId matches the tag and derives dotted-id groups for untagged operations; those emission choices must not change Fern's auth refusal classification. The mixed-service CLI journey and population class checks guard this measured distinction.
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             let group = op.sdk_group_name().unwrap_or_else(|| {
@@ -104,7 +387,7 @@ pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
         if !requirements.is_empty() && groups.values().any(|&required| required) {
             let scheme = requirements.iter().flat_map(|r| r.keys()).next();
             let element = scheme.map_or_else(|| "security/0".into(), |s| format!("security/{s}"));
-            return refusal(path, strict, "service-auth-undefined", &element);
+            return refusal(path, strict, Class::ServiceAuthUndefined, &element);
         }
     }
     for (route, item) in &doc.paths {
@@ -116,7 +399,7 @@ pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
                         || format!("{method} {route} security/0"),
                         |s| format!("{method} {route} security/{s}"),
                     );
-                    return refusal(path, strict, "endpoint-auth-undefined", &element);
+                    return refusal(path, strict, Class::EndpointAuthUndefined, &element);
                 }
             }
         }
@@ -124,11 +407,12 @@ pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     Ok(())
 }
 
-fn refusal(path: &Path, strict: bool, class: &str, element: &str) -> Result<()> {
+fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()> {
     Err(Error::InvalidSpec {
         path: path.to_path_buf(),
         message: format!(
-            "{class}: {element}{}",
+            "{}: {element}{}",
+            class.id(),
             if strict { " (fern-strict refusal)" } else { "" }
         ),
     })
@@ -137,6 +421,88 @@ fn refusal(path: &Path, strict: bool, class: &str, element: &str) -> Result<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reference_objects_exclude_schemas_and_path_items_and_honor_ignores() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("api.yml");
+        for content in [
+            "paths: {/probe: {$ref: 'absent.yml#/item'}}",
+            "components: {schemas: {Thing: {$ref: '#/components/schemas/Absent'}}}",
+            "components: {responses: {Error: {content: {application/json: {schema: {$ref: '#/components/schemas/Absent'}}}}}}",
+            "components: {securitySchemes: {Bearer: {x-crozier-ignore: true, $ref: 'absent.yml#/Bearer'}}}",
+        ] {
+            std::fs::write(&file, content).unwrap();
+            check_reference_file(&file, true).unwrap();
+        }
+        std::fs::write(&file, "components: {securitySchemes: {Bearer: {x-crozier-ignore: false, x-fern-ignore: true, $ref: 'absent.yml#/Bearer'}}}").unwrap();
+        let error = check_reference_file(&file, true).unwrap_err().to_string();
+        assert!(error.contains("unresolved-reference: components/securitySchemes/Bearer"));
+        assert!(error.contains("fern-strict"));
+        std::fs::write(
+            dir.path().join("absent.yml"),
+            "Bearer: {type: http, scheme: bearer}",
+        )
+        .unwrap();
+        check_reference_file(&file, false).unwrap();
+        std::fs::write(&file, "paths: {/probe: {get: {responses: {401: {$ref: '#/$defs/Denied'}}}}}\n$defs: {Denied: {description: Unauthorized}}\ncomponents: {schemas: {Bound: {maximum: 18446744073709552000}}}").unwrap();
+        let error = check_reference_file(&file, false).unwrap_err().to_string();
+        assert!(error.contains("unresolved-reference: paths//probe/get/responses/401"));
+    }
+
+    #[test]
+    fn reference_pointer_decodes_escaped_paths_and_array_indices() {
+        let root = serde_yaml_ng::from_str("paths: {'/probe': {get: {parameters: [{name: id}]}}}")
+            .unwrap();
+        assert!(yaml_pointer(&root, "/paths/~1probe/get/parameters/0").is_some());
+        assert!(yaml_pointer(&root, "/paths/~1probe/get/parameters/1").is_none());
+    }
+
+    #[test]
+    fn imported_auth_agrees_with_sdk_ir() {
+        use SecuritySchemeType::*;
+        for ty in [ApiKey, Http, OAuth2, OpenIdConnect, MutualTls, Other] {
+            let name = match ty {
+                ApiKey => "apiKey",
+                Http => "http",
+                OAuth2 => "oauth2",
+                OpenIdConnect => "openIdConnect",
+                MutualTls => "mutualTLS",
+                Other => "unknown",
+            };
+            for location in ["header", "cookie", "query"] {
+                for scheme in [
+                    HttpAuthScheme::Bearer,
+                    HttpAuthScheme::Basic,
+                    HttpAuthScheme::Other,
+                ] {
+                    let scheme = match scheme {
+                        HttpAuthScheme::Bearer => "bearer",
+                        HttpAuthScheme::Basic => "basic",
+                        HttpAuthScheme::Other => "unknown",
+                    };
+                    let doc = document("security: [{session: []}]",
+                        &format!("      type: {name}\n      in: {location}\n      name: SESSION\n      scheme: {scheme}"), OP);
+                    let config = crate::config::GenerateConfig::new(
+                        "api.yml".into(),
+                        "sdk".into(),
+                        Some("fern".into()),
+                        None,
+                        None,
+                        crate::settings::ExtraFields::default(),
+                        "Probe",
+                    )
+                    .unwrap();
+                    let ir = crate::ir::build(&doc, &config);
+                    assert_eq!(
+                        check(&doc, Path::new("api.yml"), false).is_err(),
+                        matches!(ir.auth, crate::ir::Auth::None),
+                        "{name}/{location}/{scheme}"
+                    );
+                }
+            }
+        }
+    }
 
     fn document(security: &str, scheme: &str, paths: &str) -> OpenApi {
         serde_yaml_ng::from_str(&format!(

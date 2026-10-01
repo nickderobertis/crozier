@@ -78,6 +78,7 @@ pub struct GenerateArgs {
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     document_refusals::check_version_file(&args.spec, args.fern_strict)?;
+    document_refusals::check_reference_file(&args.spec, args.fern_strict)?;
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
@@ -113,6 +114,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     document_refusals::check_version_file(&args.spec, args.fern_strict)?;
+    document_refusals::check_reference_file(&args.spec, args.fern_strict)?;
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
