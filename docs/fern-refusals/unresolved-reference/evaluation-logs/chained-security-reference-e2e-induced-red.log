@@ -1,0 +1,52 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+warning: variable does not need to be mutable
+   --> src/document_refusals.rs:482:9
+    |
+482 |     let mut reference = scheme.reference.clone();
+    |         ----^^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> src/document_refusals.rs:483:9
+    |
+483 |     let mut origin = path.to_path_buf();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: `crozier` (lib) generated 2 warnings (run `cargo fix --lib -p crozier` to apply 2 suggestions)
+warning: `crozier` (lib test) generated 2 warnings (2 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.22s
+────────────
+ Nextest run ID b1e5d819-acc5-48c2-b55c-a381684bed44 with nextest profile: default
+    Starting 1 test across 1 binary (438 tests and 6 binaries skipped)
+        FAIL [   0.148s] (1/1) crozier::e2e security_reference_recovers_when_the_referenced_document_is_present
+  stdout ───
+
+    running 1 test
+    test security_reference_recovers_when_the_referenced_document_is_present ... FAILED
+
+    failures:
+
+    failures:
+        security_reference_recovers_when_the_referenced_document_is_present
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 438 filtered out; finished in 0.14s
+
+  stderr ───
+
+    thread 'security_reference_recovers_when_the_referenced_document_is_present' (2055313) panicked at tests/e2e.rs:15948:9:
+    assertion `left == right` failed: crozier: invalid OpenAPI document /tmp/.tmpsIM2nb/openapi.yml: service-auth-undefined: security/BearerAuth
+
+      left: Some(1)
+     right: Some(0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.150s] 1 test run: 0 passed, 1 failed, 438 skipped
+        FAIL [   0.148s] (1/1) crozier::e2e security_reference_recovers_when_the_referenced_document_is_present
+error: test run failed

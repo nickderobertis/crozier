@@ -5,7 +5,9 @@
 
 use std::path::Path;
 
-use crate::openapi::{HttpAuthScheme, OpenApi, ParameterLocation, SecuritySchemeType};
+use crate::openapi::{
+    HttpAuthScheme, OpenApi, ParameterLocation, SecurityScheme, SecuritySchemeType,
+};
 use crate::{Error, Result};
 
 #[derive(Clone, Copy)]
@@ -461,23 +463,72 @@ fn check_version(version: &str, path: &Path, strict: bool) -> Result<()> {
     Ok(())
 }
 
+fn imported_scheme(scheme: &SecurityScheme) -> bool {
+    (scheme.ty == SecuritySchemeType::ApiKey && scheme.location == Some(ParameterLocation::Header))
+        || (scheme.ty == SecuritySchemeType::Http
+            && matches!(
+                scheme.scheme,
+                Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
+            ))
+        || matches!(
+            scheme.ty,
+            SecuritySchemeType::OAuth2 | SecuritySchemeType::OpenIdConnect
+        )
+}
+
+// Relative security references remain untouched by the SDK loader. Inspect the
+// referenced declaration only to distinguish Fern-importable auth from a refusal.
+fn imported_reference_scheme(scheme: &SecurityScheme, path: &Path) -> bool {
+    let mut reference = scheme.reference.clone();
+    let mut origin = path.to_path_buf();
+    let mut seen = std::collections::HashSet::new();
+    while let Some(next) = reference {
+        if !seen.insert((origin.clone(), next.clone())) {
+            return false;
+        }
+        let (document, pointer) = next.split_once('#').unwrap_or((&next, ""));
+        if document.starts_with("https://") || document.starts_with("http://") {
+            return false;
+        }
+        let target = if document.is_empty() {
+            origin.clone()
+        } else {
+            origin.parent().unwrap_or(Path::new(".")).join(document)
+        };
+        let Ok(target) = target.canonicalize() else {
+            return false;
+        };
+        let Some(root) = std::fs::read_to_string(&target)
+            .ok()
+            .and_then(|text| serde_yaml_ng::from_str::<ReferenceDocument>(&text).ok())
+        else {
+            return false;
+        };
+        let Some(value) = yaml_pointer(&root.0, pointer) else {
+            return false;
+        };
+        let Ok(resolved) = serde_yaml_ng::from_value::<SecurityScheme>(value.clone()) else {
+            return false;
+        };
+        if resolved.reference.is_none() {
+            return imported_scheme(&resolved);
+        }
+        origin = target;
+        reference = resolved.reference;
+    }
+    false
+}
+
 /// Reject an evaluated class before rendering or writing an SDK.
 pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     check_version(&doc.openapi, path, strict)?;
-    // The imported_auth_agrees_with_sdk_ir test reconciles this predicate with the actual importer.
-    let imported_auth = doc.components.security_schemes.values().any(|scheme| {
-        (scheme.ty == SecuritySchemeType::ApiKey
-            && scheme.location == Some(ParameterLocation::Header))
-            || (scheme.ty == SecuritySchemeType::Http
-                && matches!(
-                    scheme.scheme,
-                    Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
-                ))
-            || matches!(
-                scheme.ty,
-                SecuritySchemeType::OAuth2 | SecuritySchemeType::OpenIdConnect
-            )
-    });
+    // Inline scheme support is reconciled with the SDK IR by imported_auth_agrees_with_sdk_ir.
+    // Relative references use the separately measured Fern importer boundary.
+    let imported_auth = doc
+        .components
+        .security_schemes
+        .values()
+        .any(|scheme| imported_scheme(scheme) || imported_reference_scheme(scheme, path));
     if imported_auth {
         return Ok(());
     }
@@ -717,5 +768,51 @@ mod tests {
         assert!(error
             .to_string()
             .contains("endpoint-auth-undefined: GET /probe security/session"));
+    }
+    #[test]
+    fn referenced_auth_reads_real_files_and_rejects_cycles_and_invalid_targets() {
+        let dir = tempfile::tempdir().unwrap();
+        let origin = dir.path().join("openapi.yml");
+        let reference = SecurityScheme {
+            reference: Some("./components.json#/components/securitySchemes/Auth".into()),
+            ..SecurityScheme::default()
+        };
+        let target = dir.path().join("components.json");
+        for (scheme, imported) in [
+            (r#"{"type":"http","scheme":"bearer"}"#, true),
+            (r#"{"type":"apiKey","in":"cookie","name":"SID"}"#, false),
+            (
+                r##"{"$ref":"./.././components.json#/components/securitySchemes/Auth"}"##,
+                false,
+            ),
+            (r#"{"type":42}"#, false),
+        ] {
+            let scheme = if scheme.contains("./../") {
+                // Return to this directory through its parent without growing
+                // the path spelling on each cycle.
+                format!(
+                    r##"{{"$ref":"../{}/components.json#/components/securitySchemes/Auth"}}"##,
+                    dir.path().file_name().unwrap().to_str().unwrap()
+                )
+            } else {
+                scheme.to_owned()
+            };
+            std::fs::write(
+                &target,
+                format!(r#"{{"components":{{"securitySchemes":{{"Auth":{scheme}}}}}}}"#),
+            )
+            .unwrap();
+            assert_eq!(
+                imported_reference_scheme(&reference, &origin),
+                imported,
+                "{scheme}"
+            );
+        }
+        for text in ["not a document", "{", "{}"] {
+            std::fs::write(&target, text).unwrap();
+            assert!(!imported_reference_scheme(&reference, &origin));
+        }
+        std::fs::remove_file(target).unwrap();
+        assert!(!imported_reference_scheme(&reference, &origin));
     }
 }

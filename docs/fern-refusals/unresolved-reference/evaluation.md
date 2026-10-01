@@ -68,3 +68,17 @@ The [CLI assertion failed before this restriction](evaluation-logs/response-comp
 The accepted control generates identical bytes in both modes, while moving the
 fragment reference onto the operation refuses. After this restriction, all 42
 retrievable unresolved-reference documents still refuse in both modes.
+
+The refusal boundary requires an unresolved document: providing the relative
+security-scheme file is a [Fern-accepted control](evaluation-logs/fern-present-security-reference-check.log),
+with [successful generation](evaluation-logs/fern-present-security-reference-generate.log)
+writing 36 files. The first detector still rejected that control as undefined
+auth; its [real CLI recovery assertion failed](evaluation-logs/present-security-reference-e2e-red.log).
+The auth detector now inspects relative scheme declarations without changing
+the SDK document or its emitted authentication. A [chained bearer declaration](evaluation-logs/fern-present-security-chain.log)
+is also accepted, while a [referenced cookie declaration](evaluation-logs/fern-present-security-unimported.log)
+retains Fern's service-auth refusal. The CLI journey covers all three and proves
+identical emitted bytes between modes and between the two accepted declarations.
+[Disabling chain traversal made the assertion fail](evaluation-logs/chained-security-reference-e2e-induced-red.log).
+The reader canonicalizes file paths and guards cycles; [a mutation falsely
+accepting a cycle failed its real-files unit test](evaluation-logs/security-reference-cycle-unit-induced-red.log).

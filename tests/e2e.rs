@@ -15907,3 +15907,61 @@ fn response_component_fragment_is_not_an_operation_reference() {
         assert_eq!(run.stderr.lines().count(), 1);
     }
 }
+
+#[test]
+fn security_reference_recovers_when_the_referenced_document_is_present() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference/probe.yml");
+    std::fs::copy(probe, &spec).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures("unresolved-reference", &run, "components.yaml", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+    std::fs::write(
+        dir.path().join("components.yaml"),
+        "components:\n  securitySchemes:\n    BearerAuth: {type: http, scheme: bearer}\n",
+    )
+    .unwrap();
+    let normal = refusal_run(&crozier, &spec, false).unwrap();
+    let strict = refusal_run(&crozier, &spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+    std::fs::write(
+        dir.path().join("components.yaml"),
+        "components:\n  securitySchemes:\n    BearerAuth: {$ref: '#/components/securitySchemes/Actual'}\n    Actual: {type: http, scheme: bearer}\n",
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert_eq!(normal.files, run.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(run.target.join(file)).unwrap()
+            );
+        }
+    }
+    std::fs::write(
+        dir.path().join("components.yaml"),
+        "components:\n  securitySchemes:\n    BearerAuth: {type: apiKey, in: cookie, name: SID}\n",
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures("service-auth-undefined", &run, "BearerAuth", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+}

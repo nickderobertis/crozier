@@ -58,3 +58,10 @@ with byte-identical SDKs.
 retrieved at their recorded digests and refused in both modes: exit 1, zero
 output files, one stderr line, and `fern-strict` named in strict mode.
 `population_strict` is `26/26` and all 26 strict exits are recorded.
+
+Relative security-scheme references are classified from the referenced
+declaration rather than crozier's unresolved `Other` placeholder. The
+[accepted-file and chained-file controls](../unresolved-reference/evaluation.md)
+measure the Fern boundary without repairing emitted SDK authentication; a
+referenced cookie scheme still refuses as this class. Inline support remains
+reconciled to the SDK IR by the existing exhaustive unit gate.
