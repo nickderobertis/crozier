@@ -27,7 +27,7 @@ path-without-leading-slash	documents	check	1	Path must start with a slash.	4	une
 request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	29	unevaluated	—	—
 request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	296	unevaluated	—	—
 sdk-method-collision	names	check	1	SDK method <…> already exists (x-fern-sdk-group-name: <…>, x-fern-sdk-method-name: <…>)	2	unevaluated	—	—
-service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	unevaluated	—	—
+service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	refuse	security/session	0/26
 type-name-collision	names	check	1	<…> is already declared in <…>	104	unevaluated	—	—
 type-name-not-letter-led	names	check	1	Type name must begin with a letter	6	unevaluated	—	—
 type-not-defined	documents	check	1	<…> is not defined.	6	unevaluated	—	—

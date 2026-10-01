@@ -720,6 +720,13 @@ def tables() -> tuple[dict[str, str], list[str]]:
     patterns = class_patterns(classes)
     near = finding_patterns(findings)
     measured = read_measurements()
+    # Evaluation belongs to the document's immutable bytes, independently of
+    # Fern's population derivation. Rebuilding must retain either family's
+    # measured strict exit rather than erase it.
+    strict_exits = {
+        row["digest"]: row["crozier_strict_exit"]
+        for row in read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)
+    } if (REGISTRY / "documents.tsv").exists() else {}
     documents: dict[str, dict[str, str]] = {}
     generated: dict[str, dict[str, str]] = {}
     unretrievable: list[dict[str, str]] = []
@@ -763,7 +770,8 @@ def tables() -> tuple[dict[str, str], list[str]]:
         for name in filter(None, refusal["classes"].split(",")):
             counts[name] += 1
         documents[digest] = dict(identity, digest=digest, **refusal, crozier_exit=result["crozier_exit"],
-                                 crozier_files=result["crozier_files"], crozier_strict_exit=EMPTY)
+                                 crozier_files=result["crozier_files"],
+                                 crozier_strict_exit=strict_exits.get(digest, EMPTY))
     for row in classes:
         row["documents"] = str(counts[row["class"]])
     return ({"documents.tsv": tsv_text(DOCUMENTS_HEADER, (documents[key] for key in sorted(documents))),

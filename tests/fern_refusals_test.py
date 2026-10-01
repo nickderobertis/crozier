@@ -63,13 +63,30 @@ class CommittedTables(unittest.TestCase):
         with tempfile.TemporaryDirectory() as scratch:
             registry = Path(scratch) / "fern-refusals"
             registry.mkdir()
-            for hand_written in ("classes.tsv", "findings.tsv"):
+            for hand_written in ("classes.tsv", "findings.tsv", "documents.tsv"):
                 shutil.copy(REGISTRY / hand_written, registry / hand_written)
             result = run("build", registry=registry)
             self.assertEqual(result.returncode, 0, result.stderr)
             for name in TABLES:
                 self.assertEqual((registry / name).read_text(encoding="utf-8"),
                                  (REGISTRY / name).read_text(encoding="utf-8"), name)
+
+    def test_rebuild_preserves_strict_measurements_by_digest(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            registry = Path(scratch) / "fern-refusals"
+            shutil.copytree(REGISTRY, registry)
+            table = rows(registry / "documents.tsv")
+            digest = table[1][0]
+            table[1][-1] = "1"
+            # Identity is the digest, not the row's position in this copy.
+            table[1], table[-1] = table[-1], table[1]
+            write_rows(registry / "documents.tsv", table)
+            result = run("build", registry=registry)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            measured = next(row for row in rows(registry / "documents.tsv")[1:] if row[0] == digest)
+            self.assertEqual(measured[-1], "1")
+            result = run("check", registry=registry)
+            self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_every_selected_document_is_accounted_for_once(self) -> None:
         result = run("select")

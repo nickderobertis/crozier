@@ -17,6 +17,7 @@
 
 pub mod cli;
 pub mod config;
+pub mod document_refusals;
 pub mod emit;
 pub mod error;
 pub mod ir;
@@ -66,8 +67,7 @@ pub struct GenerateArgs {
     /// Strict Fern compatibility (`--fern-strict`): refuse, as Fern does, a
     /// document crozier would otherwise generate from. It only ever decides
     /// whether an SDK is written, never a byte of one that is. The classes it
-    /// refuses are registered in `docs/fern-refusals/`; none is evaluated yet,
-    /// so today it refuses nothing crozier's default mode generates.
+    /// refuses are registered in `docs/fern-refusals/`.
     pub fern_strict: bool,
     /// Which tree to write: Fern's packaged SDK (the default) or its flat module
     /// tree (see [`settings::Layout`]).
@@ -80,6 +80,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
+    document_refusals::check(&doc, &args.spec, args.fern_strict)?;
     // The config constructor validates the package name (a `PackageName`), so an
     // invalid, traversal-prone value can never reach the filesystem below.
     let mut config = GenerateConfig::new(
@@ -113,6 +114,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
+    document_refusals::check(&doc, &args.spec, args.fern_strict)?;
     let mut config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
