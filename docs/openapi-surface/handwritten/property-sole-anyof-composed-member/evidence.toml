@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "a3dff21156a8e1a6b488d2964e6be867039085e3360d8e2dd95e83b98de3f903"
+
+[[covers]]
+key = "property-sole-anyof-composed-member"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-renewed/README.md"

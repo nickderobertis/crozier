@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "164f364baae25692b0a697685ef1e4a5d0d50ebe0e0d6c140cbac7ea5fd6722a"
+
+[[covers]]
+key = "array-item-inheritance-union"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-renewed/README.md"

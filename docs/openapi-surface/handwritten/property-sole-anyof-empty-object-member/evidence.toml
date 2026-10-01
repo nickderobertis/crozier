@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "9f4491e1c8c5db8b3c16fe6c04856222db425ed0685f8ac80dc88ae0afd0c5bc"
+
+[[covers]]
+key = "property-sole-anyof-empty-object-member"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-renewed/README.md"
