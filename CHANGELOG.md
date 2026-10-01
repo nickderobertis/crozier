@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.87](https://github.com/nickderobertis/crozier/compare/v0.0.86...v0.0.87) - 2026-10-01
+
+### Added
+
+- *(fixtures)* cover the remaining unreached arms with hand-written fixtures ([#323](https://github.com/nickderobertis/crozier/pull/323))
+
 ## [0.0.86](https://github.com/nickderobertis/crozier/compare/v0.0.85...v0.0.86) - 2026-10-01
 
 ### Added
