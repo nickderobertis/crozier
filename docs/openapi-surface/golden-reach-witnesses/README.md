@@ -35,6 +35,14 @@ files it here.
   reads `witness-found`; `probe` still probes its declarers on the counted
   build, against that arm as it resolves in today's `src/` (or the row's
   handling sites, where a repair restructured the whole arm away).
+- A `searches/<key>.md` with a `### Configuration gate` section reads
+  `config-gated`: the arm runs only under a generation setting no probe sets,
+  so no search ran for it. In place of the per-source lines, the record states
+  the setting and the code path that shows it, the gate as `just
+  handwritten-reach` measured it on a hand-written fixture (with the setting
+  and without it), and per source the committed files that show the key was
+  never walked or queried there. `outstanding`, `retire` and `fern-rescreen`
+  pass it by, and `RankedBacklogTests` checks its three parts.
 - `<source>/records.tsv` — the evidence those lines rest on, in Contract B's
   `key kind subject result file` form. A walked or fetched declarer is a
   `document` row; a declarer becomes a `candidate` only when it is screened.

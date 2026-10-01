@@ -43,7 +43,7 @@ split four ways:
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. They are not among the 465 and never count as a real-specification
-  match. 53 of the 59 unreached arms below carry an arm-level hand-written
+  match. 54 of the 59 unreached arms below carry an arm-level hand-written
   fixture, and each such arm is still counted as unreached by real
   specifications.
 - **0 remain unproven.** 0 are the `FIXTURE` `gap` rows. The eleven shapes
@@ -63,9 +63,10 @@ split four ways:
 465 + 66 + 11 + 0 = 542. `golden` is still not `golden`-exhausted.
 [Golden reach](#every-unreached-arm-and-its-search-verdict) counts 54 golden
 rows with at least one handling site no golden-only witness executes, 59 arms
-in all. The six-source searches of 58 of those arms read `exhausted`; the
-fifty-ninth, `discriminator-mapping`'s, has no arm search yet. One reached arm
-rests on a witness whose redistribution grant is disputed.
+in all. The six-source searches of 58 of those arms read `exhausted`. The
+fifty-ninth, `discriminator-mapping`'s, reads `config-gated`: it runs only
+under an audience filter, which no search probe sets. One reached arm rests on
+a witness whose redistribution grant is disputed.
 
 **What the census still cannot enumerate.** The 542 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
@@ -1715,7 +1716,7 @@ unreached by any Fern-accepted document.
 | 11 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **22** | **8** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-anyof-discriminated-union.md) |
 | 12 | `oneof-string-const-variant` | `schemas` | **1** | **22** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md) |
 | 13 | `annotated-ref-shape` | `schemas` | **1** | **19** | **12** | owned — see the table below |
-| 14 | `discriminator-mapping` | `schemas` | **1** | **18** | **24** | open — no arm search has run; its one unreached arm lost its incidental reach when commit `63c6be587` removed `filter_ignored`'s schema-closure prune (see [below](#every-unreached-arm-and-its-search-verdict)) |
+| 14 | `discriminator-mapping` | `schemas` | **1** | **18** | **24** | open — `config-gated`: its one unreached arm runs only under an audience filter, and lost its incidental reach when commit `63c6be587` removed `filter_ignored`'s schema-closure prune: [record](openapi-surface/golden-reach-witnesses/searches/discriminator-mapping.md) |
 | 15 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **17** | **1** | owned — see the table below |
 | 16 | `anyof-array-variant-composed-item` | `schemas` | **1** | **15** | **1** | owned — see the table below |
 | 17 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **15** | **4** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-closed-object-item.md) |
@@ -1785,7 +1786,9 @@ specification is evidence that Fern generates from a shape (the manager's
 ruling to `thin-goldens-continue-2`). Each record states its arm's verdict
 itself: `exhausted` when nothing is outstanding, every declarer reaching the arm
 on the counted build is screened, and none passing every screen is left
-unregistered, otherwise `search-incomplete`. A declarer screened while an
+unregistered, otherwise `search-incomplete`. An arm only a generation setting
+reaches reads `config-gated` instead, with no search
+([configuration-gated arms](#every-unreached-arm-and-its-search-verdict)). A declarer screened while an
 earlier build's probe reached the arm, and whose probe of the counted build no
 longer does, is no candidate and holds nothing open.
 No record owes anything now, and `outstanding.tsv` lists no item. The six
@@ -1859,8 +1862,8 @@ in all. Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources. 58 read `exhausted`: each
 of those arms' six-source searches owes nothing and found no registrable
 real-world document that executes it. The fifty-ninth, `discriminator-mapping`'s
-`collect_schema_refs` arm, reads `search-incomplete` because no arm search has
-run for it. The remaining-gap searches ran four of
+`collect_schema_refs` arm, reads `config-gated`, the one arm in its own
+category below. The remaining-gap searches ran four of
 them. Two are the `scalar_body` fallback of `format-idn-hostname` and
 `format-iri`, the rows that joined `golden` in the final reconciliation on
 `short-io`, which does not reach that arm. The third is
@@ -1945,7 +1948,7 @@ took it from 61 to 60, and each is stated here rather than left to the ledger:
 | 11 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
 | 12 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 15 | `exhausted` | `inline-oneof-variants` |
 | 13 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 15 | `exhausted` | `inline-oneof-variants` |
-| 14 | `discriminator-mapping` | `src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]` | 9 | `search-incomplete` — no arm search has run | — |
+| 14 | `discriminator-mapping` | `src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]` | 9 | `config-gated` | `discriminator-mapping-audience` |
 | 15 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 15 | `exhausted` | `inline-anyof-variants` |
 | 16 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 13 | `exhausted` | `inline-anyof-variants` |
 | 17 | `oneof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 13 | `exhausted` | `inline-oneof-variants` |
@@ -1986,6 +1989,34 @@ took it from 61 to 60, and each is stated here rather than left to the ledger:
 | 52 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
 | 53 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
 | 54 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]` | 1 | `exhausted` | `ref-pointer-ignored-head` |
+
+**Configuration-gated arms.** An arm only a generation setting reaches is
+not searched for. Contract B's probe runs each declarer through `crozier
+generate` with no setting, so no document in any source could execute it, and
+an `exhausted` reading would claim a search that never ran. Its record reads
+`config-gated` instead, under a `### Configuration gate` heading, and
+`RankedBacklogTests` holds it to three parts, each checked against the tree:
+
+1. the configuration field that gates the arm, which the schema names, and the
+   crozier function that shows the gate;
+2. the gate measured: a hand-written fixture declaring the setting executes the
+   arm when generated with it and none of the arm's regions without it. `just
+   handwritten-reach` records both runs in
+   [`handwritten-config-gates.tsv`](openapi-surface/handwritten-config-gates.tsv);
+3. for each declared source, that its probe sets no such setting, and the
+   committed files that show the key was never walked or queried there.
+
+The search basis is the setting, then, not a census or an instrumented probe of
+every declarer. A hand-written cover cites a `config-gated` record the way it
+cites an `exhausted` one. `discriminator-mapping`'s
+[record](openapi-surface/golden-reach-witnesses/searches/discriminator-mapping.md)
+is the only one. Its arm runs only under an audience filter: since commit
+`63c6be587`, `collect_schema_refs` is called only from `filter_by_audience`. The
+fixture [`discriminator-mapping-audience`](openapi-surface/handwritten/discriminator-mapping-audience/)
+declares `audiences = ["public"]` and executes 9 of the arm's 9 regions with it
+and 0 without. Fern keeps the subtypes only the `mapping` names. The
+real-specification route stays open: a corpus row registered with an audience
+over a document that declares a `discriminator`.
 
 **One reached arm rests on a disputed grant.** `ref-pointer-composition-index`'s
 `ref_to_class` pointer-walk site is reached only through corpus row 224,

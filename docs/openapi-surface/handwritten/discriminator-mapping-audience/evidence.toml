@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "d3440017c656988f0e8c61750335fec684ccd9354aaf8dd166df7841a0e42435"
+audiences = ["public"]
+
+[[covers]]
+key = "discriminator-mapping"
+arm = 'src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/discriminator-mapping.md#configuration-gate"
+verdict = "config-gated"

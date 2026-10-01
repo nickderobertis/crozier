@@ -1,4 +1,5 @@
 fixture	key	site	regions_executed	regions
+discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	9	9
 format-scalar-bodies	format-duration	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
 format-scalar-bodies	format-hostname	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1

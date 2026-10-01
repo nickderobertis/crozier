@@ -1686,8 +1686,24 @@ fn probe_fern_pins() -> (String, String) {
 /// crozier over one probe document, byte-compared against its committed tree
 /// under the corpus gate's own normalization.
 fn probe_tree_failures(key: &str, probe: &Path, expected_root: &Path) -> Vec<String> {
+    filtered_tree_failures(key, probe, expected_root, &[])
+}
+
+/// [`probe_tree_failures`] with crozier filtered to `audiences`, each passed as
+/// `--audience` — the list a hand-written fixture's `evidence.toml` gave Fern's
+/// generator group. Empty, it is the unfiltered generation.
+fn filtered_tree_failures(
+    key: &str,
+    probe: &Path,
+    expected_root: &Path,
+    audiences: &[String],
+) -> Vec<String> {
     let out = tempfile::tempdir().expect("probe output tempdir");
-    let result = match probe_command(probe, out.path()).output() {
+    let mut command = probe_command(probe, out.path());
+    for audience in audiences {
+        command.arg("--audience").arg(audience);
+    }
+    let result = match command.output() {
         Ok(result) => result,
         Err(error) => return vec![format!("{key}: could not run crozier: {error}")],
     };
@@ -1989,7 +2005,17 @@ fn handwritten_fixture_failures(root: &Path) -> Vec<String> {
             }
         }
         if expected.is_dir() && spec.is_file() {
-            failures.extend(probe_tree_failures(&name, &spec, &expected));
+            let audiences: Vec<String> = evidence
+                .get(&name)
+                .and_then(|declared| declared["audiences"].as_array())
+                .map(|audiences| {
+                    audiences
+                        .iter()
+                        .filter_map(|audience| audience.as_str().map(str::to_string))
+                        .collect()
+                })
+                .unwrap_or_default();
+            failures.extend(filtered_tree_failures(&name, &spec, &expected, &audiences));
         }
     }
     failures
@@ -2235,6 +2261,7 @@ impl HandwrittenFixture {
         fixture.write_reach(&format!(
             "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t1\t1\n"
         ));
+        fixture.write_gates("");
         std::fs::write(fixture.fixture_dir().join("openapi.yml"), HANDWRITTEN_SPEC)
             .expect("fixture document");
         write_stripped_crozier_tree(
@@ -2275,6 +2302,14 @@ impl HandwrittenFixture {
             format!("fixture\tkey\tsite\tregions_executed\tregions\n{rows}"),
         )
         .expect("fixture reach ledger");
+    }
+
+    fn write_gates(&self, rows: &str) {
+        std::fs::write(
+            self.path("docs/openapi-surface/handwritten-config-gates.tsv"),
+            format!("fixture\tkey\tsite\tsetting\tregions_executed\tregions\n{rows}"),
+        )
+        .expect("fixture configuration-gate ledger");
     }
 
     /// Write `evidence.toml` at the pin and the tree's current digest, with `covers`.
@@ -2318,7 +2353,16 @@ impl HandwrittenFixture {
 
 /// crozier's output for `spec`, comment-stripped the way a Fern golden is.
 fn write_stripped_crozier_tree(spec: &Path, tree: &Path) {
-    probe_command(spec, tree).assert().success();
+    write_filtered_crozier_tree(spec, tree, &[]);
+}
+
+/// [`write_stripped_crozier_tree`] filtered to `audiences`.
+fn write_filtered_crozier_tree(spec: &Path, tree: &Path, audiences: &[&str]) {
+    let mut command = probe_command(spec, tree);
+    for audience in audiences {
+        command.args(["--audience", audience]);
+    }
+    command.assert().success();
     for rel in walk_files(tree) {
         if rel.ends_with(".py") {
             let path = tree.join(&rel);
@@ -2349,6 +2393,100 @@ fn handwritten_gate_accepts_a_well_formed_fixture() {
     )
     .expect("region file");
     assert_eq!(Vec::<String>::new(), fixture.failures());
+}
+
+/// A fixture's `audiences` reach crozier as `--audience`: a tree generated for
+/// `public` matches only while the fixture declares it, and a fixture without
+/// the key is generated whole, as before the key existed.
+#[test]
+fn handwritten_gate_generates_a_fixture_for_its_declared_audiences() {
+    let fixture = HandwrittenFixture::new();
+    // Without the key the fixture is the unfiltered generation it always was.
+    assert_eq!(Vec::<String>::new(), fixture.failures());
+    let spec = fixture.fixture_dir().join("openapi.yml");
+    let labelled = HANDWRITTEN_SPEC.replace(
+        "      operationId: probe\n",
+        "      operationId: probe\n      x-crozier-audiences: [public]\n",
+    ) + "  /internal:
+    get:
+      operationId: internalOnly
+      x-crozier-audiences: [internal]
+      responses:
+        \"200\":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: \"#/components/schemas/InternalOnly\"
+components:
+  schemas:
+    InternalOnly:
+      type: object
+      properties:
+        id:
+          type: string
+";
+    std::fs::write(&spec, labelled).expect("labelled document");
+    let tree = fixture.fixture_dir().join("fern-expected");
+    std::fs::remove_dir_all(&tree).expect("remove unfiltered tree");
+    write_filtered_crozier_tree(&spec, &tree, &["public"]);
+    let covers = std::fs::read_to_string(fixture.evidence()).expect("evidence");
+    let covers = &covers[covers.find("[[covers]]").expect("a cover")..];
+    fixture.declare(&format!("audiences = [\"public\"]\n\n{covers}"));
+    // Its arm-level cover owes the measured pair, with the setting and without.
+    fixture.assert_refused(
+        "handwritten-config-gates.tsv",
+        "with setting `audiences=public` — run `just handwritten-reach`",
+    );
+    fixture.write_gates(&format!(
+        "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t-\t1\t1\n\
+         {HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\taudiences=public\t1\t1\n"
+    ));
+    assert_eq!(Vec::<String>::new(), fixture.failures());
+
+    fixture.edit_evidence("audiences = [\"public\"]\n", "");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "crozier's file set over");
+
+    for malformed in ["[]", "\"public\"", "[\"\"]"] {
+        fixture.declare(&format!("audiences = {malformed}\n\n{covers}"));
+        fixture.assert_refused(HANDWRITTEN_FIXTURE, "evidence.toml `audiences` is");
+    }
+
+    // A `config-gated` cover rests on a setting its fixture must declare.
+    fixture.declare(&covers.replace("verdict = \"exhausted\"", "verdict = \"config-gated\""));
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "a `config-gated` cover is arm-level and its fixture declares the setting",
+    );
+}
+
+/// The configuration-gate ledger is held to its form, and to the covers it
+/// measures: a missing, misheaded, malformed, repeated or orphaned row is refused.
+#[test]
+fn handwritten_gate_refuses_a_malformed_or_orphaned_configuration_gate_ledger() {
+    let fixture = HandwrittenFixture::new();
+    let ledger = fixture.path("docs/openapi-surface/handwritten-config-gates.tsv");
+    let row = format!("{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t-\t0\t1\n");
+
+    fixture.write_gates(&row);
+    fixture.assert_refused(
+        "handwritten-config-gates.tsv",
+        "names no live arm-level cover of a fixture declaring that setting",
+    );
+    fixture.write_gates(&format!("{row}{row}"));
+    fixture.assert_refused("handwritten-config-gates.tsv", "rows are not sorted");
+    fixture.write_gates("sample-fixture\tsample-golden\n");
+    fixture.assert_refused(
+        "handwritten-config-gates.tsv line 2",
+        "not six tab-separated fields",
+    );
+    std::fs::write(&ledger, "fixture\tkey\n").expect("misheaded ledger");
+    fixture.assert_refused(
+        "handwritten-config-gates.tsv",
+        "the header line must be exactly",
+    );
+    std::fs::remove_file(&ledger).expect("remove ledger");
+    fixture.assert_refused("handwritten-config-gates.tsv", "missing — restore it");
 }
 
 #[test]
@@ -2559,7 +2697,7 @@ fn handwritten_gate_refuses_a_malformed_fixture_directory_or_evidence() {
     fixture.edit_evidence("verdict = \"exhausted\"", "verdict = \"witness-found\"");
     fixture.assert_refused(
         HANDWRITTEN_FIXTURE,
-        "verdict `witness-found` is not `exhausted` or",
+        "verdict `witness-found` is not `exhausted`, `search-incomplete` or `config-gated`",
     );
 
     let fixture = HandwrittenFixture::new();

@@ -1647,6 +1647,15 @@ def render(args: argparse.Namespace) -> int:
 OUTSTANDING = EVIDENCE / "outstanding.tsv"
 OUTSTANDING_FIELDS = ("key", "source", "item", "blocker", "build", "src_moved_since")
 RECORD_BUILD = re.compile(r"^build `([0-9a-f]+)` only\.", re.M)
+# A record whose arm only a generation setting reaches: no search ran, so it
+# counts no probe build and owes no item (`RankedBacklogTests` gates its form).
+CONFIG_GATE_HEADING = "### Configuration gate"
+
+
+def probed_records() -> list[Path]:
+    """Every committed arm-search record that counts probes, leaving out the configuration-gated ones."""
+    return [path for path in sorted((EVIDENCE / "searches").glob("*.md"))
+            if CONFIG_GATE_HEADING not in path.read_text(encoding="utf-8").splitlines()]
 
 
 def record_build(text: str, path: Path) -> str:
@@ -1667,7 +1676,7 @@ def outstanding(args: argparse.Namespace) -> int:
     """
     del args
     rows: list[dict[str, str]] = []
-    for path in sorted((EVIDENCE / "searches").glob("*.md")):
+    for path in probed_records():
         build = record_build(path.read_text(encoding="utf-8"), path)
         moved = " ".join(src_commits_since(build))
         for source in DECLARED_SOURCES:
@@ -2153,7 +2162,7 @@ def retire(args: argparse.Namespace) -> int:
     of this build is left as it is: it is outstanding, not settled.
     """
     build = _current_build()
-    keys = set(args.key or (p.stem for p in (EVIDENCE / "searches").glob("*.md")
+    keys = set(args.key or (p.stem for p in probed_records()
                             if record_build(p.read_text(encoding="utf-8"), p) == build))
     note = NOT_REACHING.format(build=build)
     marked = 0
@@ -2196,7 +2205,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
     old screen in place, so the declarer stays open rather than settled.
     """
     build = _current_build()
-    keys = args.key or sorted(p.stem for p in (EVIDENCE / "searches").glob("*.md")
+    keys = args.key or sorted(p.stem for p in probed_records()
                               if record_build(p.read_text(encoding="utf-8"), p) == build)
     wanted: dict[str, list[tuple[str, str, dict[str, Any]]]] = defaultdict(list)
     paths: dict[str, Path] = {}

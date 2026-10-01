@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: discriminator-mapping-audience
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+paths:
+  /pets/{petId}:
+    get:
+      operationId: getPet
+      x-fern-audiences:
+        - public
+      x-crozier-audiences:
+        - public
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The pet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+  /audits/{auditId}:
+    get:
+      operationId: getAudit
+      x-fern-audiences:
+        - internal
+      x-crozier-audiences:
+        - internal
+      parameters:
+        - name: auditId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The audit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Audit"
+components:
+  schemas:
+    Pet:
+      type: object
+      properties:
+        petType:
+          type: string
+        name:
+          type: string
+      required:
+        - petType
+      discriminator:
+        propertyName: petType
+        mapping:
+          cat: "#/components/schemas/Cat"
+          dog: "#/components/schemas/Dog"
+    Cat:
+      allOf:
+        - $ref: "#/components/schemas/Pet"
+        - type: object
+          properties:
+            indoor:
+              type: boolean
+    Dog:
+      allOf:
+        - $ref: "#/components/schemas/Pet"
+        - type: object
+          properties:
+            breed:
+              type: string
+    Audit:
+      type: object
+      properties:
+        id:
+          type: string
