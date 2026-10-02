@@ -6392,8 +6392,6 @@ impl EnvClientParts {
     }
 }
 
-/// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
-/// or `AsyncEndpointsPutClient`).
 /// The alias a root `client.py` imports a top-level sub-client class under, when
 /// that class is named like one of the root client classes the same file defines
 /// (`client_class_name: EcosystemClient` over an `ecosystem` resource). Fern then
@@ -6413,6 +6411,8 @@ fn root_sub_client_import(module: &str, class: &str, client_name: &str) -> Strin
     }
 }
 
+/// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
+/// or `AsyncEndpointsPutClient`).
 fn tag_client_name(module: &str, is_async: bool) -> String {
     let pascal = naming::to_pascal_case(module_stem(module));
     if is_async {
