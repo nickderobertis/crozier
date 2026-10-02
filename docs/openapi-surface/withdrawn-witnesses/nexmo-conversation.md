@@ -32,7 +32,12 @@ The census over the 236 registered sources before the withdrawal
 (`just surface-census --json`, on 2026-10-02) finds three selectors
 row 223 alone declares. None of them is a key in any region file's entry table,
 and [`../witness-search-keys.tsv`](../witness-search-keys.tsv) records none of
-them for any key. So they back no feature and need no witness.
+them for any key. So they back no feature and need no witness. That is the rule
+row 224's seven such selectors were settled under
+([`codat-assess.md`](codat-assess.md#selectors-no-other-golden-bearing-source-declares)).
+The run's planner confirmed it for these three as how this withdrawal meets the
+requirement that every census selector the row alone witnessed keeps a witness:
+a selector that backs neither a region row nor a witness-search key owes none.
 
 | selector | declared by (registered sources) | region row | `witness-search-keys.tsv` |
 |---|---|---|---|
@@ -78,4 +83,8 @@ found the documents declaring `$ref` pointers through `properties` or a
 composition index. But they probed each declarer only for the pointer-walk sites
 they name, never for these. No census selector reads an unquoted YAML timestamp
 as an example at all. A real-specification search for each behaviour, by
-Contract B, is still owed.
+Contract B, is still owed. It needs census selectors and declared sites for
+these branches first, and the run's planner assigned it outside this
+withdrawal: the selectors and sites to the coverage restatement (#361), the
+searches to a follow-up. Until those land, the four behaviours rest only on
+hand-written evidence, and the YAML-timestamp drop is an open gap.
