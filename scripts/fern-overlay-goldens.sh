@@ -98,7 +98,10 @@ one() {
   if "$repo_root/scripts/generate-fern-fixture.sh" "${setting[@]}" "$fixture" "$version" \
     "$spec" "$staging/$golden" >>"$log" 2>&1; then
     rm -rf "${dir:?}/$golden"
-    mv "$staging/$golden" "$dir/$golden"
+    mv "$staging/$golden" "$dir/$golden" || {
+      echo "$fixture: could not install $golden; the overlay is left in $staging" >&2
+      return 1
+    }
     rm -rf "$staging"
     echo "generated $fixture/$golden at fernapi/fern-python-sdk:$version"
   else
@@ -111,4 +114,7 @@ export -f one pin_of valid_fixture_name
 export repo_root corpus_pin logs golden
 export SETTING="${setting[*]}"
 
-printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'setting=($SETTING); one "$1"' _ {}
+# The worker shell xargs starts does not inherit this script's `set -euo
+# pipefail`, so it sets its own: a failed step fails that fixture's worker.
+
+printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'set -euo pipefail; setting=($SETTING); one "$1"' _ {}

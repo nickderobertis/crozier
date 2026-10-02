@@ -1862,5 +1862,81 @@ class CommittedGoldenStateTests(unittest.TestCase):
         self.assertGreater(checked, 100, "the committed corpus should be most of the rows")
 
 
+@unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
+class FernOverlayGoldensTests(unittest.TestCase):
+    """`scripts/fern-overlay-goldens.sh` over a synthetic repository root: the
+    real script and `lib.sh`, a stand-in `generate-fern-fixture.sh` that writes
+    the overlay where the script asks."""
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name) / "repo"
+        scripts = self.root / "scripts"
+        scripts.mkdir(parents=True)
+        for script in ("fern-overlay-goldens.sh", "lib.sh"):
+            shutil.copy2(REPO / "scripts" / script, scripts / script)
+        pin = {"fern_python_sdk_version": "4.3.17"}
+        for fixture in ("eos.local", "alpha", "beta"):
+            expected = self.root / "tests" / "fixtures" / fixture / "expected"
+            expected.mkdir(parents=True)
+            (expected / STATE).write_text(json.dumps(pin), encoding="utf-8")
+            (expected.parent / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+        generator = scripts / "generate-fern-fixture.sh"
+        generator.write_text(
+            textwrap.dedent(
+                r"""
+                #!/usr/bin/env bash
+                set -euo pipefail
+                shift 2
+                fixture="$1" destination="$4"
+                mkdir -p "$destination"
+                echo overlay >"$destination/version.py"
+                # A stage the worker cannot move the overlay out of.
+                [ "$fixture" != "${FAIL_INSTALL:-}" ] || chmod a-w "$(dirname "$destination")"
+                """
+            ).lstrip(),
+            encoding="utf-8",
+        )
+        generator.chmod(0o755)
+
+    def run_overlay(self, *fixtures: str, fail_install: str = "") -> subprocess.CompletedProcess[str]:
+        result = subprocess.run(
+            [
+                str(self.root / "scripts" / "fern-overlay-goldens.sh"),
+                "--jobs",
+                "2",
+                "--enum-type",
+                "literals",
+                *fixtures,
+            ],
+            env={**os.environ, "FAIL_INSTALL": fail_install},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        for stage in (self.root / "tests" / "fixtures").glob("*/.fern-overlay-stage.*"):
+            stage.chmod(0o755)
+        return result
+
+    def test_each_fixture_gets_its_overlay_golden(self) -> None:
+        result = self.run_overlay("alpha", "beta")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for fixture in ("alpha", "beta"):
+            self.assertIn(f"generated {fixture}/expected-literals at", result.stdout)
+            golden = self.root / "tests" / "fixtures" / fixture / "expected-literals"
+            self.assertEqual((golden / "version.py").read_text(encoding="utf-8"), "overlay\n")
+
+    def test_a_failed_golden_install_fails_the_run_and_is_not_reported(self) -> None:
+        if os.geteuid() == 0:
+            self.skipTest("root moves out of a read-only directory")
+        result = self.run_overlay("alpha", "beta", fail_install="alpha")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn("generated alpha/", result.stdout)
+        self.assertIn("alpha: could not install expected-literals", result.stderr)
+        self.assertFalse((self.root / "tests" / "fixtures" / "alpha" / "expected-literals").exists())
+        self.assertIn("generated beta/expected-literals at", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
