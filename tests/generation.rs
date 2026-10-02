@@ -25,6 +25,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
@@ -50,6 +51,7 @@ fn render_json(spec: &str) -> HashMap<String, String> {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
@@ -73,6 +75,7 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
@@ -630,6 +633,7 @@ fn render_enum_type(enum_type: crozier::settings::EnumType) -> HashMap<String, S
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
@@ -725,6 +729,7 @@ fn generate_writes_files_to_disk() {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("generate succeeds");
@@ -752,6 +757,7 @@ fn default_package_name_derives_from_title() {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .unwrap();
@@ -1440,6 +1446,7 @@ fn empty_title_falls_back_to_client_package() {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .unwrap();
@@ -2055,6 +2062,7 @@ fn api_key_scheme_without_name_is_rejected() {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect_err("missing apiKey name must fail");
@@ -2121,6 +2129,7 @@ fn client_class_name_overrides_derived_root_client_name() {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
@@ -2249,6 +2258,7 @@ fn render_with_audiences_mode(
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
@@ -6490,6 +6500,7 @@ fn default_package_name_sanitizes_title_punctuation_in_process() {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
@@ -13294,6 +13305,7 @@ fn render_layout(
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout,
     })
     .expect("render succeeds")
@@ -13450,6 +13462,7 @@ fn generate_flat(out: &Path) -> Vec<crozier::GeneratedFile> {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Flat,
     })
     .expect("flat generate succeeds")
@@ -13519,6 +13532,7 @@ fn flat_regeneration_surfaces_a_tree_it_cannot_clear() {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Flat,
     })
     .expect_err("an unclearable previous generation fails the run");
@@ -13569,6 +13583,7 @@ fn flat_readme_shield_names_the_organization_crozier_derives_from_the_package() 
             fern_strict: false,
             extra_fields: crozier::settings::ExtraFields::Allow,
             enum_type: crozier::settings::EnumType::PythonEnums,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
             layout,
         })
         .expect("render succeeds")
@@ -13643,6 +13658,7 @@ fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Flat,
     });
     std::fs::set_permissions(&out, std::fs::Permissions::from_mode(0o755)).unwrap();
@@ -13673,6 +13689,7 @@ fn render_files_refuses_names_and_recovers_with_nameable_enum_values() {
             fern_strict: strict,
             extra_fields: crozier::settings::ExtraFields::Allow,
             enum_type: crozier::settings::EnumType::PythonEnums,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
             layout: crozier::settings::Layout::Packaged,
         };
         std::fs::write(&spec, &probe).unwrap();

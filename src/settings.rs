@@ -137,6 +137,10 @@ impl EnumType {
     }
 }
 
+/// The default of `default-max-retries`, and Fern's `default_max_retries`
+/// default.
+pub const DEFAULT_MAX_RETRIES: u32 = 2;
+
 /// Which tree a generator writes — the two output modes Fern has, so a team
 /// migrating from Fern sets the one that matches how it ran Fern:
 ///
@@ -234,6 +238,12 @@ pub struct GeneratorSettings {
     /// `python-enums` classes or open `literals` unions. Python-generator-
     /// specific, like `extra-fields`. Defaults to [`EnumType::PythonEnums`].
     pub enum_type: Option<EnumType>,
+    /// The client's default maximum number of retries for a failed request
+    /// (Fern's `default_max_retries`, alias `maxRetries`); a per-request
+    /// `max_retries` still takes precedence. `0` disables retries by default.
+    /// Python-generator-specific, like `extra-fields`. Defaults to `2`, Fern's
+    /// default.
+    pub default_max_retries: Option<u32>,
     /// Which tree to write: `packaged` (Fern's `--preview --output`) or `flat`
     /// (Fern's `local-file-system` output). Defaults to [`Layout::Packaged`].
     pub layout: Option<Layout>,
@@ -305,6 +315,8 @@ pub struct CliOverrides {
     pub extra_fields: Option<ExtraFields>,
     /// `--enum-type`; `None` when the flag was absent.
     pub enum_type: Option<EnumType>,
+    /// `--default-max-retries`; `None` when the flag was absent.
+    pub default_max_retries: Option<u32>,
     /// `--layout`; `None` when the flag was absent.
     pub layout: Option<Layout>,
 }
@@ -324,6 +336,7 @@ impl CliOverrides {
             && self.fern_strict.is_none()
             && self.extra_fields.is_none()
             && self.enum_type.is_none()
+            && self.default_max_retries.is_none()
             && self.layout.is_none()
     }
 }
@@ -395,6 +408,7 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
         fern_strict: over.fern_strict.or(base.fern_strict),
         extra_fields: over.extra_fields.or(base.extra_fields),
         enum_type: over.enum_type.or(base.enum_type),
+        default_max_retries: over.default_max_retries.or(base.default_max_retries),
         layout: over.layout.or(base.layout),
         reference: ReferenceSettings::merge(base.reference, over.reference),
     }
@@ -412,7 +426,8 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
 /// `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES` (comma-separated),
 /// `CROZIER_AUDIENCE_STRICT`, `CROZIER_FERN_STRICT`, `CROZIER_EXTRA_FIELDS`
 /// (`allow`/`ignore`/`forbid`), `CROZIER_ENUM_TYPE` (`python-enums`/`literals`),
-/// `CROZIER_LAYOUT` (`packaged`/`flat`).
+/// `CROZIER_DEFAULT_MAX_RETRIES` (a non-negative integer), `CROZIER_LAYOUT`
+/// (`packaged`/`flat`).
 pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSettings> {
     let read = |name: &str| get(name).filter(|v| !v.is_empty());
 
@@ -452,6 +467,15 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         ),
     };
 
+    let default_max_retries = match read("CROZIER_DEFAULT_MAX_RETRIES") {
+        None => None,
+        Some(v) => Some(v.parse::<u32>().map_err(|_| Error::InvalidEnvOverride {
+            message: format!(
+                "`CROZIER_DEFAULT_MAX_RETRIES` must be a non-negative integer, got `{v}`"
+            ),
+        })?),
+    };
+
     let layout = match read("CROZIER_LAYOUT") {
         None => None,
         Some(v) => Some(parse_layout(&v).ok_or_else(|| Error::InvalidEnvOverride {
@@ -471,6 +495,7 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         fern_strict,
         extra_fields,
         enum_type,
+        default_max_retries,
         layout,
         reference: None,
     })
@@ -639,6 +664,13 @@ pub fn resolve(
         .or(env.enum_type)
         .or(per.and_then(|p| p.enum_type))
         .unwrap_or_default();
+    // `default-max-retries` is Python-generator-specific too: CLI > env >
+    // per-generator > Fern's default of 2.
+    let default_max_retries = cli
+        .default_max_retries
+        .or(env.default_max_retries)
+        .or(per.and_then(|p| p.default_max_retries))
+        .unwrap_or(DEFAULT_MAX_RETRIES);
     let layout = cli
         .layout
         .or(env.layout)
@@ -657,6 +689,7 @@ pub fn resolve(
         fern_strict,
         extra_fields,
         enum_type,
+        default_max_retries,
         layout,
     })
 }
@@ -864,6 +897,22 @@ pub fn explain(
                 .value
                 .get_or_insert_with(|| show(EnumType::default()));
             enum_type
+        },
+        // Python-generator-specific and never unset: with no layer supplying it,
+        // it shows Fern's default of 2.
+        {
+            let show = |n: u32| n.to_string();
+            let mut retries = field(
+                "default-max-retries",
+                cli.default_max_retries.map(show),
+                env.default_max_retries.map(show),
+                per.and_then(|p| p.default_max_retries).map(show),
+                None,
+            );
+            retries
+                .value
+                .get_or_insert_with(|| show(DEFAULT_MAX_RETRIES));
+            retries
         },
         layout_field(cli, env, per, config),
         // `crozier compare`'s reference command: no env layer and no default, and
@@ -1311,6 +1360,91 @@ mod tests {
         let default = row(&FileConfig::default(), &none);
         assert_eq!(default.value.as_deref(), Some("python-enums"));
         assert_eq!(default.source, Source::Default);
+    }
+
+    #[test]
+    fn env_default_max_retries_parses_integers_and_rejects_others() {
+        for (raw, expected) in [("0", 0), ("5", 5)] {
+            let e = env_overrides(env_get(&[("CROZIER_DEFAULT_MAX_RETRIES", raw)])).unwrap();
+            assert_eq!(e.default_max_retries, Some(expected), "{raw}");
+        }
+        for raw in ["-1", "two", "1.5"] {
+            let err = env_overrides(env_get(&[("CROZIER_DEFAULT_MAX_RETRIES", raw)])).unwrap_err();
+            assert!(
+                err.to_string()
+                    .contains("`CROZIER_DEFAULT_MAX_RETRIES` must be a non-negative integer"),
+                "{err}"
+            );
+        }
+    }
+
+    #[test]
+    fn default_max_retries_is_generator_specific_and_defaults_to_two() {
+        let config = parsed(
+            "generators:\n  python:\n    spec: ./a.yml\n    output: ./o\n    default-max-retries: 0",
+        );
+        let none = GeneratorSettings::default();
+        let resolved = |env: &GeneratorSettings, cli: &CliOverrides| {
+            resolve("python", &config, env, cli)
+                .unwrap()
+                .default_max_retries
+        };
+        assert_eq!(resolved(&none, &CliOverrides::default()), 0);
+        let env = env_overrides(env_get(&[("CROZIER_DEFAULT_MAX_RETRIES", "4")])).unwrap();
+        assert_eq!(resolved(&env, &CliOverrides::default()), 4);
+        let cli = CliOverrides {
+            default_max_retries: Some(1),
+            ..CliOverrides::default()
+        };
+        assert!(!cli.is_empty());
+        assert_eq!(resolved(&env, &cli), 1);
+
+        let bare = parsed("generators:\n  python:\n    spec: ./a.yml\n    output: ./o");
+        let args = resolve("python", &bare, &none, &CliOverrides::default()).unwrap();
+        assert_eq!(args.default_max_retries, DEFAULT_MAX_RETRIES);
+        // No shared top-level form, and no negative count.
+        let err = parse("default-max-retries: 0").unwrap_err();
+        assert!(err.contains("default-max-retries"), "{err}");
+        assert!(parse("generators:\n  python:\n    default-max-retries: -1").is_err());
+    }
+
+    #[test]
+    fn explain_attributes_default_max_retries_and_shows_the_default() {
+        let config = parsed(
+            "generators:\n  python:\n    spec: ./a.yml\n    output: ./o\n    default-max-retries: 0",
+        );
+        let row = |config: &FileConfig, env: &GeneratorSettings| {
+            explain("python", config, env, &CliOverrides::default())
+                .into_iter()
+                .find(|f| f.field == "default-max-retries")
+                .expect("default-max-retries present")
+        };
+        let none = GeneratorSettings::default();
+        let from_generator = row(&config, &none);
+        assert_eq!(from_generator.value.as_deref(), Some("0"));
+        assert_eq!(from_generator.source, Source::Generator);
+        let env = env_overrides(env_get(&[("CROZIER_DEFAULT_MAX_RETRIES", "3")])).unwrap();
+        let from_env = row(&config, &env);
+        assert_eq!(from_env.value.as_deref(), Some("3"));
+        assert_eq!(from_env.source, Source::Env);
+        let default = row(&FileConfig::default(), &none);
+        assert_eq!(default.value.as_deref(), Some("2"));
+        assert_eq!(default.source, Source::Default);
+    }
+
+    #[test]
+    fn merge_layers_a_generator_default_max_retries() {
+        let base = parsed("generators:\n  python:\n    default-max-retries: 0");
+        let over = parsed("generators:\n  python:\n    spec: ./a.yml");
+        assert_eq!(
+            merge(base.clone(), over).generators["python"].default_max_retries,
+            Some(0)
+        );
+        let over = parsed("generators:\n  python:\n    default-max-retries: 3");
+        assert_eq!(
+            merge(base, over).generators["python"].default_max_retries,
+            Some(3)
+        );
     }
 
     #[test]

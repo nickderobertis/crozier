@@ -39,7 +39,7 @@ shape unconditionally the e2e normalizes the block off both sides
 hand-rolled `fern generate`, or the golden silently comes back in Fern's
 out-of-the-box open-`Literal`-union enum shape. That shape has its own goldens,
 `expected-literals/` overlays for crozier's `enum-type: literals`, from
-`scripts/fern-literals-goldens.sh` ([`fern-goldens.md`](../../docs/fern-goldens.md#literal-enum-goldens)).
+`scripts/fern-overlay-goldens.sh --enum-type literals` ([`fern-goldens.md`](../../docs/fern-goldens.md#literal-enum-goldens)).
 
 Per-fixture non-default settings live in **one shared table**,
 [`fern-generator-config.txt`](fern-generator-config.txt) — a single file for the

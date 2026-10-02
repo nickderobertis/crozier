@@ -734,10 +734,11 @@ class FernRescreenVerdictTests(unittest.TestCase):
         heredoc = re.search(r'cat > "\$workdir/fern/generators\.yml" <<YAML\n(.*?)\nYAML\n', script, re.S)
         self.assertIsNotNone(heredoc, "generate-fern-fixture.sh no longer writes generators.yml from a heredoc")
         body = heredoc.group(1)
-        # `pydantic_config_block` is the script's default: an `expected/` golden's
-        # python_enums enum type with no extra-fields setting.
+        # The blocks are the script's defaults: an `expected/` golden's
+        # python_enums enum type, with no extra-fields or default-max-retries setting.
         for variable, value in (("api_path", "openapi/openapi.yml"), ("FERN_PYTHON_VERSION", version),
                                 ("audiences_block", ""), ("client_class_name_block", ""),
+                                ("default_max_retries_block", ""),
                                 ("pydantic_config_block",
                                  "          pydantic_config:\n            enum_type: python_enums\n")):
             body = body.replace("${" + variable + "}", value)

@@ -191,6 +191,10 @@ pub struct Ir {
     pub extra_fields: crate::settings::ExtraFields,
     /// How string enums are emitted (Fern's `pydantic_config.enum_type`).
     pub enum_type: crate::settings::EnumType,
+    /// The client's default maximum number of retries (Fern's
+    /// `default_max_retries`): the root client's `max_retries` fallback and the
+    /// client wrappers' parameter default.
+    pub default_max_retries: u32,
     /// Which tree to emit: Fern's packaged SDK or its flat module tree.
     pub layout: crate::settings::Layout,
 }
@@ -2104,6 +2108,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         environment,
         extra_fields: config.extra_fields,
         enum_type: config.enum_type,
+        default_max_retries: config.default_max_retries,
         layout: config.layout,
     }
 }
@@ -17113,6 +17118,7 @@ mod tests {
             fern_strict: false,
             extra_fields: crate::settings::ExtraFields::Allow,
             enum_type: crate::settings::EnumType::PythonEnums,
+            default_max_retries: crate::settings::DEFAULT_MAX_RETRIES,
             layout: crate::settings::Layout::Packaged,
         })
         .expect("render succeeds");

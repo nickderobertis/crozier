@@ -88,7 +88,7 @@ jobs:
           }
 
           for name in OUTPUT SPEC PACKAGE_NAME PROJECT_NAME CLIENT_CLASS_NAME \
-            AUDIENCE_STRICT EXTRA_FIELDS ENUM_TYPE LAYOUT; do
+            AUDIENCE_STRICT EXTRA_FIELDS ENUM_TYPE DEFAULT_MAX_RETRIES LAYOUT; do
             var="CROZIER_REFERENCE_$name"
             [ -n "${!var:-}" ] || fail "$var is not set; run this as a crozier compare reference command"
           done
@@ -126,6 +126,13 @@ jobs:
               fail "unknown enum type '$CROZIER_REFERENCE_ENUM_TYPE': expected python-enums or literals"
               ;;
           esac
+
+          # Fern's `default_max_retries` defaults to 2, as crozier's does; only another
+          # value is written.
+          retries="$CROZIER_REFERENCE_DEFAULT_MAX_RETRIES"
+          [[ "$retries" =~ ^(0|[1-9][0-9]*)$ ]] || fail "default max retries '$retries' is not a non-negative integer"
+          default_max_retries=""
+          [ "$retries" = 2 ] || default_max_retries="          default_max_retries: $retries"$'\n'
 
           work="$(mktemp -d)"
           trap 'rm -rf "$work"' EXIT
@@ -173,7 +180,7 @@ jobs:
                   version: $q_sdk_version
                   config:
                     client_class_name: $q_client
-                    pydantic_config:
+          ${default_max_retries}          pydantic_config:
           ${enum_type}            extra_fields: $q_extra_fields
                   output:
                     location: local-file-system

@@ -1427,6 +1427,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         packaged.then_some(ir.project_name.as_str()),
         &ir.auth,
         &ir.global_headers,
+        ir.default_max_retries,
     ));
 
     // `environment.py`: the server-environment enum, when the document declares
@@ -1597,6 +1598,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 auth: &ir.auth,
                 environment: ir.environment.as_ref(),
                 global_headers: &ir.global_headers,
+                default_max_retries: ir.default_max_retries,
             },
         )?);
     }
@@ -3446,13 +3448,16 @@ fn distinct_global_header_params(global_headers: &[GlobalHeader]) -> Vec<&Global
 /// Generate `core/client_wrapper.py`, shaped by the SDK's [`Auth`] model. The
 /// bearer-optional form is byte-identical to Fern's default wrapper; api-key and
 /// required-credential forms swap the constructor parameter, the header wiring,
-/// and the token helper. Assembled from literal blocks (no source-line
-/// continuations, which would eat the Python indentation).
+/// and the token helper. Every wrapper's `max_retries` parameter defaults to
+/// `default_max_retries`, as Fern's does to its `default_max_retries`.
+/// Assembled from literal blocks (no source-line continuations, which would eat
+/// the Python indentation).
 fn client_wrapper_file(
     pkg: &str,
     sdk_name: Option<&str>,
     auth: &Auth,
     global_headers: &[GlobalHeader],
+    default_max_retries: u32,
 ) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
     // Promoted global headers: a constructor parameter, an assignment, a
@@ -3526,7 +3531,7 @@ fn client_wrapper_file(
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n    ):\n");
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n    ):\n"));
     c.push_str(&gh_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
@@ -3550,13 +3555,13 @@ fn client_wrapper_file(
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            ");
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            "));
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            ");
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            "));
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
@@ -5796,6 +5801,8 @@ struct RootClientFileCtx<'a> {
     auth: &'a Auth,
     environment: Option<&'a crate::ir::Environment>,
     global_headers: &'a [GlobalHeader],
+    /// The fallback for an unset `max_retries` (Fern's `default_max_retries`).
+    default_max_retries: u32,
 }
 
 fn root_client_file(
@@ -5814,6 +5821,7 @@ fn root_client_file(
         auth,
         environment,
         global_headers,
+        default_max_retries,
     } = cx;
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
     imports.add_plain("typing");
@@ -5858,6 +5866,7 @@ fn root_client_file(
         auth,
         environment,
         global_headers,
+        default_max_retries,
     };
     let root_methods = root_client_methods(
         env,
@@ -5954,6 +5963,7 @@ struct RootClientCfg<'a> {
     auth: &'a Auth,
     environment: Option<&'a crate::ir::Environment>,
     global_headers: &'a [GlobalHeader],
+    default_max_retries: u32,
 }
 
 #[allow(
@@ -6175,6 +6185,7 @@ fn root_client_class(
             ""
         }
         .to_string(),
+        default_max_retries: cfg.default_max_retries,
     };
     // The caller controls the separation between the sync/async classes and the
     // file's final newline, so drop the template's trailing newline.
@@ -6243,6 +6254,9 @@ struct RootClientView {
     async_token_doc: String,
     async_token_ctor: String,
     async_token_wrapper: String,
+    /// The `max_retries` fallback and its documented default (Fern's
+    /// `default_max_retries`).
+    default_max_retries: u32,
 }
 
 /// The environment-varying fragments of the root client: the docstring block, the
@@ -10629,6 +10643,7 @@ mod tests {
             async_token_doc: String::new(),
             async_token_ctor: String::new(),
             async_token_wrapper: String::new(),
+            default_max_retries: 2,
         };
         let out = render_tmpl("root_client.py", &view);
         assert!(out.starts_with("class FernApi:"));
@@ -11054,6 +11069,7 @@ mod tests {
             environment: None,
             extra_fields: crate::settings::ExtraFields::Allow,
             enum_type: crate::settings::EnumType::PythonEnums,
+            default_max_retries: crate::settings::DEFAULT_MAX_RETRIES,
             layout: crate::settings::Layout::Packaged,
         }
     }

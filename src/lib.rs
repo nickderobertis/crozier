@@ -69,6 +69,9 @@ pub struct GenerateArgs {
     /// How string enums are generated (Fern's `pydantic_config.enum_type`):
     /// `enum.StrEnum` classes or open `typing.Literal` unions.
     pub enum_type: settings::EnumType,
+    /// The client's default maximum number of retries for a failed request
+    /// (Fern's `default_max_retries`); Fern's default is 2.
+    pub default_max_retries: u32,
     /// Strict Fern compatibility (`--fern-strict`): refuse, as Fern does, a
     /// document crozier would otherwise generate from. It only ever decides
     /// whether an SDK is written, never a byte of one that is. The classes it
@@ -99,6 +102,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     )?;
     config.layout = args.layout;
     config.enum_type = args.enum_type;
+    config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
@@ -169,6 +173,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     )?;
     config.layout = args.layout;
     config.enum_type = args.enum_type;
+    config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;

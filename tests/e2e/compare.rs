@@ -502,7 +502,7 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
         root,
         "api/crozier.yml",
         &format!(
-            "spec: ./openapi.yml\nreference:\n  command: ../dump.sh\ngenerators:\n  golden:\n{}  defaults:\n    audiences: [public, internal]\n    audience-strict: true\n    extra-fields: ignore\n    enum-type: literals\n",
+            "spec: ./openapi.yml\nreference:\n  command: ../dump.sh\ngenerators:\n  golden:\n{}  defaults:\n    audiences: [public, internal]\n    audience-strict: true\n    extra-fields: ignore\n    enum-type: literals\n    default-max-retries: 0\n",
             golden_naming("    ")
         ),
     );
@@ -518,6 +518,7 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
         .env("CROZIER_AUDIENCE_STRICT", "false")
         .env("CROZIER_EXTRA_FIELDS", "forbid")
         .env("CROZIER_ENUM_TYPE", "python-enums")
+        .env("CROZIER_DEFAULT_MAX_RETRIES", "5")
         .env("CROZIER_LAYOUT", "flat")
         .env("CROZIER_CONFIG", "/nowhere/crozier.yml")
         .output()
@@ -572,6 +573,7 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
             "CROZIER_REFERENCE_AUDIENCE_STRICT=false".to_string(),
             "CROZIER_REFERENCE_CLIENT_CLASS_NAME=AcmeClient".to_string(),
             config_file,
+            "CROZIER_REFERENCE_DEFAULT_MAX_RETRIES=2".to_string(),
             "CROZIER_REFERENCE_ENUM_TYPE=python-enums".to_string(),
             "CROZIER_REFERENCE_EXTRA_FIELDS=allow".to_string(),
             generator,
@@ -591,6 +593,7 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
             "CROZIER_REFERENCE_AUDIENCE_STRICT=true".to_string(),
             "CROZIER_REFERENCE_CLIENT_CLASS_NAME=WidgetApiApi".to_string(),
             config_file,
+            "CROZIER_REFERENCE_DEFAULT_MAX_RETRIES=0".to_string(),
             "CROZIER_REFERENCE_ENUM_TYPE=literals".to_string(),
             "CROZIER_REFERENCE_EXTRA_FIELDS=ignore".to_string(),
             generator,

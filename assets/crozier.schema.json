@@ -220,6 +220,15 @@
             }
           ]
         },
+        "default-max-retries": {
+          "description": "The client's default maximum number of retries for a failed request\n(Fern's `default_max_retries`, alias `maxRetries`); a per-request\n`max_retries` still takes precedence. `0` disables retries by default.\nPython-generator-specific, like `extra-fields`. Defaults to `2`, Fern's\ndefault.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
         "layout": {
           "description": "Which tree to write: `packaged` (Fern's `--preview --output`) or `flat`\n(Fern's `local-file-system` output). Defaults to [`Layout::Packaged`].",
           "anyOf": [

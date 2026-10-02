@@ -34,6 +34,10 @@ targeted set reaching every enum shape to the `literals` output
 (`expected-literals/`; see
 [`fern-goldens.md`](fern-goldens.md#literal-enum-goldens)), and the script
 writes whichever one the generator is configured with (see `ENUM_TYPE` below).
+`default-max-retries` is certified the same way against Fern's
+`default_max_retries` (at `0`, on a targeted pair of corpora); the script
+writes it whenever it is not the shared default of `2` (see
+`DEFAULT_MAX_RETRIES` below).
 
 ## Use it
 
@@ -69,6 +73,7 @@ environment `crozier compare` passes, runs Fern, and leaves the reference SDK in
 | `AUDIENCE_STRICT` | Not written: Fern has no such setting. Its group `audiences:` filter always drops operations that carry no audience, which is crozier's `audience-strict: true`. With `false`, crozier keeps those operations and a document that has any reports `mismatched`. |
 | `EXTRA_FIELDS` | The generator's `config.pydantic_config.extra_fields`. |
 | `ENUM_TYPE` | `python-enums` sets the generator's `config.pydantic_config.enum_type: python_enums`; `literals` leaves `enum_type` unset, Fern's `literals` default; any other value exits non-zero naming it, without running `fern`. |
+| `DEFAULT_MAX_RETRIES` | The generator's `config.default_max_retries` when it is not `2`, Fern's default; at `2` no key is written. A value that is not a non-negative integer exits non-zero naming it, without running `fern`. |
 | `LAYOUT` | Fern's output mode: `packaged` runs `fern generate --local --preview --output "$CROZIER_REFERENCE_OUTPUT"`, `flat` writes the tree to a `local-file-system` output whose `path` is `$CROZIER_REFERENCE_OUTPUT`; any other value exits non-zero naming it, without running `fern`. |
 | `OUTPUT` | Where Fern writes, as `LAYOUT` describes. |
 
@@ -136,7 +141,7 @@ quote() {
 }
 
 for name in OUTPUT SPEC PACKAGE_NAME PROJECT_NAME CLIENT_CLASS_NAME \
-  AUDIENCE_STRICT EXTRA_FIELDS ENUM_TYPE LAYOUT; do
+  AUDIENCE_STRICT EXTRA_FIELDS ENUM_TYPE DEFAULT_MAX_RETRIES LAYOUT; do
   var="CROZIER_REFERENCE_$name"
   [ -n "${!var:-}" ] || fail "$var is not set; run this as a crozier compare reference command"
 done
@@ -174,6 +179,13 @@ case "$CROZIER_REFERENCE_ENUM_TYPE" in
     fail "unknown enum type '$CROZIER_REFERENCE_ENUM_TYPE': expected python-enums or literals"
     ;;
 esac
+
+# Fern's `default_max_retries` defaults to 2, as crozier's does; only another
+# value is written.
+retries="$CROZIER_REFERENCE_DEFAULT_MAX_RETRIES"
+[[ "$retries" =~ ^(0|[1-9][0-9]*)$ ]] || fail "default max retries '$retries' is not a non-negative integer"
+default_max_retries=""
+[ "$retries" = 2 ] || default_max_retries="          default_max_retries: $retries"$'\n'
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
@@ -221,7 +233,7 @@ ${audiences}    generators:
         version: $q_sdk_version
         config:
           client_class_name: $q_client
-          pydantic_config:
+${default_max_retries}          pydantic_config:
 ${enum_type}            extra_fields: $q_extra_fields
         output:
           location: local-file-system

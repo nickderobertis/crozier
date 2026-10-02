@@ -70,6 +70,10 @@ pub struct GenerateConfig {
     /// after construction; [`GenerateConfig::new`] starts from the default
     /// [`EnumType::PythonEnums`](crate::settings::EnumType::PythonEnums).
     pub enum_type: crate::settings::EnumType,
+    /// The client's default maximum number of retries (Fern's
+    /// `default_max_retries`). Set after construction; [`GenerateConfig::new`]
+    /// starts from [`DEFAULT_MAX_RETRIES`](crate::settings::DEFAULT_MAX_RETRIES).
+    pub default_max_retries: u32,
 }
 
 impl GenerateConfig {
@@ -101,6 +105,7 @@ impl GenerateConfig {
             extra_fields,
             layout: crate::settings::Layout::default(),
             enum_type: crate::settings::EnumType::default(),
+            default_max_retries: crate::settings::DEFAULT_MAX_RETRIES,
         })
     }
 }

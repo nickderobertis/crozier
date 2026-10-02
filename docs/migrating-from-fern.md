@@ -16,7 +16,8 @@ crozier certifies one pair, **Fern CLI 5.67.1** with **`fernapi/fern-python-sdk`
 either enum form: `pydantic_config.enum_type: python_enums`, which crozier's
 default `enum-type: python-enums` matches, or `enum_type` unset — Fern's
 `literals` default — which `enum-type: literals` matches (see the
-[options table](#pydantic_config)).
+[options table](#pydantic_config)). A non-default `default_max_retries` is
+matched by the same value of crozier's `default-max-retries`.
 A generator on an older release (4.x, or an older release candidate) differs
 from crozier wherever Fern's output changed since. So upgrade first, as its own
 change:
@@ -213,7 +214,7 @@ the difference, or stays on Fern.
 | `should_generate_websocket_clients` | `false` | Default only. |
 | `timeout` | unset | Default only. |
 | `timeout_in_seconds` | `60` | Default only. |
-| `default_max_retries` (or `maxRetries`) | `2` | Default only. |
+| `default_max_retries` (or `maxRetries`) | `2` | `default-max-retries`: any non-negative integer, matching the same `default_max_retries`; `2` is crozier's default too. |
 | `retry_status_codes` (or `retryStatusCodes`) | `legacy` | Default only. |
 | `offset_semantics` (or `offsetSemantics`) | `item-index` | Default only. |
 | `custom_pager_name` (or `custom-pager-name`) | unset | Default only. |

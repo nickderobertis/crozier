@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Reduce a full Fern `enum_type: literals` tree to an overlay of a fixture's golden.
+"""Reduce a full Fern tree generated under one non-default setting to an overlay.
 
-A fixture's literals golden is Fern's own output with `pydantic_config.enum_type`
-left unset (fern-python-sdk's `literals` default), stripped exactly like
-`expected/`. It differs from the committed python-enums `expected/` tree only in
-the files that mention an enum, so it is committed as an overlay: every file
-whose bytes differ from (or are absent in) `expected/`, plus a manifest naming
-the files Fern does not emit in literals mode (`core/enum.py`). The e2e gate
-rebuilds the full tree as `expected/` - removed + overlay.
+A setting golden (`expected-literals/` for `enum_type` unset,
+`expected-default-max-retries/` for `default_max_retries`) is Fern's own output
+for a fixture's spec with one generator setting changed, stripped exactly like
+`expected/`. It differs from the committed `expected/` tree only in the files
+that setting reaches, so it is committed as an overlay: every file whose bytes
+differ from (or are absent in) `expected/`, plus a manifest naming the files
+Fern does not emit under the setting (literals drop `core/enum.py`). The e2e
+gate rebuilds the full tree as `expected/` - removed + overlay.
 
-Usage: literals_overlay.py reduce BASE TREE PROVENANCE_JSON
+Usage: golden_overlay.py reduce BASE TREE PROVENANCE_JSON
   BASE             the fixture's committed python-enums `expected/` tree
-  TREE             the full stripped literals tree; reduced IN PLACE
+  TREE             the full stripped setting tree; reduced IN PLACE
   PROVENANCE_JSON  a JSON object merged into the manifest (versions, settings)
 """
 
@@ -21,7 +22,7 @@ import json
 import sys
 from pathlib import Path
 
-MANIFEST = ".crozier-literals-overlay.json"
+MANIFEST = ".crozier-overlay.json"
 # Provenance of the base tree, never part of either generated tree.
 IGNORED = {".crozier-fern-golden.json", MANIFEST}
 
@@ -37,7 +38,7 @@ def files(root: Path) -> set[str]:
 def reduce(base: Path, tree: Path, provenance: dict[str, object]) -> None:
     if not base.is_dir():
         raise SystemExit(
-            f"literals_overlay: no python-enums golden at {base}; "
+            f"golden_overlay: no python-enums golden at {base}; "
             "generate the fixture's expected/ first"
         )
     base_files = files(base)
@@ -56,7 +57,7 @@ def reduce(base: Path, tree: Path, provenance: dict[str, object]) -> None:
 
 def main(argv: list[str]) -> int:
     if len(argv) != 4 or argv[0] != "reduce":
-        print("usage: literals_overlay.py reduce BASE TREE PROVENANCE_JSON", file=sys.stderr)
+        print("usage: golden_overlay.py reduce BASE TREE PROVENANCE_JSON", file=sys.stderr)
         return 2
     reduce(Path(argv[1]), Path(argv[2]), json.loads(argv[3]))
     return 0

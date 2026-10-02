@@ -31,9 +31,17 @@ mod action;
 #[path = "e2e/major_tag.rs"]
 mod major_tag;
 
-/// `enum-type: literals` against Fern's literal-enum goldens.
+/// `enum-type: literals` through the binary.
 #[path = "e2e/literals.rs"]
 mod literals;
+
+/// `default-max-retries` through the binary.
+#[path = "e2e/default_max_retries.rs"]
+mod default_max_retries;
+
+/// Non-default settings against Fern's overlay goldens (`expected-literals/`, …).
+#[path = "e2e/overlay_goldens.rs"]
+mod overlay_goldens;
 
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
@@ -8575,19 +8583,22 @@ fn every_registered_corpus_is_wired_into_the_gate() {
         enforced.insert((*test).to_string());
     }
 
-    // The literals gate compares every enum corpus's literal-enum golden in one
-    // test, over the same committed sources; the name must still be its test's.
+    // The overlay gate compares every setting's targeted goldens in one test,
+    // over the same committed sources; the name must still be its test's.
     assert!(
-        include_str!("e2e/literals.rs").contains(&format!("fn {}()", literals::CORPUS_TEST)),
+        include_str!("e2e/overlay_goldens.rs")
+            .contains(&format!("fn {}()", overlay_goldens::CORPUS_TEST)),
         "no #[test] is named {}",
-        literals::CORPUS_TEST
+        overlay_goldens::CORPUS_TEST
     );
     assert!(
-        recipe.iter().any(|listed| listed == literals::CORPUS_TEST),
+        recipe
+            .iter()
+            .any(|listed| listed == overlay_goldens::CORPUS_TEST),
         "{} is missing from `just test-corpus-match`",
-        literals::CORPUS_TEST
+        overlay_goldens::CORPUS_TEST
     );
-    enforced.insert(literals::CORPUS_TEST.to_string());
+    enforced.insert(overlay_goldens::CORPUS_TEST.to_string());
 
     let listed: std::collections::BTreeSet<String> = recipe.iter().cloned().collect();
     assert_eq!(
@@ -11816,6 +11827,7 @@ const CROZIER_ENV_VARS: &[&str] = &[
     "CROZIER_FERN_STRICT",
     "CROZIER_EXTRA_FIELDS",
     "CROZIER_ENUM_TYPE",
+    "CROZIER_DEFAULT_MAX_RETRIES",
     "CROZIER_LAYOUT",
 ];
 
@@ -12454,6 +12466,7 @@ fn config_labels_the_layer_every_field_came_from() {
         ("extra-fields", "forbid", "generator"),
         // Never unset: with no layer supplying it, the value a run would use.
         ("enum-type", "python-enums", "default"),
+        ("default-max-retries", "2", "default"),
         ("layout", "packaged", "default"),
         // `crozier compare`'s command, from the shared block.
         ("reference.command", "./reference.sh --all", "shared"),
@@ -12492,6 +12505,7 @@ fn config_labels_the_layer_every_field_came_from() {
             // `config` shows the `false` a run would use.
             "fern-strict" => "false",
             "enum-type" => "python-enums",
+            "default-max-retries" => "2",
             "layout" => "packaged",
             _ => "(unset)",
         };
@@ -14710,6 +14724,90 @@ print("accepted")
         }
     }
     assert_eq!(outcomes, ["accepted", "rejected"]);
+}
+
+/// `default-max-retries` decides how many times a generated client retries a
+/// failed request when the caller does not say: against a local server that
+/// answers every request `503`, a client generated with `0` makes one attempt
+/// and one generated with the default makes three (two retries), while a
+/// per-request `max_retries` still overrides either.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_default_max_retries_bounds_the_attempts_a_client_makes() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("api.yml");
+    std::fs::write(&spec, default_max_retries::SPEC).unwrap();
+    let script = r#"
+import http.server
+import threading
+
+from pets import PetsApi
+from pets.core.api_error import ApiError
+
+hits = []
+
+
+class Unavailable(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        hits.append(self.path)
+        self.send_response(503)
+        self.send_header("Retry-After", "1")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def log_message(self, *args):
+        pass
+
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Unavailable)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+client = PetsApi(base_url=f"http://127.0.0.1:{server.server_port}")
+
+
+def attempts(**kwargs):
+    before = len(hits)
+    try:
+        client.pets.list_pets(**kwargs)
+    except ApiError as error:
+        assert error.status_code == 503, error
+    else:
+        raise AssertionError("a 503 did not raise")
+    return len(hits) - before
+
+
+print(attempts(), attempts(request_options={"max_retries": 1}))
+"#;
+    let mut outcomes = Vec::new();
+    for (name, args) in [
+        ("zero", &["--default-max-retries", "0"][..]),
+        ("default", &[][..]),
+    ] {
+        let sdk = dir.path().join(name);
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&sdk)
+            .args(["--package-name", "pets"])
+            .args(args)
+            .assert()
+            .success();
+        let py = sdk_python_env(&sdk.join("pyproject.toml"))
+            .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+        let run = std::process::Command::new(&py)
+            .args(["-c", script])
+            .current_dir(sdk.join("src"))
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("drive the generated client");
+        assert!(
+            run.status.success(),
+            "{name}: {}",
+            String::from_utf8_lossy(&run.stderr)
+        );
+        outcomes.push(String::from_utf8_lossy(&run.stdout).trim().to_string());
+    }
+    assert_eq!(outcomes, ["1 2", "3 2"]);
 }
 
 /// One class written into a scratch registry: its row, probe, Fern record and,

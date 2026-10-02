@@ -14,7 +14,7 @@ class {{ class_name }}:
         The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
 
     max_retries : typing.Optional[int]
-        The default maximum number of retries for failed requests. Defaults to 2. Per-request `max_retries` in `request_options` takes precedence over this value.
+        The default maximum number of retries for failed requests. Defaults to {{ default_max_retries }}. Per-request `max_retries` in `request_options` takes precedence over this value.
 
     stream_reconnection_enabled : typing.Optional[bool]
         Whether to automatically reconnect on stream disconnection for resumable streaming endpoints. Defaults to True. Per-request `stream_reconnection_enabled` in `request_options` takes precedence over this value.
@@ -56,7 +56,7 @@ class {{ class_name }}:
         logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
-        _defaulted_max_retries = max_retries if max_retries is not None else 2
+        _defaulted_max_retries = max_retries if max_retries is not None else {{ default_max_retries }}
 {{ server_variable_init }}        self._client_wrapper = {{ wrapper }}(
             base_url={{ wrapper_base_url }},
 {{ gh_wrapper }}{{ wrapper_arg }}
