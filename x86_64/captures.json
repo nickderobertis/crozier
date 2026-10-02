@@ -4,7 +4,7 @@
     {
       "name": "config",
       "toggles": {},
-      "hash": "2a110ee664b04553e62449034907385185051e35058423d03181f89298a663fc",
+      "hash": "a6e93ffeba26d4ff55b6885778df5ee2c3e5a0d4e87e70c706a139fcc9aa1648",
       "image": "config.svg"
     },
     {
@@ -22,7 +22,7 @@
     {
       "name": "help",
       "toggles": {"command":"generate"},
-      "hash": "3c819ba6e451a4ea4bfeea5d462e6226e7984e890b7b7e1faac93fc1cd34f66a",
+      "hash": "723540822c2fe82445af8a68326c34687cc17e6fb4850c5caccee67f4de1e294",
       "image": "help-generate.svg"
     },
     {
