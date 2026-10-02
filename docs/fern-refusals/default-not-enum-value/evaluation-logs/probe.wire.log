@@ -1,0 +1,9 @@
+Baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; generated public enum/client driven over HTTPX transport.
+declared enum: createdAt, -createdAt; declared default: -createdAt
+generated enum members: [('CREATED_AT', 'createdAt')]
+declared negative branch: ValueError '-createdAt' is not a valid ListRequestSort
+requests sent for declared negative branch: 0
+omitted sort response: None
+request: [{"method": "POST", "url": "https://example.test/contacts", "body": "{}"}]
+
+exit: 0

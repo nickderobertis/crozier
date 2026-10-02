@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /activities:
+    get:
+      operationId: probe
+      x-fern-examples:
+        - response: {body: {kind: FILL}}
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Activity'}
+components:
+  schemas:
+    Activity:
+      type: object
+      required: [id]
+      properties:
+        id: {type: string}
+        kind: {type: string, enum: [FILL, ACATC]}
+        n: {type: integer}
+        sub: {$ref: '#/components/schemas/Sub'}
+    Sub:
+      type: object
+      properties:
+        kind: {type: string, enum: [A, B]}

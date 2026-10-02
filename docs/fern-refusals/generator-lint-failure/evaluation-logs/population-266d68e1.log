@@ -1,0 +1,17 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 266d68e1e6f7bce1b1416a776da476839bb4efef993414f75d68d0635395473b
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/266d68e1e6f7bce1b1416a776da476839bb4efef993414f75d68d0635395473b.yaml'), '--output', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/generator-lint/baseline-sdks/266d68e1'), '--package-name', 'fern']
+exit: 0
+generated 48 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/generator-lint/baseline-sdks/266d68e1
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 1
+src/fern/raw_client.py:75: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:147: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/search/raw_client.py:73: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/search/raw_client.py:143: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/client.py:160: error: Name "search" already defined on line 118  [no-redef]
+src/fern/client.py:333: error: Name "search" already defined on line 283  [no-redef]
+Found 6 errors in 3 files (checked 41 source files)

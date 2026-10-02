@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /contacts:
+    post:
+      operationId: createContact
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [attributes]
+              properties:
+                attributes: {$ref: '#/components/schemas/Container/properties/id'}
+      responses:
+        '204': {description: No Content}
+components:
+  schemas:
+    Container: {type: object, properties: {id: {type: string}}}

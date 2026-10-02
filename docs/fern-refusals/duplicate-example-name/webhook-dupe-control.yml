@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '204':
+          description: No Content
+webhooks:
+  hook:
+    post:
+      operationId: hook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+            examples:
+              a:
+                value:
+                  id: a
+                summary: Same
+              b:
+                value:
+                  id: b
+                summary: Same
+      responses:
+        '200':
+          description: OK

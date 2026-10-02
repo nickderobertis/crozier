@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.30s
+────────────
+ Nextest run ID f76b0027-9e52-4d04-88bd-70508fd9abb6 with nextest profile: default
+    Starting 1 test across 1 binary (445 tests and 6 binaries skipped)
+        FAIL [   0.062s] (1/1) crozier::e2e unresolved_schema_refusal_preserves_optional_and_response_root_references
+  stdout ───
+
+    running 1 test
+    test unresolved_schema_refusal_preserves_optional_and_response_root_references ... FAILED
+
+    failures:
+
+    failures:
+        unresolved_schema_refusal_preserves_optional_and_response_root_references
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 445 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'unresolved_schema_refusal_preserves_optional_and_response_root_references' (468755) panicked at tests/e2e.rs:16384:13:
+    probe.yml: unresolved-schema-reference: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.064s] 1 test run: 0 passed, 1 failed, 445 skipped
+        FAIL [   0.062s] (1/1) crozier::e2e unresolved_schema_refusal_preserves_optional_and_response_root_references
+error: test run failed

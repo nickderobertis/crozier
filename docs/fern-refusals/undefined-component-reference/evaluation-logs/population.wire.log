@@ -1,0 +1,3 @@
+AttributeError: 'FernApi' object has no attribute 'cart'
+requests sent: 0
+declared Cart endpoint GET /carts/{id}.json refers to absent CartIDParam; the entire Cart service is dropped

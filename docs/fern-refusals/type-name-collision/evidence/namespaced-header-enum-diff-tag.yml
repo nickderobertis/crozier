@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      parameters:
+      - name: Mode
+        in: header
+        schema:
+          type: string
+          enum:
+          - a
+          - b
+        required: true
+      responses:
+        '204':
+          description: ok
+      tags:
+      - agents
+components:
+  schemas:
+    ListAgentsRequestMode:
+      type: string
+      enum:
+      - x
+      - y

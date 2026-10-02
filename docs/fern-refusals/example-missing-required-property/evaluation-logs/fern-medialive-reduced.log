@@ -1,0 +1,40 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[sdk] 4 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateMultiplex -> examples[0] -> request
+        issue: Example is missing required property "request.multiplexSettings.TransportStreamBitrate"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateMultiplex
+        issue: CreateMultiplexRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultiplexes
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultiplexes
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+Found 4 errors and 0 warnings in <n> seconds.

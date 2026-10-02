@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /requests/{id}:
+    get:
+      operationId: getRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Request'}
+components:
+  schemas:
+    FileBase:
+      type: object
+      nullable: true
+      properties:
+        id: {type: string, example: '12345'}
+    FileMini:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/FileBase'
+        - properties:
+            name: {type: string, example: Contract.pdf}
+    Request:
+      type: object
+      properties:
+        log:
+          allOf:
+            - $ref: '#/components/schemas/FileMini'
+            - description: The log.

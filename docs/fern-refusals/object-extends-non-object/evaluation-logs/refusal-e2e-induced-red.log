@@ -1,0 +1,58 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+warning: variant `ObjectExtendsNonObject` is never constructed
+  --> src/document_refusals.rs:24:5
+   |
+14 | enum Class {
+   |      ----- variant in this enum
+...
+24 |     ObjectExtendsNonObject,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Class` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `names` is never read
+   --> src/document_refusals.rs:217:5
+    |
+213 | struct SchemaContext<'a> {
+    |        ------------- field in this struct
+...
+217 |     names: indexmap::IndexMap<String, bool>,
+    |     ^^^^^
+
+warning: function `check_object_extension` is never used
+   --> src/document_refusals.rs:334:4
+    |
+334 | fn check_object_extension(
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `crozier` (lib) generated 3 warnings
+warning: `crozier` (lib test) generated 3 warnings (3 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.51s
+────────────
+ Nextest run ID 7009e68a-f286-4d5f-82be-6b0cf252d6a2 with nextest profile: default
+    Starting 1 test across 1 binary (441 tests and 6 binaries skipped)
+        FAIL [   0.081s] (1/1) crozier::e2e object_extension_refusal_preserves_scalar_aliases_and_object_bases
+  stdout ───
+
+    running 1 test
+    test object_extension_refusal_preserves_scalar_aliases_and_object_bases ... FAILED
+
+    failures:
+
+    failures:
+        object_extension_refusal_preserves_scalar_aliases_and_object_bases
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 441 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'object_extension_refusal_preserves_scalar_aliases_and_object_bases' (3713799) panicked at tests/e2e.rs:16123:13:
+    probe.yml: object-extends-non-object: crozier generated from the probe in its mode; the class says it is refused (39 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.083s] 1 test run: 0 passed, 1 failed, 441 skipped
+        FAIL [   0.081s] (1/1) crozier::e2e object_extension_refusal_preserves_scalar_aliases_and_object_bases
+error: test run failed

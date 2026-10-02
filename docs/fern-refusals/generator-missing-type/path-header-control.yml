@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      responses:
+        '204':
+          description: No Content
+    parameters:
+    - name: Api-Version
+      in: header
+      required: true
+      schema:
+        type: string
+        enum:
+        - '2026-03-11'

@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 33.44s
+────────────
+ Nextest run ID e99a372c-26d4-4191-85ab-bb0b1a481184 with nextest profile: default
+    Starting 1 test across 1 binary (456 tests and 6 binaries skipped)
+        FAIL [   0.412s] (1/1) crozier::e2e example_missing_required_property_refusal_covers_measured_shapes
+  stdout ───
+
+    running 1 test
+    test example_missing_required_property_refusal_covers_measured_shapes ... FAILED
+
+    failures:
+
+    failures:
+        example_missing_required_property_refusal_covers_measured_shapes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 456 filtered out; finished in 0.36s
+
+  stderr ───
+
+    thread 'example_missing_required_property_refusal_covers_measured_shapes' (1954405) panicked at tests/e2e.rs:16791:9:
+    example-missing-required-property: crozier generated from the probe in its mode; the class says it is refused (41 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.433s] 1 test run: 0 passed, 1 failed, 456 skipped
+        FAIL [   0.412s] (1/1) crozier::e2e example_missing_required_property_refusal_covers_measured_shapes
+error: test run failed

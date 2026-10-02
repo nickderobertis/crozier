@@ -35,6 +35,30 @@ fn render(spec: &str) -> HashMap<String, String> {
         .collect()
 }
 
+/// [`render`] without the Fern refusal checks: the IR and emitter alone, for
+/// a guard that only a document crozier refuses reaches.
+fn render_ir(spec: &str) -> HashMap<String, String> {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(&path, spec).unwrap();
+    let doc = crozier::openapi::load(&path).expect("document loads");
+    let config = crozier::config::GenerateConfig::new(
+        path,
+        PathBuf::from("unused"),
+        Some("acme".to_string()),
+        Some("acme".to_string()),
+        None,
+        crozier::settings::ExtraFields::Allow,
+        &doc.info.title,
+    )
+    .expect("config");
+    crozier::emit::generate(&crozier::ir::build(&doc, &config))
+        .expect("render succeeds")
+        .into_iter()
+        .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+        .collect()
+}
+
 /// [`render`] over a `.json` document, which the loader reads with serde_json.
 fn render_json(spec: &str) -> HashMap<String, String> {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -3889,6 +3913,12 @@ paths:
                 file: { type: string, format: binary }
       responses:
         '204': { description: Updated }
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      responses:
+        '204': { description: Listed }
 components:
   securitySchemes:
     Basic:
@@ -11647,7 +11677,9 @@ fn parameter_schema_refs_and_errorless_downloads() {
 
 /// OneVoice (corpus row 227): a requirement naming only schemes Fern does not
 /// support — a cookie `apiKey` beside `mutualTLS` — leaves the client with no
-/// credential at all, as its Fern 5.20.0 golden's client does.
+/// credential at all, as its Fern 5.20.0 golden's client does. Its path items
+/// name other files Fern never loads, so no operation requires that auth; one
+/// that did would be refused as `service-auth-undefined`, as pinned Fern does.
 #[test]
 fn onevoice_unsupported_schemes_define_no_auth() {
     let files = render(
@@ -11657,10 +11689,7 @@ security:
   - cookieAuth: []
 paths:
   /health:
-    get:
-      tags: [health]
-      operationId: getHealth
-      responses: { '200': { description: ok } }
+    $ref: 'paths/health.yaml#/~1health'
 components:
   securitySchemes:
     cookieAuth: { type: apiKey, in: cookie, name: access_token }
@@ -12669,10 +12698,11 @@ components:
 /// the union (`#/components/schemas/intersectsFilter/properties/intersects`).
 /// The pointer is copied where it is first met; met again inside that copy, it
 /// is the unknown type, so the copy's own geometries are `List[Any]` instead of
-/// a union copied without end.
+/// a union copied without end. Pinned Fern exhausts its heap on this document,
+/// so the CLI refuses it as `heap-exhausted`; the IR's guard is driven directly.
 #[test]
 fn a_pointer_back_into_its_own_expansion_is_the_unknown_type() {
-    let files = render(
+    let files = render_ir(
         r##"openapi: 3.0.0
 info: { title: STAC Search, version: 1.0.0 }
 paths:

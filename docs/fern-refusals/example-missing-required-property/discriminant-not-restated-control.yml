@@ -1,0 +1,257 @@
+{
+ "openapi": "3.0.0",
+ "info": {
+  "title": "Prisma Browser Management Console Public API",
+  "description": "This Open API spec file represents the APIs available for Palo Alto Networks Prisma Browser Management APIs. These APIs are available for all Prisma Browser tenants to scale and automate their processes related to the browser. All of the functionality exposed by these APIs can also be performed using the Prisma Browser User Interface. These APIs use the common SASE authentication mechanism and base URL. See the Prisma SASE API Get Started guide for more information. \u00a9 2026 Palo Alto Networks, Inc. Palo Alto Networks is a registered trademark of Palo Alto Networks. A list of our trademarks can be found at https://www.paloaltonetworks.com/company/trademarks.html. All other marks mentioned herein may be trademarks of their respective companies.",
+  "version": "1.0.0"
+ },
+ "servers": [
+  {
+   "url": "https://api.sase.paloaltonetworks.com"
+  }
+ ],
+ "security": [
+  {
+   "BearerAuth": []
+  }
+ ],
+ "tags": [
+  {
+   "name": "Users Read",
+   "description": "Look up users known to the browser management console."
+  },
+  {
+   "name": "Users Actions",
+   "description": "Suspend, resume, and force re-authentication for users."
+  },
+  {
+   "name": "User Requests",
+   "description": "Review and act on end-user access and app-login requests."
+  },
+  {
+   "name": "Devices Read",
+   "description": "Look up devices known to the browser management console."
+  },
+  {
+   "name": "Devices Actions",
+   "description": "Archive, restore, suspend, resume, delete, and force re-authentication for devices."
+  },
+  {
+   "name": "User Groups",
+   "description": "Manage user groups used by browser policies."
+  },
+  {
+   "name": "Device Groups",
+   "description": "Manage device groups used by browser policies."
+  },
+  {
+   "name": "Applications Read",
+   "description": "Look up application objects and the available application categories."
+  },
+  {
+   "name": "Applications Actions",
+   "description": "Create, update, and delete individual application objects."
+  },
+  {
+   "name": "Applications Bulk",
+   "description": "Create or delete many application objects in a single request."
+  },
+  {
+   "name": "Application Groups",
+   "description": "Manage logical groupings of applications."
+  },
+  {
+   "name": "Configuration Management",
+   "description": "Manage publishing of policy and configuration drafts, and exporting the tenant configuration."
+  },
+  {
+   "name": "Sign-In Overview",
+   "description": "Retrieve the full sign-in policy."
+  },
+  {
+   "name": "Sign-In Rules",
+   "description": "Manage sign-in policy rules."
+  },
+  {
+   "name": "Sign-In Sections",
+   "description": "Manage sign-in policy sections."
+  },
+  {
+   "name": "Sign-In Positions",
+   "description": "Reorder sign-in policy rules and sections."
+  },
+  {
+   "name": "Security Overview",
+   "description": "Retrieve the full security policy."
+  },
+  {
+   "name": "Security Rules",
+   "description": "Manage security policy rules."
+  },
+  {
+   "name": "Security Sections",
+   "description": "Manage security policy sections."
+  },
+  {
+   "name": "Security Positions",
+   "description": "Reorder security policy rules and sections."
+  },
+  {
+   "name": "Access and Data Overview",
+   "description": "Retrieve the full access-and-data policy."
+  },
+  {
+   "name": "Access and Data Rules",
+   "description": "Manage access-and-data policy rules."
+  },
+  {
+   "name": "Access and Data Sections",
+   "description": "Manage access-and-data policy sections."
+  },
+  {
+   "name": "Access and Data Positions",
+   "description": "Reorder access-and-data policy rules and sections."
+  },
+  {
+   "name": "Customization Overview",
+   "description": "Retrieve the full customization policy."
+  },
+  {
+   "name": "Customization Rules",
+   "description": "Manage customization policy rules."
+  },
+  {
+   "name": "Customization Sections",
+   "description": "Manage customization policy sections."
+  },
+  {
+   "name": "Customization Positions",
+   "description": "Reorder customization policy rules and sections."
+  },
+  {
+   "name": "Assets",
+   "description": "Upload branding and configuration assets such as logos, icons, and PAC files."
+  },
+  {
+   "name": "Integrations",
+   "x-displayName": "Cloud Storage",
+   "description": "Manage cloud storage provider integrations."
+  },
+  {
+   "name": "IDP Application Sync",
+   "description": "Manage IDP Application Sync provider integrations."
+  },
+  {
+   "name": "Application Plugins",
+   "description": "Manage application plugins. Aligns with the pan.dev published taxonomy."
+  }
+ ],
+ "paths": {
+  "/seb-api/v1/applications/{id}": {
+   "get": {
+    "operationId": "GetApplicationByID",
+    "tags": [
+     "Applications Read"
+    ],
+    "summary": "Get an application by ID",
+    "description": "Fetches a specific application object identified by its unique ID.",
+    "parameters": [],
+    "responses": {
+     "200": {
+      "description": "An Application",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApplicationItem"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "ApplicationItem": {
+    "type": "object",
+    "oneOf": [
+     {
+      "$ref": "#/components/schemas/CustomApplication"
+     }
+    ],
+    "discriminator": {
+     "propertyName": "type",
+     "mapping": {
+      "custom": "#/components/schemas/CustomApplication",
+      "private": "#/components/schemas/PrivateApplication",
+      "non-web": "#/components/schemas/NonWebApplication",
+      "catalog": "#/components/schemas/CatalogApplication",
+      "localdesktopcustom": "#/components/schemas/LocalDesktopCustomApplication",
+      "localdesktopcatalog": "#/components/schemas/LocalDesktopCatalogApplication"
+     }
+    }
+   },
+   "BaseApplication": {
+    "type": "object",
+    "properties": {
+     "type": {
+      "type": "string",
+      "enum": [
+       "custom",
+       "private",
+       "non-web",
+       "catalog",
+       "localdesktopcustom",
+       "localdesktopcatalog"
+      ]
+     }
+    },
+    "required": [
+     "id",
+     "name",
+     "type",
+     "metadata"
+    ]
+   },
+   "BaseApplicationWithUrls": {
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/BaseApplication"
+     },
+     {
+      "type": "object",
+      "properties": {
+       "urls": {
+        "type": "array",
+        "uniqueItems": true,
+        "description": "URL patterns for the application",
+        "items": {
+         "type": "string"
+        }
+       }
+      },
+      "required": [
+       "urls"
+      ]
+     }
+    ]
+   },
+   "CustomApplication": {
+    "type": "object",
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/BaseApplicationWithUrls"
+     }
+    ]
+   }
+  },
+  "securitySchemes": {
+   "BearerAuth": {
+    "type": "http",
+    "scheme": "bearer",
+    "bearerFormat": "JWT"
+   }
+  }
+ }
+}

@@ -1,0 +1,32 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.29s
+────────────
+ Nextest run ID 589dc20d-bba6-4255-a4a2-5e8afff6cf8f with nextest profile: default
+    Starting 1 test across 1 binary (442 tests and 6 binaries skipped)
+        FAIL [   0.113s] (1/1) crozier::e2e inline_header_enum_refusal_recovers_with_a_named_schema
+  stdout ───
+
+    running 1 test
+    test inline_header_enum_refusal_recovers_with_a_named_schema ... FAILED
+
+    failures:
+
+    failures:
+        inline_header_enum_refusal_recovers_with_a_named_schema
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 442 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'inline_header_enum_refusal_recovers_with_a_named_schema' (279752) panicked at tests/e2e.rs:16190:13:
+    assertion `left == right` failed: x-fern-ignore: crozier: invalid OpenAPI document /tmp/.tmpsBFfg6/x-fern-ignore.yml: generator-missing-type: paths//agents/get/parameters/0/Api-Version/schema
+
+      left: Some(1)
+     right: Some(0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.115s] 1 test run: 0 passed, 1 failed, 442 skipped
+        FAIL [   0.113s] (1/1) crozier::e2e inline_header_enum_refusal_recovers_with_a_named_schema
+error: test run failed

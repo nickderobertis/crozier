@@ -1,0 +1,6 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; package/client import: OK
+declared Message.content: oneOf [string, array of MessageContent]; Fern reports `Expected example to be an object. Example is: "content"`
+generated Message.content annotation: <class 'fern.types.message_content.MessageContent'>
+constructing the declared string content fails: ValidationError 1 validation error for Message
+journey with declared response string content fails: ParsingError headers: {'content-length': '155', 'content-type': 'application/json'}, status_code: 200, body: {'id': 'c1', 'object': 'chat.completion', 'created': 1, 'model': 'm', 'choices': [{'index': 0, 'message': {'role': 'assistant', 'content': 'hi'}, 'finish_reason': 'stop'}]}, cause: 1 validation error for ChatCompletionResponse
+exit: 0

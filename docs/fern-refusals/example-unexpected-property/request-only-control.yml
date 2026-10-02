@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /probe:
+    post:
+      operationId: probe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, required: [a], properties: {a: {$ref: '#/components/schemas/Thing_Item'}}}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/subscription'}
+components:
+  schemas:
+    subscription:
+      type: object
+      properties:
+        n: {type: string}
+    Thing_Item: {type: object, properties: {id: {type: string}}}
+    ThingItem: {type: object, properties: {name: {type: string}}}

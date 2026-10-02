@@ -1,0 +1,11 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 1a978bc6ed0d56f783189f913f33c7837261e6a7c34c48a976335b78f10b5ea2.json
+command: baseline-crozier --no-config generate python --spec 1a978bc6ed0d56f783189f913f33c7837261e6a7c34c48a976335b78f10b5ea2.json --output <sdk> --package-name fern
+generated 61 files into <scratch>/clio/base-datasync
+exit: 0
+command: python -c 'import fern; import fern.client'
+package and client import: OK
+command: python -m mypy .
+src/fern/kitchenreader/raw_client.py:350: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/kitchenreader/raw_client.py:361: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+Found 72 errors in 3 files (checked 54 source files)

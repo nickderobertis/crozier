@@ -1,0 +1,15 @@
+openapi: 3.0.3
+info: {title: Response fragment control, version: '1'}
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '204': {$ref: '#/components/responses/Empty'}
+components:
+  responses:
+    Empty:
+      description: Empty
+      $ref: '#/x-fragment/base'
+x-fragment:
+  base: {headers: {}}

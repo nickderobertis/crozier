@@ -1,0 +1,7 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+declared: GET /collections, required query f (string); x-fern-examples: [{query-parameters: {}}]; 204 No Content
+generated signature: (self, *, f: str, request_options: Optional[fern.core.request_options.RequestOptions] = None) -> None
+sent: ('GET', 'https://example.test/collections?f=json') parsed: None
+reference.md snippet passes f: True
+required f is a required keyword and is sent under its declared wire name; the empty 204 parses as None
+exit: 0

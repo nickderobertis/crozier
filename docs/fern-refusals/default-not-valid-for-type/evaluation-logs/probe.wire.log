@@ -1,0 +1,8 @@
+Baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b. Generated public client driven over HTTPX transport.
+declared optional integer page default: string one
+response: None
+requests: [{"method": "GET", "url": "https://example.test/probe", "body": ""}]
+valid explicit page response: None
+requests: [{"method": "GET", "url": "https://example.test/probe", "body": ""}, {"method": "GET", "url": "https://example.test/probe?page=2", "body": ""}]
+
+exit: 0

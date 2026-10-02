@@ -1,0 +1,22 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+source: https://raw.githubusercontent.com/sn-ravance/Ollama_Docker/3f2dd7761e30b51c2206a8b7e7938cf783b2c200/docs/openapi.yaml
+digest: 5487bf4381fc761ccbf1d955abeb0e4133dd5af6ffc0b9d8b1268038eef0fc7a
+command: [PosixPath('<scratch>/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('<scratch>/population/5487bf4381fc761ccbf1d955abeb0e4133dd5af6ffc0b9d8b1268038eef0fc7a.yaml'), '--output', PosixPath('<scratch>/population-sdks/service-auth-undefined/5487bf4381fc761ccbf1d955abeb0e4133dd5af6ffc0b9d8b1268038eef0fc7a'), '--package-name', 'fern']
+exit: 0
+generated 50 files into <scratch>/population-sdks/service-auth-undefined/5487bf4381fc761ccbf1d955abeb0e4133dd5af6ffc0b9d8b1268038eef0fc7a
+command: [PosixPath('<scratch>/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: [PosixPath('<scratch>/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 1
+src/fern/raw_client.py:67: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:118: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:191: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:251: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:328: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:384: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:435: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:508: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:568: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:645: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+Found 10 errors in 1 file (checked 43 source files)

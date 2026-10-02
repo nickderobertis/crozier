@@ -1,0 +1,19 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 958b17deddd64a6f2d7eb00a48b74fc228df61c318dfa69abcf6939222361197.json
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/958b17deddd64a6f2d7eb00a48b74fc228df61c318dfa69abcf6939222361197.json'), '--output', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/type-not-defined/reps/securityscorecard'), '--package-name', 'fern']
+exit: 0
+generated 1416 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/type-not-defined/reps/securityscorecard
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 2
+src/fern/v1/client.py:1707: error: Duplicate argument "customer_id" in function definition
+src/fern/v1/client.py:1745: error: Duplicate argument "customer_id" in function definition
+src/fern/v1/client.py:3180: error: Duplicate argument "customer_id" in function definition
+src/fern/v1/client.py:3288: error: Duplicate argument "customer_id" in function definition
+src/fern/v1/client.py:5749: error: Duplicate argument "customer_id" in function definition
+src/fern/v1/client.py:5795: error: Duplicate argument "customer_id" in function definition
+src/fern/v1/client.py:7458: error: Duplicate argument "customer_id" in function definition
+src/fern/v1/client.py:7574: error: Duplicate argument "customer_id" in function definition
+Found 8 errors in 1 file (errors prevented further checking)

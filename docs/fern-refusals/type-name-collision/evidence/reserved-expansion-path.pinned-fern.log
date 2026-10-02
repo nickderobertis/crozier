@@ -1,0 +1,16 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> probe
+        issue: Path parameter is unreferenced in endpoint: accountId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> probe
+        issue: Multiple request properties resolve to the same generated name accountId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+accountId" (name: "+accountId")
+  - Path parameter "accountId" (name: "accountId")
+
+Found 2 errors and 0 warnings in <n> seconds.

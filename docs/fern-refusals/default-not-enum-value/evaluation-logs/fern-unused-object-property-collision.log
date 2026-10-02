@@ -1,0 +1,14 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> types -> Unused -> properties -> key -> type
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> UnusedKey
+        issue: Default value '-createdAt' is not a valid enum value
+
+Found 2 errors and 0 warnings in <n> seconds.

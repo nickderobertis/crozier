@@ -1,0 +1,3 @@
+request: GET https://example.com/agents
+Api-Version: 2026-03-11
+parsed: None

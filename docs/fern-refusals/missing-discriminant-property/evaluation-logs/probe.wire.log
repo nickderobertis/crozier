@@ -1,0 +1,10 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+declared: GET /pets -> Pet, oneOf [Cat, Dog], discriminator kind, mapping cat -> #/components/schemas/Kitten, dog -> #/components/schemas/Puppy; neither mapping target exists
+generated Pet annotation: typing.Union[Cat, Dog] (untagged; the discriminator and its mapping are dropped)
+wire: GET https://example.com/pets
+response: {"kind": "dog", "name": "Rover"} -> parsed type: Cat wire: {'kind': 'dog', 'name': 'Rover'}
+wire: GET https://example.com/pets
+response: {"kind": "cat", "name": "Tom"} -> parsed type: Cat wire: {'kind': 'cat', 'name': 'Tom'}
+wire: GET https://example.com/pets
+response: {"name": "NoKind"} -> parsed type: Cat wire: {'name': 'NoKind'}
+every payload parses as Cat, whatever kind it names: the declared mapping (dog -> Puppy) is not honoured, and a payload with no discriminant is accepted although the document requires kind to select a variant

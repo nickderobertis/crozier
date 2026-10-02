@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info: {title: Probe, version: '1'}
+paths:
+  /probe:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema: {type: string, enum: [first, second], default: third}
+      responses:
+        '204': {description: No content}

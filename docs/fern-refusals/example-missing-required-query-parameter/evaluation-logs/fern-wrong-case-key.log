@@ -1,0 +1,14 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> getCollections -> examples[0] -> query-parameters
+        issue: Example is missing required query parameter "f"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getCollections -> examples[0] -> query-parameters
+        issue: Unexpected query parameter "F"
+
+Found 2 errors and 0 warnings in <n> seconds.

@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /prod/multiplexes:
+    post:
+      operationId: CreateMultiplex
+      responses:
+        '201':
+          description: ok
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - multiplexSettings
+              properties:
+                multiplexSettings:
+                  type: object
+                  properties:
+                    A:
+                      allOf:
+                      - $ref: '#/components/schemas/__int'
+                      - description: d
+                    B:
+                      allOf:
+                      - $ref: '#/components/schemas/__int'
+                      - description: d
+components:
+  schemas:
+    __int:
+      type: integer
+    MultiplexSettings:
+      type: object
+      required:
+      - A
+      properties:
+        A:
+          allOf:
+          - $ref: '#/components/schemas/__int'
+          - description: d
+        B:
+          allOf:
+          - $ref: '#/components/schemas/__int'
+          - description: d
+    CreateMultiplexRequest:
+      type: object
+      properties:
+        Name:
+          type: string

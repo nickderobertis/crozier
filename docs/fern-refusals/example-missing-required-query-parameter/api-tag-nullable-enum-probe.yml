@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /things:
+    get:
+      operationId: getThings
+      parameters:
+      - name: f
+        in: query
+        schema:
+          type: string
+          enum:
+          - json
+          - html
+          nullable: true
+      responses:
+        '204':
+          description: No Content
+      tags:
+      - API

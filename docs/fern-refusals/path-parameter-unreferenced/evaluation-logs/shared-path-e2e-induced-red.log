@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.39s
+────────────
+ Nextest run ID 05e6e3c8-d084-4c55-9d51-6aa535cd9b3c with nextest profile: default
+    Starting 1 test across 1 binary (433 tests and 6 binaries skipped)
+        FAIL [   0.090s] (1/1) crozier::e2e shared_referenced_path_parameter_recovers_with_placeholder
+  stdout ───
+
+    running 1 test
+    test shared_referenced_path_parameter_recovers_with_placeholder ... FAILED
+
+    failures:
+
+    failures:
+        shared_referenced_path_parameter_recovers_with_placeholder
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 433 filtered out; finished in 0.08s
+
+  stderr ───
+
+    thread 'shared_referenced_path_parameter_recovers_with_placeholder' (3907320) panicked at tests/e2e.rs:15717:9:
+    path-parameter-unreferenced: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.094s] 1 test run: 0 passed, 1 failed, 433 skipped
+        FAIL [   0.090s] (1/1) crozier::e2e shared_referenced_path_parameter_recovers_with_placeholder
+error: test run failed

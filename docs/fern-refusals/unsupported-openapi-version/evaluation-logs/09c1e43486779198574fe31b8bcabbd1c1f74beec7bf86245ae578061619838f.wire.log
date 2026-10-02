@@ -1,0 +1,10 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document OpenAPI version: 3.2.0
+client: (*, base_url: 'typing.Optional[str]' = None, environment: 'FernApiEnvironment' = <FernApiEnvironment.DEFAULT: 'https://api.orgmetra.example/v1'>, idempotency_key: 'typing.Optional[str]' = None, tenant_reference: 'typing.Optional[str]' = None, actor_reference: 'typing.Optional[str]' = None, purpose_code: 'str', token: 'typing.Union[str, typing.Callable[[], str]]', headers: 'typing.Optional[typing.Dict[str, str]]' = None, timeout: 'typing.Optional[float]' = None, max_retries: 'typing.Optional[int]' = None, stream_reconnection_enabled: 'typing.Optional[bool]' = None, max_stream_reconnection_attempts: 'typing.Optional[int]' = None, follow_redirects: 'typing.Optional[bool]' = True, httpx_client: 'typing.Optional[httpx.Client]' = None, logging: 'typing.Optional[typing.Union[LogConfig, Logger]]' = None)
+request: POST https://example.com/person-records
+body: {"display_name":"Witness","effective_from":"2026-01-02"}
+response fixture: {'person_record_id': '00000000-0000-4000-8000-000000000001'}
+parsed: CreatedPersonRecord(person_record_id='00000000-0000-4000-8000-000000000001')
+selected endpoint conforms for this request/response; this does not cover other 3.2 constructs.
+
+exit: 0

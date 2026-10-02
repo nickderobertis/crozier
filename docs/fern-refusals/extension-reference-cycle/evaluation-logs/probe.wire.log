@@ -1,0 +1,5 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+declared Node: object property id:string; x-link is metadata, not a wire property; paths is empty
+serialized: {"id": "A"}
+parsed id: A
+no HTTP endpoint declares Node; public model serialization and parsing preserve its declared property

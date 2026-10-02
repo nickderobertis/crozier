@@ -1,0 +1,6 @@
+method: (id: str, *, request_options: Optional[fern.core.request_options.RequestOptions] = None) -> None
+supplied id: SENTINEL_ID
+parsed: None
+request: GET https://example.com/things
+body: b''
+declared required path parameter id is accepted by the method but absent from the request; field dropped

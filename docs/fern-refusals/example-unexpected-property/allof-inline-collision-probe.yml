@@ -1,0 +1,43 @@
+openapi: 3.0.1
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /things/{id}:
+    get:
+      operationId: getThing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThingList_Show'
+components:
+  schemas:
+    ThingList:
+      allOf:
+      - type: object
+        properties:
+          extra:
+            type: string
+    ThingList_Show:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ThingList'
+    Thing_List:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: string

@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.45s
+────────────
+ Nextest run ID 7485bf38-4ac5-4707-9097-7161689d4da9 with nextest profile: default
+    Starting 1 test across 1 binary (428 tests and 6 binaries skipped)
+        FAIL [   0.017s] (1/1) crozier::e2e unresolved_security_reference_recovers_with_inline_scheme
+  stdout ───
+
+    running 1 test
+    test unresolved_security_reference_recovers_with_inline_scheme ... FAILED
+
+    failures:
+
+    failures:
+        unresolved_security_reference_recovers_with_inline_scheme
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 428 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'unresolved_security_reference_recovers_with_inline_scheme' (2351164) panicked at tests/e2e.rs:15514:9:
+    unresolved-reference: crozier's refusal in its mode printed no line containing crozier_diagnostic "components/securitySchemes/BearerAuth"; it printed: crozier: invalid OpenAPI document <repo>/docs/fern-refusals/unresolved-reference/probe.yml: service-auth-undefined: security/BearerAuth
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.020s] 1 test run: 0 passed, 1 failed, 428 skipped
+        FAIL [   0.017s] (1/1) crozier::e2e unresolved_security_reference_recovers_with_inline_scheme
+error: test run failed

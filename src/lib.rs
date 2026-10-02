@@ -18,6 +18,7 @@
 pub mod cli;
 pub mod compare;
 pub mod config;
+pub mod document_refusals;
 pub mod emit;
 pub mod error;
 pub mod ir;
@@ -86,9 +87,12 @@ pub struct GenerateArgs {
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
+    document_refusals::check_version_file(&args.spec, args.fern_strict)?;
+    document_refusals::check_structure_file(&args.spec, args.fern_strict)?;
     let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
+    document_refusals::check(&doc, &args.spec, args.fern_strict)?;
     // The config constructor validates the package name (a `PackageName`), so an
     // invalid, traversal-prone value can never reach the filesystem below.
     let mut config = GenerateConfig::new(
@@ -104,6 +108,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.enum_type = args.enum_type;
     config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
+    document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     let files = emit::generate(&ir)?;
@@ -159,9 +164,12 @@ pub fn resolved_names(args: &GenerateArgs) -> Result<ResolvedNames> {
 /// Render the files for a spec without writing them — used by tests to compare
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
+    document_refusals::check_version_file(&args.spec, args.fern_strict)?;
+    document_refusals::check_structure_file(&args.spec, args.fern_strict)?;
     let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
+    document_refusals::check(&doc, &args.spec, args.fern_strict)?;
     let mut config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
@@ -175,6 +183,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.enum_type = args.enum_type;
     config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
+    document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     emit::generate(&ir)

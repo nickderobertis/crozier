@@ -1,0 +1,25 @@
+openapi: 3.1.0
+info: {title: probe, version: 1.0.0}
+paths:
+  /group:
+    post:
+      operationId: group
+      tags: [people]
+      x-fern-sdk-group-name: api
+      parameters:
+        - {name: f, in: query, schema: {$ref: "#/components/schemas/Color"}}
+      responses:
+        "403":
+          description: Forbidden
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Thing"}
+components:
+  schemas:
+    Thing:
+      type: object
+      properties:
+        id: {type: string}
+    Color: {type: string, enum: [red, blue]}

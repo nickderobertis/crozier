@@ -1,0 +1,32 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.77s
+────────────
+ Nextest run ID 91b31897-c3a7-4a60-b609-548b00df36de with nextest profile: default
+    Starting 1 test across 1 binary (432 tests and 6 binaries skipped)
+        FAIL [   0.051s] (1/1) crozier::e2e path_without_leading_slash_recovers_with_valid_path
+  stdout ───
+
+    running 1 test
+    test path_without_leading_slash_recovers_with_valid_path ... FAILED
+
+    failures:
+
+    failures:
+        path_without_leading_slash_recovers_with_valid_path
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 432 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'path_without_leading_slash_recovers_with_valid_path' (3745585) panicked at tests/e2e.rs:15635:9:
+    assertion `left == right` failed: crozier: invalid OpenAPI document /tmp/.tmpBRnFlC/ignored.yml: path-without-leading-slash: paths/things
+
+      left: Some(1)
+     right: Some(0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.054s] 1 test run: 0 passed, 1 failed, 432 skipped
+        FAIL [   0.051s] (1/1) crozier::e2e path_without_leading_slash_recovers_with_valid_path
+error: test run failed

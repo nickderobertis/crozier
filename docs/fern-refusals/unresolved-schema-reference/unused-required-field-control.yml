@@ -1,0 +1,10 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths: {}
+components:
+  schemas:
+    Thing:
+      type: object
+      required: [value]
+      properties:
+        value: {$ref: '#/components/schemas/Missing'}

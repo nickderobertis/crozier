@@ -1,0 +1,12 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+source: https://raw.githubusercontent.com/api-evangelist/langwatch/9f5230540220233f9ff4b8f27d7f6b1c15d7ac3f/openapi/langwatch-dataset-api-openapi.yml
+digest: 05274561b18c20b41f3d9acb0c611fdadafc28aa62aa695ce506c030cf7dd391
+command: [PosixPath('<scratch>/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('<scratch>/population/05274561b18c20b41f3d9acb0c611fdadafc28aa62aa695ce506c030cf7dd391.yml'), '--output', PosixPath('<scratch>/population-sdks/unsupported-openapi-version/05274561b18c20b41f3d9acb0c611fdadafc28aa62aa695ce506c030cf7dd391'), '--package-name', 'fern']
+exit: 0
+generated 82 files into <scratch>/population-sdks/unsupported-openapi-version/05274561b18c20b41f3d9acb0c611fdadafc28aa62aa695ce506c030cf7dd391
+command: [PosixPath('<scratch>/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: [PosixPath('<scratch>/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 0
+Success: no issues found in 75 source files

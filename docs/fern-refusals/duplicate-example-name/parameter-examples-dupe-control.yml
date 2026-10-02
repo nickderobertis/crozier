@@ -1,0 +1,23 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: probe
+      parameters:
+      - name: q
+        in: query
+        schema:
+          type: string
+        examples:
+          a:
+            summary: Same
+            value: x
+          b:
+            summary: Same
+            value: y
+      responses:
+        '204':
+          description: No Content

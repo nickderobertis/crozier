@@ -1,0 +1,44 @@
+openapi: 3.0.0
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /x:
+    get:
+      operationId: query
+      tags:
+      - X
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/X'
+components:
+  schemas:
+    X:
+      title: X
+      allOf:
+      - $ref: '#/components/schemas/X/definitions/Base'
+      - type: object
+        additionalProperties: false
+        properties:
+          flag:
+            type: boolean
+      required:
+      - id
+      properties:
+        id:
+          type: string
+      definitions:
+        Base:
+          type: object
+          properties:
+            id:
+              type: string

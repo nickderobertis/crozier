@@ -1,0 +1,6 @@
+constructor: (*, base_url: 'str', headers: 'typing.Optional[typing.Dict[str, str]]' = None, timeout: 'typing.Optional[float]' = None, max_retries: 'typing.Optional[int]' = None, stream_reconnection_enabled: 'typing.Optional[bool]' = None, max_stream_reconnection_attempts: 'typing.Optional[int]' = None, follow_redirects: 'typing.Optional[bool]' = True, httpx_client: 'typing.Optional[httpx.Client]' = None, logging: 'typing.Optional[typing.Union[LogConfig, Logger]]' = None)
+parsed: {'openapi': '3.0.3'}
+request: GET https://example.com/openapi.json
+Authorization: None
+document requires BearerAuth; ../components.yaml#/components/securitySchemes/BearerAuth is absent
+wire mismatch: request silently sent without credential; unavailable declaration not honored

@@ -808,11 +808,33 @@ pub(crate) fn validate_ir(
             }
         }
     }
+    // Pinned Fern 5.67.1 accepts a header parameter's enum named like a root
+    // schema (it checks and generates), while a query parameter's is "already
+    // declared": docs/fern-refusals/type-name-collision/evidence/
+    // namespaced-header-enum-*.pinned-fern.log.
+    let header_enums: std::collections::HashSet<String> = doc
+        .paths
+        .iter()
+        .flat_map(|(route, item)| {
+            item.operations().into_iter().flat_map(move |(method, op)| {
+                let context = crate::ir::request_context(op, method, route);
+                op.parameters
+                    .iter()
+                    .filter(|parameter| {
+                        parameter.location == Some(crate::openapi::ParameterLocation::Header)
+                    })
+                    .map(move |parameter| {
+                        crate::ir::request_parameter_type_name(&context, &parameter.name)
+                    })
+            })
+        })
+        .collect();
     for tag in &ir.tag_types {
         if matches!(tag.decl, crate::ir::TypeDecl::Enum(_))
             && !tag.module.is_empty()
             && !tag.module.contains('/')
             && roots.contains(tag.decl.name())
+            && !header_enums.contains(tag.decl.name())
         {
             return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("enum {} in namespace {} collides with a schema declaration; give the types distinct declared names", tag.decl.name(), tag.module)), strict));
         }
@@ -825,6 +847,8 @@ pub(crate) fn validate_ir(
     ) {
         if let Some(previous) = names.insert(decl.name(), namespace) {
             if previous != namespace
+                && !(header_enums.contains(decl.name())
+                    && (previous.is_empty() || namespace.is_empty()))
                 && previous
                     .rsplit_once('/')
                     .map(|(parent, _)| parent)

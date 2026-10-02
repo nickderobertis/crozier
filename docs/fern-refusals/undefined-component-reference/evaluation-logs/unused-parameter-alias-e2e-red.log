@@ -1,0 +1,32 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.59s
+────────────
+ Nextest run ID e3f7d64a-de4f-4552-bc17-dd77a961da1a with nextest profile: default
+    Starting 1 test across 1 binary (436 tests and 6 binaries skipped)
+        FAIL [   0.030s] (1/1) crozier::e2e missing_parameter_component_recovers_when_definition_is_added
+  stdout ───
+
+    running 1 test
+    test missing_parameter_component_recovers_when_definition_is_added ... FAILED
+
+    failures:
+
+    failures:
+        missing_parameter_component_recovers_when_definition_is_added
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 436 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'missing_parameter_component_recovers_when_definition_is_added' (4126344) panicked at tests/e2e.rs:15753:9:
+    assertion `left == right` failed: crozier: invalid OpenAPI document /tmp/.tmpUZfWZ6/unused.yml: undefined-component-reference: components/parameters/UnusedAlias: #/components/parameters/AbsentUnused
+
+      left: Some(1)
+     right: Some(0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.032s] 1 test run: 0 passed, 1 failed, 436 skipped
+        FAIL [   0.030s] (1/1) crozier::e2e missing_parameter_component_recovers_when_definition_is_added
+error: test run failed

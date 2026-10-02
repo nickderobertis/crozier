@@ -1,0 +1,9 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+declared required credential: APIKeyQueryParam, in=query, name=apikey
+client constructor: (*, base_url: 'typing.Optional[str]' = None, environment: 'FernApiEnvironment' = <FernApiEnvironment.DEFAULT: 'https://api.afinis.org/v1'>, headers: 'typing.Optional[typing.Dict[str, str]]' = None, timeout: 'typing.Optional[float]' = None, max_retries: 'typing.Optional[int]' = None, stream_reconnection_enabled: 'typing.Optional[bool]' = None, max_stream_reconnection_attempts: 'typing.Optional[int]' = None, follow_redirects: 'typing.Optional[bool]' = True, httpx_client: 'typing.Optional[httpx.Client]' = None, logging: 'typing.Optional[typing.Union[LogConfig, Logger]]' = None)
+request: POST https://example.com/debitauthorizations
+apiVersion header: 1.0.6
+body: {"debtor":{},"instructedAmount":{"currency":"USD"},"verification":{"authorizeToPay":true}}
+response fixture: {'status': 'Agree to debit', 'requestedExecutionDate': '2020-04-29', 'creditor': {}, 'originalEndToEndIdentification': 'CBA321'}
+parsed: Response201(status=<Response201Status.AGREE_TO_DEBIT: 'Agree to debit'>, requested_execution_date='2020-04-29', creditor=Party(name=None, postal_address=None, identification=None, phone_number=None, email_address=None), original_end_to_end_identification='CBA321')
+wire mismatch: no generated api key credential or apikey query parameter

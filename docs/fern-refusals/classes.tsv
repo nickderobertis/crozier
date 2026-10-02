@@ -1,37 +1,37 @@
 class	family	fern_stage	fern_exit	diagnostic	documents	status	crozier_diagnostic	population_strict
-default-not-enum-value	documents	check	1	Default value <…> is not a valid enum value	5	unevaluated	—	—
-default-not-valid-for-type	documents	check	1	Default value <…> is not a valid <…>	15	unevaluated	—	—
+default-not-enum-value	documents	check	1	Default value <…> is not a valid enum value	5	refuse	ListRequest/properties/sort	5/5
+default-not-valid-for-type	documents	check	1	Default value <…> is not a valid <…>	15	refuse	page/schema	15/15
 discriminant-value-unsuitable	names	check	1	Discriminant value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.	13	refuse	#/components/schemas/Asset discriminant "_t"	13/13
-duplicate-example-name	documents	check	1	Duplicate example name: <…>	109	unevaluated	—	—
+duplicate-example-name	documents	check	1	Duplicate example name: <…>	109	refuse	POST /probe request example name Order updated	109/109
 duplicate-path-parameter	names	check	1	Endpoint has duplicate path parameter: <…>.	6	refuse	route /accounts/{account_id}/members/{account_id} repeats path parameter "account_id"	6/6
-endpoint-auth-undefined	documents	check	1	Endpoint requires auth, but no auth is defined.	22	unevaluated	—	—
+endpoint-auth-undefined	documents	check	1	Endpoint requires auth, but no auth is defined.	22	refuse	GET /probe security/session	22/22
 enum-name-unsuitable	names	check	1	Enum name <…> for value <…> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	368	refuse	#/components/schemas/Color enum value "#0094FF"	368/368
 enum-value-unnameable	names	check	1	Enum value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	331	refuse	#/components/schemas/Minutes enum value "10080"	331/331
-example-missing-required-property	documents	check	1	Example is missing required property <…>	130	unevaluated	—	—
-example-missing-required-query-parameter	documents	check	1	Example is missing required query parameter <…>	2	unevaluated	—	—
-example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	unevaluated	—	—
-example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	331	unevaluated	—	—
-example-unexpected-property	documents	check	1	Unexpected property <…>	196	unevaluated	—	—
-extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	unevaluated	—	—
+example-missing-required-property	documents	check	1	Example is missing required property <…>	130	refuse	GET /requests/{id} response extends nullable	130/130
+example-missing-required-query-parameter	documents	check	1	Example is missing required query parameter <…>	2	refuse	GET /collections x-fern-examples/0 query parameter f	2/2
+example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	refuse	GET /activities x-fern-examples response	50/50
+example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	331	refuse	GET /probe response example	331/331
+example-unexpected-property	documents	check	1	Unexpected property <…>	196	refuse	GET /probe components/schemas/Thing_Item collides with ThingItem	196/196
+extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	refuse	components/schemas/Node/x-link	2/2
 generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	refuse	thing_level5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	1/1
-generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	unevaluated	—	—
-generator-missing-type	documents	generate	1	KeyError: <…>	1	unevaluated	—	—
-heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memory	2	unevaluated	—	—
-list-default-not-array	documents	check	1	Default value for list type must be an array	7	unevaluated	—	—
-missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	unevaluated	—	—
-named-type-default	documents	check	1	Default values are not supported for the named type	10	unevaluated	—	—
-object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	114	unevaluated	—	—
+generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	refuse	are both Event_UserAccountDeleted	11/11
+generator-missing-type	documents	generate	1	KeyError: <…>	1	refuse	Api-Version	1/1
+heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memory	2	refuse	components/schemas/Tool/properties/composition	2/2
+list-default-not-array	documents	check	1	Default value for list type must be an array	7	refuse	Thing/properties/tags	7/7
+missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	refuse	GET /pets response 200 components/schemas/Pet discriminator kind	13/13
+named-type-default	documents	check	1	Default values are not supported for the named type	10	refuse	ticket/properties/type/default	10/10
+object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	114	refuse	Tagged/allOf	114/114
 object-property-name-collision	names	check	1	Object has multiple properties named <…>:	41	refuse	#/components/schemas/FileConflict property "sha1"	41/41
-path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	29	unevaluated	—	—
-path-without-leading-slash	documents	check	1	Path must start with a slash.	4	unevaluated	—	—
+path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	29	refuse	GET /things parameter id	29/29
+path-without-leading-slash	documents	check	1	Path must start with a slash.	4	refuse	paths/things	4/4
 request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	29	refuse	GET /accounts parameters "account_id" and "accountId"	29/29
 request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	296	refuse	PATCH /repos/{name} body property "name"	296/296
 sdk-method-collision	names	check	1	SDK method <…> already exists (x-fern-sdk-group-name: <…>, x-fern-sdk-method-name: <…>)	2	refuse	SDK method analytics.create	2/2
-service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	unevaluated	—	—
+service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	refuse	security/session	26/26
 type-name-collision	names	check	1	<…> is already declared in <…>	104	refuse	type GetThingResponse	104/104
 type-name-not-letter-led	names	check	1	Type name must begin with a letter	6	refuse	#/components/schemas/123456	6/6
-type-not-defined	documents	check	1	<…> is not defined.	6	unevaluated	—	—
-undefined-component-reference	documents	check	0	<…> is undefined	3	unevaluated	—	—
-unresolved-reference	documents	check	0	Failed to resolve <…>	42	unevaluated	—	—
-unresolved-schema-reference	documents	check	0	Unexpected error: Failed to resolve schema reference: <…>	49	unevaluated	—	—
-unsupported-openapi-version	documents	check	1	Unsupported OpenAPI version: <…>	20	unevaluated	—	—
+type-not-defined	documents	check	1	<…> is not defined.	6	refuse	POST /users responses/403	6/6
+undefined-component-reference	documents	check	0	<…> is undefined	3	refuse	CartIdParam	3/3
+unresolved-reference	documents	check	0	Failed to resolve <…>	42	refuse	components/securitySchemes/BearerAuth	42/42
+unresolved-schema-reference	documents	check	0	Unexpected error: Failed to resolve schema reference: <…>	49	refuse	attributes reference #/components/schemas/custom_attributes	49/49
+unsupported-openapi-version	documents	check	1	Unsupported OpenAPI version: <…>	20	refuse	openapi 3.2.0	20/20

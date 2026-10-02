@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /forms:
+    post:
+      operationId: createForm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - block
+              properties:
+                block:
+                  $ref: '#/components/schemas/Block'
+      responses:
+        '204':
+          description: No Content
+components:
+  schemas:
+    Choice:
+      type: object
+      required:
+      - type
+      - payload
+      properties:
+        type:
+          type: string
+          enum:
+          - CHOICE
+        payload:
+          $ref: '#/components/schemas/Missing'
+    Title:
+      type: object
+      required:
+      - type
+      - payload
+      properties:
+        type:
+          type: string
+          enum:
+          - TITLE
+        payload:
+          $ref: '#/components/schemas/TitlePayload'
+    TitlePayload:
+      type: object
+      properties:
+        html:
+          type: string
+    Block:
+      anyOf:
+      - $ref: '#/components/schemas/Choice'
+      - $ref: '#/components/schemas/Title'

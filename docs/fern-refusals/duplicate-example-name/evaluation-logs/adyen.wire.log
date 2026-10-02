@@ -1,0 +1,7 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 0109022564565a67857d84bd61ba8dd618ab71c09474786ed5e51d60c37168ab (Adyen CheckoutService v46)
+declared: POST /paypal/updateOrder; the 200 examples advanced-with-delivery and advanced-without-delivery share the summary "Order updated with delivery methods in an Advanced flow integration"; response PaypalUpdateOrderResponse {paymentData, status: error|success}
+sent: {"method": "POST", "path": "/paypal/updateOrder", "body": {"amount": {"currency": "EUR", "value": 1200}, "paymentData": "kly45P...", "pspReference": "HWL5D5BDLSGLNK82"}, "key": "k"}
+parsed: PaypalUpdateOrderResponse(payment_data='kly45P...', status=<PaypalUpdateOrderResponseStatus.SUCCESS: 'success'>)
+declared wire names pspReference/paymentData/amount sent; both duplicate-summary responses parse into PaypalUpdateOrderResponse
+exit: 0

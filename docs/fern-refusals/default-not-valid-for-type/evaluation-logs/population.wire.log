@@ -1,0 +1,8 @@
+Baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; population 25c97d8d735203e4d9279e3c7c48ab33730e52555fd7e80a3b777a5a02b6e1bb
+declared HotspotVoucherCreationRequest.count integer default: string 1
+parsed response: {'vouchers': []}
+request: [{"method": "POST", "url": "https://example.test/v1/sites/SITE/hotspot/vouchers", "body": {"name": "guest", "timeLimitMinutes": 60}}]
+explicit count parsed response: {'vouchers': []}
+request: [{"method": "POST", "url": "https://example.test/v1/sites/SITE/hotspot/vouchers", "body": {"name": "guest", "timeLimitMinutes": 60}}, {"method": "POST", "url": "https://example.test/v1/sites/SITE/hotspot/vouchers", "body": {"count": 2, "name": "guest", "timeLimitMinutes": 60}}]
+
+exit: 0

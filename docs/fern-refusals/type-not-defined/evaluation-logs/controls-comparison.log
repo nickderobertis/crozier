@@ -1,0 +1,147 @@
+api-200-inline               fern=1 crozier=1 ok e-not-defined/runs/api-200-inline/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+api-200-ref                  fern=1 crozier=1 ok type-not-defined/runs/api-200-ref/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+api-200-string               fern=0 crozier=0 ok 
+api-403-ref                  fern=1 crozier=1 ok type-not-defined/runs/api-403-ref/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+api-body-inline              fern=0 crozier=0 ok 
+api-body-ref                 fern=0 crozier=0 ok 
+api-query-enum               fern=1 crozier=1 ok ype-not-defined/runs/api-query-enum/probe.yml: type-not-defined: POST /users parameter f (fern-strict refusal)
+api-query-string             fern=0 crozier=0 ok 
+api-tag-accepted             fern=0 crozier=0 ok 
+body-allof-ref               fern=0 crozier=0 ok 
+body-array-ref               fern=1 crozier=1 ok ype-not-defined/runs/body-array-ref/probe.yml: type-not-defined: POST /users requestBody (fern-strict refusal)
+body-form-enum               fern=1 crozier=1 ok ype-not-defined/runs/body-form-enum/probe.yml: type-not-defined: POST /users requestBody (fern-strict refusal)
+body-multipart-ref           fern=1 crozier=1 ok not-defined/runs/body-multipart-ref/probe.yml: type-not-defined: POST /users requestBody (fern-strict refusal)
+body-prop-enum               fern=1 crozier=1 ok ype-not-defined/runs/body-prop-enum/probe.yml: type-not-defined: POST /users requestBody (fern-strict refusal)
+body-prop-ref                fern=1 crozier=1 ok type-not-defined/runs/body-prop-ref/probe.yml: type-not-defined: POST /users requestBody (fern-strict refusal)
+body-ref-alias               fern=1 crozier=1 ok ype-not-defined/runs/body-ref-alias/probe.yml: type-not-defined: POST /users requestBody (fern-strict refusal)
+body-ref-enum                fern=1 crozier=1 ok type-not-defined/runs/body-ref-enum/probe.yml: type-not-defined: POST /users requestBody (fern-strict refusal)
+cookie-enum                  fern=0 crozier=0 ok 
+default-bare                 fern=0 crozier=0 ok 
+default-ref                  fern=1 crozier=1 ok -not-defined/runs/default-ref/probe.yml: type-not-defined: POST /users responses/default (fern-strict refusal)
+group-accepted               fern=0 crozier=0 ok 
+group-api                    fern=0 crozier=0 ok 
+header-enum                  fern=0 crozier=1 OVER-REFUSAL header-enum/probe.yml: generator-missing-type: paths//users/post/parameters/0/X-F/schema (fern-strict refusal)
+header-ref                   fern=0 crozier=0 ok 
+ignored-op                   fern=0 crozier=0 ok 
+other-file-accepted          fern=0 crozier=0 ok 
+other-op-error               fern=0 crozier=0 ok 
+param-ref                    fern=1 crozier=1 ok nts/type-not-defined/runs/param-ref/probe.yml: type-not-defined: POST /users parameter f (fern-strict refusal)
+path-enum                    fern=1 crozier=1 ok type-not-defined/runs/path-enum/probe.yml: type-not-defined: POST /users/{f} parameter f (fern-strict refusal)
+path-level-param             fern=1 crozier=1 ok t-defined/runs/path-level-param/probe.yml: type-not-defined: POST /users/{f} parameter f (fern-strict refusal)
+path-ref-alias               fern=1 crozier=1 ok not-defined/runs/path-ref-alias/probe.yml: type-not-defined: POST /users/{f} parameter f (fern-strict refusal)
+query-array-enum             fern=1 crozier=1 ok e-not-defined/runs/query-array-enum/probe.yml: type-not-defined: POST /users parameter f (fern-strict refusal)
+query-array-string           fern=0 crozier=0 ok 
+query-object                 fern=1 crozier=1 ok /type-not-defined/runs/query-object/probe.yml: type-not-defined: POST /users parameter f (fern-strict refusal)
+query-oneof                  fern=1 crozier=1 ok s/type-not-defined/runs/query-oneof/probe.yml: type-not-defined: POST /users parameter f (fern-strict refusal)
+query-ref-alias              fern=1 crozier=1 ok pe-not-defined/runs/query-ref-alias/probe.yml: type-not-defined: POST /users parameter f (fern-strict refusal)
+query-ref-enum               fern=1 crozier=1 ok ype-not-defined/runs/query-ref-enum/probe.yml: type-not-defined: POST /users parameter f (fern-strict refusal)
+query-required-enum          fern=1 crozier=1 ok ot-defined/runs/query-required-enum/probe.yml: type-not-defined: POST /users parameter f (fern-strict refusal)
+resp-201-ref                 fern=1 crozier=1 ok ype-not-defined/runs/resp-201-ref/probe.yml: type-not-defined: POST /users responses/201 (fern-strict refusal)
+resp-allof-ref               fern=1 crozier=1 ok e-not-defined/runs/resp-allof-ref/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-anyof-null              fern=0 crozier=0 ok 
+resp-array-ref               fern=1 crozier=1 ok e-not-defined/runs/resp-array-ref/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-array-string            fern=0 crozier=0 ok 
+resp-const                   fern=1 crozier=1 ok /type-not-defined/runs/resp-const/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-empty-object            fern=0 crozier=0 ok 
+resp-empty                   fern=0 crozier=0 ok 
+resp-inline-enum             fern=1 crozier=1 ok not-defined/runs/resp-inline-enum/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-map-ref                 fern=1 crozier=1 ok ype-not-defined/runs/resp-map-ref/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-map-string              fern=0 crozier=0 ok 
+resp-multi-2xx               fern=0 crozier=0 ok 
+resp-no-schema               fern=0 crozier=0 ok 
+resp-nullable-enum           fern=1 crozier=1 ok t-defined/runs/resp-nullable-enum/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-octet                   fern=0 crozier=0 ok 
+resp-oneof-prim              fern=1 crozier=1 ok -not-defined/runs/resp-oneof-prim/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-other-json              fern=1 crozier=1 ok -not-defined/runs/resp-other-json/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-ref-alias               fern=1 crozier=1 ok e-not-defined/runs/resp-ref-alias/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-ref-enum                fern=1 crozier=1 ok pe-not-defined/runs/resp-ref-enum/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-ref-list-alias          fern=1 crozier=1 ok -defined/runs/resp-ref-list-alias/probe.yml: type-not-defined: POST /users responses/200 (fern-strict refusal)
+resp-text-plain              fern=0 crozier=0 ok 
+status-1XX                   fern=0 crozier=0 ok 
+status-302                   fern=0 crozier=0 ok 
+status-399                   fern=0 crozier=0 ok 
+status-400                   fern=1 crozier=1 ok /type-not-defined/runs/status-400/probe.yml: type-not-defined: POST /users responses/400 (fern-strict refusal)
+status-401                   fern=1 crozier=1 ok /type-not-defined/runs/status-401/probe.yml: type-not-defined: POST /users responses/401 (fern-strict refusal)
+status-402                   fern=1 crozier=1 ok /type-not-defined/runs/status-402/probe.yml: type-not-defined: POST /users responses/402 (fern-strict refusal)
+status-403-json              fern=1 crozier=1 ok -not-defined/runs/status-403-json/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+status-404                   fern=1 crozier=1 ok /type-not-defined/runs/status-404/probe.yml: type-not-defined: POST /users responses/404 (fern-strict refusal)
+status-405                   fern=1 crozier=1 ok /type-not-defined/runs/status-405/probe.yml: type-not-defined: POST /users responses/405 (fern-strict refusal)
+status-409                   fern=1 crozier=1 ok /type-not-defined/runs/status-409/probe.yml: type-not-defined: POST /users responses/409 (fern-strict refusal)
+status-418                   fern=1 crozier=1 ok /type-not-defined/runs/status-418/probe.yml: type-not-defined: POST /users responses/418 (fern-strict refusal)
+status-420                   fern=1 crozier=1 ok /type-not-defined/runs/status-420/probe.yml: type-not-defined: POST /users responses/420 (fern-strict refusal)
+status-422                   fern=1 crozier=1 ok /type-not-defined/runs/status-422/probe.yml: type-not-defined: POST /users responses/422 (fern-strict refusal)
+status-429                   fern=1 crozier=1 ok /type-not-defined/runs/status-429/probe.yml: type-not-defined: POST /users responses/429 (fern-strict refusal)
+status-450                   fern=1 crozier=1 ok /type-not-defined/runs/status-450/probe.yml: type-not-defined: POST /users responses/450 (fern-strict refusal)
+status-451                   fern=1 crozier=1 ok /type-not-defined/runs/status-451/probe.yml: type-not-defined: POST /users responses/451 (fern-strict refusal)
+status-460                   fern=0 crozier=0 ok 
+status-498                   fern=1 crozier=1 ok /type-not-defined/runs/status-498/probe.yml: type-not-defined: POST /users responses/498 (fern-strict refusal)
+status-499                   fern=1 crozier=1 ok /type-not-defined/runs/status-499/probe.yml: type-not-defined: POST /users responses/499 (fern-strict refusal)
+status-4XX                   fern=0 crozier=0 ok 
+status-500                   fern=1 crozier=1 ok /type-not-defined/runs/status-500/probe.yml: type-not-defined: POST /users responses/500 (fern-strict refusal)
+status-503                   fern=1 crozier=1 ok /type-not-defined/runs/status-503/probe.yml: type-not-defined: POST /users responses/503 (fern-strict refusal)
+status-504                   fern=1 crozier=1 ok /type-not-defined/runs/status-504/probe.yml: type-not-defined: POST /users responses/504 (fern-strict refusal)
+status-505                   fern=1 crozier=1 ok /type-not-defined/runs/status-505/probe.yml: type-not-defined: POST /users responses/505 (fern-strict refusal)
+status-511                   fern=1 crozier=1 ok /type-not-defined/runs/status-511/probe.yml: type-not-defined: POST /users responses/511 (fern-strict refusal)
+status-520                   fern=0 crozier=0 ok 
+status-530                   fern=0 crozier=0 ok 
+status-550                   fern=0 crozier=0 ok 
+status-590                   fern=0 crozier=0 ok 
+status-598                   fern=0 crozier=0 ok 
+status-599                   fern=0 crozier=0 ok 
+status-5XX                   fern=0 crozier=0 ok 
+status-600                   fern=0 crozier=0 ok 
+status-sweep                 fern=1 crozier=1 ok type-not-defined/runs/status-sweep/probe.yml: type-not-defined: POST /s400 responses/400 (fern-strict refusal)
+tag-API                      fern=1 crozier=1 ok nts/type-not-defined/runs/tag-API/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-APIs                     fern=0 crozier=0 ok 
+tag-ApI                      fern=0 crozier=0 ok 
+tag-Api                      fern=1 crozier=1 ok nts/type-not-defined/runs/tag-Api/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-Api_                     fern=1 crozier=1 ok ts/type-not-defined/runs/tag-Api_/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-_api                     fern=1 crozier=1 ok ts/type-not-defined/runs/tag-_api/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-aPI                      fern=0 crozier=0 ok 
+tag-a_pi                     fern=0 crozier=0 ok 
+tag-api-dot                  fern=1 crozier=1 ok type-not-defined/runs/tag-api-dot/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-api-group-list           fern=1 crozier=1 ok t-defined/runs/tag-api-group-list/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-api-group-users          fern=1 crozier=1 ok -defined/runs/tag-api-group-users/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-api-users                fern=1 crozier=1 ok pe-not-defined/runs/tag-api-users/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-api1                     fern=0 crozier=0 ok 
+tag-apiDocs                  fern=0 crozier=0 ok 
+tag-core                     fern=0 crozier=0 ok 
+tag-dash-api                 fern=1 crozier=1 ok ype-not-defined/runs/tag-dash-api/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-error                    fern=0 crozier=0 ok 
+tag-package                  fern=0 crozier=0 ok 
+tag-root                     fern=0 crozier=0 ok 
+tag-spaceAPI                 fern=1 crozier=1 ok ype-not-defined/runs/tag-spaceAPI/probe.yml: type-not-defined: POST /users responses/403 (fern-strict refusal)
+tag-types                    fern=0 crozier=0 ok 
+tag-users-api                fern=0 crozier=0 ok 
+tag-users-group-api          fern=0 crozier=0 ok 
+u-both-shared                fern=1 crozier=1 ok red/probe.yml: type-not-defined: components/schemas/Proc/properties/events/items/oneOf/0 (fern-strict refusal)
+u-direct                     fern=1 crozier=1 ok /u-direct/probe.yml: type-not-defined: components/schemas/Proc/properties/events/oneOf/0 (fern-strict refusal)
+u-disc                       fern=1 crozier=1 ok isc/probe.yml: type-not-defined: components/schemas/Proc/properties/events/items/oneOf/0 (fern-strict refusal)
+u-none-shared                fern=0 crozier=0 ok 
+u-one-shared                 fern=1 crozier=1 ok red/probe.yml: type-not-defined: components/schemas/Proc/properties/events/items/oneOf/0 (fern-strict refusal)
+u-pop-no-dup                 fern=1 crozier=1 ok : type-not-defined: components/schemas/ProcedureWriteDto/properties/events/items/oneOf/0 (fern-strict refusal)
+u-same-tag                   fern=1 crozier=1 ok tag/probe.yml: type-not-defined: components/schemas/Proc/properties/events/items/oneOf/0 (fern-strict refusal)
+union-accepted               fern=0 crozier=0 ok 
+v-allof                      fern=0 crozier=0 ok 
+v-array                      fern=0 crozier=0 ok 
+v-body-only                  fern=0 crozier=0 ok 
+v-form                       fern=0 crozier=0 ok 
+v-multipart                  fern=0 crozier=0 ok 
+v-prop                       fern=0 crozier=0 ok 
+v-response                   fern=0 crozier=0 ok 
+v-undisc-union               fern=0 crozier=0 ok 
+v-union                      fern=1 crozier=1 ok s/v-union/probe.yml: type-not-defined: components/schemas/Proc/properties/events/oneOf/0 (fern-strict refusal)
+w-anyof                      fern=1 crozier=1 ok s/w-anyof/probe.yml: type-not-defined: components/schemas/Proc/properties/events/anyOf/0 (fern-strict refusal)
+w-component-union            fern=1 crozier=1 ok ed/runs/w-component-union/probe.yml: type-not-defined: components/schemas/Events/oneOf/0 (fern-strict refusal)
+w-const                      fern=1 crozier=1 ok s/w-const/probe.yml: type-not-defined: components/schemas/Proc/properties/events/oneOf/0 (fern-strict refusal)
+w-diff-names                 fern=0 crozier=0 ok 
+w-explicit-noenum            fern=0 crozier=0 ok 
+w-ignored-op                 fern=0 crozier=0 ok 
+w-inline-member              fern=1 crozier=1 ok ne-member/probe.yml: type-not-defined: components/schemas/Proc/properties/events/oneOf/0 (fern-strict refusal)
+w-kind                       fern=1 crozier=1 ok ns/w-kind/probe.yml: type-not-defined: components/schemas/Proc/properties/events/oneOf/0 (fern-strict refusal)
+w-mixed                      fern=0 crozier=0 ok 
+w-notrequired                fern=1 crozier=1 ok trequired/probe.yml: type-not-defined: components/schemas/Proc/properties/events/oneOf/0 (fern-strict refusal)
+w-optional-body              fern=1 crozier=1 ok onal-body/probe.yml: type-not-defined: components/schemas/Proc/properties/events/oneOf/0 (fern-strict refusal)
+w-response-union             fern=1 crozier=1 ok nse-union/probe.yml: type-not-defined: components/schemas/Proc/properties/events/oneOf/0 (fern-strict refusal)
+w-single-member              fern=0 crozier=0 ok 
+w-two-values                 fern=0 crozier=0 ok 

@@ -1,0 +1,11 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 0109022564565a67857d84bd61ba8dd618ab71c09474786ed5e51d60c37168ab
+command: [PosixPath('~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/0109022564565a67857d84bd61ba8dd618ab71c09474786ed5e51d60c37168ab.yaml'), '--output', PosixPath('~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/example-names/reps/adyen'), '--package-name', 'fern']
+exit: 0
+generated 339 files into ~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/example-names/reps/adyen
+command: [PosixPath('~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: [PosixPath('~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 0
+Success: no issues found in 332 source files
