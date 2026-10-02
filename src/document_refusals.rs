@@ -2536,10 +2536,13 @@ mod tests {
         let file = dir.path().join("api.yml");
         let probe = |reference: &str| {
             format!(
-                "openapi: 3.0.3\npaths: {{/holder: {{post: {{requestBody: {{content: {{application/json: \
-                 {{schema: {{type: object, required: [ghost], properties: {{ghost: {{$ref: '{reference}'}}}}}}}}}}}}, \
-                 responses: {{'204': {{description: No Content}}}}}}}}}}\ncomponents: {{schemas: {{Named: {{type: object, \
-                 $defs: {{id: {{type: string}}}}, properties: {{label: {{type: string, $defs: {{inner: {{type: string}}}}}}}}}}}}}}\n"
+                concat!(
+                    "openapi: 3.0.3\npaths: {{/holder: {{post: {{requestBody: {{content: {{application/json: ",
+                    "{{schema: {{type: object, required: [ghost], properties: {{ghost: {{$ref: '{reference}'}}}}}}}}}}}}, ",
+                    "responses: {{'204': {{description: No Content}}}}}}}}}}\ncomponents: {{schemas: {{Named: {{type: object, ",
+                    "$defs: {{id: {{type: string}}}}, properties: {{label: {{type: string, $defs: {{inner: {{type: string}}}}}}}}}}}}}}\n",
+                ),
+                reference = reference,
             )
         };
         // Pinned Fern walks a pointer naming `properties`, typing what it does
