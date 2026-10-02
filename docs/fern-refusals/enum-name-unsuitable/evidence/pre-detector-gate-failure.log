@@ -1,0 +1,33 @@
+Induced registry activation before enum-name detector; code at e95eefa21
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+────────────
+ Nextest run ID 9c223514-bd83-4dcf-a07d-6001c2527b11 with nextest profile: default
+    Starting 1 test across 1 binary (426 tests and 6 binaries skipped)
+        FAIL [   0.171s] (1/1) crozier::e2e fern_refusal_classes_hold
+  stdout ───
+
+    running 1 test
+    test fern_refusal_classes_hold ... FAILED
+
+    failures:
+
+    failures:
+        fern_refusal_classes_hold
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 426 filtered out; finished in 0.16s
+
+  stderr ───
+
+    thread 'fern_refusal_classes_hold' (3091571) panicked at tests/e2e.rs:14110:5:
+    docs/fern-refusals/ does not hold:
+    enum-name-unsuitable: crozier generated from the probe in its mode; the class says it is refused (38 file(s) written)
+    enum-name-unsuitable: crozier generated from the probe in its mode; the class says it is refused (38 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.173s] 1 test run: 0 passed, 1 failed, 426 skipped
+        FAIL [   0.171s] (1/1) crozier::e2e fern_refusal_classes_hold
+error: test run failed

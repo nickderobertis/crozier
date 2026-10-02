@@ -1,0 +1,2 @@
+exit=0
+GET /a and GET /b parse different response models named GetThingResponse; public types identifier collides and mypy rejects

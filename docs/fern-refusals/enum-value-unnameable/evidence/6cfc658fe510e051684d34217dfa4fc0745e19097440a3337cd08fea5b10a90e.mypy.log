@@ -1,0 +1,5 @@
+exit=1
+src/probe/pso2/types/em_req_event_type.py:12: error: Attempted to reuse member name "_" in Enum definition "EmReqEventType"  [misc]
+src/probe/pso2/types/em_req_event_type.py:13: error: Attempted to reuse member name "_" in Enum definition "EmReqEventType"  [misc]
+src/probe/pso2/types/em_req_event_type.py:14: error: Attempted to reuse member name "_" in Enum definition "EmReqEventType"  [misc]
+Found 3 errors in 1 file (checked 37 source files)

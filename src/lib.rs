@@ -21,6 +21,7 @@ pub mod config;
 pub mod emit;
 pub mod error;
 pub mod ir;
+mod name_refusals;
 pub mod naming;
 pub mod normalize;
 pub mod openapi;
@@ -68,8 +69,8 @@ pub struct GenerateArgs {
     /// Strict Fern compatibility (`--fern-strict`): refuse, as Fern does, a
     /// document crozier would otherwise generate from. It only ever decides
     /// whether an SDK is written, never a byte of one that is. The classes it
-    /// refuses are registered in `docs/fern-refusals/`; none is evaluated yet,
-    /// so today it refuses nothing crozier's default mode generates.
+    /// refuses and their evaluated generation policies are registered in
+    /// `docs/fern-refusals/`.
     pub fern_strict: bool,
     /// Which tree to write: Fern's packaged SDK (the default) or its flat module
     /// tree (see [`settings::Layout`]).
@@ -79,7 +80,7 @@ pub struct GenerateArgs {
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
-    let mut doc = openapi::load(&args.spec)?;
+    let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     // The config constructor validates the package name (a `PackageName`), so an
@@ -95,6 +96,8 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     )?;
     config.layout = args.layout;
     let ir = ir::build(&doc, &config);
+    name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
+    name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     let files = emit::generate(&ir)?;
     // Regeneration is idempotent: clear the crozier-owned package tree first so a
     // schema or endpoint dropped from the spec does not leave an orphaned module.
@@ -148,7 +151,7 @@ pub fn resolved_names(args: &GenerateArgs) -> Result<ResolvedNames> {
 /// Render the files for a spec without writing them — used by tests to compare
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
-    let mut doc = openapi::load(&args.spec)?;
+    let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     let mut config = GenerateConfig::new(
@@ -162,5 +165,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     )?;
     config.layout = args.layout;
     let ir = ir::build(&doc, &config);
+    name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
+    name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     emit::generate(&ir)
 }

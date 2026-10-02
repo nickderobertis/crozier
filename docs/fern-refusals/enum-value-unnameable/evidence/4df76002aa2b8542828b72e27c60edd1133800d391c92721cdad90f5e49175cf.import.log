@@ -1,0 +1,26 @@
+exit=1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import probe, pkgutil, importlib; modules = list(pkgutil.walk_packages(probe.__path__, probe.__name__ + ".")); [importlib.import_module(m.name) for m in modules]; print("all SDK modules imported:", len(modules))
+                                                                                                                    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1406, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "<scratch>/sdk-4df76002aa2b8542828b72e27c60edd1133800d391c92721cdad90f5e49175cf/src/probe/types/user_info.py", line 11, in <module>
+    from .user_info_activity import UserInfoActivity
+  File "<scratch>/sdk-4df76002aa2b8542828b72e27c60edd1133800d391c92721cdad90f5e49175cf/src/probe/types/user_info_activity.py", line 10, in <module>
+    class UserInfoActivity(enum.StrEnum):
+    ...<16 lines>...
+                return _()
+  File "<scratch>/sdk-4df76002aa2b8542828b72e27c60edd1133800d391c92721cdad90f5e49175cf/src/probe/types/user_info_activity.py", line 12, in UserInfoActivity
+    _ = "輕度"
+    ^
+  File "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/enum.py", line 391, in __setitem__
+    raise TypeError('%r already defined as %r' % (key, self[key]))
+TypeError: '_' already defined as '幾乎不動'

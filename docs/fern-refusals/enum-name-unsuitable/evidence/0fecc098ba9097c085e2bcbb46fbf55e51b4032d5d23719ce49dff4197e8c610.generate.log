@@ -1,0 +1,4 @@
+baseline=2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+locator=https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/swaggerhub.koscom/account-check/1.0.0/meta/import/input-bundle.json
+exit=0
+generated 43 files into <scratch>/sdk-0fecc098ba9097c085e2bcbb46fbf55e51b4032d5d23719ce49dff4197e8c610

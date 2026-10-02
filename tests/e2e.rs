@@ -9458,35 +9458,25 @@ fn enum_sanitization_generates_valid_python() {
     // Issue #50: enum member names and `visit()` parameters are derived from the
     // raw wire values, so a value that is not already a bare identifier once
     // produced Python that failed the final `ruff format` and discarded the whole
-    // SDK. This spec packs the crashing shapes into one enum — a Python keyword
-    // (`global`), punctuation + a leading digit (`0: Active`), and the
-    // digit-leading value `_01_00_AM` that Fern itself rejects (so it has no
-    // byte-match fixture) — plus a `type: string` enum whose values are all
-    // integers. Generation must succeed and every module must compile.
-    let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+    // SDK. This spec packs the crashing shapes Fern generates from into one
+    // document — a Python keyword (`global`) and a `type: string` enum whose
+    // values are all integers. Generation must succeed and every module must
+    // compile. The digit-run value `_01_00_AM`, which Fern rejects, is refused
+    // instead (the `enum-name-unsuitable` class, asserted below).
+    let spec = "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        \
          - { name: size, in: query, required: false, schema: { type: string, enum: [100, 125] } }\n      \
          responses:\n        '200': { description: OK, content: { application/json: { schema: \
          { $ref: '#/components/schemas/Widget' } } } }\ncomponents:\n  schemas:\n    Widget:\n      \
-         type: object\n      properties:\n        scope: { $ref: '#/components/schemas/WidgetScope' }\n        \
-         hour: { $ref: '#/components/schemas/WidgetHour' }\n    WidgetScope:\n      type: string\n      \
-         enum: [\"global\", \"practice\"]\n    WidgetHour:\n      type: string\n      \
-         enum: [\"_01_00_AM\", \"_12_00_PM\"]\n",
-    );
-    // The keyword value's `visit` parameter is keyword-escaped, and the leading
-    // digit that Fern rejects is prefixed into a legal identifier by crozier.
+         type: object\n      properties:\n        scope: { $ref: '#/components/schemas/WidgetScope' }\n    \
+         WidgetScope:\n      type: string\n      enum: [\"global\", \"practice\"]\n";
+    let (_dir, out) = generate_ok(spec);
+    // The keyword value's `visit` parameter is keyword-escaped.
     let scope = std::fs::read_to_string(out.join("src/acme/types/widget_scope.py"))
         .expect("WidgetScope enum is generated");
     assert!(
         scope.contains("global_: typing.Callable"),
         "keyword value → keyword-escaped visit param: {scope}"
-    );
-    let hour = std::fs::read_to_string(out.join("src/acme/types/widget_hour.py"))
-        .expect("WidgetHour enum is generated");
-    assert!(
-        hour.contains("_01_00_AM = \"_01_00_AM\""),
-        "digit-leading member is prefixed into a legal identifier: {hour}"
     );
     // The type-mismatched enum (string type, integer values) drops its members and
     // falls back to the base `str` type rather than emitting an empty enum class.
@@ -9496,6 +9486,31 @@ fn enum_sanitization_generates_valid_python() {
         raw.contains("size: typing.Optional[str] = None"),
         "a type-mismatched string enum falls back to str: {raw}"
     );
+
+    // Adding the digit-run enum Fern refuses turns the same document into a
+    // refusal: exit 1, nothing written, the class and value named on stderr.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        format!(
+            "{spec}    WidgetHour:\n      type: string\n      enum: [\"_01_00_AM\", \"_12_00_PM\"]\n"
+        ),
+    )
+    .unwrap();
+    let refused = dir.path().join("out");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&path)
+        .arg("--output")
+        .arg(&refused)
+        .args(["--package-name", "acme"])
+        .assert()
+        .code(1)
+        .stderr(predicates::str::contains(
+            "enum-name-unsuitable: #/components/schemas/WidgetHour enum value \"_01_00_AM\"",
+        ));
+    assert!(!refused.exists(), "a refused document writes nothing");
 }
 
 #[test]
@@ -13652,6 +13667,16 @@ struct RefusalClass {
     fern_exit: String,
     documents: String,
     crozier_diagnostic: String,
+    population_strict: String,
+}
+
+/// What `documents.tsv` records for one class: the rows carrying it, and of
+/// those the ones with a measured `crozier_strict_exit` and the ones it refused.
+#[derive(Default)]
+struct RefusalClassDocuments {
+    carried: usize,
+    measured: usize,
+    refused: usize,
 }
 
 /// Whether the gate runs each `generate` class's `wire_test.py`. Running one
@@ -13741,12 +13766,26 @@ fn fern_refusal_failures(
 
     let carried = refusal_document_class_counts(registry, &known, &mut failures);
     for class in &classes {
-        let count = carried.get(class.class.as_str()).copied().unwrap_or(0);
+        let recorded = carried.get(class.class.as_str());
+        let count = recorded.map_or(0, |recorded| recorded.carried);
         if class.documents != count.to_string() {
             failures.push(format!(
                 "{}: classes.tsv counts {} document(s), but {count} documents.tsv row(s) carry it",
                 class.class, class.documents
             ));
+        }
+        if class.status != "unevaluated" {
+            let measured = recorded.map_or_else(
+                || "0/0".to_owned(),
+                |recorded| format!("{}/{}", recorded.refused, recorded.measured),
+            );
+            if class.population_strict != measured {
+                failures.push(format!(
+                    "{}: classes.tsv population_strict is {}, but documents.tsv's \
+                     crozier_strict_exit refuses {measured} of the rows that carry it",
+                    class.class, class.population_strict
+                ));
+            }
         }
         failures.extend(refusal_class_failures(registry, class, generator, wire));
     }
@@ -13857,18 +13896,20 @@ fn parse_refusal_classes(text: &str) -> (Vec<RefusalClass>, Vec<String>) {
             fern_exit: fern_exit.to_string(),
             documents: documents.to_string(),
             crozier_diagnostic: crozier_diagnostic.to_string(),
+            population_strict: population_strict.to_string(),
         });
     }
     (classes, failures)
 }
 
-/// `documents.tsv`'s header and order, and how many rows carry each class;
-/// a class id that is no `classes.tsv` row is a failure.
+/// `documents.tsv`'s header and order, and per class how many rows carry it and
+/// how their `crozier_strict_exit` reads; a class id that is no `classes.tsv` row
+/// is a failure.
 fn refusal_document_class_counts<'a>(
     registry: &Path,
     known: &std::collections::BTreeSet<&'a str>,
     failures: &mut Vec<String>,
-) -> std::collections::BTreeMap<&'a str, usize> {
+) -> std::collections::BTreeMap<&'a str, RefusalClassDocuments> {
     let mut counts = std::collections::BTreeMap::new();
     let text = match std::fs::read_to_string(registry.join("documents.tsv")) {
         Ok(text) => text,
@@ -13907,7 +13948,14 @@ fn refusal_document_class_counts<'a>(
         }
         for id in fields[8].split(',').filter(|id| !id.is_empty()) {
             match known.get(id) {
-                Some(class) => *counts.entry(*class).or_insert(0) += 1,
+                Some(class) => {
+                    let recorded: &mut RefusalClassDocuments = counts.entry(*class).or_default();
+                    recorded.carried += 1;
+                    if fields[11] != "—" {
+                        recorded.measured += 1;
+                        recorded.refused += usize::from(fields[11] == "1");
+                    }
+                }
                 None => failures.push(format!(
                     "{id}: documents.tsv row {digest} carries it, but it is not a classes.tsv row"
                 )),
@@ -14811,6 +14859,15 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
         )],
     );
     std::fs::create_dir_all(registry.join("stray-directory")).unwrap();
+    // A fraction no documents.tsv row measured: the one carrying the class has
+    // no `crozier_strict_exit`, so the gate reads 0/0 where the table claims 1/1.
+    let classes = std::fs::read_to_string(registry.join("classes.tsv")).unwrap();
+    let drifted = classes.replace(
+        "\tGET /thing: the scratch element\t0/0\n",
+        "\tGET /thing: the scratch element\t1/1\n",
+    );
+    assert_ne!(classes, drifted, "the scratch row to drift was not found");
+    std::fs::write(registry.join("classes.tsv"), drifted).unwrap();
 
     let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
     let report = failures.join("\n");
@@ -14840,6 +14897,10 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
             "is a directory under the registry but no classes.tsv row names it",
         ),
         ("ghost-class:", "but it is not a classes.tsv row"),
+        (
+            "generated-though-refuse:",
+            "population_strict is 1/1, but documents.tsv's crozier_strict_exit refuses 0/0",
+        ),
     ];
     for (class, condition) in expected {
         assert!(
@@ -14934,4 +14995,1612 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
         "a refusal that wrote output was not reported:\n{}",
         failures.join("\n")
     );
+}
+
+/// Refusal happens before touching an existing SDK; an explicit document name
+/// recovers generation without changing the declared enum wire value.
+#[test]
+fn unnameable_enum_refusal_preserves_output_and_recovers_with_declared_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let output = dir.path().join("sdk");
+    std::fs::create_dir(&output).unwrap();
+    std::fs::write(output.join("keep.txt"), "existing SDK").unwrap();
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/enum-value-unnameable/probe.yml"),
+    )
+    .unwrap();
+    std::fs::write(&spec, &probe).unwrap();
+    for strict in [false, true] {
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe"]);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let run = command.output().unwrap();
+        assert_eq!(run.status.code(), Some(1));
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains("enum-value-unnameable"), "{stderr}");
+        if strict {
+            assert!(stderr.contains("fern-strict"), "{stderr}");
+        }
+        assert!(
+            stderr.contains("Minutes") && stderr.contains("10080"),
+            "{stderr}"
+        );
+        assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+        assert_eq!(
+            std::fs::read_to_string(output.join("keep.txt")).unwrap(),
+            "existing SDK"
+        );
+    }
+    for (first, second) in [("緊急", "補助"), ("!!!", "???")] {
+        std::fs::write(
+            &spec,
+            probe.replace("10080", first).replace("20160", second),
+        )
+        .unwrap();
+        let run = crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .arg("--fern-strict")
+            .output()
+            .unwrap();
+        assert_eq!(run.status.code(), Some(1));
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        let class = if first.is_ascii() {
+            "enum-name-unsuitable"
+        } else {
+            "enum-value-unnameable"
+        };
+        assert!(
+            stderr.contains(class) && stderr.contains("fern-strict"),
+            "{stderr}"
+        );
+        assert!(
+            stderr.contains(first) && stderr.contains("Minutes"),
+            "{stderr}"
+        );
+        assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+    }
+    std::fs::write(
+        &spec,
+        probe.replace(
+            "      enum:",
+            "      x-crozier-enum:\n        '10080': {name: 2fa}\n      enum:",
+        ),
+    )
+    .unwrap();
+    let run = crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert_eq!(run.status.code(), Some(1));
+    assert!(String::from_utf8(run.stderr)
+        .unwrap()
+        .contains("enum-value-unnameable"));
+    assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+    std::fs::write(
+        &spec,
+        probe.replace(
+            "      enum:",
+            "      x-crozier-enum:\n        '10080': {name: WEEK}\n        '20160': {name: FORTNIGHT}\n      enum:",
+        ),
+    )
+    .unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .args(["--package-name", "probe", "--fern-strict"])
+        .assert()
+        .success();
+    let module = std::fs::read_to_string(output.join("src/probe/types/minutes.py")).unwrap();
+    assert!(module.contains("WEEK = \"10080\""), "{module}");
+    assert!(module.contains("FORTNIGHT = \"20160\""), "{module}");
+}
+
+#[test]
+fn inline_unnameable_enums_report_their_operation_and_recover() {
+    let enum_schema = serde_json::json!({"type": "string", "enum": ["10080", "20160"]});
+    for (kind, location) in [
+        ("parameter", "GET /probe parameter mode"),
+        ("parameter-content", "GET /probe parameter mode"),
+        ("body", "GET /probe request body/items/additionalProperties"),
+        (
+            "response",
+            "GET /probe response 200/oneOf/0/allOf/0/anyOf/0",
+        ),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.json");
+        let output = dir.path().join("sdk");
+        let mut operation = serde_json::json!({
+            "operationId": "probe",
+            "responses": {"204": {"description": "No content"}}
+        });
+        match kind {
+            "parameter" => {
+                operation["parameters"] = serde_json::json!([
+                    {"name": "mode", "in": "query", "schema": enum_schema}
+                ]);
+            }
+            "parameter-content" => {
+                operation["parameters"] = serde_json::json!([
+                    {"name": "mode", "in": "query", "content": {
+                        "application/json": {"schema": enum_schema}
+                    }}
+                ]);
+            }
+            "body" => {
+                operation["requestBody"] = serde_json::json!({"content": {
+                    "application/json": {"schema": {"type": "array", "items": {
+                        "type": "object", "additionalProperties": enum_schema
+                    }}}
+                }});
+            }
+            "response" => {
+                operation["responses"] = serde_json::json!({"200": {
+                    "description": "Enum result", "content": {"application/json": {
+                        "schema": {"oneOf": [{"allOf": [{"anyOf": [enum_schema]}]}]}
+                    }}
+                }});
+            }
+            _ => unreachable!(),
+        }
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"get": operation}}
+        });
+        let text = serde_json::to_string(&document).unwrap();
+        std::fs::write(&spec, &text).unwrap();
+        let run = crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe"])
+            .output()
+            .unwrap();
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(run.status.code(), Some(1), "{kind}: {stderr}");
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains("enum-value-unnameable"), "{stderr}");
+        assert!(stderr.contains(location), "{kind}: {stderr}");
+        assert!(stderr.contains("10080"), "{stderr}");
+        assert!(!output.exists(), "{kind}: refusal created output");
+        std::fs::write(
+            &spec,
+            text.replace("10080", "9999").replace("20160", "9000"),
+        )
+        .unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe", "--fern-strict"])
+            .assert()
+            .success();
+        assert!(output.join("pyproject.toml").is_file(), "{kind}");
+    }
+}
+
+/// Fern treats integer enums and mixed-kind string enums as scalar aliases,
+/// including Bungie's integer bit flags written with string enum values.
+#[test]
+fn non_string_and_mixed_enums_generate_without_name_refusals() {
+    for (ty, values, alias) in [
+        ("integer", serde_json::json!(["10080", "20160"]), "int"),
+        ("string", serde_json::json!(["10080", false]), "str"),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.json");
+        let output = dir.path().join("sdk");
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"get": {"operationId": "probe", "responses": {
+                "200": {"description": "Scope value", "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Scopes"}
+                }}}
+            }}}},
+            "components": {"schemas": {"Scopes": {"type": ty, "enum": values}}}
+        });
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output)
+                .args(["--package-name", "probe"]);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            command.assert().success();
+            let module = std::fs::read_to_string(output.join("src/probe/types/scopes.py")).unwrap();
+            assert!(module.contains(&format!("Scopes = {alias}")), "{module}");
+            assert!(!module.contains("_10080"), "{module}");
+        }
+    }
+}
+
+#[test]
+fn discriminant_refusals_recover_with_a_valid_document_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let output = dir.path().join("sdk");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/discriminant-value-unsuitable/probe.yml"),
+    )
+    .unwrap();
+    for name in ["_t", "kind-name", "1kind"] {
+        std::fs::write(&spec, probe.replace("_t", name)).unwrap();
+        for strict in [false, true] {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let run = command.output().unwrap();
+            assert_eq!(run.status.code(), Some(1));
+            let stderr = String::from_utf8(run.stderr).unwrap();
+            assert_eq!(stderr.lines().count(), 1, "{stderr}");
+            assert!(stderr.contains("discriminant-value-unsuitable"), "{stderr}");
+            assert!(
+                stderr.contains("Asset") && stderr.contains(name),
+                "{stderr}"
+            );
+            if strict {
+                assert!(stderr.contains("fern-strict"), "{stderr}");
+            }
+            assert!(!output.exists());
+        }
+    }
+    for inferred in [false, true] {
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        if inferred {
+            document["components"]["schemas"]["Asset"]
+                .as_object_mut()
+                .unwrap()
+                .remove("discriminator");
+            for (variant, value) in [("ImageAsset", "image"), ("TextAsset", "text")] {
+                document["components"]["schemas"][variant]["properties"]["_t"]["enum"] =
+                    serde_json::json!([value]);
+            }
+        } else {
+            document["components"]["schemas"]["Asset"]
+                .as_object_mut()
+                .unwrap()
+                .remove("oneOf");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .arg("--fern-strict")
+            .assert()
+            .code(1)
+            .stderr(predicates::str::contains("discriminant-value-unsuitable"));
+        assert!(!output.exists());
+    }
+    std::fs::write(&spec, probe.replace("_t", "kind_name")).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .args(["--package-name", "probe", "--fern-strict"])
+        .assert()
+        .success();
+    let module = std::fs::read_to_string(output.join("src/probe/types/asset.py")).unwrap();
+    assert!(module.contains("kind_name:"), "{module}");
+}
+
+#[test]
+fn scalar_singleton_body_enum_needs_no_member_but_nested_enums_do() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    for nested in [false, true] {
+        let scalar = serde_json::json!({"type": "string", "enum": ["10080"]});
+        let schema = if nested {
+            serde_json::json!({"type": "object", "properties": {"minutes": scalar}})
+        } else {
+            scalar
+        };
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {
+                "required": true, "content": {"application/json": {"schema": schema}}
+            }, "responses": {"204": {"description": "Done"}}}}}
+        });
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{nested}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output)
+                .args(["--package-name", "probe"]);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            if nested {
+                command
+                    .assert()
+                    .code(1)
+                    .stderr(predicates::str::contains("enum-value-unnameable"));
+                assert!(!output.exists());
+            } else {
+                command.assert().success();
+                assert!(output.join("pyproject.toml").is_file());
+            }
+        }
+    }
+}
+
+#[test]
+fn repeated_path_names_refuse_and_distinct_positions_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/duplicate-path-parameter/probe.yml"),
+    )
+    .unwrap();
+    let document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+    let mut item = document["paths"]["/accounts/{account_id}/members/{account_id}"].clone();
+    item["get"]["parameters"]
+        .as_array_mut()
+        .unwrap()
+        .push(serde_json::json!({
+            "name": "member_id", "in": "path", "required": true, "schema": {"type": "string"}
+        }));
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        std::fs::write(&spec, &probe).unwrap();
+        let run = |refused: bool| {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            if refused {
+                command
+                    .assert()
+                    .code(1)
+                    .stderr(predicates::str::contains("duplicate-path-parameter"));
+                assert!(!output.exists());
+            } else {
+                command.assert().success();
+            }
+        };
+        run(true);
+        let mut recovered = document.clone();
+        recovered["paths"] =
+            serde_json::json!({"/accounts/{account_id}/members/{member_id}": item});
+        std::fs::write(&spec, serde_json::to_string(&recovered).unwrap()).unwrap();
+        run(false);
+        // A repeated declaration for one position is accepted by pinned Fern.
+        recovered["paths"] = serde_json::json!({"/accounts/{account_id}": {
+            "get": {"operationId": "getMember", "parameters": [
+                {"name": "account_id", "in": "path", "required": true, "schema": {"type": "string"}},
+                {"name": "account_id", "in": "path", "required": true, "schema": {"type": "string"}}
+            ], "responses": {"204": {"description": "Done"}}}
+        }});
+        std::fs::write(&spec, serde_json::to_string(&recovered).unwrap()).unwrap();
+        run(false);
+    }
+}
+
+#[test]
+fn normalized_parameter_collisions_refuse_and_renamed_parameters_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        std::fs::write(&spec, &probe).unwrap();
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().code(1).stderr(predicates::str::contains(
+            "request-property-camelcase-collision",
+        ));
+        assert!(!output.exists());
+        std::fs::write(&spec, probe.replace("accountId", "otherAccountId")).unwrap();
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().success();
+        assert!(output.join("pyproject.toml").is_file());
+    }
+}
+
+#[test]
+fn inferred_path_and_body_parameter_names_share_collision_validation() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    for (route, parameters, body) in [
+        (
+            "/accounts/{+accountId}",
+            serde_json::json!([{"name": "accountId", "in": "path", "required": true, "schema": {"type": "string"}}]),
+            serde_json::Value::Null,
+        ),
+        (
+            "/accounts",
+            serde_json::json!([{"name": "accountId", "in": "query", "schema": {"type": "string"}}]),
+            serde_json::json!({"type": "object", "properties": {"account_id": {"type": "string"}}}),
+        ),
+    ] {
+        let mut op = serde_json::json!({"operationId": "probe", "parameters": parameters, "responses": {"204": {"description": "Done"}}});
+        if !body.is_null() {
+            op["requestBody"] =
+                serde_json::json!({"content": {"application/json": {"schema": body}}});
+        }
+        let document = serde_json::json!({"openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {route: {"post": op}}});
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            command.assert().code(1).stderr(predicates::str::contains(
+                "request-property-camelcase-collision",
+            ));
+            assert!(!output.exists());
+        }
+    }
+}
+
+#[test]
+fn declared_parameter_names_deconflict_refusals_without_repairing_generation() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
+    )
+    .unwrap();
+    for body in [false, true] {
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        let op = &mut document["paths"]["/accounts"]["get"];
+        let hint = serde_json::json!({"type": "string", "x-fern-parameter-name": "account_id", "x-crozier-parameter-name": "otherAccount"});
+        if body {
+            op["parameters"].as_array_mut().unwrap().truncate(1);
+            op["requestBody"] = serde_json::json!({"content": {"application/json": {"schema": {"type": "object", "properties": {"accountId": hint}}}}});
+        } else {
+            op["parameters"][1]["x-fern-parameter-name"] = serde_json::json!("account_id");
+            op["parameters"][1]["x-crozier-parameter-name"] = serde_json::json!("otherAccount");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{body}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let result = command.output().unwrap();
+            let stderr = String::from_utf8(result.stderr).unwrap();
+            // Parameter-only baseline generation still fails at ruff. The
+            // body case already generates; this node changes neither outcome.
+            assert!(
+                !stderr.contains("request-property-camelcase-collision"),
+                "{stderr}"
+            );
+            if body {
+                assert_eq!(result.status.code(), Some(0), "{stderr}");
+                assert!(output.join("pyproject.toml").is_file());
+            } else {
+                assert_eq!(result.status.code(), Some(1), "{stderr}");
+                // ruff words this per version ("Duplicate parameter" at the
+                // pinned .ruff-version, "Duplicate keyword argument" later).
+                assert!(
+                    stderr.contains("with ruff failed")
+                        && stderr.contains("Duplicate")
+                        && stderr.contains("\"account_id\""),
+                    "{stderr}"
+                );
+                assert!(!output.exists());
+            }
+        }
+    }
+}
+
+#[test]
+fn body_names_colliding_with_path_names_refuse_but_query_and_header_names_generate() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/request-property-name-collision/probe.yml"),
+    )
+    .unwrap();
+    for location in ["path", "query", "header"] {
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        let mut op = document["paths"]["/repos/{name}"]["patch"].clone();
+        op["parameters"][0]["in"] = serde_json::json!(location);
+        let route = if location == "path" {
+            "/repos/{name}"
+        } else {
+            "/repos"
+        };
+        document["paths"] = serde_json::json!({route: {"patch": op}});
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{location}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            if location == "path" {
+                command
+                    .assert()
+                    .code(1)
+                    .stderr(predicates::str::contains("request-property-name-collision"));
+                assert!(!output.exists());
+            } else {
+                command.assert().success();
+                assert!(output.join("pyproject.toml").is_file());
+            }
+        }
+    }
+    let recovered = probe
+        .replace("name: name", "name: repo_name")
+        .replace("{name}", "{repo_name}");
+    std::fs::write(&spec, recovered).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn parameters_in_different_locations_refuse_and_declared_names_recover_classification() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
+            {"name": "name", "in": "query", "schema": {"type": "string"}},
+            {"name": "name", "in": "header", "schema": {"type": "string"}}
+        ], "responses": {"204": {"description": "Done"}}}}}
+    });
+    for declared in [false, true] {
+        if declared {
+            document["paths"]["/probe"]["get"]["parameters"][1]["x-fern-parameter-name"] =
+                serde_json::json!("headerName");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{declared}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let result = command.output().unwrap();
+            let stderr = String::from_utf8(result.stderr).unwrap();
+            if declared {
+                assert!(
+                    !stderr.contains("request-property-camelcase-collision"),
+                    "{stderr}"
+                );
+                if !result.status.success() {
+                    assert!(stderr.contains("ruff"), "{stderr}");
+                } else {
+                    assert!(output.join("pyproject.toml").is_file());
+                }
+            } else {
+                assert_eq!(result.status.code(), Some(1), "{stderr}");
+                assert!(
+                    stderr.contains("request-property-camelcase-collision"),
+                    "{stderr}"
+                );
+                assert!(!output.exists());
+            }
+        }
+    }
+}
+
+/// Runs `crozier generate python` over `document` in both modes, asserting each
+/// refusal exits 1, writes nothing, prints one line naming `class` and
+/// `element`, and names `fern-strict` only in strict mode.
+fn assert_name_refusal_in_both_modes(document: &serde_json::Value, class: &str, element: &str) {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains(class), "{stderr}");
+        assert!(stderr.contains(element), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!output.exists());
+    }
+}
+
+fn assert_generates_under_fern_strict(document: &serde_json::Value) {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("sdk"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    assert!(dir.path().join("sdk/pyproject.toml").is_file());
+}
+
+#[test]
+fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_collisions() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
+            {"name": "q", "in": "query", "x-fern-parameter-name": "filter",
+             "schema": {"type": "string"}},
+            {"name": "F", "in": "header", "x-crozier-parameter-name": "filter",
+             "schema": {"type": "string"}}
+        ], "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(&document, "request-property-name-collision", "\"filter\"");
+    document["paths"]["/probe"]["get"]["parameters"][1]["x-crozier-parameter-name"] =
+        serde_json::json!("headerFilter");
+    assert_generates_under_fern_strict(&document);
+}
+
+#[test]
+fn x_prefixed_headers_collide_under_fern_header_naming_and_recover_when_renamed() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
+            {"name": "requestId", "in": "query", "schema": {"type": "string"}},
+            {"name": "X-Request-Id", "in": "header", "schema": {"type": "string"}}
+        ], "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(
+        &document,
+        "request-property-name-collision",
+        "\"X-Request-Id\"",
+    );
+    document["paths"]["/probe"]["get"]["parameters"][0]["name"] = serde_json::json!("traceId");
+    assert_generates_under_fern_strict(&document);
+}
+
+#[test]
+fn duplicate_inherited_body_properties_refuse_in_a_cleanly_parsed_document() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "components": {"schemas": {
+            "Base": {"type": "object", "properties": {"name": {"type": "string"}}}
+        }},
+        "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
+            "application/json": {"schema": {"allOf": [
+                {"$ref": "#/components/schemas/Base"},
+                {"type": "object", "properties": {"name": {"type": "string"}}}
+            ]}}
+        }}, "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(
+        &document,
+        "request-property-name-collision",
+        "body property \"name\"",
+    );
+    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
+    assert_generates_under_fern_strict(&document);
+}
+
+#[test]
+fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "components": {"schemas": {
+            "Base": {"type": "object", "properties": {"name": {"type": "string"}}},
+            "Malformed": {"type": "string", "nullable": 1}
+        }},
+        "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
+            "application/json": {"schema": {"allOf": [
+                {"$ref": "#/components/schemas/Base"},
+                {"type": "object", "properties": {"name": {"type": "string"}}}
+            ]}}
+        }}, "responses": {"204": {"description": "Done"}}}}}
+    });
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1));
+        assert!(
+            stderr.contains("request-property-name-collision"),
+            "{stderr}"
+        );
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(!output.exists());
+    }
+    // An ignored operation does not acquire a name refusal. Its unrelated
+    // malformed schema still receives the existing parser diagnostic.
+    document["paths"]["/probe"]["post"]["x-crozier-ignore"] = serde_json::json!(true);
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    let result = crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("ignored"))
+        .arg("--fern-strict")
+        .output()
+        .unwrap();
+    let stderr = String::from_utf8(result.stderr).unwrap();
+    assert_eq!(result.status.code(), Some(1));
+    assert!(stderr.contains("expected a boolean"), "{stderr}");
+    assert!(
+        !stderr.contains("request-property-name-collision"),
+        "{stderr}"
+    );
+    document["paths"]["/probe"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-ignore");
+    for labelled in [false, true] {
+        let op = document["paths"]["/probe"]["post"].as_object_mut().unwrap();
+        if labelled {
+            op.insert("x-fern-audiences".to_owned(), serde_json::json!(["public"]));
+            op.insert(
+                "x-crozier-audiences".to_owned(),
+                serde_json::json!(["private"]),
+            );
+        } else {
+            op.remove("x-fern-audiences");
+            op.remove("x-crozier-audiences");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for audience in ["public", "private"] {
+            for audience_strict in [false, true] {
+                let output = dir
+                    .path()
+                    .join(format!("audience-{labelled}-{audience}-{audience_strict}"));
+                let mut command = crozier_clean_env();
+                command
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec)
+                    .arg("--output")
+                    .arg(&output)
+                    .args(["--fern-strict", "--audience", audience]);
+                if audience_strict {
+                    command.arg("--audience-strict");
+                }
+                let result = command.output().unwrap();
+                let stderr = String::from_utf8(result.stderr).unwrap();
+                let kept = if labelled {
+                    audience == "private"
+                } else {
+                    !audience_strict
+                };
+                assert_eq!(result.status.code(), Some(1), "{stderr}");
+                assert_eq!(
+                    stderr.contains("request-property-name-collision"),
+                    kept,
+                    "{stderr}"
+                );
+                if !kept {
+                    assert!(stderr.contains("expected a boolean"), "{stderr}");
+                }
+                assert!(!output.exists());
+            }
+        }
+    }
+    document["components"]["schemas"]["Malformed"]["nullable"] = serde_json::json!(false);
+    document["paths"]["/probe"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-ignore");
+    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+/// Write `document` as JSON, with each `"BIG"` string replaced by 2^64,
+/// an integer YAML's reader rejects, and run `generate --fern-strict` on it.
+fn generate_strict_with_big_integers(
+    dir: &Path,
+    document: &serde_json::Value,
+) -> (Option<i32>, String) {
+    let spec = dir.join("api.json");
+    let text = serde_json::to_string(document)
+        .unwrap()
+        .replace("\"BIG\"", "18446744073709551616");
+    std::fs::write(&spec, text).unwrap();
+    let output = dir.join("sdk");
+    let _ = std::fs::remove_dir_all(&output);
+    let result = crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .arg("--fern-strict")
+        .output()
+        .unwrap();
+    (
+        result.status.code(),
+        String::from_utf8(result.stderr).unwrap(),
+    )
+}
+
+#[test]
+fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refusals() {
+    let dir = tempfile::tempdir().unwrap();
+    // `Base.name` collides with the inline `name` an inheriting body redeclares,
+    // and `Base.count`'s example is an integer YAML's reader rejects.
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "components": {"schemas": {
+            "Base": {"type": "object", "properties": {
+                "name": {"type": "string"},
+                "count": {"type": "integer", "example": "BIG"}
+            }},
+            "ReadOnlyName": {"type": "string", "readOnly": true}
+        }},
+        "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
+            "application/json": {"schema": {"allOf": [
+                {"$ref": "#/components/schemas/Base"},
+                {"type": "object", "properties": {"name": {"type": "string"}}}
+            ]}}
+        }}, "responses": {"204": {"description": "Done"}}}}}
+    });
+    // The oversized integer does not hide the collision from the detector.
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(
+        stderr.contains("request-property-name-collision: POST /probe body property \"name\""),
+        "{stderr}"
+    );
+    // A readOnly property is never sent, so it collides with nothing in the
+    // request: declared on the property, or on the component it references.
+    for read_only in [
+        serde_json::json!({"type": "string", "readOnly": true}),
+        serde_json::json!({"$ref": "#/components/schemas/ReadOnlyName"}),
+    ] {
+        document["components"]["schemas"]["Base"]["properties"]["name"] = read_only;
+        let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert!(dir.path().join("sdk/pyproject.toml").is_file());
+    }
+    // The source-level fallback, reached when another field fails to parse,
+    // skips the readOnly property too, leaving the parser's own diagnostic.
+    document["components"]["schemas"]["Base"]["properties"]["name"] =
+        serde_json::json!({"type": "string", "readOnly": true});
+    document["components"]["schemas"]["Malformed"] =
+        serde_json::json!({"type": "string", "nullable": 1});
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(stderr.contains("expected a boolean"), "{stderr}");
+    assert!(
+        !stderr.contains("request-property-name-collision"),
+        "{stderr}"
+    );
+    assert!(!dir.path().join("sdk").exists());
+    // Without readOnly the fallback still refuses the collision.
+    document["components"]["schemas"]["Base"]["properties"]["name"] =
+        serde_json::json!({"type": "string"});
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(
+        stderr.contains("request-property-name-collision"),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn name_refusals_escape_line_breaks_in_offending_schema_names() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {},
+        "components": {"schemas": {"Minutes\nPrivate": {"type": "string", "enum": ["10080", "20160"]}}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1));
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains("Minutes\\nPrivate"), "{stderr}");
+        assert!(stderr.contains("enum-value-unnameable"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!output.exists());
+    }
+}
+
+#[test]
+fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/sdk-method-collision/probe.yml"
+    ))
+    .unwrap();
+    for strict in [false, true] {
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        let output = dir.path().join(format!("refused-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("sdk-method-collision"), "{stderr}");
+        assert!(stderr.contains("analytics.create"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert_eq!(stderr.lines().count(), 1);
+        assert!(!output.exists());
+    }
+    document["paths"]["/reports"]["post"]["x-crozier-sdk-method-name"] =
+        serde_json::json!("createReport");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    document["paths"]["/reports"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-sdk-method-name");
+    document["paths"]["/reports"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-fern-sdk-method-name");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("inferred"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn nullable_inherited_property_collisions_refuse_and_nonnullable_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/object-property-name-collision/probe.yml"
+    ))
+    .unwrap();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(
+            stderr.contains("object-property-name-collision"),
+            "{stderr}"
+        );
+        assert!(stderr.contains("sha1"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"]["schemas"]["FileMini"]["nullable"] = serde_json::json!(false);
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn type_names_across_namespaces_refuse_and_distinct_contexts_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/type-name-collision/probe.yml"
+    ))
+    .unwrap();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("type-name-collision"), "{stderr}");
+        assert!(stderr.contains("GetThingResponse"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["paths"]["/b"]["get"]["operationId"] = serde_json::json!("getOtherThing");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    document["paths"]["/b"]["get"]["operationId"] = serde_json::json!("getThing");
+    document["paths"]["/b"]["get"]["tags"] = serde_json::json!(["alpha"]);
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("same-namespace"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn numeric_type_names_refuse_and_valid_declared_names_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/type-name-not-letter-led/probe.yml"
+    ))
+    .unwrap();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("type-name-not-letter-led"), "{stderr}");
+        assert!(stderr.contains("123456"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"]["schemas"]["123456"]["x-fern-type-name"] = serde_json::json!("123456");
+    document["components"]["schemas"]["123456"]["x-crozier-type-name"] = serde_json::json!("Thing");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    let declared = dir.path().join("declared-name");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&declared)
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    assert!(
+        std::fs::read_to_string(declared.join("src/probe/types/one23456.py"))
+            .unwrap()
+            .contains("class One23456(")
+    );
+    document["components"]["schemas"]["123456"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-type-name");
+    document["components"]["schemas"]["123456"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-fern-type-name");
+    let schema = document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .remove("123456")
+        .unwrap();
+    document["components"]["schemas"]["9999"] = schema;
+    document["paths"]["/things"]["get"]["responses"]["200"]["content"]["application/json"]
+        ["schema"]["$ref"] = serde_json::json!("#/components/schemas/9999");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn oversized_generated_names_refuse_without_writes_and_shorter_names_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let original = include_str!("../docs/fern-refusals/generated-file-name-too-long/probe.yml");
+    std::fs::write(&spec, original).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("generated-file-name-too-long"), "{stderr}");
+        assert!(stderr.contains("thing_level5"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    std::fs::write(
+        &spec,
+        original.replace("_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", ""),
+    )
+    .unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn unnamed_legacy_object_references_refuse_and_component_references_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "responses": {
+            "200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/definitions/Thing"}}}}
+        }}}},
+        "definitions": {"Thing": {"type": "object", "properties": {"id": {"type": "string"}}}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("type-name-not-letter-led"), "{stderr}");
+        assert!(stderr.contains("#/definitions/Thing"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"] =
+        serde_json::json!({"schemas": {"Thing": document["definitions"]["Thing"].clone()}});
+    document["paths"]["/probe"]["get"]["responses"]["200"]["content"]["application/json"]
+        ["schema"]["$ref"] = serde_json::json!("#/components/schemas/Thing");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn recursive_inline_property_names_refuse_and_named_recursion_recovers() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {},
+        "components": {"schemas": {"Thing": {"type": "object", "properties": {
+            "child": {"type": "object", "properties": {"child": {"$ref": "#/components/schemas/Thing/properties/child"}}}
+        }}}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("generated-file-name-too-long"), "{stderr}");
+        assert!(stderr.contains("#/components/schemas/Thing"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"]["schemas"]["Thing"]["properties"]["child"] =
+        serde_json::json!({"$ref": "#/components/schemas/Thing"});
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+fn assert_measured_name_refusal(document: &serde_json::Value, class: &str, element: &str) {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains(class), "{stderr}");
+        assert!(stderr.contains(element), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert_eq!(stderr.lines().count(), 1);
+        assert!(!output.exists());
+    }
+}
+
+#[test]
+fn named_components_and_virtual_requests_refuse_their_measured_collisions() {
+    let mut document = serde_json::json!({
+        "openapi":"3.0.3","info":{"title":"probe","version":"1"},"paths":{},
+        "components":{"schemas":{"Thing":{"type":"object","properties":{"id":{"type":"string"}}},
+        "thing":{"type":"object","properties":{"name":{"type":"string"}}}}}
+    });
+    assert_measured_name_refusal(&document, "type-name-collision", "component schemas");
+    document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .remove("thing");
+    let operation = serde_json::json!({"operationId":"closeThing","tags":["alpha"],"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"204":{"description":"OK"}}});
+    document["paths"]["/a/{id}"] = serde_json::json!({"put":operation.clone()});
+    document["paths"]["/b/{id}"] = serde_json::json!({"put":operation});
+    document["paths"]["/b/{id}"]["put"]["tags"] = serde_json::json!(["beta"]);
+    assert_measured_name_refusal(
+        &document,
+        "type-name-collision",
+        "request type CloseThingRequest",
+    );
+    document["paths"]["/b/{id}"]["put"]["operationId"] = serde_json::json!("closeOtherThing");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("sdk"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn inline_request_names_are_checked_against_the_emitted_naming_contract() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi":"3.0.3","info":{"title":"probe","version":"1"},
+        "paths":{"/things":{"post":{"operationId":"createThing","tags":["alpha"],"requestBody":{"content":{"application/json":{"schema":{"type":"object","properties":{"color":{"type":"string","enum":["red","blue"]}}}}}},"responses":{"204":{"description":"OK"}}}}},
+        "components":{"schemas":{}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .assert()
+        .success();
+    let types = sdk.join("src/probe/alpha/types");
+    let emitted = std::fs::read_dir(types)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .find(|path| std::fs::read_to_string(path).is_ok_and(|text| text.contains(" = \"red\"")))
+        .unwrap();
+    let text = std::fs::read_to_string(emitted).unwrap();
+    let name = text
+        .lines()
+        .find_map(|line| {
+            line.strip_prefix("class ")
+                .and_then(|name| name.split_once('('))
+                .map(|(name, _)| name)
+        })
+        .unwrap();
+    let request_name = name.strip_suffix("Color").unwrap();
+    document["components"]["schemas"][request_name] =
+        serde_json::json!({"type":"object","properties":{"id":{"type":"string"}}});
+    assert_measured_name_refusal(
+        &document,
+        "type-name-collision",
+        &format!("request type {request_name}"),
+    );
+    document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .clear();
+    document["components"]["schemas"][name] =
+        serde_json::json!({"type":"string","enum":["other","value"]});
+    assert_measured_name_refusal(
+        &document,
+        "type-name-collision",
+        &format!("enum {name} in namespace alpha"),
+    );
+    document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .clear();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn dropped_body_enum_names_refuse_and_distinct_component_names_recover() {
+    let mut document = serde_json::json!({
+        "openapi":"3.0.3","info":{"title":"probe","version":"1"},
+        "paths":{"/things":{"post":{"operationId":"createThing","tags":["alpha"],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Thing"}}}},"responses":{"204":{"description":"OK"}}}}},
+        "components":{"schemas":{"Thing":{"type":"object","properties":{"color":{"type":"string","enum":["red","blue"]}}},"ThingColor":{"type":"string","enum":["other","value"]}}}
+    });
+    assert_measured_name_refusal(
+        &document,
+        "type-name-collision",
+        "body property \"color\" declares enum ThingColor",
+    );
+    document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .remove("ThingColor");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn unavailable_relative_type_aliases_refuse_and_available_files_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let document = serde_json::json!({
+        "openapi":"3.0.3","info":{"title":"probe","version":"1"},"paths":{},
+        "components":{"schemas":{"Thing":{"$ref":"common.json"}}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("type-name-not-letter-led"), "{stderr}");
+        assert!(stderr.contains("#/components/schemas/Thing"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    std::fs::write(
+        dir.path().join("common.json"),
+        r#"{"type":"object","properties":{"id":{"type":"string"}}}"#,
+    )
+    .unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn webhook_local_object_names_refuse_and_component_names_recover() {
+    let mut document = serde_json::json!({
+        "openapi":"3.1.0","info":{"title":"probe","version":"1"},"paths":{},
+        "webhooks":{"event":{"post":{"requestBody":{"content":{"application/json":{"schema":{
+            "type":"object","properties":{"payload":{"$ref":"#/webhooks/event/post/requestBody/content/application~1json/schema/definitions/Payload"}},
+            "definitions":{"Payload":{"type":"object","properties":{"id":{"type":"string"}}}}
+        }}}},"responses":{"204":{"description":"OK"}}}}}
+    });
+    assert_measured_name_refusal(&document, "type-name-not-letter-led", "webhook event");
+    document["components"] = serde_json::json!({"schemas":{"Payload":{"type":"object","properties":{"id":{"type":"string"}}}}});
+    document["webhooks"]["event"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["properties"]["payload"]["$ref"] = serde_json::json!("#/components/schemas/Payload");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
 }

@@ -78,7 +78,7 @@ CONFIRMATIONS_HEADER = ("class", "digest", "publisher", "generate_exit", "genera
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = ("key", "digest", "unretrievable", "check_exit", "check_log", "generate_exit",
-                      "generate_files", "generate_log", "crozier_exit", "crozier_files")
+                      "generate_files", "generate_log", "crozier_exit", "crozier_files", "crozier_strict_exit")
 FERN_CLI = "5.67.1"
 FERN_PYTHON_SDK = "5.20.0"
 EMPTY = "—"
@@ -452,17 +452,33 @@ def upgraded(row: dict[str, str]) -> dict[str, str]:
     return {field: row[field] for field in MEASUREMENT_FIELDS}
 
 
-def crozier_measure(binary: Path, document: Path, timeout: int) -> dict[str, str]:
+def crozier_run(binary: Path, document: Path, timeout: int, log: Path, *flags: str) -> tuple[str, str]:
+    """crozier's exit on `document`, and how many files it wrote; its stderr is
+    kept in `log`, under the uncommitted cache, to read why it refused."""
+    log.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="fern-refusals-crozier-") as scratch:
         output = Path(scratch) / "sdk"
         try:
-            run = subprocess.run([str(binary), "--no-config", "generate", "python", "--spec", str(document),
-                                  "--output", str(output), "--package-name", "fern", "--project-name",
-                                  "default_package_name"], capture_output=True, text=True, timeout=timeout)
+            run = subprocess.run([str(binary), "--no-config", "generate", "python", *flags, "--spec",
+                                  str(document), "--output", str(output), "--package-name", "fern",
+                                  "--project-name", "default_package_name"],
+                                 capture_output=True, text=True, timeout=timeout)
         except subprocess.TimeoutExpired:
-            return {"crozier_exit": "timeout", "crozier_files": "0"}
+            log.write_text(f"timed out after {timeout} seconds\n", encoding="utf-8")
+            return "timeout", "0"
+        log.write_text(run.stderr, encoding="utf-8")
         files = sum(1 for path in output.rglob("*") if path.is_file()) if output.is_dir() else 0
-    return {"crozier_exit": str(run.returncode), "crozier_files": str(files)}
+    return str(run.returncode), str(files)
+
+
+def crozier_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
+    status, files = crozier_run(binary, document, timeout, CACHE / "crozier-logs" / f"{digest}.default.log")
+    return {"crozier_exit": status, "crozier_files": files}
+
+
+def crozier_strict_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
+    log = CACHE / "crozier-logs" / f"{digest}.strict.log"
+    return {"crozier_strict_exit": crozier_run(binary, document, timeout, log, "--fern-strict")[0]}
 
 
 def read_measurements() -> dict[str, dict[str, str]]:
@@ -497,7 +513,8 @@ def check_blocks(row: dict[str, str]) -> bool:
 
 
 def missing_measurements(row: dict[str, str]) -> set[str]:
-    """Which of `check`, `generate` and `crozier` a retrievable document still needs."""
+    """Which of `check`, `generate`, `crozier` and `crozier-strict` a retrievable
+    document still needs."""
     if row.get("unretrievable"):
         return set()
     missing = set()
@@ -510,6 +527,9 @@ def missing_measurements(row: dict[str, str]) -> set[str]:
         missing.add("generate")
     if not row.get("crozier_exit"):
         missing.add("crozier")
+    if not row.get("crozier_strict_exit"):
+        # `build` needs it only for a document carrying an evaluated class.
+        missing.add("crozier-strict")
     return missing
 
 
@@ -533,7 +553,7 @@ def measure(args: argparse.Namespace) -> int:
         row = {} if args.again else dict(done.get(entry["key"], {}))
         row.update(key=entry["key"], digest=digest, unretrievable="")
         needed = missing_measurements(row) if row.get("check_exit") or row.get("crozier_exit") else \
-            {"check", "crozier"}
+            {"check", "crozier", "crozier-strict"}
         if "check" in needed:
             row.update(committed_check(entry) if not row.get("check_exit") and committed_check(entry)
                        else fern_check(path, digest, args.timeout))
@@ -542,7 +562,9 @@ def measure(args: argparse.Namespace) -> int:
         if "generate" in needed:
             row.update(fern_generate(path, digest, args.timeout))
         if "crozier" in needed:
-            row.update(crozier_measure(binary, path, args.timeout))
+            row.update(crozier_measure(binary, path, digest, args.timeout))
+        if "crozier-strict" in needed:
+            row.update(crozier_strict_measure(binary, path, digest, args.timeout))
         return row
 
     lock = threading.Lock()
@@ -724,10 +746,11 @@ def tables() -> tuple[dict[str, str], list[str]]:
     generated: dict[str, dict[str, str]] = {}
     unretrievable: list[dict[str, str]] = []
     counts: dict[str, int] = {row["class"]: 0 for row in classes}
+    evaluated = {row["class"] for row in classes if row["status"] != "unevaluated"}
     for entry in population():
         records = ";".join(sorted(entry["records"]))
         result = measured.get(entry["key"])
-        missing = missing_measurements(result) if result is not None else {"any"}
+        missing = missing_measurements(result) - {"crozier-strict"} if result is not None else {"any"}
         if missing:
             problems.append(f"{entry['key']}: not measured ({', '.join(sorted(missing))}); "
                             "run `just fern-refusals-measure`")
@@ -760,10 +783,18 @@ def tables() -> tuple[dict[str, str], list[str]]:
         if not refusal["classes"]:
             problems.append(f"{digest}: Fern refuses it, but {refusal['fern_log']} carries no refusal class; "
                             "add a class for the phrase that stopped it")
-        for name in filter(None, refusal["classes"].split(",")):
+        names = list(filter(None, refusal["classes"].split(",")))
+        for name in names:
             counts[name] += 1
+        strict = EMPTY
+        if evaluated.intersection(names):
+            strict = result["crozier_strict_exit"]
+            if not strict:
+                problems.append(f"{entry['key']}: not measured (crozier-strict); "
+                                "run `just fern-refusals-measure`")
+                continue
         documents[digest] = dict(identity, digest=digest, **refusal, crozier_exit=result["crozier_exit"],
-                                 crozier_files=result["crozier_files"], crozier_strict_exit=EMPTY)
+                                 crozier_files=result["crozier_files"], crozier_strict_exit=strict)
     for row in classes:
         row["documents"] = str(counts[row["class"]])
     return ({"documents.tsv": tsv_text(DOCUMENTS_HEADER, (documents[key] for key in sorted(documents))),

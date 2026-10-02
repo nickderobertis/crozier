@@ -1369,12 +1369,12 @@ Two enum members that sanitize to the same identifier are disambiguated with a
 `_{n}` suffix ([`ir::dedupe`]) so the emitted Python stays valid.
 
 **A multi-digit leading token Fern cannot name** (`_01_00_AM` → Fern's `0100Am`,
-which it *rejects* with "not suitable for code generation") has no byte-match
-target, so it is covered by the compile-only
-`enum_sanitization_generates_valid_python` e2e instead: crozier prefixes `_` to
-keep the identifier legal (`_01_00_AM`) and the whole tree compiles. This is the
-same posture as the arbitrary-spec validity check — where Fern errors, the bar is
-"valid Python," not byte-parity.
+which it *rejects* with "not suitable for code generation") is refused by crozier
+too, in every mode: it is the `enum-name-unsuitable` refusal class, whose
+evaluation found crozier's underscore-led fallback members not a usable SDK
+surface. The
+`enum_sanitization_generates_valid_python` e2e asserts the refusal beside the
+shapes Fern does generate from.
 
 ### Enum `visit()` receiver collision (issue #57)
 
