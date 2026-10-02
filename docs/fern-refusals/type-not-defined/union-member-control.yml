@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /a1:
+    post:
+      operationId: a1
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/A1"}
+      responses:
+        "204":
+          description: No Content
+  /b1:
+    post:
+      operationId: b1
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/B1"}
+      responses:
+        "204":
+          description: No Content
+  /a2:
+    post:
+      operationId: a2
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/A2"}
+      responses:
+        "204":
+          description: No Content
+  /b2:
+    post:
+      operationId: b2
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/B2"}
+      responses:
+        "204":
+          description: No Content
+  /a3:
+    post:
+      operationId: a3
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/A3"}
+      responses:
+        "204":
+          description: No Content
+  /b3:
+    post:
+      operationId: b3
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/B3"}
+      responses:
+        "204":
+          description: No Content
+  /a4:
+    post:
+      operationId: a4
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/A4"}
+      responses:
+        "204":
+          description: No Content
+  /b4:
+    post:
+      operationId: b4
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/B4"}
+      responses:
+        "204":
+          description: No Content
+  /a5:
+    post:
+      operationId: a5
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/A5"}
+      responses:
+        "204":
+          description: No Content
+  /holder:
+    post:
+      operationId: holder
+      tags: [holders]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Holder"}
+      responses:
+        "204":
+          description: No Content
+components:
+  schemas:
+    Holder:
+      type: object
+      properties:
+        mixed: {oneOf: [{$ref: "#/components/schemas/A1"}, {$ref: "#/components/schemas/B1"}]}
+        names: {oneOf: [{$ref: "#/components/schemas/A2"}, {$ref: "#/components/schemas/B2"}]}
+        values: {oneOf: [{$ref: "#/components/schemas/A3"}, {$ref: "#/components/schemas/B3"}]}
+        explicit: {oneOf: [{$ref: "#/components/schemas/A4"}, {$ref: "#/components/schemas/B4"}, {$ref: "#/components/schemas/, discriminator: {propertyName: type}"}]}
+        single: {oneOf: [{$ref: "#/components/schemas/A5"}]}
+    A1:
+      type: object
+      properties:
+        type: {type: string, enum: [A1]}
+        note: {type: string}
+    B1:
+      type: object
+      properties:
+        type: {type: string}
+        note: {type: string}
+    A2:
+      type: object
+      properties:
+        type: {type: string, enum: [A2]}
+        note: {type: string}
+    B2:
+      type: object
+      properties:
+        kind: {type: string, enum: [B2]}
+        note: {type: string}
+    A3:
+      type: object
+      properties:
+        type: {type: string, enum: [A3]}
+        note: {type: string}
+    B3:
+      type: object
+      properties:
+        type: {type: string, enum: [B3, B3X]}
+        note: {type: string}
+    A4:
+      type: object
+      properties:
+        type: {type: string}
+        note: {type: string}
+    B4:
+      type: object
+      properties:
+        type: {type: string}
+        note: {type: string}
+    A5:
+      type: object
+      properties:
+        type: {type: string, enum: [A5]}
+        note: {type: string}

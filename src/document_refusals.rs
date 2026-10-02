@@ -10,6 +10,9 @@ use crate::openapi::{
 };
 use crate::{Error, Result};
 
+mod type_not_defined;
+use type_not_defined::undefined_type_reference;
+
 #[derive(Clone, Copy)]
 enum Class {
     UnsupportedOpenapiVersion,
@@ -29,6 +32,7 @@ enum Class {
     HeapExhausted,
     DefaultNotEnumValue,
     GeneratorLintFailure,
+    TypeNotDefined,
 }
 
 impl Class {
@@ -51,6 +55,7 @@ impl Class {
             Self::HeapExhausted => "heap-exhausted",
             Self::DefaultNotEnumValue => "default-not-enum-value",
             Self::GeneratorLintFailure => "generator-lint-failure",
+            Self::TypeNotDefined => "type-not-defined",
         }
     }
 }
@@ -218,6 +223,9 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
         return refusal(path, strict, Class::ExtensionReferenceCycle, &element);
     }
     check_document_schemas(&root, path, strict)?;
+    if let Some(element) = undefined_type_reference(&root) {
+        return refusal(path, strict, Class::TypeNotDefined, &element);
+    }
     Ok(())
 }
 

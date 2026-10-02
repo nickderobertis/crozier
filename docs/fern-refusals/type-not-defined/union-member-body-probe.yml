@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /a:
+    post:
+      operationId: a
+      tags: [events]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Alert"}
+      responses:
+        "204": {description: No Content}
+  /procedures:
+    post:
+      operationId: procedure
+      tags: [procedures]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Proc"}
+      responses:
+        "204": {description: No Content}
+components:
+  schemas:
+    Proc:
+      type: object
+      properties:
+        events: {oneOf: [{$ref: "#/components/schemas/Alert"}, {$ref: "#/components/schemas/Operator"}]}
+    Alert:
+      type: object
+      required: [type]
+      properties:
+        type: {type: string, enum: [ALERT]}
+        note: {type: string}
+    Operator:
+      type: object
+      required: [type]
+      properties:
+        type: {type: string, enum: [OPERATOR]}
+        count: {type: integer}

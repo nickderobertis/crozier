@@ -16578,6 +16578,86 @@ fn recursive_inline_union_refusal_preserves_named_recursion() {
     }
 }
 
+/// Generates in both modes with byte-identical output.
+fn generates_identically_in_both_modes(spec: &Path) {
+    let normal = refusal_run(&crozier, spec, false).unwrap();
+    let strict = refusal_run(&crozier, spec, true).unwrap();
+    assert_eq!(
+        normal.code,
+        Some(0),
+        "{}: {}",
+        spec.display(),
+        normal.stderr
+    );
+    assert_eq!(
+        strict.code,
+        Some(0),
+        "{}: {}",
+        spec.display(),
+        strict.stderr
+    );
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("type-not-defined");
+    for (spec, element) in [
+        ("probe.yml", "POST /users responses/403"),
+        ("api-status-sweep-probe.yml", "POST /s400 responses/400"),
+        ("api-response-probe.yml", "POST /users responses/201"),
+        ("api-parameter-probe.yml", "POST /users/{f} parameter f"),
+        ("api-body-probe.yml", "POST /users requestBody"),
+        (
+            "union-member-body-probe.yml",
+            "components/schemas/Proc/properties/events/oneOf/0",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(spec), strict).unwrap();
+            let failures = refused_failures("type-not-defined", &run, element, strict);
+            assert!(failures.is_empty(), "{spec}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{spec}: {}", run.stderr);
+        }
+    }
+    // Recovery: the same operation filed under another tag, and the union
+    // with one member no longer carrying a single discriminant value.
+    let dir = tempfile::tempdir().unwrap();
+    let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    let union = std::fs::read_to_string(class.join("union-member-body-probe.yml")).unwrap();
+    for (name, text) in [
+        (
+            "users-tag.yml",
+            probe.replace("tags: [api]", "tags: [users]"),
+        ),
+        (
+            "plain-member.yml",
+            union.replace("{type: string, enum: [OPERATOR]}", "{type: string}"),
+        ),
+    ] {
+        let recovered = dir.path().join(name);
+        std::fs::write(&recovered, text).unwrap();
+        generates_identically_in_both_modes(&recovered);
+    }
+    for control in [
+        "api-file-accepted-control.yml",
+        "other-file-control.yml",
+        "group-name-control.yml",
+        "union-member-control.yml",
+    ] {
+        generates_identically_in_both_modes(&class.join(control));
+    }
+}
+
 #[test]
 fn enum_default_refusal_recovers_with_a_retained_default() {
     let class = Path::new(env!("CARGO_MANIFEST_DIR"))

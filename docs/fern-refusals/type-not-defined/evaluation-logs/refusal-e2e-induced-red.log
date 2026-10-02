@@ -1,0 +1,29 @@
+Induced red: undefined_type_reference returned None (predicate disabled), everything else unchanged; then restored.
+command: cargo nextest run --locked -E 'binary(e2e) and test(type_not_defined_refuses_api_file_references_and_body_member_unions)'
+────────────
+ Nextest run ID cd7ded40-d0ac-454a-a71e-645c6bcf710c with nextest profile: default
+    Starting 1 test across 1 binary (448 tests and 6 binaries skipped)
+        FAIL [   0.202s] (1/1) crozier::e2e type_not_defined_refuses_api_file_references_and_body_member_unions
+  stdout ───
+
+    running 1 test
+    test type_not_defined_refuses_api_file_references_and_body_member_unions ... FAILED
+
+    failures:
+
+    failures:
+        type_not_defined_refuses_api_file_references_and_body_member_unions
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 448 filtered out; finished in 0.18s
+
+  stderr ───
+
+    thread 'type_not_defined_refuses_api_file_references_and_body_member_unions' (2990385) panicked at tests/e2e.rs:16616:13:
+    probe.yml: type-not-defined: crozier generated from the probe in its mode; the class says it is refused (40 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.205s] 1 test run: 0 passed, 1 failed, 448 skipped
+        FAIL [   0.202s] (1/1) crozier::e2e type_not_defined_refuses_api_file_references_and_body_member_unions
+error: test run failed

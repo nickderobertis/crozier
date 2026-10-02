@@ -1,0 +1,353 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: No error name found for status code 427
+[api]: No error name found for status code 432
+[api]: No error name found for status code 433
+[api]: No error name found for status code 434
+[api]: No error name found for status code 435
+[api]: No error name found for status code 436
+[api]: No error name found for status code 437
+[api]: No error name found for status code 438
+[api]: No error name found for status code 439
+[api]: No error name found for status code 440
+[api]: No error name found for status code 441
+[api]: No error name found for status code 442
+[api]: No error name found for status code 443
+[api]: No error name found for status code 445
+[api]: No error name found for status code 446
+[api]: No error name found for status code 447
+[api]: No error name found for status code 448
+[api]: No error name found for status code 452
+[api]: No error name found for status code 453
+[api]: No error name found for status code 454
+[api]: No error name found for status code 455
+[api]: No error name found for status code 456
+[api]: No error name found for status code 457
+[api]: No error name found for status code 458
+[api]: No error name found for status code 459
+[api]: No error name found for status code 460
+[api]: No error name found for status code 461
+[api]: No error name found for status code 462
+[api]: No error name found for status code 463
+[api]: No error name found for status code 464
+[api]: No error name found for status code 465
+[api]: No error name found for status code 466
+[api]: No error name found for status code 467
+[api]: No error name found for status code 468
+[api]: No error name found for status code 469
+[api]: No error name found for status code 470
+[api]: No error name found for status code 471
+[api]: No error name found for status code 472
+[api]: No error name found for status code 473
+[api]: No error name found for status code 474
+[api]: No error name found for status code 475
+[api]: No error name found for status code 476
+[api]: No error name found for status code 477
+[api]: No error name found for status code 478
+[api]: No error name found for status code 479
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 488
+[api]: No error name found for status code 489
+[api]: No error name found for status code 490
+[api]: No error name found for status code 491
+[api]: No error name found for status code 492
+[api]: No error name found for status code 493
+[api]: No error name found for status code 494
+[api]: No error name found for status code 495
+[api]: No error name found for status code 496
+[api]: No error name found for status code 497
+[api]: No error name found for status code 512
+[api]: No error name found for status code 513
+[api]: No error name found for status code 514
+[api]: No error name found for status code 515
+[api]: No error name found for status code 516
+[api]: No error name found for status code 517
+[api]: No error name found for status code 518
+[api]: No error name found for status code 519
+[api]: No error name found for status code 520
+[api]: No error name found for status code 521
+[api]: No error name found for status code 522
+[api]: No error name found for status code 523
+[api]: No error name found for status code 524
+[api]: No error name found for status code 525
+[api]: No error name found for status code 526
+[api]: No error name found for status code 527
+[api]: No error name found for status code 528
+[api]: No error name found for status code 529
+[api]: No error name found for status code 530
+[api]: No error name found for status code 531
+[api]: No error name found for status code 532
+[api]: No error name found for status code 533
+[api]: No error name found for status code 534
+[api]: No error name found for status code 535
+[api]: No error name found for status code 536
+[api]: No error name found for status code 537
+[api]: No error name found for status code 538
+[api]: No error name found for status code 539
+[api]: No error name found for status code 540
+[api]: No error name found for status code 541
+[api]: No error name found for status code 542
+[api]: No error name found for status code 543
+[api]: No error name found for status code 544
+[api]: No error name found for status code 545
+[api]: No error name found for status code 546
+[api]: No error name found for status code 547
+[api]: No error name found for status code 548
+[api]: No error name found for status code 549
+[api]: No error name found for status code 550
+[api]: No error name found for status code 551
+[api]: No error name found for status code 552
+[api]: No error name found for status code 553
+[api]: No error name found for status code 554
+[api]: No error name found for status code 555
+[api]: No error name found for status code 556
+[api]: No error name found for status code 557
+[api]: No error name found for status code 558
+[api]: No error name found for status code 559
+[api]: No error name found for status code 560
+[api]: No error name found for status code 561
+[api]: No error name found for status code 562
+[api]: No error name found for status code 563
+[api]: No error name found for status code 564
+[api]: No error name found for status code 565
+[api]: No error name found for status code 566
+[api]: No error name found for status code 567
+[api]: No error name found for status code 568
+[api]: No error name found for status code 569
+[api]: No error name found for status code 570
+[api]: No error name found for status code 571
+[api]: No error name found for status code 572
+[api]: No error name found for status code 573
+[api]: No error name found for status code 574
+[api]: No error name found for status code 575
+[api]: No error name found for status code 576
+[api]: No error name found for status code 577
+[api]: No error name found for status code 578
+[api]: No error name found for status code 579
+[api]: No error name found for status code 580
+[api]: No error name found for status code 581
+[api]: No error name found for status code 582
+[api]: No error name found for status code 583
+[api]: No error name found for status code 584
+[api]: No error name found for status code 585
+[api]: No error name found for status code 586
+[api]: No error name found for status code 587
+[api]: No error name found for status code 588
+[api]: No error name found for status code 589
+[api]: No error name found for status code 590
+[api]: No error name found for status code 591
+[api]: No error name found for status code 592
+[api]: No error name found for status code 593
+[api]: No error name found for status code 594
+[api]: No error name found for status code 595
+[api]: No error name found for status code 596
+[api]: No error name found for status code 597
+[api]: No error name found for status code 598
+[api]: No error name found for status code 599
+[sdk] 49 errors
+    [error]
+        path: api.yml -> service -> endpoints -> s400 -> errors -> root.BadRequestError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s401 -> errors -> root.UnauthorizedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s402 -> errors -> root.PaymentRequiredError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s403 -> errors -> root.ForbiddenError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s404 -> errors -> root.NotFoundError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s405 -> errors -> root.MethodNotAllowedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s406 -> errors -> root.NotAcceptableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s407 -> errors -> root.ProxyAuthenticationRequiredError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s408 -> errors -> root.RequestTimeoutError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s409 -> errors -> root.ConflictError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s410 -> errors -> root.GoneError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s411 -> errors -> root.LengthRequiredError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s412 -> errors -> root.PreconditionFailedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s413 -> errors -> root.ContentTooLargeError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s414 -> errors -> root.URITooLongError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s415 -> errors -> root.UnsupportedMediaTypeError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s416 -> errors -> root.RangeNotSatisfiableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s417 -> errors -> root.ExpectationFailedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s418 -> errors -> root.ImATeapotError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s419 -> errors -> root.AuthenticationTimeoutError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s420 -> errors -> root.MethodFailureError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s421 -> errors -> root.MisdirectedRequestError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s422 -> errors -> root.UnprocessableEntityError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s423 -> errors -> root.LockedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s424 -> errors -> root.FailedDependencyError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s425 -> errors -> root.TooEarlyError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s426 -> errors -> root.UpgradeRequiredError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s428 -> errors -> root.PreconditionError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s429 -> errors -> root.TooManyRequestsError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s430 -> errors -> root.RequestHeaderFieldsTooLargeError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s431 -> errors -> root.RequestHeaderFieldsTooLargeError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s444 -> errors -> root.NoResponseError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s449 -> errors -> root.RetryWithError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s450 -> errors -> root.BlockedByWindowsParentalControlsError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s451 -> errors -> root.UnavailableForLegalReasonsError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s498 -> errors -> root.InvalidTokenError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s499 -> errors -> root.ClientClosedRequestError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s500 -> errors -> root.InternalServerError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s501 -> errors -> root.NotImplementedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s502 -> errors -> root.BadGatewayError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s503 -> errors -> root.ServiceUnavailableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s504 -> errors -> root.GatewayTimeoutError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s505 -> errors -> root.HTTPVersionNotSupportedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s506 -> errors -> root.VariantAlsoNegotiatesError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s507 -> errors -> root.InsufficientStorageError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s508 -> errors -> root.LoopDetectedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s509 -> errors -> root.BandwidthLimitExceededError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s510 -> errors -> root.NotExtendedError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> s511 -> errors -> root.NetworkAuthenticationRequiredError
+        issue: Error is not defined.
+
+Found 49 errors and 0 warnings in <n> seconds.
