@@ -4304,9 +4304,11 @@ document scoped the way `scripts/handwritten-fixtures.py measure` scopes a
 fixture. On every minimal document that run executes the arm (1 of its 1
 region). On every control it executes none of it.
 
-The fern-strict-mode node's refusal registry does not exist in this tree yet, so
-no record names a refusal class id. The two classes below are named by their
-diagnostic only, and the registry should assign ids when it lands.
+The arms fall in two classes of the
+[refusal registry](fern-refusals/README.md), both decided `refuse`. The three
+enum arms' documents print `enum-name-unsuitable`'s diagnostic verbatim. On
+both recursion documents, crozier refuses with `generator-lint-failure` and
+names `type Node property "-"`, with or without `--fern-strict`.
 
 | key | arm | minimal document | Fern on it | control | Fern on the control |
 |---|---|---|---|---|---|
@@ -4334,5 +4336,6 @@ has no identifier characters (`"-"`, `"_"` and `"$"` all do it). The cycle in
 each minimal document is the row's shape, carried so the record stands on that
 row's own declaration. Removing it does not stop the arm from executing. Fern
 derives the same empty name, writes it as an empty field name, and its
-generator's own `ruff check` fails. crozier also exits 1 on these two documents
-(`ruff` cannot parse the `node.py` it wrote), after the guard has run.
+generator's own `ruff check` fails. crozier also exits 1 on these two documents,
+refusing them as `generator-lint-failure` from the IR the guard runs in, so the
+guard has run first.

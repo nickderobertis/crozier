@@ -131,6 +131,14 @@ crozier generate python \
   `client_class_name`). Defaults to `{PascalCase(package_name)}Api`.
 - `--audience` (repeatable) / `--audience-strict` — prune generation to
   `x-crozier-audiences`.
+- `--fern-strict` — refuse every document in a class Fern refuses (also
+  `CROZIER_FERN_STRICT=true`, or `fern-strict: true` in `crozier.yml`). A
+  refusal exits `1`, writes nothing, and names the refusal class and the
+  offending element. Each class Fern refuses is decided once, in
+  [`docs/fern-refusals/`](docs/fern-refusals/README.md): `refuse`, where
+  crozier refuses the document whatever this setting says, or `generate`, where
+  it writes a valid SDK by default and refuses only under `--fern-strict`.
+  Every class registered today is `refuse`, so the flag changes no outcome yet.
 
 crozier exits `0` on success (with a one-line summary on stderr), `1` on an
 error, printing the exact problem and a suggested fix, and `2` on a usage error
