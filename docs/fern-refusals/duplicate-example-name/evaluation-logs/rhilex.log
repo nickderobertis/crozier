@@ -1,0 +1,5 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 9791479038e38468cdac23b741406f63d08cf384b0df70c35fa8fa644643f341
+command: [PosixPath('~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/9791479038e38468cdac23b741406f63d08cf384b0df70c35fa8fa644643f341.json'), '--output', PosixPath('~/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/example-names/reps/rhilex'), '--package-name', 'fern']
+exit: 1
+crozier: formatting src/fern/raw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/raw_client.py:42:9: Expected an identifier

@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<worktree>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.10s
+────────────
+ Nextest run ID d16b2010-7406-4968-87c6-a68813f6ea2a with nextest profile: default
+    Starting 1 test across 1 binary (448 tests and 6 binaries skipped)
+        FAIL [   0.067s] (1/1) crozier::e2e duplicate_example_name_refusal_follows_the_examples_fern_names
+  stdout ───
+
+    running 1 test
+    test duplicate_example_name_refusal_follows_the_examples_fern_names ... FAILED
+
+    failures:
+
+    failures:
+        duplicate_example_name_refusal_follows_the_examples_fern_names
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 448 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'duplicate_example_name_refusal_follows_the_examples_fern_names' (3233696) panicked at tests/e2e.rs:16704:9:
+    duplicate-example-name: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.069s] 1 test run: 0 passed, 1 failed, 448 skipped
+        FAIL [   0.067s] (1/1) crozier::e2e duplicate_example_name_refusal_follows_the_examples_fern_names
+error: test run failed

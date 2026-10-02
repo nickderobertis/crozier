@@ -16928,3 +16928,149 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         }
     }
 }
+
+/// Asserts a spec generates, with identical bytes with and without `--fern-strict`.
+fn assert_generates_in_both_modes(spec: &Path, label: &str) {
+    let normal = refusal_run(&crozier, spec, false).unwrap();
+    let strict = refusal_run(&crozier, spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{label}: {}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{label}: {}", strict.stderr);
+    assert!(!normal.files.is_empty(), "{label}");
+    assert_eq!(normal.files, strict.files, "{label}");
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap(),
+            "{label}: {file:?}"
+        );
+    }
+}
+
+#[test]
+fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
+    let id = "duplicate-example-name";
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join(id);
+    let probe = class.join("probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            id,
+            &run,
+            "POST /probe request example name Order updated",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    // Every shape pinned Fern refuses, each named where Fern names it.
+    for (case, element) in [
+        ("response-dupe", "POST /probe response example name Same"),
+        (
+            "first-2xx-dupe-201-202",
+            "GET /probe response example name Same",
+        ),
+        (
+            "resp-200-nocontent-201-dupe",
+            "GET /probe response example name Same",
+        ),
+        (
+            "resp-200-xml-201-dupe",
+            "GET /probe response example name Same",
+        ),
+        (
+            "default-response-dupe",
+            "GET /probe response example name Same",
+        ),
+        (
+            "resp-400-and-default-dupe",
+            "GET /probe response example name Same",
+        ),
+        ("form-request-dupe", "POST /probe request example name Same"),
+        (
+            "req-vnd-dupe-then-json",
+            "POST /probe request example name Same",
+        ),
+        (
+            "x-fern-examples-dupe",
+            "POST /probe x-fern-examples name Same",
+        ),
+        (
+            "x-fern-examples-empty-list",
+            "POST /probe request example name Same",
+        ),
+        (
+            "summary-equals-key",
+            "POST /probe request example name second",
+        ),
+        ("empty-summaries", "POST /probe request example name "),
+        ("numeric-summaries", "POST /probe request example name 1"),
+        (
+            "ref-summary-override",
+            "POST /probe request example name Same",
+        ),
+        (
+            "referenced-summary",
+            "POST /probe request example name Order updated",
+        ),
+        (
+            "ignored-example",
+            "POST /probe request example name Order updated",
+        ),
+        (
+            "component-response",
+            "POST /probe response example name Same",
+        ),
+        (
+            "component-request-body",
+            "POST /probe request example name Same",
+        ),
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures(id, &run, element, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{case}");
+        }
+    }
+    // Distinct summaries recover the probe.
+    let dir = tempfile::tempdir().unwrap();
+    let recovered = dir.path().join("recovered.yml");
+    let mut text = std::fs::read_to_string(&probe).unwrap();
+    let second = text.rfind("summary: Order updated").unwrap();
+    text.insert_str(second + "summary: Order updated".len(), " again");
+    std::fs::write(&recovered, text).unwrap();
+    assert_generates_in_both_modes(&recovered, "recovered probe");
+    // Near misses pinned Fern accepts generate identical bytes in both modes.
+    for control in [
+        "req-resp-summary",
+        "across-operations",
+        "error-response-dupe",
+        "second-2xx-dupe",
+        "resp-204-206-dupe",
+        "resp-201-nocontent-default-dupe",
+        "resp-200-html-201-dupe",
+        "resp-2XX-dupe",
+        "req-json-then-form-dupe",
+        "multipart-request-dupe",
+        "second-json-media-type-dupe",
+        "req-xml-dupe-only",
+        "number-vs-string-summary",
+        "request-null-summary",
+        "ref-no-summary-same-target",
+        "x-fern-examples-plus-openapi-dupe",
+        "x-fern-examples-unnamed",
+        "x-crozier-examples-dupe",
+        "ignored-operation",
+        "ignored-path-item",
+        "webhook-dupe",
+        "unused-component-response",
+        "parameter-examples-dupe",
+        "different-case",
+        "trailing-space",
+    ] {
+        assert_generates_in_both_modes(&class.join(format!("{control}-control.yml")), control);
+    }
+}

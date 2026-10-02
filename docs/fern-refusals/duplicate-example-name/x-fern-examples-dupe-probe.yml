@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    post:
+      operationId: probe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+      responses:
+        '204':
+          description: No Content
+      x-fern-examples:
+      - name: Same
+        request:
+          id: a
+      - name: Same
+        request:
+          id: b

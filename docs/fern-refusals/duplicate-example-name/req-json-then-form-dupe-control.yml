@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    post:
+      operationId: probe
+      requestBody:
+        content:
+          application/json:
+            schema: &id001
+              type: object
+              properties:
+                id:
+                  type: string
+            examples:
+              c:
+                value:
+                  id: c
+                summary: One
+          application/x-www-form-urlencoded:
+            schema: *id001
+            examples:
+              a:
+                value:
+                  id: a
+                summary: Same
+              b:
+                value:
+                  id: b
+                summary: Same
+      responses:
+        '204':
+          description: No Content

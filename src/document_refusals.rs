@@ -34,6 +34,7 @@ enum Class {
     GeneratorLintFailure,
     TypeNotDefined,
     MissingDiscriminantProperty,
+    DuplicateExampleName,
 }
 
 impl Class {
@@ -58,6 +59,7 @@ impl Class {
             Self::GeneratorLintFailure => "generator-lint-failure",
             Self::TypeNotDefined => "type-not-defined",
             Self::MissingDiscriminantProperty => "missing-discriminant-property",
+            Self::DuplicateExampleName => "duplicate-example-name",
         }
     }
 }
@@ -229,6 +231,7 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
         return refusal(path, strict, Class::TypeNotDefined, &element);
     }
     check_discriminant_examples(&root, path, strict)?;
+    check_example_names(&root, path, strict)?;
     Ok(())
 }
 
@@ -2117,6 +2120,219 @@ fn python_identifier(name: &str) -> bool {
         && !KEYWORDS.contains(&name)
 }
 
+const OPERATION_METHODS: [&str; 8] = [
+    "get", "put", "post", "delete", "options", "head", "patch", "trace",
+];
+
+/// Every operation Fern imports, with its method and route. Pinned Fern skips
+/// an ignored Path Item or operation before it reads the operation's examples.
+fn imported_operations(
+    root: &serde_yaml_ng::Value,
+) -> impl Iterator<Item = (&'static str, &str, &serde_yaml_ng::Value)> {
+    root.get("paths")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+        .into_iter()
+        .flatten()
+        .filter(|(_, item)| !ignored_reference_node(item))
+        .filter_map(|(route, item)| Some((route.as_str()?, item)))
+        .flat_map(|(route, item)| {
+            OPERATION_METHODS.iter().filter_map(move |method| {
+                let operation = item.get(*method)?;
+                (operation.is_mapping() && !ignored_reference_node(operation))
+                    .then_some((*method, route, operation))
+            })
+        })
+}
+
+/// A node with its local `$ref` chain followed; `None` for a reference that
+/// cannot be followed here (other classes own those).
+fn local_target<'a>(
+    root: &'a serde_yaml_ng::Value,
+    mut node: &'a serde_yaml_ng::Value,
+) -> Option<&'a serde_yaml_ng::Value> {
+    for _ in 0..32 {
+        let Some(reference) = node.get("$ref").and_then(serde_yaml_ng::Value::as_str) else {
+            return Some(node);
+        };
+        node = yaml_pointer(root, reference.strip_prefix('#')?)?;
+    }
+    None
+}
+
+/// A media type whose examples pinned Fern reads as JSON: a case-sensitive
+/// `json` anywhere in the key (`text/json`, `application/problem+json`,
+/// `application/x-ndjson`) or the `*/*` wildcard, the first in document order.
+/// `Application/JSON` is not one.
+fn json_examples_media(media_type: &str) -> bool {
+    media_type == "*/*" || media_type.contains("json")
+}
+
+/// The request examples Fern names: the first JSON media type's, else a form
+/// body's. Multipart, XML, text and binary examples are never read.
+fn request_examples<'a>(
+    root: &'a serde_yaml_ng::Value,
+    operation: &'a serde_yaml_ng::Value,
+) -> Option<&'a serde_yaml_ng::Value> {
+    let content = local_target(root, operation.get("requestBody")?)?
+        .get("content")?
+        .as_mapping()?;
+    content
+        .iter()
+        .find(|(media_type, _)| media_type.as_str().is_some_and(json_examples_media))
+        .map(|(_, media)| media)
+        .or_else(|| content.get("application/x-www-form-urlencoded"))?
+        .get("examples")
+}
+
+/// The response examples Fern names. Its success response is the lowest
+/// numeric 2xx code (`default` only when the operation declares none): a `204`
+/// ends the search, a response with no content or only `application/xml`
+/// passes it to the next code, and a JSON media type's examples are read. Any
+/// other content (text, HTML, PDF, binary) ends the search unread.
+fn response_examples<'a>(
+    root: &'a serde_yaml_ng::Value,
+    operation: &'a serde_yaml_ng::Value,
+) -> Option<&'a serde_yaml_ng::Value> {
+    let responses = operation.get("responses")?.as_mapping()?;
+    let mut candidates: Vec<(u64, &serde_yaml_ng::Value)> = responses
+        .iter()
+        .filter_map(|(code, response)| {
+            let code = code
+                .as_u64()
+                .or_else(|| code.as_str().and_then(|code| code.parse().ok()))?;
+            (200..300).contains(&code).then_some((code, response))
+        })
+        .collect();
+    candidates.sort_by_key(|(code, _)| *code);
+    if candidates.is_empty() {
+        // Code 0 stands for `default`, which never passes the search on.
+        candidates.extend(responses.get("default").map(|response| (0, response)));
+    }
+    for (code, response) in candidates {
+        if code == 204 {
+            return None;
+        }
+        let content = local_target(root, response)?
+            .get("content")
+            .and_then(serde_yaml_ng::Value::as_mapping)
+            .filter(|content| !content.is_empty());
+        let Some(content) = content else {
+            if code == 0 {
+                return None;
+            }
+            continue;
+        };
+        if let Some((_, media)) = content
+            .iter()
+            .find(|(media_type, _)| media_type.as_str().is_some_and(json_examples_media))
+        {
+            return media.get("examples");
+        }
+        if code == 0
+            || !content
+                .keys()
+                .all(|media_type| media_type.as_str() == Some("application/xml"))
+        {
+            return None;
+        }
+    }
+    None
+}
+
+/// A named example's name as Fern compares it: the referenced Example Object's
+/// `summary` when it has a non-null one (an empty string included, compared
+/// with its YAML type, so `1` and `"1"` differ), else the map key as a string.
+/// A `summary` beside a `$ref` is not read.
+fn example_name(
+    root: &serde_yaml_ng::Value,
+    key: &serde_yaml_ng::Value,
+    example: &serde_yaml_ng::Value,
+) -> Option<serde_yaml_ng::Value> {
+    if let Some(summary) = local_target(root, example)?
+        .get("summary")
+        .filter(|summary| !summary.is_null())
+    {
+        return Some(summary.clone());
+    }
+    let key = match key {
+        serde_yaml_ng::Value::String(key) => key.clone(),
+        serde_yaml_ng::Value::Number(key) => key.to_string(),
+        serde_yaml_ng::Value::Bool(key) => key.to_string(),
+        _ => return None,
+    };
+    Some(serde_yaml_ng::Value::String(key))
+}
+
+fn name_label(name: &serde_yaml_ng::Value) -> String {
+    name.as_str().map_or_else(
+        || {
+            serde_yaml_ng::to_string(name)
+                .unwrap_or_default()
+                .trim_end()
+                .to_owned()
+        },
+        str::to_owned,
+    )
+}
+
+fn first_duplicate(
+    names: impl IntoIterator<Item = serde_yaml_ng::Value>,
+) -> Option<serde_yaml_ng::Value> {
+    let mut seen = Vec::new();
+    for name in names {
+        if seen.contains(&name) {
+            return Some(name);
+        }
+        seen.push(name);
+    }
+    None
+}
+
+/// Pinned Fern names each endpoint example and refuses two of one name. A
+/// non-empty `x-fern-examples` list replaces the OpenAPI examples, so only its
+/// `name`s are compared; otherwise the request examples and the success
+/// response examples are each compared within themselves, never with each
+/// other or across operations. `x-crozier-examples` is not read: Fern never
+/// reads it, so its content cannot make Fern refuse a document.
+fn check_example_names(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -> Result<()> {
+    for (method, route, operation) in imported_operations(root) {
+        let element = format!("{} {route}", method.to_ascii_uppercase());
+        if let Some(examples) = operation.get("x-fern-examples") {
+            let Some(examples) = examples.as_sequence() else {
+                continue;
+            };
+            if !examples.is_empty() {
+                let names = examples
+                    .iter()
+                    .filter_map(|example| example.get("name"))
+                    .filter(|name| !name.is_null())
+                    .cloned();
+                if let Some(name) = first_duplicate(names) {
+                    let element = format!("{element} x-fern-examples name {}", name_label(&name));
+                    return refusal(path, strict, Class::DuplicateExampleName, &element);
+                }
+                continue;
+            }
+        }
+        for (side, examples) in [
+            ("request", request_examples(root, operation)),
+            ("response", response_examples(root, operation)),
+        ] {
+            let Some(examples) = examples.and_then(serde_yaml_ng::Value::as_mapping) else {
+                continue;
+            };
+            let names = examples
+                .iter()
+                .filter_map(|(key, example)| example_name(root, key, example));
+            if let Some(name) = first_duplicate(names) {
+                let element = format!("{element} {side} example name {}", name_label(&name));
+                return refusal(path, strict, Class::DuplicateExampleName, &element);
+            }
+        }
+    }
+    Ok(())
+}
+
 fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()> {
     Err(Error::InvalidSpec {
         path: path.to_path_buf(),
@@ -2352,5 +2568,149 @@ mod tests {
         for name in ["", "api-version", "api.version", "1st", "class", "None"] {
             assert!(!python_identifier(name), "{name}");
         }
+    }
+
+    fn example_name_refusal(document: &str) -> Option<String> {
+        let root: serde_yaml_ng::Value = serde_yaml_ng::from_str(document).unwrap();
+        check_example_names(&root, Path::new("api.yml"), false)
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    #[test]
+    fn duplicate_example_names_follow_the_examples_fern_reads() {
+        let same = "{a: {summary: Same, value: {}}, b: {summary: Same, value: {}}}";
+        let refused = |document: String, element: &str| {
+            let error = example_name_refusal(&document).unwrap_or_else(|| panic!("{document}"));
+            assert!(
+                error.contains(&format!("duplicate-example-name: {element}")),
+                "{error}"
+            );
+        };
+        let accepted = |document: String| assert_eq!(example_name_refusal(&document), None);
+        let body = |content: &str| {
+            format!("paths: {{/p: {{post: {{requestBody: {{content: {content}}}, responses: {{'204': {{description: x}}}}}}}}}}")
+        };
+        let responses =
+            |responses: &str| format!("paths: {{/p: {{get: {{responses: {responses}}}}}}}");
+        refused(
+            body(&format!("{{application/json: {{examples: {same}}}}}")),
+            "POST /p request example name Same",
+        );
+        // The first JSON media type, in document order, else a form body.
+        refused(
+            body(&format!(
+                "{{text/json: {{examples: {same}}}, application/json: {{}}}}"
+            )),
+            "POST /p request",
+        );
+        refused(
+            body(&format!(
+                "{{application/x-www-form-urlencoded: {{examples: {same}}}}}"
+            )),
+            "POST /p request",
+        );
+        accepted(body(&format!(
+            "{{application/json: {{}}, '*/*': {{examples: {same}}}}}"
+        )));
+        accepted(body(&format!(
+            "{{multipart/form-data: {{examples: {same}}}}}"
+        )));
+        accepted(body(&format!("{{Application/JSON: {{examples: {same}}}}}")));
+        accepted(body(&format!(
+            "{{application/x-www-form-urlencoded: {{examples: {same}}}, application/json: {{}}}}"
+        )));
+        // The lowest 2xx code with content; `default` only without one.
+        let json =
+            format!("{{description: x, content: {{application/json: {{examples: {same}}}}}}}");
+        refused(
+            responses(&format!(
+                "{{'202': {{description: x, content: {{application/json: {{}}}}}}, '201': {json}}}"
+            )),
+            "GET /p response example name Same",
+        );
+        refused(
+            responses(&format!("{{'200': {{description: x}}, '201': {json}}}")),
+            "GET /p response",
+        );
+        refused(
+            responses(&format!(
+                "{{'200': {{description: x, content: {{application/xml: {{}}}}}}, '201': {json}}}"
+            )),
+            "GET /p response",
+        );
+        refused(
+            responses(&format!("{{'400': {{description: x}}, default: {json}}}")),
+            "GET /p response",
+        );
+        accepted(responses(&format!(
+            "{{'204': {{description: x}}, '206': {json}}}"
+        )));
+        accepted(responses(&format!(
+            "{{'201': {{description: x}}, default: {json}}}"
+        )));
+        accepted(responses(&format!(
+            "{{'200': {{description: x, content: {{text/plain: {{}}}}}}, '201': {json}}}"
+        )));
+        accepted(responses(&format!("{{'400': {json}}}")));
+        accepted(responses(&format!("{{'2XX': {json}}}")));
+        // Names: a referenced summary, else the key; typed, null-skipping.
+        let examples = |examples: &str| {
+            format!("paths: {{/p: {{get: {{responses: {{'200': {{description: x, content: {{application/json: {{examples: {examples}}}}}}}}}}}}}}}\ncomponents: {{examples: {{E: {{summary: Same}}, K: {{value: 1}}}}}}")
+        };
+        refused(examples("{a: {$ref: '#/components/examples/E'}, b: {$ref: '#/components/examples/E', summary: Other}}"), "GET /p response example name Same");
+        refused(
+            examples("{a: {summary: b}, b: {value: 1}}"),
+            "GET /p response example name b",
+        );
+        refused(
+            examples("{a: {summary: ''}, b: {summary: ''}}"),
+            "GET /p response example name ",
+        );
+        refused(
+            examples("{a: {summary: 1}, b: {summary: 1}}"),
+            "GET /p response example name 1",
+        );
+        accepted(examples("{a: {summary: 1}, b: {summary: '1'}}"));
+        accepted(examples("{a: {summary: null}, b: {summary: null}}"));
+        accepted(examples(
+            "{a: {$ref: '#/components/examples/K'}, b: {$ref: '#/components/examples/K'}}",
+        ));
+        accepted(examples("{a: {summary: Same}, b: {summary: same}}"));
+        // A non-empty x-fern-examples list replaces the OpenAPI examples.
+        let fern = |list: &str, extension: &str| {
+            format!("paths: {{/p: {{post: {{{extension}: {list}, requestBody: {{content: {{application/json: {{examples: {same}}}}}}}, responses: {{'204': {{description: x}}}}}}}}}}")
+        };
+        refused(
+            fern("[{name: X}, {name: X}]", "x-fern-examples"),
+            "POST /p x-fern-examples name X",
+        );
+        refused(
+            fern("[]", "x-fern-examples"),
+            "POST /p request example name Same",
+        );
+        accepted(fern("[{name: X}]", "x-fern-examples"));
+        accepted(fern("[{request: {}}, {request: {}}]", "x-fern-examples"));
+        // Fern never reads x-crozier-examples: its names cannot refuse, and
+        // it does not replace the OpenAPI examples.
+        accepted(
+            "paths: {/p: {post: {x-crozier-examples: [{name: X}, {name: X}], responses: {}}}}"
+                .to_owned(),
+        );
+        refused(
+            fern("[{name: X}]", "x-crozier-examples"),
+            "POST /p request example name Same",
+        );
+        // Ignored operations and Path Items are not imported; webhooks are not read.
+        accepted(format!(
+            "paths: {{/p: {{x-fern-ignore: true, get: {{responses: {{'200': {json}}}}}}}}}"
+        ));
+        accepted(format!(
+            "paths: {{/p: {{get: {{x-fern-ignore: true, responses: {{'200': {json}}}}}}}}}"
+        ));
+        accepted(format!(
+            "webhooks: {{h: {{post: {{responses: {{'200': {json}}}}}}}}}"
+        ));
+        accepted(format!("components: {{responses: {{R: {json}}}}}"));
     }
 }
