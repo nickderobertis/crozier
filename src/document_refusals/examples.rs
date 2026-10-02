@@ -605,9 +605,6 @@ impl<'a> Doc<'a> {
         }
     }
 
-    /// `x-fern-examples`, which Fern validates in full: each entry's response
-    /// body against the first success response, its request against the JSON
-    /// request body and its query parameters against theirs.
     /// A request body declaring `properties` beside a `oneOf`/`anyOf` whose two
     /// or more object members Fern reads as discriminated (they share a
     /// single-value enum property): Fern takes an object property both declare
@@ -694,6 +691,9 @@ impl<'a> Doc<'a> {
         Some(declared)
     }
 
+    /// `x-fern-examples`, which Fern validates in full: each entry's response
+    /// body against the first success response, its request against the JSON
+    /// request body and its query parameters against theirs.
     fn fern_examples(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
         let entries = operation.op.get("x-fern-examples")?.as_sequence()?;
         let response = self
