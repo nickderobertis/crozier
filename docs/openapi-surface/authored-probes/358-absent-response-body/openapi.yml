@@ -1,0 +1,22 @@
+openapi: 3.1.0
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /holder:
+    get:
+      operationId: getHolder
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Named/properties/absent"
+components:
+  schemas:
+    Named:
+      type: object
+      properties:
+        label:
+          type: string
