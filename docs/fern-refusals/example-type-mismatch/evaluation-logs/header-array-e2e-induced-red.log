@@ -1,0 +1,26 @@
+────────────
+ Nextest run ID <id> with nextest profile: default
+    Starting 1 test across 1 binary (543 tests and 10 binaries skipped)
+        FAIL [   0.760s] (1/1) crozier::e2e example_type_mismatch_refusal_covers_measured_shapes
+  stdout ───
+
+    running 1 test
+    test example_type_mismatch_refusal_covers_measured_shapes ... FAILED
+
+    failures:
+
+    failures:
+        example_type_mismatch_refusal_covers_measured_shapes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 543 filtered out; finished in 0.75s
+
+  stderr ───
+
+    thread 'example_type_mismatch_refusal_covers_measured_shapes' (<pid>) panicked at tests/e2e.rs:16684:17:
+    header-array-integer-items-probe.yml: example-type-mismatch: crozier generated from the probe in its mode; the class says it is refused (39 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.763s] 1 test run: 0 passed, 1 failed, 543 skipped
+        FAIL [   0.760s] (1/1) crozier::e2e example_type_mismatch_refusal_covers_measured_shapes
+error: test run failed

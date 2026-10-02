@@ -143,9 +143,9 @@ none. crozier drops cookie parameters too (`src/ir.rs`, the
 Probe `param-content-path` emits `def op(self, probe_param: str, ...)`, losing the
 declared JSON object. Verdict *discards*.
 
-### Header parameters: inline scalar array refuses, inline object crashes
+### Header parameters: a promoted optional array refuses, inline object crashes
 
-The probe's **array-typed header with inline string items fails `fern check`**. Fern synthesizes an
+The probe's **array-typed header fails `fern check`**. Fern synthesizes an
 endpoint example for the header using the parameter *name* as a string, then
 rejects its own synthesized example against the array schema. Probe `header-array`,
 inner `fern check` exit **1** (the wrapper process exits 0 regardless, so the inner
@@ -165,6 +165,24 @@ the same failure [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md)
 records for `jaewook-epcis`, reproduced from first principles on a three-line
 specification. The failure does not cover every array header: Komga's registered
 golden generates an `Accept` header whose array items reference an object schema.
+
+**What decides it is promotion, not the items** (re-measured for issue #353 on
+thirteen documents). The probe's one operation carries the header, so Fern lifts
+it to a client-level field, and it is optional with no `default`: that field's
+example is the header's name. Every refused document is such a header — with
+string or integer items, with a schema or parameter `example`, with a list
+`default`, or optional on both of two operations — and each prints `Expected
+example to be a list` ([the logs](fern-refusals/example-type-mismatch/evaluation.md#an-optional-promoted-array-header)).
+Fern generates from the same inline string items wherever that does not hold:
+an optional or required header on one of two operations (a method argument
+typed `typing.Sequence[str]`), a required header on every operation (a
+`typing.List[str]` client field), and an optional promoted header with a string
+`default`, which Fern types `str` and sends the default for — the
+[`list-default-not-array` header control](fern-refusals/list-default-not-array/header-array-control.yml)
+is that last shape, and the only difference from the probe that matters is its
+`default: all`. Each generated tree is committed as an authored probe,
+`openapi-surface/authored-probes/353-*`, and crozier byte-matches it; crozier
+refuses the refused shape under the registry's `example-type-mismatch` class.
 
 An **inline object-typed header parameter with properties crashes the generator**.
 Short.io's registered golden accepts bare `schema: "object"` headers, so this
@@ -4196,7 +4214,7 @@ question a future probe could answer**, not a proven absence.
 | `extension-server-variable` | 0 | 0 | ignores | Contract A differential measurement at Fern CLI 5.67.1 / Python SDK 5.20.0: **Committed Fern measurement:** [`extension-server-variable`](openapi-surface/probe-expected/extension-server-variable/) and [`extension-server-variable-control`](openapi-surface/probe-expected/extension-server-variable-control/); the two complete SDK trees agree byte for byte. |
 | `extension-server` | 0 | 0 | ignores | Contract A differential measurement at Fern CLI 5.67.1 / Python SDK 5.20.0: **Committed Fern measurement:** [`extension-server`](openapi-surface/probe-expected/extension-server/) and [`extension-server-control`](openapi-surface/probe-expected/extension-server-control/); the two complete SDK trees agree byte for byte. **Region row `golden` since the 2026-09-28 walk:** 1 golden-bearing registered source now declares the shape, so [its row](openapi-surface/oas31-extensions.md) settles on byte-matching goldens and this measurement is kept as a cross-reference. |
 | `extension-xml` | 0 | 0 | ignores | Contract A differential measurement at Fern CLI 5.67.1 / Python SDK 5.20.0: **Committed Fern measurement:** [`extension-xml`](openapi-surface/probe-expected/extension-xml/) and [`extension-xml-control`](openapi-surface/probe-expected/extension-xml-control/); the two complete SDK trees agree byte for byte. |
-| `header-array` | 0 | 0 | refuses | `fern check` refuses the probe's array-typed header with inline string items, exit 1; Komga's registered golden accepts an array header with referenced object items, so the refusal applies only to the measured subtype; committed Fern measurement: [`header-array`](openapi-surface/probe-expected/header-array.fern-refusal.txt) |
+| `header-array` | 0 | 0 | refuses | `fern check` refuses the probe's array-typed header, exit 1, because its one operation makes it a promoted client field and it is optional with no string `default`; re-measured for issue #353, Fern generates the same inline string items as a method argument (on a subset of operations), as a required promoted field, and with a string `default` (the `list-default-not-array` header control), and Komga's registered golden generates a method `Accept` header with referenced object items; committed Fern measurement: [`header-array`](openapi-surface/probe-expected/header-array.fern-refusal.txt) |
 | `header-object` | 0 | 0 | crashes | `fern generate` crashes on the probe's inline object header with properties and an internal `KeyError`; Short.io's registered golden accepts bare `schema: "object"` headers, so the refusal applies only to the measured subtype; committed Fern measurement: [`header-object`](openapi-surface/probe-expected/header-object.fern-refusal.txt) |
 | `http-digest` | 0 | 4 | discards + licence | the importer drops the scheme outright; and 0 eligible of 4 verified — 3× the specification declares CC BY-NC-SA 3.0 US, 1× licence tier Q Contract A measurement: **Committed Fern measurement:** [`http-digest`](openapi-surface/probe-expected/http-digest/), Fern CLI 5.67.1 and Python SDK 5.20.0. |
 | `label-array-or-object` | 0 | 3 | discards + licence | Fern discards the `label` style and renders `str(list)` into the path segment; 0 eligible of 3 verified — 3× licence untiered; committed Fern measurement: [`label-array-or-object`](openapi-surface/probe-expected/label-array-or-object/) |

@@ -4255,6 +4255,7 @@ const CORPORA: &[&Corpus] = &[
     &FIWARE_CONTEXT_GENERATOR,
     &HASURA_METADATA,
     &ZOONK,
+    &HUATUO_NODE_TREE,
 ];
 
 #[test]
@@ -6877,6 +6878,21 @@ const HUATUO_NODE: Corpus = Corpus {
 /// HuaTuo server API v1 — corpus row 179, the publisher's own description.
 const HUATUO_SERVER: Corpus = Corpus {
     api: "huatuo-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// HuaTuo node API v1 as its repository authors it — corpus row 307, the
+/// two-file tree row 178 is bundled from. Its `BearerAuth` names the scheme
+/// `../components.yaml` declares, so its bearer credential witnesses a security
+/// scheme resolved from another document.
+const HUATUO_NODE_TREE: Corpus = Corpus {
+    api: "huatuo-node-tree",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13575,6 +13591,11 @@ fn huatuo_node_matches_fern_output() {
 #[test]
 fn huatuo_server_matches_fern_output() {
     assert_committed_corpus_matches(&HUATUO_SERVER);
+}
+
+#[test]
+fn huatuo_node_tree_matches_fern_output() {
+    assert_committed_corpus_matches(&HUATUO_NODE_TREE);
 }
 
 #[test]

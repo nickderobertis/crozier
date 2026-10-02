@@ -233,6 +233,7 @@ compares it. Row 224 is the one so far.
 | 304 | `fiware-context-generator` | github-raw | https://raw.githubusercontent.com/live-buildings/context-generator/354bf6920d20955aabb55f4778a4d8a3d855440b/swaggers/swagger.yaml | `354bf6920d20955aabb55f4778a4d8a3d855440b` | MIT (the publisher repository's pinned `LICENSE`, FIWARE Foundation; the document declares no `info.license`) | committed | The LiveBuildings data model API 0.0.1, the context generator's own description; an array item's `oneOf` member that is an `anyOf` |
 | 305 | `hasura-metadata` | github-raw | https://raw.githubusercontent.com/hasura/graphql-engine/94915fe51d6d21bd7f6d4452dc16221bef8cfefd/metadata.openapi.json | `94915fe51d6d21bd7f6d4452dc16221bef8cfefd` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Hasura GraphQL Engine's metadata schema as its repository publishes it: 334 component schemas and no paths; properties whose `oneOf` holds an `anyOf` |
 | 306 | `zoonk` | github-raw | https://raw.githubusercontent.com/zoonk/zoonk/4546e69762e30f245c9306acb95aa56fc69d2682/apps/apple/Zoonk/openapi.json | `4546e69762e30f245c9306acb95aa56fc69d2682` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Zoonk's API as its repository publishes it for the Apple client: 48 paths and 69 component schemas; `MeDeletion`'s `oneOf` offers a closed empty object |
+| 307 | `huatuo-node-tree` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | committed | HuaTuo node API v1 as its repository authors it, the source `openapi.gen.json` (row 178) is bundled from: `components.securitySchemes.BearerAuth` is `$ref: '../components.yaml#/components/securitySchemes/BearerAuth'`, a security scheme declared in another document of the same pinned tree, and thirteen schema references name `../components.yaml#/components/schemas/…`. Fern's generated bearer `token` and `Authorization` header, and its `ErrorResponse`, `Error`, `ErrorCode` and `ObservationScope` types, derive from those references. |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1333,3 +1334,20 @@ Service API (`opensuse.org/obs/2.10.50`, GPL-2.0, which declares
 `xml.attribute` 164 times) passes `fern check` and its generate exits 0 over a
 document Fern never parsed (`Failed to resolve
 #/paths/~1architectures/get/responses/401`), writing an empty SDK.
+
+## Row 307 — a security scheme declared in another document (issue #351)
+
+A `components.securitySchemes` entry may be a Reference Object naming a scheme
+in another document. Pinned Fern follows one into a document present beside
+it, so a client generated from such a description keeps its credential; the
+absent document is the `unresolved-reference` refusal class. The row pins the
+two-file tree with `tree` records in `corpus-remote-ref-pins.tsv`:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 307 | `huatuo-node-tree` | `securityscheme-ref` across documents | ✅ byte-matched after two repairs |
+
+The repairs: a security scheme a relative `$ref` names is resolved from that
+document, following a reference inside it, and a sibling file's
+`#/components/schemas/<Name>` is imported as the component it names with the
+components of that file it references, rather than inlined.

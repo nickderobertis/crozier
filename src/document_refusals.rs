@@ -2482,8 +2482,8 @@ fn check_example_query_parameters(
 /// header's name and rejects that string as no list. A required one, one left on
 /// a subset of operations as a method argument, and one whose string `default`
 /// makes Fern type it `str` each generate, as
-/// `docs/openapi-surface/fern-refusals/header-array/` measures. The promotion is
-/// read from the SDK IR, so it is decided by the one rule that emits it.
+/// `docs/fern-refusals/example-type-mismatch/evaluation.md` records. The promotion
+/// is read from the SDK IR, so it is decided by the one rule that emits it.
 fn promoted_optional_array_header(doc: &OpenApi, ir: &crate::ir::Ir) -> Option<String> {
     let header = ir
         .global_headers

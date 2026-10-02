@@ -175,7 +175,10 @@ refuses. Both keep Fern's logs under
   a false success: `fern check` and `fern generate` exit 0 over a document Fern
   never parsed. With the referenced document placed beside the probe,
   `fern check` resolves it and passes, so the class is a reference Fern cannot
-  follow, not the scheme.
+  follow, not the scheme. `fern generate` then keeps the referenced scheme's
+  credential, and crozier resolves it the same way: corpus row 307
+  (`huatuo-node-tree`) is a real tree whose `BearerAuth` names
+  `../components.yaml`, and its golden byte-matches (issue #351).
 - **The generator's own crashes** are classes too, measured in `fern generate`
   after a clean check: `generator-lint-failure` (the generated package fails
   `ruff check`, e.g. two union variants or a method and a sub-client given one
@@ -191,4 +194,7 @@ refuses. Both keep Fern's logs under
   stay there. Where a phrase class would share one's shape, its probe isolates
   the phrase another way: `type-name-not-letter-led` names a schema `123456`
   rather than `$ref`ing an unnamed pointer segment, and `example-type-mismatch`
-  is probed with a date rather than a header list.
+  is probed with a date rather than a header list. That class's detector also
+  refuses `header-array`'s shape, an optional array header Fern promotes to a
+  client field, with `header-array-*-probe.yml` documents of its own (issue
+  #353).
