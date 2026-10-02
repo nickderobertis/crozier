@@ -552,6 +552,25 @@ def discard_logs(record: dict[str, Any], base: Path) -> None:
             (base / section["log"]).unlink(missing_ok=True)
 
 
+def read_measured(path: Path) -> Any:
+    """A record this stage measured earlier, read from `path`, or a refusal saying how to get one."""
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except OSError as error:
+        fail(f"--measured {path}: {error.strerror}; pass the JSON file a measurement wrote, or drop "
+             "--measured to measure now")
+    except ValueError as error:
+        fail(f"--measured {path} is not JSON ({error}); pass the record a measurement wrote, unedited")
+    raise AssertionError  # unreachable: `fail` exits
+
+
+def positive_int(text: str) -> int:
+    value = int(text)
+    if value <= 0:
+        raise argparse.ArgumentTypeError(f"{text} is not a positive number of seconds")
+    return value
+
+
 def outcomes(record: dict[str, Any]) -> dict[str, str]:
     return {name: record[name]["outcome"] for name in SCREENS}
 
@@ -610,7 +629,7 @@ def legacy_screen(args: argparse.Namespace) -> int:
     if not directory.is_dir():
         fail(f"{directory} does not exist; acquire {args.source} through its witness-search script first")
     if args.measured:
-        record = json.loads(args.measured.read_text(encoding="utf-8"))
+        record = read_measured(args.measured)
     else:
         github = _load("witness_search_github_screen", REPO / "scripts" / "witness-search-github.py")
         acquirer = github.Acquirer(directory, cache=REPO / ".local" / "witness-screen" / args.source,
@@ -669,7 +688,7 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--licence-refusal", default="", help="refuse a licence the reading would pass, and why")
     s.add_argument("--disposition", default="", help="what becomes of a candidate passing every screen")
     s.add_argument("--measured", type=Path, help="a record this stage measured earlier, filed as it stands")
-    s.add_argument("--timeout", type=int, default=1800)
+    s.add_argument("--timeout", type=positive_int, default=1800)
     s.add_argument("--evidence-root", type=Path, default=REPO / "docs" / "openapi-surface")
     s.add_argument("--fern", help=argparse.SUPPRESS)
     args = parser.parse_args(argv)

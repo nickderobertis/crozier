@@ -213,6 +213,23 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertEqual([], self.rows())
 
 
+    def test_an_unreadable_measured_file_or_timeout_is_refused_with_its_remedy(self) -> None:
+        missing = self.screen("--measured", str(self.scratch / "absent.json"))
+        self.assertEqual(1, missing.returncode)
+        self.assertIn("pass the JSON file a measurement wrote, or drop --measured", missing.stderr)
+        garbled = self.scratch / "garbled.json"
+        garbled.write_text("{not json", encoding="utf-8")
+        refused = self.screen("--measured", str(garbled))
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("is not JSON", refused.stderr)
+        zero = subprocess.run([sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "k",
+                               "--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml",
+                               "--timeout", "0"], capture_output=True, text=True, cwd=REPO)
+        self.assertEqual(2, zero.returncode)
+        self.assertIn("0 is not a positive number of seconds", zero.stderr)
+        self.assertEqual([], self.rows())
+
+
 class HistoricalRowTests(unittest.TestCase):
     """What the legacy index reads a screen row filed before the stage as."""
 

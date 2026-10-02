@@ -906,10 +906,10 @@ COMPACT_SEGMENT = re.compile(
 CAPABILITY_SECTION = "#### What makes a search exhaustive"
 SCREENS = ("licence", "ref", "fern")
 EVIDENCE_KINDS = ("query", "walk", "document", "candidate", "screen", "wait")
-# A bucket reaching its cap is the search's to wait out, never a source declining
-# to answer, so an `unanswered` giving any of these as its reason is refused.
 # Where the measured screening stage files its redacted logs, in an evidence directory.
 LOG_DIR = "screens"
+# A bucket reaching its cap is the search's to wait out, never a source declining
+# to answer, so an `unanswered` giving any of these as its reason is refused.
 RATE_LIMIT_REASON = re.compile(
     r"(?i)rate[- ]?limit|limiter|quota|too many requests|\b429\b|\bcap(?:ped)?\b|reset"
 )

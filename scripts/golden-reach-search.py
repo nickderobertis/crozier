@@ -1320,7 +1320,7 @@ def screen(args: argparse.Namespace) -> int:
                for r in read_records(args.source)):
         fail(f"{args.candidate} is no declarer of {args.key} in {args.source}'s records; `walk` or `query` {args.source} for {args.key} first, or check the candidate's spelling")
     if args.measured:
-        record = json.loads(args.measured.read_text(encoding="utf-8"))
+        record = SCREEN.read_measured(args.measured)
     else:
         repository, commit, path, expected = candidate_ref(args.source, args.candidate)
         github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")

@@ -15,8 +15,9 @@ trust:
   `fernapi/fern-python-sdk` versions, both exit statuses, and the SHA-256 of
   each redacted log.
 - [`fern.log`](fern.log) — those redacted logs.
-- [`fern-raw_client.py`](fern-raw_client.py) — Fern's generated
-  `src/fern/raw_client.py`, unedited.
+- [`fern-raw_client.py.txt`](fern-raw_client.py.txt) — Fern's generated
+  `src/fern/raw_client.py`, its bytes unedited, kept as text: it is evidence,
+  not code this repository runs.
 
 What it shows: `CreateA` sends `"owner": a_owner` while `CreateD` and `CreateE`
 send `"owner": owner` — a colliding field is sent from its renamed argument only

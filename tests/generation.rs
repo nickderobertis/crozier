@@ -12284,8 +12284,8 @@ fn measured_yourbrand_repair_probe_matches_its_fern_output() {
     let dir =
         Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-measurements/yourbrand-repairs");
     let probe = std::fs::read_to_string(dir.join("probe.yaml")).expect("the committed probe");
-    let fern =
-        std::fs::read_to_string(dir.join("fern-raw_client.py")).expect("Fern's committed output");
+    let fern = std::fs::read_to_string(dir.join("fern-raw_client.py.txt"))
+        .expect("Fern's committed output");
     let files = render(&probe);
     let crozier = &files["src/acme/raw_client.py"];
     let telling: Vec<&str> = fern
