@@ -536,24 +536,48 @@ mod tests {
         )
         .unwrap();
         assert_eq!(c, r);
-        // Any other `…metadata.json` is SDK content: its `generatorConfig`
-        // is compared as written, at the root or nested.
-        let theirs = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 1}\n}";
-        let ours = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 2}\n}";
-        assert!(files_match(".fern/metadata.json", ours, theirs).unwrap());
-        for rel in [
-            "types/user_metadata.json",
-            "foo/metadata.json",
-            "metadata.json",
-            "foo/.fern/metadata.json",
-        ] {
-            assert!(!files_match(rel, ours, theirs).unwrap(), "{rel}");
-        }
         // Anything else: headers only, comments kept.
         let (c, r) = normalized_pair("README.md", "# Title\n", "# Other\n").unwrap();
         assert_ne!(c, r);
         assert!(files_match("README.md", "same\n", "same\n").unwrap());
         assert!(!files_match("a.py", "x = 1\n", "x = 2\n").unwrap());
+    }
+
+    /// Whether `rel` matches when the two sides differ only in their
+    /// `generatorConfig` block.
+    fn matches_despite_generator_config(rel: &str) -> bool {
+        let reference = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 1}\n}";
+        let crozier = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 2}\n}";
+        files_match(rel, crozier, reference).unwrap()
+    }
+
+    #[test]
+    fn fern_metadata_generator_config_is_normalized() {
+        assert!(matches_despite_generator_config(".fern/metadata.json"));
+    }
+
+    // Any other `…metadata.json` is SDK content: its `generatorConfig` is
+    // compared as written, whatever its name or depth.
+    #[test]
+    fn user_metadata_json_generator_config_is_compared() {
+        assert!(!matches_despite_generator_config(
+            "types/user_metadata.json"
+        ));
+    }
+
+    #[test]
+    fn nested_metadata_json_generator_config_is_compared() {
+        assert!(!matches_despite_generator_config("foo/metadata.json"));
+    }
+
+    #[test]
+    fn root_metadata_json_generator_config_is_compared() {
+        assert!(!matches_despite_generator_config("metadata.json"));
+    }
+
+    #[test]
+    fn nested_fern_metadata_generator_config_is_compared() {
+        assert!(!matches_despite_generator_config("foo/.fern/metadata.json"));
     }
 
     #[test]
