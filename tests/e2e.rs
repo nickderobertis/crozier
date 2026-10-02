@@ -8,7 +8,28 @@
 use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
+use crozier::parity::{self, Difference};
 use predicates::prelude::*;
+
+/// `crozier compare` journeys (a file under `tests/e2e/`, so cargo does not
+/// build it as a test binary of its own).
+#[path = "e2e/compare.rs"]
+mod compare;
+
+/// The "Migrating from Fern" guide's workflow, run from its own code blocks.
+#[cfg(unix)]
+#[path = "e2e/migration.rs"]
+mod migration;
+
+/// The GitHub Action's scripts (`scripts/action/`) over a real `crozier`.
+#[cfg(unix)]
+#[path = "e2e/action.rs"]
+mod action;
+
+/// `scripts/update-major-tag.sh`, the release's floating major tag.
+#[cfg(unix)]
+#[path = "e2e/major_tag.rs"]
+mod major_tag;
 
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
@@ -946,21 +967,18 @@ fn corpus_has_comparable_golden(c: &Corpus, expected: &Path) -> Result<bool, Str
     Err("fixture has no expected/ golden tree".to_string())
 }
 
-/// The OpenAPI spec a corpus generates from. A vendored corpus ships its
-/// `openapi.yml`; a `link-ok` corpus (`tests/fixtures/CORPUS.md`, spec not
-/// redistributed) is fetched into `.local/corpus/<api>/openapi.<source suffix>`
-/// by `scripts/fetch-corpus.sh` — `None` when that fetch has not run.
+/// The committed OpenAPI source used by a registered corpus.
 fn corpus_spec(api: &str) -> Option<PathBuf> {
     let vendored = fixture_dir(api).join("openapi.yml");
     if vendored.exists() {
         return Some(vendored);
     }
-    let fetched = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(".local/corpus")
+    let committed = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/corpus-sources")
         .join(api);
     ["openapi.json", "openapi.yaml", "openapi.yml"]
         .into_iter()
-        .map(|name| fetched.join(name))
+        .map(|name| committed.join(name))
         .find(|path| path.exists())
         .or_else(|| {
             let interpreter = if cfg!(windows) { "python" } else { "python3" };
@@ -976,7 +994,7 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
                 return None;
             }
             let relative = String::from_utf8(output.stdout).ok()?;
-            let path = fetched.join(relative.trim());
+            let path = committed.join(relative.trim());
             path.is_file().then_some(path)
         })
 }
@@ -984,121 +1002,6 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
 /// Fresh `crozier` command bound to the built binary.
 fn crozier() -> Command {
     Command::cargo_bin("crozier").expect("crozier binary is built for tests")
-}
-
-/// Normalize the SDK-identity headers out of the comparison. crozier brands its
-/// own `X-Crozier-*` headers rather than impersonating Fern, and — because it
-/// reproduces Fern's *packaged* wrapper — always emits the `SDK-Name`/`SDK-Version`
-/// headers that Fern's publishing metadata supplies, which the credential-free
-/// local golden trees omit. Both are deliberate, non-behavioral differences in tool
-/// branding/packaging, so drop the `SDK-Name`/`SDK-Version` lines and canonicalize
-/// the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fern-`. Applied
-/// to both sides; a no-op on lines the fixtures don't contain.
-fn normalize_sdk_headers(content: &str) -> String {
-    let is_sdk_identity_line = |line: &str| {
-        let t = line.trim_start();
-        [
-            "X-Fern-SDK-Name",
-            "X-Crozier-SDK-Name",
-            "X-Fern-SDK-Version",
-            "X-Crozier-SDK-Version",
-        ]
-        .iter()
-        .any(|h| t.starts_with(&format!("\"{h}\"")))
-    };
-    content
-        .split_inclusive('\n')
-        .filter(|line| !is_sdk_identity_line(line))
-        .collect::<String>()
-        .replace("X-Crozier-", "X-Fern-")
-}
-
-/// Normalize a lazy-loader `__init__.py` for comparison: drop leading blank lines
-/// (a comment-strip artifact) and canonicalize the import order with `ruff` isort,
-/// so the semantically-irrelevant `TYPE_CHECKING` ordering does not gate the match.
-fn try_normalize_init(content: &str) -> Result<String, String> {
-    let trimmed: String = content
-        .split_inclusive('\n')
-        .skip_while(|line| line.trim().is_empty())
-        .collect();
-    try_ruff_isort(&trimmed)
-}
-
-/// Drop Fern's `generatorConfig` block from `.fern/metadata.json`. Because the
-/// whole corpus is generated with `pydantic_config.enum_type: python_enums` (so
-/// enums render as real classes — see docs/matching.md), Fern records that config
-/// in its provenance file. crozier renders python_enums unconditionally and carries
-/// no such config, so — like the SDK-identity headers — this Fern-only provenance is
-/// normalized out of both sides rather than faked by crozier. Applied only to
-/// `metadata.json`; a no-op on content without the block. The block is the object's
-/// last key, so removing it plus the preceding comma restores the shorter form.
-fn normalize_metadata(content: &str) -> String {
-    let Some(start) = content.find("\"generatorConfig\"") else {
-        return content.to_string();
-    };
-    let before = content[..start].trim_end();
-    let before = before.strip_suffix(',').unwrap_or(before);
-    // Skip past the balanced `{ ... }` value that follows `"generatorConfig":`.
-    let rest = &content[start..];
-    let (mut depth, mut started, mut end) = (0i32, false, rest.len());
-    for (i, ch) in rest.char_indices() {
-        match ch {
-            '{' => {
-                depth += 1;
-                started = true;
-            }
-            '}' if started => {
-                depth -= 1;
-                if depth == 0 {
-                    end = i + 1;
-                    break;
-                }
-            }
-            _ => {}
-        }
-    }
-    format!("{before}{}", &rest[end..])
-}
-
-/// Run `ruff check --select I --fix` over a source string, returning the
-/// import-sorted result. Uses the same `ruff` the generator depends on.
-fn try_ruff_isort(source: &str) -> Result<String, String> {
-    use std::io::Write;
-    use std::process::{Command as PCommand, Stdio};
-    let mut child = PCommand::new("ruff")
-        .args([
-            "check",
-            "--select",
-            "I",
-            "--fix",
-            "--stdin-filename",
-            "x.py",
-            "-",
-        ])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|error| format!("could not run ruff (see docs/matching.md): {error}"))?;
-    child
-        .stdin
-        .take()
-        .ok_or_else(|| "ruff stdin was not piped".to_string())?
-        .write_all(source.as_bytes())
-        .map_err(|error| format!("could not write to ruff: {error}"))?;
-    let out = child
-        .wait_with_output()
-        .map_err(|error| format!("could not wait for ruff: {error}"))?;
-    // Trust ruff's stdout only when it exited cleanly — a non-zero exit (e.g. a
-    // syntax error in the input) must surface, not silently yield wrong text.
-    if !out.status.success() {
-        return Err(format!(
-            "ruff isort failed ({}): {}",
-            out.status,
-            String::from_utf8_lossy(&out.stderr).trim()
-        ));
-    }
-    String::from_utf8(out.stdout).map_err(|error| format!("ruff output is not UTF-8: {error}"))
 }
 
 /// Require every Fern file except explicit residual gaps to match byte-for-byte.
@@ -1134,7 +1037,7 @@ fn assert_corpus_matches(c: &Corpus) {
             // generate-and-diff pass). `just fixtures-diff` prints the same thing on
             // demand for any divergent file.
             let (actual, expected) = normalized_pair(&rel, &generated, &expected);
-            let diff = unified_diff(&expected, &actual).unwrap_or_default();
+            let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
             panic!(
                 "generated {rel} does not match the Fern fixture \
                  (normalized diff; `-` = Fern golden, `+` = crozier). \
@@ -1729,7 +1632,7 @@ fn filtered_tree_failures(
         let expected = std::fs::read_to_string(expected_root.join(&rel)).unwrap_or_default();
         if !generated_matches_fixture(&rel, &generated, &expected) {
             let (actual, expected) = normalized_pair(&rel, &generated, &expected);
-            let diff = unified_diff(&expected, &actual).unwrap_or_default();
+            let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
             failures.push(format!(
                 "{key}: generated {rel} differs from the committed Fern measurement \
                  (fix the generator, never the measurement)\n{diff}"
@@ -1829,7 +1732,7 @@ fn probe_command(probe: &Path, output: &Path) -> Command {
 /// contributing its path, a NUL, its decimal byte length, a NUL, and its bytes.
 fn probe_artifact_digest(artifact: &Path) -> Result<String, String> {
     let bytes = if artifact.is_dir() {
-        let mut files = try_walk_files(artifact)?;
+        let mut files = parity::walk_files(artifact)?;
         files.sort();
         let mut stream = Vec::new();
         for rel in files {
@@ -1850,7 +1753,7 @@ fn probe_artifact_digest(artifact: &Path) -> Result<String, String> {
 }
 
 /// FIPS 180-4 SHA-256, so the digest check needs no hashing dev-dependency for
-/// one use (the suite hand-rolls [`walk_files`] and [`unified_diff`] the same way).
+/// one use (as `crozier::parity` hand-rolls its tree walk and unified diff).
 fn sha256_hex(message: &[u8]) -> String {
     const K: [u32; 64] = [
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4,
@@ -3380,7 +3283,8 @@ fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
 /// identically.
 fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
     let out = tempfile::tempdir().expect("tempdir");
-    corpus_command(c, out.path())
+    let (mut command, _source) = corpus_command(c, out.path());
+    command
         .assert()
         .success()
         .stderr(predicate::str::contains("generated"));
@@ -3391,12 +3295,27 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
 /// command without assert_cmd's fail-fast assertion so one broken corpus cannot
 /// hide differences in its siblings. It never passes `--no-config`: `just
 /// test-corpus-match-strict` turns strict Fern compatibility on through
-/// `CROZIER_FERN_STRICT`, which `--no-config` would silently drop.
-fn corpus_command(c: &Corpus, output: &Path) -> Command {
+/// `CROZIER_FERN_STRICT`, which `--no-config` would silently drop. Keep the
+/// returned source directory alive until the subprocess finishes; then dropping
+/// it removes the staged copies.
+fn corpus_command(c: &Corpus, output: &Path) -> (Command, tempfile::TempDir) {
+    let staged = tempfile::tempdir().expect("source staging directory");
+    let prepared = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" })
+        .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/corpus_sources.py"))
+        .args(["prepare", "--fixture", c.api, "--output"])
+        .arg(staged.path())
+        .output()
+        .expect("prepare committed corpus source");
+    assert!(
+        prepared.status.success(),
+        "{}",
+        String::from_utf8_lossy(&prepared.stderr)
+    );
+    let spec = String::from_utf8(prepared.stdout).expect("source path is UTF-8");
     let mut command = crozier();
     command
         .args(["generate", "--spec"])
-        .arg(corpus_spec(c.api).unwrap_or_else(|| fixture_dir(c.api).join("openapi.yml")))
+        .arg(spec.trim())
         .arg("--output")
         .arg(output)
         .args([
@@ -3413,12 +3332,13 @@ fn corpus_command(c: &Corpus, output: &Path) -> Command {
                 .flat_map(|n| ["--client-class-name", n]),
         )
         .args(c.extra_fields.iter().flat_map(|e| ["--extra-fields", e]));
-    command
+    (command, staged)
 }
 
 fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
     let out = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
-    let result = corpus_command(c, out.path())
+    let (mut command, _source) = corpus_command(c, out.path());
+    let result = command
         .output()
         .map_err(|error| format!("could not run crozier: {error}"))?;
     let stderr = String::from_utf8_lossy(&result.stderr);
@@ -3437,143 +3357,23 @@ fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
 
 /// Whether crozier's `generated` output for `rel` equals the committed fixture
 /// under the gate's normalization — the single definition of "matches", used by
-/// both `assert_corpus_matches` and the gap reporter so they never drift.
-///
-/// Python files are compared with comments stripped (the same normalization that
-/// produced the fixtures); non-Python scaffolding (pyproject.toml, requirements.txt,
-/// JSON) is Fern's verbatim output and compared as-is.
-///
-/// The lazy-loader `__init__.py` aggregators are normalized on both sides first:
-/// leading blank lines (a comment-strip artifact of Fern's multi-line header) are
-/// trimmed, and the `TYPE_CHECKING` import block is canonicalized with `ruff` isort.
-/// That block is never executed, so its order carries no meaning — normalizing it
-/// lets crozier sort imports straightforwardly instead of reproducing Fern's
-/// traversal order.
-///
-/// The SDK-identity headers are also normalized out of both sides (see
-/// [`normalize_sdk_headers`]): crozier's `X-Crozier-*` rebrand and the
-/// packaging-only `SDK-Name`/`SDK-Version` lines are deliberate, non-behavioral
-/// differences in tool branding/packaging.
+/// both `assert_corpus_matches` and the gap reporter so they never drift. The
+/// rules (comments, SDK-identity headers, `__init__.py` import order, the
+/// metadata `generatorConfig`) live in `crozier::parity`, shared with
+/// `crozier compare`; see that module's docs and docs/matching.md.
 fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool {
     let (actual, expected) = normalized_pair(rel, generated, expected);
     actual == expected
 }
 
 /// The exact `(actual, expected)` strings the gate compares for `rel`, after the
-/// per-file normalization described on [`generated_matches_fixture`]. Factored out
-/// so the match check and the diff reporters share one definition of "the bytes
-/// that decide the match" — a printed diff is then precisely what the gate sees,
-/// never a raw diff polluted by comments, SDK-identity headers, or `__init__.py`
-/// import order that the gate already normalizes away.
+/// per-file normalization described on [`generated_matches_fixture`] — the
+/// library's [`parity::normalized_pair`], panicking on a pair it cannot normalize.
+/// A printed diff is then precisely what the gate sees, never a raw diff polluted
+/// by comments, SDK-identity headers, or `__init__.py` import order that the gate
+/// already normalizes away.
 fn normalized_pair(rel: &str, generated: &str, expected: &str) -> (String, String) {
-    try_normalized_pair(rel, generated, expected).unwrap_or_else(|error| panic!("{error}"))
-}
-
-fn try_normalized_pair(
-    rel: &str,
-    generated: &str,
-    expected: &str,
-) -> Result<(String, String), String> {
-    let generated = normalize_sdk_headers(generated);
-    let expected = normalize_sdk_headers(expected);
-    if rel.ends_with("__init__.py") {
-        Ok((
-            try_normalize_init(&crozier::strip_python_comments(&generated))?,
-            try_normalize_init(&expected)?,
-        ))
-    } else if rel.ends_with(".py") {
-        Ok((crozier::strip_python_comments(&generated), expected))
-    } else if rel.ends_with("metadata.json") {
-        Ok((
-            normalize_metadata(&generated),
-            normalize_metadata(&expected),
-        ))
-    } else {
-        Ok((generated, expected))
-    }
-}
-
-/// A minimal unified-style line diff of two already-normalized texts, dependency-free
-/// (the suite avoids a diff crate for one use, as [`walk_files`] avoids `walkdir`).
-/// Lines only in `expected` are prefixed `-`, only in `actual` `+`, shared lines a
-/// space; runs of unchanged lines beyond `CONTEXT` around each change collapse to a
-/// `⋮ (N unchanged line(s))` marker so a one-line drift in a large file prints a few
-/// lines, not the whole file. Returns `None` when the two are byte-identical.
-fn unified_diff(expected: &str, actual: &str) -> Option<String> {
-    if expected == actual {
-        return None;
-    }
-    const CONTEXT: usize = 3;
-    let a: Vec<&str> = expected.lines().collect();
-    let b: Vec<&str> = actual.lines().collect();
-    let (n, m) = (a.len(), b.len());
-
-    // Longest-common-subsequence lengths, filled from the bottom-right.
-    let mut lcs = vec![vec![0u32; m + 1]; n + 1];
-    for i in (0..n).rev() {
-        for j in (0..m).rev() {
-            lcs[i][j] = if a[i] == b[j] {
-                lcs[i + 1][j + 1] + 1
-            } else {
-                lcs[i + 1][j].max(lcs[i][j + 1])
-            };
-        }
-    }
-
-    // Backtrack into an edit script of (sign, line) ops.
-    let mut ops: Vec<(char, &str)> = Vec::new();
-    let (mut i, mut j) = (0usize, 0usize);
-    while i < n && j < m {
-        if a[i] == b[j] {
-            ops.push((' ', a[i]));
-            i += 1;
-            j += 1;
-        } else if lcs[i + 1][j] >= lcs[i][j + 1] {
-            ops.push(('-', a[i]));
-            i += 1;
-        } else {
-            ops.push(('+', b[j]));
-            j += 1;
-        }
-    }
-    while i < n {
-        ops.push(('-', a[i]));
-        i += 1;
-    }
-    while j < m {
-        ops.push(('+', b[j]));
-        j += 1;
-    }
-
-    // Keep every change, plus CONTEXT unchanged lines on each side; collapse the rest.
-    let keep: Vec<bool> = (0..ops.len())
-        .map(|k| {
-            let lo = k.saturating_sub(CONTEXT);
-            let hi = (k + CONTEXT).min(ops.len() - 1);
-            (lo..=hi).any(|x| ops[x].0 != ' ')
-        })
-        .collect();
-
-    let mut out = String::new();
-    let mut elided = 0usize;
-    for (k, (sign, line)) in ops.iter().enumerate() {
-        if keep[k] {
-            if elided > 0 {
-                out.push_str(&format!("      ⋮ ({elided} unchanged line(s))\n"));
-                elided = 0;
-            }
-            out.push(*sign);
-            out.push(' ');
-            out.push_str(line);
-            out.push('\n');
-        } else {
-            elided += 1;
-        }
-    }
-    if elided > 0 {
-        out.push_str(&format!("      ⋮ ({elided} unchanged line(s))\n"));
-    }
-    Some(out)
+    parity::normalized_pair(rel, generated, expected).unwrap_or_else(|error| panic!("{error}"))
 }
 
 #[test]
@@ -3586,8 +3386,8 @@ fn exhaustive_matches_fern_output_byte_for_byte() {
     assert_corpus_matches(&EXHAUSTIVE);
 }
 
-/// `apideck.com-crm`: a real-world `link-ok` corpus API (issue #77). Its OpenAPI
-/// spec is fetched, not vendored (`corpus_spec`); its full Fern golden is
+/// `apideck.com-crm`: a real-world committed corpus API (issue #77). Its OpenAPI
+/// spec is committed (`corpus_spec`); its full Fern golden is
 /// committed and reproduced byte-for-byte.
 const APIDECK_CRM: Corpus = Corpus {
     api: "apideck.com-crm",
@@ -3611,29 +3411,27 @@ const APIDECK_HRIS: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Enforce the real-world apideck byte-match. The spec is `link-ok` (fetched by
-/// `scripts/fetch-corpus.sh` into `.local/corpus`, not vendored), so this **skips**
-/// when the spec is absent — including the offline `check` gate, which never
-/// fetches — and **fails** when `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg
-/// fetches the spec, then sets it), so the enforced leg can never silently no-op.
+/// Enforce the real-world Apideck byte-match against its committed source.
 #[test]
 fn apideck_crm_matches_fern_output() {
     if corpus_spec(APIDECK_CRM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the apideck corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the apideck committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping apideck byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping apideck byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&APIDECK_CRM);
 }
 
-/// `bunq.com`: a large real-world `link-ok` corpus API (issue #77) — one sub-client
+/// `bunq.com`: a large real-world committed corpus API (issue #77) — one sub-client
 /// per tag over ~10× apideck's surface (docs/matching.md holds the measured
 /// endpoint/schema/tag counts), the pipeline's at-scale stress target. Its
-/// OpenAPI spec is fetched, not vendored (`corpus_spec`); its full Fern golden is
+/// OpenAPI spec is committed (`corpus_spec`); its full Fern golden is
 /// committed and crozier reproduces the entire golden byte-for-byte. Its empty
 /// `unmatched` list makes any future divergence fail by default.
 const BUNQ: Corpus = Corpus {
@@ -3647,10 +3445,10 @@ const BUNQ: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `bungie.net`: a real-world `link-ok` corpus API (issue #77) chosen as the
+/// `bungie.net`: a real-world committed corpus API (issue #77) chosen as the
 /// schema-heavy counterpart to endpoint-heavy bunq — 869 component schemas across
 /// only 13 tags. Fern accepts the raw spec cleanly and crozier consumes it without
-/// error; its OpenAPI spec is fetched, not vendored (`corpus_spec`), and crozier
+/// error; its OpenAPI spec is committed (`corpus_spec`), and crozier
 /// now reproduces the committed Fern golden byte-for-byte.
 const BUNGIE: Corpus = Corpus {
     api: "bungie.net",
@@ -3664,13 +3462,12 @@ const BUNGIE: Corpus = Corpus {
 };
 
 // ---------------------------------------------------------------------------
-// Five additional real-world `link-ok` corpora (issue #77), added together as a
+// Five additional real-world committed corpora (issue #77), added together as a
 // batch of harder, feature-diverse targets. Each passes `fern check` cleanly (the
 // prerequisite — Fern must accept the raw spec first); their Fern golden `expected/`
 // trees are workflow-managed. All five reproduce their goldens byte-for-byte, so
 // each `unmatched` list is empty and any future divergence fails by default. The
-// offline `check` gate skips every one of these (their specs are fetched, not
-// vendored); `just test-corpus-match` enforces them.
+// offline `check` gate and `just test-corpus-match` both read committed sources.
 // ---------------------------------------------------------------------------
 
 /// `anchore.io`: the Anchore Engine API server — the largest clean component-schema
@@ -4456,18 +4253,16 @@ fn every_unmatched_entry_exists_in_its_own_golden() {
 
 #[test]
 fn bunq_matches_fern_output() {
-    // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
-    // when it is absent — including the offline `check` gate — and **fails** when
-    // `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg fetches first, then sets
-    // it), so the enforced leg can never silently no-op. Bunq is fully matched, so
-    // its empty opt-out list makes the entire golden tree mandatory.
+    // An empty opt-out list makes the entire committed golden mandatory.
     if corpus_spec(BUNQ.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the bunq corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the bunq committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping bunq byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping bunq byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&BUNQ);
@@ -4475,39 +4270,33 @@ fn bunq_matches_fern_output() {
 
 #[test]
 fn bungie_matches_fern_output() {
-    // `link-ok` like apideck and bunq: the spec is fetched (not vendored), so this
-    // **skips** when it is absent — including the offline `check` gate — and
-    // **fails** when `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg fetches
-    // first, then sets it), so the enforced leg can never silently no-op.
-    // Bungie's empty opt-out list enforces the full schema-heavy golden once the
-    // spec has been fetched.
     if corpus_spec(BUNGIE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the bungie corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the bungie committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping bungie byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping bungie byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&BUNGIE);
 }
 
-// The five batch corpora below share the bunq/bungie test shape: `link-ok` (spec
-// fetched, not vendored) so each **skips** offline — including the `check` gate — and
-// **fails** when `CROZIER_REQUIRE_CORPUS` is set without a fetched spec, so an
-// enforced leg can never silently no-op. Each measured `unmatched` list contains
-// only residual divergences and shrinks as those generator gaps close.
+// Each batch corpus compares its complete golden using committed sources.
 
 #[test]
 fn anchore_matches_fern_output() {
     if corpus_spec(ANCHORE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the anchore corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the anchore committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping anchore byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping anchore byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&ANCHORE);
@@ -4518,10 +4307,12 @@ fn apache_airflow_matches_fern_output() {
     if corpus_spec(APACHE_AIRFLOW.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the apache corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the apache committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping apache byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping apache byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&APACHE_AIRFLOW);
@@ -4532,10 +4323,10 @@ fn discourse_matches_fern_output() {
     if corpus_spec(DISCOURSE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the discourse corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the discourse committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping discourse byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!("skipping discourse byte-match: committed source missing (run just lint-corpus-sources)");
         return;
     }
     assert_corpus_matches(&DISCOURSE);
@@ -4546,10 +4337,12 @@ fn appwrite_server_matches_fern_output() {
     if corpus_spec(APPWRITE_SERVER.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the appwrite corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the appwrite committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping appwrite byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping appwrite byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&APPWRITE_SERVER);
@@ -4560,10 +4353,12 @@ fn apicurio_matches_fern_output() {
     if corpus_spec(APICURIO.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the apicurio corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the apicurio committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping apicurio byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!(
+            "skipping apicurio byte-match: committed source missing (run just lint-corpus-sources)"
+        );
         return;
     }
     assert_corpus_matches(&APICURIO);
@@ -4574,10 +4369,10 @@ fn gambitcomm_mimic_matches_fern_output() {
     if corpus_spec(GAMBITCOMM_MIMIC.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the gambitcomm corpus spec is not fetched; \
-             run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the gambitcomm committed corpus spec is missing; \
+             run just lint-corpus-sources to diagnose the missing committed source"
         );
-        eprintln!("skipping gambitcomm byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        eprintln!("skipping gambitcomm byte-match: committed source missing (run just lint-corpus-sources)");
         return;
     }
     assert_corpus_matches(&GAMBITCOMM_MIMIC);
@@ -4588,7 +4383,7 @@ fn dnd5eapi_matches_fern_output() {
     if corpus_spec(DND5EAPI.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the dnd5eapi corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the dnd5eapi committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4600,7 +4395,7 @@ fn apache_qakka_matches_fern_output() {
     if corpus_spec(APACHE_QAKKA.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the apache-qakka corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the apache-qakka committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4612,7 +4407,7 @@ fn authentiqio_matches_fern_output() {
     if corpus_spec(AUTHENTIQIO.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the authentiqio corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the authentiqio committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4624,7 +4419,7 @@ fn etsi_mec010_2_matches_fern_output() {
     if corpus_spec(ETSI_MEC010_2.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the ETSI MEC 010-2 corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the ETSI MEC 010-2 committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4636,7 +4431,7 @@ fn apideck_webhook_matches_fern_output() {
     if corpus_spec(APIDECK_WEBHOOK.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Webhook corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Webhook committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4648,7 +4443,7 @@ fn apideck_vault_matches_fern_output() {
     if corpus_spec(APIDECK_VAULT.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Vault corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Vault committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4660,7 +4455,7 @@ fn airbyte_config_matches_fern_output() {
     if corpus_spec(AIRBYTE_CONFIG.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Airbyte Config corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Airbyte Config committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4672,7 +4467,7 @@ fn bintable_matches_fern_output() {
     if corpus_spec(BINTABLE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Bintable corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Bintable committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4684,7 +4479,7 @@ fn apis_guru_matches_fern_output() {
     if corpus_spec(APIS_GURU.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the APIs.guru corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the APIs.guru committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4696,7 +4491,7 @@ fn color_pizza_matches_fern_output() {
     if corpus_spec(COLOR_PIZZA.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Color Pizza corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Color Pizza committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4708,7 +4503,7 @@ fn byautomata_io_matches_fern_output() {
     if corpus_spec(BYAUTOMATA_IO.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the By Automata corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the By Automata committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4720,7 +4515,7 @@ fn apideck_proxy_matches_fern_output() {
     if corpus_spec(APIDECK_PROXY.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Proxy corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Proxy committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4732,7 +4527,7 @@ fn apideck_connector_matches_fern_output() {
     if corpus_spec(APIDECK_CONNECTOR.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Connector corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Connector committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4744,7 +4539,7 @@ fn apideck_ecommerce_matches_fern_output() {
     if corpus_spec(APIDECK_ECOMMERCE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecommerce corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecommerce committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4756,7 +4551,7 @@ fn apideck_issue_tracking_matches_fern_output() {
     if corpus_spec(APIDECK_ISSUE_TRACKING.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Issue Tracking corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Issue Tracking committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4768,7 +4563,7 @@ fn appwrite_client_matches_fern_output() {
     if corpus_spec(APPWRITE_CLIENT.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Appwrite Client corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Appwrite Client committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4780,7 +4575,7 @@ fn apideck_file_storage_matches_fern_output() {
     if corpus_spec(APIDECK_FILE_STORAGE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck File Storage corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck File Storage committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4792,7 +4587,7 @@ fn apideck_hris_matches_fern_output() {
     if corpus_spec(APIDECK_HRIS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck HRIS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck HRIS committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4804,7 +4599,7 @@ fn apideck_accounting_matches_fern_output() {
     if corpus_spec(APIDECK_ACCOUNTING.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Accounting corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Accounting committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4816,7 +4611,7 @@ fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     if corpus_spec(CALORIENINJAS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the CalorieNinjas corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the CalorieNinjas committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4844,7 +4639,7 @@ fn eos_matches_fern_output() {
     if corpus_spec(EOS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the EOS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the EOS committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4856,7 +4651,7 @@ fn apideck_sms_matches_fern_output() {
     if corpus_spec(APIDECK_SMS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck SMS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck SMS committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4868,7 +4663,7 @@ fn apideck_ecosystem_matches_fern_output() {
     if corpus_spec(APIDECK_ECOSYSTEM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecosystem corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecosystem committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4880,7 +4675,7 @@ fn apideck_customer_support_matches_fern_output() {
     if corpus_spec(APIDECK_CUSTOMER_SUPPORT.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Customer Support corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Customer Support committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4892,7 +4687,7 @@ fn apideck_lead_matches_fern_output() {
     if corpus_spec(APIDECK_LEAD.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck Lead corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Lead committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4904,7 +4699,7 @@ fn apache_org_airflow_matches_fern_output() {
     if corpus_spec(APACHE_ORG_AIRFLOW.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apache Airflow corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apache Airflow committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4916,7 +4711,7 @@ fn openfigi_com_matches_fern_output() {
     if corpus_spec(OPENFIGI.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the OpenFIGI corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the OpenFIGI committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4928,7 +4723,7 @@ fn twilio_voice_v1_matches_fern_output() {
     if corpus_spec(TWILIO_VOICE_V1.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Twilio Voice v1 corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Twilio Voice v1 committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4940,7 +4735,7 @@ fn microcks_local_matches_fern_output() {
     if corpus_spec(MICROCKS_LOCAL.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Microcks corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Microcks committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4952,7 +4747,7 @@ fn redhat_catalog_inventory_matches_fern_output() {
     if corpus_spec(REDHAT_CATALOG_INVENTORY.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Red Hat Catalog Inventory corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Red Hat Catalog Inventory committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4964,7 +4759,7 @@ fn xero_payroll_au_matches_fern_output() {
     if corpus_spec(XERO_PAYROLL_AU.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Xero Payroll AU corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Xero Payroll AU committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4976,7 +4771,7 @@ fn traccar_matches_fern_output() {
     if corpus_spec(TRACCAR.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Traccar corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Traccar committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -4988,7 +4783,7 @@ fn reverb_com_matches_fern_output() {
     if corpus_spec(REVERB_COM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Reverb corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Reverb committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -5000,7 +4795,7 @@ fn maif_otoroshi_matches_fern_output() {
     if corpus_spec(MAIF_OTOROSHI.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the MAIF Otoroshi corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the MAIF Otoroshi committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -5012,7 +4807,7 @@ fn portfoliooptimizer_io_matches_fern_output() {
     if corpus_spec(PORTFOLIOOPTIMIZER_IO.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Portfolio Optimizer corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Portfolio Optimizer committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -5024,7 +4819,7 @@ fn openbanking_org_uk_account_info_openapi_matches_fern_output() {
     if corpus_spec(OPENBANKING_ORG_UK_ACCOUNT_INFO_OPENAPI.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Open Banking account info corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Open Banking account info committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -5036,7 +4831,7 @@ fn netbox_dev_matches_fern_output() {
     if corpus_spec(NETBOX_DEV.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the NetBox corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the NetBox committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7396,7 +7191,7 @@ fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Apideck ATS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck ATS committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7408,7 +7203,7 @@ fn buildrelay_matches_fern_output() {
     if corpus_spec(BUILDRELAY.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the BuildRelay corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the BuildRelay committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7420,7 +7215,7 @@ fn tlon_notes_matches_fern_output() {
     if corpus_spec(TLON_NOTES.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Tlon Notes corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Tlon Notes committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7429,292 +7224,292 @@ fn tlon_notes_matches_fern_output() {
 
 #[test]
 fn twilio_messaging_v1_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TWILIO_MESSAGING_V1);
+    assert_committed_corpus_matches(&TWILIO_MESSAGING_V1);
 }
 
 #[test]
 fn livepeer_ai_runner_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LIVEPEER_AI_RUNNER);
+    assert_committed_corpus_matches(&LIVEPEER_AI_RUNNER);
 }
 
 #[test]
 fn eos_extra_fields_forbid_matches_fern_output() {
-    assert_link_ok_corpus_matches(&EOS_EXTRA_FIELDS_FORBID);
+    assert_committed_corpus_matches(&EOS_EXTRA_FIELDS_FORBID);
 }
 
 #[test]
 fn med_anvisa_price_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MED_ANVISA_PRICE);
+    assert_committed_corpus_matches(&MED_ANVISA_PRICE);
 }
 
 #[test]
 fn sac_backend_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SAC_BACKEND);
+    assert_committed_corpus_matches(&SAC_BACKEND);
 }
 
 #[test]
 fn kytos_sdntrace_cp_matches_fern_output() {
-    assert_link_ok_corpus_matches(&KYTOS_SDNTRACE_CP);
+    assert_committed_corpus_matches(&KYTOS_SDNTRACE_CP);
 }
 
 #[test]
 fn withsecure_gdpr_subject_rights_matches_fern_output() {
-    assert_link_ok_corpus_matches(&WITHSECURE_GDPR_SUBJECT_RIGHTS);
+    assert_committed_corpus_matches(&WITHSECURE_GDPR_SUBJECT_RIGHTS);
 }
 
 #[test]
 fn prometheus_x_edge_computing_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PROMETHEUS_X_EDGE_COMPUTING);
+    assert_committed_corpus_matches(&PROMETHEUS_X_EDGE_COMPUTING);
 }
 
 #[test]
 fn exa_gate_matches_fern_output() {
-    assert_link_ok_corpus_matches(&EXA_GATE);
+    assert_committed_corpus_matches(&EXA_GATE);
 }
 
 #[test]
 fn amazonaws_com_cloudfront_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AMAZONAWS_COM_CLOUDFRONT);
+    assert_committed_corpus_matches(&AMAZONAWS_COM_CLOUDFRONT);
 }
 
 #[test]
 fn khoainats_matches_fern_output() {
-    assert_link_ok_corpus_matches(&KHOAINATS);
+    assert_committed_corpus_matches(&KHOAINATS);
 }
 
 #[test]
 fn helios_verifiable_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HELIOS_VERIFIABLE_API);
+    assert_committed_corpus_matches(&HELIOS_VERIFIABLE_API);
 }
 
 #[test]
 fn eozilla_matches_fern_output() {
-    assert_link_ok_corpus_matches(&EOZILLA);
+    assert_committed_corpus_matches(&EOZILLA);
 }
 
 #[test]
 fn openepcis_dpp_ready_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENEPCIS_DPP_READY);
+    assert_committed_corpus_matches(&OPENEPCIS_DPP_READY);
 }
 
 #[test]
 fn ndw_accessibility_map_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NDW_ACCESSIBILITY_MAP);
+    assert_committed_corpus_matches(&NDW_ACCESSIBILITY_MAP);
 }
 
 #[test]
 fn marimo_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MARIMO);
+    assert_committed_corpus_matches(&MARIMO);
 }
 
 #[test]
 fn blackadi_oauth2_matches_fern_output() {
-    assert_link_ok_corpus_matches(&BLACKADI_OAUTH2);
+    assert_committed_corpus_matches(&BLACKADI_OAUTH2);
 }
 
 #[test]
 fn mosip_esignet_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MOSIP_ESIGNET);
+    assert_committed_corpus_matches(&MOSIP_ESIGNET);
 }
 
 #[test]
 fn openbankingproject_ch_kundenbeziehung_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG);
+    assert_committed_corpus_matches(&OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG);
 }
 
 #[test]
 fn cyberark_conjur_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CYBERARK_CONJUR_API);
+    assert_committed_corpus_matches(&CYBERARK_CONJUR_API);
 }
 
 #[test]
 fn adyen_report_notification_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ADYEN_REPORT_NOTIFICATION);
+    assert_committed_corpus_matches(&ADYEN_REPORT_NOTIFICATION);
 }
 
 #[test]
 fn adyen_managed_risk_notification_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ADYEN_MANAGED_RISK_NOTIFICATION);
+    assert_committed_corpus_matches(&ADYEN_MANAGED_RISK_NOTIFICATION);
 }
 
 #[test]
 fn go_kratos_casbin_admin_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GO_KRATOS_CASBIN_ADMIN);
+    assert_committed_corpus_matches(&GO_KRATOS_CASBIN_ADMIN);
 }
 
 #[test]
 fn descope_authzcache_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DESCOPE_AUTHZCACHE);
+    assert_committed_corpus_matches(&DESCOPE_AUTHZCACHE);
 }
 
 #[test]
 fn swagger_petstore_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SWAGGER_PETSTORE);
+    assert_committed_corpus_matches(&SWAGGER_PETSTORE);
 }
 
 #[test]
 fn cyclonedx_transparency_exchange_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
+    assert_committed_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
 }
 
 #[test]
 fn adyen_capital_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ADYEN_CAPITAL);
+    assert_committed_corpus_matches(&ADYEN_CAPITAL);
 }
 
 #[test]
 fn apivideo_android_uploader_matches_fern_output() {
-    assert_link_ok_corpus_matches(&APIVIDEO_ANDROID_UPLOADER);
+    assert_committed_corpus_matches(&APIVIDEO_ANDROID_UPLOADER);
 }
 
 #[test]
 fn truefoundry_trueforge_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE);
+    assert_committed_corpus_matches(&TRUEFOUNDRY_TRUEFORGE);
 }
 
 #[test]
 fn volview_backend_contract_matches_fern_output() {
-    assert_link_ok_corpus_matches(&VOLVIEW_BACKEND_CONTRACT);
+    assert_committed_corpus_matches(&VOLVIEW_BACKEND_CONTRACT);
 }
 
 #[test]
 fn osparc_simcore_webserver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OSPARC_SIMCORE_WEBSERVER);
+    assert_committed_corpus_matches(&OSPARC_SIMCORE_WEBSERVER);
 }
 
 #[test]
 fn helixdb_http_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HELIXDB_HTTP_API);
+    assert_committed_corpus_matches(&HELIXDB_HTTP_API);
 }
 
 #[test]
 fn flowdapt_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FLOWDAPT);
+    assert_committed_corpus_matches(&FLOWDAPT);
 }
 
 #[test]
 fn k8s_container_service_provider_matches_fern_output() {
-    assert_link_ok_corpus_matches(&K8S_CONTAINER_SERVICE_PROVIDER);
+    assert_committed_corpus_matches(&K8S_CONTAINER_SERVICE_PROVIDER);
 }
 
 #[test]
 fn daniweb_connect_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DANIWEB_CONNECT);
+    assert_committed_corpus_matches(&DANIWEB_CONNECT);
 }
 
 #[test]
 fn chaingateway_io_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CHAINGATEWAY_IO);
+    assert_committed_corpus_matches(&CHAINGATEWAY_IO);
 }
 
 #[test]
 fn hubspot_events_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HUBSPOT_EVENTS);
+    assert_committed_corpus_matches(&HUBSPOT_EVENTS);
 }
 
 #[test]
 fn paloalto_remote_networks_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_REMOTE_NETWORKS);
+    assert_committed_corpus_matches(&PALOALTO_REMOTE_NETWORKS);
 }
 
 #[test]
 fn openintegrationhub_secret_service_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENINTEGRATIONHUB_SECRET_SERVICE);
+    assert_committed_corpus_matches(&OPENINTEGRATIONHUB_SECRET_SERVICE);
 }
 
 #[test]
 fn strapi_rest_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&STRAPI_REST_API);
+    assert_committed_corpus_matches(&STRAPI_REST_API);
 }
 
 #[test]
 fn listennotes_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LISTENNOTES);
+    assert_committed_corpus_matches(&LISTENNOTES);
 }
 
 #[test]
 fn vtex_pricing_matches_fern_output() {
-    assert_link_ok_corpus_matches(&VTEX_PRICING);
+    assert_committed_corpus_matches(&VTEX_PRICING);
 }
 
 #[test]
 fn aws_importexport_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AWS_IMPORTEXPORT);
+    assert_committed_corpus_matches(&AWS_IMPORTEXPORT);
 }
 
 #[test]
 fn openbanking_brasil_directory_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENBANKING_BRASIL_DIRECTORY);
+    assert_committed_corpus_matches(&OPENBANKING_BRASIL_DIRECTORY);
 }
 
 #[test]
 fn api_openverse_org_matches_fern_output() {
-    assert_link_ok_corpus_matches(&API_OPENVERSE_ORG);
+    assert_committed_corpus_matches(&API_OPENVERSE_ORG);
 }
 
 #[test]
 fn discord_com_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DISCORD_COM);
+    assert_committed_corpus_matches(&DISCORD_COM);
 }
 
 #[test]
 fn braintrust_dev_matches_fern_output() {
-    assert_link_ok_corpus_matches(&BRAINTRUST_DEV);
+    assert_committed_corpus_matches(&BRAINTRUST_DEV);
 }
 
 #[test]
 fn agco_ats_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AGCO_ATS);
+    assert_committed_corpus_matches(&AGCO_ATS);
 }
 
 #[test]
 fn torrentarr_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TORRENTARR);
+    assert_committed_corpus_matches(&TORRENTARR);
 }
 
 #[test]
 fn svix_webhooks_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SVIX_WEBHOOKS);
+    assert_committed_corpus_matches(&SVIX_WEBHOOKS);
 }
 
 #[test]
 fn komga_matches_fern_output() {
-    assert_link_ok_corpus_matches(&KOMGA);
+    assert_committed_corpus_matches(&KOMGA);
 }
 
 #[test]
 fn short_io_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SHORT_IO);
+    assert_committed_corpus_matches(&SHORT_IO);
 }
 
 #[test]
 fn webflow_v2_matches_fern_output() {
-    assert_link_ok_corpus_matches(&WEBFLOW_V2);
+    assert_committed_corpus_matches(&WEBFLOW_V2);
 }
 
 #[test]
 fn loris_dataquery_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LORIS_DATAQUERY);
+    assert_committed_corpus_matches(&LORIS_DATAQUERY);
 }
 
 #[test]
 fn sftpgo_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SFTPGO);
+    assert_committed_corpus_matches(&SFTPGO);
 }
 
 #[test]
 fn googleapis_servicebroker_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GOOGLEAPIS_SERVICEBROKER);
+    assert_committed_corpus_matches(&GOOGLEAPIS_SERVICEBROKER);
 }
 
 #[test]
 fn audiobookshelf_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AUDIOBOOKSHELF);
+    assert_committed_corpus_matches(&AUDIOBOOKSHELF);
 }
 
 #[test]
 fn steaminputdb_matches_fern_output() {
-    assert_link_ok_corpus_matches(&STEAMINPUTDB);
+    assert_committed_corpus_matches(&STEAMINPUTDB);
 }
 
 #[test]
@@ -7722,7 +7517,7 @@ fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Square corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Square committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7734,7 +7529,7 @@ fn amazonaws_com_cloudformation_matches_fern_output() {
     if corpus_spec(AMAZONAWS_COM_CLOUDFORMATION.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the AWS CloudFormation corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the AWS CloudFormation committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7746,7 +7541,7 @@ fn redocly_com_museum_matches_fern_output() {
     if corpus_spec(REDOCLY_COM_MUSEUM.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the Redocly Museum corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the Redocly Museum committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
@@ -7758,18 +7553,18 @@ fn http_toolkit_matches_fern_output() {
     if corpus_spec(HTTP_TOOLKIT.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the HTTP Toolkit corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the HTTP Toolkit committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     }
     assert_corpus_matches(&HTTP_TOOLKIT);
 }
 
-fn assert_link_ok_corpus_matches(corpus: &Corpus) {
+fn assert_committed_corpus_matches(corpus: &Corpus) {
     if corpus_spec(corpus.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the {} corpus spec is not fetched; run scripts/fetch-corpus.sh first",
+            "CROZIER_REQUIRE_CORPUS is set but the {} committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source",
             corpus.api
         );
         return;
@@ -7779,118 +7574,118 @@ fn assert_link_ok_corpus_matches(corpus: &Corpus) {
 
 #[test]
 fn folio_mod_authtoken_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FOLIO_MOD_AUTHTOKEN);
+    assert_committed_corpus_matches(&FOLIO_MOD_AUTHTOKEN);
 }
 
 #[test]
 fn raybot_matches_fern_output() {
-    assert_link_ok_corpus_matches(&RAYBOT);
+    assert_committed_corpus_matches(&RAYBOT);
 }
 
 #[test]
 fn paloalto_cspm_alerts_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_CSPM_ALERTS);
+    assert_committed_corpus_matches(&PALOALTO_CSPM_ALERTS);
 }
 
 #[test]
 fn paloalto_cspm_reports_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_CSPM_REPORTS);
+    assert_committed_corpus_matches(&PALOALTO_CSPM_REPORTS);
 }
 
 #[test]
 fn paloalto_cspm_search_manager_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_CSPM_SEARCH_MANAGER);
+    assert_committed_corpus_matches(&PALOALTO_CSPM_SEARCH_MANAGER);
 }
 
 #[test]
 fn thrivecart_matches_fern_output() {
-    assert_link_ok_corpus_matches(&THRIVECART);
+    assert_committed_corpus_matches(&THRIVECART);
 }
 
 #[test]
 fn frankfurter_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FRANKFURTER);
+    assert_committed_corpus_matches(&FRANKFURTER);
 }
 
 #[test]
 fn worldcoin_signup_sequencer_matches_fern_output() {
-    assert_link_ok_corpus_matches(&WORLDCOIN_SIGNUP_SEQUENCER);
+    assert_committed_corpus_matches(&WORLDCOIN_SIGNUP_SEQUENCER);
 }
 
 #[test]
 fn electric_sql_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ELECTRIC_SQL);
+    assert_committed_corpus_matches(&ELECTRIC_SQL);
 }
 
 #[test]
 fn tamoss_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TAMOSS);
+    assert_committed_corpus_matches(&TAMOSS);
 }
 
 #[test]
 fn slurmdb_rest_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SLURMDB_REST);
+    assert_committed_corpus_matches(&SLURMDB_REST);
 }
 
 #[test]
 fn nimisampo_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NIMISAMPO);
+    assert_committed_corpus_matches(&NIMISAMPO);
 }
 
 #[test]
 fn free5gc_pdu_session_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FREE5GC_PDU_SESSION);
+    assert_committed_corpus_matches(&FREE5GC_PDU_SESSION);
 }
 
 #[test]
 fn sigstore_rekor_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SIGSTORE_REKOR);
+    assert_committed_corpus_matches(&SIGSTORE_REKOR);
 }
 
 #[test]
 fn letta_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LETTA);
+    assert_committed_corpus_matches(&LETTA);
 }
 
 #[test]
 fn free5gc_namf_communication_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FREE5GC_NAMF_COMMUNICATION);
+    assert_committed_corpus_matches(&FREE5GC_NAMF_COMMUNICATION);
 }
 
 #[test]
 fn openlinksw_osdb_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENLINKSW_OSDB);
+    assert_committed_corpus_matches(&OPENLINKSW_OSDB);
 }
 
 #[test]
 fn ziptax_node_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZIPTAX_NODE);
+    assert_committed_corpus_matches(&ZIPTAX_NODE);
 }
 
 #[test]
 fn nexmo_messages_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NEXMO_MESSAGES);
+    assert_committed_corpus_matches(&NEXMO_MESSAGES);
 }
 
 #[test]
 fn deepsearch_ds_v2_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DEEPSEARCH_DS_V2);
+    assert_committed_corpus_matches(&DEEPSEARCH_DS_V2);
 }
 
 #[test]
 fn mindee_ocr_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MINDEE_OCR);
+    assert_committed_corpus_matches(&MINDEE_OCR);
 }
 
 #[test]
 fn opencodeui_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENCODEUI);
+    assert_committed_corpus_matches(&OPENCODEUI);
 }
 
 /// One golden test per feature target, named like every other corpus's, so each
 /// target's Fern golden is compared on its own and the `golden-only` tier of
 /// `just fixtures-coverage` (every `*matches_fern_output*` test) counts it: a
-/// feature target's `expected/` tree is Fern's output exactly as a fetched
+/// feature target's `expected/` tree is Fern's output exactly as a real-world
 /// corpus's is. Every target walks its complete expected tree; only measured
 /// residual paths in `unmatched` are exempted and reverse-checked.
 macro_rules! feature_target_goldens {
@@ -7904,6 +7699,7 @@ macro_rules! feature_target_goldens {
 
         /// The `api` of every feature target a golden test above drives.
         const FEATURE_TARGET_GOLDEN_TESTS: &[&str] = &[$($api),*];
+        const FEATURE_TARGET_GOLDEN_NAMES: &[(&str, &str)] = &[$((stringify!($test), $api)),*];
     };
 }
 
@@ -8044,7 +7840,8 @@ fn try_generate_flat(golden: &FlatGolden) -> Result<Option<tempfile::TempDir>, S
         return Ok(None);
     }
     let out = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
-    let result = corpus_command(corpus, out.path())
+    let (mut command, _source) = corpus_command(corpus, out.path());
+    let result = command
         .args(["--layout", "flat"])
         .output()
         .map_err(|error| format!("could not run crozier: {error}"))?;
@@ -8075,16 +7872,16 @@ fn assert_flat_golden_matches(fixture: &str) {
     else {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the {fixture} corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+            "CROZIER_REQUIRE_CORPUS is set but the {fixture} committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
         );
         return;
     };
-    let differences = fixture_differences(&expected_root, out.path(), None, true)
+    let differences = parity::tree_differences(&expected_root, out.path(), None, true)
         .unwrap_or_else(|error| panic!("{fixture}: {error}"));
     let report: Vec<String> = differences
         .iter()
         .map(|(rel, difference)| match difference {
-            FixtureDifference::Text(Some(diff)) => format!("--- {rel} ---\n{diff}"),
+            Difference::Text(Some(diff)) => format!("--- {rel} ---\n{diff}"),
             other => format!("--- {rel} --- {other:?}"),
         })
         .collect();
@@ -8326,7 +8123,7 @@ fn report_fixture_gaps() {
         let out = try_generate_flat(golden)
             .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture))
             .expect("only flat goldens with an available spec are selected");
-        let differences = fixture_differences(&expected_root, out.path(), None, false)
+        let differences = parity::tree_differences(&expected_root, out.path(), None, false)
             .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
         let expected_files = walk_files(&expected_root).len();
         println!("\n=== {} ({FLAT_GOLDEN_DIR}) ===", golden.fixture);
@@ -8407,103 +8204,6 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
         selected.push(corpus);
     }
     (selected, failures)
-}
-
-#[derive(Debug, PartialEq, Eq)]
-enum FixtureDifference {
-    MissingGenerated,
-    UnexpectedGenerated,
-    Text(Option<String>),
-    Binary { expected: usize, generated: usize },
-    Processing(String),
-}
-
-fn fixture_differences(
-    expected_root: &Path,
-    generated_root: &Path,
-    file_filter: Option<&str>,
-    include_text_diffs: bool,
-) -> Result<Vec<(String, FixtureDifference)>, String> {
-    let expected_files: std::collections::BTreeSet<String> =
-        try_walk_files(expected_root)?.into_iter().collect();
-    if expected_files.is_empty() && file_filter.is_none() {
-        return Err(format!(
-            "no Fern files under {} — the fixture walk is broken",
-            expected_root.display()
-        ));
-    }
-    let generated_files: std::collections::BTreeSet<String> =
-        try_walk_files(generated_root)?.into_iter().collect();
-    let paths: std::collections::BTreeSet<&String> =
-        expected_files.union(&generated_files).collect();
-    let mut differences = Vec::new();
-
-    for rel in paths {
-        if file_filter.is_some_and(|filter| !rel.contains(filter)) {
-            continue;
-        }
-        let expected_present = expected_files.contains(rel);
-        let generated_present = generated_files.contains(rel);
-        let difference = match (expected_present, generated_present) {
-            (true, false) => Some(FixtureDifference::MissingGenerated),
-            (false, true) => Some(FixtureDifference::UnexpectedGenerated),
-            (true, true) => {
-                let expected = match std::fs::read(expected_root.join(rel)) {
-                    Ok(content) => content,
-                    Err(error) => {
-                        differences.push((
-                            rel.clone(),
-                            FixtureDifference::Processing(format!(
-                                "could not read Fern golden: {error}"
-                            )),
-                        ));
-                        continue;
-                    }
-                };
-                let generated = match std::fs::read(generated_root.join(rel)) {
-                    Ok(content) => content,
-                    Err(error) => {
-                        differences.push((
-                            rel.clone(),
-                            FixtureDifference::Processing(format!(
-                                "could not read Crozier output: {error}"
-                            )),
-                        ));
-                        continue;
-                    }
-                };
-                if expected == generated {
-                    None
-                } else {
-                    match (
-                        std::str::from_utf8(&expected),
-                        std::str::from_utf8(&generated),
-                    ) {
-                        (Ok(expected), Ok(generated)) => {
-                            match try_normalized_pair(rel, generated, expected) {
-                                Ok((actual, expected)) if actual == expected => None,
-                                Ok((actual, expected)) => {
-                                    Some(FixtureDifference::Text(include_text_diffs.then(|| {
-                                        unified_diff(&expected, &actual).unwrap_or_default()
-                                    })))
-                                }
-                                Err(error) => Some(FixtureDifference::Processing(error)),
-                            }
-                        }
-                        _ => Some(FixtureDifference::Binary {
-                            expected: expected.len(),
-                            generated: generated.len(),
-                        }),
-                    }
-                }
-            }
-            (false, false) => unreachable!("path came from the union"),
-        };
-        if let Some(difference) = difference {
-            differences.push((rel.clone(), difference));
-        }
-    }
-    Ok(differences)
 }
 
 /// Mismatch-investigation aid — NOT a gate (ignored by default). Complementing
@@ -8590,7 +8290,7 @@ fn report_fixture_diffs() {
             println!("{}", known_fern_failure_marker(c, &known_failure));
             continue;
         }
-        let differences = match fixture_differences(
+        let differences = match parity::tree_differences(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
@@ -8626,7 +8326,7 @@ fn report_fixture_diffs() {
             }
         };
         println!("\n=== {label} ===");
-        let differences = match fixture_differences(
+        let differences = match parity::tree_differences(
             &fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR),
             out.path(),
             file_filter.as_deref(),
@@ -8653,7 +8353,7 @@ fn report_fixture_diffs() {
 /// Print one golden's differences for `report_fixture_diffs`, tagging each one
 /// outside `unmatched` as a regression.
 fn print_fixture_differences(
-    differences: &[(String, FixtureDifference)],
+    differences: &[(String, Difference)],
     unmatched: &std::collections::HashSet<&str>,
 ) {
     for (rel, difference) in differences {
@@ -8666,27 +8366,27 @@ fn print_fixture_differences(
         };
         println!("\n--- {rel}{tag} ---");
         match difference {
-            FixtureDifference::MissingGenerated => {
+            Difference::OnlyInReference => {
                 println!("  Crozier did not emit this Fern file.");
             }
-            FixtureDifference::UnexpectedGenerated => {
+            Difference::OnlyInCrozier => {
                 println!("  Crozier emitted this file, but Fern did not.");
             }
-            FixtureDifference::Text(Some(diff)) => {
+            Difference::Text(Some(diff)) => {
                 println!("  (`-` Fern golden, `+` crozier)\n{diff}");
             }
-            FixtureDifference::Text(None) => {
+            Difference::Text(None) => {
                 println!("  Normalized text differs; unified diff omitted in summary mode.");
             }
-            FixtureDifference::Binary {
-                expected,
-                generated,
+            Difference::Binary {
+                reference: expected,
+                crozier: generated,
             } => {
                 println!(
                     "  Binary bytes differ (Fern: {expected} bytes; Crozier: {generated} bytes)."
                 );
             }
-            FixtureDifference::Processing(error) => {
+            Difference::Processing(error) => {
                 println!("  Could not normalize/compare this file: {error}");
             }
         }
@@ -8716,83 +8416,6 @@ fn select_flat_goldens(requested: Option<&str>, filter: Option<&str>) -> Vec<&'s
                 && (requested.is_some() || corpus_spec(flat_golden_corpus(golden).api).is_some())
         })
         .collect()
-}
-
-/// [`unified_diff`] correctness — a real self-test so the diff the reporters and the
-/// gate's failure message print is trustworthy (this binary is coverage-excluded, so
-/// the assertions here are the guardrail).
-#[test]
-fn unified_diff_reports_only_real_changes() {
-    // Identical input → no diff.
-    assert_eq!(unified_diff("a\nb\nc", "a\nb\nc"), None);
-
-    // A single changed line surfaces as a `-`/`+` pair; unchanged neighbours stay ` `.
-    let d = unified_diff("a\nb\nc", "a\nB\nc").expect("differs");
-    assert!(d.contains("- b"), "want the golden line: {d}");
-    assert!(d.contains("+ B"), "want the crozier line: {d}");
-    assert!(d.contains("  a") && d.contains("  c"), "want context: {d}");
-
-    // Far-apart changes collapse the unchanged middle to an elision marker.
-    let big = (0..40)
-        .map(|n| n.to_string())
-        .collect::<Vec<_>>()
-        .join("\n");
-    let mut lines: Vec<String> = big.lines().map(String::from).collect();
-    lines[0] = "changed".into();
-    let d = unified_diff(&big, &lines.join("\n")).expect("differs");
-    assert!(d.contains("unchanged line(s)"), "want elision marker: {d}");
-    assert!(!d.contains("\n  20\n"), "middle should be elided: {d}");
-}
-
-#[test]
-fn aggregate_fixture_diff_includes_missing_unexpected_and_changed_files() {
-    let expected = tempfile::tempdir().expect("expected tempdir");
-    let generated = tempfile::tempdir().expect("generated tempdir");
-    std::fs::write(expected.path().join("same.txt"), "same\n").unwrap();
-    std::fs::write(generated.path().join("same.txt"), "same\n").unwrap();
-    std::fs::write(expected.path().join("changed.txt"), "Fern\n").unwrap();
-    std::fs::write(generated.path().join("changed.txt"), "Crozier\n").unwrap();
-    std::fs::write(expected.path().join("missing.txt"), "Fern only\n").unwrap();
-    std::fs::write(generated.path().join("unexpected.txt"), "Crozier only\n").unwrap();
-    std::fs::write(
-        expected.path().join(".crozier-fern-golden.json"),
-        "provenance is not Fern output\n",
-    )
-    .unwrap();
-
-    let differences = fixture_differences(expected.path(), generated.path(), None, true).unwrap();
-    assert_eq!(differences.len(), 3, "{differences:?}");
-    assert!(differences.iter().any(|(path, difference)| {
-        path == "changed.txt" && matches!(difference, FixtureDifference::Text(_))
-    }));
-    assert!(differences.iter().any(|(path, difference)| {
-        path == "missing.txt" && difference == &FixtureDifference::MissingGenerated
-    }));
-    assert!(differences.iter().any(|(path, difference)| {
-        path == "unexpected.txt" && difference == &FixtureDifference::UnexpectedGenerated
-    }));
-
-    let summary = fixture_differences(expected.path(), generated.path(), None, false).unwrap();
-    assert!(summary.iter().any(|(path, difference)| {
-        path == "changed.txt" && difference == &FixtureDifference::Text(None)
-    }));
-}
-
-#[cfg(unix)]
-#[test]
-fn aggregate_fixture_diff_refuses_to_follow_symlinks() {
-    use std::os::unix::fs::symlink;
-
-    let expected = tempfile::tempdir().expect("expected tempdir");
-    let generated = tempfile::tempdir().expect("generated tempdir");
-    let outside = tempfile::NamedTempFile::new().expect("outside file");
-    symlink(outside.path(), expected.path().join("outside-link")).expect("create symlink");
-
-    let error = fixture_differences(expected.path(), generated.path(), None, true).unwrap_err();
-    assert!(
-        error.contains("refusing to follow symbolic link"),
-        "{error}"
-    );
 }
 
 #[test]
@@ -8880,8 +8503,8 @@ fn a_known_fern_failure_registration_cannot_excuse_anything_else() {
 }
 
 /// Registration only becomes coverage when something *runs* it. A `Corpus` that
-/// no test drives, or a fetched-spec corpus missing from `just test-corpus-match`,
-/// would skip silently in every gate — so a reintroduced residual would go
+/// no test drives, or a committed-source corpus missing from `just test-corpus-match`,
+/// would miss the explicit corpus recipe — so a reintroduced residual would go
 /// unnoticed exactly where the corpus is supposed to catch it. Both wirings are
 /// derived from the sources themselves, so adding a corpus without them fails
 /// here rather than years later.
@@ -8892,10 +8515,16 @@ fn every_registered_corpus_is_wired_into_the_gate() {
 
     let mut enforced = std::collections::BTreeSet::new();
     for corpus in registered_diff_corpora() {
-        // Feature targets are driven one test each by `feature_target_goldens!`
-        // (held to the set by `every_feature_target_has_its_own_golden_test`),
-        // and their specs are vendored, so they need no per-corpus wiring.
-        if FEATURE_TARGETS.iter().any(|t| t.api == corpus.api) {
+        if let Some((test, _)) = FEATURE_TARGET_GOLDEN_NAMES
+            .iter()
+            .find(|(_, api)| *api == corpus.api)
+        {
+            assert!(
+                recipe.iter().any(|listed| listed == test),
+                "{}: {test} is missing from just test-corpus-match",
+                corpus.api
+            );
+            enforced.insert((*test).to_string());
             continue;
         }
         let constant = corpus_constant_for(source, corpus.api).unwrap_or_else(|| {
@@ -8910,32 +8539,19 @@ fn every_registered_corpus_is_wired_into_the_gate() {
                 corpus.api
             )
         });
-        if fixture_dir(corpus.api).join("openapi.yml").exists() {
-            continue;
-        }
         assert!(
             recipe.contains(&test),
-            "{}: {test} is missing from `just test-corpus-match`, so CI would skip its fetched spec",
+            "{}: {test} is missing from `just test-corpus-match`, so CI would omit its committed source",
             corpus.api
         );
         enforced.insert(test);
     }
-    // A flat golden over a fetched spec needs the same CI wiring as its
+    // A flat golden needs the same corpus-recipe wiring as its
     // packaged sibling, or the corpus leg would skip it too.
     for (test, fixture) in FLAT_GOLDEN_TESTS {
-        let golden = FLAT_GOLDENS
-            .iter()
-            .find(|golden| golden.fixture == *fixture)
-            .expect("a flat test drives a registered flat golden");
-        if fixture_dir(flat_golden_corpus(golden).api)
-            .join("openapi.yml")
-            .exists()
-        {
-            continue;
-        }
         assert!(
             recipe.iter().any(|listed| listed == test),
-            "{fixture}: {test} is missing from `just test-corpus-match`, so CI would skip its fetched spec"
+            "{fixture}: {test} is missing from `just test-corpus-match`, so CI would omit its committed source"
         );
         enforced.insert((*test).to_string());
     }
@@ -8991,7 +8607,7 @@ fn corpus_constant_for(source: &str, api: &str) -> Option<String> {
 fn corpus_test_for(source: &str, constant: &str) -> Option<String> {
     const DRIVERS: [&str; 3] = [
         "assert_corpus_matches(&",
-        "assert_link_ok_corpus_matches(&",
+        "assert_committed_corpus_matches(&",
         "known_fern_failure(&",
     ];
     let mut current = None;
@@ -9131,66 +8747,10 @@ fn every_existing_manifest_golden_is_registered_for_aggregate_comparison() {
     );
 }
 
-/// Every file under `root`, as `/`-separated paths relative to `root`, sorted.
-/// A small hand-rolled walk to avoid a `walkdir` dev-dependency for one use.
+/// Every file under `root`, as `/`-separated paths relative to `root`, sorted —
+/// the library's [`parity::walk_files`], panicking on a walk it refuses.
 fn walk_files(root: &Path) -> Vec<String> {
-    try_walk_files(root).unwrap_or_else(|error| panic!("{error}"))
-}
-
-fn try_walk_files(root: &Path) -> Result<Vec<String>, String> {
-    fn rec(base: &Path, dir: &Path, out: &mut Vec<String>) -> Result<(), String> {
-        let mut entries = Vec::new();
-        let directory = std::fs::read_dir(dir)
-            .map_err(|error| format!("read_dir {}: {error}", dir.display()))?;
-        for entry in directory {
-            entries.push(
-                entry
-                    .map_err(|error| format!("read_dir entry in {}: {error}", dir.display()))?
-                    .path(),
-            );
-        }
-        entries.sort();
-        for path in entries {
-            let metadata = std::fs::symlink_metadata(&path)
-                .map_err(|error| format!("metadata {}: {error}", path.display()))?;
-            if metadata.file_type().is_symlink() {
-                return Err(format!(
-                    "refusing to follow symbolic link while walking {}",
-                    path.display()
-                ));
-            }
-            if metadata.is_dir() {
-                rec(base, &path, out)?;
-            } else {
-                let rel = path.strip_prefix(base).map_err(|error| {
-                    format!(
-                        "{} is not below {}: {error}",
-                        path.display(),
-                        base.display()
-                    )
-                })?;
-                let rel = rel.to_string_lossy().replace('\\', "/");
-                // Automation provenance is committed atomically inside the
-                // golden directory, but it is not Fern output and Crozier must
-                // not be expected to emit it.
-                if rel != ".crozier-fern-golden.json" {
-                    out.push(rel);
-                }
-            }
-        }
-        Ok(())
-    }
-    let mut out = Vec::new();
-    if root.is_symlink() {
-        return Err(format!(
-            "refusing to follow symbolic link while walking {}",
-            root.display()
-        ));
-    }
-    if root.is_dir() {
-        rec(root, root, &mut out)?;
-    }
-    Ok(out)
+    parity::walk_files(root).unwrap_or_else(|error| panic!("{error}"))
 }
 
 #[test]
@@ -9898,35 +9458,25 @@ fn enum_sanitization_generates_valid_python() {
     // Issue #50: enum member names and `visit()` parameters are derived from the
     // raw wire values, so a value that is not already a bare identifier once
     // produced Python that failed the final `ruff format` and discarded the whole
-    // SDK. This spec packs the crashing shapes into one enum — a Python keyword
-    // (`global`), punctuation + a leading digit (`0: Active`), and the
-    // digit-leading value `_01_00_AM` that Fern itself rejects (so it has no
-    // byte-match fixture) — plus a `type: string` enum whose values are all
-    // integers. Generation must succeed and every module must compile.
-    let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+    // SDK. This spec packs the crashing shapes Fern generates from into one
+    // document — a Python keyword (`global`) and a `type: string` enum whose
+    // values are all integers. Generation must succeed and every module must
+    // compile. The digit-run value `_01_00_AM`, which Fern rejects, is refused
+    // instead (the `enum-name-unsuitable` class, asserted below).
+    let spec = "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        \
          - { name: size, in: query, required: false, schema: { type: string, enum: [100, 125] } }\n      \
          responses:\n        '200': { description: OK, content: { application/json: { schema: \
          { $ref: '#/components/schemas/Widget' } } } }\ncomponents:\n  schemas:\n    Widget:\n      \
-         type: object\n      properties:\n        scope: { $ref: '#/components/schemas/WidgetScope' }\n        \
-         hour: { $ref: '#/components/schemas/WidgetHour' }\n    WidgetScope:\n      type: string\n      \
-         enum: [\"global\", \"practice\"]\n    WidgetHour:\n      type: string\n      \
-         enum: [\"_01_00_AM\", \"_12_00_PM\"]\n",
-    );
-    // The keyword value's `visit` parameter is keyword-escaped, and the leading
-    // digit that Fern rejects is prefixed into a legal identifier by crozier.
+         type: object\n      properties:\n        scope: { $ref: '#/components/schemas/WidgetScope' }\n    \
+         WidgetScope:\n      type: string\n      enum: [\"global\", \"practice\"]\n";
+    let (_dir, out) = generate_ok(spec);
+    // The keyword value's `visit` parameter is keyword-escaped.
     let scope = std::fs::read_to_string(out.join("src/acme/types/widget_scope.py"))
         .expect("WidgetScope enum is generated");
     assert!(
         scope.contains("global_: typing.Callable"),
         "keyword value → keyword-escaped visit param: {scope}"
-    );
-    let hour = std::fs::read_to_string(out.join("src/acme/types/widget_hour.py"))
-        .expect("WidgetHour enum is generated");
-    assert!(
-        hour.contains("_01_00_AM = \"_01_00_AM\""),
-        "digit-leading member is prefixed into a legal identifier: {hour}"
     );
     // The type-mismatched enum (string type, integer values) drops its members and
     // falls back to the base `str` type rather than emitting an empty enum class.
@@ -9936,6 +9486,31 @@ fn enum_sanitization_generates_valid_python() {
         raw.contains("size: typing.Optional[str] = None"),
         "a type-mismatched string enum falls back to str: {raw}"
     );
+
+    // Adding the digit-run enum Fern refuses turns the same document into a
+    // refusal: exit 1, nothing written, the class and value named on stderr.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        format!(
+            "{spec}    WidgetHour:\n      type: string\n      enum: [\"_01_00_AM\", \"_12_00_PM\"]\n"
+        ),
+    )
+    .unwrap();
+    let refused = dir.path().join("out");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&path)
+        .arg("--output")
+        .arg(&refused)
+        .args(["--package-name", "acme"])
+        .assert()
+        .code(1)
+        .stderr(predicates::str::contains(
+            "enum-name-unsuitable: #/components/schemas/WidgetHour enum value \"_01_00_AM\"",
+        ));
+    assert!(!refused.exists(), "a refused document writes nothing");
 }
 
 #[test]
@@ -12810,6 +12385,7 @@ fn config_labels_the_layer_every_field_came_from() {
     std::fs::write(
         dir.path().join("crozier.yml"),
         "spec: ./api.yml\npackage-name: fromshared\nproject-name: shared-dist\naudiences: [internal]\n\
+         reference:\n  command: ./reference.sh --all\n\
          generators:\n  python:\n    type: python\n    output: ./out\n    package-name: fromgenerator\n    audiences: [public]\n    extra-fields: forbid\n",
     )
     .unwrap();
@@ -12847,6 +12423,8 @@ fn config_labels_the_layer_every_field_came_from() {
         ("extra-fields", "forbid", "generator"),
         // Never unset: with no layer supplying it, the value a run would use.
         ("layout", "packaged", "default"),
+        // `crozier compare`'s command, from the shared block.
+        ("reference.command", "./reference.sh --all", "shared"),
     ];
     assert_eq!(rows.len(), expected.len(), "{stdout}");
     for (row, want) in rows.iter().zip(expected) {
@@ -13747,7 +13325,7 @@ fn relative_schema_refs_report_missing_files_pointers_and_wrong_shapes() {
 
 #[test]
 fn paypal_catalog_products_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PAYPAL_CATALOG_PRODUCTS);
+    assert_committed_corpus_matches(&PAYPAL_CATALOG_PRODUCTS);
 }
 
 #[test]
@@ -13806,272 +13384,272 @@ fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
 
 #[test]
 fn truefoundry_trueforge_5adde28_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE_5ADDE28);
+    assert_committed_corpus_matches(&TRUEFOUNDRY_TRUEFORGE_5ADDE28);
 }
 
 #[test]
 fn fergus_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FERGUS);
+    assert_committed_corpus_matches(&FERGUS);
 }
 
 #[test]
 fn groupe_psa_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GROUPE_PSA);
+    assert_committed_corpus_matches(&GROUPE_PSA);
 }
 
 #[test]
 fn timelyapp_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TIMELYAPP);
+    assert_committed_corpus_matches(&TIMELYAPP);
 }
 
 #[test]
 fn nextgen_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NEXTGEN);
+    assert_committed_corpus_matches(&NEXTGEN);
 }
 
 #[test]
 fn auto_agent_protocol_matches_fern_output() {
-    assert_link_ok_corpus_matches(&AUTO_AGENT_PROTOCOL);
+    assert_committed_corpus_matches(&AUTO_AGENT_PROTOCOL);
 }
 
 #[test]
 fn skool_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SKOOL);
+    assert_committed_corpus_matches(&SKOOL);
 }
 
 #[test]
 fn spendesk_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SPENDESK);
+    assert_committed_corpus_matches(&SPENDESK);
 }
 
 #[test]
 fn billie_matches_fern_output() {
-    assert_link_ok_corpus_matches(&BILLIE);
+    assert_committed_corpus_matches(&BILLIE);
 }
 
 #[test]
 fn alma_france_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ALMA_FRANCE);
+    assert_committed_corpus_matches(&ALMA_FRANCE);
 }
 
 #[test]
 fn outreach_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OUTREACH);
+    assert_committed_corpus_matches(&OUTREACH);
 }
 
 #[test]
 fn tally_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TALLY);
+    assert_committed_corpus_matches(&TALLY);
 }
 
 #[test]
 fn billie_entry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&BILLIE_ENTRY);
+    assert_committed_corpus_matches(&BILLIE_ENTRY);
 }
 
 #[test]
 fn skool_entry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SKOOL_ENTRY);
+    assert_committed_corpus_matches(&SKOOL_ENTRY);
 }
 
 #[test]
 fn timelyapp_entry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TIMELYAPP_ENTRY);
+    assert_committed_corpus_matches(&TIMELYAPP_ENTRY);
 }
 
 #[test]
 fn cradl_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CRADL);
+    assert_committed_corpus_matches(&CRADL);
 }
 
 #[test]
 fn zulip_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZULIP);
+    assert_committed_corpus_matches(&ZULIP);
 }
 
 #[test]
 fn zulip_jentic_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZULIP_JENTIC);
+    assert_committed_corpus_matches(&ZULIP_JENTIC);
 }
 
 #[test]
 fn zulip_jentic_entry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZULIP_JENTIC_ENTRY);
+    assert_committed_corpus_matches(&ZULIP_JENTIC_ENTRY);
 }
 
 #[test]
 fn milvus_restful_v2_3_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MILVUS_RESTFUL_V2_3);
+    assert_committed_corpus_matches(&MILVUS_RESTFUL_V2_3);
 }
 
 #[test]
 fn milvus_restful_v2_4_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MILVUS_RESTFUL_V2_4);
+    assert_committed_corpus_matches(&MILVUS_RESTFUL_V2_4);
 }
 
 #[test]
 fn ramu_shogi_matches_fern_output() {
-    assert_link_ok_corpus_matches(&RAMU_SHOGI);
+    assert_committed_corpus_matches(&RAMU_SHOGI);
 }
 
 #[test]
 fn langchain_agent_protocol_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LANGCHAIN_AGENT_PROTOCOL);
+    assert_committed_corpus_matches(&LANGCHAIN_AGENT_PROTOCOL);
 }
 
 #[test]
 fn hse_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HSE);
+    assert_committed_corpus_matches(&HSE);
 }
 
 #[test]
 fn milvus_vector_operations_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MILVUS_VECTOR_OPERATIONS);
+    assert_committed_corpus_matches(&MILVUS_VECTOR_OPERATIONS);
 }
 
 #[test]
 fn mistle_control_plane_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MISTLE_CONTROL_PLANE);
+    assert_committed_corpus_matches(&MISTLE_CONTROL_PLANE);
 }
 
 #[test]
 fn osparc_payments_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OSPARC_PAYMENTS);
+    assert_committed_corpus_matches(&OSPARC_PAYMENTS);
 }
 
 #[test]
 fn huatuo_node_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HUATUO_NODE);
+    assert_committed_corpus_matches(&HUATUO_NODE);
 }
 
 #[test]
 fn huatuo_server_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HUATUO_SERVER);
+    assert_committed_corpus_matches(&HUATUO_SERVER);
 }
 
 #[test]
 fn viskit_studio_matches_fern_output() {
-    assert_link_ok_corpus_matches(&VISKIT_STUDIO);
+    assert_committed_corpus_matches(&VISKIT_STUDIO);
 }
 
 #[test]
 fn embedpdf_cloudpdf_matches_fern_output() {
-    assert_link_ok_corpus_matches(&EMBEDPDF_CLOUDPDF);
+    assert_committed_corpus_matches(&EMBEDPDF_CLOUDPDF);
 }
 
 #[test]
 fn npq_registration_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NPQ_REGISTRATION);
+    assert_committed_corpus_matches(&NPQ_REGISTRATION);
 }
 
 #[test]
 fn sim_logs_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SIM_LOGS);
+    assert_committed_corpus_matches(&SIM_LOGS);
 }
 
 #[test]
 fn sim_tables_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SIM_TABLES);
+    assert_committed_corpus_matches(&SIM_TABLES);
 }
 
 #[test]
 fn vellum_gateway_matches_fern_output() {
-    assert_link_ok_corpus_matches(&VELLUM_GATEWAY);
+    assert_committed_corpus_matches(&VELLUM_GATEWAY);
 }
 
 #[test]
 fn dot_ai_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DOT_AI);
+    assert_committed_corpus_matches(&DOT_AI);
 }
 
 #[test]
 fn paloalto_code_technologies_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PALOALTO_CODE_TECHNOLOGIES);
+    assert_committed_corpus_matches(&PALOALTO_CODE_TECHNOLOGIES);
 }
 
 #[test]
 fn marimo_plugins_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MARIMO_PLUGINS);
+    assert_committed_corpus_matches(&MARIMO_PLUGINS);
 }
 
 #[test]
 fn otoroshi_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OTOROSHI);
+    assert_committed_corpus_matches(&OTOROSHI);
 }
 
 #[test]
 fn standrig_matches_fern_output() {
-    assert_link_ok_corpus_matches(&STANDRIG);
+    assert_committed_corpus_matches(&STANDRIG);
 }
 
 #[test]
 fn mockserver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MOCKSERVER);
+    assert_committed_corpus_matches(&MOCKSERVER);
 }
 
 #[test]
 fn ideaconsult_enanomapper_matches_fern_output() {
-    assert_link_ok_corpus_matches(&IDEACONSULT_ENANOMAPPER);
+    assert_committed_corpus_matches(&IDEACONSULT_ENANOMAPPER);
 }
 
 #[test]
 fn openaire_graph_matches_fern_output() {
-    assert_link_ok_corpus_matches(&OPENAIRE_GRAPH);
+    assert_committed_corpus_matches(&OPENAIRE_GRAPH);
 }
 
 #[test]
 fn qredence_fleet_rlm_matches_fern_output() {
-    assert_link_ok_corpus_matches(&QREDENCE_FLEET_RLM);
+    assert_committed_corpus_matches(&QREDENCE_FLEET_RLM);
 }
 
 #[test]
 fn fiware_context_generator_matches_fern_output() {
-    assert_link_ok_corpus_matches(&FIWARE_CONTEXT_GENERATOR);
+    assert_committed_corpus_matches(&FIWARE_CONTEXT_GENERATOR);
 }
 
 #[test]
 fn hasura_metadata_matches_fern_output() {
-    assert_link_ok_corpus_matches(&HASURA_METADATA);
+    assert_committed_corpus_matches(&HASURA_METADATA);
 }
 
 #[test]
 fn zoonk_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ZOONK);
+    assert_committed_corpus_matches(&ZOONK);
 }
 
 #[test]
 fn peopledatalabs_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PEOPLEDATALABS);
+    assert_committed_corpus_matches(&PEOPLEDATALABS);
 }
 
 #[test]
 fn adyen_acs_notification_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ADYEN_ACS_NOTIFICATION);
+    assert_committed_corpus_matches(&ADYEN_ACS_NOTIFICATION);
 }
 
 #[test]
 fn nexmo_conversation_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NEXMO_CONVERSATION);
+    assert_committed_corpus_matches(&NEXMO_CONVERSATION);
 }
 
 #[test]
 fn googleapis_monitoring_v1_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
+    assert_committed_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
 }
 
 #[test]
 fn docu_goapiserver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DOCU_GOAPISERVER);
+    assert_committed_corpus_matches(&DOCU_GOAPISERVER);
 }
 
 #[test]
 fn onevoice_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ONEVOICE);
+    assert_committed_corpus_matches(&ONEVOICE);
 }
 
 #[test]
 fn xfsc_oidc_identity_resolver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
+    assert_committed_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
 }
 
 // ---------------------------------------------------------------------------
@@ -14092,6 +13670,16 @@ struct RefusalClass {
     fern_exit: String,
     documents: String,
     crozier_diagnostic: String,
+    population_strict: String,
+}
+
+/// What `documents.tsv` records for one class: the rows carrying it, and of
+/// those the ones with a measured `crozier_strict_exit` and the ones it refused.
+#[derive(Default)]
+struct RefusalClassDocuments {
+    carried: usize,
+    measured: usize,
+    refused: usize,
 }
 
 /// Whether the gate runs each `generate` class's `wire_test.py`. Running one
@@ -14309,12 +13897,26 @@ fn fern_refusal_failures(
 
     let carried = refusal_document_class_counts(registry, &known, &mut failures);
     for class in &classes {
-        let count = carried.get(class.class.as_str()).copied().unwrap_or(0);
+        let recorded = carried.get(class.class.as_str());
+        let count = recorded.map_or(0, |recorded| recorded.carried);
         if class.documents != count.to_string() {
             failures.push(format!(
                 "{}: classes.tsv counts {} document(s), but {count} documents.tsv row(s) carry it",
                 class.class, class.documents
             ));
+        }
+        if class.status != "unevaluated" {
+            let measured = recorded.map_or_else(
+                || "0/0".to_owned(),
+                |recorded| format!("{}/{}", recorded.refused, recorded.measured),
+            );
+            if class.population_strict != measured {
+                failures.push(format!(
+                    "{}: classes.tsv population_strict is {}, but documents.tsv's \
+                     crozier_strict_exit refuses {measured} of the rows that carry it",
+                    class.class, class.population_strict
+                ));
+            }
         }
         failures.extend(refusal_class_failures(registry, class, generator, wire));
     }
@@ -14425,18 +14027,20 @@ fn parse_refusal_classes(text: &str) -> (Vec<RefusalClass>, Vec<String>) {
             fern_exit: fern_exit.to_string(),
             documents: documents.to_string(),
             crozier_diagnostic: crozier_diagnostic.to_string(),
+            population_strict: population_strict.to_string(),
         });
     }
     (classes, failures)
 }
 
-/// `documents.tsv`'s header and order, and how many rows carry each class;
-/// a class id that is no `classes.tsv` row is a failure.
+/// `documents.tsv`'s header and order, and per class how many rows carry it and
+/// how their `crozier_strict_exit` reads; a class id that is no `classes.tsv` row
+/// is a failure.
 fn refusal_document_class_counts<'a>(
     registry: &Path,
     known: &std::collections::BTreeSet<&'a str>,
     failures: &mut Vec<String>,
-) -> std::collections::BTreeMap<&'a str, usize> {
+) -> std::collections::BTreeMap<&'a str, RefusalClassDocuments> {
     let mut counts = std::collections::BTreeMap::new();
     let text = match std::fs::read_to_string(registry.join("documents.tsv")) {
         Ok(text) => text,
@@ -14475,7 +14079,14 @@ fn refusal_document_class_counts<'a>(
         }
         for id in fields[8].split(',').filter(|id| !id.is_empty()) {
             match known.get(id) {
-                Some(class) => *counts.entry(*class).or_insert(0) += 1,
+                Some(class) => {
+                    let recorded: &mut RefusalClassDocuments = counts.entry(*class).or_default();
+                    recorded.carried += 1;
+                    if fields[11] != "—" {
+                        recorded.measured += 1;
+                        recorded.refused += usize::from(fields[11] == "1");
+                    }
+                }
                 None => failures.push(format!(
                     "{id}: documents.tsv row {digest} carries it, but it is not a classes.tsv row"
                 )),
@@ -14650,7 +14261,7 @@ fn refusal_run(
         .output()
         .map_err(|error| format!("could not run crozier: {error}"))?;
     let files = if target.exists() {
-        try_walk_files(&target)?
+        parity::walk_files(&target)?
     } else {
         Vec::new()
     };
@@ -15379,6 +14990,15 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
         )],
     );
     std::fs::create_dir_all(registry.join("stray-directory")).unwrap();
+    // A fraction no documents.tsv row measured: the one carrying the class has
+    // no `crozier_strict_exit`, so the gate reads 0/0 where the table claims 1/1.
+    let classes = std::fs::read_to_string(registry.join("classes.tsv")).unwrap();
+    let drifted = classes.replace(
+        "\tGET /thing: the scratch element\t0/0\n",
+        "\tGET /thing: the scratch element\t1/1\n",
+    );
+    assert_ne!(classes, drifted, "the scratch row to drift was not found");
+    std::fs::write(registry.join("classes.tsv"), drifted).unwrap();
 
     let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
     let report = failures.join("\n");
@@ -15408,6 +15028,10 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
             "is a directory under the registry but no classes.tsv row names it",
         ),
         ("ghost-class:", "but it is not a classes.tsv row"),
+        (
+            "generated-though-refuse:",
+            "population_strict is 1/1, but documents.tsv's crozier_strict_exit refuses 0/0",
+        ),
     ];
     for (class, condition) in expected {
         assert!(
@@ -17284,5 +16908,1657 @@ fn example_query_parameter_refusal_follows_the_examples_fern_checks() {
         "untagged-optional-enum",
     ] {
         assert_generates_in_both_modes(&class.join(format!("{control}-control.yml")), control);
+    }
+}
+/// Refusal happens before touching an existing SDK; an explicit document name
+/// recovers generation without changing the declared enum wire value.
+#[test]
+fn unnameable_enum_refusal_preserves_output_and_recovers_with_declared_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let output = dir.path().join("sdk");
+    std::fs::create_dir(&output).unwrap();
+    std::fs::write(output.join("keep.txt"), "existing SDK").unwrap();
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/enum-value-unnameable/probe.yml"),
+    )
+    .unwrap();
+    std::fs::write(&spec, &probe).unwrap();
+    for strict in [false, true] {
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe"]);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let run = command.output().unwrap();
+        assert_eq!(run.status.code(), Some(1));
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains("enum-value-unnameable"), "{stderr}");
+        if strict {
+            assert!(stderr.contains("fern-strict"), "{stderr}");
+        }
+        assert!(
+            stderr.contains("Minutes") && stderr.contains("10080"),
+            "{stderr}"
+        );
+        assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+        assert_eq!(
+            std::fs::read_to_string(output.join("keep.txt")).unwrap(),
+            "existing SDK"
+        );
+    }
+    for (first, second) in [("緊急", "補助"), ("!!!", "???")] {
+        std::fs::write(
+            &spec,
+            probe.replace("10080", first).replace("20160", second),
+        )
+        .unwrap();
+        let run = crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .arg("--fern-strict")
+            .output()
+            .unwrap();
+        assert_eq!(run.status.code(), Some(1));
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        let class = if first.is_ascii() {
+            "enum-name-unsuitable"
+        } else {
+            "enum-value-unnameable"
+        };
+        assert!(
+            stderr.contains(class) && stderr.contains("fern-strict"),
+            "{stderr}"
+        );
+        assert!(
+            stderr.contains(first) && stderr.contains("Minutes"),
+            "{stderr}"
+        );
+        assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+    }
+    std::fs::write(
+        &spec,
+        probe.replace(
+            "      enum:",
+            "      x-crozier-enum:\n        '10080': {name: 2fa}\n      enum:",
+        ),
+    )
+    .unwrap();
+    let run = crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert_eq!(run.status.code(), Some(1));
+    assert!(String::from_utf8(run.stderr)
+        .unwrap()
+        .contains("enum-value-unnameable"));
+    assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+    std::fs::write(
+        &spec,
+        probe.replace(
+            "      enum:",
+            "      x-crozier-enum:\n        '10080': {name: WEEK}\n        '20160': {name: FORTNIGHT}\n      enum:",
+        ),
+    )
+    .unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .args(["--package-name", "probe", "--fern-strict"])
+        .assert()
+        .success();
+    let module = std::fs::read_to_string(output.join("src/probe/types/minutes.py")).unwrap();
+    assert!(module.contains("WEEK = \"10080\""), "{module}");
+    assert!(module.contains("FORTNIGHT = \"20160\""), "{module}");
+}
+
+#[test]
+fn inline_unnameable_enums_report_their_operation_and_recover() {
+    let enum_schema = serde_json::json!({"type": "string", "enum": ["10080", "20160"]});
+    for (kind, location) in [
+        ("parameter", "GET /probe parameter mode"),
+        ("parameter-content", "GET /probe parameter mode"),
+        ("body", "GET /probe request body/items/additionalProperties"),
+        (
+            "response",
+            "GET /probe response 200/oneOf/0/allOf/0/anyOf/0",
+        ),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.json");
+        let output = dir.path().join("sdk");
+        let mut operation = serde_json::json!({
+            "operationId": "probe",
+            "responses": {"204": {"description": "No content"}}
+        });
+        match kind {
+            "parameter" => {
+                operation["parameters"] = serde_json::json!([
+                    {"name": "mode", "in": "query", "schema": enum_schema}
+                ]);
+            }
+            "parameter-content" => {
+                operation["parameters"] = serde_json::json!([
+                    {"name": "mode", "in": "query", "content": {
+                        "application/json": {"schema": enum_schema}
+                    }}
+                ]);
+            }
+            "body" => {
+                operation["requestBody"] = serde_json::json!({"content": {
+                    "application/json": {"schema": {"type": "array", "items": {
+                        "type": "object", "additionalProperties": enum_schema
+                    }}}
+                }});
+            }
+            "response" => {
+                operation["responses"] = serde_json::json!({"200": {
+                    "description": "Enum result", "content": {"application/json": {
+                        "schema": {"oneOf": [{"allOf": [{"anyOf": [enum_schema]}]}]}
+                    }}
+                }});
+            }
+            _ => unreachable!(),
+        }
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"get": operation}}
+        });
+        let text = serde_json::to_string(&document).unwrap();
+        std::fs::write(&spec, &text).unwrap();
+        let run = crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe"])
+            .output()
+            .unwrap();
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(run.status.code(), Some(1), "{kind}: {stderr}");
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains("enum-value-unnameable"), "{stderr}");
+        assert!(stderr.contains(location), "{kind}: {stderr}");
+        assert!(stderr.contains("10080"), "{stderr}");
+        assert!(!output.exists(), "{kind}: refusal created output");
+        std::fs::write(
+            &spec,
+            text.replace("10080", "9999").replace("20160", "9000"),
+        )
+        .unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args(["--package-name", "probe", "--fern-strict"])
+            .assert()
+            .success();
+        assert!(output.join("pyproject.toml").is_file(), "{kind}");
+    }
+}
+
+/// Fern treats integer enums and mixed-kind string enums as scalar aliases,
+/// including Bungie's integer bit flags written with string enum values.
+#[test]
+fn non_string_and_mixed_enums_generate_without_name_refusals() {
+    for (ty, values, alias) in [
+        ("integer", serde_json::json!(["10080", "20160"]), "int"),
+        ("string", serde_json::json!(["10080", false]), "str"),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.json");
+        let output = dir.path().join("sdk");
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"get": {"operationId": "probe", "responses": {
+                "200": {"description": "Scope value", "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Scopes"}
+                }}}
+            }}}},
+            "components": {"schemas": {"Scopes": {"type": ty, "enum": values}}}
+        });
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output)
+                .args(["--package-name", "probe"]);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            command.assert().success();
+            let module = std::fs::read_to_string(output.join("src/probe/types/scopes.py")).unwrap();
+            assert!(module.contains(&format!("Scopes = {alias}")), "{module}");
+            assert!(!module.contains("_10080"), "{module}");
+        }
+    }
+}
+
+#[test]
+fn discriminant_refusals_recover_with_a_valid_document_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let output = dir.path().join("sdk");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/discriminant-value-unsuitable/probe.yml"),
+    )
+    .unwrap();
+    for name in ["_t", "kind-name", "1kind"] {
+        std::fs::write(&spec, probe.replace("_t", name)).unwrap();
+        for strict in [false, true] {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let run = command.output().unwrap();
+            assert_eq!(run.status.code(), Some(1));
+            let stderr = String::from_utf8(run.stderr).unwrap();
+            assert_eq!(stderr.lines().count(), 1, "{stderr}");
+            assert!(stderr.contains("discriminant-value-unsuitable"), "{stderr}");
+            assert!(
+                stderr.contains("Asset") && stderr.contains(name),
+                "{stderr}"
+            );
+            if strict {
+                assert!(stderr.contains("fern-strict"), "{stderr}");
+            }
+            assert!(!output.exists());
+        }
+    }
+    for inferred in [false, true] {
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        if inferred {
+            document["components"]["schemas"]["Asset"]
+                .as_object_mut()
+                .unwrap()
+                .remove("discriminator");
+            for (variant, value) in [("ImageAsset", "image"), ("TextAsset", "text")] {
+                document["components"]["schemas"][variant]["properties"]["_t"]["enum"] =
+                    serde_json::json!([value]);
+            }
+        } else {
+            document["components"]["schemas"]["Asset"]
+                .as_object_mut()
+                .unwrap()
+                .remove("oneOf");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .arg("--fern-strict")
+            .assert()
+            .code(1)
+            .stderr(predicates::str::contains("discriminant-value-unsuitable"));
+        assert!(!output.exists());
+    }
+    std::fs::write(&spec, probe.replace("_t", "kind_name")).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .args(["--package-name", "probe", "--fern-strict"])
+        .assert()
+        .success();
+    let module = std::fs::read_to_string(output.join("src/probe/types/asset.py")).unwrap();
+    assert!(module.contains("kind_name:"), "{module}");
+}
+
+#[test]
+fn scalar_singleton_body_enum_needs_no_member_but_nested_enums_do() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    for nested in [false, true] {
+        let scalar = serde_json::json!({"type": "string", "enum": ["10080"]});
+        let schema = if nested {
+            serde_json::json!({"type": "object", "properties": {"minutes": scalar}})
+        } else {
+            scalar
+        };
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {
+                "required": true, "content": {"application/json": {"schema": schema}}
+            }, "responses": {"204": {"description": "Done"}}}}}
+        });
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{nested}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output)
+                .args(["--package-name", "probe"]);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            if nested {
+                command
+                    .assert()
+                    .code(1)
+                    .stderr(predicates::str::contains("enum-value-unnameable"));
+                assert!(!output.exists());
+            } else {
+                command.assert().success();
+                assert!(output.join("pyproject.toml").is_file());
+            }
+        }
+    }
+}
+
+#[test]
+fn repeated_path_names_refuse_and_distinct_positions_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/duplicate-path-parameter/probe.yml"),
+    )
+    .unwrap();
+    let document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+    let mut item = document["paths"]["/accounts/{account_id}/members/{account_id}"].clone();
+    item["get"]["parameters"]
+        .as_array_mut()
+        .unwrap()
+        .push(serde_json::json!({
+            "name": "member_id", "in": "path", "required": true, "schema": {"type": "string"}
+        }));
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        std::fs::write(&spec, &probe).unwrap();
+        let run = |refused: bool| {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            if refused {
+                command
+                    .assert()
+                    .code(1)
+                    .stderr(predicates::str::contains("duplicate-path-parameter"));
+                assert!(!output.exists());
+            } else {
+                command.assert().success();
+            }
+        };
+        run(true);
+        let mut recovered = document.clone();
+        recovered["paths"] =
+            serde_json::json!({"/accounts/{account_id}/members/{member_id}": item});
+        std::fs::write(&spec, serde_json::to_string(&recovered).unwrap()).unwrap();
+        run(false);
+        // A repeated declaration for one position is accepted by pinned Fern.
+        recovered["paths"] = serde_json::json!({"/accounts/{account_id}": {
+            "get": {"operationId": "getMember", "parameters": [
+                {"name": "account_id", "in": "path", "required": true, "schema": {"type": "string"}},
+                {"name": "account_id", "in": "path", "required": true, "schema": {"type": "string"}}
+            ], "responses": {"204": {"description": "Done"}}}
+        }});
+        std::fs::write(&spec, serde_json::to_string(&recovered).unwrap()).unwrap();
+        run(false);
+    }
+}
+
+#[test]
+fn normalized_parameter_collisions_refuse_and_renamed_parameters_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        std::fs::write(&spec, &probe).unwrap();
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().code(1).stderr(predicates::str::contains(
+            "request-property-camelcase-collision",
+        ));
+        assert!(!output.exists());
+        std::fs::write(&spec, probe.replace("accountId", "otherAccountId")).unwrap();
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().success();
+        assert!(output.join("pyproject.toml").is_file());
+    }
+}
+
+#[test]
+fn inferred_path_and_body_parameter_names_share_collision_validation() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    for (route, parameters, body) in [
+        (
+            "/accounts/{+accountId}",
+            serde_json::json!([{"name": "accountId", "in": "path", "required": true, "schema": {"type": "string"}}]),
+            serde_json::Value::Null,
+        ),
+        (
+            "/accounts",
+            serde_json::json!([{"name": "accountId", "in": "query", "schema": {"type": "string"}}]),
+            serde_json::json!({"type": "object", "properties": {"account_id": {"type": "string"}}}),
+        ),
+    ] {
+        let mut op = serde_json::json!({"operationId": "probe", "parameters": parameters, "responses": {"204": {"description": "Done"}}});
+        if !body.is_null() {
+            op["requestBody"] =
+                serde_json::json!({"content": {"application/json": {"schema": body}}});
+        }
+        let document = serde_json::json!({"openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {route: {"post": op}}});
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            // Pinned Fern reports both an unreferenced path parameter and the
+            // camelCase collision for `{+accountId}`
+            // (type-name-collision/evidence/reserved-expansion-path.pinned-fern.log);
+            // the document-family check names it first.
+            let class = if route.contains('+') {
+                "path-parameter-unreferenced"
+            } else {
+                "request-property-camelcase-collision"
+            };
+            command
+                .assert()
+                .code(1)
+                .stderr(predicates::str::contains(class));
+            assert!(!output.exists());
+        }
+    }
+}
+
+#[test]
+fn declared_parameter_names_deconflict_refusals_without_repairing_generation() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
+    )
+    .unwrap();
+    for body in [false, true] {
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        let op = &mut document["paths"]["/accounts"]["get"];
+        let hint = serde_json::json!({"type": "string", "x-fern-parameter-name": "account_id", "x-crozier-parameter-name": "otherAccount"});
+        if body {
+            op["parameters"].as_array_mut().unwrap().truncate(1);
+            op["requestBody"] = serde_json::json!({"content": {"application/json": {"schema": {"type": "object", "properties": {"accountId": hint}}}}});
+        } else {
+            op["parameters"][1]["x-fern-parameter-name"] = serde_json::json!("account_id");
+            op["parameters"][1]["x-crozier-parameter-name"] = serde_json::json!("otherAccount");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{body}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let result = command.output().unwrap();
+            let stderr = String::from_utf8(result.stderr).unwrap();
+            // Parameter-only baseline generation still fails at ruff. The
+            // body case already generates; this node changes neither outcome.
+            assert!(
+                !stderr.contains("request-property-camelcase-collision"),
+                "{stderr}"
+            );
+            if body {
+                assert_eq!(result.status.code(), Some(0), "{stderr}");
+                assert!(output.join("pyproject.toml").is_file());
+            } else {
+                assert_eq!(result.status.code(), Some(1), "{stderr}");
+                // ruff words this per version ("Duplicate parameter" at the
+                // pinned .ruff-version, "Duplicate keyword argument" later).
+                assert!(
+                    stderr.contains("with ruff failed")
+                        && stderr.contains("Duplicate")
+                        && stderr.contains("\"account_id\""),
+                    "{stderr}"
+                );
+                assert!(!output.exists());
+            }
+        }
+    }
+}
+
+#[test]
+fn body_names_colliding_with_path_names_refuse_but_query_and_header_names_generate() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/request-property-name-collision/probe.yml"),
+    )
+    .unwrap();
+    for location in ["path", "query", "header"] {
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        let mut op = document["paths"]["/repos/{name}"]["patch"].clone();
+        op["parameters"][0]["in"] = serde_json::json!(location);
+        let route = if location == "path" {
+            "/repos/{name}"
+        } else {
+            "/repos"
+        };
+        document["paths"] = serde_json::json!({route: {"patch": op}});
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{location}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            if location == "path" {
+                command
+                    .assert()
+                    .code(1)
+                    .stderr(predicates::str::contains("request-property-name-collision"));
+                assert!(!output.exists());
+            } else {
+                command.assert().success();
+                assert!(output.join("pyproject.toml").is_file());
+            }
+        }
+    }
+    let recovered = probe
+        .replace("name: name", "name: repo_name")
+        .replace("{name}", "{repo_name}");
+    std::fs::write(&spec, recovered).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn parameters_in_different_locations_refuse_and_declared_names_recover_classification() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
+            {"name": "name", "in": "query", "schema": {"type": "string"}},
+            {"name": "name", "in": "header", "schema": {"type": "string"}}
+        ], "responses": {"204": {"description": "Done"}}}}}
+    });
+    for declared in [false, true] {
+        if declared {
+            document["paths"]["/probe"]["get"]["parameters"][1]["x-fern-parameter-name"] =
+                serde_json::json!("headerName");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{declared}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let result = command.output().unwrap();
+            let stderr = String::from_utf8(result.stderr).unwrap();
+            if declared {
+                assert!(
+                    !stderr.contains("request-property-camelcase-collision"),
+                    "{stderr}"
+                );
+                if !result.status.success() {
+                    assert!(stderr.contains("ruff"), "{stderr}");
+                } else {
+                    assert!(output.join("pyproject.toml").is_file());
+                }
+            } else {
+                assert_eq!(result.status.code(), Some(1), "{stderr}");
+                assert!(
+                    stderr.contains("request-property-camelcase-collision"),
+                    "{stderr}"
+                );
+                assert!(!output.exists());
+            }
+        }
+    }
+}
+
+/// Runs `crozier generate python` over `document` in both modes, asserting each
+/// refusal exits 1, writes nothing, prints one line naming `class` and
+/// `element`, and names `fern-strict` only in strict mode.
+fn assert_name_refusal_in_both_modes(document: &serde_json::Value, class: &str, element: &str) {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains(class), "{stderr}");
+        assert!(stderr.contains(element), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!output.exists());
+    }
+}
+
+fn assert_generates_under_fern_strict(document: &serde_json::Value) {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("sdk"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    assert!(dir.path().join("sdk/pyproject.toml").is_file());
+}
+
+#[test]
+fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_collisions() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
+            {"name": "q", "in": "query", "x-fern-parameter-name": "filter",
+             "schema": {"type": "string"}},
+            {"name": "F", "in": "header", "x-crozier-parameter-name": "filter",
+             "schema": {"type": "string"}}
+        ], "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(&document, "request-property-name-collision", "\"filter\"");
+    document["paths"]["/probe"]["get"]["parameters"][1]["x-crozier-parameter-name"] =
+        serde_json::json!("headerFilter");
+    assert_generates_under_fern_strict(&document);
+}
+
+#[test]
+fn x_prefixed_headers_collide_under_fern_header_naming_and_recover_when_renamed() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
+            {"name": "requestId", "in": "query", "schema": {"type": "string"}},
+            {"name": "X-Request-Id", "in": "header", "schema": {"type": "string"}}
+        ], "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(
+        &document,
+        "request-property-name-collision",
+        "\"X-Request-Id\"",
+    );
+    document["paths"]["/probe"]["get"]["parameters"][0]["name"] = serde_json::json!("traceId");
+    assert_generates_under_fern_strict(&document);
+}
+
+#[test]
+fn duplicate_inherited_body_properties_refuse_in_a_cleanly_parsed_document() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "components": {"schemas": {
+            "Base": {"type": "object", "properties": {"name": {"type": "string"}}}
+        }},
+        "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
+            "application/json": {"schema": {"allOf": [
+                {"$ref": "#/components/schemas/Base"},
+                {"type": "object", "properties": {"name": {"type": "string"}}}
+            ]}}
+        }}, "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(
+        &document,
+        "request-property-name-collision",
+        "body property \"name\"",
+    );
+    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
+    assert_generates_under_fern_strict(&document);
+}
+
+#[test]
+fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "components": {"schemas": {
+            "Base": {"type": "object", "properties": {"name": {"type": "string"}}},
+            "Malformed": {"type": "string", "nullable": 1}
+        }},
+        "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
+            "application/json": {"schema": {"allOf": [
+                {"$ref": "#/components/schemas/Base"},
+                {"type": "object", "properties": {"name": {"type": "string"}}}
+            ]}}
+        }}, "responses": {"204": {"description": "Done"}}}}}
+    });
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1));
+        assert!(
+            stderr.contains("request-property-name-collision"),
+            "{stderr}"
+        );
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(!output.exists());
+    }
+    // An ignored operation does not acquire a name refusal. Its unrelated
+    // malformed schema still receives the existing parser diagnostic.
+    document["paths"]["/probe"]["post"]["x-crozier-ignore"] = serde_json::json!(true);
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    let result = crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("ignored"))
+        .arg("--fern-strict")
+        .output()
+        .unwrap();
+    let stderr = String::from_utf8(result.stderr).unwrap();
+    assert_eq!(result.status.code(), Some(1));
+    assert!(stderr.contains("expected a boolean"), "{stderr}");
+    assert!(
+        !stderr.contains("request-property-name-collision"),
+        "{stderr}"
+    );
+    document["paths"]["/probe"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-ignore");
+    for labelled in [false, true] {
+        let op = document["paths"]["/probe"]["post"].as_object_mut().unwrap();
+        if labelled {
+            op.insert("x-fern-audiences".to_owned(), serde_json::json!(["public"]));
+            op.insert(
+                "x-crozier-audiences".to_owned(),
+                serde_json::json!(["private"]),
+            );
+        } else {
+            op.remove("x-fern-audiences");
+            op.remove("x-crozier-audiences");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for audience in ["public", "private"] {
+            for audience_strict in [false, true] {
+                let output = dir
+                    .path()
+                    .join(format!("audience-{labelled}-{audience}-{audience_strict}"));
+                let mut command = crozier_clean_env();
+                command
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec)
+                    .arg("--output")
+                    .arg(&output)
+                    .args(["--fern-strict", "--audience", audience]);
+                if audience_strict {
+                    command.arg("--audience-strict");
+                }
+                let result = command.output().unwrap();
+                let stderr = String::from_utf8(result.stderr).unwrap();
+                let kept = if labelled {
+                    audience == "private"
+                } else {
+                    !audience_strict
+                };
+                assert_eq!(result.status.code(), Some(1), "{stderr}");
+                assert_eq!(
+                    stderr.contains("request-property-name-collision"),
+                    kept,
+                    "{stderr}"
+                );
+                if !kept {
+                    assert!(stderr.contains("expected a boolean"), "{stderr}");
+                }
+                assert!(!output.exists());
+            }
+        }
+    }
+    document["components"]["schemas"]["Malformed"]["nullable"] = serde_json::json!(false);
+    document["paths"]["/probe"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-ignore");
+    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+/// Write `document` as JSON, with each `"BIG"` string replaced by 2^64,
+/// an integer YAML's reader rejects, and run `generate --fern-strict` on it.
+fn generate_strict_with_big_integers(
+    dir: &Path,
+    document: &serde_json::Value,
+) -> (Option<i32>, String) {
+    let spec = dir.join("api.json");
+    let text = serde_json::to_string(document)
+        .unwrap()
+        .replace("\"BIG\"", "18446744073709551616");
+    std::fs::write(&spec, text).unwrap();
+    let output = dir.join("sdk");
+    let _ = std::fs::remove_dir_all(&output);
+    let result = crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .arg("--fern-strict")
+        .output()
+        .unwrap();
+    (
+        result.status.code(),
+        String::from_utf8(result.stderr).unwrap(),
+    )
+}
+
+#[test]
+fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refusals() {
+    let dir = tempfile::tempdir().unwrap();
+    // `Base.name` collides with the inline `name` an inheriting body redeclares,
+    // and `Base.count`'s example is an integer YAML's reader rejects.
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "components": {"schemas": {
+            "Base": {"type": "object", "properties": {
+                "name": {"type": "string"},
+                "count": {"type": "integer", "example": "BIG"}
+            }},
+            "ReadOnlyName": {"type": "string", "readOnly": true}
+        }},
+        "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
+            "application/json": {"schema": {"allOf": [
+                {"$ref": "#/components/schemas/Base"},
+                {"type": "object", "properties": {"name": {"type": "string"}}}
+            ]}}
+        }}, "responses": {"204": {"description": "Done"}}}}}
+    });
+    // The oversized integer does not hide the collision from the detector.
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(
+        stderr.contains("request-property-name-collision: POST /probe body property \"name\""),
+        "{stderr}"
+    );
+    // A readOnly property is never sent, so it collides with nothing in the
+    // request: declared on the property, or on the component it references.
+    for read_only in [
+        serde_json::json!({"type": "string", "readOnly": true}),
+        serde_json::json!({"$ref": "#/components/schemas/ReadOnlyName"}),
+    ] {
+        document["components"]["schemas"]["Base"]["properties"]["name"] = read_only;
+        let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert!(dir.path().join("sdk/pyproject.toml").is_file());
+    }
+    // The source-level fallback, reached when another field fails to parse,
+    // skips the readOnly property too, leaving the parser's own diagnostic.
+    document["components"]["schemas"]["Base"]["properties"]["name"] =
+        serde_json::json!({"type": "string", "readOnly": true});
+    document["components"]["schemas"]["Malformed"] =
+        serde_json::json!({"type": "string", "nullable": 1});
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(stderr.contains("expected a boolean"), "{stderr}");
+    assert!(
+        !stderr.contains("request-property-name-collision"),
+        "{stderr}"
+    );
+    assert!(!dir.path().join("sdk").exists());
+    // Without readOnly the fallback still refuses the collision.
+    document["components"]["schemas"]["Base"]["properties"]["name"] =
+        serde_json::json!({"type": "string"});
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(
+        stderr.contains("request-property-name-collision"),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn name_refusals_escape_line_breaks_in_offending_schema_names() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {},
+        "components": {"schemas": {"Minutes\nPrivate": {"type": "string", "enum": ["10080", "20160"]}}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1));
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains("Minutes\\nPrivate"), "{stderr}");
+        assert!(stderr.contains("enum-value-unnameable"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!output.exists());
+    }
+}
+
+#[test]
+fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/sdk-method-collision/probe.yml"
+    ))
+    .unwrap();
+    for strict in [false, true] {
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        let output = dir.path().join(format!("refused-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("sdk-method-collision"), "{stderr}");
+        assert!(stderr.contains("analytics.create"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert_eq!(stderr.lines().count(), 1);
+        assert!(!output.exists());
+    }
+    document["paths"]["/reports"]["post"]["x-crozier-sdk-method-name"] =
+        serde_json::json!("createReport");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    document["paths"]["/reports"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-sdk-method-name");
+    document["paths"]["/reports"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-fern-sdk-method-name");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("inferred"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn nullable_inherited_property_collisions_refuse_and_nonnullable_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/object-property-name-collision/probe.yml"
+    ))
+    .unwrap();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(
+            stderr.contains("object-property-name-collision"),
+            "{stderr}"
+        );
+        assert!(stderr.contains("sha1"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"]["schemas"]["FileMini"]["nullable"] = serde_json::json!(false);
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn type_names_across_namespaces_refuse_and_distinct_contexts_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/type-name-collision/probe.yml"
+    ))
+    .unwrap();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("type-name-collision"), "{stderr}");
+        assert!(stderr.contains("GetThingResponse"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["paths"]["/b"]["get"]["operationId"] = serde_json::json!("getOtherThing");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    document["paths"]["/b"]["get"]["operationId"] = serde_json::json!("getThing");
+    document["paths"]["/b"]["get"]["tags"] = serde_json::json!(["alpha"]);
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("same-namespace"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn numeric_type_names_refuse_and_valid_declared_names_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/type-name-not-letter-led/probe.yml"
+    ))
+    .unwrap();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("type-name-not-letter-led"), "{stderr}");
+        assert!(stderr.contains("123456"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"]["schemas"]["123456"]["x-fern-type-name"] = serde_json::json!("123456");
+    document["components"]["schemas"]["123456"]["x-crozier-type-name"] = serde_json::json!("Thing");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    let declared = dir.path().join("declared-name");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&declared)
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    assert!(
+        std::fs::read_to_string(declared.join("src/probe/types/one23456.py"))
+            .unwrap()
+            .contains("class One23456(")
+    );
+    document["components"]["schemas"]["123456"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-type-name");
+    document["components"]["schemas"]["123456"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-fern-type-name");
+    let schema = document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .remove("123456")
+        .unwrap();
+    document["components"]["schemas"]["9999"] = schema;
+    document["paths"]["/things"]["get"]["responses"]["200"]["content"]["application/json"]
+        ["schema"]["$ref"] = serde_json::json!("#/components/schemas/9999");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn oversized_generated_names_refuse_without_writes_and_shorter_names_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let original = include_str!("../docs/fern-refusals/generated-file-name-too-long/probe.yml");
+    std::fs::write(&spec, original).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("generated-file-name-too-long"), "{stderr}");
+        assert!(stderr.contains("thing_level5"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    std::fs::write(
+        &spec,
+        original.replace("_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", ""),
+    )
+    .unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn unnamed_legacy_object_references_refuse_and_component_references_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "responses": {
+            "200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/definitions/Thing"}}}}
+        }}}},
+        "definitions": {"Thing": {"type": "object", "properties": {"id": {"type": "string"}}}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("type-name-not-letter-led"), "{stderr}");
+        assert!(stderr.contains("#/definitions/Thing"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"] =
+        serde_json::json!({"schemas": {"Thing": document["definitions"]["Thing"].clone()}});
+    document["paths"]["/probe"]["get"]["responses"]["200"]["content"]["application/json"]
+        ["schema"]["$ref"] = serde_json::json!("#/components/schemas/Thing");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn recursive_inline_property_names_refuse_and_named_recursion_recovers() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {},
+        "components": {"schemas": {"Thing": {"type": "object", "properties": {
+            "child": {"type": "object", "properties": {"child": {"$ref": "#/components/schemas/Thing/properties/child"}}}
+        }}}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("generated-file-name-too-long"), "{stderr}");
+        assert!(stderr.contains("#/components/schemas/Thing"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    document["components"]["schemas"]["Thing"]["properties"]["child"] =
+        serde_json::json!({"$ref": "#/components/schemas/Thing"});
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+fn assert_measured_name_refusal(document: &serde_json::Value, class: &str, element: &str) {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains(class), "{stderr}");
+        assert!(stderr.contains(element), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert_eq!(stderr.lines().count(), 1);
+        assert!(!output.exists());
+    }
+}
+
+#[test]
+fn named_components_and_virtual_requests_refuse_their_measured_collisions() {
+    let mut document = serde_json::json!({
+        "openapi":"3.0.3","info":{"title":"probe","version":"1"},"paths":{},
+        "components":{"schemas":{"Thing":{"type":"object","properties":{"id":{"type":"string"}}},
+        "thing":{"type":"object","properties":{"name":{"type":"string"}}}}}
+    });
+    assert_measured_name_refusal(&document, "type-name-collision", "component schemas");
+    document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .remove("thing");
+    let operation = serde_json::json!({"operationId":"closeThing","tags":["alpha"],"parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"204":{"description":"OK"}}});
+    document["paths"]["/a/{id}"] = serde_json::json!({"put":operation.clone()});
+    document["paths"]["/b/{id}"] = serde_json::json!({"put":operation});
+    document["paths"]["/b/{id}"]["put"]["tags"] = serde_json::json!(["beta"]);
+    assert_measured_name_refusal(
+        &document,
+        "type-name-collision",
+        "request type CloseThingRequest",
+    );
+    document["paths"]["/b/{id}"]["put"]["operationId"] = serde_json::json!("closeOtherThing");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("sdk"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn inline_request_names_are_checked_against_the_emitted_naming_contract() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document = serde_json::json!({
+        "openapi":"3.0.3","info":{"title":"probe","version":"1"},
+        "paths":{"/things":{"post":{"operationId":"createThing","tags":["alpha"],"requestBody":{"content":{"application/json":{"schema":{"type":"object","properties":{"color":{"type":"string","enum":["red","blue"]}}}}}},"responses":{"204":{"description":"OK"}}}}},
+        "components":{"schemas":{}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .assert()
+        .success();
+    let types = sdk.join("src/probe/alpha/types");
+    let emitted = std::fs::read_dir(types)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .find(|path| std::fs::read_to_string(path).is_ok_and(|text| text.contains(" = \"red\"")))
+        .unwrap();
+    let text = std::fs::read_to_string(emitted).unwrap();
+    let name = text
+        .lines()
+        .find_map(|line| {
+            line.strip_prefix("class ")
+                .and_then(|name| name.split_once('('))
+                .map(|(name, _)| name)
+        })
+        .unwrap();
+    let request_name = name.strip_suffix("Color").unwrap();
+    document["components"]["schemas"][request_name] =
+        serde_json::json!({"type":"object","properties":{"id":{"type":"string"}}});
+    assert_measured_name_refusal(
+        &document,
+        "type-name-collision",
+        &format!("request type {request_name}"),
+    );
+    document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .clear();
+    document["components"]["schemas"][name] =
+        serde_json::json!({"type":"string","enum":["other","value"]});
+    assert_measured_name_refusal(
+        &document,
+        "type-name-collision",
+        &format!("enum {name} in namespace alpha"),
+    );
+    document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .clear();
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn dropped_body_enum_names_refuse_and_distinct_component_names_recover() {
+    let mut document = serde_json::json!({
+        "openapi":"3.0.3","info":{"title":"probe","version":"1"},
+        "paths":{"/things":{"post":{"operationId":"createThing","tags":["alpha"],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Thing"}}}},"responses":{"204":{"description":"OK"}}}}},
+        "components":{"schemas":{"Thing":{"type":"object","properties":{"color":{"type":"string","enum":["red","blue"]}}},"ThingColor":{"type":"string","enum":["other","value"]}}}
+    });
+    assert_measured_name_refusal(
+        &document,
+        "type-name-collision",
+        "body property \"color\" declares enum ThingColor",
+    );
+    document["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .remove("ThingColor");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn unavailable_relative_type_aliases_refuse_and_available_files_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let document = serde_json::json!({
+        "openapi":"3.0.3","info":{"title":"probe","version":"1"},"paths":{},
+        "components":{"schemas":{"Thing":{"$ref":"common.json"}}}
+    });
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("bad-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("type-name-not-letter-led"), "{stderr}");
+        assert!(stderr.contains("#/components/schemas/Thing"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert!(!output.exists());
+    }
+    std::fs::write(
+        dir.path().join("common.json"),
+        r#"{"type":"object","properties":{"id":{"type":"string"}}}"#,
+    )
+    .unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+#[test]
+fn webhook_local_object_names_refuse_and_component_names_recover() {
+    let mut document = serde_json::json!({
+        "openapi":"3.1.0","info":{"title":"probe","version":"1"},"paths":{},
+        "webhooks":{"event":{"post":{"requestBody":{"content":{"application/json":{"schema":{
+            "type":"object","properties":{"payload":{"$ref":"#/webhooks/event/post/requestBody/content/application~1json/schema/definitions/Payload"}},
+            "definitions":{"Payload":{"type":"object","properties":{"id":{"type":"string"}}}}
+        }}}},"responses":{"204":{"description":"OK"}}}}}
+    });
+    assert_measured_name_refusal(&document, "type-name-not-letter-led", "webhook event");
+    document["components"] = serde_json::json!({"schemas":{"Payload":{"type":"object","properties":{"id":{"type":"string"}}}}});
+    document["webhooks"]["event"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["properties"]["payload"]["$ref"] = serde_json::json!("#/components/schemas/Payload");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}
+
+/// A tag or SDK-group enum named like a root schema: pinned Fern refuses a
+/// query parameter's as already declared, and checks and generates a header
+/// parameter's whatever its values
+/// (type-name-collision/evidence/namespaced-*.pinned-fern.log).
+#[test]
+fn namespaced_enum_collisions_follow_the_parameter_location() {
+    let evidence = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("type-name-collision/evidence");
+    for case in [
+        "namespaced-query-enum-same",
+        "namespaced-query-enum-diff",
+        "namespaced-query-enum-same-tag",
+        "namespaced-query-enum-diff-tag",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &evidence.join(format!("{case}.yml")), strict).unwrap();
+            let failures = refused_failures(
+                "type-name-collision",
+                &run,
+                "collides with a schema declaration",
+                strict,
+            );
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+        }
+    }
+    for case in [
+        "namespaced-header-enum-same",
+        "namespaced-header-enum-diff",
+        "namespaced-header-enum-diff-tag",
+    ] {
+        assert_generates_in_both_modes(&evidence.join(format!("{case}.yml")), case);
     }
 }

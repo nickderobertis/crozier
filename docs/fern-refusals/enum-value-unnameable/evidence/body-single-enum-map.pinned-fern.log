@@ -1,0 +1,10 @@
+command: npx --yes fern-api@5.67.1 check
+exit=1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> ProbeRequestValue
+        issue: Enum value 10080 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+Found 1 error and 0 warnings in <n> seconds.

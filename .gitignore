@@ -17,10 +17,9 @@ llmlint.buildout.yml
 # when run without LLVM_PROFILE_FILE (the coverage recipes always set it)
 *.profraw
 
-# Machine-local corpus cache: `link-ok` OpenAPI specs fetched by
-# scripts/fetch-corpus.sh for the byte-match corpus tests. The specs are
-# link-only by policy (only Fern's generated goldens are vendored, under
-# tests/fixtures/), so they are never committed — CI re-fetches them.
+# Machine-local scratch: a deliberate re-fetch by scripts/fetch-corpus.sh (golden
+# rebuilds and source audits only — the committed copies under
+# tests/fixtures/corpus-sources/ are what every gate reads) and measurement output.
 /.local
 
 # screencomp visual-docs: the committed digest baseline (shots/baseline/) and the

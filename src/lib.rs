@@ -16,14 +16,17 @@
 //! Depend on the CLI, not on these items.
 
 pub mod cli;
+pub mod compare;
 pub mod config;
 pub mod document_refusals;
 pub mod emit;
 pub mod error;
 pub mod ir;
+mod name_refusals;
 pub mod naming;
 pub mod normalize;
 pub mod openapi;
+pub mod parity;
 pub mod pyfmt;
 pub mod refs;
 pub mod schema;
@@ -67,7 +70,8 @@ pub struct GenerateArgs {
     /// Strict Fern compatibility (`--fern-strict`): refuse, as Fern does, a
     /// document crozier would otherwise generate from. It only ever decides
     /// whether an SDK is written, never a byte of one that is. The classes it
-    /// refuses are registered in `docs/fern-refusals/`.
+    /// refuses and their evaluated generation policies are registered in
+    /// `docs/fern-refusals/`.
     pub fern_strict: bool,
     /// Which tree to write: Fern's packaged SDK (the default) or its flat module
     /// tree (see [`settings::Layout`]).
@@ -79,7 +83,7 @@ pub struct GenerateArgs {
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     document_refusals::check_version_file(&args.spec, args.fern_strict)?;
     document_refusals::check_structure_file(&args.spec, args.fern_strict)?;
-    let mut doc = openapi::load(&args.spec)?;
+    let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     document_refusals::check(&doc, &args.spec, args.fern_strict)?;
@@ -97,6 +101,8 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.layout = args.layout;
     let ir = ir::build(&doc, &config);
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
+    name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
+    name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     let files = emit::generate(&ir)?;
     // Regeneration is idempotent: clear the crozier-owned package tree first so a
     // schema or endpoint dropped from the spec does not leave an orphaned module.
@@ -111,12 +117,48 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     Ok(files)
 }
 
+/// The names a generation run would use once crozier's defaults are filled in:
+/// what [`generate`] derives from the API title when a name is not configured.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResolvedNames {
+    /// The Python package (import) name.
+    pub package_name: String,
+    /// The distribution name.
+    pub project_name: String,
+    /// The root client class name.
+    pub client_class_name: String,
+}
+
+/// Resolve the names `args` would generate with, reading the document's title
+/// for the defaults exactly as [`generate`] does.
+pub fn resolved_names(args: &GenerateArgs) -> Result<ResolvedNames> {
+    let doc = openapi::load(&args.spec)?;
+    let config = GenerateConfig::new(
+        args.spec.clone(),
+        args.output.clone(),
+        args.package_name.clone(),
+        args.project_name.clone(),
+        args.client_class_name.clone(),
+        args.extra_fields,
+        &doc.info.title,
+    )?;
+    let client_class_name = config
+        .client_class_name
+        .clone()
+        .unwrap_or_else(|| config::default_client_class_name(config.package_name.as_str()));
+    Ok(ResolvedNames {
+        package_name: config.package_name.as_str().to_string(),
+        project_name: config.project_name,
+        client_class_name,
+    })
+}
+
 /// Render the files for a spec without writing them — used by tests to compare
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     document_refusals::check_version_file(&args.spec, args.fern_strict)?;
     document_refusals::check_structure_file(&args.spec, args.fern_strict)?;
-    let mut doc = openapi::load(&args.spec)?;
+    let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     document_refusals::check(&doc, &args.spec, args.fern_strict)?;
@@ -132,5 +174,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.layout = args.layout;
     let ir = ir::build(&doc, &config);
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
+    name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
+    name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     emit::generate(&ir)
 }

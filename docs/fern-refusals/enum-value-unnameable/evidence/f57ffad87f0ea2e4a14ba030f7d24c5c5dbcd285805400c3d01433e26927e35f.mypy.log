@@ -1,0 +1,18 @@
+exit=1
+src/probe/types/advisory_contract_info_request_withdrawal_prohibition.py:12: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestWithdrawalProhibition"  [misc]
+src/probe/types/advisory_contract_info_request_withdrawal_prohibition.py:13: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestWithdrawalProhibition"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_type.py:12: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_type.py:13: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_type.py:14: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_remuneration_type.py:12: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryRemunerationType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_remuneration_type.py:13: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryRemunerationType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_remuneration_type.py:14: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryRemunerationType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_remuneration_type.py:15: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryRemunerationType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_remuneration_condition.py:12: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryRemunerationCondition"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_remuneration_condition.py:13: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryRemunerationCondition"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_contract_type.py:12: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryContractType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_contract_type.py:13: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryContractType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_contract_type.py:14: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryContractType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_contract_type.py:15: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryContractType"  [misc]
+src/probe/types/advisory_contract_info_request_advisory_contract_type.py:16: error: Attempted to reuse member name "_" in Enum definition "AdvisoryContractInfoRequestAdvisoryContractType"  [misc]
+Found 16 errors in 5 files (checked 39 source files)

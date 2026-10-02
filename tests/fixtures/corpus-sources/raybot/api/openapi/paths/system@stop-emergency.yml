@@ -1,0 +1,15 @@
+post:
+  summary: Stop all motors and cancel all running, queued and processing commands
+  operationId: stopEmergency
+  description: Stop all motors and cancel all running, queued and processing commands
+  tags:
+    - system
+  responses:
+    "204":
+      description: No Content
+    "400":
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yml#/ErrorResponse"

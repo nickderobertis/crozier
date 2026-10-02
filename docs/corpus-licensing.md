@@ -11,8 +11,9 @@ The rule governs which real-world OpenAPI documents may be registered in
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md), and so which
 publishers' generated SDK output this repository redistributes as a committed
 golden. `NOTICE` retains each registered document's own licence name beside its
-source URL; the source documents themselves are fetched at generation time
-rather than vendored (`decision` = `link-ok`).
+source URL; the source documents and all their referenced files are committed
+(`decision` = `committed`), with pinned URLs retained as rebuild provenance
+and SHA-256 digests checked by `just lint-corpus-sources`.
 
 ## The rule
 

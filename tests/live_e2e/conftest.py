@@ -53,12 +53,8 @@ class Fixture:
     generated package must be importable as `fern` for the `reference.md` snippets
     to run, so `package_name` is `fern`.
 
-    `spec_url` distinguishes the two corpus kinds. When `None` the spec is vendored
-    at `tests/fixtures/<name>/openapi.yml` (the synthetic Fern seeds). When set, the
-    spec is a `link-ok` real-world entry from `tests/fixtures/CORPUS.md` — its
-    licence permits redistribution but only the *generated* Fern golden is vendored,
-    so the harness fetches the spec from this pinned URL at run time and drives
-    crozier's output against it. Keep the URL in step with the CORPUS.md row."""
+    `spec_url` distinguishes real-world registered sources from synthetic Fern
+    seeds. Both are committed; URLs are retained as rebuild provenance only."""
 
     name: str
     package_name: str = "fern"
@@ -213,30 +209,15 @@ def _wait_until_listening(port: int, proc: subprocess.Popen, timeout: float = 60
 
 
 def _spec_path(fixture: Fixture, work: Path) -> Path:
-    """The OpenAPI spec to generate from. Vendored fixtures read
-    `tests/fixtures/<name>/openapi.yml`; a `link-ok` corpus fixture (spec not
-    vendored) is fetched from its pinned URL into `work`, with a few retries since
-    the gate should not flake on a transient network blip."""
+    """Read the committed source; corpus URLs are rebuild provenance only."""
     if fixture.spec_url is None:
         return _FIXTURES / fixture.name / "openapi.yml"
-    import urllib.request
-
-    dest = work / "openapi.json"
-    last = None
-    for attempt in range(4):
-        try:
-            request = urllib.request.Request(
-                fixture.spec_url, headers={"User-Agent": "crozier-live-e2e"}
-            )
-            with urllib.request.urlopen(request, timeout=30) as response:
-                dest.write_bytes(response.read())
-            return dest
-        except Exception as error:  # noqa: BLE001 — retried, then surfaced
-            last = error
-            time.sleep(2**attempt)
-    raise RuntimeError(
-        f"fetching {fixture.name} spec from {fixture.spec_url} failed: {last}"
+    result = subprocess.run(
+        [sys.executable, str(_FIXTURES.parent.parent / "scripts/corpus_sources.py"),
+         "prepare", "--fixture", fixture.name, "--output", str(work / "source")],
+        check=True, capture_output=True, text=True,
     )
+    return Path(result.stdout.strip())
 
 
 def _generate_sdk(crozier: str, fixture: Fixture, spec: Path, out: Path):

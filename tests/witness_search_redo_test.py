@@ -574,7 +574,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertGreater(count, 0, "rejected-spec source table must not be empty")
 
     def test_paypal_registration_accounts_for_all_owned_keys(self) -> None:
-        source = REPO / ".local/corpus/paypal-catalog-products/openapi.json"
+        source = REPO / "tests/fixtures/corpus-sources/paypal-catalog-products/openapi.json"
         if not source.is_file():
             self.skipTest("PayPal source not fetched; run just fetch-corpus --fixture paypal-catalog-products")
         keys = dict(self.contract_keys())

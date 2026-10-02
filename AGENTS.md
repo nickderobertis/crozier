@@ -45,6 +45,10 @@ The north star: **`crozier`'s output, with comments stripped, equals Fern's
 output with comments stripped.** The whole registered corpus reaches it today.
 See [`docs/matching.md`](docs/matching.md) for the strategy, the fixture corpus,
 and why each shape generates the way it does.
+The byte-match rules are defined once, in `src/parity.rs`: the corpus gate and
+`crozier compare` (a user's migration check against their own reference SDK,
+[`docs/compare.md`](docs/compare.md)) both call them, so change a rule there or
+nowhere.
 
 Being a Fern drop-in extends to its `x-*` vendor extensions (audience labels,
 per-node ignore, …). The standing **dual-header policy**: read *both* the
@@ -100,10 +104,13 @@ Use the `just` recipes; do not hand-roll equivalents.
   `check`) that build a generated SDK's venv from PyPI and run mypy/pytest in it:
   the runtime wire suite and the fern-refusals gate's `wire_test.py` among them.
   Separate from the offline `check`; CI's `sdk-env` matrix job runs it, gated.
-- `just test-corpus-match` — enforce the real-world corpus byte-match: fetch the
-  `link-ok` corpus specs (not vendored) and byte-compare crozier's output against
-  the committed Fern goldens. Needs network; runs in the CI live-e2e leg, and the
-  byte-diff tests skip when a spec is unfetched (so `check` stays offline).
+- `just test-corpus-match` — byte-compare every registered corpus against Fern
+  using committed sources. `just test-corpus-offline` proves it, its strict form,
+  the census, the refusal-class gate and the census-fallback samples with sockets
+  denied and no cache; CI runs this in its live-e2e leg.
+- `just corpus-sources vendor` / `audit` — rebuild-only source fetch/verification;
+  pinned URLs are provenance. `just lint-corpus-sources` checks every committed
+  file's SHA-256 offline. See `tests/fixtures/corpus-sources.tsv`.
 - `just test-corpus-match-strict` — the same byte-match with `fern-strict` on,
   so a refusal class that refuses a document Fern generates from fails it. The
   classes, their probes and the refused-document population live in
@@ -120,8 +127,7 @@ Use the `just` recipes; do not hand-roll equivalents.
   prints the normalized diff of files it doesn't (to fix the generator). Neither
   gates. See [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
 - `just fixtures-coverage` — what the committed Fern **goldens** reach in `src/`,
-  apart from what crozier's own tests reach. Outside `check` (needs network, runs
-  the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
+  apart from what crozier's own tests reach. Outside `check` (runs the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
   `check`. Reading the split:
   [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
 - `just golden-reach` — the same golden-only tier one golden test at a time,
@@ -131,8 +137,7 @@ Use the `just` recipes; do not hand-roll equivalents.
   [`docs/openapi-surface-coverage.md`](docs/openapi-surface-coverage.md#golden-reach-row-by-row).
 - `just surface-census` — which OpenAPI shapes the registered golden **sources**
   declare, measured off each source document's object model (never a generated
-  `expected/` tree). Outside `check` (fetches the `link-ok` half, so it needs
-  network); `just test-surface-census` drives it offline over the vendored
+  `expected/` tree). Outside `check` (reads the committed corpus); `just test-surface-census` drives it offline over the vendored
   sources and IS in `check`. What the census is for, and the grammar its
   selectors follow:
   [`docs/openapi-surface-coverage.md`](docs/openapi-surface-coverage.md).
@@ -194,7 +199,9 @@ Use the `just` recipes; do not hand-roll equivalents.
   and `verify-install-script` runs `scripts/install.sh` against the GitHub
   Release — each then runs `scripts/smoke.sh`, which asserts the version and
   drives a real `crozier generate`, so "published" means "installs AND runs," not
-  just "the version string is right." **First publish reserves the name:** an
+  just "the version string is right." Last, `release.yml`'s `major-tag` job moves
+  the floating `v0` the GitHub Action's (`action.yml`) consumers pin, only once
+  no publish or verify job failed. **First publish reserves the name:** an
   early `0.0.x`/`0.1.0` release claims `crozier` on both registries.
 
 ## Invariants (non-negotiable)

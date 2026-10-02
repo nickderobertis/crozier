@@ -74,6 +74,17 @@
         }
       ]
     },
+    "reference": {
+      "description": "Shared default for how `crozier compare` produces each generator's\nreference SDK. Ignored by `crozier generate`.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReferenceSettings"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "generators": {
       "description": "The named generator instances (one SDK each), in declaration order.",
       "type": "object",
@@ -98,6 +109,20 @@
           "const": "flat"
         }
       ]
+    },
+    "ReferenceSettings": {
+      "description": "The `reference:` block: how `crozier compare` produces the reference SDK it\nchecks a generator's output against. `crozier generate` ignores it. There is no\ndefault command and no environment variable for it; see `docs/compare.md`.",
+      "type": "object",
+      "properties": {
+        "command": {
+          "description": "Shell command (`sh -c`, run from the config file's directory) that writes\nthe reference SDK into the output directory `crozier compare` names in\nits environment.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "GeneratorSettings": {
       "description": "One generator's settings, as written under `generators.<name>` (or as the\ntop-level shared defaults, which share this shape minus `type`). Every field\nis optional: an absent field falls through to the next layer down. Unknown\nfields are rejected so a typo fails loudly instead of being ignored.",
@@ -189,6 +214,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/Layout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reference": {
+          "description": "How `crozier compare` produces this generator's reference SDK; overrides\nthe shared top-level block. Ignored by `crozier generate`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReferenceSettings"
             },
             {
               "type": "null"

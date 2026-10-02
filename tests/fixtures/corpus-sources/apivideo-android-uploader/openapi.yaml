@@ -1,0 +1,1720 @@
+openapi: 3.0.0
+info:
+  description: api.video is an API that encodes on the go to facilitate immediate
+    playback, enhancing viewer streaming experiences across multiple devices and platforms.
+    You can stream live or on-demand online videos within minutes.
+  title: api.video
+  version: "1"
+servers:
+- description: Production server
+  url: https://ws.api.video
+- description: Test server `all videos are watermarked, and deleted after 24 hours.
+  url: https://sandbox.api.video
+paths:
+  /auth/api-key:
+    post:
+      description: |-
+        Returns a bearer token that can be used to authenticate other endpoint.
+
+        You can find the tutorial on using the disposable bearer token [here](https://docs.api.video/reference/disposable-bearer-token-authentication).
+      operationId: POST_auth-api-key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/authenticate-payload'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    token_type: Bearer
+                    expires_in: 3600
+                    access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjUyZWM4NWUyMjFkODZjOWI0NDQ5NzBhMjQwMzUyOWQ4MDQyNGQ3ZmJjYjFlYWM2MjVlM2VkMjI2YWRlNTcxMDY2NDUyZDc0NjdhN2E4NjI0In0.eyJhdWQiOiJsaWJjYXN0IiwianRpIjoiNTJlYzg1ZTIyMWQ4NmM5YjQ0NDk3MGEyNDAzNTI5ZDgwNDI0ZDdmYmNiMWVhYzYyNWUzZWQyMjZhZGU1NzEwNjY0NTJkNzQ2N2E3YTg2MjQiLCJpYXQiOjE1MjUyNzYxNDcsIm5iZiI6MTUyNTI3NjE0NywiZXhwIjoxNTI1Mjc5NzQ3LCJzdWIiOiJ1c01vbml0b3IiLCJzY29wZXMiOlsibW9uaXRvci5saWJjYXN0LmNvbSJdLCJjb250ZXh0Ijp7InVzZXIiOiJ1c01vbml0b3IiLCJwcm9qZWN0IjoicHJNb25pdG9yIiwibWVtYmVyIjoibWVNb25pdG9yIn19.rUvishDNyJLNlI4W5VmguNecm5KD2uZgPkKJQbaqw-cJbSrVxkSbiKYtk_E3cz3WT7-IS2yFTsYN3uIo5Rbit8_HftweyEp2bdBRI8yjR6oZZ1sNJJXswISN1i2kk4r-aaxu7Xxf_LtsjOMUj_YZsvcc2nqBXPKjHbJCJryx3DDJaIcymOqao7nhQaCCQyrQooAXNTYs4E9fWN1dC_x2O-zok5TuG-xhEW-umwxfSUMWNgSTkz38ACceQ0PCJSgB3jqjDH4MwC7B3ppEPZuK5E6JhKeyRlalswRyYq3UQPnVeMTam7YQHsuTgbehF6WySW8i44o7V_MCe9hjPdp-WA
+                    refresh_token: def50200a28d88fb9aaa921be78eeb5604b071101a334899a7d5fc7492cf8ea752962ddc8961fe5c126101d4ecacd980396eb2fd494995b812dffcb98256c4277f790d1f658fc2d2e34f350740544e5232d69d68d34c648271d706c5e7049adac0b1832d0fdf71809715cc7e97fa63f65966deadb501a55ff469b0fd23a637cb6acbe9d9b8594a17f09efc2efeed82984764a0065d5e29c950c7b081a61ba2aaa192be3085c400ee37eac50fa9320ce2cfe8916c8165418d23e9f91b6a5c8515e1d74ee193a5a1ca01954fbff27361c20184240be2359e0afbed0bf1c762cf872450b5e8b5d4704f4fd9583e4470adc98409dd42965709712806bd9019378a72eea0b4912ce684ffd833db5806ab84174f905db2a75380071d004615c944bb8f8c4045cce7234c2be9a2330522cf7f067b8e58f57cffb6edb4b7ef91313e12bcde47e5e76ceee7fa52990132288f345d33ed917ae4fd54b7284f8964d898e97e1ee3bc4157f75d7fee63976e4be66ac1ec32ef74afa533f0eb593523f226cbec57d196ac8962
+              schema:
+                $ref: '#/components/schemas/access-token'
+          description: Success
+        "400":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    type: https://docs.api.video/reference/authentication-invalid-user-credentials
+                    title: The user credentials were incorrect.
+                    name: ""
+                    status: 400
+              schema:
+                $ref: '#/components/schemas/bad-request'
+          description: Bad Request
+      summary: Get Bearer Token
+      tags:
+      - Advanced authentication
+      x-client-action: authenticate
+      x-client-hidden: true
+      x-doctave:
+        code-samples:
+        - language: go
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: node
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: php
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: python
+          code: |
+            #With the api.video API clients, authentication is taken care of with each client created.
+            # You get to skip this step!
+        - language: java
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: csharp
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: swift
+          code: |
+            // With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+      x-contentType: application/json
+      x-accepts: application/json
+  /auth/refresh:
+    post:
+      description: |-
+        Accepts the old bearer token and returns a new bearer token that can be used to authenticate other endpoint.
+
+        You can find the tutorial on using the disposable bearer token [here](https://docs.api.video/reference/disposable-bearer-token-authentication).
+      operationId: POST_auth-refresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/refresh-token-payload'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    token_type: Bearer
+                    expires_in: 3600
+                    access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjUyZWM4NWUyMjFkODZjOWI0NDQ5NzBhMjQwMzUyOWQ4MDQyNGQ3ZmJjYjFlYWM2MjVlM2VkMjI2YWRlNTcxMDY2NDUyZDc0NjdhN2E4NjI0In0.eyJhdWQiOiJsaWJjYXN0IiwianRpIjoiNTJlYzg1ZTIyMWQ4NmM5YjQ0NDk3MGEyNDAzNTI5ZDgwNDI0ZDdmYmNiMWVhYzYyNWUzZWQyMjZhZGU1NzEwNjY0NTJkNzQ2N2E3YTg2MjQiLCJpYXQiOjE1MjUyNzYxNDcsIm5iZiI6MTUyNTI3NjE0NywiZXhwIjoxNTI1Mjc5NzQ3LCJzdWIiOiJ1c01vbml0b3IiLCJzY29wZXMiOlsibW9uaXRvci5saWJjYXN0LmNvbSJdLCJjb250ZXh0Ijp7InVzZXIiOiJ1c01vbml0b3IiLCJwcm9qZWN0IjoicHJNb25pdG9yIiwibWVtYmVyIjoibWVNb25pdG9yIn19.rUvishDNyJLNlI4W5VmguNecm5KD2uZgPkKJQbaqw-cJbSrVxkSbiKYtk_E3cz3WT7-IS2yFTsYN3uIo5Rbit8_HftweyEp2bdBRI8yjR6oZZ1sNJJXswISN1i2kk4r-aaxu7Xxf_LtsjOMUj_YZsvcc2nqBXPKjHbJCJryx3DDJaIcymOqao7nhQaCCQyrQooAXNTYs4E9fWN1dC_x2O-zok5TuG-xhEW-umwxfSUMWNgSTkz38ACceQ0PCJSgB3jqjDH4MwC7B3ppEPZuK5E6JhKeyRlalswRyYq3UQPnVeMTam7YQHsuTgbehF6WySW8i44o7V_MCe9hjPdp-WA
+                    refresh_token: def50200a28d88fb9aaa921be78eeb5604b071101a334899a7d5fc7492cf8ea752962ddc8961fe5c126101d4ecacd980396eb2fd494995b812dffcb98256c4277f790d1f658fc2d2e34f350740544e5232d69d68d34c648271d706c5e7049adac0b1832d0fdf71809715cc7e97fa63f65966deadb501a55ff469b0fd23a637cb6acbe9d9b8594a17f09efc2efeed82984764a0065d5e29c950c7b081a61ba2aaa192be3085c400ee37eac50fa9320ce2cfe8916c8165418d23e9f91b6a5c8515e1d74ee193a5a1ca01954fbff27361c20184240be2359e0afbed0bf1c762cf872450b5e8b5d4704f4fd9583e4470adc98409dd42965709712806bd9019378a72eea0b4912ce684ffd833db5806ab84174f905db2a75380071d004615c944bb8f8c4045cce7234c2be9a2330522cf7f067b8e58f57cffb6edb4b7ef91313e12bcde47e5e76ceee7fa52990132288f345d33ed917ae4fd54b7284f8964d898e97e1ee3bc4157f75d7fee63976e4be66ac1ec32ef74afa533f0eb593523f226cbec57d196ac8962
+              schema:
+                $ref: '#/components/schemas/access-token'
+          description: Success
+        "400":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    status: 400
+                    type: https://docs.api.video/reference/authentication-invalid-user-credentials
+                    title: The user credentials were incorrect.
+                    name: ""
+              schema:
+                $ref: '#/components/schemas/bad-request'
+          description: Bad Request
+      summary: Refresh Bearer Token
+      tags:
+      - Advanced authentication
+      x-client-action: refresh
+      x-client-hidden: true
+      x-doctave:
+        code-samples:
+        - language: go
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: node
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: php
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: python
+          code: |
+            #With the api.video API clients, authentication is taken care of with each client created.
+            # You get to skip this step!
+        - language: java
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: csharp
+          code: |
+            //With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+        - language: swift
+          code: |
+            // With the api.video API clients, authentication is taken care of with each client created.
+            // You get to skip this step!
+      x-contentType: application/json
+      x-accepts: application/json
+  /videos/{videoId}/source:
+    post:
+      description: Ingest a video from a source or file.
+      operationId: POST_videos-videoId-source
+      parameters:
+      - description: Enter the videoId you want to use to upload your video.
+        example: vi4k0jvEUuaTdRAEjQ4Jfrgz
+        explode: false
+        in: path
+        name: videoId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: '`part <part>/<total_parts>` ; `bytes <from_byte>-<to_byte>/<total_bytes>`'
+        example: bytes 209715200-419430399/524288000 OR part 2/3
+        explode: false
+        in: header
+        name: Content-Range
+        required: false
+        schema:
+          pattern: /(?:bytes (?<from>\d+)-(?<to>\d+)|part (?<part>\d+))\/(?<total>\d+|\*)/
+          type: string
+        style: simple
+        x-client-ignore: true
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/video-upload-payload'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    videoId: vi4blUQJFrYWbaG44NChkH27
+                    title: Maths video
+                    description: An amazing video explaining the string theory.
+                    public: false
+                    panoramic: false
+                    mp4Support: true
+                    playerId: pl45KFKdlddgk654dspkze
+                    tags:
+                    - maths
+                    - string theory
+                    - video
+                    metadata:
+                    - key: Author
+                      value: John Doe
+                    - key: Format
+                      value: Tutorial
+                    publishedAt: 2024-07-14T23:36:07+00:00
+                    discarded: false
+                    discardedAt: null
+                    deletesAt: null
+                    source:
+                      uri: /videos/vi4blUQJFrYWbaG44NChkH27/source
+                    assets:
+                      iframe: <iframe src="https://embed.api.video/vod/vi4blUQJFrYWbaG44NChkH27"
+                        width="100%" height="100%" frameborder="0" scrolling="no"
+                        allowfullscreen=""></iframe>
+                      player: https://embed.api.video/vod/vi4blUQJFrYWbaG44NChkH27
+                      hls: https://cdn.api.video/vod/vi4blUQJFrYWbaG44NChkH27/hls/manifest.m3u8
+                      thumbnail: https://cdn.api.video/vod/vi4blUQJFrYWbaG44NChkH27/thumbnail.jpg
+                      mp4: https://cdn.api.video/vod/vi4blUQJFrYWbaG44NChkH27/mp4/source.mp4
+              schema:
+                $ref: '#/components/schemas/video'
+          description: Created
+          headers:
+            X-RateLimit-Limit:
+              description: The request limit per minute.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Remaining:
+              description: The number of available requests left for the current time
+                window.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Retry-After:
+              description: The number of seconds left until the current rate limit
+                window resets.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+        "400":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    type: https://docs.api.video/reference/video-source-already-uploaded
+                    title: The source of the video is already uploaded.
+                    name: file
+                    status: 400
+                    problems:
+                    - type: https://docs.api.video/reference/video-source-already-uploaded
+                      title: The source of the video is already uploaded.
+                      name: file
+                    - type: https://docs.api.video/reference/video-source-already-uploaded
+                      title: The video xxxx has already been uploaded.
+                      name: video
+                    - type: https://docs.api.video/reference/uploaded-file-no-file
+                      title: There is no uploaded file in the request.
+                      name: file
+                    - type: https://docs.api.video/reference/uploaded-file-multiple-files
+                      title: There is more than one uploaded file in the request.
+                      name: file
+              schema:
+                $ref: '#/components/schemas/bad-request'
+          description: Bad Request
+          headers:
+            X-RateLimit-Limit:
+              description: The request limit per minute.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Remaining:
+              description: The number of available requests left for the current time
+                window.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Retry-After:
+              description: The number of seconds left until the current rate limit
+                window resets.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+        "404":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    type: https://docs.api.video/reference/resource-not-found
+                    title: The requested resource was not found.
+                    name: videoId
+                    status: 404
+              schema:
+                $ref: '#/components/schemas/not-found'
+          description: Not Found
+          headers:
+            X-RateLimit-Limit:
+              description: The request limit per minute.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Remaining:
+              description: The number of available requests left for the current time
+                window.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Retry-After:
+              description: The number of seconds left until the current rate limit
+                window resets.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+        "429":
+          content:
+            application/json:
+              examples:
+                Too many requests:
+                  value:
+                    type: https://docs.api.video/reference/too-many-requests
+                    title: Too many requests.
+                    status: 429
+              schema:
+                $ref: '#/components/schemas/too-many-requests'
+          description: Too Many Requests
+          headers:
+            X-RateLimit-Limit:
+              description: The request limit per minute.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Remaining:
+              description: The number of available requests left for the current time
+                window.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Retry-After:
+              description: The number of seconds left until the current rate limit
+                window resets.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security:
+      - apiKey: []
+      summary: Upload a video
+      tags:
+      - Videos
+      x-client-description:
+        default: "To upload a video to the videoId you created. You can only upload\
+          \ your video to the videoId once.\n\nWe offer 2 types of upload: \n* Regular\
+          \ upload \n* Progressive upload\nThe latter allows you to split a video\
+          \ source into X chunks and send those chunks independently (concurrently\
+          \ or sequentially). The 2 main goals for our users are to\n  * allow the\
+          \ upload of video sources > 200 MiB (200 MiB = the max. allowed file size\
+          \ for regular upload)\n  * allow to send a video source \"progressively\"\
+          , i.e., before before knowing the total size of the video.\n  Once all chunks\
+          \ have been sent, they are reaggregated to one source file. The video source\
+          \ is considered as \"completely sent\" when the \"last\" chunk is sent (i.e.,\
+          \ the chunk that \"completes\" the upload).\n"
+      x-client-action: upload
+      x-client-chunk-upload: true
+      x-doctave:
+        explorer-enabled: false
+        code-samples:
+        - language: go
+          code: "// First install the go client with \"go get github.com/apivideo/api.video-go-client\"\
+            \n// Documentation: https://github.com/apivideo/api.video-go-client/blob/main/docs/VideosApi.md#upload\n\
+            \npackage main\n\nimport (\n    \"context\"\n    \"fmt\"\n    \"os\"\n\
+            \    apivideosdk \"github.com/apivideo/api.video-go-client\"\n)\n\nfunc\
+            \ main() {\n    client := apivideosdk.ClientBuilder(\"YOUR_API_KEY\").Build()\n\
+            \    // if you rather like to use the sandbox environment:\n    // client\
+            \ := apivideosdk.SandboxClientBuilder(\"YOUR_SANDBOX_API_KEY\").Build()\n\
+            \n      videoId := \"vi4k0jvEUuaTdRAEjQ4Jfrgz\" \n    // string | Enter\
+            \ the videoId you want to use to upload your video.\n      file := os.NewFile(1234,\
+            \ \"some_file\") \n    // *os.File | The path to the video you would like\
+            \ to upload. The path must be local. If you want to use a video from an\
+            \ online source, you must use the \"/videos\" endpoint and add the \"\
+            source\" parameter when you create a new video.\n    \n    \n      res,\
+            \ err := client.Videos.UploadFile(videoId, file)\n    \n      // you can\
+            \ also use a Reader instead of a File:\n      // client.Videos.Upload(videoId,\
+            \ fileName, fileReader, fileSize)\n    \n      if err != nil {\n     \
+            \     fmt.Fprintf(os.Stderr, \"Error when calling `Videos.Upload``: %v\\\
+            \n\", err)\n      }\n      // response from `Upload`: Video\n      fmt.Fprintf(os.Stdout,\
+            \ \"Response from `Videos.Upload`: %v\\\n\", res)\n    }\n      }\n"
+        - language: node
+          code: "// First install the \"@api.video/nodejs-client\" npm package\n//\
+            \ Documentation: https://github.com/apivideo/api.video-nodejs-client/blob/main/doc/api/VideosApi.md#upload\n\
+            \nconst client = new ApiVideoClient({ apiKey: \"YOUR_API_KEY\" });\n\n\
+            const videoId = 'vi4k0jvEUuaTdRAEjQ4Jfrgz'; // Enter the videoId you want\
+            \ to use to upload your video.\nconst file = './my-video.mp4'; // The\
+            \ path to the video you would like to upload. The path must be local.\
+            \ If you want to use a video from an online source, you must use the \"\
+            /videos\" endpoint and add the \"source\" parameter when you create a\
+            \ new video.\n      \nconst video = await client.videos.upload(videoId,\
+            \ file);\n\n// if needed you can define an upload progress listener:\n\
+            const video2 = await client.videos.upload(videoId, file, (event) => {\n\
+            \  console.log(\"uploadedBytes: \" + event.uploadedBytes);\n  console.log(\"\
+            totalBytes: \" + event.totalBytes);\n  console.log(\"chunksCount: \" +\
+            \ event.chunksCount);\n  console.log(\"currentChunk: \" + event.currentChunk);\n\
+            \  console.log(\"currentChunkTotalBytes: \" + event.currentChunkTotalBytes);\n\
+            \  console.log(\"currentChunkUploadedBytes: \" + event.currentChunkUploadedBytes);\n\
+            });"
+        - language: php
+          code: "<?php\n// First install the api client: \"composer require api-video/php-api-client\"\
+            \n// Documentation: https://github.com/apivideo/api.video-php-client/blob/main/docs/Api/VideosApi.md#upload\n\
+            \nrequire __DIR__ . '/vendor/autoload.php';\n\n$client = new \\ApiVideo\\\
+            Client\\Client(\n    'https://ws.api.video',\n    'YOUR_API_KEY',\n  \
+            \  new \\Symfony\\Component\\HttpClient\\Psr18Client()\n);\n\n// create\
+            \ a new video & upload a video file\n$myVideo = $client->videos()->create((new\
+            \ \\ApiVideo\\Client\\Model\\VideoCreationPayload())->setTitle('Uploaded\
+            \ video'));\n$client->videos()->upload($myVideo->getVideoId(), new SplFileObject(__DIR__\
+            \ . '/558k.mp4'));\n\n// create a new video & upload a video file using\
+            \ progressive upload (the file is uploaded by parts)\n$myVideo2 = $client->videos()->create((new\
+            \ \\ApiVideo\\Client\\Model\\VideoCreationPayload())->setTitle('Uploaded\
+            \ video (progressive upload)'));\n\n$progressiveSession = $client->videos()->createUploadProgressiveSession($myVideo2->getVideoId());\n\
+            \n$progressiveSession->uploadPart(new SplFileObject(__DIR__ . '/10m.mp4.part.a'));\n\
+            $progressiveSession->uploadPart(new SplFileObject(__DIR__ . '/10m.mp4.part.b'));\n\
+            \n$progressiveSession->uploadLastPart(new SplFileObject(__DIR__ . '/10m.mp4.part.c')); "
+        - language: python
+          code: |
+            # First install the api client with "pip install api.video"
+            # Documentation: https://github.com/apivideo/api.video-python-client/blob/main/docs/VideosApi.md#upload
+
+            import apivideo
+            from apivideo.api import videos_api
+            from apivideo.model.bad_request import BadRequest
+            from apivideo.model.not_found import NotFound
+            from apivideo.model.video import Video
+            from apivideo.configuration import Configuration
+            from pprint import pprint
+
+            # Enter a context with an instance of the API client
+            # When uploading a file you can change the chunk size (in octet)
+            configuration = Configuration(chunk_size=10 * 1024 * 1024)
+            with apivideo.AuthenticatedApiClient(__API_KEY__, configuration=configuration) as api_client:
+                # Create an instance of the API class
+                api_instance = videos_api.VideosApi(api_client)
+                video_id = "vi4k0jvEUuaTdRAEjQ4Jfrgz" # str | Enter the videoId you want to use to upload your video.
+                file = open('/path/to/file', 'rb') # file_type | The path to the video you would like to upload. The path must be local. If you want to use a video from an online source, you must use the "/videos" endpoint and add the "source" parameter when you create a new video.
+
+                # example passing only required values which don't have defaults set
+                try:
+                    # Upload a video
+                    api_response = api_instance.upload(video_id, file)
+                    pprint(api_response)
+                except apivideo.ApiException as e:
+                    print("Exception when calling VideosApi->upload: %s\n" % e)
+        - language: java
+          code: |
+            // First add the "video.api:java-api-client" maven dependency to your project
+            // Documentation: https://github.com/apivideo/api.video-java-client/blob/main/docs/VideosApi.md#upload
+
+            import video.api.client.ApiVideoClient;
+            import video.api.client.api.ApiException;
+            import video.api.client.api.models.*;
+            import video.api.client.api.clients.VideosApi;
+            import java.util.*;
+
+            public class Example {
+              public static void main(String[] args) {
+                ApiVideoClient client = new ApiVideoClient("YOUR_API_KEY");
+                // if you rather like to use the sandbox environment:
+                // ApiVideoClient client = new ApiVideoClient("YOUR_SANDBOX_API_KEY", ApiVideoClient.Environment.SANDBOX);
+
+                VideosApi apiInstance = client.videos();
+
+                String videoId = "vi4k0jvEUuaTdRAEjQ4Jfrgz"; // Enter the videoId you want to use to upload your video.
+                File file = new File("/path/to/file"); // The path to the video you would like to upload. The path must be local. If you want to use a video from an online source, you must use the "/videos" endpoint and add the "source" parameter when you create a new video.
+
+                try {
+                  Video result = apiInstance.upload(videoId, file);
+                  System.out.println(result);
+                } catch (ApiException e) {
+                  System.err.println("Exception when calling VideosApi#upload");
+                  System.err.println("Status code: " + e.getCode());
+                  System.err.println("Reason: " + e.getMessage());
+                  System.err.println("Response headers: " + e.getResponseHeaders());
+                  e.printStackTrace();
+                }
+              }
+            }
+        - language: android
+          code: |
+            // First add the "video.api:android-api-client" maven dependency to your project
+            // Documentation: https://github.com/apivideo/api.video-android-client/blob/main/docs/VideosApi.md#upload
+
+            VideosApiStore.initialize("YOUR_API_KEY")
+            // if you rather like to use the sandbox environment:
+            // VideosApiStore.initialize("YOUR_SANDBOX_API_KEY", Environment.SANDBOX)
+
+            val workManager = WorkManager.getInstance(context) // WorkManager comes from package "androidx.work:work-runtime"
+
+            val videoId = "vi4k0jvEUuaTdRAEjQ4Jfrgz" // The videoId you want to use to upload your video.
+            val file = File("/path/to/file") // The path to the video you want to upload.
+
+            workManager.upload(videoId, file) // Dispatch the upload with the WorkManager
+        - language: csharp
+          code: |
+            // First add the "ApiVideo" NuGet package to your project
+            // Documentation: https://github.com/apivideo/api.video-csharp-client/blob/main/docs/VideosApi.md#upload
+
+            using System.Diagnostics;
+            using ApiVideo.Client;
+
+            namespace Example
+            {
+                public class uploadExample
+                {
+                    public static void Main()
+                    {
+                        var basePath = ApiVideoClient.Client.Environment.SANDBOX;
+                        var apiKey = "YOUR_API_KEY";
+
+                        var apiInstance = new ApiVideoClient(apiKey,basePath);
+
+                        var videoId = vi4k0jvEUuaTdRAEjQ4Jfrgz;  // string | Enter the videoId you want to use to upload your video.
+                        var file = BINARY_DATA_HERE;  // System.IO.Stream | The path to the video you would like to upload. The path must be local. If you want to use a video from an online source, you must use the "/videos" endpoint and add the "source" parameter when you create a new video.
+                        var apiVideosInstance = apiInstance.Videos();
+                        try
+                        {
+                            // Upload a video
+                            Video result = apiVideosInstance.upload(videoId, file);
+                            Debug.WriteLine(result);
+                        }
+                        catch (ApiException  e)
+                        {
+                            Debug.Print("Exception when calling VideosApi.upload: " + e.Message );
+                            Debug.Print("Status Code: "+ e.ErrorCode);
+                            Debug.Print(e.StackTrace);
+                        }
+                    }
+                }
+            }
+        - language: swift
+          code: |
+            // First install the api client: https://github.com/apivideo/api.video-swift-client#getting-started
+            // Documentation: https://github.com/apivideo/api.video-swift-client/blob/main/docs/VideosAPI.md#upload
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /upload:
+    post:
+      description: Uploading a video with the delegated upload token.
+      operationId: POST_upload
+      parameters:
+      - description: The unique identifier for the token you want to use to upload
+          a video.
+        example: to1tcmSFHeYY5KzyhOqVKMKb
+        explode: true
+        in: query
+        name: token
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Content-Range represents the range of bytes that will be returned
+          as a result of the request. Byte ranges are inclusive, meaning that bytes
+          0-999 represents the first 1000 bytes in a file or object.
+        example: 'Content-Range: bytes 200-100/5000'
+        explode: false
+        in: header
+        name: Content-Range
+        required: false
+        schema:
+          pattern: ^bytes [0-9]*-[0-9]*\/[0-9]*$
+          type: string
+        style: simple
+        x-client-ignore: true
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/token-upload-payload'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    videoId: vi4k0jvEUuaTdRAEjQ4Jfrgz
+                    playerId: pl45KFKdlddgk654dspkze
+                    title: Maths video
+                    description: An amazing video explaining the string theory
+                    language: en
+                    languageOrigin: api
+                    public: false
+                    panoramic: false
+                    tags:
+                    - maths
+                    - string theory
+                    - video
+                    metadata:
+                    - key: Author
+                      value: John Doe
+                    - key: Format
+                      value: Tutorial
+                    publishedAt: 2024-07-14T23:36:07+00:00
+                    discarded: false
+                    discardedAt: null
+                    deletesAt: null
+                    source:
+                      uri: /videos/vi4k0jvEUuaTdRAEjQ4Jfrgz/source
+                    assets:
+                      iframe: <iframe src="https://embed.api.video/vod/vi4blUQJFrYWbaG44NChkH27"
+                        width="100%" height="100%" frameborder="0" scrolling="no"
+                        allowfullscreen=""></iframe>
+                      player: https://embed.api.video/vod/vi4blUQJFrYWbaG44NChkH27
+                      hls: https://cdn.api.video/vod/vi4blUQJFrYWbaG44NChkH27/hls/manifest.m3u8
+                      thumbnail: https://cdn.api.video/vod/vi4blUQJFrYWbaG44NChkH27/thumbnail.jpg
+                      mp4: https://cdn.api.video/vod/vi4blUQJFrYWbaG44NChkH27/mp4/source.mp4
+              schema:
+                $ref: '#/components/schemas/video'
+          description: Created
+          headers:
+            X-RateLimit-Limit:
+              description: The request limit per minute.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Remaining:
+              description: The number of available requests left for the current time
+                window.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Retry-After:
+              description: The number of seconds left until the current rate limit
+                window resets.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bad-request'
+          description: Bad Request
+          headers:
+            X-RateLimit-Limit:
+              description: The request limit per minute.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Remaining:
+              description: The number of available requests left for the current time
+                window.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Retry-After:
+              description: The number of seconds left until the current rate limit
+                window resets.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+        "429":
+          content:
+            application/json:
+              examples:
+                Too many requests:
+                  value:
+                    type: https://docs.api.video/reference/too-many-requests
+                    title: Too many requests.
+                    status: 429
+              schema:
+                $ref: '#/components/schemas/too-many-requests'
+          description: Too Many Requests
+          headers:
+            X-RateLimit-Limit:
+              description: The request limit per minute.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Remaining:
+              description: The number of available requests left for the current time
+                window.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+            X-RateLimit-Retry-After:
+              description: The number of seconds left until the current rate limit
+                window resets.
+              explode: false
+              schema:
+                type: integer
+              style: simple
+      security: []
+      summary: Upload with an delegated upload token
+      tags:
+      - Videos
+      x-client-description:
+        default: This method allows you to send a video using an upload token. Upload
+          tokens are especially useful when the upload is done from the client side.
+          If you want to upload a video from your server-side application, you'd better
+          use the [standard upload method](#upload).
+      x-client-action: uploadWithUploadToken
+      x-client-chunk-upload: true
+      x-doctave:
+        code-samples:
+        - language: go
+          code: |
+            // First install the go client with "go get github.com/apivideo/api.video-go-client"
+            // Documentation: https://github.com/apivideo/api.video-go-client/blob/main/docs/VideosApi.md#uploadWithUploadToken
+        - language: node
+          code: "// First install the \"@api.video/nodejs-client\" npm package\n//\
+            \ Documentation: https://github.com/apivideo/api.video-nodejs-client/blob/main/doc/api/VideosApi.md#uploadWithUploadToken\n\
+            \nconst client = new ApiVideoClient({ apiKey: \"YOUR_API_KEY\" });\n\n\
+            const token = 'to4k0jvEUuaTdRAEjQ4Jfrgz'; // Enter the unique identifier\
+            \ for the token you want to use to upload a video.\nconst file = './my-video.mp4';\
+            \ // The path to the video you would like to upload. The path must be\
+            \ local. If you want to use a video from an online source, you must use\
+            \ the \"/videos\" endpoint and add the \"source\" parameter when you create\
+            \ a new video.\n      \nconst video = await client.videos.uploadWithUploadToken(token,\
+            \ file);\n"
+        - language: python
+          code: |
+            # First install the api client with "pip install api.video"
+            # Documentation: https://github.com/apivideo/api.video-python-client/blob/main/docs/VideosApi.md#uploadWithUploadToken
+        - language: java
+          code: |
+            // First add the "video.api:java-api-client" maven dependency to your project
+            // Documentation: https://github.com/apivideo/api.video-java-client/blob/main/docs/VideosApi.md#uploadWithUploadToken
+        - language: android
+          code: |
+            // First add the "video.api:android-api-client" maven dependency to your project
+            // Documentation: https://github.com/apivideo/api.video-android-client/blob/main/docs/VideosApi.md#uploadWithUploadToken
+
+            VideosApiStore.initialize()
+
+            val workManager = WorkManager.getInstance(context) // WorkManager comes from package "androidx.work:work-runtime"
+
+            val token = "to1tcmSFHeYY5KzyhOqVKMKb" // The unique identifier for the token you want to use to upload a video.
+            val file = File("/path/to/file") // The path to the video you want to upload.
+
+            workManager.uploadWithUploadToken(token, file) // Dispatch the upload with the WorkManager
+        - language: csharp
+          code: |
+            // First add the "ApiVideo" NuGet package to your project
+            // Documentation: https://github.com/apivideo/api.video-csharp-client/blob/main/docs/VideosApi.md#uploadWithUploadToken
+        - language: php
+          code: "<?php\n// First install the api client: \"composer require api-video/php-api-client\"\
+            \n// Documentation: https://github.com/apivideo/api.video-php-client/blob/main/docs/Api/VideosApi.md#pickThumbnail\n\
+            \nrequire __DIR__ . '/vendor/autoload.php';\n\n$client = new \\ApiVideo\\\
+            Client\\Client(\n    'https://ws.api.video',\n    'YOUR_API_KEY',\n  \
+            \  new \\Symfony\\Component\\HttpClient\\Psr18Client()\n);\n \n$videoId\
+            \ = 'vi4k0jvEUuaTdRAEjQ4Jfrgz'; // Unique identifier of the video you\
+            \ want to add a thumbnail to, where you use a section of your video as\
+            \ the thumbnail.\n\n$video = $client->videos()->pickThumbnail($videoId,\
+            \ (new \\ApiVideo\\Client\\Model\\VideoThumbnailPickPayload())\n    ->setTimecode(\"\
+            00:01:00.000\")); // Frame in video to be used as a placeholder before\
+            \ the video plays. "
+        - language: swift
+          code: |
+            // First install the api client: https://github.com/apivideo/api.video-swift-client#getting-started
+            // Documentation: https://github.com/apivideo/api.video-swift-client/blob/main/docs/VideosAPI.md#uploadWithUploadToken
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+components:
+  examples:
+    live-stream-response-example:
+      value:
+        liveStreamId: li4pqNqGUkhKfWcBGpZVLRY5
+        createdAt: 2020-07-29T10:45:35+00:00
+        updatedAt: 2020-07-29T10:45:35+00:00
+        streamKey: cc1b4df0-d1c5-4064-a8f9-9f0368385135
+        restreams:
+        - name: YouTube
+          serverUrl: rtmp://youtube.broadcast.example.com
+          streamKey: cc1b4df0-d1c5-4064-a8f9-9f0368385135
+        - name: Twitch
+          serverUrl: rtmp://twitch.broadcast.example.com
+          streamKey: cc1b4df0-d1c5-4064-a8f9-9f0368385135
+        name: Live From New York
+        public: true
+        broadcasting: false
+        assets:
+          iframe: <iframe src="https://embed.api.video/live/li4pqNqGUkhKfWcBGpZVLRY5"
+            width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen=""></iframe>
+          player: https://embed.api.video/live/li4pqNqGUkhKfWcBGpZVLRY5
+          hls: https://live.api.video/li4pqNqGUkhKfWcBGpZVLRY5.m3u8
+          thumbnail: https://live.api.video/li4pqNqGUkhKfWcBGpZVLRY5/thumbnail.jpg
+  parameters:
+    filterBy:
+      $ref: '#/components/parameters/filterBy_2'
+      description: "Use this parameter to filter the API's response based on different\
+        \ data dimensions. You can serialize filters in your query to receive more\
+        \ detailed breakdowns of your analytics.\n\n- If you do not set a value for\
+        \ `filterBy`, the API returns the full dataset for your project.\n- The API\
+        \ only accepts the `mediaId` and `mediaType` filters when you call `/data/metrics/play/total`\
+        \ or `/data/buckets/play-total/media-id`.\n\nThese are the available breakdown\
+        \ dimensions:\n\n- `mediaId`: Returns analytics based on the unique identifiers\
+        \ of a video or a live stream.\n- `mediaType`: Returns analytics based on\
+        \ the type of content. Possible values: `video` and `live-stream`. \n- `continent`:\
+        \ Returns analytics based on the viewers' continent. The list of supported\
+        \ continents names are based on the [GeoNames public database](https://www.geonames.org/countries/).\
+        \ You must use the ISO-3166 alpha2 format, for example `EU`. Possible values\
+        \ are: `AS`, `AF`, `NA`, `SA`, `AN`, `EU`, `AZ`. \n- `country`: Returns analytics\
+        \ based on the viewers' country. The list of supported country names are based\
+        \ on the [GeoNames public database](https://www.geonames.org/countries/).\
+        \ You must use the ISO-3166 alpha2 format, for example `FR`.\n- `deviceType`:\
+        \ Returns analytics based on the type of device used by the viewers. Response\
+        \ values can include: `computer`, `phone`, `tablet`, `tv`, `console`, `wearable`,\
+        \ `unknown`.\n- `operatingSystem`: Returns analytics based on the operating\
+        \ system used by the viewers. Response values can include `windows`, `mac\
+        \ osx`, `android`, `ios`, `linux`.\n- `browser`: Returns analytics based on\
+        \ the browser used by the viewers. Response values can include `chrome`, `firefox`,\
+        \ `edge`, `opera`.\n- `tag`: Returns analytics for videos using this tag.\
+        \ This filter only accepts a single value and is case sensitive. Read more\
+        \ about tagging your videos [here](https://docs.api.video/vod/tags-metadata).\n\
+        - `referrer`: Filters data based on the URL where the view is originating\
+        \ from. Accepts an empty string as a value to filter view events where no\
+        \ referrer is available.\n"
+      example: filterBy[country]=FR&filterBy[operatingSystem]=windows&filterBy[browser][]=firefox&filterBy[browser][]=chrome&filterBy[tag]=Cool
+        videos
+      explode: true
+      in: query
+      name: filterBy
+      required: false
+      schema:
+        properties:
+          mediaId:
+            description: Returns analytics based on the unique identifiers of a video
+              or a live stream.
+            example:
+            - vi4blUQJFrYWbaG44NChkH27
+            items:
+              type: string
+            type: array
+          mediaType:
+            enum:
+            - video
+            - live-stream
+            example: video
+            type: string
+          continent:
+            description: Returns analytics based on the viewers' continent. The list
+              of supported continents names are based on the [GeoNames public database](https://www.geonames.org/countries/).
+              You must use the ISO-3166 alpha2 format, for example `EU`.
+            example:
+            - EU
+            items:
+              enum:
+              - AS
+              - AF
+              - NA
+              - SA
+              - AN
+              - EU
+              - AZ
+              type: string
+            type: array
+          country:
+            description: Returns analytics based on the viewers' country. The list
+              of supported country names are based on the [GeoNames public database](https://www.geonames.org/countries/).
+              You must use the ISO-3166 alpha2 format, for example `FR`.
+            example:
+            - FR
+            items:
+              type: string
+            type: array
+          deviceType:
+            description: 'Returns analytics based on the type of device used by the
+              viewers. Response values can include: `computer`, `phone`, `tablet`,
+              `tv`, `console`, `wearable`, `unknown`.'
+            example:
+            - computer
+            items:
+              type: string
+            type: array
+          operatingSystem:
+            description: Returns analytics based on the operating system used by the
+              viewers. Response values can include `windows`, `mac osx`, `android`,
+              `ios`, `linux`.
+            example:
+            - windows
+            items:
+              type: string
+            type: array
+          browser:
+            description: Returns analytics based on the browser used by the viewers.
+              Response values can include `chrome`, `firefox`, `edge`, `opera`.
+            example:
+            - firefox
+            items:
+              type: string
+            type: array
+          tag:
+            description: Returns analytics for videos using this tag. This filter
+              only accepts a single value and is case sensitive. Read more about tagging
+              your videos [here](https://docs.api.video/vod/tags-metadata).
+            example: Cool videos
+            type: string
+          referrer:
+            description: |-
+              Filters data based on the URL where the view is originating from. This filter parameter accepts an empty string to filter view events where no referrer is available.
+
+              - The API filters for exact matches. Include the trailing `/` characters if needed.
+              - The URLs you add must be URL encoded.
+            example:
+            - https%3A%2F%2Fmy-awesome-videos.com
+            items:
+              format: uri
+              maxLength: 2048
+              type: string
+            type: array
+        type: object
+        x-is-deep-object: true
+      style: deepObject
+      x-is-deep-object: true
+    current-page:
+      description: 'Choose the number of search results to return per page. Minimum
+        value: 1'
+      example: 2
+      explode: true
+      in: query
+      name: currentPage
+      required: false
+      schema:
+        default: 1
+        type: integer
+      style: form
+    page-size:
+      description: Results per page. Allowed values 1-100, default is 25.
+      example: 30
+      explode: true
+      in: query
+      name: pageSize
+      required: false
+      schema:
+        default: 25
+        type: integer
+      style: form
+  schemas:
+    access-token:
+      example:
+        access_token: est
+        token_type: qui nulla l
+        refresh_token: cillum
+        expires_in: 3600
+      properties:
+        access_token:
+          description: The access token containing security credentials allowing you
+            to acccess the API. The token lasts for one hour.
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjUyZWM4NWUyMjFkODZjOWI0NDQ5NzBhMjQwMzUyOWQ4MDQyNGQ3ZmJjYjFlYWM2MjVlM2VkMjI2YWRlNTcxMDY2NDUyZDc0NjdhN2E4NjI0In0.eyJhdWQiOiJsaWJjYXN0IiwianRpIjoiNTJlYzg1ZTIyMWQ4NmM5YjQ0NDk3MGEyNDAzNTI5ZDgwNDI0ZDdmYmNiMWVhYzYyNWUzZWQyMjZhZGU1NzEwNjY0NTJkNzQ2N2E3YTg2MjQiLCJpYXQiOjE1MjUyNzYxNDcsIm5iZiI6MTUyNTI3NjE0NywiZXhwIjoxNTI1Mjc5NzQ3LCJzdWIiOiJ1c01vbml0b3IiLCJzY29wZXMiOlsibW9uaXRvci5saWJjYXN0LmNvbSJdLCJjb250ZXh0Ijp7InVzZXIiOiJ1c01vbml0b3IiLCJwcm9qZWN0IjoicHJNb25pdG9yIiwibWVtYmVyIjoibWVNb25pdG9yIn19.rUvishDNyJLNlI4W5VmguNecm5KD2uZgPkKJQbaqw-cJbSrVxkSbiKYtk_E3cz3WT7-IS2yFTsYN3uIo5Rbit8_HftweyEp2bdBRI8yjR6oZZ1sNJJXswISN1i2kk4r-aaxu7Xxf_LtsjOMUj_YZsvcc2nqBXPKjHbJCJryx3DDJaIcymOqao7nhQaCCQyrQooAXNTYs4E9fWN1dC_x2O-zok5TuG-xhEW-umwxfSUMWNgSTkz38ACceQ0PCJSgB3jqjDH4MwC7B3ppEPZuK5E6JhKeyRlalswRyYq3UQPnVeMTam7YQHsuTgbehF6WySW8i44o7V_MCe9hjPdp-WA
+          type: string
+        token_type:
+          default: bearer
+          description: The type of token you have.
+          type: string
+        refresh_token:
+          description: A token you can use to get the next access token when your
+            current access token expires.
+          example: def50200a28d88fb9aaa921be78eeb5604b071101a334899a7d5fc7492cf8ea752962ddc8961fe5c126101d4ecacd980396eb2fd494995b812dffcb98256c4277f790d1f658fc2d2e34f350740544e5232d69d68d34c648271d706c5e7049adac0b1832d0fdf71809715cc7e97fa63f65966deadb501a55ff469b0fd23a637cb6acbe9d9b8594a17f09efc2efeed82984764a0065d5e29c950c7b081a61ba2aaa192be3085c400ee37eac50fa9320ce2cfe8916c8165418d23e9f91b6a5c8515e1d74ee193a5a1ca01954fbff27361c20184240be2359e0afbed0bf1c762cf872450b5e8b5d4704f4fd9583e4470adc98409dd42965709712806bd9019378a72eea0b4912ce684ffd833db5806ab84174f905db2a75380071d004615c944bb8f8c4045cce7234c2be9a2330522cf7f067b8e58f57cffb6edb4b7ef91313e12bcde47e5e76ceee7fa52990132288f345d33ed917ae4fd54b7284f8964d898e97e1ee3bc4157f75d7fee63976e4be66ac1ec32ef74afa533f0eb593523f226cbec57d196ac8962
+          type: string
+        expires_in:
+          description: Lists the time in seconds when your access token expires. It
+            lasts for one hour.
+          type: integer
+      title: AccessToken
+      type: object
+    bad-request:
+      properties:
+        type:
+          description: A link to the error documentation.
+          type: string
+        title:
+          description: A description of the error that occurred.
+          type: string
+        name:
+          description: The name of the parameter that caused the error.
+          type: string
+        status:
+          description: The HTTP status code.
+          type: integer
+        problems:
+          description: Returns any additional problems in the request in an array
+            of objects.
+          items:
+            $ref: '#/components/schemas/additional-bad-request-errors'
+          type: array
+          uniqueItems: true
+      title: BadRequest
+      type: object
+    additional-bad-request-errors:
+      properties:
+        type:
+          description: A link to the error documentation.
+          type: string
+        title:
+          description: A description of the error that occurred.
+          type: string
+        name:
+          description: The name of the parameter that caused the error.
+          type: string
+        status:
+          description: The HTTP status code.
+          type: integer
+      title: BadRequest
+      type: object
+    not-found:
+      properties:
+        type:
+          description: A link to the error documentation.
+          type: string
+        title:
+          description: A description of the error that occurred.
+          type: string
+        name:
+          description: The name of the parameter that caused the error.
+          type: string
+        status:
+          description: The HTTP status code.
+          type: integer
+      title: NotFound
+      type: object
+    too-many-requests:
+      properties:
+        type:
+          description: A link to the error documentation.
+          type: string
+        title:
+          description: A description of the error that occurred.
+          type: string
+        status:
+          description: The HTTP status code.
+          type: integer
+      title: TooManyRequests
+      type: object
+    video:
+      example:
+        videoId: vi4k0jvEUuaTdRAEjQ4Jfrgz
+        title: Maths video
+        description: An amazing video explaining the string theory
+        language: en
+        languageOrigin: api
+        tags:
+        - maths
+        - string theory
+        - video
+        metadata:
+        - key: Author
+          value: John Doe
+        - key: Format
+          value: Tutorial
+        createdAt: 2024-03-03T12:52:03+00:00
+        publishedAt: 2024-07-14T23:36:07+00:00
+        discarded: false
+        discardedAt: null
+        deletesAt: null
+        actions:
+        - video_delete
+        - video_download
+        - video_update
+      properties:
+        videoId:
+          description: The unique identifier of the video object.
+          example: vi4k0jvEUuaTdRAEjQ4Prklg
+          type: string
+        createdAt:
+          description: When a video was created, presented in ATOM UTC format.
+          example: 2024-05-28T11:15:07Z
+          format: date-time
+          type: string
+        title:
+          description: |
+            The title of the video content.
+          example: Maths video
+          type: string
+        description:
+          description: |
+            A description for the video content.
+          example: An amazing video explaining string theory.
+          type: string
+        publishedAt:
+          description: The date and time the API created the video. Date and time
+            are provided using ATOM UTC format.
+          example: 2024-05-28T11:15:07Z
+          format: date-time
+          type: string
+        updatedAt:
+          description: The date and time the video was updated. Date and time are
+            provided using ATOM UTC format.
+          example: 2024-05-28T11:15:07Z
+          format: date-time
+          type: string
+        discardedAt:
+          description: The date and time the video was discarded. The API populates
+            this field only if you have the Video Restore feature enabled and discard
+            a video. Date and time are provided using ATOM UTC format.
+          example: 2024-05-28T11:15:07Z
+          format: date-time
+          nullable: true
+          type: string
+        deletesAt:
+          description: The date and time the video will be permanently deleted. The
+            API populates this field only if you have the Video Restore feature enabled
+            and discard a video. Discarded videos are pemanently deleted after 90
+            days. Date and time are provided using ATOM UTC format.
+          example: 2024-05-28T11:15:07Z
+          format: date-time
+          nullable: true
+          type: string
+        discarded:
+          description: Returns `true` for videos you discarded when you have the Video
+            Restore feature enabled. Returns `false` for every other video.
+          type: boolean
+        language:
+          description: Returns the language of a video in [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag)
+            format. You can set the language during video creation via the API, otherwise
+            it is detected automatically.
+          example: en
+          type: string
+        languageOrigin:
+          description: |-
+            Returns the origin of the last update on the video's `language` attribute.
+
+            - `api` means that the last update was requested from the API.
+            - `auto` means that the last update was done automatically by the API.
+          enum:
+          - api
+          - auto
+          example: api
+          nullable: true
+          type: string
+        tags:
+          description: "One array of tags (each tag is a string) in order to categorize\
+            \ a video. Tags may include spaces. \n"
+          example: '"tags": ["maths", "string theory", "video"]'
+          items:
+            type: string
+          type: array
+        metadata:
+          description: |
+            Metadata you can use to categorise and filter videos. Metadata is a list of dictionaries, where each dictionary represents a key value pair for categorising a video.
+          example: '[{"key":"Author", "value":"John Doe"}, {"key":"Format", "value":"Tutorial"}]'
+          items:
+            $ref: '#/components/schemas/metadata'
+          type: array
+        source:
+          $ref: '#/components/schemas/video-source'
+        assets:
+          $ref: '#/components/schemas/video-assets'
+        playerId:
+          description: |
+            The id of the player that will be applied on the video.
+          example: pl45KFKdlddgk654dspkze
+          type: string
+        public:
+          description: |
+            Defines if the content is publicly reachable or if a unique token is needed for each play session. Default is true. Tutorials on [private videos](https://api.video/blog/endpoints/private-videos/).
+          example: false
+          type: boolean
+        panoramic:
+          description: |
+            Defines if video is panoramic.
+          example: false
+          type: boolean
+        mp4Support:
+          description: |
+            This lets you know whether mp4 is supported. If enabled, an mp4 URL will be provided in the response for the video.
+          example: true
+          type: boolean
+      required:
+      - videoId
+      title: Video
+      type: object
+    authenticate-payload:
+      example:
+        apiKey: 9VxMaPgsaFg7EBqmuspSzF7
+      properties:
+        apiKey:
+          description: Your account API key. You can use your sandbox API key, or
+            you can use your production API key.
+          type: string
+      required:
+      - apiKey
+      title: ApiKey
+      type: object
+    refresh-token-payload:
+      example:
+        refreshToken: def502005346d9cc2bd79a7793ab5bdabfefcaabfbb8c253f14733f1262077e1a3f38c4751d6d20f590c3784e531a82adc11f05fc1949aa46d5575aaa99cb84b9334ba66ac773576b5d7a418937ae337de62811d086dd42ad1164b12f87d67be6ffea18f2d50be9b95697b21c4d3c4372849bdb2287259cb80541570e913691a08b2fa33c85885930de15cebea627fc09f0255562ab3d39d87d4ff8fc02b00e252afcd480421dec7de9d1411176bcf669c527762e22294b453bc9ea06e9fa8ba5b873feb2ee14ce0a6a6ddd4b78c580631e210e9b9387265dc2bec9478a66a09dcdce1c40d2f856689e9d81742c9628a0b87b359e0b218ea1f07427eef89f999e47af89792f598e05847bd008fddc32ee63f4a601ffb4cd2ad08977f1c854ec358238322c918f05aa5a41f8a171dee497218408abc8283473f6112aeed7310815416a0fa36c63667e0ed014fa40b8992891bf58bae400d901c01450101c88f4978938ad138adc19cfe5698d60fd82cb27c586f6a8f70f4393c7c9e579df8739d46d249fb76d7
+      properties:
+        refreshToken:
+          description: |
+            The refresh token is either the first refresh token you received when you authenticated with the auth/api-key endpoint, or it's the refresh token from the last time you used the auth/refresh endpoint. Place this in the body of your request to obtain a new access token (which is valid for an hour) and a new refresh token.
+          type: string
+      required:
+      - refreshToken
+      title: RefreshToken
+      type: object
+    metadata:
+      properties:
+        key:
+          description: The constant that defines the data set.
+          example: Color
+          type: string
+        value:
+          description: A variable which belongs to the data set.
+          example: Green
+          type: string
+      title: Metadata
+      type: object
+      x-client-all-args-constructor: true
+    video-upload-payload:
+      properties:
+        file:
+          description: The path to the video you would like to upload. The path must
+            be local. If you want to use a video from an online source, you must use
+            the "/videos" endpoint and add the "source" parameter when you create
+            a new video.
+          format: binary
+          type: string
+          x-client-chunk-upload: "true"
+      required:
+      - file
+      type: object
+    token-upload-payload:
+      properties:
+        file:
+          description: The path to the video you want to upload.
+          format: binary
+          type: string
+          x-client-chunk-upload: "true"
+        videoId:
+          description: The video id returned by the first call to this endpoint in
+            a large video upload scenario.
+          type: string
+          x-client-ignore: true
+          x-client-copy-from-response: true
+      required:
+      - file
+      title: tokenUploadPayload
+      type: object
+    video-source-live-stream-link:
+      properties:
+        rel:
+          type: string
+        uri:
+          type: string
+      type: object
+    video-source-live-stream:
+      description: This appears if the video is from a Live Record.
+      properties:
+        liveStreamId:
+          description: The unique identifier for the live stream.
+          example: li400mYKSgQ6xs7taUeSaEKr
+          type: string
+        links:
+          items:
+            $ref: '#/components/schemas/video-source-live-stream-link'
+          type: array
+      type: object
+    video-source:
+      description: Source information about the video.
+      properties:
+        uri:
+          description: The URL where the video is stored.
+          example: /videos/vi4k0jvEUuaTdRAEjQ4Prklg/source
+          type: string
+        type:
+          type: string
+        liveStream:
+          $ref: '#/components/schemas/video-source-live-stream'
+      title: VideoSource
+      type: object
+    video-assets:
+      description: Collection of details about the video object that you can use to
+        work with the video object.
+      properties:
+        hls:
+          description: This is the manifest URL. For HTTP Live Streaming (HLS), when
+            a HLS video stream is initiated, the first file to download is the manifest.
+            This file has the extension M3U8, and provides the video player with information
+            about the various bitrates available for streaming.
+          format: uri
+          type: string
+        iframe:
+          description: Code to use video from a third party website
+          example: <iframe src="//embed.api.video/c188ed58-3403-46a2-b91b-44603d10b2c9?token=831a9bd9-9f50-464c-a369-8e9d914371ae"
+            width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen=""></iframe>
+          type: string
+        player:
+          description: Raw url of the player.
+          example: https://embed.api.video/1b9d6ae8-8f57-4b6d-8552-d636926b4f5f?token=831a9bd9-9f50-464c-a369-8e9d914371ae
+          format: uri
+          type: string
+        thumbnail:
+          description: Poster of the video.
+          example: https://cdn.api.video/stream/831a9bd9-9f50-464c-a369-8e9d914371ae/thumbnail.jpg
+          format: uri
+          type: string
+        mp4:
+          description: Available only if mp4Support is enabled. Raw mp4 url.
+          example: https://cdn.api.video/vod/vi4k0jvEUuaTdRAEjQ4Jfrgz/token/8fd70443-d9f0-45d2-b01c-12c8cfc707c9/mp4/source.mp4
+          format: uri
+          type: string
+      title: VideoAssets
+      type: object
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+    apiKey:
+      scheme: basic
+      type: http
+x-stoplight:
+  id: ybzk39fiws46g
+x-client-base-paths:
+  production: https://ws.api.video
+  sandbox: https://sandbox.api.video
+x-doctave:
+  explorer-enabled: true
+  proxy-enabled: true
+  samples-enabled: true
+  samples-languages:
+  - curl
+  - go
+  - node
+  - php
+  - python
+x-webhooks:
+  live-stream.broadcast.started:
+    post:
+      tags:
+      - Webhooks
+      summary: Live stream started
+      description: This webhook triggers when a live stream broadcast is started.
+      operationId: POST-webhooks
+      parameters:
+      - in: header
+        name: X-Api-Video-WebhookID
+        schema:
+          type: string
+        description: The unique ID of your webhook.
+        required: true
+      - in: header
+        name: X-Api-Video-Signature
+        schema:
+          type: string
+        description: The webhook's body encrypted using the webhook's signature secret,
+          in HMAC SHA256. Use this hash to verify that api.video is the origin of
+          this webhook notification.
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: The name of the webhook event that occurred.
+                  example: live-stream.broadcast.started
+                emittedAt:
+                  description: Returns the date-time when the webhook event occurred.
+                  type: string
+                  format: date-time
+                  example: 2024-08-151T10:18:47+00:00
+                liveStreamId:
+                  description: The ID of the live stream that started broadcasting.
+                  type: string
+                  example: li400mYKSgQ6xs7taUeSaEap
+      responses:
+        "202":
+          summary: Accepted
+          description: Your webhook server may return this response to api.video to
+            signal that the webhook is accepted.
+  live-stream.broadcast.ended:
+    post:
+      tags:
+      - Webhooks
+      summary: Live stream ended
+      description: This webhook triggers when a live stream broadcast is ended.
+      operationId: POST-webhooks
+      parameters:
+      - in: header
+        name: X-Api-Video-WebhookID
+        schema:
+          type: string
+        description: The unique ID of your webhook.
+        required: true
+      - in: header
+        name: X-Api-Video-Signature
+        schema:
+          type: string
+        description: The webhook's body encrypted using the webhook's signature secret,
+          in HMAC SHA256. Use this hash to verify that api.video is the origin of
+          this webhook notification.
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: The name of the webhook event that occurred.
+                  example: live-stream.broadcast.ended
+                emittedAt:
+                  description: Returns the date-time when the webhook event occurred.
+                  type: string
+                  format: date-time
+                  example: 2024-08-151T10:18:47+00:00
+                liveStreamId:
+                  description: The ID of the live stream that ended broadcasting.
+                  type: string
+                  example: li400mYKSgQ6xs7taUeSaEap
+      responses:
+        "202":
+          summary: Accepted
+          description: Your webhook server may return this response to api.video to
+            signal that the webhook is accepted.
+  video.source.recorded:
+    post:
+      tags:
+      - Webhooks
+      summary: Video source recorded
+      description: This webhook triggers when a live stream broadcast is completed
+        and the recording of the stream is ready for transcoding. This means that
+        the video is in queue for transcoding.
+      operationId: POST-webhooks
+      parameters:
+      - in: header
+        name: X-Api-Video-WebhookID
+        schema:
+          type: string
+        description: The unique ID of your webhook.
+        required: true
+      - in: header
+        name: X-Api-Video-Signature
+        schema:
+          type: string
+        description: The webhook's body encrypted using the webhook's signature secret,
+          in HMAC SHA256. Use this hash to verify that api.video is the origin of
+          this webhook notification.
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: The name of the webhook event that occurred.
+                  example: video.source.recorded
+                emittedAt:
+                  description: Returns the date-time when the webhook event occurred.
+                  type: string
+                  format: date-time
+                  example: 2024-08-151T10:18:47+00:00
+                liveStreamId:
+                  description: The ID of the live stream that ended broadcasting.
+                  type: string
+                  example: li400mYKSgQ6xs7taUeSaEap
+                videoId:
+                  description: The video ID of the live stream recording.
+                  type: string
+                  example: vi4blUQJFrYWbaG44NChkH11
+      responses:
+        "202":
+          summary: Accepted
+          description: Your webhook server may return this response to api.video to
+            signal that the webhook is accepted.
+  video.encoding.quality.completed:
+    post:
+      tags:
+      - Webhooks
+      summary: Video encoding completed
+      description: This webhook triggers when a new video is uploaded into your account,
+        and all HLS and mp4 quality versions are encoded.
+      operationId: POST-webhooks
+      parameters:
+      - in: header
+        name: X-Api-Video-WebhookID
+        schema:
+          type: string
+        description: The unique ID of your webhook.
+        required: true
+      - in: header
+        name: X-Api-Video-Signature
+        schema:
+          type: string
+        description: The webhook's body encrypted using the webhook's signature secret,
+          in HMAC SHA256. Use this hash to verify that api.video is the origin of
+          this webhook notification.
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: The name of the webhook event that occurred.
+                  example: video.encoding.quality.completed
+                emittedAt:
+                  description: Returns the date-time when the webhook event occurred.
+                  type: string
+                  format: date-time
+                  example: 2024-08-151T10:18:47+00:00
+                videoId:
+                  description: The ID of the video where a certain quality version's
+                    encoding is finished.
+                  type: string
+                  example: vi4blUQJFrYWbaG44NChkH11
+                encoding:
+                  description: The type of encoding that is finished.
+                  type: string
+                  enum:
+                  - hls
+                  - mp4
+                  example: hls
+                quality:
+                  description: The quality version of encoding that is finished.
+                  type: string
+                  enum:
+                  - 240p
+                  - 360p
+                  - 480p
+                  - 720p
+                  - 1080p
+                  example: 1080p
+      responses:
+        "202":
+          summary: Accepted
+          description: Your webhook server may return this response to api.video to
+            signal that the webhook is accepted.
+  video.caption.generated:
+    post:
+      tags:
+      - Webhooks
+      summary: Video caption generated
+      description: This webhook triggers when the API finishes generating a caption
+        for a video.
+      operationId: POST-webhooks
+      parameters:
+      - in: header
+        name: X-Api-Video-WebhookID
+        schema:
+          type: string
+        description: The unique ID of your webhook.
+        required: true
+      - in: header
+        name: X-Api-Video-Signature
+        schema:
+          type: string
+        description: The webhook's body encrypted using the webhook's signature secret,
+          in HMAC SHA256. Use this hash to verify that api.video is the origin of
+          this webhook notification.
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: The name of the webhook event that occurred.
+                  example: video.caption.generated
+                emittedAt:
+                  description: Returns the date-time when the webhook event occurred.
+                  type: string
+                  format: date-time
+                  example: 2024-08-151T10:18:47+00:00
+                videoId:
+                  description: The ID of the video for which the caption was generated.
+                  type: string
+                  example: vi4blUQJFrYWbaG44NCh1234
+                captionId:
+                  description: The ID of the caption that was generated.
+                  type: string
+                  example: caption_1CHAfLFHT5B5EV4vzT1234
+                generationMode:
+                  description: Returns the method used to generate the caption. `transcript`
+                    means that the caption was generated based on the transcription
+                    of the video. Learn more about transcripts [here](https://docs.api.video/vod/generate-transcripts).
+                  type: string
+                  enum:
+                  - transcript
+                  example: transcript
+                language:
+                  description: Returns the language of the captions in [IETF language
+                    tag](https://en.wikipedia.org/wiki/IETF_language_tag) format.
+                  example: en
+                  type: string
+                  enum:
+                  - ar
+                  - ca
+                  - cs
+                  - da
+                  - de
+                  - el
+                  - en
+                  - es
+                  - fa
+                  - fi
+                  - fr
+                  - he
+                  - hi
+                  - hr
+                  - hu
+                  - it
+                  - ja
+                  - ko
+                  - ml
+                  - nl
+                  - nn
+                  - false
+                  - pl
+                  - pt
+                  - ru
+                  - sk
+                  - sl
+                  - te
+                  - tr
+                  - uk
+                  - ur
+                  - vi
+                  - zh
+      responses:
+        "202":
+          summary: Accepted
+          description: Your webhook server may return this response to api.video to
+            signal that the webhook is accepted.
+  video.summary.generated:
+    post:
+      tags:
+      - Webhooks
+      summary: Video summary generated
+      description: This webhook triggers when the API finishes generating a summary
+        for a video.
+      operationId: POST-webhooks
+      parameters:
+      - in: header
+        name: X-Api-Video-WebhookID
+        schema:
+          type: string
+        description: The unique ID of your webhook.
+        required: true
+      - in: header
+        name: X-Api-Video-Signature
+        schema:
+          type: string
+        description: The webhook's body encrypted using the webhook's signature secret,
+          in HMAC SHA256. Use this hash to verify that api.video is the origin of
+          this webhook notification.
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: The name of the webhook event that occurred.
+                  example: video.summary.generated
+                emittedAt:
+                  description: Returns the date-time when the webhook event occurred.
+                  type: string
+                  format: date-time
+                  example: 2024-08-151T10:18:47+00:00
+                videoId:
+                  description: The ID of the video for which the summary was generated.
+                  type: string
+                  example: vi4blUQJFrYWbaG44NCh1234
+                summaryId:
+                  description: The ID of the summary that was generated.
+                  type: string
+                  example: summary_1CGyYoB9XCgBk4iQna8ocT
+      responses:
+        "202":
+          summary: Accepted
+          description: Your webhook server may return this response to api.video to
+            signal that the webhook is accepted.
+

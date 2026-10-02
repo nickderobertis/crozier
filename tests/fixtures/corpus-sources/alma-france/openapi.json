@@ -1,0 +1,1632 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Alma Payments API",
+    "description": "Alma payment API for buy-now-pay-later (BNPL) solutions. Supports payment creation, eligibility checks, refunds, and order management.",
+    "version": "1.0.0",
+    "x-jentic-source-url": "https://docs.almapay.com/reference/"
+  },
+  "servers": [
+    {
+      "url": "https://api.getalma.eu/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "https://api.sandbox.getalma.eu/v1",
+      "description": "Sandbox server"
+    }
+  ],
+  "paths": {
+    "/payments": {
+      "post": {
+        "operationId": "createpayment",
+        "summary": "Create a payment",
+        "tags": [
+          "Payments"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listpayments",
+        "summary": "Retrieve payments list",
+        "tags": [
+          "Payments"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of results per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of payments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Payment"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "operationId": "getpayment",
+        "summary": "Retrieve a payment",
+        "tags": [
+          "Payments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "modifypayment",
+        "summary": "Modify a payment",
+        "tags": [
+          "Payments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment identifier"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModifyPaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment modified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "cancelpayment",
+        "summary": "Cancel a payment",
+        "tags": [
+          "Payments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}/capture": {
+      "post": {
+        "operationId": "capturepayment",
+        "summary": "Capture a deferred payment",
+        "tags": [
+          "Payments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment captured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}/sms": {
+      "post": {
+        "operationId": "sendpaymentsms",
+        "summary": "Send payment link via SMS",
+        "tags": [
+          "Payments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment identifier"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string",
+                    "description": "Phone number to send the payment link to"
+                  }
+                },
+                "required": [
+                  "phone"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SMS sent successfully"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}/email": {
+      "post": {
+        "operationId": "sendpaymentemail",
+        "summary": "Send payment link via email",
+        "tags": [
+          "Payments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment identifier"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address to send the payment link to"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email sent successfully"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{payment_id}/orders": {
+      "post": {
+        "operationId": "createorder",
+        "summary": "Create an order for an existing payment",
+        "tags": [
+          "Orders"
+        ],
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment identifier"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/refunds": {
+      "post": {
+        "operationId": "createrefund",
+        "summary": "Create a refund",
+        "tags": [
+          "Refunds"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRefundRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Refund created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refund"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eligibility/purchases": {
+      "post": {
+        "operationId": "checkpurchaseeligibility",
+        "summary": "Verify purchase eligibility",
+        "tags": [
+          "Eligibility"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EligibilityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Eligibility result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EligibilityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/addresses": {
+      "post": {
+        "operationId": "createaddress",
+        "summary": "Create an address",
+        "tags": [
+          "Addresses"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Address"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Address"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/balance-transactions": {
+      "get": {
+        "operationId": "listbalancetransactions",
+        "summary": "Retrieve a list of balance transactions",
+        "tags": [
+          "BalanceTransactions"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of results per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of balance transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BalanceTransaction"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data-exports": {
+      "post": {
+        "operationId": "createdataexport",
+        "summary": "Create a data export",
+        "tags": [
+          "DataExports"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDataExportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data export created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataExport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data-exports/{id}": {
+      "get": {
+        "operationId": "getdataexport",
+        "summary": "Retrieve a data export",
+        "tags": [
+          "DataExports"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Data export identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data export details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataExport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}/cancel": {
+      "put": {
+        "operationId": "cancelPayment",
+        "summary": "Cancel payment",
+        "description": "Cancel an existing payment.",
+        "tags": [
+          "Payments"
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancel payment successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ]
+      }
+    },
+    "/payments/{id}/update": {
+      "post": {
+        "operationId": "updatePayment",
+        "summary": "Update payment",
+        "description": "Modify an existing payment.",
+        "tags": [
+          "Payments"
+        ],
+        "responses": {
+          "200": {
+            "description": "Update payment successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks": {
+      "post": {
+        "operationId": "configureWebhooks",
+        "summary": "Configure webhooks",
+        "description": "Configure webhook endpoints for event notifications.",
+        "tags": [
+          "Webhooks"
+        ],
+        "responses": {
+          "200": {
+            "description": "Configure webhooks successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers": {
+      "post": {
+        "operationId": "createCustomer",
+        "summary": "Create customer",
+        "description": "Create a new customer record.",
+        "tags": [
+          "Customers"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getCustomer",
+        "summary": "Get customer",
+        "description": "Retrieve customer data.",
+        "tags": [
+          "Customers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{payment_id}/orders/status": {
+      "post": {
+        "operationId": "updateOrderStatus",
+        "summary": "Update order status",
+        "description": "Send order status update for a payment.",
+        "tags": [
+          "Orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Update order status successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{payment_id}/orders/shipment": {
+      "post": {
+        "operationId": "sendShipmentInfo",
+        "summary": "Send shipment info",
+        "description": "Send shipment information for a payment order.",
+        "tags": [
+          "Orders"
+        ],
+        "responses": {
+          "200": {
+            "description": "Send shipment info successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Payment ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AlmaAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Alma API key authentication. Format: 'Alma-Auth sk_live_your_api_key' or 'Alma-Auth sk_test_your_api_key'"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "description": "Error code identifier"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique payment identifier"
+          },
+          "status": {
+            "type": "string",
+            "description": "Payment status"
+          },
+          "purchase_amount": {
+            "type": "integer",
+            "description": "Purchase amount in cents"
+          },
+          "customer_fee": {
+            "type": "integer",
+            "description": "Customer fee in cents"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "payment_plan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentPlanItem"
+            }
+          },
+          "url": {
+            "type": "string",
+            "description": "Payment page URL"
+          },
+          "return_url": {
+            "type": "string",
+            "description": "Return URL after payment"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          }
+        }
+      },
+      "CreatePaymentRequest": {
+        "type": "object",
+        "required": [
+          "payment"
+        ],
+        "properties": {
+          "payment": {
+            "type": "object",
+            "required": [
+              "purchase_amount",
+              "return_url",
+              "installments_count"
+            ],
+            "properties": {
+              "purchase_amount": {
+                "type": "integer",
+                "description": "Purchase amount in cents"
+              },
+              "return_url": {
+                "type": "string",
+                "description": "URL to redirect after payment"
+              },
+              "installments_count": {
+                "type": "integer",
+                "description": "Number of installments"
+              },
+              "customer_cancel_url": {
+                "type": "string",
+                "description": "URL to redirect on cancellation"
+              },
+              "ipn_callback_url": {
+                "type": "string",
+                "description": "URL for server-to-server payment notifications"
+              },
+              "locale": {
+                "type": "string",
+                "description": "Locale for the payment page (e.g., fr, en)"
+              }
+            }
+          },
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          }
+        }
+      },
+      "ModifyPaymentRequest": {
+        "type": "object",
+        "properties": {
+          "purchase_amount": {
+            "type": "integer",
+            "description": "Updated purchase amount in cents"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "birth_date": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "PaymentPlanItem": {
+        "type": "object",
+        "properties": {
+          "due_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Due date for this installment"
+          },
+          "purchase_amount": {
+            "type": "integer",
+            "description": "Amount for this installment in cents"
+          },
+          "state": {
+            "type": "string",
+            "description": "State of the installment"
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "merchant_reference": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateOrderRequest": {
+        "type": "object",
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "description": "Merchant order reference"
+          }
+        }
+      },
+      "Refund": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "payment_id": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Refund amount in cents"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateRefundRequest": {
+        "type": "object",
+        "required": [
+          "payment_id",
+          "amount"
+        ],
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "description": "Payment to refund"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Refund amount in cents"
+          }
+        }
+      },
+      "EligibilityRequest": {
+        "type": "object",
+        "required": [
+          "purchase_amount"
+        ],
+        "properties": {
+          "purchase_amount": {
+            "type": "integer",
+            "description": "Purchase amount in cents"
+          },
+          "installments_counts": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "List of installment counts to check eligibility for"
+          }
+        }
+      },
+      "EligibilityResponse": {
+        "type": "object",
+        "properties": {
+          "eligible": {
+            "type": "boolean",
+            "description": "Whether the purchase is eligible"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Reasons if not eligible"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "line1": {
+            "type": "string"
+          },
+          "line2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        }
+      },
+      "BalanceTransaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Amount in cents"
+          },
+          "type": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DataExport": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "download_url": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateDataExportRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of data to export"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Start date for export range"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "description": "End date for export range"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "AlmaAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Payments",
+      "description": "Payment management operations"
+    },
+    {
+      "name": "Refunds",
+      "description": "Refund operations"
+    },
+    {
+      "name": "Eligibility",
+      "description": "Purchase eligibility checks"
+    },
+    {
+      "name": "Orders",
+      "description": "Order management"
+    },
+    {
+      "name": "Addresses",
+      "description": "Address management"
+    },
+    {
+      "name": "BalanceTransactions",
+      "description": "Balance transaction history"
+    },
+    {
+      "name": "DataExports",
+      "description": "Data export operations"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Webhooks endpoints"
+    },
+    {
+      "name": "Customers",
+      "description": "Customers endpoints"
+    }
+  ]
+}

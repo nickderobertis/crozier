@@ -1,0 +1,15 @@
+post:
+  summary: Reboot the system
+  operationId: rebootSystem
+  description: Reboot the system.
+  tags:
+    - system
+  responses:
+    "204":
+      description: No Content
+    "400":
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/error.yml#/ErrorResponse"

@@ -1,0 +1,3 @@
+exit=1
+src/probe/__init__.py:12: error: Incompatible import of "GetThingResponse" (imported name has type "type[probe.beta.types.get_thing_response.GetThingResponse]", local name has type "type[probe.alpha.types.get_thing_response.GetThingResponse]")  [assignment]
+Found 1 error in 1 file (checked 38 source files)

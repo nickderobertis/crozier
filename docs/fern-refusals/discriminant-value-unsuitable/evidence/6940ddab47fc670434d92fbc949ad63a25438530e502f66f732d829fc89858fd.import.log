@@ -1,0 +1,19 @@
+exit=1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import probe, pkgutil, importlib; [importlib.import_module(m.name) for m in pkgutil.walk_packages(probe.__path__, probe.__name__ + ".")]; print("all SDK modules import: PASS")
+                                       ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1406, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "<scratch>/sdk-6940ddab47fc670434d92fbc949ad63a25438530e502f66f732d829fc89858fd/src/probe/datapoints/client.py", line 12, in <module>
+    from ..types.i_asset_input import IAssetInput
+  File "<scratch>/sdk-6940ddab47fc670434d92fbc949ad63a25438530e502f66f732d829fc89858fd/src/probe/types/i_asset_input.py", line 11, in <module>
+    from .i_asset_input_existing_asset_input_metadata import IAssetInputExistingAssetInputMetadata
+ModuleNotFoundError: No module named 'probe.types.i_asset_input_existing_asset_input_metadata'

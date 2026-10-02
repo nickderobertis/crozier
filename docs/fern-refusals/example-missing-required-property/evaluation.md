@@ -59,20 +59,20 @@ the rule is restored.
 
 [The population refusal log](evaluation-logs/population-refusals.jsonl) runs
 the integrated release build over every retrievable document of the class in
-both modes: 129 of 130 are refused, each with exit 1, no files and one stderr
+both modes: all 130 are refused, each with exit 1, no files and one stderr
 line naming the class that fires first, with `fern-strict` as the strict cause.
 
-The remaining document, AWS MediaLive (`4cecee33…`), reaches this class only
-through `type-name-collision`, a `names`-family class, as the manager ruled.
-Delta-debugging it against pinned Fern, first over its path items, then over
-its component schemas, leaves `POST /prod/multiplexes` with four components.
-On that [reduced document](evaluation-logs/fern-medialive-reduced.log) Fern
-reports both `CreateMultiplexRequest is already declared in this file` and
-the missing `request.multiplexSettings.TransportStreamBitrate`. The operation's
-inline request body takes Fern's name `CreateMultiplexRequest`, which a
-component already holds, and Fern validates its own example against that
-component. The [hand-written collision alone](request-name-collision.yml)
+AWS MediaLive (`4cecee33…`) reaches this class only through a `names`-family
+collision. Delta-debugging it against pinned Fern, first over its path items,
+then over its component schemas, leaves `POST /prod/multiplexes` with four
+components. On that [reduced document](evaluation-logs/fern-medialive-reduced.log)
+Fern reports both `CreateMultiplexRequest is already declared in this file`
+and the missing `request.multiplexSettings.TransportStreamBitrate`: the
+operation's inline request body takes Fern's name `CreateMultiplexRequest`,
+which a component already holds, and Fern validates its own example against
+that component. The [hand-written collision alone](request-name-collision.yml)
 reports [only the name collision](evaluation-logs/fern-request-name-collision.log).
-Detecting it belongs to the `names` family's detector and is not added here;
-baseline crozier writes no SDK for MediaLive either, failing `ruff` on a
-duplicate keyword argument.
+No detector for it is added here. With the `names` family merged, crozier
+refuses MediaLive in both modes as `request-property-camelcase-collision` (its
+schedule operation's `maxResults` and `MaxResults`), a class Fern also reports
+for it; the inline-request-name collision itself remains a `names` follow-up.

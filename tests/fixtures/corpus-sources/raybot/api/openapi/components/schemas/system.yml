@@ -1,0 +1,43 @@
+SystemInfo:
+  type: object
+  properties:
+    localIp:
+      type: string
+      description: The local IP address of the system
+      x-order: 1
+    cpuUsage:
+      type: number
+      description: The CPU usage of the system in percentage
+      x-order: 2
+    memoryUsage:
+      type: number
+      description: The memory usage of the system in percentage
+      x-order: 3
+    totalMemory:
+      type: number
+      description: The total memory of the system in MB
+      x-order: 4
+    uptime:
+      type: number
+      description: The uptime of the system in seconds
+      x-order: 5
+  required:
+    - localIp
+    - cpuUsage
+    - memoryUsage
+    - totalMemory
+    - uptime
+
+SystemStatus:
+  type: object
+  properties:
+    status:
+      type: string
+      enum:
+        - NORMAL
+        - ERROR
+      description: The status of the system
+      x-order: 1
+      x-go-type: string
+  required:
+    - status

@@ -1,0 +1,466 @@
+RobotStateResponse:
+  type: object
+  properties:
+    battery:
+      $ref: "#/BatteryState"
+      x-order: 1
+    charge:
+      $ref: "#/ChargeState"
+      x-order: 2
+    discharge:
+      $ref: "#/DischargeState"
+      x-order: 3
+    distanceSensor:
+      $ref: "#/DistanceSensorState"
+      x-order: 4
+    liftMotor:
+      $ref: "#/LiftMotorState"
+      x-order: 5
+    driveMotor:
+      $ref: "#/DriveMotorState"
+      x-order: 6
+    location:
+      $ref: "#/LocationState"
+      x-order: 7
+    cargo:
+      $ref: "#/CargoState"
+      x-order: 8
+    cargoDoorMotor:
+      $ref: "#/CargoDoorMotorState"
+      x-order: 9
+    appConnection:
+      $ref: "./app-connection.yml#/AppConnection"
+      x-order: 10
+    leds:
+      type: object
+      properties:
+        systemLed:
+          $ref: "#/Led"
+        alertLed:
+          $ref: "#/Led"
+      x-order: 11
+      required:
+        - systemLed
+        - alertLed
+  required:
+    - battery
+    - charge
+    - discharge
+    - distanceSensor
+    - liftMotor
+    - driveMotor
+    - location
+    - cargo
+    - cargoDoorMotor
+    - appConnection
+    - leds
+
+BatteryState:
+  type: object
+  properties:
+    current:
+      type: integer
+      example: 100
+      description: The current of the battery
+      x-order: 1
+      x-go-type: uint16
+    temp:
+      type: integer
+      example: 25
+      description: The temperature of the battery
+      x-order: 2
+      x-go-type: uint8
+    voltage:
+      type: integer
+      example: 120
+      description: The voltage of the battery
+      x-order: 3
+      x-go-type: uint16
+    cellVoltages:
+      type: array
+      items:
+        type: integer
+      example: [12, 12, 12, 12]
+      description: The cell voltages of the battery
+      x-order: 4
+      x-go-type: "[]uint16"
+    percent:
+      type: integer
+      example: 50
+      description: The percentage of the battery
+      x-order: 5
+      x-go-type: uint8
+    fault:
+      type: integer
+      example: 0
+      description: The fault of the battery
+      x-order: 6
+      x-go-type: uint8
+    health:
+      type: integer
+      example: 100
+      description: The health of the battery
+      x-order: 7
+      x-go-type: uint8
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2021-01-01T00:00:00Z"
+      description: The updated at time of the battery
+      x-order: 8
+  required:
+    - current
+    - temp
+    - voltage
+    - cellVoltages
+    - percent
+    - fault
+    - health
+    - updatedAt
+
+ChargeState:
+  type: object
+  properties:
+    currentLimit:
+      type: integer
+      example: 100
+      description: The current limit of the charge
+      x-order: 1
+      x-go-type: uint16
+    enabled:
+      type: boolean
+      example: true
+      description: Whether the charge is enabled
+      x-order: 2
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2021-01-01T00:00:00Z"
+      description: The updated at time of the charge
+      x-order: 3
+  required:
+    - currentLimit
+    - enabled
+    - updatedAt
+
+DischargeState:
+  type: object
+  properties:
+    currentLimit:
+      type: integer
+      example: 100
+      description: The current limit of the discharge
+      x-order: 1
+      x-go-type: uint16
+    enabled:
+      type: boolean
+      example: true
+      description: Whether the discharge is enabled
+      x-order: 2
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2021-01-01T00:00:00Z"
+      description: The updated at time of the discharge
+      x-order: 3
+  required:
+    - currentLimit
+    - enabled
+    - updatedAt
+
+DistanceSensorState:
+  type: object
+  properties:
+    frontDistance:
+      type: integer
+      example: 100
+      description: The front distance of the distance sensor
+      x-order: 1
+      x-go-type: uint16
+    backDistance:
+      type: integer
+      example: 100
+      description: The back distance of the distance sensor
+      x-order: 2
+      x-go-type: uint16
+    downDistance:
+      type: integer
+      example: 100
+      description: The down distance of the distance sensor
+      x-order: 3
+      x-go-type: uint16
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2021-01-01T00:00:00Z"
+      description: The updated at time of the distance sensor
+      x-order: 4
+  required:
+    - frontDistance
+    - backDistance
+    - downDistance
+    - updatedAt
+
+LiftMotorState:
+  type: object
+  properties:
+    currentPosition:
+      type: integer
+      example: 100
+      description: The current position of the lift motor
+      x-order: 1
+      x-go-type: uint16
+    targetPosition:
+      type: integer
+      example: 100
+      description: The target position of the lift motor
+      x-order: 2
+      x-go-type: uint16
+    isRunning:
+      type: boolean
+      example: true
+      description: Whether the lift motor is running
+      x-order: 3
+    enabled:
+      type: boolean
+      example: true
+      description: Whether the lift motor is enabled
+      x-order: 4
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2021-01-01T00:00:00Z"
+      description: The updated at time of the lift motor
+      x-order: 5
+  required:
+    - currentPosition
+    - targetPosition
+    - isRunning
+    - enabled
+    - updatedAt
+
+DriveMotorState:
+  type: object
+  properties:
+    direction:
+      type: string
+      enum:
+        - FORWARD
+        - BACKWARD
+      example: "FORWARD"
+      description: The direction of the drive motor
+      x-order: 1
+      x-go-type: string
+    speed:
+      type: integer
+      example: 100
+      description: The speed of the drive motor (0-100)
+      x-order: 2
+      x-go-type: uint8
+    isRunning:
+      type: boolean
+      example: true
+      description: Whether the drive motor is running
+      x-order: 3
+    enabled:
+      type: boolean
+      example: true
+      description: Whether the drive motor is enabled
+      x-order: 4
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2021-01-01T00:00:00Z"
+      description: The updated at time of the drive motor
+      x-order: 5
+  required:
+    - direction
+    - speed
+    - isRunning
+    - enabled
+    - updatedAt
+
+LocationState:
+  type: object
+  properties:
+    currentLocation:
+      type: string
+      example: "ABCxyz"
+      description: The current location of the robot
+      x-order: 1
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2021-01-01T00:00:00Z"
+      description: The updated at time of the location
+      x-order: 2
+  required:
+    - currentLocation
+    - updatedAt
+
+CargoState:
+  type: object
+  properties:
+    isOpen:
+      type: boolean
+      example: true
+      description: Whether the cargo is open
+      x-order: 1
+    qrCode:
+      type: string
+      example: "ABCxyz"
+      description: The QR code read from the cargo QR scanner
+      x-order: 2
+    bottomDistance:
+      type: integer
+      example: 100
+      description: The bottom distance of the cargo
+      x-order: 3
+      x-go-type: uint16
+    hasItem:
+      type: boolean
+      example: true
+      description: Whether the cargo has an item
+      x-order: 4
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2025-01-01T00:00:00Z"
+      description: The updated at time of the cargo
+      x-order: 5
+  required:
+    - isOpen
+    - qrCode
+    - bottomDistance
+    - hasItem
+    - updatedAt
+
+CargoDoorMotorState:
+  type: object
+  properties:
+    direction:
+      type: string
+      enum:
+        - CLOSE
+        - OPEN
+      example: "CLOSE"
+      description: The direction of the cargo door motor
+      x-order: 1
+      x-go-type: string
+    speed:
+      type: integer
+      example: 100
+      description: The speed of the cargo door motor
+      x-order: 2
+      x-go-type: uint8
+    isRunning:
+      type: boolean
+      example: true
+      description: Whether the cargo door motor is running
+      x-order: 3
+    enabled:
+      type: boolean
+      example: true
+      description: Whether the cargo door motor is enabled
+      x-order: 4
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2025-01-01T00:00:00Z"
+      description: The updated at time of the cargo door motor
+      x-order: 5
+  required:
+    - direction
+    - speed
+    - isRunning
+    - enabled
+    - updatedAt
+
+LimitSwitchState:
+  type: object
+  properties:
+    limitSwitch1:
+      $ref: "#/LimitSwitch"
+  required:
+    - limitSwitch1
+
+LimitSwitch:
+  type: object
+  properties:
+    pressed:
+      type: boolean
+      example: true
+      description: Whether the limit switch is pressed
+      x-order: 1
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2025-01-01T00:00:00Z"
+      description: The updated at time of the limit switch
+      x-order: 2
+  required:
+    - pressed
+    - updatedAt
+
+LedMode:
+  type: string
+  enum:
+    - OFF
+    - ON
+    - BLINK
+  example: "OFF"
+  description: The mode of the led
+  x-go-type: string
+
+LedState:
+  type: object
+  properties:
+    mode:
+      $ref: "#/LedMode"
+      x-order: 1
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2025-01-01T00:00:00Z"
+      description: The updated at time of the led
+      x-order: 2
+  required:
+    - mode
+    - updatedAt
+
+LedConnection:
+  type: object
+  properties:
+    connected:
+      type: boolean
+      example: true
+      description: Whether the led is connected
+      x-order: 1
+    lastConnectedAt:
+      type: string
+      format: date-time
+      nullable: true
+      example: "2025-01-01T00:00:00Z"
+      description: The last connected at time of the led
+      x-order: 2
+    error:
+      type: string
+      example: "error message"
+      nullable: true
+      description: The error message of the led
+      x-order: 3
+  required:
+    - connected
+    - lastConnectedAt
+    - error
+
+Led:
+  type: object
+  properties:
+    connection:
+      $ref: "#/LedConnection"
+    state:
+      $ref: "#/LedState"
+  required:
+    - connection
+    - state

@@ -132,8 +132,30 @@ crozier generate python \
 - `--audience` (repeatable) / `--audience-strict` — prune generation to
   `x-crozier-audiences`.
 
-crozier exits `0` on success (with a one-line summary on stderr) and `1` on any
-error, printing the exact problem and a suggested fix.
+crozier exits `0` on success (with a one-line summary on stderr), `1` on an
+error, printing the exact problem and a suggested fix, and `2` on a usage error
+(a bad flag or argument). `crozier compare` adds `3` and `4` for its results
+([`docs/compare.md`](docs/compare.md#exit-statuses)).
+
+To check crozier against the SDK you generate today, before switching, run
+`crozier compare`: for every generator your `crozier.yml` files declare, it runs a
+reference command you configure, generates crozier's SDK, compares the two trees
+after crozier's documented normalizations (comments, SDK-identity headers,
+`__init__.py` import order, generator metadata; see
+[`docs/matching.md`](docs/matching.md#how-the-comparison-works)), and reports the
+time each side took. See
+[`docs/compare.md`](docs/compare.md). Moving from Fern, the
+[Fern reference recipe](docs/fern-reference.md) produces that reference.
+
+In CI, the GitHub Action runs the same check on every pull request and reports
+it in the job summary:
+
+```yaml
+      - uses: nickderobertis/crozier@v0
+```
+
+See [`docs/github-action.md`](docs/github-action.md) for its inputs, outputs and
+versioning, and the one workflow a repository migrating from Fern adds.
 
 ## Configuration
 
@@ -192,6 +214,65 @@ Per-generation flags (`--spec`, `--output`, …) apply to a single generator, so
 they are rejected when more than one would run — name one, or set the values in
 `crozier.yml`. See [`docs/configuration.md`](docs/configuration.md) for the full
 reference.
+
+## Migrating from Fern
+
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires the README's migration section to link the guide's detail page; a README reader arrives here first, not through that page or AGENTS.md. -->
+A repository can move from Fern's Python generator to crozier one generator at a
+time, checking each against Fern before it switches. Before step 1, bring the
+Fern generator to the version crozier certifies; that and the other steps a
+migration may still need are in
+[`docs/migrating-from-fern.md`](docs/migrating-from-fern.md).
+
+**1. Add crozier config beside the Fern config**, one generator at a time. Save
+your copy of the [Fern reference recipe](docs/fern-reference.md) and name it as
+`reference.command`. Set `layout` to how that generator's Fern output was
+written: `flat` for a `local-file-system` output `path` (point `output` where that
+tree lives), `packaged` (the default) for `fern generate --preview --output`:
+
+<!-- migration-e2e: config -->
+```yaml
+# crozier.yml, at the repository root beside fern/
+generators:
+  python:
+    spec: ./fern/openapi/openapi.yml
+    output: ./sdks/python          # the generator's local-file-system path
+    package-name: acme             # fern.config.json's organization
+    layout: flat
+    reference:
+      command: ./scripts/fern-reference.sh
+```
+
+**2. Compare until every generator matches**, locally and in CI with the
+[GitHub Action](docs/github-action.md):
+
+<!-- migration-e2e: compare -->
+```sh
+crozier compare
+```
+
+It checks only generators that have crozier config, so the ones still on Fern do
+not fail it. crozier does not track what is left; list the Python generators
+your Fern config still runs:
+
+<!-- migration-e2e: remaining -->
+```sh
+grep -rn --include=generators.yml 'fernapi/fern-python-sdk' .
+```
+
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires the migration section to link the compare reference rather than restate it; a README reader has not come through AGENTS.md. -->
+[`docs/compare.md`](docs/compare.md) covers the report, exit statuses, JSON
+report, timings and the reference-command contract.
+
+**3. Switch the build** from `fern generate` to crozier:
+
+<!-- migration-e2e: generate -->
+```sh
+crozier generate python
+```
+
+**4. Remove that generator** (its `fernapi/fern-python-sdk` entry) from
+`generators.yml`. TypeScript and other generators stay on Fern.
 
 ## Development
 

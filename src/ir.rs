@@ -2048,12 +2048,10 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
 
     // The root client class name is Fern's `client_class_name` when given
     // (issue #61), else derived from the package name as `{PascalCase}Api`.
-    let client_name = config.client_class_name.clone().unwrap_or_else(|| {
-        format!(
-            "{}Api",
-            naming::to_pascal_case(config.package_name.as_str())
-        )
-    });
+    let client_name = config
+        .client_class_name
+        .clone()
+        .unwrap_or_else(|| crate::config::default_client_class_name(config.package_name.as_str()));
     let environment = environment_model(doc, &client_name);
 
     Ir {
@@ -4630,7 +4628,7 @@ fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
 /// The stem crozier snake-cases into a header parameter's Python name. Fern drops
 /// the conventional `X-` custom-header prefix (`X-TEST-ENDPOINT-HEADER` becomes
 /// `test_endpoint_header`), while the wire name stays the `headers` dict key.
-fn header_param_stem(wire_name: &str) -> &str {
+pub(crate) fn header_param_stem(wire_name: &str) -> &str {
     wire_name
         .strip_prefix("X-")
         .or_else(|| wire_name.strip_prefix("x-"))
@@ -7477,7 +7475,7 @@ fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
 /// the `operationId` alone — `inlined_search` → `InlinedSearch`, `verify code` →
 /// `VerifyCode` — never prefixing the tag, so a tag-grouped operation's hoisted
 /// type stays `VerifyCodeResponse`, not `WidgetsVerifyCodeResponse`.
-fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> String {
+pub(crate) fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> String {
     // An SDK-shaped operation names its hoisted types from the shape it declares,
     // not from its `operationId`: Fern joins the `x-fern-sdk-method-name` to the
     // LAST `x-fern-sdk-group-name` segment. Webflow's `time-on-page` under
@@ -7674,7 +7672,7 @@ fn tag_pascal(tag: &str) -> String {
 /// `inlinedrequests`), then the whole id, then the leading path segment. Where the
 /// operationId prefix *does* equal the tag (`widgets_getWidget` under `Widgets`),
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
-fn endpoint_module(op: &Operation, url: &str) -> String {
+pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
     // An explicit `x-crozier-sdk-group-name` / `x-fern-sdk-group-name` names the
     // sub-client outright and outranks every derivation below: it is the author
     // saying where the method goes, so neither the tag nor the `operationId` is
@@ -7930,7 +7928,8 @@ fn discriminant_value(schema: &Schema) -> Option<String> {
         .or_else(|| schema_example(schema)?.as_str().map(str::to_string))
 }
 
-fn inferred_discriminant_property(
+/// Infer the selector used by generation and by name-refusal validation.
+pub(crate) fn inferred_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {

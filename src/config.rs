@@ -100,6 +100,13 @@ impl GenerateConfig {
     }
 }
 
+/// The root client class name derived when none is configured:
+/// `{PascalCase(package_name)}Api`.
+#[must_use]
+pub fn default_client_class_name(package_name: &str) -> String {
+    format!("{}Api", crate::naming::to_pascal_case(package_name))
+}
+
 /// Derive a fallback package name from the API title.
 fn default_package_name(title: &str) -> String {
     let snake = crate::naming::prose_identifier(title);

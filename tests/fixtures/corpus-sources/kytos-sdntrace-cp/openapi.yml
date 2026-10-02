@@ -1,0 +1,277 @@
+openapi: 3.0.0
+info:
+  title: amlight/sdntrace_cp
+  version: '0.1'
+  description: An OpenFlow Path Tracing on Control Plane
+servers:
+  - url: /api/amlight/sdntrace_cp
+paths:
+  /v1/trace:
+    put:
+      summary: Trace a path
+      description: Trace a path starting with the switch given with the parameters given. The trace is done entirely in control plane.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trace:
+                  type: object
+                  required:
+                    - switch
+                  properties:
+                    switch:
+                      type: object
+                      required:
+                        - dpid
+                        - in_port
+                      properties:
+                        dpid:
+                          type: string
+                          description: Initial switch datapath ID
+                          example: 00:00:00:00:00:00:00:01
+                        in_port:
+                          type: integer
+                          description: Starting incoming port
+                          example: 1
+                    eth:
+                      type: object
+                      properties:
+                        dl_vlan:
+                          type: integer
+                          description: VLAN ID. This is an integer in range [1, 4095] as in a network packet.
+                          example: 100
+                          minimum: 1
+                          maximum: 4095
+                        dl_type:
+                          type: integer
+                          description: Ethernet type
+                          example: '0x8100'
+                        dl_src:
+                          type: string
+                          description: Source MAC address
+                          example: '01:23:45:67:89:ab'
+                        dl_dst:
+                          type: string
+                          description: Destination MAC address
+                          example: '23:45:67:89:ab:cd'
+                    ip:
+                      type: object
+                      properties:
+                        nw_src:
+                          type: string
+                          description: Source IP for IPv4.
+                          example: 192.168.20.21
+                        nw_dst:
+                          type: string
+                          description: Destination IP for IPv4.
+                          example: 192.168.25.123
+                        ipv6_src:
+                          type: string
+                          description: Source IP for IPv6.
+                          example: '2002:db8::8a3f:362:7897'
+                        ipv6_dst:
+                          type: string
+                          description: Destination IP for IPv6.
+                          example: '2002:db8::8a3f:362:7897'
+                        nw_proto:
+                          type: integer
+                          description: IP protocol
+                          example: 6
+                        nw_tos:
+                          type: integer
+                          description: IP TOS
+                          example: 0
+                    tp:
+                      type: object
+                      properties:
+                        tp_src:
+                          type: integer
+                          description: Source transport port
+                          example: 8761
+                        tp_dst:
+                          type: integer
+                          description: Destination transport port
+                          example: 80
+      responses:
+        200:
+          description: Ok.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array 
+                    items:
+                      type: object
+                      required:
+                        - dpid
+                        - port
+                        - time
+                        - type
+                      properties:
+                        dpid:
+                          type: string
+                          description: Switch datapath ID 
+                          example: 00:00:00:00:00:00:00:01
+                        port:
+                          type: integer
+                          description: Incoming port in the switch
+                          example: 1
+                        time:
+                          type: string
+                          description: Date time when the iteration was computed
+                          example: "2022-01-25 13:44:52.387021"
+                        type:
+                          type: string
+                          enum: ["starting", "intermediary", "last", "loop"]
+                          description: Type of the step. May be "starting", "intermediary", "last", and "loop".
+                          example: "intermediary"
+                        vlan:
+                          type: integer
+                          description: VLAN ID
+                          example: 100
+        400:
+          description: "Parameter 'dpid' and/or 'in_port' is missing"
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Bad requestç
+        424:
+          description: "Stored flows could not be fetched"
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Failed Dependency
+  /v1/traces:
+    put:
+      summary: Trace paths given switches
+      description: Trace a path starting with each switch given in a list as parameter.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  trace:
+                    type: object
+                    required:
+                      - switch
+                    properties:
+                      switch:
+                        type: object
+                        required:
+                          - dpid
+                          - in_port
+                        properties:
+                          dpid:
+                            type: string
+                            description: Initial switch datapath ID
+                            example: 00:00:00:00:00:00:00:01
+                          in_port:
+                            type: integer
+                            description: Starting incoming port
+                            example: 1
+                      eth:
+                        type: object
+                        properties:
+                          dl_vlan:
+                            type: integer
+                            description: VLAN ID. This is an integer in range [1, 4095] as in a network packet.
+                            example: 100
+                            minimum: 1
+                            maximum: 4095
+                          dl_type:
+                            type: integer
+                            description: Ethernet type
+                          dl_src:
+                            type: string
+                            description: Source MAC address
+                          dl_dst:
+                            type: string
+                            description: Destination MAC address
+                      ip:
+                        type: object
+                        properties:
+                          nw_src:
+                            type: string
+                            description: Source IP for IPv4.
+                            example: 192.168.20.21
+                          nw_dst:
+                            type: string
+                            description: Destination IP for IPv4.
+                            example: 192.168.25.123
+                          ipv6_src:
+                            type: string
+                            description: Source IP for IPv6.
+                            example: '2002:db8::8a3f:362:7897'
+                          ipv6_dst:
+                            type: string
+                            description: Destination IP for IPv6.
+                            example: '2002:db8::8a3f:362:7897'
+                          nw_proto:
+                            type: integer
+                            description: IP protocol
+                            example: 6
+                          nw_tos:
+                            type: integer
+                            description: IP TOS
+                            example: 0
+                      tp:
+                        type: object
+                        properties:
+                          tp_src:
+                            type: integer
+                            description: Source transport port
+                            example: 8761
+                          tp_dst:
+                            type: integer
+                            description: Destination transport port
+                            example: 80
+      responses:
+        200:
+          description: Ok.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array 
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - dpid
+                          - port
+                          - time
+                          - type
+                        properties:
+                          dpid:
+                            type: string
+                            description: Switch datapath ID 
+                            example: 00:00:00:00:00:00:00:01
+                          port:
+                            type: integer
+                            description: Incoming port in the switch
+                            example: 1
+                          time:
+                            type: string
+                            description: Date time when the iteration was computed
+                            example: "2022-01-25 13:44:52.387021"
+                          type:
+                            type: string
+                            enum: ["starting", "intermediary", "last", "loop"]
+                            description: Type of the step. May be "starting", "intermediary", "last", and "loop".
+                            example: "intermediary"
+                          vlan:
+                            type: integer
+                            description: VLAN ID
+                            example: 100

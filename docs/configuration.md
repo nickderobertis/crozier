@@ -23,6 +23,7 @@ built-in's defaults.
 | `crozier init` | Write a starter `crozier.yml` (`--output <path>`, `--force`). |
 | `crozier config [<name>]` | Print the effective config and the layer each value came from. |
 | `crozier schema` | Print the config JSON Schema to stdout. |
+| `crozier compare [PATHS...]` | Check every configured generator's output against a reference SDK your `reference.command` produces, and time both sides. |
 
 ## Precedence
 
@@ -109,6 +110,8 @@ audiences: [public]
 audience-strict: false
 fern-strict: false        # see "Strict Fern compatibility" below
 layout: packaged          # packaged|flat — see "Output layout"
+reference:                # used only by `crozier compare`
+  command: ./scripts/reference-sdk.sh
 
 generators:
   python:
@@ -126,6 +129,8 @@ generators:
                                # shared top-level field)
     layout: flat               # packaged (Fern's --preview --output) | flat
                                # (Fern's local-file-system output)
+    reference:
+      command: ./scripts/reference-sdk.sh   # overrides the shared block
   admin:
     spec: ./admin-openapi.yml
     output: ./sdks/admin
@@ -146,6 +151,13 @@ one that is.
 
 Unknown fields and unknown generator types are rejected at parse time, with the
 offending file's path in the error. Generators run in declaration order.
+
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires this page to link the compare reference; human readers reach configuration.md from the README, not through AGENTS.md, and this is the one place the page sends them to the command's own reference. -->
+Only [`crozier compare`](compare.md) reads the `reference` block (one key,
+`command`): it names the command that produces each
+generator's reference SDK. It resolves as `--reference-command` >
+`generators.<name>.reference.command` > top-level `reference.command`, with no
+environment variable and no default, and `crozier generate` ignores it.
 
 ### Editor support (JSON Schema)
 
@@ -183,6 +195,8 @@ generator `python`
 ```
 
 `layout` always shows the value a run would use, `packaged` when no layer sets it.
+`reference.command` shows the command `crozier compare` would run (its
+`--reference-command` flag aside), or `(unset)`.
 
 ## Examples
 

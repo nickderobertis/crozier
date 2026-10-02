@@ -46,7 +46,7 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
             "schema.example=object&schema.type:primary=object"
         )
         sources = census.registered_sources(
-            REPO / "tests" / "fixtures", REPO / ".local" / "corpus", False
+            REPO / "tests" / "fixtures", REPO / "tests" / "fixtures" / "corpus-sources", False
         )
         self.assertEqual(236, len(sources))
         declared: list[str] = []
@@ -88,7 +88,7 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
         sources = {
             source.fixture: source
             for source in census.registered_sources(
-                REPO / "tests" / "fixtures", REPO / ".local" / "corpus", False
+                REPO / "tests" / "fixtures", REPO / "tests" / "fixtures" / "corpus-sources", False
             )
         }
         copies = 0
