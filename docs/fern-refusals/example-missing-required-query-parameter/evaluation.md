@@ -95,14 +95,19 @@ missing required one.
   [other tag](other-tag-optional-enum-control.yml),
   [untagged](untagged-optional-enum-control.yml)).
 - A *required* enum under `API` makes Fern report only `type-not-defined`.
-  That class is evaluated separately, so this detector does not fire there.
+
+Every one of these probes also prints Fern's "Type … is not defined", the
+`api.yml` mechanism the `type-not-defined` detector measures. On integration
+this class's own `API`-tag predicate was removed in favour of that detector,
+which refuses each tagged probe first, naming `GET /things parameter f`; the
+CLI journey asserts that refusal, and every accepted control still generates.
 
 Where a shape was not measured, the detector does not refuse. Every accepted
 control generates identical bytes in both crozier modes.
 
 The [CLI assertion failed with only the `x-fern-examples` predicate
 disabled](evaluation-logs/refusal-e2e-induced-red.log), writing 36 files.
-With only the `API`-tag predicate disabled, the
+Before integration, with only the then `API`-tag predicate disabled, the
 [same assertion failed on the tagged probe](evaluation-logs/api-tag-induced-red.log),
 writing 40 files. Both passed again once restored. Giving `f` in the probe's
 example recovers generation in both modes.
@@ -110,6 +115,7 @@ example recovers generation in both modes.
 [Both population documents](evaluation-logs/population-refusals.jsonl) were
 retrieved at their digests and run with the finished detector's release build.
 Both were refused in both modes: exit 1, no files, one stderr line naming the
-class and element, and the strict cause where it applies. Maps is refused as
-this class (`GET /api tag API query parameter f`). Processes hits the
+class and element, and the strict cause where it applies. Maps was refused as
+this class (`GET /api tag API query parameter f`) before integration; the
+final remeasurement in that log records the class that refuses it now. Processes hits the
 registered `object-extends-non-object` refusal first.

@@ -2405,22 +2405,6 @@ fn omittable_schema(root: &serde_yaml_ng::Value, schema: Option<&serde_yaml_ng::
         || type_is("array")
 }
 
-/// Whether Fern declares a named type for a query parameter's schema (an
-/// enum, object, union or reference, or a list of one) rather than a
-/// primitive.
-fn named_query_type(schema: &serde_yaml_ng::Value) -> bool {
-    if schema.get("$ref").is_some() {
-        return true;
-    }
-    if schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("array") {
-        return schema.get("items").is_some_and(named_query_type);
-    }
-    ["enum", "properties", "oneOf", "anyOf"]
-        .iter()
-        .any(|key| schema.get(*key).is_some())
-        || schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("object")
-}
-
 /// Pinned Fern checks every endpoint example against the endpoint's required
 /// query parameters. An `x-fern-examples` entry is checked when it declares
 /// `query-parameters` as a map, or declares a `response` without them; the
@@ -2428,11 +2412,9 @@ fn named_query_type(schema: &serde_yaml_ng::Value) -> bool {
 /// `nullable` or list parameter may be omitted; a default does not excuse
 /// one. `x-crozier-examples` is not read.
 ///
-/// Fern also writes an operation whose first tag is `API` (or `Api`, `api`)
-/// into the definition file it names `api.yml`, which its root definition
-/// replaces. The named type of an optional query parameter there is lost, so
-/// Fern's own generated example omits the parameter and Fern reports it as a
-/// required one it is missing.
+/// Fern also reports this for an optional named-type query parameter of an
+/// operation it files into `api.yml`; that is the `type-not-defined` mechanism,
+/// whose detector refuses it first.
 fn check_example_query_parameters(
     root: &serde_yaml_ng::Value,
     path: &Path,
@@ -2474,30 +2456,6 @@ fn check_example_query_parameters(
                     );
                 }
             }
-            continue;
-        }
-        let tag = operation
-            .get("tags")
-            .and_then(|tags| tags.get(0))
-            .and_then(serde_yaml_ng::Value::as_str);
-        let Some(tag) = tag.filter(|tag| matches!(*tag, "api" | "Api" | "API")) else {
-            continue;
-        };
-        let lost = parameters.iter().find(|(_, parameter)| {
-            parameter
-                .get("required")
-                .and_then(serde_yaml_ng::Value::as_bool)
-                != Some(true)
-                && parameter_schema(parameter).is_some_and(named_query_type)
-        });
-        if let Some((name, _)) = lost {
-            let element = format!("{element} tag {tag} query parameter {name}");
-            return refusal(
-                path,
-                strict,
-                Class::ExampleMissingRequiredQueryParameter,
-                &element,
-            );
         }
     }
     Ok(())
@@ -2976,40 +2934,6 @@ mod tests {
             "paths: {/c: {parameters: [{name: f, in: query, required: true}], get: {x-fern-examples: [{query-parameters: {}}]}}}"
                 .to_owned(),
             "query parameter f",
-        );
-        // An optional named query type under a first tag Fern files as api.yml.
-        let tagged = |tags: &str, schema: &str| {
-            format!("paths: {{/c: {{get: {{tags: {tags}, parameters: [{{name: f, in: query, schema: {schema}}}]}}}}}}")
-        };
-        let enumeration = "{type: string, enum: [json, html]}";
-        refused(
-            tagged("[API]", enumeration),
-            "GET /c tag API query parameter f",
-        );
-        refused(
-            tagged("[api]", enumeration),
-            "GET /c tag api query parameter f",
-        );
-        refused(
-            tagged("[Api]", "{$ref: '#/components/schemas/Color'}"),
-            "tag Api query parameter f",
-        );
-        refused(
-            tagged("[API]", &format!("{{type: array, items: {enumeration}}}")),
-            "tag API query parameter f",
-        );
-        refused(
-            tagged("[API]", "{type: string, nullable: true, enum: [a]}"),
-            "tag API query parameter f",
-        );
-        accepted(tagged("[API]", "{type: string}"));
-        accepted(tagged("[API]", "{type: array, items: {type: string}}"));
-        accepted(tagged("[users, API]", enumeration));
-        accepted(tagged("[Maps]", enumeration));
-        accepted(tagged("[ApI]", enumeration));
-        accepted(
-            "paths: {/c: {get: {tags: [API], parameters: [{name: f, in: query, required: true, schema: {type: string, enum: [a]}}]}}}"
-                .to_owned(),
         );
     }
 }

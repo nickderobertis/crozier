@@ -17143,26 +17143,6 @@ fn example_query_parameter_refusal_follows_the_examples_fern_checks() {
             "required-content-param-omitted",
             "GET /collections x-fern-examples/0 query parameter f",
         ),
-        (
-            "api-tag-optional-enum",
-            "GET /things tag API query parameter f",
-        ),
-        (
-            "api-tag-lower-optional-enum",
-            "GET /things tag api query parameter f",
-        ),
-        (
-            "api-tag-optional-ref-enum",
-            "GET /things tag API query parameter f",
-        ),
-        (
-            "api-tag-optional-array-enum",
-            "GET /things tag API query parameter f",
-        ),
-        (
-            "api-tag-nullable-enum",
-            "GET /things tag API query parameter f",
-        ),
     ] {
         let spec = class.join(format!("{case}-probe.yml"));
         for strict in [false, true] {
@@ -17170,6 +17150,24 @@ fn example_query_parameter_refusal_follows_the_examples_fern_checks() {
             let failures = refused_failures(id, &run, element, strict);
             assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
             assert_eq!(run.stderr.lines().count(), 1, "{case}");
+        }
+    }
+    // Fern also reports the parameter missing from the example it writes for
+    // an optional named query type in its `api.yml` file; that file is the
+    // `type-not-defined` mechanism, whose refusal names the parameter first.
+    for case in [
+        "api-tag-optional-enum",
+        "api-tag-lower-optional-enum",
+        "api-tag-optional-ref-enum",
+        "api-tag-optional-array-enum",
+        "api-tag-nullable-enum",
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures =
+                refused_failures("type-not-defined", &run, "GET /things parameter f", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
         }
     }
     // Giving the required parameter recovers the probe.
