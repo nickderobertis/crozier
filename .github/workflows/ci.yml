@@ -9,6 +9,7 @@ on:
   pull_request:
     # The defaults plus `ready_for_review`, so lifting a draft re-runs the required
     # checks on its head commit rather than leaving only the draft-time runs.
+    # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The publication lifecycle lifts a draft and then requires a required-check run attached to its head commit AFTER the lift; it does not accept draft-time runs as that verdict, and without this event it finds none and refuses to land. The draft-time checks are kept rather than skipped so a draft is never left without required-check evidence.
     types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
