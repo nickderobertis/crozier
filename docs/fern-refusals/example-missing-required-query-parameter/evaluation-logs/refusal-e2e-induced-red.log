@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<worktree>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.01s
+────────────
+ Nextest run ID 18633eb5-9753-4e46-aef5-14a98487ec31 with nextest profile: default
+    Starting 1 test across 1 binary (449 tests and 6 binaries skipped)
+        FAIL [   0.077s] (1/1) crozier::e2e example_query_parameter_refusal_follows_the_examples_fern_checks
+  stdout ───
+
+    running 1 test
+    test example_query_parameter_refusal_follows_the_examples_fern_checks ... FAILED
+
+    failures:
+
+    failures:
+        example_query_parameter_refusal_follows_the_examples_fern_checks
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 449 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'example_query_parameter_refusal_follows_the_examples_fern_checks' (3802280) panicked at tests/e2e.rs:16833:9:
+    example-missing-required-query-parameter: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.079s] 1 test run: 0 passed, 1 failed, 449 skipped
+        FAIL [   0.077s] (1/1) crozier::e2e example_query_parameter_refusal_follows_the_examples_fern_checks
+error: test run failed

@@ -35,6 +35,7 @@ enum Class {
     TypeNotDefined,
     MissingDiscriminantProperty,
     DuplicateExampleName,
+    ExampleMissingRequiredQueryParameter,
 }
 
 impl Class {
@@ -60,6 +61,9 @@ impl Class {
             Self::TypeNotDefined => "type-not-defined",
             Self::MissingDiscriminantProperty => "missing-discriminant-property",
             Self::DuplicateExampleName => "duplicate-example-name",
+            Self::ExampleMissingRequiredQueryParameter => {
+                "example-missing-required-query-parameter"
+            }
         }
     }
 }
@@ -232,6 +236,7 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     }
     check_discriminant_examples(&root, path, strict)?;
     check_example_names(&root, path, strict)?;
+    check_example_query_parameters(&root, path, strict)?;
     Ok(())
 }
 
@@ -2333,6 +2338,171 @@ fn check_example_names(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -
     Ok(())
 }
 
+/// The operation's query parameters as Fern imports them: Path Item
+/// parameters overridden by the operation's own of the same name, references
+/// followed, ignored parameters dropped.
+fn query_parameters<'a>(
+    root: &'a serde_yaml_ng::Value,
+    item: &'a serde_yaml_ng::Value,
+    operation: &'a serde_yaml_ng::Value,
+) -> Vec<(&'a str, &'a serde_yaml_ng::Value)> {
+    let mut parameters: Vec<(&str, &serde_yaml_ng::Value)> = Vec::new();
+    for parameter in [item, operation]
+        .into_iter()
+        .filter_map(|node| node.get("parameters")?.as_sequence())
+        .flatten()
+    {
+        let Some(parameter) = local_target(root, parameter) else {
+            continue;
+        };
+        if parameter.get("in").and_then(serde_yaml_ng::Value::as_str) != Some("query") {
+            continue;
+        }
+        let Some(name) = parameter.get("name").and_then(serde_yaml_ng::Value::as_str) else {
+            continue;
+        };
+        parameters.retain(|(declared, _)| *declared != name);
+        if !ignored_reference_node(parameter) {
+            parameters.push((name, parameter));
+        }
+    }
+    parameters
+}
+
+/// A parameter's schema, from `schema` or its first `content` media type.
+fn parameter_schema(parameter: &serde_yaml_ng::Value) -> Option<&serde_yaml_ng::Value> {
+    parameter.get("schema").or_else(|| {
+        parameter
+            .get("content")?
+            .as_mapping()?
+            .values()
+            .next()?
+            .get("schema")
+    })
+}
+
+/// Whether a schema is `nullable` or a list, the shapes an example may omit —
+/// or cannot be followed, which is never refused.
+fn omittable_schema(root: &serde_yaml_ng::Value, schema: Option<&serde_yaml_ng::Value>) -> bool {
+    let Some(schema) = schema else {
+        return false;
+    };
+    let Some(schema) = local_target(root, schema) else {
+        return true;
+    };
+    let type_is = |name: &str| match schema.get("type") {
+        Some(serde_yaml_ng::Value::String(value)) => value == name,
+        Some(serde_yaml_ng::Value::Sequence(values)) => {
+            values.iter().any(|value| value.as_str() == Some(name))
+        }
+        _ => false,
+    };
+    schema
+        .get("nullable")
+        .and_then(serde_yaml_ng::Value::as_bool)
+        == Some(true)
+        || type_is("null")
+        || type_is("array")
+}
+
+/// Whether Fern declares a named type for a query parameter's schema (an
+/// enum, object, union or reference, or a list of one) rather than a
+/// primitive.
+fn named_query_type(schema: &serde_yaml_ng::Value) -> bool {
+    if schema.get("$ref").is_some() {
+        return true;
+    }
+    if schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("array") {
+        return schema.get("items").is_some_and(named_query_type);
+    }
+    ["enum", "properties", "oneOf", "anyOf"]
+        .iter()
+        .any(|key| schema.get(*key).is_some())
+        || schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("object")
+}
+
+/// Pinned Fern checks every endpoint example against the endpoint's required
+/// query parameters. An `x-fern-examples` entry is checked when it declares
+/// `query-parameters` as a map, or declares a `response` without them; the
+/// key is the wire name, case-sensitive, and a `null` value is missing. A
+/// `nullable` or list parameter may be omitted; a default does not excuse
+/// one. `x-crozier-examples` is not read.
+///
+/// Fern also writes an operation whose first tag is `API` (or `Api`, `api`)
+/// into the definition file it names `api.yml`, which its root definition
+/// replaces. The named type of an optional query parameter there is lost, so
+/// Fern's own generated example omits the parameter and Fern reports it as a
+/// required one it is missing.
+fn check_example_query_parameters(
+    root: &serde_yaml_ng::Value,
+    path: &Path,
+    strict: bool,
+) -> Result<()> {
+    for (method, route, operation) in imported_operations(root) {
+        let element = format!("{} {route}", method.to_ascii_uppercase());
+        let Some(item) = root.get("paths").and_then(|paths| paths.get(route)) else {
+            continue;
+        };
+        let parameters = query_parameters(root, item, operation);
+        let examples = operation
+            .get("x-fern-examples")
+            .and_then(serde_yaml_ng::Value::as_sequence)
+            .filter(|examples| !examples.is_empty());
+        if let Some(examples) = examples {
+            for (index, example) in examples.iter().enumerate() {
+                let given = match example.get("query-parameters") {
+                    Some(serde_yaml_ng::Value::Mapping(given)) => given.clone(),
+                    None if example.get("response").is_some() => serde_yaml_ng::Mapping::new(),
+                    _ => continue,
+                };
+                let missing = parameters.iter().find(|(name, parameter)| {
+                    parameter
+                        .get("required")
+                        .and_then(serde_yaml_ng::Value::as_bool)
+                        == Some(true)
+                        && !omittable_schema(root, parameter_schema(parameter))
+                        && given.get(*name).is_none_or(serde_yaml_ng::Value::is_null)
+                });
+                if let Some((name, _)) = missing {
+                    let element =
+                        format!("{element} x-fern-examples/{index} query parameter {name}");
+                    return refusal(
+                        path,
+                        strict,
+                        Class::ExampleMissingRequiredQueryParameter,
+                        &element,
+                    );
+                }
+            }
+            continue;
+        }
+        let tag = operation
+            .get("tags")
+            .and_then(|tags| tags.get(0))
+            .and_then(serde_yaml_ng::Value::as_str);
+        let Some(tag) = tag.filter(|tag| matches!(*tag, "api" | "Api" | "API")) else {
+            continue;
+        };
+        let lost = parameters.iter().find(|(_, parameter)| {
+            parameter
+                .get("required")
+                .and_then(serde_yaml_ng::Value::as_bool)
+                != Some(true)
+                && parameter_schema(parameter).is_some_and(named_query_type)
+        });
+        if let Some((name, _)) = lost {
+            let element = format!("{element} tag {tag} query parameter {name}");
+            return refusal(
+                path,
+                strict,
+                Class::ExampleMissingRequiredQueryParameter,
+                &element,
+            );
+        }
+    }
+    Ok(())
+}
+
 fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()> {
     Err(Error::InvalidSpec {
         path: path.to_path_buf(),
@@ -2712,5 +2882,134 @@ mod tests {
             "webhooks: {{h: {{post: {{responses: {{'200': {json}}}}}}}}}"
         ));
         accepted(format!("components: {{responses: {{R: {json}}}}}"));
+    }
+
+    #[test]
+    fn example_query_parameters_follow_the_examples_fern_checks() {
+        let check = |document: String| {
+            let root: serde_yaml_ng::Value = serde_yaml_ng::from_str(&document).unwrap();
+            check_example_query_parameters(&root, Path::new("api.yml"), true)
+                .err()
+                .map(|error| error.to_string())
+        };
+        let refused = |document: String, element: &str| {
+            let error = check(document.clone()).unwrap_or_else(|| panic!("{document}"));
+            assert!(
+                error.contains("example-missing-required-query-parameter: GET /c ")
+                    && error.contains(&format!("{element} (fern-strict refusal)")),
+                "{error}"
+            );
+        };
+        let accepted = |document: String| assert_eq!(check(document), None);
+        let op = |parameter: &str, examples: &str| {
+            format!("paths: {{/c: {{get: {{parameters: [{parameter}], x-fern-examples: {examples}, responses: {{}}}}}}}}")
+        };
+        let required = "{name: f, in: query, required: true, schema: {type: string}}";
+        refused(
+            op(required, "[{query-parameters: {}}]"),
+            "GET /c x-fern-examples/0 query parameter f",
+        );
+        refused(
+            op(
+                required,
+                "[{query-parameters: {f: x}}, {query-parameters: {f: null}}]",
+            ),
+            "GET /c x-fern-examples/1 query parameter f",
+        );
+        refused(
+            op(required, "[{query-parameters: {F: x}}]"),
+            "query parameter f",
+        );
+        refused(
+            op(required, "[{response: {body: {}}}]"),
+            "query parameter f",
+        );
+        refused(
+            op(
+                "{name: f, in: query, required: true, schema: {type: string, default: x}}",
+                "[{query-parameters: {}}]",
+            ),
+            "query parameter f",
+        );
+        refused(
+            format!(
+                "{}\ncomponents: {{parameters: {{F: {required}}}}}",
+                op(
+                    "{$ref: '#/components/parameters/F'}",
+                    "[{query-parameters: {}}]"
+                )
+            ),
+            "query parameter f",
+        );
+        accepted(op(required, "[{query-parameters: {f: x}}]"));
+        accepted(op(required, "[{name: only}]"));
+        accepted(op(required, "[{query-parameters: null}]"));
+        accepted(op(required, "[]"));
+        accepted(op(
+            "{name: f, in: query, required: false, schema: {type: string}}",
+            "[{query-parameters: {}}]",
+        ));
+        for schema in [
+            "{type: string, nullable: true}",
+            "{type: [string, 'null']}",
+            "{type: array, items: {type: string}}",
+            "{$ref: '#/components/schemas/Absent'}",
+        ] {
+            accepted(op(
+                &format!("{{name: f, in: query, required: true, schema: {schema}}}"),
+                "[{query-parameters: {}}]",
+            ));
+        }
+        accepted(op(
+            "{name: f, in: query, required: true, x-fern-ignore: true}",
+            "[{query-parameters: {}}]",
+        ));
+        accepted(
+            "paths: {/c: {get: {parameters: [{name: f, in: query, required: true}], x-crozier-examples: [{query-parameters: {}}]}}}"
+                .to_owned(),
+        );
+        accepted(
+            "paths: {/c: {parameters: [{name: f, in: query, required: true}], get: {parameters: [{name: f, in: query}], x-fern-examples: [{query-parameters: {}}]}}}"
+                .to_owned(),
+        );
+        refused(
+            "paths: {/c: {parameters: [{name: f, in: query, required: true}], get: {x-fern-examples: [{query-parameters: {}}]}}}"
+                .to_owned(),
+            "query parameter f",
+        );
+        // An optional named query type under a first tag Fern files as api.yml.
+        let tagged = |tags: &str, schema: &str| {
+            format!("paths: {{/c: {{get: {{tags: {tags}, parameters: [{{name: f, in: query, schema: {schema}}}]}}}}}}")
+        };
+        let enumeration = "{type: string, enum: [json, html]}";
+        refused(
+            tagged("[API]", enumeration),
+            "GET /c tag API query parameter f",
+        );
+        refused(
+            tagged("[api]", enumeration),
+            "GET /c tag api query parameter f",
+        );
+        refused(
+            tagged("[Api]", "{$ref: '#/components/schemas/Color'}"),
+            "tag Api query parameter f",
+        );
+        refused(
+            tagged("[API]", &format!("{{type: array, items: {enumeration}}}")),
+            "tag API query parameter f",
+        );
+        refused(
+            tagged("[API]", "{type: string, nullable: true, enum: [a]}"),
+            "tag API query parameter f",
+        );
+        accepted(tagged("[API]", "{type: string}"));
+        accepted(tagged("[API]", "{type: array, items: {type: string}}"));
+        accepted(tagged("[users, API]", enumeration));
+        accepted(tagged("[Maps]", enumeration));
+        accepted(tagged("[ApI]", enumeration));
+        accepted(
+            "paths: {/c: {get: {tags: [API], parameters: [{name: f, in: query, required: true, schema: {type: string, enum: [a]}}]}}}"
+                .to_owned(),
+        );
     }
 }

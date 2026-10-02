@@ -17074,3 +17074,136 @@ fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
         assert_generates_in_both_modes(&class.join(format!("{control}-control.yml")), control);
     }
 }
+
+#[test]
+fn example_query_parameter_refusal_follows_the_examples_fern_checks() {
+    let id = "example-missing-required-query-parameter";
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join(id);
+    let probe = class.join("probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            id,
+            &run,
+            "GET /collections x-fern-examples/0 query parameter f",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    // Every shape pinned Fern refuses, each named where Fern names it.
+    for (case, element) in [
+        (
+            "required-default-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "required-null-value",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "path-level-required-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "response-only-example",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "wrong-case-key",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "second-entry-omits",
+            "GET /collections x-fern-examples/1 query parameter f",
+        ),
+        (
+            "renamed-param-uses-sdk-name",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "ref-param-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "two-required-one-given",
+            "GET /collections x-fern-examples/0 query parameter b",
+        ),
+        (
+            "required-object-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "required-untyped-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "required-content-param-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "api-tag-optional-enum",
+            "GET /things tag API query parameter f",
+        ),
+        (
+            "api-tag-lower-optional-enum",
+            "GET /things tag api query parameter f",
+        ),
+        (
+            "api-tag-optional-ref-enum",
+            "GET /things tag API query parameter f",
+        ),
+        (
+            "api-tag-optional-array-enum",
+            "GET /things tag API query parameter f",
+        ),
+        (
+            "api-tag-nullable-enum",
+            "GET /things tag API query parameter f",
+        ),
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures(id, &run, element, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{case}");
+        }
+    }
+    // Giving the required parameter recovers the probe.
+    let dir = tempfile::tempdir().unwrap();
+    let recovered = dir.path().join("recovered.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    assert!(text.contains("query-parameters: {}"));
+    std::fs::write(
+        &recovered,
+        text.replace("query-parameters: {}", "query-parameters: {f: json}"),
+    )
+    .unwrap();
+    assert_generates_in_both_modes(&recovered, "recovered probe");
+    // Near misses pinned Fern accepts generate identical bytes in both modes.
+    for control in [
+        "no-query-parameters-key",
+        "optional-param-omitted",
+        "required-with-example-no-ext",
+        "required-no-examples",
+        "required-nullable-omitted",
+        "x-crozier-examples-omitted",
+        "required-array-omitted",
+        "renamed-param-uses-wire-name",
+        "required-31-null-union-omitted",
+        "ignored-operation",
+        "query-parameters-null",
+        "empty-list",
+        "ignored-param-omitted",
+        "api-tag-optional-string",
+        "api-tag-optional-array-string",
+        "api-second-tag-optional-enum",
+        "other-tag-optional-enum",
+        "untagged-optional-enum",
+    ] {
+        assert_generates_in_both_modes(&class.join(format!("{control}-control.yml")), control);
+    }
+}
