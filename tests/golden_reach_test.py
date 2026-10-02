@@ -203,7 +203,7 @@ E2E = textwrap.dedent(
 
     #[test]
     fn demo_a_matches_fern_output() {
-        assert_link_ok_corpus_matches(&DEMO_A);
+        assert_committed_corpus_matches(&DEMO_A);
     }
 
     #[test]

@@ -40,7 +40,7 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.get_holder()
+client.create_route()
 ```
 
 ## Async Client
@@ -58,7 +58,7 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.get_holder()
+    await client.create_route()
 
 
 asyncio.run(main())
@@ -73,7 +73,7 @@ will be thrown.
 from fern.core.api_error import ApiError
 
 try:
-    client.get_holder()
+    client.create_route(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -90,7 +90,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from fern import FernApi
 
 client = FernApi(...)
-response = client.with_raw_response.get_holder()
+response = client.with_raw_response.create_route(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -121,7 +121,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.get_holder(request_options={
+client.create_route(..., request_options={
     "max_retries": 1
 })
 ```
@@ -136,7 +136,7 @@ from fern import FernApi
 client = FernApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.get_holder(request_options={
+client.create_route(..., request_options={
     "timeout": 1
 })
 ```
