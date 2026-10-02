@@ -2212,11 +2212,18 @@ fn normalize_declared_type_names(doc: &mut OpenApi) {
         .schemas
         .iter()
         .filter_map(|(name, schema)| {
-            let declared = schema.declared_type_name()?.replace(['/', '~'], " ");
+            let declared = declared_type_key(schema.declared_type_name()?);
             (declared != *name).then(|| (name.clone(), declared))
         })
         .collect();
     rename_component_schemas(doc, &renames);
+}
+
+/// The component key a declared type name is renamed to: the name itself, with
+/// each `/` or `~` (a word break to Fern, which would split a `$ref` pointer
+/// here) spelled as a space.
+pub(crate) fn declared_type_key(declared: &str) -> String {
+    declared.replace(['/', '~'], " ")
 }
 
 /// Rename component schemas by `renames` (old key to new key), keeping their

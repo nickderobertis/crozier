@@ -898,7 +898,7 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
         // `-shared-differing` and `-taken`).
         let hinted = crate::openapi::refusal_type_name(node).is_some();
         let body = without_type_names(node);
-        let resolved = declared.replace(['/', '~'], " ");
+        let resolved = crate::openapi::declared_type_key(declared);
         if let Some((previous, previous_hinted, previous_body)) = types.get(&resolved) {
             if (hinted || *previous_hinted) && *previous_body != body {
                 return Err(refusal(path, Class::TypeNameCollision, format!("component schemas {previous:?} and {name:?} both declare type {resolved} with different schemas; give them distinct names")));

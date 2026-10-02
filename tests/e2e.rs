@@ -1856,20 +1856,33 @@ fn sha256_matches_the_fips_180_4_test_vectors() {
 
 const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 
-/// The naming tickets' authored probes (#350, #354, #357): each case directory
-/// holds the probe, pinned Fern's `fern.log` and, where Fern generated, its
-/// comment-stripped `fern-expected/` tree. Manager-authored documents, neither
-/// real specifications nor hand-written fixtures, so this is no
+/// The naming tickets' authored probes (#350, #354, #357) are the case
+/// directories whose names carry those ticket numbers. Each holds the probe,
+/// pinned Fern's `fern.log` and, where Fern generated, its comment-stripped
+/// `fern-expected/` tree. They are manager-authored documents, neither real
+/// specifications nor hand-written fixtures, so this is no
 /// `*matches_fern_output*` test and the golden-only tier never runs it.
-const NAMING_AUTHORED_PROBES: [&str; 8] = [
-    "crozier-350-declared-type-name",
-    "crozier-350-declared-type-name-shared",
-    "crozier-350-declared-type-name-shared-differing",
-    "crozier-350-declared-type-name-slash",
-    "crozier-350-declared-type-name-taken",
-    "crozier-350-declared-type-name-tilde",
-    "crozier-354-model-property-construct",
-    "crozier-357-tag-only-operation-id",
+const NAMING_TICKETS: [&str; 3] = ["crozier-350-", "crozier-354-", "crozier-357-"];
+
+/// Every naming case Fern refused, with the class crozier refuses it under and
+/// the element its refusal line names. The two collisions fail Fern's check on
+/// the merged type's example; the manager ruled them `type-name-collision`.
+const NAMING_REFUSALS: [(&str, &str, &str); 3] = [
+    (
+        "crozier-350-declared-type-name-blank-digit-led",
+        "type-name-not-letter-led",
+        "123456",
+    ),
+    (
+        "crozier-350-declared-type-name-shared-differing",
+        "type-name-collision",
+        "\"Widget\"",
+    ),
+    (
+        "crozier-350-declared-type-name-taken",
+        "type-name-collision",
+        "\"Widget\"",
+    ),
 ];
 
 /// Where pinned Fern generated, crozier byte-matches its tree over `probe` in
@@ -1899,9 +1912,14 @@ fn authored_probe_tree_failures(case: &str, probe: &Path, tree: &Path) -> Vec<St
     failures
 }
 
-/// Where pinned Fern refused, crozier refuses in both modes under
-/// `type-name-collision`, naming both components and writing nothing.
-fn authored_probe_refusal_failures(case: &str, probe: &Path) -> Vec<String> {
+/// Where pinned Fern refused, crozier refuses in both modes under `class`,
+/// naming `element` and writing nothing.
+fn authored_probe_refusal_failures(
+    case: &str,
+    probe: &Path,
+    class: &str,
+    element: &str,
+) -> Vec<String> {
     let mut failures = Vec::new();
     for strict in [false, true] {
         let out = tempfile::tempdir().expect("probe output tempdir");
@@ -1916,14 +1934,14 @@ fn authored_probe_refusal_failures(case: &str, probe: &Path) -> Vec<String> {
         };
         let stderr = String::from_utf8_lossy(&result.stderr);
         if result.status.code() != Some(1)
-            || !stderr.contains("type-name-collision")
-            || !stderr.contains("\"Widget\"")
+            || !stderr.contains(class)
+            || !stderr.contains(element)
             || stderr.contains("fern-strict") != strict
             || target.exists()
         {
             failures.push(format!(
-                "{case}: crozier (strict {strict}) must exit 1 naming type-name-collision and \
-                 `Widget`, writing nothing, where Fern refused; it exited {:?}: {stderr}",
+                "{case}: crozier (strict {strict}) must exit 1 naming {class} and {element}, \
+                 writing nothing, where Fern refused; it exited {:?}: {stderr}",
                 result.status.code()
             ));
         }
@@ -1934,8 +1952,27 @@ fn authored_probe_refusal_failures(case: &str, probe: &Path) -> Vec<String> {
 #[test]
 fn naming_authored_probes_match_pinned_fern() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut cases: Vec<String> = std::fs::read_dir(root.join(AUTHORED_PROBES_DIR))
+        .expect("the authored probes")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_dir())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .filter(|case| NAMING_TICKETS.iter().any(|ticket| case.starts_with(ticket)))
+        .collect();
+    cases.sort();
+    for ticket in NAMING_TICKETS {
+        assert!(
+            cases.iter().any(|case| case.starts_with(ticket)),
+            "no authored probe for {ticket}"
+        );
+    }
     let mut failures = Vec::new();
-    for case in NAMING_AUTHORED_PROBES {
+    for (case, _, _) in NAMING_REFUSALS {
+        if !cases.iter().any(|listed| listed == case) {
+            failures.push(format!("{case}: a listed refusal with no case directory"));
+        }
+    }
+    for case in &cases {
         let dir = root.join(AUTHORED_PROBES_DIR).join(case);
         let probe = dir.join("openapi.yml");
         let log = std::fs::read_to_string(dir.join("fern.log")).unwrap_or_default();
@@ -1944,14 +1981,22 @@ fn naming_authored_probes_match_pinned_fern() {
         }
         let tree = dir.join("fern-expected");
         let generated = log.contains("\ngenerate exit: 0\n");
-        if generated != tree.is_dir() {
-            failures.push(format!(
-                "{case}: fern.log's generate exit and the presence of fern-expected/ disagree"
-            ));
-        } else if generated {
-            failures.extend(authored_probe_tree_failures(case, &probe, &tree));
-        } else {
-            failures.extend(authored_probe_refusal_failures(case, &probe));
+        let refusal = NAMING_REFUSALS
+            .iter()
+            .find(|(refused, _, _)| refused == case);
+        match (generated, tree.is_dir(), refusal) {
+            (true, true, None) => {
+                failures.extend(authored_probe_tree_failures(case, &probe, &tree));
+            }
+            (false, false, Some((_, class, element))) => {
+                failures.extend(authored_probe_refusal_failures(
+                    case, &probe, class, element,
+                ));
+            }
+            _ => failures.push(format!(
+                "{case}: fern.log's generate exit, fern-expected/ and NAMING_REFUSALS disagree \
+                 on whether Fern generated"
+            )),
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));

@@ -1363,8 +1363,10 @@ tier is undecided and they are not coverage.
   declaration also rescues a key `type-name-not-letter-led` would refuse.
   `normalize_declared_type_names` renames the component before lowering. The
   canonical spelling alone produces the same tree, and wins when both appear
-  (`canonical_type_name_hint_names_components_like_fern_spelling`). A `/` or `~`
-  in the name breaks a word (`Gad/get` is `GadGet`). Two components resolving to
+  (`canonical_type_name_hint_names_components_like_fern_spelling`). A blank
+  declaration declares nothing: `Widget` stays `Widget` (`-blank`), and `123456`
+  is still refused as `type-name-not-letter-led` (`-blank-digit-led`). A `/` or
+  `~` in the name breaks a word (`Gad/get` is `GadGet`). Two components resolving to
   one name are one type to Fern. It generates the merge of identical schemas
   (`-shared`) and refuses differing ones, whether both declare the name
   (`-shared-differing`) or one already holds it as its key (`-taken`). crozier
