@@ -4450,7 +4450,6 @@ const CORPORA: &[&Corpus] = &[
     &PALOALTO_CODE_TECHNOLOGIES,
     &MARIMO_PLUGINS,
     &OTOROSHI,
-    &NEXMO_CONVERSATION,
     &GOOGLEAPIS_MONITORING_V1,
     &DOCU_GOAPISERVER,
     &ONEVOICE,
@@ -7364,20 +7363,6 @@ const PEOPLEDATALABS: Corpus = Corpus {
 /// from Adyen/adyen-openapi, whose enum members lead with a digit
 const ADYEN_ACS_NOTIFICATION: Corpus = Corpus {
     api: "adyen-acs-notification",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
-/// `nexmo-conversation`: corpus row 223, the Vonage (Nexmo) Conversation API
-/// 2.0.1 as APIs.guru pins it. Its `$ref`s point into a component's `oneOf`
-/// members and nested properties, the pointer arms no earlier golden reached.
-const NEXMO_CONVERSATION: Corpus = Corpus {
-    api: "nexmo-conversation",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13907,11 +13892,6 @@ fn peopledatalabs_matches_fern_output() {
 #[test]
 fn adyen_acs_notification_matches_fern_output() {
     assert_committed_corpus_matches(&ADYEN_ACS_NOTIFICATION);
-}
-
-#[test]
-fn nexmo_conversation_matches_fern_output() {
-    assert_committed_corpus_matches(&NEXMO_CONVERSATION);
 }
 
 #[test]

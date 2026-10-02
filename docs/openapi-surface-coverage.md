@@ -90,7 +90,12 @@ links splits them three ways:
 disputed. `ref-pointer-composition-index`'s `ref_to_class` composition-index
 walk was reached only through corpus row 224 until that row was withdrawn for
 its disputed grant. It now rests on the hand-written fixture
-`composition-index-pointer` and is one of the 55.
+`composition-index-pointer` and is one of the 55. Corpus row 223
+(`nexmo-conversation`) rested on the same aggregation-only grant and is
+withdrawn too. No site lost its last golden witness with it, and the four
+behaviours only its golden executed now rest on the hand-written fixture
+`ref-pointer-walk`
+([record](openapi-surface/withdrawn-witnesses/nexmo-conversation.md)).
 
 Where crozier deliberately differs from Fern is decided per refusal class in
 [`fern-refusals/`](fern-refusals/README.md). Each of its 36 classes is decided
@@ -1239,11 +1244,11 @@ The six region files, read as one body of work. Two measurements feed it:
   current walk is the **2026-09-28** one, pinned by digest (`c9319995…`) in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that check runs to completion on it. Corpus
-  rows 301 to 306, registered since, and row 224's withdrawal bring the tree to
-  236 registered sources; the cells their declarations move are re-read from a
-  walk over that tree. Row 307 then re-registers row 13's
+  rows 301 to 306, registered since, and the withdrawals of rows 224 and 223
+  bring the tree to 235 registered sources; the cells their declarations move
+  are re-read from a walk over that tree. Row 307 then re-registers row 13's
   `apideck.com-ecosystem` document under a second generator setting, bringing
-  it to **237** registered sources, of which **220** carry a committed golden.
+  it to **236** registered sources, of which **219** carry a committed golden.
   It declares nothing row 13 does not, so it moves no row's category, and the
   per-fixture cells, walked before it, do not list it.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
@@ -1362,7 +1367,8 @@ rows 223 to 231, the witnesses the arm searches found (`nexmo-conversation`,
 `codat-assess`, `googleapis-monitoring-v1`, `docu-goapiserver`, `onevoice`,
 `xfsc-oidc-identity-resolver`, `adyen-acs-notification`, `peopledatalabs` and
 `standrig`), bring it to 230 (32 vendored plus 198 `link-ok`); they declare no
-`gap` selector and move no category either. Corpus row 232, MockServer's own
+`gap` selector and move no category either. Rows 223 and 224 have since been
+withdrawn for want of a publisher grant, as the walk count below records. Corpus row 232, MockServer's own
 description (`mockserver`), brings it to 231 (32 vendored plus 199 `link-ok`),
 and declares no `gap` selector either.
 
@@ -1391,9 +1397,11 @@ The remaining-gap searches register corpus rows 301 to 306
 `fiware-context-generator`, `hasura-metadata` and `zoonk`), bringing the walk to
 237 sources (32 vendored plus 205 `link-ok`); withdrawing row 224
 (`codat-assess`) for its disputed grant leaves 236 (32 vendored plus 204
-`link-ok`), and row 307 (`apideck.com-ecosystem-client-class-name`, row 13's
-document under `client_class_name: EcosystemClient`) makes 237 (32 vendored
-plus 205 `link-ok`). Rows 301 and 302 are the first
+`link-ok`), withdrawing row 223 (`nexmo-conversation`) for want of a
+publisher grant leaves 235 (32 vendored plus 203 `link-ok`), and row 307
+(`apideck.com-ecosystem-client-class-name`, row 13's document under
+`client_class_name: EcosystemClient`) makes 236 (32 vendored plus 204
+`link-ok`). Rows 301 and 302 are the first
 golden-only witnesses of `operation-external-docs` and `xml-attribute`, which
 [Golden rows with no golden-only witness](#golden-rows-with-no-golden-only-witness)
 listed until then. Rows 303 to 305 declare `schema.oneOf>schema.anyOf` and move
@@ -1734,23 +1742,25 @@ continuation node `thin-goldens-continue` recorded an arm search for each over t
 six declared sources, linked from its disposition and from its reach cell. That
 search registered corpus rows 223 to 231, which took `anyof-anyof-variant`,
 `anyof-string-const-variant`, `mutualTLS` and `securityscheme-type-openidconnect`
-off this list and bought `ref-pointer-composition-index` its pointer-walk site; the
+off this list and bought `ref-pointer-composition-index` its pointer-walk site
+(rows 223 and 224 were later withdrawn for want of a publisher grant, and that
+site now rests on a hand-written fixture); the
 repairs rows 225, 229 and 230 needed narrowed the `enum-leading-zero-member` and
 `enum-leading-digit-identifier` fallbacks to names Fern refuses, so their sites stay
 unreached by any Fern-accepted document.
 
 | rank | key | region | unreached sites | unreached regions | witnesses | disposition |
 |---:|---|---|---:|---:|---:|---|
-| 1 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **3** | owned — see the table below |
+| 1 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — see the table below |
 | 2 | `anyof-discriminated-union` | `schemas` | **2** | **45** | **13** | owned — see the table below |
-| 3 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **4** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-properties.md) |
+| 3 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-properties.md) |
 | 4 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-items.md) |
 | 5 | `oneof-anyof-variant` | `schemas` | **1** | **69** | **3** | open — searched by `search-remaining-gaps`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-anyof-variant.md) |
 | 6 | `anyof-oneof-variant` | `schemas` | **1** | **64** | **3** | owned — see the table below |
 | 7 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **41** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-anyof-item.md) |
-| 8 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **25** | **9** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-oneof-discriminated-union.md) |
-| 9 | `items-oneof-element` | `schemas` | **1** | **23** | **21** | owned — see the table below |
-| 10 | `oneof-discriminated-union` | `schemas` | **1** | **23** | **37** | owned — see the table below |
+| 8 | `oneof-discriminated-union` | `schemas` | **1** | **36** | **36** | owned — see the table below |
+| 9 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **25** | **9** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-oneof-discriminated-union.md) |
+| 10 | `items-oneof-element` | `schemas` | **1** | **23** | **21** | owned — see the table below |
 | 11 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **22** | **8** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-anyof-discriminated-union.md) |
 | 12 | `oneof-string-const-variant` | `schemas` | **1** | **22** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md) |
 | 13 | `annotated-ref-shape` | `schemas` | **1** | **19** | **12** | owned — see the table below |
@@ -1776,8 +1786,8 @@ unreached by any Fern-accepted document.
 | 33 | `http-negotiate` | `security` | **1** | **5** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/http-negotiate.md) |
 | 34 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-items.md) |
 | 35 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **5** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-leading-zero-member.md) |
-| 36 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **194** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/mutually-recursive-graph.md) |
-| 37 | `recursive-graph` | `schemas` | **1** | **2** | **194** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/recursive-graph.md) |
+| 36 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **193** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/mutually-recursive-graph.md) |
+| 37 | `recursive-graph` | `schemas` | **1** | **2** | **193** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/recursive-graph.md) |
 | 38 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — see the table below |
 | 39 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-empty-identifier-member.md) |
 | 40 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/enum-leading-digit-identifier.md) |
@@ -1874,7 +1884,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 | boundary rank | key | outcome |
 |---:|---|---|
 | 1 | `property-anyof-discriminated-union` | witness registered for both arms — corpus row 194 (`deepsearch-ds-v2`) executes `hoist_discriminated_union`, and corpus row 196 (`opencodeui`) reaches the `prop_type_ref` arm, so every handling site is reached; the arm search the reach cell links reads `witness-found`, every declarer probed on build `4828cc2b` for the arm it searched |
-| 2 | `ref-pointer-composition-index` | searched on build `4828cc2b`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; the one arm a witness once reached, `ref_to_class`'s pointer walk, lost that witness when corpus row 224 (`codat-assess`) was withdrawn for a disputed grant, and [a replacement search](openapi-surface/withdrawn-witnesses/codat-assess.md#replacement-search) reads `exhausted`, so the hand-written fixture `composition-index-pointer` covers it; the three `resolve_schema_pointer` composition arms stay unreached, since the loader copies every resolvable pointer where it is used, and the declarers the probes found reaching them — Cvent and Sellsy (handed off, then rejected: Fern's exit 0 was over an unparsed document) and Codat Commerce (the same) — are not Fern-accepted; corpus row 223 (`nexmo-conversation`) reached the pointer walk on the probe build and no longer does once its `properties` pointers are copied; [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-composition-index.md) |
+| 2 | `ref-pointer-composition-index` | searched on build `4828cc2b`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; the one arm a witness once reached, `ref_to_class`'s pointer walk, lost that witness when corpus row 224 (`codat-assess`) was withdrawn for a disputed grant, and [a replacement search](openapi-surface/withdrawn-witnesses/codat-assess.md#replacement-search) reads `exhausted`, so the hand-written fixture `composition-index-pointer` covers it; the three `resolve_schema_pointer` composition arms stay unreached, since the loader copies every resolvable pointer where it is used, and the declarers the probes found reaching them — Cvent and Sellsy (handed off, then rejected: Fern's exit 0 was over an unparsed document) and Codat Commerce (the same) — are not Fern-accepted; corpus row 223 (`nexmo-conversation`) reached the pointer walk on the probe build and no longer did once its `properties` pointers were copied, and is since withdrawn for want of a publisher grant; [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-composition-index.md) |
 | 3 | `media-type-key-parameters` | no arm to buy — its witness list named one fixture; the predicate finds `vtex-pricing` and `sftpgo` declaring the shape too, and their goldens reach both sites |
 | 4 | `anyof-discriminated-union` | searched on build `4828cc2b`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — every declarer reaching the arm is Fern-refused (Kibana, gcore, ogx) or a test fixture declined as no real-world specification (Monite's Spectral test input); [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-discriminated-union.md) |
 | 5 | `x-fern-or-crozier-ignore` | searched on build `4828cc2b`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — Cloudflare's `api-schemas` reaches both schema arms but declares `gap` selectors and Fern refuses it; Fern's own importer test fixtures reach them and are declined as no real-world specification; copies of AssemblyAI's description (jentic's, and `atacan/AssemblyAI`'s) reach them and pass Fern, and fail the licence screen on AssemblyAI's own revenue-ceiling terms (CORPUS.md's REJECTED `assemblyai-autosdk`); [arm search](openapi-surface/golden-reach-witnesses/searches/x-fern-or-crozier-ignore.md) |
@@ -1984,9 +1994,9 @@ why. The changes that took the arm off:
 | 5 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 64 | `exhausted` | `inline-oneof-variants` |
 | 6 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 64 | `exhausted` | `inline-anyof-variants` |
 | 7 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 41 | `exhausted` | `inline-oneof-variants` |
-| 8 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
-| 9 | `items-oneof-element` | `src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]` | 21 | `exhausted` | `nested-array-elements` |
-| 10 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 8 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 9 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 10 | `items-oneof-element` | `src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]` | 21 | `exhausted` | `nested-array-elements` |
 | 11 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
 | 12 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 15 | `exhausted` | `inline-oneof-variants` |
 | 13 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 15 | `exhausted` | `inline-oneof-variants` |
@@ -2078,14 +2088,31 @@ corpus screens. So the arm is unreached by any real specification
 the hand-written fixture `composition-index-pointer` covers it at arm level, its
 Fern tree byte-matched. That fixture is how crozier learned that Fern types a
 pointer ending on a composition member as unknown. Every other row and selector
-`codat-assess` declared keeps a golden-bearing witness: the ledger lists three for
-`ref-pointer-composition-index`, four for `ref-pointer-nested-properties` and one,
+`codat-assess` declared keeps a golden-bearing witness: the ledger now lists two for
+`ref-pointer-composition-index`, three for `ref-pointer-nested-properties` and one,
 `auto-agent-protocol`, for `ref-pointer-unnamed-segment`. The seven selectors no
 other golden-bearing source declares — `schema.definitions`,
 `schema.format=ISO4217` and five vendor extensions — back no feature: none is a
 region row's key or a `witness-search-keys.tsv` selector, so none needs a witness
 ([the list](openapi-surface/withdrawn-witnesses/codat-assess.md#selectors-no-other-golden-bearing-source-declares)). The
 2026-09-28 evidence cells that listed it no longer do.
+
+Corpus row 223, `nexmo-conversation`, rested on the same evidence: the Vonage
+(Nexmo) Conversation API 2.0.1 at `APIs-guru/openapi-directory` `f04b8d0b`,
+under the aggregation's grant alone. [The publisher-grant
+search](openapi-surface/withdrawn-witnesses/nexmo-conversation.md#the-publisher-grant-search)
+found no Vonage or Nexmo repository publishing it under any licence, so it is
+withdrawn the same way. Re-measured without it, every `golden-reach.tsv` site
+it reached keeps a golden-only witness, and the three selectors it alone
+declared back no feature. Four behaviours no remaining golden executes are
+copying a `$ref` whose text names `properties`, naming a variant so copied
+after its reference, the inferred `type` tag of a union of such copies, and
+dropping an unquoted YAML timestamp example. They now rest on the hand-written
+fixture `ref-pointer-walk`, regenerated with the pinned Fern and byte-matched.
+That is hand-written evidence, counted as no real-specification match, and each
+behaviour's real-specification search reads `search-incomplete`; the YAML
+timestamp drop is an open gap
+([the table](openapi-surface/withdrawn-witnesses/nexmo-conversation.md#the-reach-row-223-alone-carried)).
 
 #### The `example` arm, removed as a proven divergence
 

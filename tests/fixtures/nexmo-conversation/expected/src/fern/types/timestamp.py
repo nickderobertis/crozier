@@ -1,6 +1,0 @@
-
-
-Timestamp = str
-"""
-Timestamp
-"""

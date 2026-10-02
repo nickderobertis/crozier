@@ -7420,7 +7420,7 @@ ref-pointer-composition-index	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml f
 ref-pointer-composition-index	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml licence	passed	screens.jsonl
 ref-pointer-composition-index	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml ref	passed	screens.jsonl
 ref-pointer-composition-index	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml fern	passed	screens.jsonl
-ref-pointer-composition-index	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml licence	passed	screens.jsonl
+ref-pointer-composition-index	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml licence	failed: no publisher redistribution grant, as the APIs-guru/openapi-directory aggregation's CC0-1.0 alone does not admit it and no Vonage or Nexmo repository publishes the description under any licence	screens.jsonl
 ref-pointer-composition-index	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml ref	passed	screens.jsonl
 ref-pointer-composition-index	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 ref-pointer-nested-items	document	APIs/codat.io/accounting/2.1.0/openapi.yaml	census 17	enumeration.tsv.gz
@@ -7442,7 +7442,7 @@ ref-pointer-nested-properties	document	APIs/openai.com/1.2.0/openapi.yaml	census
 ref-pointer-nested-properties	document	APIs/twinehealth.com/v7.78.1/openapi.yaml	census 11	enumeration.tsv.gz
 ref-pointer-nested-properties	document	APIs/vtex.local/Profile-System/1.0/openapi.yaml	census 14	enumeration.tsv.gz
 ref-pointer-nested-properties	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml fern	passed	screens.jsonl
-ref-pointer-nested-properties	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml licence	passed	screens.jsonl
+ref-pointer-nested-properties	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml licence	failed: no publisher redistribution grant, as the APIs-guru/openapi-directory aggregation's CC0-1.0 alone does not admit it and no Vonage or Nexmo repository publishes the description under any licence	screens.jsonl
 ref-pointer-nested-properties	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml ref	passed	screens.jsonl
 ref-pointer-nested-properties	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 ref-pointer-undeclared-component-head	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
