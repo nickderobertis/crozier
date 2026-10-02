@@ -13667,6 +13667,16 @@ struct RefusalClass {
     fern_exit: String,
     documents: String,
     crozier_diagnostic: String,
+    population_strict: String,
+}
+
+/// What `documents.tsv` records for one class: the rows carrying it, and of
+/// those the ones with a measured `crozier_strict_exit` and the ones it refused.
+#[derive(Default)]
+struct RefusalClassDocuments {
+    carried: usize,
+    measured: usize,
+    refused: usize,
 }
 
 /// Whether the gate runs each `generate` class's `wire_test.py`. Running one
@@ -13756,12 +13766,26 @@ fn fern_refusal_failures(
 
     let carried = refusal_document_class_counts(registry, &known, &mut failures);
     for class in &classes {
-        let count = carried.get(class.class.as_str()).copied().unwrap_or(0);
+        let recorded = carried.get(class.class.as_str());
+        let count = recorded.map_or(0, |recorded| recorded.carried);
         if class.documents != count.to_string() {
             failures.push(format!(
                 "{}: classes.tsv counts {} document(s), but {count} documents.tsv row(s) carry it",
                 class.class, class.documents
             ));
+        }
+        if class.status != "unevaluated" {
+            let measured = recorded.map_or_else(
+                || "0/0".to_owned(),
+                |recorded| format!("{}/{}", recorded.refused, recorded.measured),
+            );
+            if class.population_strict != measured {
+                failures.push(format!(
+                    "{}: classes.tsv population_strict is {}, but documents.tsv's \
+                     crozier_strict_exit refuses {measured} of the rows that carry it",
+                    class.class, class.population_strict
+                ));
+            }
         }
         failures.extend(refusal_class_failures(registry, class, generator, wire));
     }
@@ -13872,18 +13896,20 @@ fn parse_refusal_classes(text: &str) -> (Vec<RefusalClass>, Vec<String>) {
             fern_exit: fern_exit.to_string(),
             documents: documents.to_string(),
             crozier_diagnostic: crozier_diagnostic.to_string(),
+            population_strict: population_strict.to_string(),
         });
     }
     (classes, failures)
 }
 
-/// `documents.tsv`'s header and order, and how many rows carry each class;
-/// a class id that is no `classes.tsv` row is a failure.
+/// `documents.tsv`'s header and order, and per class how many rows carry it and
+/// how their `crozier_strict_exit` reads; a class id that is no `classes.tsv` row
+/// is a failure.
 fn refusal_document_class_counts<'a>(
     registry: &Path,
     known: &std::collections::BTreeSet<&'a str>,
     failures: &mut Vec<String>,
-) -> std::collections::BTreeMap<&'a str, usize> {
+) -> std::collections::BTreeMap<&'a str, RefusalClassDocuments> {
     let mut counts = std::collections::BTreeMap::new();
     let text = match std::fs::read_to_string(registry.join("documents.tsv")) {
         Ok(text) => text,
@@ -13922,7 +13948,14 @@ fn refusal_document_class_counts<'a>(
         }
         for id in fields[8].split(',').filter(|id| !id.is_empty()) {
             match known.get(id) {
-                Some(class) => *counts.entry(*class).or_insert(0) += 1,
+                Some(class) => {
+                    let recorded: &mut RefusalClassDocuments = counts.entry(*class).or_default();
+                    recorded.carried += 1;
+                    if fields[11] != "—" {
+                        recorded.measured += 1;
+                        recorded.refused += usize::from(fields[11] == "1");
+                    }
+                }
                 None => failures.push(format!(
                     "{id}: documents.tsv row {digest} carries it, but it is not a classes.tsv row"
                 )),
@@ -14826,6 +14859,15 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
         )],
     );
     std::fs::create_dir_all(registry.join("stray-directory")).unwrap();
+    // A fraction no documents.tsv row measured: the one carrying the class has
+    // no `crozier_strict_exit`, so the gate reads 0/0 where the table claims 1/1.
+    let classes = std::fs::read_to_string(registry.join("classes.tsv")).unwrap();
+    let drifted = classes.replace(
+        "\tGET /thing: the scratch element\t0/0\n",
+        "\tGET /thing: the scratch element\t1/1\n",
+    );
+    assert_ne!(classes, drifted, "the scratch row to drift was not found");
+    std::fs::write(registry.join("classes.tsv"), drifted).unwrap();
 
     let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
     let report = failures.join("\n");
@@ -14855,6 +14897,10 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
             "is a directory under the registry but no classes.tsv row names it",
         ),
         ("ghost-class:", "but it is not a classes.tsv row"),
+        (
+            "generated-though-refuse:",
+            "population_strict is 1/1, but documents.tsv's crozier_strict_exit refuses 0/0",
+        ),
     ];
     for (class, condition) in expected {
         assert!(
