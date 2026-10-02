@@ -72,7 +72,11 @@ operation's inline request body takes Fern's name `CreateMultiplexRequest`,
 which a component already holds, and Fern validates its own example against
 that component. The [hand-written collision alone](request-name-collision.yml)
 reports [only the name collision](evaluation-logs/fern-request-name-collision.log).
-No detector for it is added here. With the `names` family merged, crozier
-refuses MediaLive in both modes as `request-property-camelcase-collision` (its
-schedule operation's `maxResults` and `MaxResults`), a class Fern also reports
-for it; the inline-request-name collision itself remains a `names` follow-up.
+MediaLive is therefore attributed to `type-name-collision`, the `names`
+family, and no detector for it is added here. The planner's amendment would
+leave such a document out of this class's `population_strict`; it is not left
+out, because the `names` detectors merged from crozier PR #342 now refuse it in
+both modes, as `request-property-camelcase-collision` (its schedule
+operation's `maxResults` and `MaxResults`, a class Fern also reports for it),
+and the planner ruled that this integration supersedes the exclusion. The
+inline-request-name collision itself remains a `names` follow-up.
