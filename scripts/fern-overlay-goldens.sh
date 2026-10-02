@@ -71,19 +71,24 @@ corpus_pin="$(pin_of "$repo_root/tests/fixtures/eos.local/expected/.crozier-fern
 logs="$repo_root/.local/fern-overlay"
 mkdir -p "$logs"
 
+# one FIXTURE SETTING... — generate FIXTURE's overlay golden under SETTING.
 one() {
   local fixture="$1" dir spec="" version staging log
+  shift
   valid_fixture_name "$fixture" || { echo "$fixture: invalid fixture name" >&2; return 1; }
   dir="$repo_root/tests/fixtures/$fixture"
   log="$logs/$fixture.log"
   : >"$log"
   [ -d "$dir/expected" ] || { echo "$fixture: no expected/ golden to overlay" >&2; return 1; }
   version="$corpus_pin"
-  [ ! -f "$dir/expected/.crozier-fern-golden.json" ] || version="$(pin_of "$dir/expected/.crozier-fern-golden.json")"
+  [ ! -f "$dir/expected/.crozier-fern-golden.json" ] \
+    || version="$(pin_of "$dir/expected/.crozier-fern-golden.json")" \
+    || { echo "$fixture: unreadable expected/.crozier-fern-golden.json" >&2; return 1; }
   if [ ! -f "$dir/openapi.yml" ]; then
     if cut -f1 "$repo_root/tests/fixtures/corpus-remote-ref-pins.tsv" | grep -qx -- "$fixture" \
       || cut -f2 "$repo_root/tests/fixtures/corpus-remote-ref-pins.tsv" | grep -qx -- "$fixture"; then
-      spec="$(just --justfile "$repo_root/justfile" fetch-corpus --fixture "$fixture" 2>>"$log" | tail -1)"
+      spec="$(just --justfile "$repo_root/justfile" fetch-corpus --fixture "$fixture" 2>>"$log" | tail -1)" \
+        || { echo "$fixture: just fetch-corpus failed; see $log" >&2; return 1; }
     else
       for name in openapi.json openapi.yaml openapi.yml; do
         [ ! -f "$repo_root/tests/fixtures/corpus-sources/$fixture/$name" ] \
@@ -95,7 +100,7 @@ one() {
   # A stage below the fixture keeps the destination guard of
   # generate-fern-fixture.sh satisfied; only a complete overlay is moved in.
   staging="$(mktemp -d "$dir/.fern-overlay-stage.XXXXXX")"
-  if "$repo_root/scripts/generate-fern-fixture.sh" "${setting[@]}" "$fixture" "$version" \
+  if "$repo_root/scripts/generate-fern-fixture.sh" "$@" "$fixture" "$version" \
     "$spec" "$staging/$golden" >>"$log" 2>&1; then
     rm -rf "${dir:?}/$golden"
     mv "$staging/$golden" "$dir/$golden" || {
@@ -112,9 +117,8 @@ one() {
 }
 export -f one pin_of valid_fixture_name
 export repo_root corpus_pin logs golden
-export SETTING="${setting[*]}"
 
 # The worker shell xargs starts does not inherit this script's `set -euo
-# pipefail`, so it sets its own: a failed step fails that fixture's worker.
-
-printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'set -euo pipefail; setting=($SETTING); one "$1"' _ {}
+# pipefail`, so it sets its own: a failed step fails that fixture's worker. The
+# setting reaches it as separate arguments, never re-split from a string.
+printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'set -euo pipefail; one "$@"' _ {} "${setting[@]}"

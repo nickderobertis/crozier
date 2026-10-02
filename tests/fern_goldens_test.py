@@ -1866,7 +1866,7 @@ class CommittedGoldenStateTests(unittest.TestCase):
 class FernOverlayGoldensTests(unittest.TestCase):
     """`scripts/fern-overlay-goldens.sh` over a synthetic repository root: the
     real script and `lib.sh`, a stand-in `generate-fern-fixture.sh` that writes
-    the overlay where the script asks."""
+    the setting it was given as the overlay, where the script asks."""
 
     def setUp(self) -> None:
         temporary = tempfile.TemporaryDirectory()
@@ -1888,10 +1888,11 @@ class FernOverlayGoldensTests(unittest.TestCase):
                 r"""
                 #!/usr/bin/env bash
                 set -euo pipefail
+                setting="$1 $2"
                 shift 2
                 fixture="$1" destination="$4"
                 mkdir -p "$destination"
-                echo overlay >"$destination/version.py"
+                echo "$setting" >"$destination/version.py"
                 # A stage the worker cannot move the overlay out of.
                 [ "$fixture" != "${FAIL_INSTALL:-}" ] || chmod a-w "$(dirname "$destination")"
                 """
@@ -1925,7 +1926,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         for fixture in ("alpha", "beta"):
             self.assertIn(f"generated {fixture}/expected-literals at", result.stdout)
             golden = self.root / "tests" / "fixtures" / fixture / "expected-literals"
-            self.assertEqual((golden / "version.py").read_text(encoding="utf-8"), "overlay\n")
+            self.assertEqual((golden / "version.py").read_text(encoding="utf-8"), "--enum-type literals\n")
 
     def test_a_failed_golden_install_fails_the_run_and_is_not_reported(self) -> None:
         if os.geteuid() == 0:
