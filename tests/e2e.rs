@@ -403,6 +403,19 @@ const FEATURE_TARGETS: &[Corpus] = &[
         extra_fields: None,
         unmatched: &[],
     },
+    // `x-fern-property-name` (and its canonical `x-crozier-property-name`)
+    // renaming a request-body property clear of the same-named path parameter it
+    // would collide with, and a response field, while both keep their wire keys.
+    Corpus {
+        api: "crozier-property-name",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        audience_strict: false,
+        client_class_name: None,
+        extra_fields: None,
+        unmatched: &[],
+    },
     Corpus {
         api: "auth-schemes",
         package_name: "fern",
@@ -7732,6 +7745,7 @@ macro_rules! feature_target_goldens {
 
 feature_target_goldens! {
     crozier_sdk_extensions_matches_fern_output => "crozier-sdk-extensions",
+    crozier_property_name_matches_fern_output => "crozier-property-name",
     auth_schemes_matches_fern_output => "auth-schemes",
     inline_request_response_matches_fern_output => "inline-request-response",
     cookie_parameters_matches_fern_output => "cookie-parameters",
