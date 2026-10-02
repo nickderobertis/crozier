@@ -15903,6 +15903,97 @@ fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery(
         .success();
 }
 
+/// Write `document` as JSON, with each `"BIG"` string replaced by 2^64,
+/// an integer YAML's reader rejects, and run `generate --fern-strict` on it.
+fn generate_strict_with_big_integers(
+    dir: &Path,
+    document: &serde_json::Value,
+) -> (Option<i32>, String) {
+    let spec = dir.join("api.json");
+    let text = serde_json::to_string(document)
+        .unwrap()
+        .replace("\"BIG\"", "18446744073709551616");
+    std::fs::write(&spec, text).unwrap();
+    let output = dir.join("sdk");
+    let _ = std::fs::remove_dir_all(&output);
+    let result = crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .arg("--fern-strict")
+        .output()
+        .unwrap();
+    (
+        result.status.code(),
+        String::from_utf8(result.stderr).unwrap(),
+    )
+}
+
+#[test]
+fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refusals() {
+    let dir = tempfile::tempdir().unwrap();
+    // `Base.name` collides with the inline `name` an inheriting body redeclares,
+    // and `Base.count`'s example is an integer YAML's reader rejects.
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "components": {"schemas": {
+            "Base": {"type": "object", "properties": {
+                "name": {"type": "string"},
+                "count": {"type": "integer", "example": "BIG"}
+            }},
+            "ReadOnlyName": {"type": "string", "readOnly": true}
+        }},
+        "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
+            "application/json": {"schema": {"allOf": [
+                {"$ref": "#/components/schemas/Base"},
+                {"type": "object", "properties": {"name": {"type": "string"}}}
+            ]}}
+        }}, "responses": {"204": {"description": "Done"}}}}}
+    });
+    // The oversized integer does not hide the collision from the detector.
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(
+        stderr.contains("request-property-name-collision: POST /probe body property \"name\""),
+        "{stderr}"
+    );
+    // A readOnly property is never sent, so it collides with nothing in the
+    // request: declared on the property, or on the component it references.
+    for read_only in [
+        serde_json::json!({"type": "string", "readOnly": true}),
+        serde_json::json!({"$ref": "#/components/schemas/ReadOnlyName"}),
+    ] {
+        document["components"]["schemas"]["Base"]["properties"]["name"] = read_only;
+        let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+        assert_eq!(code, Some(0), "{stderr}");
+        assert!(dir.path().join("sdk/pyproject.toml").is_file());
+    }
+    // The source-level fallback, reached when another field fails to parse,
+    // skips the readOnly property too, leaving the parser's own diagnostic.
+    document["components"]["schemas"]["Base"]["properties"]["name"] =
+        serde_json::json!({"type": "string", "readOnly": true});
+    document["components"]["schemas"]["Malformed"] =
+        serde_json::json!({"type": "string", "nullable": 1});
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(stderr.contains("expected a boolean"), "{stderr}");
+    assert!(
+        !stderr.contains("request-property-name-collision"),
+        "{stderr}"
+    );
+    assert!(!dir.path().join("sdk").exists());
+    // Without readOnly the fallback still refuses the collision.
+    document["components"]["schemas"]["Base"]["properties"]["name"] =
+        serde_json::json!({"type": "string"});
+    let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
+    assert_eq!(code, Some(1), "{stderr}");
+    assert!(
+        stderr.contains("request-property-name-collision"),
+        "{stderr}"
+    );
+}
+
 #[test]
 fn name_refusals_escape_line_breaks_in_offending_schema_names() {
     let dir = tempfile::tempdir().unwrap();
