@@ -1348,6 +1348,10 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .collect();
 
     // One file per generated type.
+    let decl_settings = DeclSettings {
+        extra: ir.extra_fields,
+        enum_type: ir.enum_type,
+    };
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
         let repair = repair_map.get(decl.name());
@@ -1356,8 +1360,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             decl,
             RefLoc::RootTypes,
             &tag_map,
-            ir.extra_fields,
-            ir.enum_type,
+            decl_settings,
             forward,
             repair,
         )?;
@@ -1391,8 +1394,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 decl,
                 location,
                 &tag_map,
-                ir.extra_fields,
-                ir.enum_type,
+                decl_settings,
                 forward,
                 repair,
             )?;
@@ -3693,17 +3695,22 @@ fn update_forward_refs_call(target: &str, repair: &ForwardRepair) -> String {
 /// Render one type declaration to a file body. `loc` is the file's location
 /// (package-root `types/` or a tag's `types/`), which sets the `core`/type import
 /// depth; `tag_types` maps hoisted type names to their tags for those references.
-#[allow(
-    clippy::too_many_arguments,
-    reason = "the declaration dispatcher takes each generator setting a declaration's shape reads"
-)]
+/// The generator settings a declaration's rendered shape reads, bundled to keep
+/// [`render_type_decl`] within the argument limit.
+#[derive(Debug, Clone, Copy, Default)]
+struct DeclSettings {
+    /// Fern's `pydantic_config.extra_fields`: every model's `extra` config.
+    extra: ExtraFields,
+    /// Fern's `pydantic_config.enum_type`: an enum's class or literal form.
+    enum_type: EnumType,
+}
+
 fn render_type_decl(
     env: &Environment<'static>,
     decl: &TypeDecl,
     loc: RefLoc,
     tag_types: &BTreeMap<String, String>,
-    extra: ExtraFields,
-    enum_type: EnumType,
+    settings: DeclSettings,
     forward: &std::collections::HashSet<String>,
     repair: Option<&ForwardRepair>,
 ) -> Result<String> {
@@ -3712,6 +3719,7 @@ fn render_type_decl(
     let needs_forward = repair.is_some();
     let empty_repair = ForwardRepair::default();
     let repair = repair.unwrap_or(&empty_repair);
+    let DeclSettings { extra, enum_type } = settings;
     match decl {
         TypeDecl::Object(obj) => {
             let mut imports = Imports::at(loc, tag_types);
@@ -10374,8 +10382,8 @@ mod tests {
         path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
         readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
         render, render_class_body, render_enum, render_type_decl, url_arg, BodySchemaShape,
-        ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
-        RenderedField, RootClientView, RootModuleView, Slot,
+        ClientCtx, DeclSettings, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc,
+        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -13405,8 +13413,7 @@ mod tests {
             &alias,
             RefLoc::RootTypes,
             &Default::default(),
-            crate::settings::ExtraFields::Allow,
-            crate::settings::EnumType::default(),
+            DeclSettings::default(),
             &std::collections::HashSet::from(["Node".to_string()]),
             None,
         )
@@ -13438,8 +13445,7 @@ mod tests {
             &singleton,
             RefLoc::RootTypes,
             &Default::default(),
-            crate::settings::ExtraFields::Allow,
-            crate::settings::EnumType::default(),
+            DeclSettings::default(),
             &Default::default(),
             None,
         )
