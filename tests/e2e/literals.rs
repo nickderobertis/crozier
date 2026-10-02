@@ -4,7 +4,9 @@
 
 use std::path::Path;
 
-/// One string enum, reached through a model field and an operation header.
+/// Two string enums, one reached through a model field and one through an
+/// operation header (a component, since Fern refuses an inline enum header
+/// schema).
 pub(super) const ENUM_SPEC: &str = "openapi: 3.0.0
 info:
   title: Pets
@@ -17,7 +19,7 @@ paths:
         - name: X-Mode
           in: header
           required: true
-          schema: { type: string, enum: [fast, slow] }
+          schema: { $ref: '#/components/schemas/Mode' }
       responses:
         '200':
           description: OK
@@ -26,6 +28,9 @@ paths:
               schema: { $ref: '#/components/schemas/Pet' }
 components:
   schemas:
+    Mode:
+      type: string
+      enum: [fast, slow]
     Status:
       type: string
       enum: [active, inactive]
@@ -56,7 +61,7 @@ fn enum_type_row(dir: &Path, env: &[(&str, &str)]) -> (String, String) {
 
 /// Which enum shape the SDK generated under `out` has, asserting every file the
 /// setting decides agrees on it: the enum module, the `core/enum.py` runtime the
-/// classes need, the header's serialization and the worked example.
+/// classes need, the header's type and serialization and the worked example.
 fn written_enum_type(out: &Path) -> &'static str {
     let pkg = out.join("src/pets");
     let read = |rel: &str| std::fs::read_to_string(pkg.join(rel)).expect(rel);
@@ -79,14 +84,8 @@ fn written_enum_type(out: &Path) -> &'static str {
     } else {
         assert!(status.contains("class Status(enum.StrEnum):"), "{status}");
         assert!(pkg.join("core/enum.py").is_file());
-        assert!(
-            raw.contains("\"X-Mode\": mode.value if mode is not None else None"),
-            "{raw}"
-        );
-        assert!(
-            reference.contains("mode=GetPetRequestXMode.FAST"),
-            "{reference}"
-        );
+        assert!(raw.contains("mode: Mode,"), "{raw}");
+        assert!(reference.contains("mode=Mode.FAST"), "{reference}");
         "python-enums"
     }
 }
