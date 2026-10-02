@@ -36,6 +36,8 @@ fn render(spec: &Path, fern_strict: bool) -> Rendered {
         audience_strict: false,
         fern_strict,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .map(|files| {
