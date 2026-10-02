@@ -769,7 +769,6 @@ fn oauth_scope_enum(doc: &OpenApi) -> Option<EnumType> {
         module: "oauth_scope".to_string(),
         members,
         docstring: None,
-        literal: false,
     })
 }
 
@@ -1713,12 +1712,6 @@ pub struct EnumType {
     pub members: Vec<EnumMember>,
     /// Optional docstring.
     pub docstring: Option<String>,
-    /// Whether the enum renders as an open `typing.Literal` union rather than an
-    /// `enum.StrEnum` class (`enum-type: literals`, Fern with `enum_type` unset).
-    /// Set for every enum at once by [`build`] from the generator config, so the
-    /// module renderer and the worked examples, which both look the declaration
-    /// up, agree on the enum's shape.
-    pub literal: bool,
 }
 
 /// One member of an [`EnumType`].
@@ -1812,7 +1805,6 @@ fn build_enum(
         module: naming::module_name(name),
         members,
         docstring,
-        literal: false,
     }
 }
 
@@ -2077,15 +2069,6 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             .flat_map(|ep| ep.header_params.iter_mut())
         {
             param.enum_value = false;
-        }
-        let decls = builder
-            .types
-            .iter_mut()
-            .chain(tag_types.iter_mut().map(|tag_type| &mut tag_type.decl));
-        for decl in decls {
-            if let TypeDecl::Enum(e) = decl {
-                e.literal = true;
-            }
         }
     }
 

@@ -1357,6 +1357,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             RefLoc::RootTypes,
             &tag_map,
             ir.extra_fields,
+            ir.enum_type,
             forward,
             repair,
         )?;
@@ -1391,6 +1392,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 location,
                 &tag_map,
                 ir.extra_fields,
+                ir.enum_type,
                 forward,
                 repair,
             )?;
@@ -1523,6 +1525,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 client_name: &ir.client_name,
                 module,
                 types: &ir.types,
+                enum_type: ir.enum_type,
                 tag_decls: &ir.tag_types,
                 auth: &ir.auth,
                 has_environment: ir.environment.is_some(),
@@ -1555,6 +1558,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             client_name: &ir.client_name,
             module,
             types: &ir.types,
+            enum_type: ir.enum_type,
             tag_decls: &ir.tag_types,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
@@ -1593,6 +1597,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 modules: &root_modules,
                 root_endpoints: if root_emittable { &root_eps } else { &[] },
                 types: &ir.types,
+                enum_type: ir.enum_type,
                 tag_decls: &ir.tag_types,
                 tag_map: &tag_map,
                 auth: &ir.auth,
@@ -1652,6 +1657,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             client_name: &ir.client_name,
             module: "",
             types: &ir.types,
+            enum_type: ir.enum_type,
             tag_decls: &ir.tag_types,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
@@ -2201,6 +2207,7 @@ fn select_readme_endpoint<'a>(
 fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
     let mut ctx = ExampleCtx {
         types: &ir.types,
+        enum_type: ir.enum_type,
         yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
@@ -2411,6 +2418,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let sync_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
+            enum_type: ir.enum_type,
             yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
@@ -2444,6 +2452,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
+            enum_type: ir.enum_type,
             yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
@@ -2688,6 +2697,7 @@ fn reference_entry(
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
         types: &ir.types,
+        enum_type: ir.enum_type,
         yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
@@ -3683,12 +3693,17 @@ fn update_forward_refs_call(target: &str, repair: &ForwardRepair) -> String {
 /// Render one type declaration to a file body. `loc` is the file's location
 /// (package-root `types/` or a tag's `types/`), which sets the `core`/type import
 /// depth; `tag_types` maps hoisted type names to their tags for those references.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "the declaration dispatcher takes each generator setting a declaration's shape reads"
+)]
 fn render_type_decl(
     env: &Environment<'static>,
     decl: &TypeDecl,
     loc: RefLoc,
     tag_types: &BTreeMap<String, String>,
     extra: ExtraFields,
+    enum_type: EnumType,
     forward: &std::collections::HashSet<String>,
     repair: Option<&ForwardRepair>,
 ) -> Result<String> {
@@ -3855,7 +3870,7 @@ fn render_type_decl(
                 },
             )
         }
-        TypeDecl::Enum(e) if e.literal => render_literal_enum(env, e),
+        TypeDecl::Enum(e) if enum_type == EnumType::Literals => render_literal_enum(env, e),
         TypeDecl::Enum(e) => render_enum(env, e, &loc),
         TypeDecl::DiscriminatedUnion(union) => {
             render_discriminated_union(env, union, extra, loc, tag_types, forward, repair)
@@ -5796,6 +5811,7 @@ struct RootClientFileCtx<'a> {
     modules: &'a [&'a String],
     root_endpoints: &'a [&'a Endpoint],
     types: &'a [TypeDecl],
+    enum_type: EnumType,
     tag_decls: &'a [TagTypeDecl],
     tag_map: &'a BTreeMap<String, String>,
     auth: &'a Auth,
@@ -5816,6 +5832,7 @@ fn root_client_file(
         modules,
         root_endpoints,
         types,
+        enum_type,
         tag_decls,
         tag_map,
         auth,
@@ -5875,6 +5892,7 @@ fn root_client_file(
         client_name,
         root_endpoints,
         types,
+        enum_type,
         tag_decls,
         tag_map,
         auth,
@@ -5890,6 +5908,7 @@ fn root_client_file(
         client_name,
         root_endpoints,
         types,
+        enum_type,
         tag_decls,
         tag_map,
         auth,
@@ -5977,6 +5996,7 @@ fn root_client_methods(
     client_name: &str,
     endpoints: &[&Endpoint],
     types: &[TypeDecl],
+    enum_type: EnumType,
     tag_decls: &[TagTypeDecl],
     tag_map: &BTreeMap<String, String>,
     auth: &Auth,
@@ -5994,6 +6014,7 @@ fn root_client_methods(
         client_name,
         module: "",
         types,
+        enum_type,
         tag_decls,
         auth,
         has_environment,
@@ -6362,6 +6383,8 @@ struct ClientCtx<'a> {
     client_name: &'a str,
     module: &'a str,
     types: &'a [TypeDecl],
+    /// How string enums render, for the example generator.
+    enum_type: EnumType,
     /// Hoisted tag-scoped types, for the example generator's constructors.
     tag_decls: &'a [TagTypeDecl],
     auth: &'a Auth,
@@ -6643,6 +6666,7 @@ fn client_stream_docstring(
 
     let mut ctx = ExampleCtx {
         types: cx.types,
+        enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
@@ -6773,6 +6797,7 @@ fn client_binary_stream_docstring(
 
     let mut ctx = ExampleCtx {
         types: cx.types,
+        enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
@@ -6871,6 +6896,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
 
     let mut ctx = ExampleCtx {
         types: cx.types,
+        enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
@@ -7216,6 +7242,8 @@ impl Example {
 /// Threads the type table and the imports/datetime a worked example accumulates.
 struct ExampleCtx<'a> {
     types: &'a [TypeDecl],
+    /// How string enums render: a literal enum's example is its plain string.
+    enum_type: EnumType,
     /// The timestamp-like scalars a YAML document writes unquoted, `None` for
     /// JSON. Such a scalar is a date to Fern's parser, not a string, so an example
     /// spelled by one is not one a plain `str` field can take.
@@ -7640,7 +7668,7 @@ impl<'a> ExampleCtx<'a> {
                     .members
                     .iter()
                     .find(|member| member.value == value)?;
-                if enum_type.literal {
+                if self.enum_type == EnumType::Literals {
                     return Some(Example::Atom(literal_enum_value(&member.value)));
                 }
                 let member_name = member.name.clone();
@@ -8313,10 +8341,12 @@ impl<'a> ExampleCtx<'a> {
             }
             // A literal enum's example is its first value as a plain string, which
             // needs no import.
-            Some(TypeDecl::Enum(e)) if e.literal => match e.members.first() {
-                Some(m) => Example::Atom(literal_enum_value(&m.value)),
-                None => Example::Atom("None".to_string()),
-            },
+            Some(TypeDecl::Enum(e)) if self.enum_type == EnumType::Literals => {
+                match e.members.first() {
+                    Some(m) => Example::Atom(literal_enum_value(&m.value)),
+                    None => Example::Atom("None".to_string()),
+                }
+            }
             // An enum's example is member access on its first member
             // (`TypesWeatherReport.SUNNY`), importing the enum by name.
             Some(TypeDecl::Enum(e)) => {
@@ -8373,7 +8403,7 @@ impl<'a> ExampleCtx<'a> {
                                         .iter()
                                         .find(|value| value.value == m.discriminant)
                                         .map(|value| {
-                                            if declared.literal {
+                                            if self.enum_type == EnumType::Literals {
                                                 (literal_enum_value(&value.value), false)
                                             } else {
                                                 (format!("{enum_name}.{}", value.name), true)
@@ -11852,6 +11882,7 @@ mod tests {
     ) -> ExampleCtx<'a> {
         ExampleCtx {
             types,
+            enum_type: crate::settings::EnumType::default(),
             yaml_unquoted_timestamps: None,
             tag_decls,
             referenced: Default::default(),
@@ -12030,7 +12061,6 @@ mod tests {
                     docstring: None,
                 }],
                 docstring: None,
-                literal: false,
             }),
         ];
         let auth = Auth::None;
@@ -12170,7 +12200,6 @@ mod tests {
                     docstring: None,
                 }],
                 docstring: None,
-                literal: false,
             }),
             TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
                 base_fields: Vec::new(),
@@ -12457,7 +12486,6 @@ mod tests {
                 docstring: None,
             }],
             docstring: None,
-            literal: false,
         });
         let alias = TypeDecl::Alias(AliasType {
             reach_refs: Vec::new(),
@@ -12685,7 +12713,6 @@ mod tests {
             module: "empty_enum".to_string(),
             members: Vec::new(),
             docstring: None,
-            literal: false,
         });
         let mut nullable_required = model_field("server_url", TypeRef::Primitive(Prim::Str), true);
         nullable_required.optional = true;
@@ -13320,6 +13347,7 @@ mod tests {
             client_name: "AcmeApi",
             module: "events",
             types: &[],
+            enum_type: crate::settings::EnumType::default(),
             tag_decls: &[],
             auth: &auth,
             has_environment: false,
@@ -13378,6 +13406,7 @@ mod tests {
             RefLoc::RootTypes,
             &Default::default(),
             crate::settings::ExtraFields::Allow,
+            crate::settings::EnumType::default(),
             &std::collections::HashSet::from(["Node".to_string()]),
             None,
         )
@@ -13410,6 +13439,7 @@ mod tests {
             RefLoc::RootTypes,
             &Default::default(),
             crate::settings::ExtraFields::Allow,
+            crate::settings::EnumType::default(),
             &Default::default(),
             None,
         )
@@ -13429,7 +13459,6 @@ mod tests {
                     docstring: Some("Ready member.".to_string()),
                 }],
                 docstring: Some("State enum.".to_string()),
-                literal: false,
             },
             &RefLoc::RootTypes,
         )
