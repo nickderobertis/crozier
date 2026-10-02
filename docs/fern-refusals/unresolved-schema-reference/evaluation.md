@@ -77,3 +77,20 @@ that rule removed](evaluation-logs/union-member-e2e-induced-red.log), refusing
 the later-member control. Remeasured with the corrected detector, all 49
 population documents still refuse in both modes; one is now first diagnosed
 as `heap-exhausted` rather than by the narrowed inline-header check.
+
+A required field whose pointer names `properties` is walked rather than
+resolved, and pinned Fern does not fail it (crozier#358). It generates a bare
+`Any` for [`Named/properties/absent`](../../openapi-surface/authored-probes/358-absent-required-property/fern.log)
+and for an undeclared head,
+[`Missing/properties/absent`](../../openapi-surface/authored-probes/358-undeclared-head-properties-required/fern.log),
+and `str` for
+[`Named/properties/label/$defs/inner`](../../openapi-surface/authored-probes/356-defs-required-property/fern.log).
+The detector refused all three until then: a false refusal, now removed, with
+each case byte-matching Fern's tree under `authored_probe_measurements_match_fern`
+and generating identically in both modes. A required pointer without the word
+still fails Fern when it reaches nothing:
+[`Named/items` on an object with no `items`](evaluation-logs/fern-nested-items-required.log)
+is a false success like the probe's, and
+[`nested-items-required-control.yml`](nested-items-required-control.yml) is
+refused in both modes. No population document's refusal names a `properties`
+pointer, so no population row moves.
