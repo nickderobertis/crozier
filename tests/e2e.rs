@@ -4255,6 +4255,7 @@ const CORPORA: &[&Corpus] = &[
     &FIWARE_CONTEXT_GENERATOR,
     &HASURA_METADATA,
     &ZOONK,
+    &YOURBRAND_TICKETING,
 ];
 
 #[test]
@@ -7111,6 +7112,20 @@ const HASURA_METADATA: Corpus = Corpus {
 /// `oneOf` offers a closed empty object
 const ZOONK: Corpus = Corpus {
     api: "zoonk",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `yourbrand-ticketing`: corpus row 307, YourBrand's Ticketing service API
+/// from marinasundstrom/YourBrand, whose two `format: duration` string bodies
+/// reach `scalar_body`'s plain-string arm
+const YOURBRAND_TICKETING: Corpus = Corpus {
+    api: "yourbrand-ticketing",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13665,6 +13680,11 @@ fn hasura_metadata_matches_fern_output() {
 #[test]
 fn zoonk_matches_fern_output() {
     assert_committed_corpus_matches(&ZOONK);
+}
+
+#[test]
+fn yourbrand_ticketing_matches_fern_output() {
+    assert_committed_corpus_matches(&YOURBRAND_TICKETING);
 }
 
 #[test]

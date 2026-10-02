@@ -1,0 +1,13 @@
+{
+  "check_diagnostic": "All checks passed",
+  "check_exit": "0",
+  "check_log_sha256": "e6ea3e2ff7163058f3c93e939775bd6aa7f99ce1610ec91f4c42caf4113c975d",
+  "fern_cli": "5.67.1",
+  "generate_diagnostic": "[api]: python-sdk Finished.",
+  "generate_exit": "0",
+  "generate_log_sha256": "57898a5580e0ad4209627db928c479ae0fd6d18d42e492e5c68796cce0511c36",
+  "generate_python_files": 33,
+  "generator": "5.20.0",
+  "probe": "probe.yaml",
+  "sha256": "635dc44c0c79413776d5c1cadb4a1abba963430fb39ca64ff1498022dad4f6cf"
+}

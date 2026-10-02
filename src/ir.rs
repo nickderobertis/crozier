@@ -2020,6 +2020,17 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                 (source, &mut endpoint.request_body)
             {
                 fields.retain(|field| !schema_property_is_read_only(doc, source, &field.wire_name));
+                // A body Fern drops from the type layer sends a field renamed for a
+                // parameter collision from its renamed argument; one it keeps as a
+                // type sends the parameter's. Measured on Fern 5.20.0 over a 3.0
+                // probe: a schema posted by one operation alone sends `a_owner`
+                // (YourBrand's `CreateProject` sends `create_project_organization_id`),
+                // while the same schema also answered by a `GET`, or posted by a
+                // second operation, sends `owner` (Airflow's `DAG.tags` sends `tags`,
+                // Anchore's `PolicyBundleRecord.active` sends `active`).
+                for field in fields.iter_mut() {
+                    field.collision_prefix = None;
+                }
                 let field_names: std::collections::HashSet<&str> =
                     fields.iter().map(|field| field.py_name.as_str()).collect();
                 for path_param in &mut endpoint.path_params {
@@ -6354,6 +6365,18 @@ impl InlineHoister<'_> {
                     }
                     if let Some(reference) = non_null[0].reference.as_deref() {
                         return wrap(TypeRef::Named(ref_to_class(reference)));
+                    }
+                    // A sole member that is itself a composition is that composition,
+                    // nullable where it says so: YourBrand's `sortDirection` is
+                    // `oneOf: [{nullable: true, oneOf: [$ref SortDirection]}]`, and its
+                    // golden types it `Optional[SortDirection]`.
+                    if non_null[0].one_of.is_some() || non_null[0].any_of.is_some() {
+                        let inner = self.hoist_param_enum(request_ctx, param, non_null[0]);
+                        return wrap(if is_optional(non_null[0]) {
+                            optional_type_ref(inner)
+                        } else {
+                            inner
+                        });
                     }
                     if is_unknown(non_null[0]) {
                         return TypeRef::Primitive(Prim::Any);
