@@ -31,8 +31,7 @@ Fern configuration it names: `enum-type: python-enums` against
 `enum_type` unset, fern-python-sdk's `literals` default. crozier's corpus gate
 holds every corpus document to the `python_enums` output (`expected/`) and a
 targeted set reaching every enum shape to the `literals` output
-(`expected-literals/`; see
-[`fern-goldens.md`](fern-goldens.md#literal-enum-goldens)), and the script
+(`expected-literals/`), and the script
 writes whichever one the generator is configured with (see `ENUM_TYPE` below).
 `default-max-retries` is certified the same way against Fern's
 `default_max_retries` (at `0`, on a targeted pair of corpora); the script

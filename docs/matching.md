@@ -1361,12 +1361,10 @@ while the open union takes it. What changes, all measured against Fern 5.20.0:
 - every worked example (README, `reference.md`, method docstrings) passes the
   value's string where it passed a member, so the enum is no longer imported.
 
-The flag is set once on each `ir::EnumType` (`literal`) by `ir::build`, so the
-module renderer and the example writer read the same answer. A targeted set of
-corpora reaching every enum shape carries the literals golden it is held to
-(`expected-literals/`, an overlay of `expected/`; see
-[`fern-goldens.md`](fern-goldens.md#literal-enum-goldens)), compared by
-`tests/e2e/literals.rs`. Fern's third mode, `forward_compatible_python_enums`,
+The module renderer and the example writer both read the one `Ir.enum_type`, so
+they agree on every enum's shape. A targeted set of corpora reaching every enum
+shape carries the literals golden it is held to (`expected-literals/`, an
+overlay of `expected/`), compared by `tests/e2e/overlay_goldens.rs`. Fern's third mode, `forward_compatible_python_enums`,
 has no crozier counterpart.
 
 ## Enum name sanitization (issue #50)

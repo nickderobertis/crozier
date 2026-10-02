@@ -68,8 +68,7 @@ version supplied from a workflow input:
 Both therefore emit one `generators.yml` naming `fernapi/fern-python-sdk` at the
 resolved version, and both apply the corpus-wide `pydantic_config.enum_type:
 python_enums` that `generate-fern-fixture.sh` writes for every `expected/` golden
-(crozier's default renders string enums as real `enum.Enum` classes; see
-[`matching.md`](matching.md)). Only its `--enum-type literals` mode, which
+(crozier's default renders string enums as real `enum.Enum` classes). Only its `--enum-type literals` mode, which
 produces the [literal-enum goldens](#literal-enum-goldens), leaves it unset. A fixture's own non-default settings — audiences,
 `client_class_name`, `extra_fields` — reach the same block from
 `fern-generator-config.txt`, so a golden generated locally is the artifact the
@@ -251,8 +250,7 @@ crozier generates: named, inline-property, parameter, sanitized-name, optional
 and nullable enums) also carries `expected-literals/`: Fern's output for the
 same spec, pins and settings with
 `pydantic_config.enum_type` left unset (fern-python-sdk's `literals` default),
-which crozier reproduces with `--enum-type literals` (see
-[`matching.md`](matching.md#literal-enums)).
+which crozier reproduces with `--enum-type literals`.
 
 - **It is an overlay of `expected/`.** Fern's literals output differs from the
   python-enums tree only where an enum appears, so the directory holds just the
