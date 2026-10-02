@@ -7210,7 +7210,7 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
             name,
         )));
     }
-    let id = op.operation_id.as_deref().unwrap_or_default().trim();
+    let id = tag_spelling_id(op, op.operation_id.as_deref().unwrap_or_default().trim());
     // An `operationId` carrying a path-template expression is named by that
     // expression's contents alone: braintrust's catch-all proxy declares
     // `proxy{path+}` on `/v1/proxy/{path+}` and Fern's method is `path`. Only an
@@ -7462,6 +7462,21 @@ fn operation_id_tag_prefix<'a>(id: &'a str, tag: &str) -> Option<(&'a str, &'a s
     Some((prefix, suffix))
 }
 
+/// An operationId that only repeats its first tag before one trailing `_`
+/// (`Search_` under `Search`) is read as the tag's own spelling: Fern hoists it
+/// to the root client as `search`, exactly as it does an operationId that spells
+/// its tag, where the `group_method` split would leave an empty method. Measured
+/// on the refusal registry's `operation-id-tag-only` finding; beside another
+/// operation of that tag the root method collides with the sub-client, which
+/// `generator-lint-failure` refuses.
+fn tag_spelling_id<'a>(op: &Operation, id: &'a str) -> &'a str {
+    id.strip_suffix('_')
+        .filter(|head| {
+            first_tag(op).is_some_and(|tag| operation_id_matches_tag_spelling(head, tag))
+        })
+        .unwrap_or(id)
+}
+
 /// Case-insensitive tag matching is valid when the tag itself records word
 /// boundaries (`Activities`, `APIs`) or both spellings snake-case identically.
 /// An all-lowercase tag does not invent boundaries: `apiKeys` under `apikeys`
@@ -7636,7 +7651,7 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
             .collect::<Vec<_>>()
             .join(" ");
     }
-    let id = op.operation_id.as_deref().unwrap_or_default().trim();
+    let id = tag_spelling_id(op, op.operation_id.as_deref().unwrap_or_default().trim());
     if id.is_empty() {
         if let Some(tag) = first_tag(op) {
             return tag_pascal(tag);
@@ -7706,7 +7721,7 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
             .collect::<Vec<_>>()
             .join("/");
     }
-    let id = op.operation_id.as_deref().unwrap_or_default().trim();
+    let id = tag_spelling_id(op, op.operation_id.as_deref().unwrap_or_default().trim());
     if id.is_empty() && first_tag(op).is_none() {
         return String::new();
     }
@@ -13984,6 +13999,31 @@ mod tests {
             endpoint_method_name(&o, "GET", "/v2/catalog/info"),
             "catalog_info"
         );
+    }
+
+    #[test]
+    fn a_tag_only_operationid_is_a_root_method_named_for_the_tag() {
+        use super::{endpoint_method_name, endpoint_module, module_title};
+        // The refusal registry's `operation-id-tag-only` finding: Fern hoists a
+        // lone `Search_` under `Search` to the root client as `search`, where the
+        // `group_method` split would leave an empty method in a `search` client.
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3", "info": { "title": "t", "version": "1" }, "paths": {}
+        }))
+        .unwrap();
+        let o = op("Search_", "Search");
+        assert_eq!(endpoint_module(&o, "/search"), "");
+        assert_eq!(endpoint_method_name(&o, "GET", "/search"), "search");
+        assert_eq!(
+            module_title(&doc, &o, "/search"),
+            module_title(&doc, &op("Search", "Search"), "/search")
+        );
+        // Only the tag's own spelling before one `_` reads that way: another
+        // prefix keeps its `group_method` split, and a second `_` is no tag.
+        let o = op("Find_", "Search");
+        assert_eq!(endpoint_module(&o, "/search"), "search");
+        let o = op("Search__", "Search");
+        assert_eq!(endpoint_module(&o, "/search"), "search");
     }
 
     #[test]

@@ -955,6 +955,16 @@ pub struct Schema {
     /// by `x-crozier-ignore` when both appear (see [`Schema::ignored`]).
     #[serde(rename = "x-fern-ignore", default)]
     pub ignore_fern: Option<bool>,
+    /// `x-crozier-type-name`: the SDK type name a component schema declares
+    /// (canonical spelling). Read via [`Schema::declared_type_name`], which also
+    /// honours the `x-fern-type-name` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-type-name", default)]
+    pub(crate) type_name_crozier: Option<String>,
+    /// `x-fern-type-name`: the Fern spelling of the declared type name. Superseded
+    /// by `x-crozier-type-name` when both appear (see [`Schema::declared_type_name`]).
+    #[serde(rename = "x-fern-type-name", default)]
+    pub(crate) type_name_fern: Option<String>,
     /// `x-crozier-enum`: per-value member names for a string enum, keyed by wire
     /// value (canonical spelling). Read via [`Schema::enum_member_names`], which
     /// also honours the `x-fern-enum` variant per the
@@ -1014,6 +1024,19 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+
+    /// The SDK type name this schema declares, canonicalizing on the
+    /// `x-crozier-type-name` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). A blank declaration declares
+    /// nothing.
+    #[must_use]
+    pub fn declared_type_name(&self) -> Option<&str> {
+        [&self.type_name_crozier, &self.type_name_fern]
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .find(|name| !name.trim().is_empty())
     }
 
     /// The declared Python member name for each enum value, canonicalizing on the
@@ -1493,7 +1516,8 @@ pub(crate) fn refusal_parameter_name(node: &serde_yaml_ng::Value) -> Option<&str
         })
 }
 
-/// Declared SDK type name, used only to classify measured refusals.
+/// Declared SDK type name read off the raw source node, for the refusals
+/// classified before the typed parse; emission reads [`Schema::declared_type_name`].
 pub(crate) fn refusal_type_name(node: &serde_yaml_ng::Value) -> Option<&str> {
     node.get("x-crozier-type-name")
         .and_then(serde_yaml_ng::Value::as_str)
@@ -1604,6 +1628,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
     normalize_parameter_schema_refs(&mut doc);
+    normalize_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
@@ -2167,6 +2192,42 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
         .map(|name| (name.clone(), format!("{name}Body")))
         .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed))
         .collect();
+    rename_component_schemas(doc, &renames);
+}
+
+/// Rename each component schema that declares an SDK type name
+/// (`x-crozier-type-name`, or its Fern spelling `x-fern-type-name`) to that
+/// name, rewriting every reference to it, so the class, its module and every
+/// annotation naming it follow the declaration as Fern's do: the refusal
+/// registry's `schema-declared-type-name` finding declares `Gadget` on `Widget`
+/// and `Thing` on `123456`, and Fern generates `types/gadget.py`'s `Gadget` and
+/// `types/thing.py`'s `Thing`. A declared name another component already holds
+/// is left alone, as is one a `$ref` pointer could not spell.
+fn normalize_declared_type_names(doc: &mut OpenApi) {
+    let renames: IndexMap<String, String> = doc
+        .components
+        .schemas
+        .iter()
+        .filter_map(|(name, schema)| {
+            let declared = schema.declared_type_name()?;
+            (declared != name).then(|| (name.clone(), declared.to_string()))
+        })
+        .filter(|(_, declared)| {
+            !declared.contains(['/', '~']) && !doc.components.schemas.contains_key(declared)
+        })
+        .collect();
+    let mut targets = std::collections::BTreeSet::new();
+    let renames = renames
+        .into_iter()
+        .filter(|(_, declared)| targets.insert(declared.clone()))
+        .collect();
+    rename_component_schemas(doc, &renames);
+}
+
+/// Rename component schemas by `renames` (old key to new key), keeping their
+/// document order, and point every `$ref` and discriminator mapping that named
+/// an old key at its new one.
+fn rename_component_schemas(doc: &mut OpenApi, renames: &IndexMap<String, String>) {
     if renames.is_empty() {
         return;
     }
@@ -2183,7 +2244,7 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
             *reference = format!("#/components/schemas/{renamed}{rest}");
         }
     };
-    for_each_root_schema(doc, &mut |schema| {
+    let mut visit = |schema: &mut Schema| {
         for_each_schema_in(schema, &mut |node| {
             if let Some(reference) = node.reference.as_mut() {
                 rewrite(reference);
@@ -2194,7 +2255,12 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
                 }
             }
         });
-    });
+    };
+    for_each_root_schema(doc, &mut visit);
+    // A webhook's payload is lowered to a type too, so its references follow.
+    for item in doc.webhooks.values_mut() {
+        for_each_path_item_schema(item, &mut visit);
+    }
 }
 
 /// Carry a component schema's nullability to every reference to it.
@@ -2901,6 +2967,124 @@ mod tests {
 
     fn schema_keys(doc: &OpenApi) -> Vec<String> {
         doc.components.schemas.keys().cloned().collect()
+    }
+
+    #[test]
+    fn declared_type_name_prefers_the_canonical_spelling() {
+        let schema = |value| serde_json::from_value::<Schema>(value).unwrap();
+        let both = schema(serde_json::json!({
+            "x-fern-type-name": "Decoy", "x-crozier-type-name": "Gadget"
+        }));
+        assert_eq!(both.declared_type_name(), Some("Gadget"));
+        let fern = schema(serde_json::json!({ "x-fern-type-name": "Gadget" }));
+        assert_eq!(fern.declared_type_name(), Some("Gadget"));
+        let blank = schema(serde_json::json!({
+            "x-crozier-type-name": " ", "x-fern-type-name": "Gadget"
+        }));
+        assert_eq!(blank.declared_type_name(), Some("Gadget"));
+        assert_eq!(schema(serde_json::json!({})).declared_type_name(), None);
+    }
+
+    #[test]
+    fn declared_type_names_rename_components_and_every_reference() {
+        let mut doc = parse(
+            r"
+openapi: 3.1.0
+info: { title: t, version: '1' }
+paths:
+  /w:
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Widget/properties/id' }
+webhooks:
+  made:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                widget: { $ref: '#/components/schemas/Widget' }
+components:
+  schemas:
+    Widget:
+      x-fern-type-name: Gadget
+      type: object
+      properties:
+        id: { type: string }
+    Holder:
+      type: object
+      discriminator:
+        propertyName: kind
+        mapping: { w: '#/components/schemas/Widget' }
+      properties:
+        widgets: { type: array, items: { $ref: '#/components/schemas/Widget' } }
+    Taken:
+      x-crozier-type-name: Holder
+      type: object
+    Same:
+      x-fern-type-name: Same
+      type: object
+    Slashed:
+      x-fern-type-name: a/b
+      type: object
+    First:
+      x-fern-type-name: Twin
+      type: object
+    Second:
+      x-fern-type-name: Twin
+      type: object
+",
+        );
+        normalize_declared_type_names(&mut doc);
+        // Renamed in place; a name another component holds, the key's own
+        // name, one a pointer cannot spell and a second claim on one name are
+        // all left alone.
+        assert_eq!(
+            schema_keys(&doc),
+            ["Gadget", "Holder", "Taken", "Same", "Slashed", "Twin", "Second"]
+        );
+        let holder = &doc.components.schemas["Holder"];
+        assert_eq!(
+            holder.properties["widgets"]
+                .items
+                .as_ref()
+                .and_then(|items| items.reference.as_deref()),
+            Some("#/components/schemas/Gadget")
+        );
+        assert_eq!(
+            holder.discriminator.as_ref().unwrap().mapping["w"],
+            "#/components/schemas/Gadget"
+        );
+        let response = doc.paths["/w"].get.as_ref().unwrap().responses["200"].content
+            ["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        assert_eq!(
+            response.reference.as_deref(),
+            Some("#/components/schemas/Gadget/properties/id")
+        );
+        let payload = doc.webhooks["made"]
+            .post
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap()
+            .content["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        assert_eq!(
+            payload.properties["widget"].reference.as_deref(),
+            Some("#/components/schemas/Gadget")
+        );
     }
 
     #[test]

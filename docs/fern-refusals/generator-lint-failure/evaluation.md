@@ -46,10 +46,11 @@ IR, which names those elements as Fern does:
 When the operationId only repeats its tag (`Search_` under `Search`), Fern
 hoists the method to the root. That collides only when the tag keeps another
 operation. Alone, as in [this document](evaluation-logs/tag-suffix-single.yml), Fern
-[generates](evaluation-logs/fern-tag-suffix-single.log). crozier names that
-method empty and has failed its own `ruff format` there since the baseline.
-The detector does not refuse that single-operation shape, so it is no control
-here: crozier writes nothing for it in either mode.
+[generates](evaluation-logs/fern-tag-suffix-single.log). crozier named that
+method empty and failed its own `ruff format` there from the baseline until the
+registry's `operation-id-tag-only` finding committed Fern's tree for it. It now
+writes the root `search` method and byte-matches that tree in both modes. The
+detector does not refuse that single-operation shape.
 
 Per the planner's ruling, operation naming is read as pinned Fern reads it:
 `x-crozier-sdk-group-name` and `x-crozier-sdk-method-name` are set aside while

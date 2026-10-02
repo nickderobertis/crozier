@@ -1325,7 +1325,8 @@ the SDKs match, then migrate the annotations to `x-crozier-*` as unhurried clean
 The precedence lives in the field accessors (`Operation::audiences`,
 `Operation::ignored`, `Operation::sdk_group_name`, `Operation::sdk_method_name`,
 `Operation::pagination`, `Operation::streaming`, `Schema::ignored`,
-`Schema::enum_member_names`); any future extension inherits the policy by default.
+`Schema::enum_member_names`, `Schema::declared_type_name`); any future extension
+inherits the policy by default.
 
 Four of them shape the client tree and its methods, and corpus row 108
 (`truefoundry-trueforge`) is the registered witness of all four:
@@ -1343,6 +1344,38 @@ Four of them shape the client tree and its methods, and corpus row 108
 - **`streaming`** with a `stream-condition` splits one operation into two methods,
   `<name>_stream` and `<name>`, each sending the condition's request field as the
   literal that half means; the field is an argument of neither.
+
+### Three naming shapes measured on probes, not real specifications
+
+Three shapes are byte-matched against trees pinned Fern generated from
+manager-authored probes, recorded as `generates` findings of the refusal registry
+([`fern-refusals/README.md`](fern-refusals/README.md)) with each tree under
+`docs/openapi-surface/fern-refusals/finding-trees/`. That tree is what
+`generates_findings_byte_match_their_fern_trees` in `tests/e2e.rs` compares
+crozier against, in both modes. No real-specification search has been run for
+any of them and none is a hand-written fixture, so their evidence tier is
+undecided. They are not coverage.
+
+- **`schema-declared-type-name`.** A component schema's
+  `x-fern-type-name`/`x-crozier-type-name` names its class, its module and every
+  reference to it: Fern generates `Widget` with `x-fern-type-name: Gadget` as
+  `types/gadget.py`'s `Gadget` and `123456` with `Thing` as `Thing`, so the
+  declaration also rescues a key `type-name-not-letter-led` would refuse.
+  `normalize_declared_type_names` renames the component before lowering. The
+  canonical spelling alone produces the same tree, and wins when both appear
+  (`canonical_type_name_hint_names_components_like_fern_spelling`). A declared
+  name another component already holds is left unrenamed: Fern merges the two
+  and then fails `fern check` on the merged schema's example, which no class
+  records yet.
+- **`model-property-construct`.** Fern's tree carries no field that shadows
+  pydantic's `BaseModel.construct()`: a `construct` property is `construct_`
+  under `FieldMetadata(alias="construct")` and `pydantic.Field(alias="construct")`,
+  as `copy`, `json` and `validate` already were, so `model_field_name` protects it.
+- **`operation-id-tag-only`.** A lone `Search_` under the tag `Search` is the
+  root client's `search` method, as `search` under `search` is, where splitting
+  `group_method` would leave an empty method that `ruff` refuses. With a second
+  operation of that tag, the root method collides with the sub-client, and
+  `generator-lint-failure` still refuses it.
 
 ## Literal enums
 

@@ -1854,6 +1854,116 @@ fn sha256_matches_the_fips_180_4_test_vectors() {
     );
 }
 
+const FINDING_TREES_DIR: &str = "docs/openapi-surface/fern-refusals/finding-trees";
+const FINDINGS_DIR: &str = "docs/openapi-surface/fern-refusals/findings";
+
+/// A `generates` finding of the refusal registry (docs/fern-refusals/README.md)
+/// whose comment-stripped Fern tree is committed under `finding-trees/<name>/`:
+/// crozier byte-matches that tree over the finding's probe, in both modes.
+/// These probes are manager-authored documents, not real specifications and not
+/// hand-written fixtures, so this is no `*matches_fern_output*` test and the
+/// golden-only tier never runs it.
+fn finding_tree_failures(root: &Path, name: &str, probe: &Path) -> Vec<String> {
+    let tree = root.join(FINDING_TREES_DIR).join(name);
+    let mut failures = filtered_tree_failures(name, probe, &tree, &[]);
+    let strict = tempfile::tempdir().expect("strict output tempdir");
+    match probe_command(probe, strict.path())
+        .arg("--fern-strict")
+        .output()
+    {
+        Ok(result) if result.status.success() => {
+            if walk_files(strict.path()) != walk_files(&tree) {
+                failures.push(format!(
+                    "{name}: crozier's --fern-strict file set over {} differs from {}",
+                    probe.display(),
+                    tree.display()
+                ));
+            }
+        }
+        Ok(result) => failures.push(format!(
+            "{name}: crozier --fern-strict refused a probe Fern generates from: {}",
+            String::from_utf8_lossy(&result.stderr)
+        )),
+        Err(error) => failures.push(format!("{name}: could not run crozier: {error}")),
+    }
+    failures
+}
+
+#[test]
+fn generates_findings_byte_match_their_fern_trees() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut names: Vec<String> = std::fs::read_dir(root.join(FINDING_TREES_DIR))
+        .expect("the committed finding trees")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_dir())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .collect();
+    names.sort();
+    assert_eq!(
+        names,
+        [
+            "model-property-construct",
+            "operation-id-tag-only",
+            "schema-declared-type-name"
+        ],
+        "every committed finding tree is held here; add a new one to this list"
+    );
+    let findings =
+        std::fs::read_to_string(root.join("docs/fern-refusals/findings.tsv")).expect("findings");
+    let mut failures = Vec::new();
+    for name in &names {
+        let probe = root.join(FINDINGS_DIR).join(format!("{name}.yml"));
+        if !findings
+            .lines()
+            .any(|row| row.starts_with(&format!("{name}\tgenerates\t0\t0\t")))
+        {
+            failures.push(format!(
+                "{name}: findings.tsv has no `generates` row with exits 0 for this tree"
+            ));
+        }
+        failures.extend(finding_tree_failures(root, name, &probe));
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// `x-crozier-type-name` is the canonical spelling of `x-fern-type-name`
+/// (AGENTS.md, the dual-header policy): alone it names a component exactly as
+/// the Fern spelling with the same value does, and beside a different Fern
+/// spelling it wins. Both variants are held to the tree Fern generated from the
+/// `x-fern-type-name` probe.
+#[test]
+fn canonical_type_name_hint_names_components_like_fern_spelling() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let probe = std::fs::read_to_string(
+        root.join(FINDINGS_DIR)
+            .join("schema-declared-type-name.yml"),
+    )
+    .expect("the declared type-name probe");
+    assert_eq!(probe.matches("x-fern-type-name: ").count(), 2, "{probe}");
+    let dir = tempfile::tempdir().unwrap();
+    let canonical_only = probe.replace("x-fern-type-name: ", "x-crozier-type-name: ");
+    let both = probe
+        .replace(
+            "x-fern-type-name: Gadget",
+            "x-fern-type-name: Decoy\n      x-crozier-type-name: Gadget",
+        )
+        .replace(
+            "x-fern-type-name: Thing",
+            "x-fern-type-name: '9'\n      x-crozier-type-name: Thing",
+        );
+    let mut failures = Vec::new();
+    for (name, document) in [("canonical-only", canonical_only), ("both", both)] {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(&spec, document).unwrap();
+        failures.extend(finding_tree_failures(
+            root,
+            "schema-declared-type-name",
+            &spec,
+        ));
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
 
 /// Every hand-written generation fixture, found by listing
@@ -18351,10 +18461,19 @@ fn numeric_type_names_refuse_and_valid_declared_names_recover() {
         .arg("--fern-strict")
         .assert()
         .success();
+    // The canonical declaration names the class, its module and the method's
+    // return annotation, as Fern names a component by its `x-fern-type-name`
+    // (the refusal registry's `schema-declared-type-name` finding).
     assert!(
-        std::fs::read_to_string(declared.join("src/probe/types/one23456.py"))
+        std::fs::read_to_string(declared.join("src/probe/types/thing.py"))
             .unwrap()
-            .contains("class One23456(")
+            .contains("class Thing(")
+    );
+    assert!(!declared.join("src/probe/types/one23456.py").exists());
+    assert!(
+        std::fs::read_to_string(declared.join("src/probe/client.py"))
+            .unwrap()
+            .contains("-> Thing:")
     );
     document["components"]["schemas"]["123456"]
         .as_object_mut()
