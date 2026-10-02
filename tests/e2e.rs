@@ -16659,6 +16659,122 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
 }
 
 #[test]
+fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped_variant() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("missing-discriminant-property");
+    let id = "missing-discriminant-property";
+    let probe = class.join("probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            id,
+            &run,
+            "GET /pets response 200 components/schemas/Pet discriminator kind",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    // Fern refuses every one of these with the class's diagnostic: its own example
+    // reaching a union with no mapping target, or an `x-fern-examples` value
+    // lacking the discriminant. Plain examples and `x-crozier-examples` rescue none.
+    for (case, element) in [
+        (
+            "request-absent-mapping",
+            "POST /pets request components/schemas/Pet",
+        ),
+        (
+            "optional-depth3-absent-mapping",
+            "GET /pets response 200 components/schemas/Pet",
+        ),
+        ("required-depth12-absent-mapping", "components/schemas/Pet"),
+        (
+            "optional-request-absent-mapping",
+            "POST /pets request components/schemas/Pet",
+        ),
+        ("array-item-absent-mapping", "components/schemas/Pet"),
+        ("nullable-absent-mapping", "components/schemas/Pet"),
+        (
+            "error-response-absent-mapping",
+            "GET /pets response 400 components/schemas/Pet",
+        ),
+        ("no-members-absent-mapping", "components/schemas/Pet"),
+        ("nested-union-absent-mapping", "components/schemas/Pet"),
+        ("map-value-absent-mapping", "components/schemas/Pet"),
+        ("allof-absent-mapping", "components/schemas/Pet"),
+        (
+            "x-fern-example-without-kind-mapped",
+            "GET /pets response 200 x-fern-examples/0",
+        ),
+        (
+            "x-fern-request-example-without-kind-mapped",
+            "POST /pets request x-fern-examples/0",
+        ),
+        (
+            "x-fern-example-nested-without-kind-mapped",
+            "x-fern-examples/0/pet",
+        ),
+        (
+            "x-crozier-example-with-kind-absent-mapping",
+            "components/schemas/Pet",
+        ),
+        ("example-with-kind-absent-mapping", "components/schemas/Pet"),
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures(id, &run, element, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert!(
+                run.stderr.contains("discriminator kind"),
+                "{case}: {}",
+                run.stderr
+            );
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let assert_generates_identically = |spec: &Path| {
+        let normal = refusal_run(&crozier, spec, false).unwrap();
+        let strict = refusal_run(&crozier, spec, true).unwrap();
+        let name = spec.display();
+        assert_eq!(normal.code, Some(0), "{name}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{name}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap(),
+                "{name}: {file}"
+            );
+        }
+    };
+    // One mapping target that resolves gives Fern's example its discriminant.
+    let dir = tempfile::tempdir().unwrap();
+    let recovered = dir.path().join("recovered.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    std::fs::write(&recovered, text.replace("schemas/Kitten", "schemas/Cat")).unwrap();
+    assert_generates_identically(&recovered);
+    for control in [
+        "half-absent-mapping",
+        "first-absent-mapping",
+        "anyof-absent-mapping",
+        "unused-absent-mapping",
+        "optional-depth4-absent-mapping",
+        "required3-optional-absent-mapping",
+        "nested-union-second-absent-mapping",
+        "x-fern-example-with-kind-absent-mapping",
+        "x-fern-ignore-operation-absent-mapping",
+        "example-without-kind-mapped",
+        "empty-mapping",
+        "empty-schema-mapping",
+    ] {
+        assert_generates_identically(&class.join(format!("{control}-control.yml")));
+    }
+}
+
+#[test]
 fn enum_default_refusal_recovers_with_a_retained_default() {
     let class = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join(FERN_REFUSALS_DIR)

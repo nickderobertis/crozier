@@ -33,6 +33,7 @@ enum Class {
     DefaultNotEnumValue,
     GeneratorLintFailure,
     TypeNotDefined,
+    MissingDiscriminantProperty,
 }
 
 impl Class {
@@ -56,6 +57,7 @@ impl Class {
             Self::DefaultNotEnumValue => "default-not-enum-value",
             Self::GeneratorLintFailure => "generator-lint-failure",
             Self::TypeNotDefined => "type-not-defined",
+            Self::MissingDiscriminantProperty => "missing-discriminant-property",
         }
     }
 }
@@ -226,6 +228,7 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     if let Some(element) = undefined_type_reference(&root) {
         return refusal(path, strict, Class::TypeNotDefined, &element);
     }
+    check_discriminant_examples(&root, path, strict)?;
     Ok(())
 }
 
@@ -796,6 +799,276 @@ fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool
         }
     }
     Ok(())
+}
+
+/// Fern validates each endpoint's example against its discriminated unions: a
+/// `discriminator` with a non-empty `mapping` on a schema without `anyOf`. With
+/// no `x-fern-examples` the example is Fern's own, which is `{}` at a union whose
+/// every mapping target is missing; otherwise each `x-fern-examples` value is
+/// checked. Plain OpenAPI examples and `x-crozier-examples` play no part: Fern
+/// discards the first and never reads the second. Measured in
+/// `docs/fern-refusals/missing-discriminant-property/evaluation.md`.
+fn check_discriminant_examples(
+    root: &serde_yaml_ng::Value,
+    path: &Path,
+    strict: bool,
+) -> Result<()> {
+    let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) else {
+        return Ok(());
+    };
+    for (route, item) in paths {
+        let Some(route) = route.as_str() else {
+            continue;
+        };
+        for method in [
+            "get", "put", "post", "delete", "options", "head", "patch", "trace",
+        ] {
+            let Some(operation) = item.get(method) else {
+                continue;
+            };
+            if ignored_reference_node(operation) {
+                continue;
+            }
+            let operation_element = format!("{} {route}", method.to_ascii_uppercase());
+            let request = operation
+                .get("requestBody")
+                .map(|body| resolved_node(body, root))
+                .and_then(json_schema)
+                .map(|schema| (format!("{operation_element} request"), schema));
+            let responses = operation
+                .get("responses")
+                .and_then(serde_yaml_ng::Value::as_mapping);
+            let mut codes: Vec<(String, &serde_yaml_ng::Value)> = responses
+                .into_iter()
+                .flatten()
+                .filter_map(|(code, response)| {
+                    let code = code
+                        .as_str()
+                        .map(str::to_owned)
+                        .or_else(|| code.as_u64().map(|code| code.to_string()))?;
+                    let schema = json_schema(resolved_node(response, root))?;
+                    (code.len() == 3 && code.bytes().all(|b| b.is_ascii_digit()))
+                        .then_some((code, schema))
+                })
+                .collect();
+            codes.sort_by(|left, right| left.0.cmp(&right.0));
+            // Fern's endpoint response is the first 2xx body; 4xx and 5xx bodies are errors.
+            let success = codes
+                .iter()
+                .find(|(code, _)| code.starts_with('2'))
+                .map(|(code, schema)| (format!("{operation_element} response {code}"), *schema));
+            let errors = codes
+                .iter()
+                .filter(|(code, _)| code.starts_with('4') || code.starts_with('5'))
+                .map(|(code, schema)| (format!("{operation_element} response {code}"), *schema));
+            if let Some(examples) = operation
+                .get("x-fern-examples")
+                .and_then(serde_yaml_ng::Value::as_sequence)
+            {
+                for (index, example) in examples.iter().enumerate() {
+                    let checks = [
+                        (example.get("request"), request.as_ref()),
+                        (
+                            example.get("response").and_then(|value| value.get("body")),
+                            success.as_ref(),
+                        ),
+                    ];
+                    for (value, schema) in checks {
+                        let (Some(value), Some((element, schema))) = (value, schema) else {
+                            continue;
+                        };
+                        if let Some(union) = example_without_discriminant(
+                            value,
+                            schema,
+                            root,
+                            &format!("{element} x-fern-examples/{index}"),
+                            &mut std::collections::HashSet::new(),
+                        ) {
+                            return refusal(
+                                path,
+                                strict,
+                                Class::MissingDiscriminantProperty,
+                                &union,
+                            );
+                        }
+                    }
+                }
+                continue;
+            }
+            for (element, schema) in request.into_iter().chain(success).chain(errors) {
+                if let Some(union) = unmapped_union(
+                    schema,
+                    root,
+                    "schema",
+                    0,
+                    &mut std::collections::HashSet::new(),
+                ) {
+                    return refusal(
+                        path,
+                        strict,
+                        Class::MissingDiscriminantProperty,
+                        &format!("{element} {union}"),
+                    );
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn resolved_node<'a>(
+    node: &'a serde_yaml_ng::Value,
+    root: &'a serde_yaml_ng::Value,
+) -> &'a serde_yaml_ng::Value {
+    node.get("$ref")
+        .and_then(serde_yaml_ng::Value::as_str)
+        .and_then(|reference| reference.strip_prefix('#'))
+        .and_then(|pointer| yaml_pointer(root, pointer))
+        .unwrap_or(node)
+}
+
+fn json_schema(body: &serde_yaml_ng::Value) -> Option<&serde_yaml_ng::Value> {
+    if ignored_reference_node(body) {
+        return None;
+    }
+    body.get("content")?.get("application/json")?.get("schema")
+}
+
+/// The property a discriminated union requires of its example, and its mapping.
+fn discriminated_union(schema: &serde_yaml_ng::Value) -> Option<(&str, &serde_yaml_ng::Mapping)> {
+    let discriminator = schema.get("discriminator")?;
+    let property = discriminator
+        .get("propertyName")
+        .and_then(serde_yaml_ng::Value::as_str)?;
+    let mapping = discriminator
+        .get("mapping")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+        .filter(|mapping| !mapping.is_empty())?;
+    // Fern imports an `anyOf` discriminator as an undiscriminated union.
+    schema.get("anyOf").is_none().then_some((property, mapping))
+}
+
+/// Fern omits an optional property from its example below three object levels.
+const EXAMPLE_OPTIONAL_LEVELS: usize = 3;
+/// The deepest required chain measured to carry Fern's example to a union.
+const EXAMPLE_REQUIRED_LEVELS: usize = 12;
+
+/// The union Fern's own example reaches with every mapping target missing: each
+/// variant is then unknown and the example `{}` has no discriminant.
+fn unmapped_union(
+    schema: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    element: &str,
+    levels: usize,
+    seen: &mut std::collections::HashSet<(String, usize)>,
+) -> Option<String> {
+    if ignored_reference_node(schema) {
+        return None;
+    }
+    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+        let pointer = reference.strip_prefix('#')?;
+        if !seen.insert((reference.to_owned(), levels)) {
+            return None;
+        }
+        let target = yaml_pointer(root, pointer)?;
+        return unmapped_union(
+            target,
+            root,
+            reference.trim_start_matches("#/"),
+            levels,
+            seen,
+        );
+    }
+    if let Some((property, mapping)) = discriminated_union(schema) {
+        let missing = mapping.values().all(|target| {
+            target
+                .as_str()
+                .and_then(|target| target.strip_prefix('#'))
+                .is_some_and(|pointer| yaml_pointer(root, pointer).is_none())
+        });
+        // A resolved variant becomes Fern's example, so nothing below is reached.
+        return missing.then(|| format!("{element} discriminator {property}"));
+    }
+    if levels < EXAMPLE_REQUIRED_LEVELS {
+        if let Some(properties) = schema
+            .get("properties")
+            .and_then(serde_yaml_ng::Value::as_mapping)
+        {
+            let required = schema
+                .get("required")
+                .and_then(serde_yaml_ng::Value::as_sequence);
+            for (name, child) in properties {
+                let Some(name) = name.as_str() else { continue };
+                let is_required = required
+                    .is_some_and(|fields| fields.iter().any(|field| field.as_str() == Some(name)));
+                if !is_required && levels >= EXAMPLE_OPTIONAL_LEVELS {
+                    continue;
+                }
+                let child_element = format!("{element}/properties/{name}");
+                if let Some(union) = unmapped_union(child, root, &child_element, levels + 1, seen) {
+                    return Some(union);
+                }
+            }
+        }
+        for key in ["items", "additionalProperties"] {
+            if let Some(child) = schema.get(key).filter(|child| child.is_mapping()) {
+                let child_element = format!("{element}/{key}");
+                if let Some(union) = unmapped_union(child, root, &child_element, levels + 1, seen) {
+                    return Some(union);
+                }
+            }
+        }
+    }
+    for key in ["allOf", "oneOf", "anyOf"] {
+        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+            // Fern's example of an undiscriminated union is its first member's.
+            let members = if key == "allOf" { children.len() } else { 1 };
+            for (index, child) in children.iter().enumerate().take(members) {
+                let child_element = format!("{element}/{key}/{index}");
+                if let Some(union) = unmapped_union(child, root, &child_element, levels, seen) {
+                    return Some(union);
+                }
+            }
+        }
+    }
+    None
+}
+
+/// The union an `x-fern-examples` object reaches through `$ref`s and object
+/// properties without naming the union's discriminant.
+fn example_without_discriminant(
+    example: &serde_yaml_ng::Value,
+    schema: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    element: &str,
+    seen: &mut std::collections::HashSet<String>,
+) -> Option<String> {
+    if ignored_reference_node(schema) {
+        return None;
+    }
+    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+        let pointer = reference.strip_prefix('#')?;
+        if !seen.insert(reference.to_owned()) {
+            return None;
+        }
+        let target = yaml_pointer(root, pointer)?;
+        let union = example_without_discriminant(example, target, root, element, seen);
+        seen.remove(reference);
+        return union;
+    }
+    let example = example.as_mapping()?;
+    if let Some((property, _)) = discriminated_union(schema) {
+        return (schema.get("oneOf").is_some() && !example.contains_key(property))
+            .then(|| format!("{element} discriminator {property}"));
+    }
+    let properties = schema
+        .get("properties")
+        .and_then(serde_yaml_ng::Value::as_mapping)?;
+    example.iter().find_map(|(name, value)| {
+        let child = properties.get(name)?;
+        let name = name.as_str()?;
+        example_without_discriminant(value, child, root, &format!("{element}/{name}"), seen)
+    })
 }
 
 fn check_bound_schemas(

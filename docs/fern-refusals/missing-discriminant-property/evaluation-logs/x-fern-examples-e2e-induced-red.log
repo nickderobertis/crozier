@@ -1,0 +1,31 @@
+induced red: only the `example_without_discriminant` predicate replaced by `!example.contains_key(property) && false` in src/document_refusals.rs; everything else as committed
+$ cargo nextest run --locked --no-fail-fast -E 'binary(e2e) and test(missing_discriminant_refusal)'
+exit: 100
+────────────
+ Nextest run ID 94055d3d-5e3f-4f2c-b05e-f1f3a20a04d6 with nextest profile: default
+    Starting 1 test across 1 binary (448 tests and 6 binaries skipped)
+        FAIL [   0.254s] (1/1) crozier::e2e missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped_variant
+  stdout ───
+
+    running 1 test
+    test missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped_variant ... FAILED
+
+    failures:
+
+    failures:
+        missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped_variant
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 448 filtered out; finished in 0.25s
+
+  stderr ───
+
+    thread 'missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped_variant' (3389676) panicked at tests/e2e.rs:16642:13:
+    x-fern-example-without-kind-mapped: missing-discriminant-property: crozier generated from the probe in its mode; the class says it is refused (40 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.257s] 1 test run: 0 passed, 1 failed, 448 skipped
+        FAIL [   0.254s] (1/1) crozier::e2e missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped_variant
+error: test run failed
+
+restored: git checkout src/document_refusals.rs; the same journey passes.
