@@ -1240,8 +1240,12 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that check runs to completion on it. Corpus
   rows 301 to 306, registered since, and row 224's withdrawal bring the tree to
-  **236** registered sources, of which **219** carry a committed golden; the
-  cells their declarations move are re-read from a walk over that tree.
+  236 registered sources; the cells their declarations move are re-read from a
+  walk over that tree. Row 307 then re-registers row 13's
+  `apideck.com-ecosystem` document under a second generator setting, bringing
+  it to **237** registered sources, of which **220** carry a committed golden.
+  It declares nothing row 13 does not, so it moves no row's category, and the
+  per-fixture cells, walked before it, do not list it.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
   rests on. Every `golden` row's golden-only witnesses are recomputed from it by
@@ -1387,7 +1391,9 @@ The remaining-gap searches register corpus rows 301 to 306
 `fiware-context-generator`, `hasura-metadata` and `zoonk`), bringing the walk to
 237 sources (32 vendored plus 205 `link-ok`); withdrawing row 224
 (`codat-assess`) for its disputed grant leaves 236 (32 vendored plus 204
-`link-ok`). Rows 301 and 302 are the first
+`link-ok`), and row 307 (`apideck.com-ecosystem-client-class-name`, row 13's
+document under `client_class_name: EcosystemClient`) makes 237 (32 vendored
+plus 205 `link-ok`). Rows 301 and 302 are the first
 golden-only witnesses of `operation-external-docs` and `xml-attribute`, which
 [Golden rows with no golden-only witness](#golden-rows-with-no-golden-only-witness)
 listed until then. Rows 303 to 305 declare `schema.oneOf>schema.anyOf` and move

@@ -4255,6 +4255,7 @@ const CORPORA: &[&Corpus] = &[
     &FIWARE_CONTEXT_GENERATOR,
     &HASURA_METADATA,
     &ZOONK,
+    &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
 ];
 
 #[test]
@@ -7116,6 +7117,22 @@ const ZOONK: Corpus = Corpus {
     audiences: &[],
     audience_strict: false,
     client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `apideck.com-ecosystem-client-class-name`: corpus row 307, row 13's Ecosystem
+/// API under `client_class_name: EcosystemClient` — the class name of its own
+/// `ecosystem` resource's sub-client. The root `client.py` imports that
+/// sub-client's classes aliased (`ecosystem_client_EcosystemClient`), so the
+/// root class it defines does not shadow the `ecosystem` property's type.
+const APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME: Corpus = Corpus {
+    api: "apideck.com-ecosystem-client-class-name",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: Some("EcosystemClient"),
     extra_fields: None,
     unmatched: &[],
 };
@@ -13668,6 +13685,11 @@ fn zoonk_matches_fern_output() {
 }
 
 #[test]
+fn apideck_ecosystem_client_class_name_matches_fern_output() {
+    assert_committed_corpus_matches(&APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME);
+}
+
+#[test]
 fn peopledatalabs_matches_fern_output() {
     assert_committed_corpus_matches(&PEOPLEDATALABS);
 }
@@ -14503,16 +14525,28 @@ fn sdk_python_env_in(root: &Path, pyproject: &Path, use_uv: bool) -> Result<Path
     if !requirements.iter().any(|r| r.starts_with("mypy==")) {
         return Err(format!("{} declares no pinned mypy", pyproject.display()));
     }
+    cached_python_env(root, "crozier-sdk-env", &requirements, use_uv)
+}
+
+/// Prepare (creating and caching) a virtualenv holding exactly `requirements`
+/// under `root`, named `{prefix}-{digest}` by a digest of the list, and return
+/// its interpreter. Built with `uv` or with `venv` + `pip`.
+fn cached_python_env(
+    root: &Path,
+    prefix: &str,
+    requirements: &[String],
+    use_uv: bool,
+) -> Result<PathBuf, String> {
     let base = python_interpreter().ok_or("no python3/python on PATH")?;
     let key = sha256_hex(requirements.join("\n").as_bytes());
-    let venv = root.join(format!("crozier-sdk-env-{}", &key[..16]));
+    let venv = root.join(format!("{prefix}-{}", &key[..16]));
     let venv_py = venv_python(&venv);
     let ready = venv.join(".crozier-ready");
     // Tests run in parallel processes and threads, and all of them want this
     // one environment: whoever holds the lock builds it, the rest wait and then
     // find it ready. A directory left without the marker is a build that died
     // part-way, so it is cleared rather than built over.
-    let lock = hold_lock(&root.join(format!("crozier-sdk-env-{}.lock", &key[..16])))?;
+    let lock = hold_lock(&root.join(format!("{prefix}-{}.lock", &key[..16])))?;
     if venv_py.exists() && ready.is_file() {
         return Ok(venv_py);
     }
@@ -14540,14 +14574,14 @@ fn sdk_python_env_in(root: &Path, pyproject: &Path, use_uv: bool) -> Result<Path
         install
             .args(["pip", "install", "--python"])
             .arg(&venv_py)
-            .args(&requirements);
+            .args(requirements);
         run(install, "uv pip install")?;
     } else {
         let mut venv_cmd = std::process::Command::new(base);
         venv_cmd.args(["-m", "venv"]).arg(&venv);
         run(venv_cmd, "python -m venv")?;
         let mut install = std::process::Command::new(&venv_py);
-        install.args(["-m", "pip", "install"]).args(&requirements);
+        install.args(["-m", "pip", "install"]).args(requirements);
         run(install, "pip install")?;
     }
     std::fs::write(&ready, requirements.join("\n"))
@@ -14777,6 +14811,78 @@ fn sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
     assert!(
         output.status.success() && report.contains("Success: no issues found"),
         "mypy reports errors in crozier's SDK under its own pin:\n{report}{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+/// The pyright a consumer's editor runs, pinned with its own Node.js so the
+/// journey needs no system `node`.
+const PYRIGHT_REQUIREMENT: &str = "pyright[nodejs]==1.1.414";
+
+/// `client-class-name` set to the class name of one of the spec's own resource
+/// sub-clients (corpus row 307: `EcosystemClient` over Apideck's `Ecosystem`
+/// resource) leaves the root client's `ecosystem` property typed as the
+/// sub-client, not as the root class that shares its name: a consumer's pyright
+/// resolves the sub-client's method through the property of both root clients,
+/// as it does a sub-client whose name collides with nothing (`category`).
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_sub_client_named_like_the_root_client_typechecks_through_its_property() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(
+            corpus_spec("apideck.com-ecosystem-client-class-name")
+                .expect("row 307's committed source"),
+        )
+        .arg("--output")
+        .arg(&sdk)
+        .args([
+            "--package-name",
+            "fern",
+            "--client-class-name",
+            "EcosystemClient",
+        ])
+        .assert()
+        .success();
+    std::fs::write(
+        sdk.join("consumer.py"),
+        r#"from fern import AsyncEcosystemClient, EcosystemClient
+from fern.types import GetCategoriesResponse, GetEcosystemResponse
+
+client = EcosystemClient()
+ecosystem: GetEcosystemResponse = client.ecosystem.ecosystems_one(ecosystem_id="ecosystem_id")
+categories: GetCategoriesResponse = client.category.categories_all(ecosystem_id="ecosystem_id")
+
+
+async def main() -> None:
+    async_client = AsyncEcosystemClient()
+    response: GetEcosystemResponse = await async_client.ecosystem.ecosystems_one(ecosystem_id="ecosystem_id")
+"#,
+    )
+    .unwrap();
+    let sdk_py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the consumer type-check needs the SDK's env: {reason}"));
+    let pyright_py = cached_python_env(
+        &python_env_root(),
+        "crozier-pyright-env",
+        &[PYRIGHT_REQUIREMENT.to_string()],
+        uv_available(),
+    )
+    .unwrap_or_else(|reason| panic!("the consumer type-check needs pyright: {reason}"));
+    let output = std::process::Command::new(&pyright_py)
+        .args(["-m", "pyright", "--pythonpath"])
+        .arg(&sdk_py)
+        .arg("consumer.py")
+        .current_dir(&sdk)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run pyright over the consumer");
+    let report = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success() && report.contains("0 errors"),
+        "pyright cannot resolve a sub-client through the root client's property:\n{report}{}",
         String::from_utf8_lossy(&output.stderr)
     );
 }

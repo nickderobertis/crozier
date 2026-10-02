@@ -233,6 +233,7 @@ compares it. Row 224 is the one so far.
 | 304 | `fiware-context-generator` | github-raw | https://raw.githubusercontent.com/live-buildings/context-generator/354bf6920d20955aabb55f4778a4d8a3d855440b/swaggers/swagger.yaml | `354bf6920d20955aabb55f4778a4d8a3d855440b` | MIT (the publisher repository's pinned `LICENSE`, FIWARE Foundation; the document declares no `info.license`) | committed | The LiveBuildings data model API 0.0.1, the context generator's own description; an array item's `oneOf` member that is an `anyOf` |
 | 305 | `hasura-metadata` | github-raw | https://raw.githubusercontent.com/hasura/graphql-engine/94915fe51d6d21bd7f6d4452dc16221bef8cfefd/metadata.openapi.json | `94915fe51d6d21bd7f6d4452dc16221bef8cfefd` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Hasura GraphQL Engine's metadata schema as its repository publishes it: 334 component schemas and no paths; properties whose `oneOf` holds an `anyOf` |
 | 306 | `zoonk` | github-raw | https://raw.githubusercontent.com/zoonk/zoonk/4546e69762e30f245c9306acb95aa56fc69d2682/apps/apple/Zoonk/openapi.json | `4546e69762e30f245c9306acb95aa56fc69d2682` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Zoonk's API as its repository publishes it for the Apple client: 48 paths and 69 component schemas; `MeDeletion`'s `oneOf` offers a closed empty object |
+| 307 | `apideck.com-ecosystem-client-class-name` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json | `0.0.6` | Apache 2.0 | committed | Row 13's Ecosystem API regenerated with `client_class_name: EcosystemClient`, the class name of its own `Ecosystem` resource's sub-client |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -448,6 +449,22 @@ row name is the fixture directory, so the two goldens, cached specs, and
 
 Reuse this shape for any future generator setting a document cannot express:
 add a row over a small registered source rather than hunting a new spec.
+
+## Row 307 — a sub-client named like the root client
+
+`client_class_name` set to the class name of one of the document's own
+resource sub-clients makes the root `client.py` define a class the sub-client
+import would otherwise bind — the collision hellopatient's TinyURL client hits
+with `client_class_name: TinyUrlClient` over its `TinyURL` resource. That spec
+carries no licence, only terms of service, so this row reproduces the collision
+over row 13's Apache-2.0 Ecosystem API instead: its `Ecosystem` resource's
+sub-client is `EcosystemClient`, the name a consumer of the "Ecosystem API"
+would give its client, and its four other resources pin that a sub-client
+colliding with nothing stays unaliased.
+
+| name | selected for | status |
+|---|---|---|
+| `apideck.com-ecosystem-client-class-name` | `client_class_name: EcosystemClient`, imported by Fern as `ecosystem_client_EcosystemClient` | ✅ matched |
 
 ## Batch 9 — the Latin-1 naming asymmetry (issue #77)
 

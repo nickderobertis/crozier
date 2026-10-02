@@ -5882,10 +5882,24 @@ fn root_client_file(
         // (`ApikeyauthClient`, and MockServer's `AsyncapiClient`).
         let mut names = [format!("Async{pascal}Client"), format!("{pascal}Client")];
         names.sort_by_key(|name| name.to_lowercase());
-        type_checking.push_str(&format!(
-            "    from .{m}.client import {}, {}\n",
-            names[0], names[1]
-        ));
+        if names
+            .iter()
+            .any(|name| root_sub_client_alias(m, name, client_name).is_some())
+        {
+            // An aliased import is never combined with its sibling: Fern writes
+            // one `from … import X as alias` statement per name.
+            for name in &names {
+                type_checking.push_str(&format!(
+                    "    from .{m}.client import {}\n",
+                    root_sub_client_import(m, name, client_name)
+                ));
+            }
+        } else {
+            type_checking.push_str(&format!(
+                "    from .{m}.client import {}, {}\n",
+                names[0], names[1]
+            ));
+        }
     }
     let cfg = RootClientCfg {
         auth,
@@ -6144,8 +6158,10 @@ fn root_client_class(
     let module_views: Vec<RootModuleView> = modules
         .iter()
         .map(|m| {
-            let cls = tag_client_name(m, is_async);
-            // The lazy `from .{attr}.client import {cls}` sits at 12 spaces of indent.
+            let class = tag_client_name(m, is_async);
+            let import = root_sub_client_import(m, &class, client_name);
+            let cls = root_sub_client_alias(m, &class, client_name).unwrap_or(class);
+            // The lazy `from .{attr}.client import {import}` sits at 12 spaces of indent.
             // Fern's printer wraps this single-name import into the parenthesized,
             // trailing-comma form once the flat line reaches 107 columns; ruff (run at
             // `line-length = 120`) then preserves that shape via its magic trailing
@@ -6153,10 +6169,12 @@ fn root_client_class(
             // same call itself — ruff will not split a single-name import for it. The
             // boundary is exact: corpus row 123 wraps at 107 and the corpus's widest
             // flat import is 106.
-            let wrap = 12 + "from .".len() + m.len() + ".client import ".len() + cls.len() >= 107;
+            let wrap =
+                12 + "from .".len() + m.len() + ".client import ".len() + import.len() >= 107;
             RootModuleView {
                 attr: (*m).clone(),
                 cls,
+                import,
                 wrap,
             }
         })
@@ -6232,7 +6250,11 @@ fn root_client_class(
 #[derive(Serialize)]
 struct RootModuleView {
     attr: String,
+    /// The name the sub-client class is bound to in the root `client.py`: its own
+    /// name, or the alias [`root_sub_client_alias`] gives it.
     cls: String,
+    /// What the lazy import names: the class, with ` as {alias}` when aliased.
+    import: String,
     /// Whether the lazy import line overflows Fern's 107-column threshold and must be
     /// emitted in the parenthesized multi-line form (a single-name import ruff won't
     /// split, so its magic trailing comma just preserves whichever shape we emit).
@@ -6372,6 +6394,25 @@ impl EnvClientParts {
 
 /// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
 /// or `AsyncEndpointsPutClient`).
+/// The alias a root `client.py` imports a top-level sub-client class under, when
+/// that class is named like one of the root client classes the same file defines
+/// (`client_class_name: EcosystemClient` over an `ecosystem` resource). Fern then
+/// imports it as `{module}_client_{Class}`, so the root class does not shadow it
+/// and the sub-client property keeps the sub-client's type; `None` otherwise.
+fn root_sub_client_alias(module: &str, class: &str, client_name: &str) -> Option<String> {
+    (class == client_name || class.strip_prefix("Async") == Some(client_name))
+        .then(|| format!("{module}_client_{class}"))
+}
+
+/// The import clause naming `class` in a root `client.py`: `{class}`, or
+/// `{class} as {alias}` when [`root_sub_client_alias`] aliases it.
+fn root_sub_client_import(module: &str, class: &str, client_name: &str) -> String {
+    match root_sub_client_alias(module, class, client_name) {
+        Some(alias) => format!("{class} as {alias}"),
+        None => class.to_string(),
+    }
+}
+
 fn tag_client_name(module: &str, is_async: bool) -> String {
     let pascal = naming::to_pascal_case(module_stem(module));
     if is_async {
@@ -10381,9 +10422,10 @@ mod tests {
         example_from_json_as, example_import_cmp, field_decl, generate, natural_cmp,
         path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
         readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
-        render, render_class_body, render_enum, render_type_decl, url_arg, BodySchemaShape,
-        ClientCtx, DeclSettings, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc,
-        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
+        render, render_class_body, render_enum, render_type_decl, root_sub_client_alias,
+        root_sub_client_import, url_arg, BodySchemaShape, ClientCtx, DeclSettings, Example,
+        ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField,
+        RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -10675,6 +10717,7 @@ mod tests {
             modules: vec![RootModuleView {
                 attr: "endpoints_put".to_string(),
                 cls: "EndpointsPutClient".to_string(),
+                import: "EndpointsPutClient".to_string(),
                 wrap: false,
             }],
             is_async: false,
@@ -10695,6 +10738,35 @@ mod tests {
         assert!(out.contains(
             "    @property\n    def endpoints_put(self):\n        if self._endpoints_put is None:"
         ));
+    }
+
+    #[test]
+    fn root_sub_client_alias_names_only_the_classes_the_root_defines() {
+        // `client_class_name: EcosystemClient` defines `EcosystemClient` and
+        // `AsyncEcosystemClient`, so both of the `ecosystem` sub-client's classes
+        // are aliased and an unrelated sub-client is not.
+        assert_eq!(
+            root_sub_client_import("ecosystem", "EcosystemClient", "EcosystemClient"),
+            "EcosystemClient as ecosystem_client_EcosystemClient"
+        );
+        assert_eq!(
+            root_sub_client_alias("ecosystem", "AsyncEcosystemClient", "EcosystemClient"),
+            Some("ecosystem_client_AsyncEcosystemClient".to_string())
+        );
+        assert_eq!(
+            root_sub_client_import("category", "CategoryClient", "EcosystemClient"),
+            "CategoryClient"
+        );
+        // A root named like a sub-client's async class collides with that class
+        // alone: the root's own async class is `AsyncAsyncFooClient`.
+        assert_eq!(
+            root_sub_client_alias("foo", "AsyncFooClient", "AsyncFooClient"),
+            Some("foo_client_AsyncFooClient".to_string())
+        );
+        assert_eq!(
+            root_sub_client_alias("foo", "FooClient", "AsyncFooClient"),
+            None
+        );
     }
 
     #[test]

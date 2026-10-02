@@ -303,6 +303,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e fiware_context_generator_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e hasura_metadata_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zoonk_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecosystem_client_class_name_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e peopledatalabs_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_acs_notification_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nexmo_conversation_matches_fern_output
