@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/assemblyai.com/main/1.3.4/openapi.json
+HTTP 200
+270121 bytes, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87
+pinned sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87
+outcome: passed: 270121 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87

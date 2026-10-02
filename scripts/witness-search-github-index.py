@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import csv
 import functools
+import importlib.util
 import io
 import json
 import re
@@ -144,6 +145,12 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
             for field in ("license", "ref", "fern", "disposition"):
                 if not isinstance(row.get(field), str) or not row[field]:
                     raise ValueError(f"{path}:{number}: missing or invalid {field}")
+            # A screen carries the measured stage's record, or predates the stage
+            # and is historical; one filed since without its record is refused.
+            failures = load_screen().row_failures(row, path.parent, SCREEN_FIELDS)
+            if failures:
+                raise ValueError(f"{path}:{number}: a screen is filed only with its measured record — "
+                                 + "; ".join(failures))
             keys = row.get("keys") or [row.get("key")]
             if not isinstance(keys, list) or any(
                 not isinstance(key, str) or not key for key in keys
@@ -208,6 +215,27 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
     return rows
 
 
+@functools.cache
+def load_screen() -> Any:
+    """`scripts/witness_screen.py`, the measured screening stage these screens come from."""
+    spec = importlib.util.spec_from_file_location(
+        "witness_screen_for_index", Path(__file__).with_name("witness_screen.py")
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load witness_screen.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+# The legacy row field each measured screen's outcome is stated in.
+SCREEN_FIELDS = {"licence": "license", "ref": "ref", "fern": "fern"}
+# Said on a candidate's `records.tsv` evidence when its screen predates the
+# measured stage: the row stays, and is read as history rather than measurement.
+HISTORICAL_SCREEN = "historical screen: filed before scripts/witness_screen.py, with no measured record"
+
+
 def normalize_repo(value: str) -> str:
     return value.removeprefix("github.com/")
 
@@ -270,6 +298,8 @@ def classify(
             ref = screen_value(screen["ref"])
             fern = screen_value(screen["fern"])
             settled = screen["disposition"]
+            if load_screen().is_historical(screen):
+                evidence = f"{evidence}; {HISTORICAL_SCREEN}"
             disposition = (
                 settled
                 if settled in ("witness-found", "not-owed")
@@ -843,6 +873,11 @@ COMPACT_SEGMENT = re.compile(
 )
 
 
+# The count a compact line adds of the candidates its dispositions rest on a
+# historical screen for, so a reader citing the line sees which are history.
+HISTORICAL = "on historical screens"
+
+
 def disposition_counts(root: Path, source: str) -> dict[str, Counter]:
     """key -> how many of one source's `records.tsv` rows hold each disposition."""
     path = root / f"witness-search-{source}" / "records.tsv"
@@ -851,6 +886,8 @@ def disposition_counts(root: Path, source: str) -> dict[str, Counter]:
     with io.StringIO(read_ledger(path), newline="") as stream:
         for row in csv.DictReader(stream, delimiter="\t"):
             counts.setdefault(row["key"], Counter())[row["disposition"]] += 1
+            if HISTORICAL_SCREEN in row["evidence"]:
+                counts[row["key"]][HISTORICAL] += 1
     return counts
 
 
@@ -884,9 +921,10 @@ def rederived_region_texts(root: Path) -> dict[Path, str]:
                 if source not in by_source:
                     by_source[source] = disposition_counts(root, source)
                 count = by_source[source].get(key, Counter())
+                historical = f", {count[HISTORICAL]} {HISTORICAL}" if count[HISTORICAL] else ""
                 segments.append(
-                    f"{source}: {sum(count.values())} candidates ("
-                    + ", ".join(f"{count[name]} {name}" for name in DISPOSITIONS)
+                    f"{source}: {sum(count[name] for name in count if name != HISTORICAL)} candidates ("
+                    + ", ".join(f"{count[name]} {name}" for name in DISPOSITIONS) + historical
                     + f") [records](witness-search-{match['directory']}/records.tsv){match['witness'] or ''}")
             cells[2] = "; ".join(segments)
             lines[number] = " | ".join(cells)

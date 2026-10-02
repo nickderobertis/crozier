@@ -2,8 +2,8 @@ key	kind	subject	result	file
 *	wait	github-code-search guard log index-pacing-waits.jsonl	27 entries	index-pacing-waits.jsonl
 *	wait	github-code-search guard log rate-limit-calls.jsonl	10476 entries	rate-limit-calls.jsonl
 *	wait	github-code-search guard log rate-limit-waits.jsonl	1 entries	rate-limit-waits.jsonl
-*	wait	github-code-search guard log raw-github-calls.jsonl	1035 entries	raw-github-calls.jsonl
-*	wait	github-code-search guard log raw-github-waits.jsonl	1031 entries	raw-github-waits.jsonl
+*	wait	github-code-search guard log raw-github-calls.jsonl	1039 entries	raw-github-calls.jsonl
+*	wait	github-code-search guard log raw-github-waits.jsonl	1033 entries	raw-github-waits.jsonl
 annotated-ref-shape	document	APIs-guru/openapi-directory:APIs/apache.org/airflow/2.5.3/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 annotated-ref-shape	document	APIs-guru/openapi-directory:APIs/apideck.com/file-storage/10.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 annotated-ref-shape	document	APIs-guru/openapi-directory:APIs/cpy.re/peertube/5.1.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
@@ -10063,9 +10063,9 @@ x-fern-or-crozier-ignore	document	healthcare-org-app/healthcare-appointments:ope
 x-fern-or-crozier-ignore	document	healthcare-org-app/healthcare-prescriptions:openapi.yaml@ba9c26afe85c2a889c0d9ffdd4786e8edbef7ada	census 1	candidates.jsonl
 x-fern-or-crozier-ignore	query	\x-fern-ignore\": true" "\"components\"" filename:openapi.json	0	queries.jsonl
 x-fern-or-crozier-ignore	query	x-fern-ignore: true "components:" filename:openapi.yaml	10	queries.jsonl
-x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
-x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 ref	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 ref	passed: 207126 bytes read at the immutable commit ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718, sha256 b306bf4455446eb3bc38f0e687888206b017b5e89c6047a5592e2fbdd88160b7	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
-x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 ref	passed: 228310 bytes read at the immutable commit ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718, sha256 10ca68affcc55d46649da53ca342ee804c56af96b0a963d584562c8b21e20824	screens.jsonl

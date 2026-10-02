@@ -1,0 +1,27 @@
+--- fern check (exit 1) ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 3 errors
+    [error]
+        path: secrets.yml -> service -> endpoints -> createSecret
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+    [error]
+        path: secrets.yml -> service -> endpoints -> renameSecret
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+    [error]
+        path: teams.yml -> service -> endpoints -> joinTeam
+        issue: Multiple request properties have the name teamId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "teamId"
+  - Body property: <Request Body> -> teamId
+
+Found 3 errors and 2 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 3 errors and 2 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown.
+

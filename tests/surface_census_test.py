@@ -282,14 +282,68 @@ def witness_sources_queried(cell: str, declared: dict[str, str]) -> dict[str, st
     }
 
 
+def records_rate_limit_cap(segment: str) -> bool:
+    """Whether one source's segment of a recorded search records a rate-limit cap.
+
+    The exhaustive contract's own vocabulary (`RATE_LIMIT_REASON`) decides it; a
+    search index's page cap — the 100 results one page serves — is the index's
+    answer, not a bucket reaching its limit, so it is set aside first.
+    """
+    text = re.sub(r"(?i)\bpage cap\b", "", segment)
+    # A match inside a longer word (`reset` in `preset-io`) names no limit.
+    return any(not (match.start() and (text[match.start() - 1].isalnum() or text[match.start() - 1] == "-"))
+               for match in RATE_LIMIT_REASON.finditer(text))
+
+
+OUTSTANDING_ACQUISITION = "outstanding acquisition"
+
+
+def capped_sources(cell: str, declared: dict[str, str]) -> list[str]:
+    """The declared sources a rate-limit cap left short: outstanding acquisitions.
+
+    A capped bucket is waited out and the search continues, so a query left at
+    one is an acquisition the search still owes — never a source that declined
+    to answer. A source whose capped query was answered on a retry owes
+    nothing. Every live completeness decision reads the rest as outstanding.
+    """
+    return sorted(
+        declared[name] for name, segment in witness_sources_queried(cell, declared).items()
+        if records_rate_limit_cap(segment)
+        and re.search(rf"\b(?:{UNANSWERED}|{OUTSTANDING_ACQUISITION})\b", segment, re.I)
+    )
+
+
 def unanswered_sources(cell: str, declared: dict[str, str]) -> list[str]:
-    """The declared sources this record marks `unanswered` — the ones that did not answer."""
+    """The declared sources this record marks `unanswered` — the ones that did not answer.
+
+    A source recording a rate-limit cap is none of them, whatever word it is
+    recorded with: it is an outstanding acquisition ([`capped_sources`]).
+    """
     queried = witness_sources_queried(cell, declared)
     return sorted(
         declared[name]
         for name, segment in queried.items()
-        if re.search(rf"\b{UNANSWERED}\b", segment, re.I)
+        if re.search(rf"\b{UNANSWERED}\b", segment, re.I) and not records_rate_limit_cap(segment)
     )
+
+
+def rate_limit_unanswered_failures(key: str, region: str, row: list[str], declared: dict[str, str]) -> list[str]:
+    """A recorded search reading a rate-limit cap as `unanswered`, refused at any outcome.
+
+    The exhaustive contract refuses that reading, and so does this record: a
+    capped source is an **outstanding acquisition** the search still owes, and
+    is spelled so.
+    """
+    queried = witness_sources_queried(row[6], declared)
+    capped = sorted(declared[name] for name, segment in queried.items()
+                    if records_rate_limit_cap(segment) and re.search(rf"\b{UNANSWERED}\b", segment, re.I))
+    if not capped:
+        return []
+    return [
+        f"{key}: {region}.md reads {capped} `{UNANSWERED}` for a rate-limit cap; a capped bucket is "
+        f"waited out and the search continues, so that source is an **outstanding acquisition** "
+        f"the search still owes — never a source that did not answer"
+    ]
 
 
 def is_licence_identifier(span: str) -> bool:
@@ -383,7 +437,7 @@ def blocker_form(evidence: str) -> str | None:
 # an unreachable endpoint, an error, a cap, or a body nobody read.
 UNANSWERED_BEHAVIOUR = re.compile(
     r"\b(?:refus\w*|declin\w*|unreachab\w*|unavailab\w*|error\w*|fail\w*|"
-    r"time[ds]?.?out|timeout\w*|rate.?limit\w*|limiter|unread|capp\w*|"
+    r"time[ds]?.?out|timeout\w*|unread|"
     r"no body search|exposes no\b|went unread)",
     re.I,
 )
@@ -561,7 +615,11 @@ def open_search_probe_failures(
         )
     else:
         outstanding = unanswered_sources(row[6], declared)
-        if not outstanding:
+        capped = rate_limit_unanswered_failures(key, region, row, declared)
+        failures += capped
+        if not outstanding and capped:
+            pass  # the cap is the whole of what it marks unanswered, and is refused above
+        elif not outstanding:
             failures.append(
                 f"{key}: its recorded search marks no required source "
                 f"`{UNANSWERED}`, so it names no outstanding source — a search "
@@ -606,6 +664,13 @@ def unread_source_failures(
             f"{key}: {region}.md records {outstanding} as `{UNANSWERED}` while "
             f"the row reads `none-found`; a search a required source did not "
             f"answer is `{SEARCH_INCOMPLETE}`, not evidence of absence"
+        ]
+    capped = capped_sources(row[6], declared)
+    if capped and witness_search_outcome(row) == "none-found":
+        return [
+            f"{key}: {region}.md records a rate-limit cap at {capped} while the row reads "
+            f"`none-found`; a capped source is an outstanding acquisition, so the search is "
+            f"`{SEARCH_INCOMPLETE}`, not evidence of absence"
         ]
     return []
 
@@ -684,6 +749,28 @@ def refused_arm_records(root: Path) -> dict[tuple[str, str], list[str]]:
     return records
 
 
+NAMED_GAPS_HEADING = "#### Unproven arms, named"
+
+
+def named_gap_arms(root: Path) -> dict[tuple[str, str], str]:
+    """`(key, arm)` -> why the coverage report names that unreached arm an unproven gap.
+
+    The manager's ruling to the witness-screens node: an arm whose cover stops
+    qualifying, with no proof crozier can yet show in its place, is listed as a
+    gap with its reason rather than dropped or left counted.
+    """
+    doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+    if NAMED_GAPS_HEADING not in doc:
+        return {}
+    body = doc.split(NAMED_GAPS_HEADING, 1)[1].split("\n#", 1)[0]
+    gaps = {}
+    for line in body.splitlines():
+        cells = table_cells(line, 3)
+        if cells and re.fullmatch(r"`[^`]+`", cells[0].strip()):
+            gaps[(cells[0].strip("` "), cells[1].strip("` ").replace("\\|", "|"))] = cells[2].strip()
+    return gaps
+
+
 def finished_state_failures(root: Path) -> list[str]:
     """What keeps the coverage report from its finished state, read off `root`'s ledgers.
 
@@ -711,6 +798,8 @@ def finished_state_failures(root: Path) -> list[str]:
                 )
     arm_covers = {(key, arm) for _fixture, key, arm in covers if arm}
     refused = refused_arm_records(root)
+    named = named_gap_arms(root)
+    searches = surface / "golden-reach-witnesses" / "searches"
     for (key, arm), probes in sorted(refused.items()):
         missing = [probe for probe in probes if not (root / "docs" / probe).is_file()]
         if len(probes) != 2 or missing:
@@ -718,14 +807,36 @@ def finished_state_failures(root: Path) -> list[str]:
                 f"{key}: its refused-document record for `{arm}` does not link a committed "
                 f"minimal document and control (missing: {missing or probes})"
             )
+    unreached = set()
     for _rank, reach in ledger:
         for arm, hit, _total in reach.sites:
+            if not hit:
+                unreached.add((reach.key, arm))
             if hit or (reach.key, arm) in arm_covers or (reach.key, arm) in refused:
+                continue
+            if (reach.key, arm) in named:
+                record = searches / f"{reach.key}.md"
+                verdicts = {
+                    line[2].strip("`")
+                    for line in exhaustive_search_lines(record.read_text(encoding="utf-8")).get(reach.key, [])
+                } if record.is_file() else set()
+                if verdicts != {SEARCH_INCOMPLETE} or not named[(reach.key, arm)]:
+                    failures.append(
+                        f"{reach.key}: unreached arm `{arm}` is named an unproven gap, but its arm "
+                        f"search reads {sorted(verdicts) or 'nothing'}; only a `search-incomplete` "
+                        "arm, with its reason, is a named gap"
+                    )
                 continue
             failures.append(
                 f"{reach.key}: unreached arm `{arm}` has neither an arm-level hand-written "
-                f"cover nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md"
+                f"cover nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md, "
+                f"nor a row under {NAMED_GAPS_HEADING!r} in docs/openapi-surface-coverage.md"
             )
+    for key, arm in sorted(set(named) - unreached):
+        failures.append(
+            f"{key}: docs/openapi-surface-coverage.md names `{arm}` an unproven gap, which the "
+            "reach ledger records reached or does not list; remove the row"
+        )
     with (root / "docs" / "fern-refusals" / "classes.tsv").open(encoding="utf-8", newline="") as handle:
         for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
             if row["status"] == "unevaluated":
@@ -788,7 +899,7 @@ COMPACT_SEGMENT = re.compile(
     "\\(" + ", ".join(
         rf"(?P<{name.replace('-', '_')}>\d+) {re.escape(name)}"
         for name in COMPACT_DISPOSITIONS
-    ) + "\\) "
+    ) + r"(?:, (?P<historical>\d+) on historical screens)?\) "
     r"\[records\]\(witness-search-(?P<directory>[\w.-]+)/records\.tsv\)"
     r"(?: witness `(?P<witness>[^`]+)` at `(?P<revision>[^`]+)`)?"
 )
@@ -797,6 +908,8 @@ SCREENS = ("licence", "ref", "fern")
 EVIDENCE_KINDS = ("query", "walk", "document", "candidate", "screen", "wait")
 # A bucket reaching its cap is the search's to wait out, never a source declining
 # to answer, so an `unanswered` giving any of these as its reason is refused.
+# Where the measured screening stage files its redacted logs, in an evidence directory.
+LOG_DIR = "screens"
 RATE_LIMIT_REASON = re.compile(
     r"(?i)rate[- ]?limit|limiter|quota|too many requests|\b429\b|\bcap(?:ped)?\b|reset"
 )
@@ -934,6 +1047,15 @@ def compact_record_failures(
         ):
             failures.append(
                 f"{key}: `{source}` compact candidate count differs from records.tsv"
+            )
+        # The candidates whose disposition rests on a screen filed before the
+        # measured stage: the index labels each on its evidence, and the line
+        # says how many, so a reader citing it sees which are history.
+        historical = sum(1 for _, row in rows if _index_module.HISTORICAL_SCREEN in row.get("evidence", ""))
+        if historical != int(segment["historical"] or 0):
+            failures.append(
+                f"{key}: `{source}` states {segment['historical'] or 0} candidate(s) on historical "
+                f"screens, and records.tsv labels {historical}"
             )
         if counts.keys() - set(COMPACT_DISPOSITIONS):
             failures.append(f"{key}: `{source}` records.tsv has unknown disposition")
@@ -1342,7 +1464,10 @@ def evidence_directory_failures(
     for path in sorted(directory.rglob("*")):
         rel = path.relative_to(directory).as_posix()
         exempt = (*tables, "enumeration.tsv", "enumeration.tsv.gz", *layout_files)
-        if path.is_file() and rel not in exempt and rel not in named:
+        # A layout entry ending `/` is a directory the layout defines: the
+        # measured stage's redacted logs, each named by the screen row it backs.
+        under = any(rel.startswith(entry) for entry in layout_files if entry.endswith("/"))
+        if path.is_file() and rel not in exempt and rel not in named and not under:
             failures.append(
                 f"{key}: {name}/{rel} is evidence the table accounts for nowhere — "
                 "no records.tsv row names it"
@@ -1358,6 +1483,7 @@ def exhaustive_search_failures(
     directory_for: Callable[[str], Path] | None = None,
     pinned_for: Callable[[str, list[str]], list[dict[str, str]]] | None = None,
     layout_files: tuple[str, ...] = (),
+    measured_build: str | None = None,
 ) -> list[str]:
     """Every way one key's exhaustive-search record falls short of Contract B.
 
@@ -1409,6 +1535,7 @@ def exhaustive_search_failures(
         failures += exhaustive_line_failures(
             key, source, line, records, capabilities.get(source), exhausted, directory,
             pinned_for(source, line) if pinned_for and recorded_walks(line[4]) else None,
+            measured_build,
         )
     return failures
 
@@ -1447,6 +1574,25 @@ def fixture_declined(key: str, directory: Path) -> set[str]:
     return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(marker)}
 
 
+@functools.lru_cache(maxsize=None)
+def reaching_probes(directory: Path) -> frozenset[tuple[str, str, str]]:
+    """`(key, candidate, build)` of every probe in `directory/probe.jsonl` that reaches an unreached site."""
+    probes = directory / "probe.jsonl"
+    rows = [json.loads(line) for line in probes.read_text(encoding="utf-8").splitlines()] if probes.is_file() else []
+    return frozenset((row.get("key"), row.get("candidate"), row.get("build")) for row in rows if row.get("reached"))
+
+
+def reaches_on(directory: Path, key: str, candidate: str, build: str) -> bool:
+    """Whether `directory/probe.jsonl` records `build`'s probe of `candidate` reaching an unreached site."""
+    return (key, candidate, build) in reaching_probes(directory)
+
+
+@functools.lru_cache(maxsize=None)
+def screen_states(directory: Path, key: str) -> dict[str, str]:
+    """The arm search's own reading of each candidate's latest screen in `directory` (measured or historical)."""
+    return golden_reach_search().screen_states_in(directory, key)
+
+
 def not_reaching_failures(
     key: str, candidate: str, census_run: list[str], directory: Path
 ) -> list[str] | None:
@@ -1481,8 +1627,14 @@ def exhaustive_line_failures(
     exhausted: bool,
     directory: Path,
     pinned: list[dict[str, str]] | None = None,
+    measured_build: str | None = None,
 ) -> list[str]:
-    """One `(key, source)` line against its evidence and, when exhausted, its obligations."""
+    """One `(key, source)` line against its evidence and, when exhausted, its obligations.
+
+    With `measured_build` — an arm search's record, counted on that build, whose
+    screens come from the measured stage — a candidate that build's probe finds
+    reaching the arm, settled only by a historical screen, is still owed.
+    """
     failures: list[str] = []
     where = f"witness-search-{source}/records.tsv"
 
@@ -1582,11 +1734,19 @@ def exhaustive_line_failures(
                 f"{sorted(done)}; a declaring candidate is screened on licence, ref "
                 "and fern"
             )
-        elif (exhausted and all(done[s] == "passed" for s in SCREENS)
+        elif (exhausted and all(done[s].startswith("passed") for s in SCREENS)
               and candidate not in fixture_declined(key, directory)):
             failures.append(
                 f"{key}: an `exhausted` search keeps `{candidate}`, which passes all "
                 "three screens — that is a witness, not an absence"
+            )
+        elif (exhausted and measured_build and candidate not in fixture_declined(key, directory)
+              and reaches_on(directory, key, candidate, measured_build)
+              and screen_states(directory, key).get(candidate) == "historical"):
+            failures.append(
+                f"{key}: an `exhausted` search settles `{candidate}` in `{source}` on a historical "
+                "screen — one filed before scripts/witness_screen.py, with no measured record — "
+                "which settles nothing; re-screen it, or read the search `search-incomplete`"
             )
 
     if not exhausted:
@@ -7379,19 +7539,22 @@ class RankedBacklogTests(unittest.TestCase):
             r"fixture\.\*\*.*?each of the (\d+) is still one of the (\d+) \[unreached arms\].*?"
             r"The six-source searches of (\d+) read `exhausted`\. The (\d+)th, `([a-z-]+)`'s, reads "
             r"`config-gated`.*?\*\*(\d+) are reachable only by a document Fern refuses\*\*(.*?)"
-            r"(\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes is decided `refuse`",
+            r"\*\*(\d+) (?:is a named gap|are named gaps)\*\*.*?"
+            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes is decided `refuse`",
             headline,
         )
         self.assertIsNotNone(arms_stated, "the headline no longer states the three-way arm split")
         reached = len(arms) - len(unreached)
+        named = set(named_gap_arms(REPO)) & unreached
         self.assertEqual(
             [categories["golden"], len(arms), reached, len(covered), len(covered), len(unreached),
-             len(covered) - len(gated), len(covered), *sorted(gated), len(refused),
-             reached, len(covered), len(refused), len(arms), len(classes)],
+             len(covered) - len(gated), len(covered), *sorted(gated), len(refused), len(named),
+             reached, len(covered), len(refused), len(named), len(arms), len(classes)],
             [int(v) if v.isdigit() else v for i, v in enumerate(arms_stated.groups()) if i != 10],
         )
         self.assertEqual(len(ledger_rows), categories["golden"], "the reach ledger is not every golden row")
-        self.assertEqual(len(unreached), len(covered) + len(refused), "an unreached arm is unaccounted for")
+        self.assertEqual(len(unreached), len(covered) + len(refused) + len(named),
+                         "an unreached arm is unaccounted for")
         self.assertEqual(
             sorted({key for key, _arm in refused}),
             sorted(set(re.findall(r"`([a-z-]+)`(?:'s)?", arms_stated.group(11))) & {k for k, _a in refused}),
@@ -8193,6 +8356,22 @@ class RankedBacklogTests(unittest.TestCase):
                         [], unread_source_failures(key, path.stem, row, declared)
                     )
 
+    def test_no_recorded_search_reads_a_rate_limit_cap_as_unanswered(self) -> None:
+        """The exhaustive contract's vocabulary, held over every legacy issue-188 record too.
+
+        A capped bucket is waited out, so a source left at one is an outstanding
+        acquisition the search still owes; a legacy line that read it
+        `unanswered` let an unfinished search stand as a settled one.
+        """
+        for path in sorted(self.REGIONS.glob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            declared = declared_witness_sources(text)
+            if not declared:
+                continue
+            for key, row in sorted(witness_search_table(text).items()):
+                with self.subTest(region=path.stem, key=key):
+                    self.assertEqual([], rate_limit_unanswered_failures(key, path.stem, row, declared))
+
     def test_every_blocked_witness_probe_row_meets_the_amended_settlement_rule(self) -> None:
         """Route 2, read over every region row in the tree that claims it.
 
@@ -8849,7 +9028,8 @@ class RankedBacklogTests(unittest.TestCase):
                         directory_for=lambda source: self.ARM_SEARCHES / source,
                         pinned_for=self.arm_search_pin,
                         layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv", "census-fallback.tsv",
-                                      "fern-rescreen.jsonl"),
+                                      "fern-rescreen.jsonl", f"{LOG_DIR}/"),
+                        measured_build=re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1),
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"
@@ -9506,6 +9686,17 @@ class AmendedSettlementRuleTests(RegionFixture, unittest.TestCase):
             self.only_failure(self.unread("none-found", self.UNANSWERED_SOURCES)),
         )
 
+    def test_a_none_found_row_with_a_rate_limited_source_is_refused(self) -> None:
+        """A cap is an outstanding acquisition, so the world has not been asked either."""
+        capped = self.UNANSWERED_SOURCES.replace(
+            "→ **unanswered**: the endpoint returned HTTP 502 on every attempt.",
+            "→ 3; `… filename:openapi.json` is an **outstanding acquisition**: refused with "
+            "`HTTP 403: API rate limit exceeded` while the bucket was capped.")
+        self.assertIn(
+            "records a rate-limit cap at ['GitHub code search'] while the row reads `none-found`",
+            self.only_failure(self.unread("none-found", capped)),
+        )
+
     def test_search_incomplete_is_the_spelling_an_unanswered_source_takes(self) -> None:
         """The outcome the amendment adds, doing the job the refusal above leaves open."""
         self.assertEqual([], self.unread(SEARCH_INCOMPLETE, self.UNANSWERED_SOURCES))
@@ -9532,9 +9723,8 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         "{convertible} |  |  |  |"
     )
     OUTSTANDING = (
-        "**outstanding:** GitHub code search — the secondary limiter refused every "
-        "attempt while `gh api rate_limit` still reported budget, so it answered "
-        "nothing."
+        "**outstanding:** GitHub code search — the endpoint failed with `HTTP 502` "
+        "on every attempt, so it answered nothing."
     )
     CONVERTIBLE = (
         "The row stays convertible: a registrable witness promotes it to `golden` "
@@ -9545,6 +9735,14 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         "declares it **0** times | — | — | — | {sources} |"
     )
     OUTSTANDING_SOURCES = (
+        "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits. "
+        "**GitHub code search** `gh search code '\"x-sample\" filename:openapi.yaml'` "
+        "→ **unanswered**: the endpoint returned `HTTP 502` on every attempt."
+    )
+    # What the fixture above used to record, and what route 3 now refuses: a
+    # bucket at its cap is waited out, so the source is an outstanding
+    # acquisition the search still owes, never an unanswered one.
+    CAPPED_SOURCES = (
         "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits. "
         "**GitHub code search** `gh search code '\"x-sample\" filename:openapi.yaml'` "
         "→ **unanswered**: refused with `HTTP 403: API rate limit exceeded for user "
@@ -9653,7 +9851,7 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
     def test_each_way_of_naming_what_the_source_did_instead_is_accepted(self) -> None:
         """And the complete ones are, so the refusal above is about content."""
         for good in (
-            "**outstanding:** GitHub code search, which the secondary limiter refused.",
+            "**outstanding:** GitHub code search, which refused every query put to it.",
             "**outstanding:** GitHub code search — the endpoint was unreachable on "
             "every attempt.",
             "**outstanding:** GitHub code search — its index returned an error "
@@ -9663,6 +9861,30 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         ):
             with self.subTest(outstanding=good):
                 self.assertEqual([], self.reconcile(outstanding=good))
+
+    def test_a_rate_limit_cap_recorded_as_unanswered_is_refused(self) -> None:
+        """A capped source is an outstanding acquisition, so it licenses no route 3."""
+        for cap in (
+            self.CAPPED_SOURCES,
+            self.CAPPED_SOURCES.replace("refused with `HTTP 403: API rate limit exceeded for user ID 19440155`",
+                                        "refused by the secondary limiter while `gh api rate_limit` still "
+                                        "reported budget,"),
+            self.CAPPED_SOURCES.replace("`HTTP 403: API rate limit exceeded for user ID 19440155`",
+                                        "`HTTP Error 429: Too Many Requests`"),
+        ):
+            with self.subTest(cap=cap):
+                failure = self.only_failure(self.reconcile(sources=cap))
+                self.assertIn("reads ['GitHub code search'] `unanswered` for a rate-limit cap", failure)
+                self.assertIn("**outstanding acquisition**", failure)
+
+    def test_a_capped_source_spelled_as_an_outstanding_acquisition_still_licenses_nothing(self) -> None:
+        """Reworded honestly, the cap is no unanswered source either: route 3 needs a real one."""
+        outstanding = self.CAPPED_SOURCES.replace(
+            "→ **unanswered**: refused", "→ **outstanding acquisition**: refused")
+        self.assertIn(
+            "marks no required source `unanswered`",
+            self.only_failure(self.reconcile(sources=outstanding)),
+        )
 
     def test_a_row_whose_search_marks_no_source_unanswered_is_refused(self) -> None:
         """A search every source answered settles on what it found, not on a probe."""
@@ -9714,6 +9936,8 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [Path("docs") / "fern-refusals" / "classes.tsv"]
         copies += [path.relative_to(REPO) for path in HANDWRITTEN.glob("*/evidence.toml")]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
+        copies += [Path("docs") / "openapi-surface-coverage.md"]
+        copies += [path.relative_to(REPO) for path in (REPO / surface / "golden-reach-witnesses" / "searches").glob("*.md")]
         for relative in copies:
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPO / relative, self.root / relative)
@@ -9748,7 +9972,34 @@ class FinishedStateGateTests(unittest.TestCase):
         )
         self.assertEqual(
             [f"http-dpop: unreached arm `{arm}` has neither an arm-level hand-written cover "
-             f"nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md"],
+             f"nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md, "
+             f"nor a row under {NAMED_GAPS_HEADING!r} in docs/openapi-surface-coverage.md"],
+            finished_state_failures(self.root),
+        )
+
+    NAMED_ARM = "src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\\(Prim::Str\\)]"
+
+    def test_the_committed_named_gap_is_an_uncovered_arm_over_an_incomplete_search(self) -> None:
+        """`format-duration`'s arm has no cover and no refused record: only its named row holds it."""
+        self.assertIn(("format-duration", self.NAMED_ARM), named_gap_arms(self.root))
+        covered = {(key, arm) for _fixture, key, arm in handwritten_covers(
+            self.root / "docs" / "openapi-surface" / "handwritten")}
+        self.assertNotIn(("format-duration", self.NAMED_ARM), covered)
+        row = f"| `format-duration` | `{self.NAMED_ARM}` | registered witness"
+        self.edit("docs/openapi-surface-coverage.md", row,
+                  row.replace("`format-duration`", "`format-duration-retired`"))
+        failures = finished_state_failures(self.root)
+        self.assertIn(f"format-duration: unreached arm `{self.NAMED_ARM}` has neither", failures[0])
+        self.assertIn("format-duration-retired: docs/openapi-surface-coverage.md names", failures[1])
+
+    def test_a_named_gap_over_a_search_reading_exhausted_is_refused(self) -> None:
+        record = "docs/openapi-surface/golden-reach-witnesses/searches/format-duration.md"
+        path = self.root / record
+        path.write_text(path.read_text(encoding="utf-8").replace("`search-incomplete`", "`exhausted`"),
+                        encoding="utf-8")
+        self.assertEqual(
+            [f"format-duration: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
+             "arm search reads ['exhausted']; only a `search-incomplete` arm, with its reason, is a named gap"],
             finished_state_failures(self.root),
         )
 

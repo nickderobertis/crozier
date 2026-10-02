@@ -101,6 +101,18 @@ files it here.
   and its digest, each command's exit status, the first diagnostic Fern
   printed and the digest of its full output, and the screen is re-filed from it.
 - `<source>/screens.jsonl` — each screen as it was filed, with its evidence.
+  `screen` files one only through the measured screening stage,
+  [`scripts/witness_screen.py`](../../../scripts/witness_screen.py): the
+  candidate read at its pinned commit through the guarded raw route, its licence
+  read against the corpus rule, pinned Fern run over it. Each row's `measured`
+  record holds every outcome's pins, exit status and redacted log, the logs
+  committed under `<source>/screens/` by their digest. An outcome stated as text
+  is refused. A row without a `measured` record was filed before the stage
+  landed: it is **historical**, kept as filed, and settles no candidate — a
+  reaching candidate whose latest screen is historical is outstanding, listed in
+  `outstanding.tsv`, unless `fern-rescreen.jsonl` holds a pinned Fern run that
+  refused it. `restate` restates a committed record's screens and counts from
+  evidence filed since, keeping the rest as rendered.
   The `github-code-search` licence screens rest on each repository's licence at
   the pinned commit; 40 of those REST lookups first went out on 2026-09-26
   without a credential, which `rate-limit-calls.jsonl` shows against GitHub's

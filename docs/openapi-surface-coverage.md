@@ -68,12 +68,12 @@ links splits them three ways:
 
 - **826 are reached by a registered real specification.** A golden-only
   witness executes the arm and its golden byte-matches.
-- **55 are reached only by a hand-written fixture.** An arm-level cover in
+- **54 are reached only by a hand-written fixture.** An arm-level cover in
   [the hand-written fixtures](openapi-surface/handwritten/AGENTS.md) executes
   the arm, and crozier byte-matches the tree Fern generated from it. That is the
-  same weaker proof as the `handwritten` rows, so each of the 55 is still one of
+  same weaker proof as the `handwritten` rows, so each of the 54 is still one of
   the 60 [unreached arms](#every-unreached-arm-and-its-search-verdict). The
-  six-source searches of 54 read `exhausted`. The 55th,
+  six-source searches of 53 read `exhausted`. The 54th,
   `discriminator-mapping`'s, reads `config-gated`: it runs only under an
   audience filter, which no search probe sets.
 - **5 are reachable only by a document Fern refuses**, which leaves no Fern tree
@@ -85,12 +85,20 @@ links splits them three ways:
   six-source search reads `exhausted`. Each record, a minimal refused document
   and a control Fern generates from, is in
   [Arms only a refused document reaches](fern-limitations.md#arms-only-a-refused-document-reaches).
+- **1 is a named gap**, an arm no proof crozier can show covers yet:
+  `format-duration`'s `scalar_body` plain-string arm. Its arm search now reads
+  `search-incomplete`. The measured re-screen of the candidate it had settled on
+  a historical screen found a real specification that reaches the arm:
+  `yourbrand-ticketing`, corpus row 307, whose Fern golden crozier byte-matches.
+  The reach ledger has not been re-measured over that golden, so the arm is not
+  yet counted as reached, and the hand-written cover it rested on is withdrawn.
+  [Unproven arms, named](#unproven-arms-named) lists it.
 
-826 + 55 + 5 = 886. No arm rests on a witness whose redistribution grant is
+826 + 54 + 5 + 1 = 886. No arm rests on a witness whose redistribution grant is
 disputed. `ref-pointer-composition-index`'s `ref_to_class` composition-index
 walk was reached only through corpus row 224 until that row was withdrawn for
 its disputed grant. It now rests on the hand-written fixture
-`composition-index-pointer` and is one of the 55.
+`composition-index-pointer` and is one of the 54.
 
 Where crozier deliberately differs from Fern is decided per refusal class in
 [`fern-refusals/`](fern-refusals/README.md). Each of its 36 classes is decided
@@ -1239,8 +1247,8 @@ The six region files, read as one body of work. Two measurements feed it:
   current walk is the **2026-09-28** one, pinned by digest (`c9319995…`) in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that check runs to completion on it. Corpus
-  rows 301 to 306, registered since, and row 224's withdrawal bring the tree to
-  **236** registered sources, of which **219** carry a committed golden; the
+  rows 301 to 307, registered since, and row 224's withdrawal bring the tree to
+  **237** registered sources, of which **220** carry a committed golden; the
   cells their declarations move are re-read from a walk over that tree.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -2011,7 +2019,7 @@ why. The changes that took the arm off:
 | 38 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]` | 2 | `exhausted` | `x-fern-ignore-schema` |
 | 39 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
 | 40 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
-| 41 | `format-duration` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 41 | `format-duration` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `search-incomplete` | — |
 | 42 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
 | 43 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
 | 44 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
@@ -2080,6 +2088,19 @@ other golden-bearing source declares — `schema.definitions`,
 region row's key or a `witness-search-keys.tsv` selector, so none needs a witness
 ([the list](openapi-surface/withdrawn-witnesses/codat-assess.md#selectors-no-other-golden-bearing-source-declares)). The
 2026-09-28 evidence cells that listed it no longer do.
+
+#### Unproven arms, named
+
+An unreached arm with neither an arm-level hand-written cover nor a refused-document
+record is unproven. It may stand only as a **named gap**: a row below saying why,
+over an arm search reading `search-incomplete`, which
+`finished_state_failures` in `tests/surface_census_test.py` checks. A named gap
+is never counted as proven. It leaves the list when the reach ledger shows the
+arm reached, or when its search is decided again.
+
+| key | unreached arm | why it is unproven |
+|---|---|---|
+| `format-duration` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | registered witness, reach ledger not yet re-measured: the measured re-screen read the candidate's licence (MIT at its pinned commit) and pinned Fern's acceptance, so YourBrand's Ticketing API is corpus row 307, `yourbrand-ticketing`, byte-matched against its Fern 5.20.0 golden; the reach ledger, `golden-reach.tsv`, predates it |
 
 #### The `example` arm, removed as a proven divergence
 

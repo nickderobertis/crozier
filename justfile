@@ -19,7 +19,7 @@ bootstrap:
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard test-fern-refusals fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-corpus-sources test-corpus-sources lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-witness-screen test-rate-limit-guard test-fern-refusals fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-corpus-sources test-corpus-sources lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -715,6 +715,17 @@ test-witness-search-acquisition:
 # Offline HTTP journey for the GitHub/Sourcegraph witness acquisition path.
 test-witness-search-github:
     "$(./scripts/census-python.sh)" tests/witness_search_github_test.py
+
+# The measured screening stage both witness-search families file screens through:
+# its CLI over a loopback raw-GitHub server and a stub `fern`, and the legacy
+# index reading what it files.
+test-witness-screen:
+    "$(./scripts/census-python.sh)" tests/witness_screen_test.py
+
+# Take one legacy witness-search candidate's licence, ref and Fern screens, measured.
+# Network (the guarded raw route) and Fern (`just setup-fern`).
+witness-screen *args:
+    @"$(./scripts/census-python.sh)" ./scripts/witness_screen.py "$@"
 
 # Canonical reproduction entry point; archived evidence retains original commands.
 witness-search-local-census *args:

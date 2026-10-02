@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/atacan/AssemblyAI/ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718/openapi.yaml
+HTTP 200
+207126 bytes, sha256 b306bf4455446eb3bc38f0e687888206b017b5e89c6047a5592e2fbdd88160b7
+pinned sha256 b306bf4455446eb3bc38f0e687888206b017b5e89c6047a5592e2fbdd88160b7
+outcome: passed: 207126 bytes read at the immutable commit ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718, sha256 b306bf4455446eb3bc38f0e687888206b017b5e89c6047a5592e2fbdd88160b7

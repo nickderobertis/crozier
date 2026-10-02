@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/marinasundstrom/YourBrand/6ef617804cb34ceba4b847c62ab122042d86abbe/src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml
+HTTP 200
+69838 bytes, sha256 3be4a678e0019f61d5ed6e109b30543388284c231efe762e84d914b67b5168ff
+pinned sha256 3be4a678e0019f61d5ed6e109b30543388284c231efe762e84d914b67b5168ff
+outcome: passed: 69838 bytes read at the immutable commit 6ef617804cb34ceba4b847c62ab122042d86abbe, sha256 3be4a678e0019f61d5ed6e109b30543388284c231efe762e84d914b67b5168ff

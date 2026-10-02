@@ -1,0 +1,10 @@
+rule docs/corpus-licensing.md sha256 f01729ef062b5c065460cbb7cfc7e2b86a1b5a6e11e2b702029a1aeb0efc8373: admits Apache-2.0, MIT, BSD, CC0, GPL, AGPL, LGPL, MPL, EPL, CC-BY, CC-BY-SA, CC-BY-ND
+info.license: '' -> None
+GET LICENSE: HTTP 404
+GET LICENSE.md: HTTP 404
+GET LICENSE.txt: HTTP 404
+GET LICENCE: HTTP 404
+GET LICENCE.md: HTTP 404
+GET COPYING: HTTP 404
+licence file (none) -> None
+outcome: failed: grants nothing — no info.license and no licence file at the pinned commit

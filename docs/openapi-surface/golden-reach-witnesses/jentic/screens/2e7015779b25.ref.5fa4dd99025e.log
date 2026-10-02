@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json
+HTTP 200
+215139 bytes, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89
+pinned sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89
+outcome: passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89

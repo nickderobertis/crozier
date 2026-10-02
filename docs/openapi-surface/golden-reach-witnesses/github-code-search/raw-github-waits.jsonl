@@ -1029,3 +1029,5 @@
 {"at": "2026-09-29T23:30:26.025+00:00", "cause": "spacing", "duration_s": 1.928, "key": "*", "subject": "xlang-ai/OpenAgents:real_agents/plugins_agent/plugins/XWeather/openapi.yaml"}
 {"at": "2026-09-29T23:30:28.341+00:00", "cause": "spacing", "duration_s": 1.998, "key": "*", "subject": "yausername/NewPipeREST:docs/openapi.yaml"}
 {"at": "2026-09-29T23:30:30.726+00:00", "cause": "spacing", "duration_s": 1.988, "key": "*", "subject": "APIs-guru/openapi-directory:APIs/apideck.com/webhook/10.0.0/openapi.yaml"}
+{"at": "2026-10-02T18:46:18.751+00:00", "cause": "spacing", "duration_s": 1.912, "key": "x-fern-or-crozier-ignore", "subject": "atacan/AssemblyAI:LICENSE"}
+{"at": "2026-10-02T18:46:21.772+00:00", "cause": "spacing", "duration_s": 1.905, "key": "x-fern-or-crozier-ignore", "subject": "atacan/AssemblyAI:LICENSE"}

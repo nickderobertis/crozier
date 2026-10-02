@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/Lap-Platform/LAP/28649a16232be198447487a7e421cca242c1cdd7/examples/verbose/openapi/vercel.yaml
+HTTP 200
+930358 bytes, sha256 671230cab236b6507b3d6743219878427c7ccb8e72f5a5d1650bc475d7815a88
+pinned sha256 671230cab236b6507b3d6743219878427c7ccb8e72f5a5d1650bc475d7815a88
+outcome: passed: 930358 bytes read at the immutable commit 28649a16232be198447487a7e421cca242c1cdd7, sha256 671230cab236b6507b3d6743219878427c7ccb8e72f5a5d1650bc475d7815a88

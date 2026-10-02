@@ -1842,9 +1842,11 @@ components:
         self.assertEqual(
             "# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n|---|---|---|---|\n"
             "| `shape` | `witness-found` | sourcegraph: 1 candidates (1 witness-found, 0 rejected, 0 outstanding, "
-            "0 not-owed) [records](witness-search-sourcegraph/records.tsv) witness `example/api:openapi.yaml` at `x` "
-            "| kept as written |\n\n## After\n",
+            "0 not-owed, 1 on historical screens) [records](witness-search-sourcegraph/records.tsv) witness "
+            "`example/api:openapi.yaml` at `x` | kept as written |\n\n## After\n",
             region.read_text(encoding="utf-8"))
+        # Its screen row carries no measured record, so the line says the one
+        # candidate it counts rests on a historical screen.
         subprocess.run([*command, "--check"], check=True, capture_output=True)
         # A segment the index cannot read is refused by name, and the region file is left as written.
         malformed = ("# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n"

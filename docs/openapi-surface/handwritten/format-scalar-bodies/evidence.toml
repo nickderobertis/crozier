@@ -3,12 +3,6 @@ fern_python_sdk_version = "5.20.0"
 digest = "c87b6622e93a52f205c5cfddef683a89ee8258a92f9185a5e35e46a409c78c32"
 
 [[covers]]
-key = "format-duration"
-arm = 'src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-duration.md#witness-search-exhaustive"
-verdict = "exhausted"
-
-[[covers]]
 key = "format-email"
 arm = 'src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/format-email.md#witness-search-exhaustive"
