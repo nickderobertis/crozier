@@ -599,8 +599,9 @@ fn string_enum_renders_as_enum_class() {
 }
 
 /// A component enum (with a description and a value needing escapes), a
-/// hoisted inline-property enum, an enum header, and a request example that
-/// names enum values.
+/// hoisted inline-property enum, an enum header (a component, since Fern
+/// refuses an inline enum header schema), and a request example that names enum
+/// values.
 const LITERAL_ENUM_SPEC: &str = r#"openapi: 3.0.0
 info:
   title: Pets
@@ -613,7 +614,7 @@ paths:
         - name: X-Mode
           in: header
           required: true
-          schema: { type: string, enum: [fast, slow] }
+          schema: { $ref: '#/components/schemas/Mode' }
       requestBody:
         required: true
         content:
@@ -628,6 +629,9 @@ paths:
               schema: { $ref: '#/components/schemas/Pet' }
 components:
   schemas:
+    Mode:
+      type: string
+      enum: [fast, slow]
     Status:
       type: string
       description: The pet's status.
@@ -712,14 +716,16 @@ fn python_enums_stay_the_default_class_form() {
     let files = render_enum_type(crozier::settings::EnumType::PythonEnums);
     assert!(files["src/acme/types/status.py"].contains("class Status(enum.StrEnum):"));
     assert!(files.contains_key("src/acme/core/enum.py"));
+    // A component enum header is typed by its class and sent as its string.
     let raw = &files["src/acme/pets/raw_client.py"];
+    assert!(raw.contains("mode: Mode,"), "{raw}");
     assert!(
-        raw.contains("\"X-Mode\": mode.value if mode is not None else None"),
+        raw.contains("\"X-Mode\": str(mode) if mode is not None else None"),
         "{raw}"
     );
     let client = &files["src/acme/pets/client.py"];
     for expected in [
-        "mode=CreatePetRequestXMode.FAST",
+        "mode=Mode.FAST",
         "status=Status.ACTIVE",
         "size=PetSize.LARGE",
     ] {
