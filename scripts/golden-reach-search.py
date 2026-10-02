@@ -1324,6 +1324,14 @@ def screen(args: argparse.Namespace) -> int:
         fail(f"{args.candidate} is no declarer of {args.key} in {args.source}'s records; `walk` or `query` {args.source} for {args.key} first, or check the candidate's spelling")
     if args.measured:
         record = SCREEN.read_measured(args.measured)
+        # A record measured elsewhere is filed only against the document it read.
+        repository, commit, path, expected = candidate_ref(args.source, args.candidate)
+        document = record.get("document") if isinstance(record, dict) and isinstance(record.get("document"), dict) else {}
+        read = (document.get("repository"), document.get("commit"), document.get("path"))
+        if read != (repository, commit, path) or (expected and document.get("sha256") not in (expected, "")):
+            fail(f"--measured names {read}, not {args.candidate}'s pinned document "
+                 f"{(repository, commit, path)}{' with sha256 ' + expected if expected else ''}; pass the record "
+                 "measured for this candidate, or drop --measured to measure it now")
     else:
         repository, commit, path, expected = candidate_ref(args.source, args.candidate)
         github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
@@ -1337,7 +1345,7 @@ def screen(args: argparse.Namespace) -> int:
         record_guard_logs(args.source)
     missing = SCREEN.measured_failures(record, directory)
     refusal = (f"{args.candidate}: a screen is filed only with its measured record, and this one lacks "
-               + "; ".join(missing)) if missing else ""
+               + "; ".join(missing) + " — measure it again: run `screen` without --measured") if missing else ""
     if not refusal and args.registered and not all(
             outcome.startswith("passed") for outcome in SCREEN.outcomes(record).values()):
         refusal = (f"--registered claims {args.candidate} passed every screen, and its measured outcomes read "

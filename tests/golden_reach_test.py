@@ -838,7 +838,7 @@ class _StageScratch(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(textwrap.dedent(text), encoding="utf-8")
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
-            manifest.append(f"jentic-public-apis\t{name}\t{self.REVISION}\t{digest}")
+            manifest.append(f"jentic/jentic-public-apis\t{name}\t{self.REVISION}\t{digest}")
         shared = surface / "witness-search-jentic"
         shared.mkdir(parents=True)
         (shared / "acquisition-manifest.tsv").write_text("\n".join(manifest) + "\n", encoding="utf-8")
@@ -933,7 +933,7 @@ class ArmSearchStageTests(_StageScratch):
         self.assertTrue(enumeration["c.yaml"]["status"].startswith("unreadable: DocumentError: c.yaml: line 3"))
         records = golden_reach_search.read_records("jentic")
         self.assertEqual(
-            [("walk", f"jentic-public-apis@{self.REVISION}", "3"), ("document", "a.yaml", "census 1")],
+            [("walk", f"jentic/jentic-public-apis@{self.REVISION}", "3"), ("document", "a.yaml", "census 1")],
             sorted(((r["kind"], r["subject"], r["result"]) for r in records), reverse=True),
         )
 
@@ -1013,7 +1013,7 @@ class ArmSearchStageTests(_StageScratch):
         self.assertTrue(rows["c.yaml"]["status"].startswith("unreadable: "))
         records = {(r["key"], r["kind"], r["subject"], r["result"]) for r in golden_reach_search.read_records("jentic")}
         self.assertIn((self.KEY, "document", "a.yaml", "census 1"), records)
-        self.assertIn(("format-iri", "walk", f"jentic-public-apis@{self.REVISION}", "3"), records)
+        self.assertIn(("format-iri", "walk", f"jentic/jentic-public-apis@{self.REVISION}", "3"), records)
         self.assertFalse({r for r in records if r[0] == "format-iri" and r[1] == "document"})
         self.walk()
         self.assertEqual(self.KEY, enumeration()["a.yaml"]["matched_keys"])
@@ -1038,7 +1038,7 @@ class ArmSearchStageTests(_StageScratch):
             self.assertEqual(0, golden_reach_search.main(
                 ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1"]))
         unread = golden_reach_search.local_copies("jentic", self.root, fetch=False)
-        self.assertEqual({"jentic-public-apis:c.yaml", "other-tree:c.yaml"}, set(unread))
+        self.assertEqual({"jentic/jentic-public-apis:c.yaml", "other-tree:c.yaml"}, set(unread))
         if importlib.util.find_spec("ruamel") is None:
             self.skipTest("ruamel.yaml, the YAML 1.2 parser `refuse` reads YAML with, is not installed")
         (self.root / "c.yaml").write_bytes((other / "c.yaml").read_bytes())
@@ -1048,7 +1048,7 @@ class ArmSearchStageTests(_StageScratch):
         self.assertEqual({"other-tree:c.yaml"}, set(refused), "only the copy whose pinned bytes were read is refused")
         self.assertEqual(digest, refused["other-tree:c.yaml"]["sha256"])
         self.assertEqual(
-            [("jentic-public-apis:c.yaml", "unreadable")],
+            [("jentic/jentic-public-apis:c.yaml", "unreadable")],
             [(document, reason.split(":", 1)[0]) for document, reason in golden_reach_search._unreadable(self.KEY, "jentic")],
         )
 
@@ -1071,9 +1071,9 @@ class ArmSearchStageTests(_StageScratch):
         documents = sorted(
             r["subject"] for r in golden_reach_search.read_records("jentic") if r["kind"] == "document"
         )
-        self.assertEqual(["jentic-public-apis:a.yaml", "other-tree:a.yaml"], documents)
+        self.assertEqual(["jentic/jentic-public-apis:a.yaml", "other-tree:a.yaml"], documents)
         self.assertEqual(
-            {"jentic-public-apis:a.yaml", "other-tree:a.yaml"},
+            {"jentic/jentic-public-apis:a.yaml", "other-tree:a.yaml"},
             {candidate for candidate, _path in golden_reach_search.declarers("jentic", self.KEY, self.root)},
         )
 
@@ -1117,7 +1117,7 @@ class ArmSearchStageTests(_StageScratch):
                          [line.split(" | ")[1].strip("`") for line in lines])
         jentic = next(line for line in lines if "| `jentic` |" in line)
         self.assertIn("`search-incomplete`", jentic)
-        self.assertIn(f"`jentic-public-apis` at `{self.REVISION}` → 3 documents", jentic)
+        self.assertIn(f"`jentic/jentic-public-apis` at `{self.REVISION}` → 3 documents", jentic)
         label = golden_reach_search.fern_label()
         self.assertIn("`a.yaml` licence `passed: no info.license, LICENSE at the pinned commit reads as MIT, "
                       "which the corpus rule admits` ref `passed: ", jentic)
@@ -1172,7 +1172,7 @@ class ArmSearchStageTests(_StageScratch):
         manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
         digest = hashlib.sha256(broken.read_bytes()).hexdigest()
         with manifest.open("a", encoding="utf-8") as handle:
-            handle.write(f"jentic-public-apis\td.json\t{self.REVISION}\t{digest}\n")
+            handle.write(f"jentic/jentic-public-apis\td.json\t{self.REVISION}\t{digest}\n")
         with contextlib.redirect_stdout(io.StringIO()):
             golden_reach_search.main(["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY,
                                       "--jobs", "1"])
@@ -1224,7 +1224,7 @@ class ArmSearchStageTests(_StageScratch):
         manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
         digest = hashlib.sha256(explicit.read_bytes()).hexdigest()
         with manifest.open("a", encoding="utf-8") as handle:
-            handle.write(f"jentic-public-apis\td.yaml\t{self.REVISION}\t{digest}\n")
+            handle.write(f"jentic/jentic-public-apis\td.yaml\t{self.REVISION}\t{digest}\n")
         with contextlib.redirect_stdout(io.StringIO()):
             golden_reach_search.main(["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY,
                                       "--jobs", "1"])
@@ -1590,6 +1590,12 @@ class ArmSearchStageTests(_StageScratch):
         log.write_text(log.read_text(encoding="utf-8") + "outcome: passed\n", encoding="utf-8")
         self.assertIn(f"the licence screen's log {good['licence']['log']} as recorded: its sha256 differs",
                       refusal(good))
+        # A whole record of another document is no screen of this candidate.
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(["screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+                                      "--measured", self.measured(document="b.yaml")])
+        self.assertIn("not a.yaml's pinned document", str(refused.exception))
+        self.assertIn("pass the record measured for this candidate", str(refused.exception))
         self.assertFalse((golden_reach_search.EVIDENCE / "jentic" / "screens.jsonl").exists())
 
     def test_a_historical_screen_settles_nothing_and_its_candidate_is_owed_a_re_screen(self) -> None:
@@ -1661,7 +1667,7 @@ class ArmSearchStageTests(_StageScratch):
 
     def test_a_candidate_is_read_where_its_source_pinned_it(self) -> None:
         digest = hashlib.sha256((self.root / "a.yaml").read_bytes()).hexdigest()
-        self.assertEqual(("jentic-public-apis", self.REVISION, "a.yaml", digest),
+        self.assertEqual(("jentic/jentic-public-apis", self.REVISION, "a.yaml", digest),
                          golden_reach_search.candidate_ref("jentic", "a.yaml"))
         self.assertEqual(("example/api", "b" * 40, "docs/open api.yaml", ""),
                          golden_reach_search.candidate_ref("sourcegraph",

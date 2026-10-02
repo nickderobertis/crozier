@@ -150,7 +150,7 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
             failures = load_screen().row_failures(row, path.parent, SCREEN_FIELDS)
             if failures:
                 raise ValueError(f"{path}:{number}: a screen is filed only with its measured record — "
-                                 + "; ".join(failures))
+                                 + "; ".join(failures) + " — re-screen it with `just witness-screen screen`")
             keys = row.get("keys") or [row.get("key")]
             if not isinstance(keys, list) or any(
                 not isinstance(key, str) or not key for key in keys

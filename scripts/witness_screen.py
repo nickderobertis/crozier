@@ -657,7 +657,8 @@ def legacy_screen(args: argparse.Namespace) -> int:
     disposition = args.disposition or ("" if passed else "rejected")
     refusal = ""
     if missing:
-        refusal = "a screen is filed only with its measured record; it lacks " + "; ".join(missing)
+        refusal = ("a screen is filed only with its measured record; it lacks " + "; ".join(missing)
+                   + " — measure it again: run `screen` without --measured")
     elif disposition and SUCCESS_DISPOSITIONS.fullmatch(disposition) and not passed:
         refusal = (f"`{disposition}` claims a candidate that passed every screen, and this one's measured "
                    f"outcomes read {outcomes(record)}; drop --disposition to file it `rejected`")
