@@ -31,7 +31,7 @@ class {{ class_name }}:
     logging : typing.Optional[typing.Union[LogConfig, Logger]]
         Configure logging for the SDK. Accepts a LogConfig dict with 'level' (debug/info/warn/error), 'logger' (custom logger implementation), and 'silent' (boolean, defaults to True) fields. You can also pass a pre-configured Logger instance.
 
-    Examples
+{{ tr_doc }}    Examples
     --------
     from {{ pkg }} import {{ class_name }}
 
@@ -54,7 +54,7 @@ class {{ class_name }}:
         follow_redirects: typing.Optional[bool] = True,
         httpx_client: typing.Optional[{{ httpx_type }}] = None,
         logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
-    ):
+{{ tr_ctor }}    ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else {{ default_max_retries }}
 {{ server_variable_init }}        self._client_wrapper = {{ wrapper }}(
@@ -74,7 +74,7 @@ class {{ class_name }}:
             stream_reconnection_enabled=stream_reconnection_enabled,
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
-        )
+{{ tr_wrapper }}        )
 {% if root_methods %}
         self._raw_client = {{ raw_client_cls }}(client_wrapper=self._client_wrapper)
 {% endif %}

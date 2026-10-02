@@ -45,6 +45,7 @@ use crate::error::{Error, Result};
 use crate::openapi::{
     for_each_path_item_schema, for_each_root_schema, for_each_schema_in,
     referenced_component_schema, AdditionalProperties, OpenApi, Parameter, PathItem, Schema,
+    SecurityScheme,
 };
 
 /// How long `curl` may spend on one referenced document before crozier gives up
@@ -126,8 +127,14 @@ pub fn resolve(
         active: Vec::new(),
         imported: IndexMap::new(),
         importing: HashSet::new(),
+        root_schemas: doc.components.schemas.keys().cloned().collect(),
     };
     let remote_origin = register_component_schemas(doc, &mut resolver)?;
+    for scheme in doc.components.security_schemes.values_mut() {
+        if let Some(resolved) = resolver.resolve_security_scheme(scheme) {
+            *scheme = resolved;
+        }
+    }
     let root_spec = DocumentLocation::Local(spec.to_path_buf());
     for parameter in doc.components.parameters.values_mut() {
         resolver.resolve_parameter(parameter, &root_spec)?;
@@ -325,6 +332,9 @@ struct Resolver<'a> {
     active: Vec<String>,
     imported: IndexMap<String, Schema>,
     importing: HashSet<(String, String)>,
+    /// The root document's own component schema names, which a sibling file's
+    /// component never displaces.
+    root_schemas: HashSet<String>,
 }
 
 impl Resolver<'_> {
@@ -380,6 +390,45 @@ impl Resolver<'_> {
         Ok(())
     }
 
+    /// The Security Scheme Object a `components.securitySchemes` Reference Object
+    /// names in another local document, which Fern imports under the referencing
+    /// key exactly as it does an in-document one. A reference inside that document
+    /// is followed relative to it, so a chain ending in a declaration resolves.
+    /// `None` leaves the entry as written: an in-document or absolute-URL
+    /// reference, a cycle, or a target that is not a Security Scheme Object. A
+    /// relative document that is absent never reaches here, because
+    /// `unresolved-reference` has already refused it.
+    fn resolve_security_scheme(&mut self, scheme: &SecurityScheme) -> Option<SecurityScheme> {
+        let mut reference = scheme.reference.clone()?;
+        if split_external(&reference).is_none() || split_remote(&reference).is_some() {
+            return None;
+        }
+        let mut source = DocumentLocation::Local(self.spec.to_path_buf());
+        let mut seen = HashSet::new();
+        loop {
+            let location = if reference.starts_with('#') {
+                source.clone()
+            } else if split_remote(&reference).is_some() {
+                return None;
+            } else {
+                DocumentLocation::from_reference(&reference, &source)
+            };
+            if !seen.insert((location.key(), reference.clone())) {
+                return None;
+            }
+            let fragment = reference
+                .split_once('#')
+                .map_or("", |(_, fragment)| fragment);
+            let node = pointer(self.document(&location, &reference).ok()?, fragment)?.clone();
+            let resolved: SecurityScheme = serde_yaml_ng::from_value(node).ok()?;
+            let Some(next) = resolved.reference.clone() else {
+                return Some(resolved);
+            };
+            source = location;
+            reference = next;
+        }
+    }
+
     fn resolve_parameter(
         &mut self,
         parameter: &mut Parameter,
@@ -422,6 +471,10 @@ impl Resolver<'_> {
                         }
                     }
                 }
+                if let Some(name) = self.import_sibling_component(&reference, source)? {
+                    schema.reference = Some(format!("#/components/schemas/{name}"));
+                    return Ok(());
+                }
                 if let Some(name) = self.import_named_schema(&reference, source)? {
                     schema.reference = Some(format!("#/components/schemas/{name}"));
                     return Ok(());
@@ -449,6 +502,35 @@ impl Resolver<'_> {
             }
         }
         Ok(())
+    }
+
+    /// A relative file's component schema (`../components.yaml#/components/schemas/ErrorResponse`)
+    /// is imported as the component it names, as Fern imports it, with each
+    /// component of that file it points at imported beside it: HuaTuo's node and
+    /// server descriptions share `ErrorResponse`, `Error`, `ErrorCode` and
+    /// `ObservationScope` this way. A name the root document already declares is
+    /// not displaced, and such a reference is inlined as before.
+    fn import_sibling_component(
+        &mut self,
+        reference: &str,
+        source: &DocumentLocation,
+    ) -> Result<Option<String>> {
+        let Some((_, fragment)) = split_external(reference) else {
+            return Ok(None);
+        };
+        // A document reached by URL keeps Helios's root-document pointer
+        // semantics, so only a file beside the root is imported this way.
+        if split_remote(reference).is_some() || matches!(source, DocumentLocation::Remote(_)) {
+            return Ok(None);
+        }
+        let Some(name) = fragment.strip_prefix("/components/schemas/") else {
+            return Ok(None);
+        };
+        if name.is_empty() || name.contains('/') || self.root_schemas.contains(name) {
+            return Ok(None);
+        }
+        let path = DocumentLocation::from_reference(reference, source);
+        self.import_pointer_at_path(&path, name, fragment, None, reference)
     }
 
     /// A sibling schema file often holds several named definitions at its top
@@ -546,6 +628,17 @@ impl Resolver<'_> {
                 if let Some(local) = value.strip_prefix("#/definitions/") {
                     if !local.is_empty() && !local.contains('/') {
                         locals.push((local.to_string(), format!("/definitions/{local}")));
+                        node.reference = Some(format!("#/components/schemas/{local}"));
+                    }
+                    return;
+                }
+            }
+            // Inside a sibling file's component, its own component pointers name
+            // components of that file.
+            if fragment.starts_with("/components/schemas/") {
+                if let Some(local) = value.strip_prefix("#/components/schemas/") {
+                    if !local.is_empty() && !local.contains('/') {
+                        locals.push((local.to_string(), format!("/components/schemas/{local}")));
                         node.reference = Some(format!("#/components/schemas/{local}"));
                     }
                     return;
@@ -1387,6 +1480,7 @@ components:
             active: Vec::new(),
             imported: IndexMap::new(),
             importing: HashSet::new(),
+            root_schemas: HashSet::new(),
         };
         assert_eq!(
             resolver
@@ -1486,8 +1580,155 @@ components:
             .as_ref()
             .expect("response schema")
             .properties["geometry"];
+        // Imported as the component it names, as Fern imports HuaTuo's
+        // `../components.yaml#/components/schemas/ObservationScope`.
         assert_eq!(
-            geometry.ty.as_ref().and_then(|ty| ty.primary()),
+            geometry.reference.as_deref(),
+            Some("#/components/schemas/Geometry")
+        );
+        assert_eq!(
+            document.components.schemas["Geometry"]
+                .ty
+                .as_ref()
+                .and_then(|ty| ty.primary()),
+            Some("string")
+        );
+    }
+
+    /// A root document and its sibling files in a temporary tree, resolved from
+    /// disk as a load resolves them.
+    fn resolved_tree(root: &str, siblings: &[(&str, &str)]) -> (tempfile::TempDir, OpenApi) {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let spec = directory.path().join("api").join("openapi.yml");
+        std::fs::create_dir_all(spec.parent().expect("root directory")).expect("root directory");
+        std::fs::write(&spec, root).expect("root document");
+        for (path, text) in siblings {
+            let file = directory.path().join("api").join(path);
+            std::fs::create_dir_all(file.parent().expect("sibling directory"))
+                .expect("sibling directory");
+            std::fs::write(file, text).expect("sibling document");
+        }
+        let mut document = parse(root);
+        resolve(&mut document, &FakeFetcher::new(&[]), &spec).expect("resolvable tree");
+        (directory, document)
+    }
+
+    const SCHEME_ROOT: &str = "openapi: 3.0.3\ncomponents:\n  securitySchemes:\n    BearerAuth:\n      $ref: '../components.yaml#/components/securitySchemes/BearerAuth'\n";
+
+    #[test]
+    fn an_external_security_scheme_reference_resolves_to_its_declaration() {
+        let (_tree, doc) = resolved_tree(
+            SCHEME_ROOT,
+            &[(
+                "../components.yaml",
+                "components:\n  securitySchemes:\n    BearerAuth: {type: http, scheme: bearer}\n",
+            )],
+        );
+        let scheme = &doc.components.security_schemes["BearerAuth"];
+        assert!(scheme.reference.is_none());
+        assert_eq!(scheme.ty, crate::openapi::SecuritySchemeType::Http);
+        assert_eq!(scheme.scheme, Some(crate::openapi::HttpAuthScheme::Bearer));
+    }
+
+    #[test]
+    fn an_external_security_scheme_chain_is_followed_inside_the_target_document() {
+        let (_tree, doc) = resolved_tree(
+            SCHEME_ROOT,
+            &[(
+                "../components.yaml",
+                "components:\n  securitySchemes:\n    BearerAuth: {$ref: '#/components/securitySchemes/Actual'}\n    Actual: {type: apiKey, in: header, name: X-Key}\n",
+            )],
+        );
+        let scheme = &doc.components.security_schemes["BearerAuth"];
+        assert_eq!(scheme.ty, crate::openapi::SecuritySchemeType::ApiKey);
+        assert_eq!(scheme.name.as_deref(), Some("X-Key"));
+    }
+
+    #[test]
+    fn an_unresolvable_security_scheme_reference_is_left_as_written() {
+        for target in [
+            // A cycle never ends in a declaration.
+            "components:\n  securitySchemes:\n    BearerAuth: {$ref: '#/components/securitySchemes/BearerAuth'}\n",
+            // No node at the pointer.
+            "components:\n  securitySchemes: {}\n",
+            // A node that is no Security Scheme Object.
+            "components:\n  securitySchemes:\n    BearerAuth: [not, a, scheme]\n",
+        ] {
+            let (_tree, doc) = resolved_tree(SCHEME_ROOT, &[("../components.yaml", target)]);
+            assert_eq!(
+                doc.components.security_schemes["BearerAuth"].reference.as_deref(),
+                Some("../components.yaml#/components/securitySchemes/BearerAuth"),
+                "{target}"
+            );
+        }
+    }
+
+    #[test]
+    fn in_document_and_absolute_security_scheme_references_are_not_followed_here() {
+        let (doc, fetched) = resolved(
+            &format!(
+                "openapi: 3.0.3\ncomponents:\n  securitySchemes:\n    Local: {{$ref: '#/components/securitySchemes/Actual'}}\n    Actual: {{type: http, scheme: bearer}}\n    Remote: {{$ref: '{REMOTE}#/Bearer'}}\n"
+            ),
+            &[(REMOTE, "Bearer: {type: http, scheme: bearer}\n")],
+        );
+        assert!(fetched.is_empty());
+        for name in ["Local", "Remote"] {
+            assert!(
+                doc.components.security_schemes[name].reference.is_some(),
+                "{name}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_sibling_component_is_imported_with_the_components_it_names() {
+        let (_tree, doc) = resolved_tree(
+            "openapi: 3.0.3\npaths:\n  /x:\n    get:\n      responses:\n        '400':\n          description: Bad\n          content:\n            application/json:\n              schema:\n                $ref: '../components.yaml#/components/schemas/ErrorResponse'\n",
+            &[(
+                "../components.yaml",
+                "components:\n  schemas:\n    ErrorResponse:\n      type: object\n      properties:\n        error: {$ref: '#/components/schemas/Error'}\n    Error:\n      type: object\n      properties:\n        code: {type: string}\n",
+            )],
+        );
+        let schema = doc.paths["/x"].get.as_ref().expect("get").responses["400"].content
+            ["application/json"]
+            .schema
+            .as_ref()
+            .expect("error schema");
+        assert_eq!(
+            schema.reference.as_deref(),
+            Some("#/components/schemas/ErrorResponse")
+        );
+        assert_eq!(
+            doc.components.schemas["ErrorResponse"].properties["error"]
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/Error")
+        );
+        assert!(doc.components.schemas["Error"]
+            .properties
+            .contains_key("code"));
+    }
+
+    #[test]
+    fn a_sibling_component_never_displaces_a_root_component_of_its_name() {
+        let (_tree, doc) = resolved_tree(
+            "openapi: 3.0.3\ncomponents:\n  schemas:\n    Error: {type: integer}\n    Wrapper:\n      properties:\n        error: {$ref: '../components.yaml#/components/schemas/Error'}\n",
+            &[(
+                "../components.yaml",
+                "components:\n  schemas:\n    Error: {type: string}\n",
+            )],
+        );
+        assert_eq!(
+            doc.components.schemas["Error"]
+                .ty
+                .as_ref()
+                .and_then(|ty| ty.primary()),
+            Some("integer")
+        );
+        let error = &doc.components.schemas["Wrapper"].properties["error"];
+        assert!(error.reference.is_none());
+        assert_eq!(
+            error.ty.as_ref().and_then(|ty| ty.primary()),
             Some("string")
         );
     }

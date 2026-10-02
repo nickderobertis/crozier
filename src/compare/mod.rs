@@ -1103,7 +1103,7 @@ mod tests {
         let repo = tempfile::tempdir().unwrap();
         let root = repo.path();
         let refused = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/openapi-surface/probes/header-array.yml");
+            .join("docs/openapi-surface/probes/header-object.yml");
         write(
         root,
         "crozier.yml",
@@ -1129,7 +1129,7 @@ mod tests {
                 .to_string()
         };
         // A document crozier refuses is reported with crozier's own diagnostic.
-        assert!(reason_of("refused").contains("unsupported array schema"));
+        assert!(reason_of("refused").contains("unsupported object schema"));
         #[cfg(unix)]
         assert!(reason_of("linked").contains("the trees could not be compared"));
         assert!(reason_of("badpackage").contains("could not read the generator's settings"));

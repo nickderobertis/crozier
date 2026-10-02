@@ -1193,7 +1193,7 @@ fn refused_probe_inputs_report_the_unsupported_shape() {
     for (probe, diagnostic) in [
         (
             probes.join("header-array.yml"),
-            "GET /probe: header parameter `probeParam` has an unsupported array schema",
+            "example-type-mismatch: GET /probe header probeParam",
         ),
         (
             probes.join("header-object.yml"),
@@ -1201,7 +1201,7 @@ fn refused_probe_inputs_report_the_unsupported_shape() {
         ),
         (
             path_item_probe,
-            "GET /probe: header parameter `probeParam` has an unsupported array schema",
+            "example-type-mismatch: GET /probe header probeParam",
         ),
         (
             probes.join("nonascii-operationId.yml"),
@@ -15775,6 +15775,38 @@ fn security_reference_recovers_when_the_referenced_document_is_present() {
             std::fs::read(strict.target.join(file)).unwrap()
         );
     }
+    // The referenced scheme authenticates exactly as the same scheme declared
+    // in the document does: one `token` credential, sent as a bearer header.
+    let inline = dir.path().join("inline.yml");
+    std::fs::write(
+        &inline,
+        std::fs::read_to_string(&spec).unwrap().replace(
+            "$ref: './components.yaml#/components/securitySchemes/BearerAuth'",
+            "{type: http, scheme: bearer}",
+        ),
+    )
+    .unwrap();
+    let declared = refusal_run(&crozier, &inline, false).unwrap();
+    assert_eq!(declared.code, Some(0), "{}", declared.stderr);
+    assert_eq!(normal.files, declared.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read_to_string(normal.target.join(file)).unwrap(),
+            std::fs::read_to_string(declared.target.join(file)).unwrap(),
+            "{file}"
+        );
+    }
+    let wrapper = normal
+        .files
+        .iter()
+        .find(|file| file.ends_with("core/client_wrapper.py"))
+        .expect("a client wrapper");
+    let wrapper = std::fs::read_to_string(normal.target.join(wrapper)).unwrap();
+    assert!(
+        wrapper.contains("token: typing.Union[str, typing.Callable[[], str]]")
+            && wrapper.contains("headers[\"Authorization\"] = f\"Bearer {self._get_token()}\""),
+        "{wrapper}"
+    );
     std::fs::write(
         dir.path().join("components.yaml"),
         "components:\n  securitySchemes:\n    BearerAuth: {$ref: '#/components/securitySchemes/Actual'}\n    Actual: {type: http, scheme: bearer}\n",
@@ -15907,19 +15939,8 @@ fn list_default_refusal_recovers_with_an_array() {
             assert_eq!(run.stderr.lines().count(), 1);
         }
     }
-    for strict in [false, true] {
-        let run = refusal_run(&crozier, &class.join("header-array-control.yml"), strict).unwrap();
-        assert_eq!(run.code, Some(1));
-        assert!(run.files.is_empty());
-        assert!(
-            run.stderr
-                .contains("header parameter `value` has an unsupported array schema"),
-            "{}",
-            run.stderr
-        );
-        assert!(!run.stderr.contains(": list-default-not-array:"));
-    }
     for case in [
+        "header-array-control.yml",
         "valid-list-control.yml",
         "null-list-control.yml",
         "unused-array-control.yml",

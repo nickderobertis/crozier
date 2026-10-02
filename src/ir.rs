@@ -391,6 +391,11 @@ pub struct GlobalHeader {
     /// and Fern's wrapper takes `typing.Optional[int]` and writes
     /// `str(self._request_timeout)` into the header.
     pub py_type: HeaderType,
+    /// The string `default` an optional header's first declaration carries. Fern
+    /// types such a header `str` whatever its schema, moves its constructor field
+    /// after `logging`, leaves it out of every example, and sends the default when
+    /// the field is unset.
+    pub default: Option<String>,
 }
 
 /// The Python scalar a promoted header's constructor argument takes.
@@ -404,10 +409,25 @@ pub enum HeaderType {
     Float,
     /// `bool`, from `type: boolean`.
     Bool,
+    /// `typing.List[<item>]`, from `type: array` with inline scalar `items`.
+    List(HeaderItem),
+}
+
+/// The scalar an array header's inline `items` declare.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HeaderItem {
+    /// `str`, from `type: string` or an untyped item.
+    Str,
+    /// `int`, from `type: integer`.
+    Int,
+    /// `float`, from `type: number`.
+    Float,
+    /// `bool`, from `type: boolean`.
+    Bool,
 }
 
 impl HeaderType {
-    /// The Python annotation, e.g. `int`.
+    /// The Python annotation, e.g. `int` or `typing.List[str]`.
     #[must_use]
     pub fn python(self) -> &'static str {
         match self {
@@ -415,7 +435,17 @@ impl HeaderType {
             Self::Int => "int",
             Self::Float => "float",
             Self::Bool => "bool",
+            Self::List(HeaderItem::Str) => "typing.List[str]",
+            Self::List(HeaderItem::Int) => "typing.List[int]",
+            Self::List(HeaderItem::Float) => "typing.List[float]",
+            Self::List(HeaderItem::Bool) => "typing.List[bool]",
         }
+    }
+
+    /// Whether the header carries an array.
+    #[must_use]
+    pub fn is_list(self) -> bool {
+        matches!(self, Self::List(_))
     }
 }
 
@@ -430,8 +460,8 @@ impl HeaderType {
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut total = 0usize;
     // wire name → (operations carrying it, required in every one so far, the
-    // first declaration's Python type), first-seen.
-    let mut seen: IndexMap<String, (usize, bool, HeaderType)> = IndexMap::new();
+    // first declaration's Python type and string default), first-seen.
+    let mut seen: IndexMap<String, (usize, bool, HeaderType, Option<String>)> = IndexMap::new();
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             total += 1;
@@ -442,6 +472,10 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                         0,
                         true,
                         header_py_type(p.schema.as_ref()),
+                        p.schema
+                            .as_ref()
+                            .and_then(|schema| schema.default.as_ref()?.as_str())
+                            .map(str::to_owned),
                     ));
                     entry.0 += 1;
                     entry.1 = entry.1 && p.required == Some(true);
@@ -462,27 +496,38 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
         .collect();
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
-        .filter(|(wire_name, (count, required, _))| {
+        .filter(|(wire_name, (count, required, py_type, _))| {
             // Fern promotes a header carried by *every* operation with its own
             // declared optionality, and one carried by at least three quarters
             // of them as an unconditionally optional constructor field.
             // Flowdapt's `x-api-version` rides 24 of its 26 operations and is
             // promoted; `marimo`'s `Marimo-Session-Id` rides 55 of 88 and stays
             // a per-method parameter.
+            // An array header is the exception: Fern promotes a required solo
+            // one too.
             total > 0
                 && *count * 4 >= total * 3
-                && (!*required || total > 1)
+                && (!*required || total > 1 || py_type.is_list())
                 && !is_transport_managed_parameter(wire_name)
                 && !is_promotion_reserved_header(wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
-        .map(|(wire_name, (count, required, py_type))| GlobalHeader {
-            py_name: naming::field_name(header_param_stem(&wire_name)),
-            wire_name,
-            py_type,
+        .map(|(wire_name, (count, required, py_type, default))| {
             // A header short of every operation is promoted as optional
             // whatever the operations that do declare it say.
-            required: required && count == total,
+            let required = required && count == total;
+            let default = default.filter(|_| !required);
+            GlobalHeader {
+                py_name: naming::field_name(header_param_stem(&wire_name)),
+                wire_name,
+                py_type: if default.is_some() {
+                    HeaderType::Str
+                } else {
+                    py_type
+                },
+                required,
+                default,
+            }
         })
         .collect();
     // Fern also treats additional header apiKey security schemes as SDK-wide
@@ -496,12 +541,24 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     headers
 }
 
-/// The Python scalar a promoted header's schema declares, `str` for anything else.
+/// The Python type a promoted header's schema declares: its scalar, or a list of
+/// the scalar an array's inline `items` declare; `str` for anything else.
 fn header_py_type(schema: Option<&Schema>) -> HeaderType {
     match schema.and_then(|schema| schema.ty.as_ref()?.primary()) {
         Some("integer") => HeaderType::Int,
         Some("number") => HeaderType::Float,
         Some("boolean") => HeaderType::Bool,
+        Some("array") => schema
+            .and_then(|schema| schema.items.as_deref())
+            .filter(|items| items.reference.is_none())
+            .map_or(HeaderType::Str, |items| {
+                HeaderType::List(match items.ty.as_ref().and_then(TypeField::primary) {
+                    Some("integer") => HeaderItem::Int,
+                    Some("number") => HeaderItem::Float,
+                    Some("boolean") => HeaderItem::Bool,
+                    _ => HeaderItem::Str,
+                })
+            }),
         _ => HeaderType::Str,
     }
 }
@@ -537,6 +594,7 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 wire_name: wire_name.clone(),
                 required: true,
                 py_type: HeaderType::Str,
+                default: None,
             })
         })
         .collect()
@@ -13634,6 +13692,78 @@ mod tests {
             panic!("header api key should select api-key auth");
         };
         assert!(required);
+    }
+
+    /// A one-operation document whose `GET /probe` carries the header `X-Things`
+    /// with `schema` and `required`.
+    fn one_header_doc(schema: &str, required: bool) -> crate::openapi::OpenApi {
+        serde_yaml_ng::from_str(&format!(
+            "paths:\n  /probe:\n    get:\n      parameters:\n        - {{name: X-Things, in: header, required: {required}, schema: {schema}}}\n      responses: {{'204': {{description: OK}}}}\n"
+        ))
+        .expect("document deserializes")
+    }
+
+    #[test]
+    fn an_array_header_takes_a_list_of_its_inline_scalar_items() {
+        for (items, expected) in [
+            ("{type: string}", "typing.List[str]"),
+            ("{type: integer}", "typing.List[int]"),
+            ("{type: number}", "typing.List[float]"),
+            ("{type: boolean}", "typing.List[bool]"),
+            ("{}", "typing.List[str]"),
+        ] {
+            let doc = one_header_doc(&format!("{{type: array, items: {items}}}"), true);
+            let headers = global_headers(&doc);
+            assert_eq!(headers[0].py_type.python(), expected, "{items}");
+            assert!(headers[0].py_type.is_list());
+        }
+        // Referenced items are not a scalar this field can name.
+        let schema = Schema {
+            ty: Some(TypeField::Single("array".into())),
+            items: Some(Box::new(Schema {
+                reference: Some("#/components/schemas/MediaType".into()),
+                ..Schema::default()
+            })),
+            ..Schema::default()
+        };
+        assert_eq!(
+            crate::ir::header_py_type(Some(&schema)),
+            crate::ir::HeaderType::Str
+        );
+        assert!(!crate::ir::HeaderType::Int.is_list());
+    }
+
+    #[test]
+    fn a_required_solo_header_is_promoted_only_when_it_is_an_array() {
+        let array = global_headers(&one_header_doc(
+            "{type: array, items: {type: string}}",
+            true,
+        ));
+        assert_eq!(array.len(), 1);
+        assert!(array[0].required);
+        assert!(global_headers(&one_header_doc("{type: string}", true)).is_empty());
+    }
+
+    #[test]
+    fn an_optional_promoted_header_keeps_its_string_default_as_a_str() {
+        let headers = global_headers(&one_header_doc(
+            "{type: array, items: {type: string}, default: all}",
+            false,
+        ));
+        assert_eq!(headers[0].default.as_deref(), Some("all"));
+        assert_eq!(headers[0].py_type, crate::ir::HeaderType::Str);
+        // A list default is no string default, and a required header keeps none.
+        let list = global_headers(&one_header_doc(
+            "{type: array, items: {type: string}, default: [a]}",
+            false,
+        ));
+        assert_eq!(list[0].default, None);
+        assert!(list[0].py_type.is_list());
+        let required = global_headers(&one_header_doc(
+            "{type: array, items: {type: string}, default: all}",
+            true,
+        ));
+        assert_eq!(required[0].default, None);
     }
 
     #[test]
