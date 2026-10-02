@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /forms:
+    post:
+      operationId: createForm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sq:
+                  type: object
+                  properties:
+                    z:
+                      type: boolean
+              anyOf:
+              - type: object
+                properties:
+                  kind:
+                    type: string
+                    enum:
+                    - a
+              - type: object
+                properties:
+                  kind:
+                    type: string
+                    enum:
+                    - b
+            examples:
+              one:
+                value:
+                  kind: b
+                  sq:
+                    z: true
+      responses:
+        '204':
+          description: Created

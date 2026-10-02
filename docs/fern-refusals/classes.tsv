@@ -7,11 +7,11 @@ duplicate-path-parameter	names	check	1	Endpoint has duplicate path parameter: <�
 endpoint-auth-undefined	documents	check	1	Endpoint requires auth, but no auth is defined.	22	refuse	GET /probe security/session	22/22
 enum-name-unsuitable	names	check	1	Enum name <…> for value <…> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	368	unevaluated	—	—
 enum-value-unnameable	names	check	1	Enum value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	331	unevaluated	—	—
-example-missing-required-property	documents	check	1	Example is missing required property <…>	130	unevaluated	—	—
+example-missing-required-property	documents	check	1	Example is missing required property <…>	130	refuse	GET /requests/{id} response extends nullable	129/130
 example-missing-required-query-parameter	documents	check	1	Example is missing required query parameter <…>	2	refuse	GET /collections x-fern-examples/0 query parameter f	2/2
 example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	refuse	GET /activities x-fern-examples response	50/50
 example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	331	refuse	GET /probe response example	331/331
-example-unexpected-property	documents	check	1	Unexpected property <…>	196	unevaluated	—	—
+example-unexpected-property	documents	check	1	Unexpected property <…>	196	refuse	GET /probe components/schemas/Thing_Item collides with ThingItem	196/196
 extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	refuse	components/schemas/Node/x-link	2/2
 generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	unevaluated	—	—
 generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	refuse	are both Event_UserAccountDeleted	11/11

@@ -330,7 +330,7 @@ fn find_union(
 
 /// At least two members, every one an object sharing a property whose only
 /// value is a string (`enum` of one, or `const`).
-fn inferred_discriminant(root: &Value, members: &[Value]) -> bool {
+pub(super) fn inferred_discriminant(root: &Value, members: &[Value]) -> bool {
     let objects: Vec<&serde_yaml_ng::Mapping> = members
         .iter()
         .filter_map(|member| resolve(root, member).get("properties"))

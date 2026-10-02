@@ -36,6 +36,7 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
             .or_else(|| doc.discriminant_required_by_grandparent(&operation))
             .or_else(|| doc.schema_scalar_example(&operation))
             .or_else(|| doc.media_scalar_example(&operation))
+            .or_else(|| doc.shadowed_union_property(&operation))
             .or_else(|| doc.fern_examples(&operation))
             .or_else(|| doc.error_examples(&operation));
         if let Some((class, detail)) = found {
@@ -43,6 +44,7 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
         }
     }
     doc.colliding_component()
+        .or_else(|| doc.required_beside_definitions_member())
         .or_else(|| doc.colliding_property())
         .or_else(|| doc.scalar_taken_by_inline_object())
         .or_else(|| doc.merged_member_enum())
@@ -606,6 +608,92 @@ impl<'a> Doc<'a> {
     /// `x-fern-examples`, which Fern validates in full: each entry's response
     /// body against the first success response, its request against the JSON
     /// request body and its query parameters against theirs.
+    /// A request body declaring `properties` beside a `oneOf`/`anyOf` whose two
+    /// or more object members Fern reads as discriminated (they share a
+    /// single-value enum property): Fern takes an object property both declare
+    /// from the members, so a written request example nesting a key no member
+    /// declares there is unexpected, whatever the top level declares (Moffin's
+    /// `serviceQueries.renapoCURP` against its members' `renapoCurp`). Measured
+    /// accepted: a single member, members without the shared enum, no
+    /// top-level `properties`, and a key some member declares.
+    fn shadowed_union_property(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
+        let media = self.request_media(operation)?;
+        let schema = self.resolve(media.get("schema")?)?;
+        let top = schema.get("properties").and_then(Value::as_mapping)?;
+        let members = schema
+            .get("oneOf")
+            .or_else(|| schema.get("anyOf"))
+            .and_then(Value::as_sequence)?;
+        if !super::type_not_defined::inferred_discriminant(self.root, members) {
+            return None;
+        }
+        let mut written: Vec<(String, &Value)> = Vec::new();
+        if let Some(value) = media.get("example") {
+            written.push(("example".to_owned(), value));
+        }
+        for (name, example) in media
+            .get("examples")
+            .and_then(Value::as_mapping)
+            .into_iter()
+            .flatten()
+        {
+            if let (Some(name), Some(value)) = (name.as_str(), self.resolve(example)?.get("value"))
+            {
+                written.push((format!("examples/{name}"), value));
+            }
+        }
+        for (property, _) in top {
+            let Some(property) = property.as_str() else {
+                continue;
+            };
+            let Some(declared) = self.member_object_keys(members, property) else {
+                continue;
+            };
+            if declared.is_empty() {
+                continue;
+            }
+            for (name, value) in &written {
+                let Some(keys) = value.get(property).and_then(Value::as_mapping) else {
+                    continue;
+                };
+                if let Some(key) = keys.keys().find(|key| !declared.contains(key)) {
+                    return Some((
+                        Class::ExampleUnexpectedProperty,
+                        format!("request {name} {property}.{}", literal(key)),
+                    ));
+                }
+            }
+        }
+        None
+    }
+
+    /// The property names the union members' object declarations of
+    /// `property` give, or `None` when a member declares it as anything but a
+    /// closed object of named properties.
+    fn member_object_keys(&self, members: &'a [Value], property: &str) -> Option<Vec<&'a Value>> {
+        let mut declared = Vec::new();
+        for member in members {
+            let Some(nested) = self
+                .resolve(member)?
+                .get("properties")
+                .and_then(|properties| properties.get(property))
+            else {
+                continue;
+            };
+            let nested = self.resolve(nested)?;
+            if has_composition(nested)
+                || !matches!(
+                    nested.get("additionalProperties"),
+                    None | Some(Value::Bool(false))
+                )
+            {
+                return None;
+            }
+            declared.extend(nested.get("properties").and_then(Value::as_mapping)?.keys());
+        }
+        Some(declared)
+    }
+
     fn fern_examples(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
         let entries = operation.op.get("x-fern-examples")?.as_sequence()?;
         let response = self
@@ -825,16 +913,105 @@ impl<'a> Doc<'a> {
                 continue;
             };
             let (winner_key, winner) = components[winner_index];
-            if has_composition(loser) {
-                continue;
-            }
+            let declared = *loser;
+            let merged;
+            let loser = if has_composition(loser) {
+                let Some(flat) = self.flattened_all_of(loser) else {
+                    continue;
+                };
+                merged = flat;
+                &merged
+            } else {
+                *loser
+            };
             let Some(class) = collision_class(loser, winner) else {
                 continue;
             };
-            if let Some(element) = self.response_reaching(loser) {
+            if let Some(element) = self.response_reaching(declared) {
                 return Some((
                     class,
                     format!("{element} components/schemas/{key} collides with {winner_key}"),
+                ));
+            }
+        }
+        None
+    }
+
+    /// An `allOf` of plain objects as the one object Fern's example of it is:
+    /// every member's properties and required names, members resolved by
+    /// reference (Clio's `TaskTemplateList` against `TaskTemplate_List`).
+    /// Anything else in the composition is not measured and yields `None`.
+    fn flattened_all_of(&self, schema: &'a Value) -> Option<Value> {
+        if ["oneOf", "anyOf"]
+            .iter()
+            .any(|key| schema.get(*key).is_some())
+        {
+            return None;
+        }
+        let mut properties = serde_yaml_ng::Mapping::new();
+        let mut required = Vec::new();
+        for member in schema.get("allOf")?.as_sequence()? {
+            let member = self.resolve(member)?;
+            if has_composition(member) {
+                return None;
+            }
+            if let Some(own) = member.get("properties").and_then(Value::as_mapping) {
+                properties.extend(own.iter().map(|(key, value)| (key.clone(), value.clone())));
+            }
+            required.extend(required_names(member).into_iter().map(Value::from));
+        }
+        let mut flat = serde_yaml_ng::Mapping::new();
+        flat.insert("properties".into(), properties.into());
+        flat.insert("required".into(), required.into());
+        Some(flat.into())
+    }
+
+    /// A component declaring a required property beside an `allOf` with a
+    /// member referenced into a component's own `definitions`/`$defs` (an
+    /// NSwag document's, as CommunityToolkit Datasync's `KitchenSink`): Fern
+    /// does not follow that member, and its example of the component, reached
+    /// from a response, carries the required property no member it reads
+    /// declares, which is unexpected. Measured accepted: the member referencing
+    /// a component, an absent reference, an optional or no top-level property.
+    fn required_beside_definitions_member(&self) -> Option<(Class, String)> {
+        for (key, schema) in self.component_schemas() {
+            let Some(members) = schema.get("allOf").and_then(Value::as_sequence) else {
+                continue;
+            };
+            let into_definitions = |member: &Value| {
+                str_of(member, "$ref")
+                    .and_then(|reference| reference.strip_prefix("#/components/schemas/"))
+                    .is_some_and(|pointer| {
+                        pointer
+                            .split('/')
+                            .skip(1)
+                            .any(|part| matches!(part, "definitions" | "$defs"))
+                    })
+            };
+            if !members.iter().any(into_definitions) {
+                continue;
+            }
+            let read: Vec<&Value> = members
+                .iter()
+                .filter(|member| !into_definitions(member))
+                .filter_map(|member| self.resolve(member))
+                .collect();
+            let Some(property) = required_names(schema).into_iter().find(|name| {
+                schema
+                    .get("properties")
+                    .is_some_and(|properties| properties.get(*name).is_some())
+                    && !read.iter().any(|member| {
+                        member
+                            .get("properties")
+                            .is_some_and(|properties| properties.get(*name).is_some())
+                    })
+            }) else {
+                continue;
+            };
+            if let Some(element) = self.response_reaching(schema) {
+                return Some((
+                    Class::ExampleUnexpectedProperty,
+                    format!("{element} components/schemas/{key} property {property}"),
                 ));
             }
         }
