@@ -13957,12 +13957,53 @@ enum WireTests {
 #[test]
 fn fern_refusal_classes_hold() {
     let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
-    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+    let mut failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+    failures.extend(nested_items_required_control_failures(&registry, &crozier));
     assert!(
         failures.is_empty(),
         "{FERN_REFUSALS_DIR}/ does not hold:\n{}",
         failures.join("\n")
     );
+}
+
+/// crozier#358's one refused use site: a required property whose pointer,
+/// naming no `properties`, reaches nothing (`Named/items` on an object with no
+/// `items`). Pinned Fern fails to resolve it
+/// (`unresolved-schema-reference/evaluation-logs/fern-nested-items-required.log`),
+/// so the committed control is refused in both modes with exactly one line
+/// naming the class and the pointer.
+fn nested_items_required_control_failures(
+    registry: &Path,
+    generator: &dyn Fn() -> Command,
+) -> Vec<String> {
+    let control = registry
+        .join("unresolved-schema-reference")
+        .join("nested-items-required-control.yml");
+    let mut failures = Vec::new();
+    for strict in [false, true] {
+        let run = match refusal_run(generator, &control, strict) {
+            Ok(run) => run,
+            Err(error) => {
+                failures.push(format!("nested-items-required-control.yml: {error}"));
+                continue;
+            }
+        };
+        failures.extend(refused_failures(
+            "unresolved-schema-reference",
+            &run,
+            "reference #/components/schemas/Named/items",
+            strict,
+        ));
+        let lines = run.stderr.lines().count();
+        if lines != 1 {
+            failures.push(format!(
+                "nested-items-required-control.yml: crozier's refusal (strict: {strict}) printed \
+                 {lines} stderr lines; a refusal prints one: {}",
+                run.stderr.trim()
+            ));
+        }
+    }
+    failures
 }
 
 /// Removing an unsupported required credential recovers generation; merely
