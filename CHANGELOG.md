@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.93](https://github.com/nickderobertis/crozier/compare/v0.0.92...v0.0.93) - 2026-10-02
+
+### Added
+
+- *(python)* add Fern's literal enums and default max retries as generator settings ([#345](https://github.com/nickderobertis/crozier/pull/345))
+
 ## [0.0.92](https://github.com/nickderobertis/crozier/compare/v0.0.91...v0.0.92) - 2026-10-02
 
 ### Added
