@@ -1,0 +1,31 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 0f91f13845fc76d702273fecd126e9b6099848506db2f210863820ece747534e.json
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier', '--no-config', 'generate', 'python', '--spec', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/0f91f13845fc76d702273fecd126e9b6099848506db2f210863820ece747534e.json', '--output', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/example-values/sdk/alpaca', '--package-name', 'fern']
+exit: 0
+generated 636 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/example-values/sdk/alpaca
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python', '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python', '-m', 'mypy', '.']
+exit: 1
+Never]"  [arg-type]
+src/fern/accounts/raw_client.py:683: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:974: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:985: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:996: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1383: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1394: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1405: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1588: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1599: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1610: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1658: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1729: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1740: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:1751: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:2042: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:2053: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/accounts/raw_client.py:2064: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/client.py:371: error: Name "calendar" already defined on line 174  [no-redef]
+src/fern/client.py:831: error: Name "calendar" already defined on line 627  [no-redef]
+Found 362 errors in 24 files (checked 629 source files)

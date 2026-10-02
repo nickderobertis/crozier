@@ -1,0 +1,6 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; package/client import: OK
+GET /activities sent with no body; declared enum value FILL parsed as <ActivityKind.FILL: 'FILL'>
+GET /activities sent with no body; declared enum value ACATC parsed as <ActivityKind.ACATC: 'ACATC'>
+generated ActivityKind members: ['FILL', 'ACATC']
+requests: [('GET', 'https://sdk-boundary.invalid/activities'), ('GET', 'https://sdk-boundary.invalid/activities')]
+exit: 0

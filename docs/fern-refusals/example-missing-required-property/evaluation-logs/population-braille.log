@@ -1,0 +1,11 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 981dd0a3479197032c4ebd98b040f6a53d4b6878d008a3a83518fb1f7fc5e269.json
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier', '--no-config', 'generate', 'python', '--spec', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/981dd0a3479197032c4ebd98b040f6a53d4b6878d008a3a83518fb1f7fc5e269.json', '--output', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/example-values/sdk/braille', '--package-name', 'fern']
+exit: 0
+generated 60 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/example-values/sdk/braille
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python', '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python', '-m', 'mypy', '.']
+exit: 0
+Success: no issues found in 53 source files

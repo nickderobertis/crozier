@@ -1,0 +1,41 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: accounts.yml -> service -> endpoints -> getAccountActivities -> examples[0] -> response
+        issue: "fill" is not a valid example for this enum. Enum values are:
+  - FILL
+  - ACATC
+  - ACATS
+  - CGD
+  - CIL
+  - CSD
+  - CSW
+  - DIV
+  - DIVCGL
+  - DIVCGS
+  - DIVNRA
+  - DIVROC
+  - DIVTXEX
+  - FEE
+  - INT
+  - JNLC
+  - JNLS
+  - MA
+  - OPASN
+  - OPCA
+  - OPCSH
+  - OPEXC
+  - OPEXP
+  - OPTRD
+  - PTC
+  - REO
+  - REORG
+  - SPIN
+  - SPLIT
+  - FOPT
+  - OCT
+
+Found 1 error and 0 warnings in <n> seconds.

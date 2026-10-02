@@ -42,10 +42,15 @@ measured. Refused shapes, each a committed `*-probe.yml` with its Fern log:
 - a fractional number as an `integer`'s schema example
   ([integer-fraction](evaluation-logs/fern-integer-fraction.log)), and a
   non-`YYYY-MM-DD` string as a `date`'s (the probe), under the first success
-  response, the required properties of a request body that writes no example,
-  or a parameter;
-- the same scalars inside a written media example, through `allOf` members too
+  response, the required properties of a request body that writes no example
+  ([request-required](evaluation-logs/fern-request-required.log)), or a
+  parameter's schema or own example
+  ([parameter-schema-example](evaluation-logs/fern-parameter-schema-example.log),
+  [parameter-example](evaluation-logs/fern-parameter-example.log));
+- the same scalars inside a written response or request media example,
+  through `allOf` members too
   ([written-date](evaluation-logs/fern-written-date.log),
+  [written-request](evaluation-logs/fern-written-request.log),
   [written-allof-date](evaluation-logs/fern-written-allof-date.log));
 - two or more named request examples beside a `204` and another `2XX` whose
   body is an object with empty `properties`, the shape of GitHub's

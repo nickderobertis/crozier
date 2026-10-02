@@ -1,0 +1,30 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/clone/.claude/worktrees/agent-a8921728008912d00)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.21s
+────────────
+ Nextest run ID 2251ce22-da34-47d2-8094-21b1212ee233 with nextest profile: default
+    Starting 1 test across 1 binary (451 tests and 6 binaries skipped)
+        FAIL [   0.155s] (1/1) crozier::e2e example_not_enum_value_refusal_covers_measured_shapes
+  stdout ───
+
+    running 1 test
+    test example_not_enum_value_refusal_covers_measured_shapes ... FAILED
+
+    failures:
+
+    failures:
+        example_not_enum_value_refusal_covers_measured_shapes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 451 filtered out; finished in 0.14s
+
+  stderr ───
+
+    thread 'example_not_enum_value_refusal_covers_measured_shapes' (3389507) panicked at tests/e2e.rs:16592:9:
+    example-not-enum-value: crozier generated from the probe in its mode; the class says it is refused (39 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.161s] 1 test run: 0 passed, 1 failed, 451 skipped
+        FAIL [   0.155s] (1/1) crozier::e2e example_not_enum_value_refusal_covers_measured_shapes
+error: test run failed
+exit: 100

@@ -9,7 +9,7 @@ enum-name-unsuitable	names	check	1	Enum name <…> for value <…> is not suitab
 enum-value-unnameable	names	check	1	Enum value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	331	unevaluated	—	—
 example-missing-required-property	documents	check	1	Example is missing required property <…>	130	unevaluated	—	—
 example-missing-required-query-parameter	documents	check	1	Example is missing required query parameter <…>	2	refuse	GET /collections x-fern-examples/0 query parameter f	2/2
-example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	unevaluated	—	—
+example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	refuse	GET /activities x-fern-examples response	50/50
 example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	331	refuse	GET /probe response example	331/331
 example-unexpected-property	documents	check	1	Unexpected property <…>	196	unevaluated	—	—
 extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	refuse	components/schemas/Node/x-link	2/2

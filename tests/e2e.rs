@@ -16832,6 +16832,30 @@ fn example_type_mismatch_refusal_covers_measured_shapes() {
 }
 
 #[test]
+fn example_not_enum_value_refusal_covers_measured_shapes() {
+    example_value_class_holds(
+        "example-not-enum-value",
+        "example-not-enum-value: GET /activities x-fern-examples response",
+    );
+}
+
+#[test]
+fn example_unexpected_property_refusal_covers_measured_shapes() {
+    example_value_class_holds(
+        "example-unexpected-property",
+        "example-unexpected-property: GET /probe components/schemas/Thing_Item collides with ThingItem",
+    );
+}
+
+#[test]
+fn example_missing_required_property_refusal_covers_measured_shapes() {
+    example_value_class_holds(
+        "example-missing-required-property",
+        "example-missing-required-property: GET /requests/{id} response extends nullable",
+    );
+}
+
+#[test]
 fn enum_default_refusal_recovers_with_a_retained_default() {
     let class = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join(FERN_REFUSALS_DIR)

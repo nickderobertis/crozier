@@ -1,0 +1,7 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; package/client import: OK
+declared Activity: allOf [account_id/activity_type/id, oneOf [TradeActivity, NonTradeActivity]]; TradeActivity.type enum [fill, partial_fill]
+generated Activity declared fields: ['account_id', 'activity_type', 'id']
+parsed: [Activity(account_id=None, activity_type=<ActivityType.FILL: 'FILL'>, id='a1', type='fill', qty='1', symbol='AAPL')]
+TradeActivity.type typed on the parsed model: False
+request: GET https://sdk-boundary.invalid/v1/accounts/activities
+exit: 0
