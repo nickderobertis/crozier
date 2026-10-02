@@ -1032,8 +1032,8 @@ fn assert_corpus_matches(c: &Corpus) {
 
 /// Require crozier's generated tree `out` for `c` to reproduce the Fern tree
 /// `expected_root`, under the corpus's declared residuals — the comparison
-/// [`assert_corpus_matches`] makes against `expected/`, shared with the literals
-/// gate, which makes it against a corpus's materialized literal-enum golden.
+/// [`assert_corpus_matches`] makes against `expected/`, shared with the overlay
+/// gate, which makes it against a corpus's materialized overlay golden.
 fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
     let repository_scaffolding = repository_scaffolding(c);
     let packaged_expectations = packaged_expectations(c);
@@ -3306,7 +3306,7 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
 }
 
 /// [`generate_corpus`] with `extra` flags appended to the corpus's own — the
-/// literals gate's `--enum-type literals`.
+/// overlay gate's setting, such as `--enum-type literals`.
 fn generate_corpus_with(c: &Corpus, extra: &[&str]) -> tempfile::TempDir {
     let out = tempfile::tempdir().expect("tempdir");
     let (mut command, _source) = corpus_command(c, out.path());
