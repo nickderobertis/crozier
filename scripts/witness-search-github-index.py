@@ -222,7 +222,8 @@ def load_screen() -> Any:
         "witness_screen_for_index", Path(__file__).with_name("witness_screen.py")
     )
     if spec is None or spec.loader is None:
-        raise RuntimeError("cannot load witness_screen.py")
+        raise ValueError("cannot load scripts/witness_screen.py; restore it from git "
+                         "(`git checkout -- scripts/witness_screen.py`)")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)

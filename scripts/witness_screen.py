@@ -84,7 +84,8 @@ def fail(message: str) -> None:
 
 def _load(name: str, path: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
-    assert spec and spec.loader
+    if spec is None or spec.loader is None:
+        fail(f"cannot load {path.relative_to(REPO)}; restore it from git (`git checkout -- {path.relative_to(REPO)}`)")
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
     spec.loader.exec_module(module)
