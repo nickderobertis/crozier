@@ -7,9 +7,8 @@ on:
   push:
     branches: [main]
   pull_request:
-    # The defaults plus `ready_for_review`: the gate and llmlint skip draft PRs, so
-    # each head commit is swept once — when it is opened or pushed as ready, or when
-    # its draft is lifted.
+    # The defaults plus `ready_for_review`, so lifting a draft re-runs the required
+    # checks on its head commit rather than leaving only the draft-time runs.
     types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
@@ -22,7 +21,6 @@ permissions:
 jobs:
   check:
     name: check (${{ matrix.os }})
-    if: github.event.pull_request.draft != true
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -96,7 +94,7 @@ jobs:
     name: gate
     # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
     needs: [check, sdk-env, install, package, live-e2e]
-    if: always() && github.event.pull_request.draft != true
+    if: always()
     runs-on: ubuntu-latest
     steps:
       # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
@@ -205,7 +203,7 @@ jobs:
   # resolves them with no job-time fetch to flake; docs/llmlint-plugins.md.
   llmlint:
     name: llmlint
-    if: github.event_name == 'pull_request' && github.event.action != 'edited' && github.event.pull_request.draft != true
+    if: github.event_name == 'pull_request' && github.event.action != 'edited'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
