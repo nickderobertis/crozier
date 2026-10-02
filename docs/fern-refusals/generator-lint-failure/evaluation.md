@@ -48,7 +48,7 @@ hoists the method to the root. That collides only when the tag keeps another
 operation. Alone, as in [this document](evaluation-logs/tag-suffix-single.yml), Fern
 [generates](evaluation-logs/fern-tag-suffix-single.log). crozier named that
 method empty and failed its own `ruff format` there from the baseline until the
-authored probe `crozier-357-tag-only-operation-id` committed Fern's tree for it. It now
+authored probe `376-357-tag-only-operation-id` committed Fern's tree for it. It now
 writes the root `search` method and byte-matches that tree in both modes. The
 detector does not refuse that single-operation shape. Beside another operation
 of the tag, the [probe](tag-suffix-collision-probe.yml) and BBC (`eeab4173…`)

@@ -1856,31 +1856,31 @@ fn sha256_matches_the_fips_180_4_test_vectors() {
 
 const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 
-/// The naming tickets' authored probes (#350, #354, #357) are the case
-/// directories whose names carry those ticket numbers. Each holds the probe,
-/// pinned Fern's `fern.log` and, where Fern generated, its comment-stripped
-/// `fern-expected/` tree. They are manager-authored documents, neither real
-/// specifications nor hand-written fixtures, so this is no
-/// `*matches_fern_output*` test and the golden-only tier never runs it.
-const NAMING_TICKETS: [&str; 3] = ["crozier-350-", "crozier-354-", "crozier-357-"];
+/// The naming tickets' (#350, #354, #357) authored probes are the case
+/// directories `376-<ticket>-<shape>`; `authored_probe_measurements_match_fern`
+/// byte-compares each against Fern's tree by default. A document Fern refused
+/// is no authored probe: it is an `evidence/376-*` probe of the registry class
+/// crozier refuses it under.
+const NAMING_TICKETS: [&str; 3] = ["376-350-", "376-354-", "376-357-"];
 
-/// Every naming case Fern refused, with the class crozier refuses it under and
-/// the element its refusal line names. The two collisions fail Fern's check on
-/// the merged type's example; the manager ruled them `type-name-collision`.
+/// Every naming input Fern refused: the registry class crozier refuses it under,
+/// the probe's stem in that class's `evidence/` (beside its `.pinned-fern.log`),
+/// and the element its refusal line names. The two collisions fail Fern's check
+/// on the merged type's example; the manager ruled them `type-name-collision`.
 const NAMING_REFUSALS: [(&str, &str, &str); 3] = [
     (
-        "crozier-350-declared-type-name-blank-digit-led",
         "type-name-not-letter-led",
+        "376-350-declared-type-name-blank-digit-led",
         "123456",
     ),
     (
-        "crozier-350-declared-type-name-shared-differing",
         "type-name-collision",
+        "376-350-declared-type-name-shared-differing",
         "\"Widget\"",
     ),
     (
-        "crozier-350-declared-type-name-taken",
         "type-name-collision",
+        "376-350-declared-type-name-taken",
         "\"Widget\"",
     ),
 ];
@@ -1949,6 +1949,8 @@ fn authored_probe_refusal_failures(
     failures
 }
 
+/// Every naming probe Fern generated from also generates under `--fern-strict`,
+/// and every one it refused is refused in both modes under its registry class.
 #[test]
 fn naming_authored_probes_match_pinned_fern() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -1967,37 +1969,31 @@ fn naming_authored_probes_match_pinned_fern() {
         );
     }
     let mut failures = Vec::new();
-    for (case, _, _) in NAMING_REFUSALS {
-        if !cases.iter().any(|listed| listed == case) {
-            failures.push(format!("{case}: a listed refusal with no case directory"));
-        }
-    }
     for case in &cases {
         let dir = root.join(AUTHORED_PROBES_DIR).join(case);
-        let probe = dir.join("openapi.yml");
-        let log = std::fs::read_to_string(dir.join("fern.log")).unwrap_or_default();
-        if !log.starts_with("Fern CLI 5.67.1, python-sdk 5.20.0\n") {
-            failures.push(format!("{case}: fern.log is not a measurement at the pin"));
+        failures.extend(authored_probe_tree_failures(
+            case,
+            &dir.join("openapi.yml"),
+            &dir.join("fern-expected"),
+        ));
+    }
+    for (class, stem, element) in NAMING_REFUSALS {
+        let evidence = root.join(FERN_REFUSALS_DIR).join(class).join("evidence");
+        let log = std::fs::read_to_string(evidence.join(format!("{stem}.pinned-fern.log")))
+            .unwrap_or_default();
+        if !log.starts_with("Fern CLI 5.67.1, python-sdk 5.20.0\n")
+            || !log.contains("\ngenerate exit: 1\n")
+        {
+            failures.push(format!(
+                "{stem}: its pinned-fern.log is no refusal measured at the pin"
+            ));
         }
-        let tree = dir.join("fern-expected");
-        let generated = log.contains("\ngenerate exit: 0\n");
-        let refusal = NAMING_REFUSALS
-            .iter()
-            .find(|(refused, _, _)| refused == case);
-        match (generated, tree.is_dir(), refusal) {
-            (true, true, None) => {
-                failures.extend(authored_probe_tree_failures(case, &probe, &tree));
-            }
-            (false, false, Some((_, class, element))) => {
-                failures.extend(authored_probe_refusal_failures(
-                    case, &probe, class, element,
-                ));
-            }
-            _ => failures.push(format!(
-                "{case}: fern.log's generate exit, fern-expected/ and NAMING_REFUSALS disagree \
-                 on whether Fern generated"
-            )),
-        }
+        failures.extend(authored_probe_refusal_failures(
+            stem,
+            &evidence.join(format!("{stem}.yml")),
+            class,
+            element,
+        ));
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
@@ -2067,7 +2063,7 @@ fn canonical_type_name_hint_names_components_like_fern_spelling() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let probe = std::fs::read_to_string(
         root.join(AUTHORED_PROBES_DIR)
-            .join("crozier-350-declared-type-name/openapi.yml"),
+            .join("376-350-declared-type-name/openapi.yml"),
     )
     .expect("the declared type-name probe");
     assert_eq!(probe.matches("x-fern-type-name: ").count(), 2, "{probe}");
@@ -2091,10 +2087,218 @@ fn canonical_type_name_hint_names_components_like_fern_spelling() {
             &spec,
             &root
                 .join(AUTHORED_PROBES_DIR)
-                .join("crozier-350-declared-type-name/fern-expected"),
+                .join("376-350-declared-type-name/fern-expected"),
         ));
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// Every authored-probe measurement, found by listing
+/// `docs/openapi-surface/authored-probes/` and nothing else: crozier's output
+/// over each case's `openapi.yml` byte-matches the `fern-expected/` tree pinned
+/// Fern generated from it, under the gate's normalization. A case is neither a
+/// hand-written fixture nor real-specification evidence (the directory's
+/// README), so this is not a `*matches_fern_output*` test.
+#[test]
+fn authored_probe_measurements_match_fern() {
+    let failures =
+        authored_probe_failures(&Path::new(env!("CARGO_MANIFEST_DIR")).join(AUTHORED_PROBES_DIR));
+    assert!(
+        failures.is_empty(),
+        "the authored-probe measurements break their contract \
+         (docs/openapi-surface/authored-probes/README.md):\n{}",
+        failures.join("\n")
+    );
+}
+
+/// Every way the cases under `root` fail: a case missing its document, its
+/// Fern log or its tree, a log that does not record Fern's exit statuses at the
+/// pin, or crozier's output differing from the tree.
+fn authored_probe_failures(root: &Path) -> Vec<String> {
+    let Ok(entries) = std::fs::read_dir(root) else {
+        return vec![format!("{}: no authored-probes directory", root.display())];
+    };
+    let mut cases: Vec<PathBuf> = entries
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.is_dir())
+        .collect();
+    cases.sort();
+    if cases.is_empty() {
+        return vec![format!("{}: no case directories", root.display())];
+    }
+    let (cli_pin, sdk_pin) = probe_fern_pins();
+    let mut failures = Vec::new();
+    for case in cases {
+        let name = case
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        let spec = case.join("openapi.yml");
+        let expected = case.join("fern-expected");
+        let log = std::fs::read_to_string(case.join("fern.log")).unwrap_or_default();
+        let pin = format!("Fern CLI {cli_pin}, python-sdk {sdk_pin}");
+        if !log.starts_with(&pin)
+            || !log.contains("\ncheck exit: ")
+            || !log.contains("\ngenerate exit: ")
+        {
+            failures.push(format!(
+                "{name}: fern.log must open with `{pin}` and record `check exit:` and \
+                 `generate exit:` — re-measure the case at the pin"
+            ));
+        }
+        if !spec.is_file() || !expected.is_dir() {
+            failures.push(format!(
+                "{name}: a case holds openapi.yml and the fern-expected/ tree Fern generated from it"
+            ));
+            continue;
+        }
+        failures.extend(filtered_tree_failures(&name, &spec, &expected, &[]));
+    }
+    failures
+}
+
+#[test]
+fn authored_probe_gate_names_a_broken_case() {
+    let root = tempfile::tempdir().unwrap();
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(AUTHORED_PROBES_DIR)
+        .join("358-absent-property");
+    let case = root.path().join("358-absent-property");
+    copy_dir(&source, &case);
+    assert!(authored_probe_failures(root.path()).is_empty());
+    // A Fern tree that no longer matches crozier is named, with its file.
+    let holder = case.join("fern-expected/src/fern/types/holder.py");
+    let text = std::fs::read_to_string(&holder).unwrap();
+    std::fs::write(
+        &holder,
+        text.replace("typing.Optional[typing.Any]", "typing.Optional[str]"),
+    )
+    .unwrap();
+    let failures = authored_probe_failures(root.path());
+    assert!(
+        failures.len() == 1
+            && failures[0]
+                .contains("358-absent-property: generated src/fern/types/holder.py differs"),
+        "{failures:?}"
+    );
+    // So is a log that does not record the measurement.
+    std::fs::write(&holder, text).unwrap();
+    std::fs::write(case.join("fern.log"), "generate exit: 0\n").unwrap();
+    let failures = authored_probe_failures(root.path());
+    assert!(
+        failures.len() == 1 && failures[0].contains("fern.log must open with"),
+        "{failures:?}"
+    );
+    assert!(authored_probe_failures(&root.path().join("absent"))[0]
+        .contains("no authored-probes directory"));
+}
+
+/// Copy every file under `source` to the same relative path under `target`.
+fn copy_dir(source: &Path, target: &Path) {
+    for rel in walk_files(source) {
+        let to = target.join(&rel);
+        std::fs::create_dir_all(to.parent().unwrap()).unwrap();
+        std::fs::copy(source.join(&rel), to).unwrap();
+    }
+}
+
+/// The relative imports of every generated module under `root` that name a
+/// module the SDK does not contain, as `<file>: <import line>`.
+fn unwritten_module_imports(root: &Path) -> Vec<String> {
+    let mut missing = Vec::new();
+    for rel in walk_files(root) {
+        if !rel.ends_with(".py") {
+            continue;
+        }
+        let file = root.join(&rel);
+        let text = std::fs::read_to_string(&file).unwrap_or_default();
+        for line in text.lines() {
+            let Some(module) = line
+                .trim_start()
+                .strip_prefix("from .")
+                .and_then(|rest| rest.split(" import ").next())
+            else {
+                continue;
+            };
+            let mut base = file.parent().unwrap().to_path_buf();
+            let mut dotted = module;
+            while let Some(rest) = dotted.strip_prefix('.') {
+                base.pop();
+                dotted = rest;
+            }
+            let target = dotted
+                .split('.')
+                .filter(|part| !part.is_empty())
+                .fold(base, |path, part| path.join(part));
+            if !target.with_extension("py").is_file() && !target.join("__init__.py").is_file() {
+                missing.push(format!("{rel}: {}", line.trim()));
+            }
+        }
+    }
+    missing
+}
+
+/// crozier#358: a pointer past a declared component's head that names nothing
+/// (`#/components/schemas/Named/properties/absent`) is the unknown type at every
+/// use site, so no generated module imports one crozier never wrote. Each case
+/// is the authored probe pinned Fern measured for that site.
+#[test]
+fn unresolved_nested_pointers_import_only_written_modules() {
+    let probes = Path::new(env!("CARGO_MANIFEST_DIR")).join(AUTHORED_PROBES_DIR);
+    for case in [
+        "358-absent-property",
+        "358-absent-required-property",
+        "358-absent-array-item",
+        "358-absent-map-value",
+        "358-absent-allof-member",
+        "358-absent-request-body",
+        "358-absent-response-body",
+        "358-absent-items-segment",
+        "358-undeclared-head-properties-required",
+    ] {
+        let out = tempfile::tempdir().unwrap();
+        let result = probe_command(&probes.join(case).join("openapi.yml"), out.path())
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "{case}: {}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let missing = unwritten_module_imports(out.path());
+        assert!(
+            missing.is_empty(),
+            "{case} imports modules crozier did not write: {missing:?}"
+        );
+        assert!(
+            !walk_files(out.path())
+                .iter()
+                .any(|rel| rel.contains("named_absent") || rel.contains("named_item")),
+            "{case}"
+        );
+    }
+}
+
+#[test]
+fn unwritten_module_imports_names_a_missing_module() {
+    let root = tempfile::tempdir().unwrap();
+    let types = root.path().join("src/fern/types");
+    std::fs::create_dir_all(&types).unwrap();
+    std::fs::write(types.join("__init__.py"), "").unwrap();
+    std::fs::write(types.join("named.py"), "").unwrap();
+    std::fs::write(
+        types.join("holder.py"),
+        "from .named import Named\nfrom .named_absent import NamedAbsent\nfrom ..core.http import X\n",
+    )
+    .unwrap();
+    assert_eq!(
+        unwritten_module_imports(root.path()),
+        [
+            "src/fern/types/holder.py: from .named_absent import NamedAbsent",
+            "src/fern/types/holder.py: from ..core.http import X",
+        ]
+    );
 }
 
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
@@ -4483,7 +4687,6 @@ const CORPORA: &[&Corpus] = &[
     &PALOALTO_CODE_TECHNOLOGIES,
     &MARIMO_PLUGINS,
     &OTOROSHI,
-    &NEXMO_CONVERSATION,
     &GOOGLEAPIS_MONITORING_V1,
     &DOCU_GOAPISERVER,
     &ONEVOICE,
@@ -7380,20 +7583,6 @@ const PEOPLEDATALABS: Corpus = Corpus {
 /// from Adyen/adyen-openapi, whose enum members lead with a digit
 const ADYEN_ACS_NOTIFICATION: Corpus = Corpus {
     api: "adyen-acs-notification",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
-/// `nexmo-conversation`: corpus row 223, the Vonage (Nexmo) Conversation API
-/// 2.0.1 as APIs.guru pins it. Its `$ref`s point into a component's `oneOf`
-/// members and nested properties, the pointer arms no earlier golden reached.
-const NEXMO_CONVERSATION: Corpus = Corpus {
-    api: "nexmo-conversation",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13921,11 +14110,6 @@ fn adyen_acs_notification_matches_fern_output() {
 }
 
 #[test]
-fn nexmo_conversation_matches_fern_output() {
-    assert_committed_corpus_matches(&NEXMO_CONVERSATION);
-}
-
-#[test]
 fn googleapis_monitoring_v1_matches_fern_output() {
     assert_committed_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
 }
@@ -13990,12 +14174,53 @@ enum WireTests {
 #[test]
 fn fern_refusal_classes_hold() {
     let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
-    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+    let mut failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+    failures.extend(nested_items_required_control_failures(&registry, &crozier));
     assert!(
         failures.is_empty(),
         "{FERN_REFUSALS_DIR}/ does not hold:\n{}",
         failures.join("\n")
     );
+}
+
+/// crozier#358's one refused use site: a required property whose pointer,
+/// naming no `properties`, reaches nothing (`Named/items` on an object with no
+/// `items`). Pinned Fern fails to resolve it
+/// (`unresolved-schema-reference/evaluation-logs/fern-nested-items-required.log`),
+/// so the committed control is refused in both modes with exactly one line
+/// naming the class and the pointer.
+fn nested_items_required_control_failures(
+    registry: &Path,
+    generator: &dyn Fn() -> Command,
+) -> Vec<String> {
+    let control = registry
+        .join("unresolved-schema-reference")
+        .join("nested-items-required-control.yml");
+    let mut failures = Vec::new();
+    for strict in [false, true] {
+        let run = match refusal_run(generator, &control, strict) {
+            Ok(run) => run,
+            Err(error) => {
+                failures.push(format!("nested-items-required-control.yml: {error}"));
+                continue;
+            }
+        };
+        failures.extend(refused_failures(
+            "unresolved-schema-reference",
+            &run,
+            "reference #/components/schemas/Named/items",
+            strict,
+        ));
+        let lines = run.stderr.lines().count();
+        if lines != 1 {
+            failures.push(format!(
+                "nested-items-required-control.yml: crozier's refusal (strict: {strict}) printed \
+                 {lines} stderr lines; a refusal prints one: {}",
+                run.stderr.trim()
+            ));
+        }
+    }
+    failures
 }
 
 /// Removing an unsupported required credential recovers generation; merely
@@ -16514,6 +16739,7 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
         "optional-known-child-control.yml",
         "union-first-member-control.yml",
         "anyof-first-member-control.yml",
+        "nested-items-required-control.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -16574,6 +16800,18 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
             "anyof-second-member-control.yml",
         ]
         .map(|case| class.join(case)),
+    );
+    // A required pointer naming `properties` is walked, and Fern generates from
+    // one reaching nothing or a `$defs` member; each is an authored probe whose
+    // Fern tree `authored_probe_measurements_match_fern` byte-matches.
+    let probes = Path::new(env!("CARGO_MANIFEST_DIR")).join(AUTHORED_PROBES_DIR);
+    accepted.extend(
+        [
+            "358-absent-required-property",
+            "358-undeclared-head-properties-required",
+            "356-defs-required-property",
+        ]
+        .map(|case| probes.join(case).join("openapi.yml")),
     );
     for spec in accepted {
         let normal = refusal_run(&crozier, &spec, false).unwrap();
@@ -18599,7 +18837,7 @@ fn numeric_type_names_refuse_and_valid_declared_names_recover() {
         .success();
     // The canonical declaration names the class, its module and the method's
     // return annotation, as Fern names a component by its `x-fern-type-name`
-    // (the authored probe `crozier-350-declared-type-name`).
+    // (the authored probe `376-350-declared-type-name`).
     assert!(
         std::fs::read_to_string(declared.join("src/probe/types/thing.py"))
             .unwrap()

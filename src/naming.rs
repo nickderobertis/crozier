@@ -981,7 +981,7 @@ pub fn is_reserved(name: &str) -> bool {
 /// golden, and embedpdf-cloudpdf's `PdfFieldActions.validate` (`BaseModel.validate()`)
 /// is `validate_`, and MockServer's `json` bodies (`BaseModel.json()`) are
 /// `json_`, and `construct` (`BaseModel.construct()`) is `construct_`, measured
-/// on the authored probe `crozier-354-model-property-construct`. The protection
+/// on the authored probe `376-354-model-property-construct`. The protection
 /// is *model-scoped*, so an enum visitor's `copy` argument (otoroshi's
 /// `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its spelling.
 #[must_use]

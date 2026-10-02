@@ -894,8 +894,8 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
         // A type name declared by one component and resolved to by another
         // (its own key or declaration) is one type to Fern, which merges them;
         // it generates the merge of two identical schemas and refuses two that
-        // differ (the authored probes `crozier-350-declared-type-name-shared`,
-        // `-shared-differing` and `-taken`).
+        // differ (the authored probe `376-350-declared-type-name-shared`; the
+        // refusals are this class's `evidence/376-350-declared-type-name-*`).
         let hinted = crate::openapi::refusal_type_name(node).is_some();
         let body = without_type_names(node);
         let resolved = crate::openapi::declared_type_key(declared);

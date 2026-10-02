@@ -1,0 +1,24 @@
+openapi: 3.1.0
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /holder:
+    post:
+      operationId: createHolder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Named/properties/absent"
+      responses:
+        "204":
+          description: No Content
+components:
+  schemas:
+    Named:
+      type: object
+      properties:
+        label:
+          type: string

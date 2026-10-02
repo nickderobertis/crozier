@@ -35,12 +35,15 @@ parameter and the camelCase collision from [Fern](evidence/reserved-expansion-pa
 the document-family check names it first.
 
 The detector also covers a declared type name (`x-fern-type-name` or
-`x-crozier-type-name`) that two component schemas resolve to, measured on the
-authored probes under
-[`../../openapi-surface/authored-probes/`](../../openapi-surface/authored-probes/).
-Pinned Fern merges the two into one type. It generates the merge when the
-schemas are the same (`crozier-350-declared-type-name-shared`). When they
-differ, its `fern check` fails on the merged type's example: both components
-declaring the name (`-shared-differing`), and one declaring a name the other
-holds as its key (`-taken`). crozier refuses those two in both modes, naming
-both components, and byte-matches Fern's tree for the merge of the same schemas.
+`x-crozier-type-name`) that two component schemas resolve to. Pinned Fern
+merges the two into one type. It generates the merge when the schemas are the
+same: the authored probe
+[`376-350-declared-type-name-shared`](../../openapi-surface/authored-probes/376-350-declared-type-name-shared/)
+holds Fern's tree, which crozier byte-matches. When they differ, its
+`fern check` fails on the merged type's example: both components declaring the
+name ([probe](evidence/376-350-declared-type-name-shared-differing.yml),
+[pinned Fern](evidence/376-350-declared-type-name-shared-differing.pinned-fern.log)),
+and one declaring a name the other holds as its key
+([probe](evidence/376-350-declared-type-name-taken.yml),
+[pinned Fern](evidence/376-350-declared-type-name-taken.pinned-fern.log)).
+crozier refuses those two in both modes, naming both components.

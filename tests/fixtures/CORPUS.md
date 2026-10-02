@@ -218,7 +218,6 @@ compares it. Row 224 is the one so far.
 | 220 | `paloalto-code-technologies` | github-raw | https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/code/Technologies.json | `4e989cdd4bbda669dc73c0d3f5db90bb4989bee3` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Prisma Cloud Technologies API; the publisher's own description, declaring `anyof-array-variant-struct-item` |
 | 221 | `marimo-plugins` | github-raw | https://raw.githubusercontent.com/marimo-team/marimo/433386f4573e4ad77a22439db68276e6196d3307/frontend/plugins.openapi.yaml | `433386f4573e4ad77a22439db68276e6196d3307` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | marimo plugin contracts 1.0.0; the publisher's own description, declaring `anyof-array-variant-struct-item` |
 | 222 | `otoroshi` | github-raw | https://raw.githubusercontent.com/MAIF/otoroshi/e912f12c40eaf6de0cdda2e8c43db5cf226a301d/otoroshi/conf/schemas/openapi.json | `e912f12c40eaf6de0cdda2e8c43db5cf226a301d` | Apache-2.0 (the publisher repository's pinned `LICENCE`; the document's `info.license` is Apache 2.0) | committed | Otoroshi Admin API 16.12.0-dev as its repository pins it (a different document from row 59's APIs.guru 1.5.0-dev); declaring `ref-pointer-undeclared-component-head` |
-| 223 | `nexmo-conversation` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/conversation/2.0.1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`) | committed | The Vonage (Nexmo) Conversation API 2.0.1; `$ref` pointers into a component's composition members and nested properties |
 | 225 | `googleapis-monitoring-v1` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/monitoring/v1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | Creative Commons Attribution 3.0 (the document's own `info.license`, Google's grant over its own description; the aggregating repository is CC0-1.0) | committed | Google Cloud Monitoring API v1 (dashboards); enum members with leading zeros |
 | 226 | `docu-goapiserver` | github-raw | https://raw.githubusercontent.com/JuaniGit/docu-goapiserver/45632ead37e9915e251896ae62e378ba738f0529/openapi.yaml | `45632ead37e9915e251896ae62e378ba738f0529` | MIT (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | committed | Primula Tracker API V3 (OpenAPI 3.1); an `anyOf` variant that is itself an `anyOf` |
 | 227 | `onevoice` | github-raw | https://raw.githubusercontent.com/f1xgun/onevoice/5dab014aaf878650bbf19aea528f72a0fe265e35/docs/api/spec/openapi.yaml | `5dab014aaf878650bbf19aea528f72a0fe265e35` | MIT (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | committed | OneVoice API 1.0.0; a `mutualTLS` security scheme beside a supported one |
@@ -1184,7 +1183,7 @@ registered here with its Fern 5.20.0 golden and byte-matches with
 
 | # | name | the row whose unreached site it reached | status |
 |---:|---|---|---|
-| 223 | `nexmo-conversation` | `ref-pointer-composition-index`, `ref-pointer-nested-properties` | ✅ byte-matched after three repairs |
+| 223 | `nexmo-conversation` | `ref-pointer-composition-index`, `ref-pointer-nested-properties` | ⛔ withdrawn for a missing publisher grant; its source, golden and test are removed |
 | 224 | `codat-assess` | `ref-pointer-composition-index` | ⛔ withdrawn for a disputed grant; its golden and test are removed |
 | 225 | `googleapis-monitoring-v1` | `enum-leading-zero-member` | ✅ byte-matched after one repair |
 | 226 | `docu-goapiserver` | `anyof-anyof-variant` | ✅ byte-matched after four repairs |
@@ -1268,6 +1267,23 @@ sources — found no document that passes all three corpus screens and reaches t
 `docs/openapi-surface/withdrawn-witnesses/codat-assess.md`. That arm is covered
 instead by the hand-written `composition-index-pointer` fixture, which is never a
 corpus row.
+
+### Row 223 withdrawn
+
+| # | name | method | source | pinned ref | license | decision | withdrawn because |
+|---:|---|---|---|---|---|---|---|
+| 223 | `nexmo-conversation` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/conversation/2.0.1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`) | withdrawn | its only grant is the aggregator's: Vonage publishes no copy of the description under any licence, and its `x-origin`, `nexmo/api-specification`, no longer exists. The Vonage (Nexmo) Conversation API 2.0.1; `$ref` pointers into a component's composition members and nested properties |
+
+Row 223 was held to the standard row 224 was withdrawn under: an aggregation's
+grant alone does not suffice. The search for Vonage's own grant found none — no
+repository of the `Vonage` or `Nexmo` organisations carries the Conversation API
+description, and those that carry other OpenAPI documents grant nothing for this
+one. Its committed source, golden, `tests/e2e.rs` corpus and test, and `just
+test-corpus-match` line are removed. Every census selector it alone declared backs
+no feature, and every `golden-reach.tsv` site it reached is still reached by a
+remaining golden. The four behaviours only its golden executed are now carried by
+the hand-written `ref-pointer-walk` fixture, which is never a corpus row. The record is
+`docs/openapi-surface/withdrawn-witnesses/nexmo-conversation.md`.
 
 OneVoice's paths are all relative `$ref`s into sibling files, which Fern leaves
 unresolved without a diagnostic, so its golden is the document's types and

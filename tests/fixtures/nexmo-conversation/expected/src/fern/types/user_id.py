@@ -1,6 +1,0 @@
-
-
-UserId = str
-"""
-User ID
-"""

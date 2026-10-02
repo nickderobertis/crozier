@@ -1,6 +1,0 @@
-
-
-EventType = str
-"""
-Event type
-"""
