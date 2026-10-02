@@ -10,9 +10,7 @@ anyof-array-variant-oneof-nullable-item	absent-tree	measured	docs/openapi-surfac
 anyof-array-variant-struct-item	absent-tree	measured	docs/openapi-surface/probe-expected/anyof-array-variant-struct-item	—	0a28034c5915d52de5566badcbcf1efeb7748ff87d47e007aa0f3ef8d7df6eb6
 anyof-sole-member	absent-tree	measured	docs/openapi-surface/probe-expected/anyof-sole-member	—	b15883f7fb296dc802034c77fa7581c778121a4618bdf1e1c6e5bcd544e23990
 apiKey-query	absent-tree	discards	docs/openapi-surface/probe-expected/apiKey-query	—	64188a92f148a5ebe4188cb9b44b97f62358fa4d7eed9c5b013fa35216b79927
-array-item-inheritance-union	absent-tree	measured	docs/openapi-surface/probe-expected/array-item-inheritance-union	—	164f364baae25692b0a697685ef1e4a5d0d50ebe0e0d6c140cbac7ea5fd6722a
 array-item-pointer-walk-anyof	absent-tree	measured	docs/openapi-surface/probe-expected/array-item-pointer-walk-anyof	—	c318e3a2ea7e12732c5dfb71b1c351c760f70e6c20c11b2f8ddbdd0e7e6d4b70
-array-item-pointer-walk-oneof	absent-tree	measured	docs/openapi-surface/probe-expected/array-item-pointer-walk-oneof	—	c318e3a2ea7e12732c5dfb71b1c351c760f70e6c20c11b2f8ddbdd0e7e6d4b70
 boolean-schema-true	differential	coincidence	docs/openapi-surface/probe-expected/boolean-schema-true	boolean-schema-true-control	17f2fb18308568de1517c12f98be028e4a12efd2c5606ff7e093efc160410a27
 components-pathItems	absent-tree	discards	docs/openapi-surface/probe-expected/components-pathItems	—	75b47849fb42c5e6c11fdcafd089677d9bce94db920e79e1fa2daa1f7b88ad76
 const-boolean	absent-tree	discards	docs/openapi-surface/probe-expected/const-boolean	—	d3dee9bc7dcfeced94da2f02474bc1f96105df1683dcf0227acd3af2dba22ee1
@@ -95,12 +93,8 @@ parameter-style-simple-path-object	absent-tree	discards	docs/openapi-surface/pro
 pipeDelimited-array	absent-tree	discards	docs/openapi-surface/probe-expected/pipeDelimited-array	—	ab7a798cc270fd0662ed066f1feb0677fd1a4cc2da32d878a45eca66fa2aaabd
 pipeDelimited-object	absent-tree	discards	docs/openapi-surface/probe-expected/pipeDelimited-object	—	a350eea8c92ca5abd19fb2ef0144a951be1f0887aef0a4b676f5a4916abb07ea
 property-sole-anyof-closed-object-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-anyof-closed-object-member	—	60a7b2523e1560e04097a2ab02a1a6d419bae1c5121c3017c62d6e0ba260aeec
-property-sole-anyof-composed-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-anyof-composed-member	—	a3dff21156a8e1a6b488d2964e6be867039085e3360d8e2dd95e83b98de3f903
-property-sole-anyof-empty-object-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-anyof-empty-object-member	—	9f4491e1c8c5db8b3c16fe6c04856222db425ed0685f8ac80dc88ae0afd0c5bc
 property-sole-anyof-struct-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-anyof-struct-member	—	a3dff21156a8e1a6b488d2964e6be867039085e3360d8e2dd95e83b98de3f903
 property-sole-oneof-closed-object-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-oneof-closed-object-member	—	60a7b2523e1560e04097a2ab02a1a6d419bae1c5121c3017c62d6e0ba260aeec
-property-sole-oneof-composed-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-oneof-composed-member	—	a3dff21156a8e1a6b488d2964e6be867039085e3360d8e2dd95e83b98de3f903
-property-sole-oneof-empty-object-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-oneof-empty-object-member	—	9f4491e1c8c5db8b3c16fe6c04856222db425ed0685f8ac80dc88ae0afd0c5bc
 range-1XX	absent-tree	discards	docs/openapi-surface/probe-expected/range-1XX	—	75b47849fb42c5e6c11fdcafd089677d9bce94db920e79e1fa2daa1f7b88ad76
 range-3XX	absent-tree	discards	docs/openapi-surface/probe-expected/range-3XX	—	75b47849fb42c5e6c11fdcafd089677d9bce94db920e79e1fa2daa1f7b88ad76
 range-4XX	absent-tree	discards	docs/openapi-surface/probe-expected/range-4XX	—	75b47849fb42c5e6c11fdcafd089677d9bce94db920e79e1fa2daa1f7b88ad76
