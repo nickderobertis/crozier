@@ -1341,7 +1341,7 @@ def screen(args: argparse.Namespace) -> int:
     if not refusal and args.registered and not all(
             outcome.startswith("passed") for outcome in SCREEN.outcomes(record).values()):
         refusal = (f"--registered claims {args.candidate} passed every screen, and its measured outcomes read "
-                   f"{SCREEN.outcomes(record)}")
+                   f"{SCREEN.outcomes(record)}; drop --registered to file the refusal as measured")
     if refusal:
         if not args.measured and isinstance(record, dict):
             SCREEN.discard_logs(record, directory)

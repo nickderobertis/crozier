@@ -444,7 +444,8 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
             record["licence"] = {"outcome": outcome, **section, "log": log, "log_sha256": digest}
         else:
             record["licence"] = {"outcome": "not-run: the ref screen failed, so no bytes were read"}
-        failed = [name for name in ("licence", "ref") if not record[name]["outcome"].startswith("passed")]
+        # The screen that refused it: the ref is read first, and a licence not run never failed.
+        failed = [name for name in ("ref", "licence") if record[name]["outcome"].startswith("failed: ")]
         if failed:
             record["fern"] = {"outcome": f"not-run: the {failed[0]} screen failed"}
             return record
@@ -454,6 +455,7 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     logs_text = run.pop("logs")
     verdict = fern_verdict(run)
     if verdict is None:
+        discard_logs(record, base)
         fail(f"Fern timed out after {timeout}s on {repository}:{path}; nothing was filed — "
              "re-run with a longer --timeout")
     text = "".join(f"--- fern {name} (exit {run.get(f'{name}_exit')}) ---\n{body}\n" for name, body in logs_text.items())
@@ -657,7 +659,7 @@ def legacy_screen(args: argparse.Namespace) -> int:
         refusal = "a screen is filed only with its measured record; it lacks " + "; ".join(missing)
     elif disposition and SUCCESS_DISPOSITIONS.fullmatch(disposition) and not passed:
         refusal = (f"`{disposition}` claims a candidate that passed every screen, and this one's measured "
-                   f"outcomes read {outcomes(record)}")
+                   f"outcomes read {outcomes(record)}; drop --disposition to file it `rejected`")
     elif not disposition:
         refusal = ("every screen passed; say what becomes of the candidate with --disposition "
                    "(witness-found, pending-registration, …)")

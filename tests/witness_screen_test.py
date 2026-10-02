@@ -31,8 +31,10 @@ DOCUMENT = b"openapi: 3.0.3\ninfo: {title: shop, version: '1'}\npaths: {}\n"
 PROPRIETARY = b"openapi: 3.0.3\ninfo: {title: shop, version: '1', license: {name: Shop EULA}}\npaths: {}\n"
 SECRET = "ghp_offlinesecretvalue0123456789"
 FERN = """\
-    import os, pathlib, sys
+    import os, pathlib, sys, time
     print("token in use: " + os.environ.get("GITHUB_TOKEN", ""))
+    if os.environ["FERN_STUB"] == "hang":
+        time.sleep(30)
     if os.environ["FERN_STUB"] == "refuse":
         print("Found 1 error in 0.42 seconds.")
         print("issue: the `x-fern-enum` extension is missing; add it")
@@ -155,6 +157,39 @@ class LegacyScreenCliTests(unittest.TestCase):
             "disposition": "declares", "selector_count": 1}, "candidates.jsonl:1", screened)
         self.assertEqual(("pass", "witness-found", "candidates.jsonl:1"),
                          (result["fern_screen"], result["disposition"], result["evidence"]))
+
+    def test_a_ref_the_read_cannot_pin_fails_and_the_later_screens_do_not_run(self) -> None:
+        for args, ref in (
+            (["--commit", "main"], "failed: 'main' is no full commit SHA, so the ref is mutable"),
+            (["--path", "gone.yaml"], f"failed: HTTP 404 reading gone.yaml at acme/shop@{COMMIT}"),
+            (["--sha256", "0" * 64], f"failed: the bytes at acme/shop@{COMMIT} carry sha256 "
+                                     f"{hashlib.sha256(DOCUMENT).hexdigest()}, not the pinned {'0' * 64}"),
+        ):
+            with self.subTest(args=args):
+                (self.evidence / "screens.jsonl").unlink(missing_ok=True)
+                command = [sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "sample-shape",
+                           "--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml",
+                           "--evidence-root", str(self.root)]
+                for flag, value in zip(args[::2], args[1::2]):
+                    if flag in command:
+                        command[command.index(flag) + 1] = value
+                    else:
+                        command += [flag, value]
+                done = subprocess.run(command, env=self.env, capture_output=True, text=True, cwd=REPO, timeout=300)
+                self.assertEqual(0, done.returncode, done.stderr)
+                [row] = self.rows()
+                self.assertEqual(ref, row["ref"])
+                self.assertEqual("rejected", row["disposition"])
+                self.assertEqual("not-run: the ref screen failed", row["fern"])
+                if args[0] == "--path":
+                    self.assertEqual("not-run: the ref screen failed, so no bytes were read", row["license"])
+
+    def test_a_fern_run_cut_off_by_its_timeout_files_nothing(self) -> None:
+        refused = self.screen("--disposition", "witness-found", "--timeout", "1", FERN_STUB="hang")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("Fern timed out after 1s on acme/shop:openapi.yaml; nothing was filed", refused.stderr)
+        self.assertEqual([], self.rows())
+        self.assertEqual([], sorted((self.evidence / "screens").iterdir()), "a log outlived its unfiled screen")
 
     def test_fern_text_is_refused_as_a_measurement(self) -> None:
         refused = self.screen("--fern", "passed", "--disposition", "witness-found")
