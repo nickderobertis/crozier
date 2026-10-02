@@ -10553,10 +10553,13 @@ fn operation_id_equal_to_tag_generates_on_root_client() {
     );
 }
 
+/// A lone inline header enum is a document pinned Fern fails to generate
+/// (`generator-missing-type`); a second operation without the header keeps it
+/// an endpoint parameter, the shape Fern generates and hoists.
 #[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      responses:\n        '204': { description: Found }\n",
     );
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
