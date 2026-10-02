@@ -13,8 +13,11 @@
 //! - `.py`: Python comments are stripped ([`crate::strip_python_comments`]);
 //! - `__init__.py`: additionally, leading blank lines are dropped and the imports
 //!   are sorted with `ruff check --select I --fix` ([`normalize_init`]);
-//! - `metadata.json` (the reference's `.fern/metadata.json`): the
-//!   `generatorConfig` block is dropped ([`normalize_metadata`]);
+//! - exactly `.fern/metadata.json` (Fern's own provenance record, at the SDK
+//!   root — [`FERN_METADATA`]): the `generatorConfig` block is dropped
+//!   ([`normalize_metadata`]). Any other file whose name ends in
+//!   `metadata.json` (say `types/user_metadata.json`) is SDK content, so it
+//!   gets no such rule;
 //! - anything else is compared as-is.
 //!
 //! The tree rules ([`tree_differences`]): the comparison is bidirectional (a file
@@ -36,6 +39,11 @@ use crate::strip_python_comments;
 /// The provenance record a committed golden tree carries beside the reference
 /// output. It is not reference output, so neither side's walk includes it.
 pub const PROVENANCE_FILE: &str = ".crozier-fern-golden.json";
+
+/// The SDK-relative path of Fern's own metadata record — the one file
+/// [`normalize_metadata`] applies to. `rel` is always `/`-separated (see
+/// [`walk_files`]), so this exact match holds on Windows too.
+pub const FERN_METADATA: &str = ".fern/metadata.json";
 
 /// Normalize the SDK-identity headers out of the comparison. crozier brands its
 /// own `X-Crozier-*` headers rather than impersonating the reference, and —
@@ -182,7 +190,7 @@ pub fn normalized_pair(
             strip_python_comments(&crozier),
             strip_python_comments(&reference),
         ))
-    } else if rel.ends_with("metadata.json") {
+    } else if rel == FERN_METADATA {
         Ok((normalize_metadata(&crozier), normalize_metadata(&reference)))
     } else {
         Ok((crozier, reference))
@@ -528,6 +536,19 @@ mod tests {
         )
         .unwrap();
         assert_eq!(c, r);
+        // Any other `…metadata.json` is SDK content: its `generatorConfig`
+        // is compared as written, at the root or nested.
+        let theirs = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 1}\n}";
+        let ours = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 2}\n}";
+        assert!(files_match(".fern/metadata.json", ours, theirs).unwrap());
+        for rel in [
+            "types/user_metadata.json",
+            "foo/metadata.json",
+            "metadata.json",
+            "foo/.fern/metadata.json",
+        ] {
+            assert!(!files_match(rel, ours, theirs).unwrap(), "{rel}");
+        }
         // Anything else: headers only, comments kept.
         let (c, r) = normalized_pair("README.md", "# Title\n", "# Other\n").unwrap();
         assert_ne!(c, r);
