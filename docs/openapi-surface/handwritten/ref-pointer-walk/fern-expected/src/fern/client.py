@@ -7,7 +7,12 @@ from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
 from .raw_client import AsyncRawFernApi, RawFernApi
+from .types.create_route_request_properties import CreateRouteRequestProperties
 from .types.holder import Holder
+from .types.route import Route
+
+
+OMIT = typing.cast(typing.Any, ...)
 
 
 class FernApi:
@@ -116,6 +121,68 @@ class FernApi:
         client.get_holder()
         """
         _response = self._raw_client.get_holder(request_options=request_options)
+        return _response.data
+
+    def list_routes(
+        self, *, since: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
+    ) -> Route:
+        """
+        Parameters
+        ----------
+        since : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Route
+            OK
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.list_routes()
+        """
+        _response = self._raw_client.list_routes(since=since, request_options=request_options)
+        return _response.data
+
+    def create_route(
+        self,
+        *,
+        name: typing.Optional[str] = OMIT,
+        properties: typing.Optional[CreateRouteRequestProperties] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        name : typing.Optional[str]
+
+        properties : typing.Optional[CreateRouteRequestProperties]
+            Route properties
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.create_route()
+        """
+        _response = self._raw_client.create_route(name=name, properties=properties, request_options=request_options)
         return _response.data
 
 
@@ -249,4 +316,84 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         _response = await self._raw_client.get_holder(request_options=request_options)
+        return _response.data
+
+    async def list_routes(
+        self, *, since: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
+    ) -> Route:
+        """
+        Parameters
+        ----------
+        since : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Route
+            OK
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.list_routes()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list_routes(since=since, request_options=request_options)
+        return _response.data
+
+    async def create_route(
+        self,
+        *,
+        name: typing.Optional[str] = OMIT,
+        properties: typing.Optional[CreateRouteRequestProperties] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        name : typing.Optional[str]
+
+        properties : typing.Optional[CreateRouteRequestProperties]
+            Route properties
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.create_route()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.create_route(
+            name=name, properties=properties, request_options=request_options
+        )
         return _response.data

@@ -985,8 +985,8 @@ pub struct Schema {
     /// when that reference named `properties` and so was one Fern's importer
     /// converts as a copy at its use site. Not a wire field: a discriminated-union
     /// variant copied this way is declared under a name read off the reference
-    /// itself, as Fern's variant conversion names it (the Vonage Conversation
-    /// API's `ComponentsSchemasChannelPropertiesFromOneOf0`).
+    /// itself, as Fern's variant conversion names it (the hand-written
+    /// `ref-pointer-walk` fixture's `ComponentsSchemasRoutePropertiesFromOneOf0`).
     #[serde(skip)]
     pub ref_origin: Option<String>,
     /// Set when this node stood where a schema object was expected but the document
@@ -1936,9 +1936,9 @@ fn inline_schema_pointers(
             // Fern's v1 importer converts *any* reference whose text names
             // `properties` as a copy at the reference (`$ref.includes("properties")`
             // in its `convertSchema`), walking the whole pointer: a plain
-            // component named `conversation_properties` and a pointer that ends on
-            // a composition member (the Vonage Conversation API's
-            // `…/channel/properties/from/oneOf/0`) are copied like the pointers
+            // component named `route_properties` and a pointer that ends on a
+            // composition member (the hand-written `ref-pointer-walk` fixture's
+            // `…/Route/properties/from/oneOf/0`) are copied like the pointers
             // above, where one without the word keeps its reference.
             if reference.contains("properties") {
                 if let Some(target) = properties_reference_target(components, &reference) {
@@ -3309,8 +3309,8 @@ components:
             Some("string")
         );
         // A pointer whose text names `properties` is copied even where it ends
-        // on a composition member, as Fern's importer copies the Vonage
-        // Conversation API's `…/channel/properties/from/oneOf/0`, and the copy
+        // on a composition member, as Fern's importer copies the hand-written
+        // `ref-pointer-walk` fixture's `…/Route/properties/from/oneOf/0`, and the copy
         // remembers the pointer it came from.
         let member = &revision.properties["member"];
         assert!(member.reference.is_none());
