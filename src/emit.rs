@@ -3692,9 +3692,6 @@ fn update_forward_refs_call(target: &str, repair: &ForwardRepair) -> String {
     format!("update_forward_refs({})", arguments.join(", "))
 }
 
-/// Render one type declaration to a file body. `loc` is the file's location
-/// (package-root `types/` or a tag's `types/`), which sets the `core`/type import
-/// depth; `tag_types` maps hoisted type names to their tags for those references.
 /// The generator settings a declaration's rendered shape reads, bundled to keep
 /// [`render_type_decl`] within the argument limit.
 #[derive(Debug, Clone, Copy, Default)]
@@ -3705,6 +3702,9 @@ struct DeclSettings {
     enum_type: EnumType,
 }
 
+/// Render one type declaration to a file body. `loc` is the file's location
+/// (package-root `types/` or a tag's `types/`), which sets the `core`/type import
+/// depth; `tag_types` maps hoisted type names to their tags for those references.
 fn render_type_decl(
     env: &Environment<'static>,
     decl: &TypeDecl,
