@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.92](https://github.com/nickderobertis/crozier/compare/v0.0.91...v0.0.92) - 2026-10-02
+
+### Added
+
+- *(coverage)* restate the coverage report with hand-written evidence and refusal decisions ([#346](https://github.com/nickderobertis/crozier/pull/346))
+
 ## [0.0.91](https://github.com/nickderobertis/crozier/compare/v0.0.90...v0.0.91) - 2026-10-02
 
 ### Added
