@@ -29,7 +29,7 @@ already declines.
 ## Selectors no other golden-bearing source declares
 
 The census over the 236 registered sources before the withdrawal
-(`scripts/openapi-surface-census.py --json`, on 2026-10-02) finds three selectors
+(`just surface-census --json`, on 2026-10-02) finds three selectors
 row 223 alone declares. None of them is a key in any region file's entry table,
 and [`../witness-search-keys.tsv`](../witness-search-keys.tsv) records none of
 them for any key. So they back no feature and need no witness.
