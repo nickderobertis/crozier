@@ -792,7 +792,7 @@ def fixture_test_map(repo_root: Path) -> dict[str, str]:
         fn = re.match(r"^fn (\w+)\(", line)
         if fn:
             current = fn.group(1)
-        drive = re.search(r"assert_(?:link_ok_)?corpus_matches\(&(\w+)\)", line)
+        drive = re.search(r"assert_(?:link_ok_|committed_)?corpus_matches\(&(\w+)\)", line)
         if drive and current and GOLDEN_TEST.search(current) and drive.group(1) in constants:
             tests[constants[drive.group(1)]] = current
     for test, api in re.findall(r"^\s*(\w+_matches_fern_output) => \"([^\"]+)\"", source, re.M):
