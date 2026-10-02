@@ -50,7 +50,12 @@ operation. Alone, as in [this document](evaluation-logs/tag-suffix-single.yml), 
 method empty and failed its own `ruff format` there from the baseline until the
 authored probe `crozier-357-tag-only-operation-id` committed Fern's tree for it. It now
 writes the root `search` method and byte-matches that tree in both modes. The
-detector does not refuse that single-operation shape.
+detector does not refuse that single-operation shape. Beside another operation
+of the tag, the [probe](tag-suffix-collision-probe.yml) and BBC (`eeab4173…`)
+are still refused in both modes, now as `GET /search root method and sub-client
+search`: the collision Fern's F811 on `search` names in
+[the probe's log](evaluation-logs/fern-tag-suffix-collision.log) and BBC's. The
+population log below predates that and records `method name is empty` for BBC.
 
 Per the planner's ruling, operation naming is read as pinned Fern reads it:
 `x-crozier-sdk-group-name` and `x-crozier-sdk-method-name` are set aside while

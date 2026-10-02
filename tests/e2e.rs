@@ -17037,7 +17037,10 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
             "type Event variants \"user:account_deleted\" and \"user_account:deleted\" are both Event_UserAccountDeleted",
         ),
         ("root-collision-probe.yml", "GET /search root method and sub-client search"),
-        ("tag-suffix-collision-probe.yml", "GET /search method name is empty"),
+        (
+            "tag-suffix-collision-probe.yml",
+            "GET /search root method and sub-client search",
+        ),
         ("untitled-summary-probe.yml", "POST /change-requests method name is empty"),
         ("server-hyphen-probe.yml", "variable \"api-version\""),
         ("server-dot-probe.yml", "variable \"api.version\""),
