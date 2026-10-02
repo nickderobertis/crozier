@@ -519,6 +519,34 @@ impl Operation {
             .as_deref()
             .or(self.streaming_fern.as_deref())
     }
+
+    /// Take out the `x-crozier-sdk-group-name` / `x-crozier-sdk-method-name`
+    /// overrides, which pinned Fern does not read, so the operation names as
+    /// Fern names it; `None` when it carries neither. Refusal detectors use this
+    /// read-only view and hand the overrides back through
+    /// [`Operation::restore_crozier_naming`] before anything is emitted.
+    pub(crate) fn take_crozier_naming(&mut self) -> Option<CrozierNaming> {
+        if self.sdk_group_name_crozier.is_none() && self.sdk_method_name_crozier.is_none() {
+            return None;
+        }
+        Some(CrozierNaming {
+            group: self.sdk_group_name_crozier.take(),
+            method: self.sdk_method_name_crozier.take(),
+        })
+    }
+
+    /// Restore what [`Operation::take_crozier_naming`] took out.
+    pub(crate) fn restore_crozier_naming(&mut self, naming: CrozierNaming) {
+        self.sdk_group_name_crozier = naming.group;
+        self.sdk_method_name_crozier = naming.method;
+    }
+}
+
+/// An operation's crozier-only naming overrides, held aside while a refusal
+/// detector reads the document as pinned Fern does.
+pub(crate) struct CrozierNaming {
+    group: Option<SdkGroupName>,
+    method: Option<String>,
 }
 
 /// The value of `x-crozier-streaming` / `x-fern-streaming`: how an operation

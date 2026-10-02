@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /change-requests:
+    post:
+      summary: 提交修改请求
+      tags:
+      - Change Requests
+      responses:
+        '204':
+          description: No Content

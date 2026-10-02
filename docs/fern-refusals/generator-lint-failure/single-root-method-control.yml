@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /search:
+    get:
+      operationId: search
+      tags:
+      - search
+      responses:
+        '204':
+          description: No Content

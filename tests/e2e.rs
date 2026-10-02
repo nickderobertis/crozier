@@ -16668,3 +16668,67 @@ fn enum_default_refusal_recovers_with_a_retained_default() {
         }
     }
 }
+
+/// `generator-lint-failure`: each shape whose generated Python pinned Fern's own
+/// `ruff check` rejects is refused in both modes, naming the element, while
+/// every measured near-miss Fern generates from writes the same SDK in both.
+#[test]
+fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-lint-failure");
+    for (probe, element) in [
+        (
+            "probe.yml",
+            "type Event variants \"user:account_deleted\" and \"user_account:deleted\" are both Event_UserAccountDeleted",
+        ),
+        ("root-collision-probe.yml", "GET /search root method and sub-client search"),
+        ("tag-suffix-collision-probe.yml", "GET /search method name is empty"),
+        ("untitled-summary-probe.yml", "POST /change-requests method name is empty"),
+        ("server-hyphen-probe.yml", "variable \"api-version\""),
+        ("server-dot-probe.yml", "variable \"api.version\""),
+        ("server-keyword-probe.yml", "variable \"class\""),
+        ("server-unbound-placeholder-probe.yml", "placeholder \"extra\""),
+        ("slash-property-probe.yml", "type Result property \"/\""),
+        ("empty-enum-probe.yml", "components/schemas/Result enum has no non-null value"),
+        ("null-only-enum-probe.yml", "components/schemas/Result enum has no non-null value"),
+        ("null-enum-not-nullable-probe.yml", "components/schemas/Result enum has no non-null value"),
+        (
+            "inline-null-only-enum-probe.yml",
+            "components/schemas/Result/properties/temperature/anyOf/1 enum has no non-null value",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(probe), strict).unwrap();
+            let failures = refused_failures("generator-lint-failure", &run, element, strict);
+            assert!(failures.is_empty(), "{probe}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{probe}: {}", run.stderr);
+        }
+    }
+    for control in [
+        "distinct-discriminants-control.yml",
+        "single-root-method-control.yml",
+        "canonical-group-name-control.yml",
+        "ascii-summary-control.yml",
+        "server-identifier-control.yml",
+        "server-secondary-hyphen-control.yml",
+        "server-placeholder-without-variables-control.yml",
+        "slash-prefixed-property-control.yml",
+        "null-and-value-enum-control.yml",
+    ] {
+        let spec = class.join(control);
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(normal.code, Some(0), "{control}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{control}: {}", strict.stderr);
+        assert!(!normal.files.is_empty(), "{control}");
+        assert_eq!(normal.files, strict.files, "{control}");
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap(),
+                "{control}: {file:?}"
+            );
+        }
+    }
+}

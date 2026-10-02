@@ -1,0 +1,13 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/docs/fern-refusals/generator-lint-failure/probe.yml'), '--output', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/probes/generator-lint-failure'), '--package-name', 'fern']
+exit: 0
+generated 40 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/probes/generator-lint-failure
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 1
+src/fern/types/event.py:25: error: Name "Event_UserAccountDeleted" already defined on line 12  [no-redef]
+src/fern/raw_client.py:42: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:83: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+Found 3 errors in 2 files (checked 33 source files)

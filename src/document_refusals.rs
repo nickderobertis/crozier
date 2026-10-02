@@ -28,6 +28,7 @@ enum Class {
     UnresolvedSchemaReference,
     HeapExhausted,
     DefaultNotEnumValue,
+    GeneratorLintFailure,
 }
 
 impl Class {
@@ -49,6 +50,7 @@ impl Class {
             Self::UnresolvedSchemaReference => "unresolved-schema-reference",
             Self::HeapExhausted => "heap-exhausted",
             Self::DefaultNotEnumValue => "default-not-enum-value",
+            Self::GeneratorLintFailure => "generator-lint-failure",
         }
     }
 }
@@ -1138,6 +1140,21 @@ fn check_schema(
             }
         }
     }
+    // Fern renders a string enum with no non-null member as an enum class whose
+    // `visit` method has no body, which its own `ruff check` cannot parse.
+    if schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("string")
+        && schema
+            .get("enum")
+            .and_then(serde_yaml_ng::Value::as_sequence)
+            .is_some_and(|values| values.iter().all(serde_yaml_ng::Value::is_null))
+    {
+        return refusal(
+            context.path,
+            context.strict,
+            Class::GeneratorLintFailure,
+            &format!("{element} enum has no non-null value"),
+        );
+    }
     if let Some(properties) = schema
         .get("properties")
         .and_then(serde_yaml_ng::Value::as_mapping)
@@ -1620,6 +1637,205 @@ pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     Ok(())
 }
 
+/// Reject an SDK whose generated Python pinned Fern's own `ruff check` rejects
+/// (`generator-lint-failure`). crozier's IR names clients, methods, union
+/// variants, fields and server variables as Fern does, so each shape is read
+/// from it; operation naming is read without the `x-crozier-*` overrides Fern
+/// never sees.
+pub fn check_sdk(
+    doc: &mut OpenApi,
+    ir: &crate::ir::Ir,
+    config: &crate::config::GenerateConfig,
+    path: &Path,
+    strict: bool,
+) -> Result<()> {
+    let fern_ir = fern_naming_ir(doc, config);
+    let ir = fern_ir.as_ref().unwrap_or(ir);
+    let class = Class::GeneratorLintFailure;
+    for decl in ir
+        .types
+        .iter()
+        .chain(ir.tag_types.iter().map(|tagged| &tagged.decl))
+    {
+        let fields: Vec<&crate::ir::Field> = match decl {
+            crate::ir::TypeDecl::Object(object) => object.fields.iter().collect(),
+            crate::ir::TypeDecl::DiscriminatedUnion(union) => {
+                // F811: two discriminant values that name one wrapper class.
+                for (index, member) in union.members.iter().enumerate() {
+                    if let Some(earlier) = union.members[..index].iter().find(|earlier| {
+                        earlier.class_name == member.class_name
+                            && earlier.discriminant != member.discriminant
+                    }) {
+                        return refusal(
+                            path,
+                            strict,
+                            class,
+                            &format!(
+                                "type {} variants {:?} and {:?} are both {}",
+                                union.name,
+                                earlier.discriminant,
+                                member.discriminant,
+                                member.class_name
+                            ),
+                        );
+                    }
+                }
+                union
+                    .base_fields
+                    .iter()
+                    .chain(union.members.iter().flat_map(|member| &member.fields))
+                    .collect()
+            }
+            crate::ir::TypeDecl::Alias(_) | crate::ir::TypeDecl::Enum(_) => Vec::new(),
+        };
+        // A syntax error: a property whose Python name is empty (`/`).
+        if let Some(field) = fields.iter().find(|field| field.py_name.is_empty()) {
+            return refusal(
+                path,
+                strict,
+                class,
+                &format!("type {} property {:?}", decl.name(), field.wire_name),
+            );
+        }
+    }
+    for endpoint in ir.endpoints.iter().filter(|endpoint| endpoint.emittable) {
+        let route = format!("{} {}", endpoint.http_method, endpoint.path);
+        // F811: a root-client method and a sub-client property of one name.
+        if endpoint.module.is_empty()
+            && ir.endpoint_modules.iter().any(|module| {
+                module.split('/').next() == Some(endpoint.method_name.as_str())
+                    && !(ir.empty_endpoint_namespace && module == "_")
+            })
+        {
+            return refusal(
+                path,
+                strict,
+                class,
+                &format!(
+                    "{route} root method and sub-client {}",
+                    endpoint.method_name
+                ),
+            );
+        }
+        // A syntax error: a method with no name. Fern empties one named from a
+        // summary with no ASCII word; one whose operationId only repeats its tag
+        // it instead hoists to the root, which collides with that tag's
+        // sub-client only when the tag keeps another operation.
+        if endpoint.method_name.is_empty() {
+            let named_by_summary = doc
+                .paths
+                .get(&endpoint.path)
+                .and_then(|item| {
+                    item.operations()
+                        .into_iter()
+                        .find(|(method, _)| *method == endpoint.http_method)
+                })
+                .is_some_and(|(_, op)| op.operation_id.is_none() && op.sdk_method_name().is_none());
+            let shares_sub_client = ir
+                .endpoints
+                .iter()
+                .filter(|other| other.module == endpoint.module)
+                .count()
+                > 1;
+            if named_by_summary || shares_sub_client {
+                return refusal(
+                    path,
+                    strict,
+                    class,
+                    &format!("{route} method name is empty"),
+                );
+            }
+        }
+    }
+    if let Some(environment) = &ir.environment {
+        let template = &environment.url_template;
+        let variables = &environment.variables;
+        // A syntax error: `str.format` keyword arguments are the variable names.
+        if let Some(variable) = variables
+            .iter()
+            .find(|variable| !python_identifier(&variable.wire_name))
+        {
+            return refusal(
+                path,
+                strict,
+                class,
+                &format!("server {template} variable {:?}", variable.wire_name),
+            );
+        }
+        // F524: a placeholder `str.format` is given no argument for.
+        if !variables.is_empty() {
+            let mut rest = template.as_str();
+            while let Some((_, after)) = rest.split_once('{') {
+                let Some((placeholder, after)) = after.split_once('}') else {
+                    break;
+                };
+                if !variables
+                    .iter()
+                    .any(|variable| variable.wire_name == placeholder)
+                {
+                    return refusal(
+                        path,
+                        strict,
+                        class,
+                        &format!("server {template} placeholder {placeholder:?}"),
+                    );
+                }
+                rest = after;
+            }
+        }
+    }
+    Ok(())
+}
+
+/// The IR for the document as pinned Fern names its operations, or `None`
+/// when no operation carries an `x-crozier-*` naming override (the emitted IR
+/// already is that view). The overrides are restored before returning.
+fn fern_naming_ir(
+    doc: &mut OpenApi,
+    config: &crate::config::GenerateConfig,
+) -> Option<crate::ir::Ir> {
+    let mut taken = Vec::new();
+    for (item_index, item) in doc.paths.values_mut().enumerate() {
+        for (slot_index, slot) in item.operation_slots().into_iter().enumerate() {
+            if let Some(naming) = slot
+                .as_mut()
+                .and_then(crate::openapi::Operation::take_crozier_naming)
+            {
+                taken.push((item_index, slot_index, naming));
+            }
+        }
+    }
+    if taken.is_empty() {
+        return None;
+    }
+    let ir = crate::ir::build(doc, config);
+    for (item_index, slot_index, naming) in taken {
+        if let Some((_, item)) = doc.paths.get_index_mut(item_index) {
+            if let Some(op) = item.operation_slots()[slot_index].as_mut() {
+                op.restore_crozier_naming(naming);
+            }
+        }
+    }
+    Some(ir)
+}
+
+/// Whether `name` can be a Python keyword argument: an identifier that is not
+/// a keyword.
+fn python_identifier(name: &str) -> bool {
+    const KEYWORDS: [&str; 35] = [
+        "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class",
+        "continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global",
+        "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return",
+        "try", "while", "with", "yield",
+    ];
+    let mut chars = name.chars();
+    chars
+        .next()
+        .is_some_and(|first| first == '_' || first.is_alphabetic())
+        && chars.all(|c| c == '_' || c.is_alphanumeric())
+        && !KEYWORDS.contains(&name)
+}
+
 fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()> {
     Err(Error::InvalidSpec {
         path: path.to_path_buf(),
@@ -1845,5 +2061,15 @@ mod tests {
         }
         std::fs::remove_file(target).unwrap();
         assert!(!imported_reference_scheme(&reference, &origin));
+    }
+
+    #[test]
+    fn server_variables_must_be_python_keyword_arguments() {
+        for name in ["apiVersion", "api_version", "_v", "région"] {
+            assert!(python_identifier(name), "{name}");
+        }
+        for name in ["", "api-version", "api.version", "1st", "class", "None"] {
+            assert!(!python_identifier(name), "{name}");
+        }
     }
 }

@@ -96,6 +96,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     )?;
     config.layout = args.layout;
     let ir = ir::build(&doc, &config);
+    document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     let files = emit::generate(&ir)?;
     // Regeneration is idempotent: clear the crozier-owned package tree first so a
     // schema or endpoint dropped from the spec does not leave an orphaned module.
@@ -130,5 +131,6 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     )?;
     config.layout = args.layout;
     let ir = ir::build(&doc, &config);
+    document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     emit::generate(&ir)
 }
