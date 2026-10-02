@@ -9242,7 +9242,7 @@ fn build_example_inner(
         let example = qp.example.as_deref().unwrap_or_default();
         // A YAML timestamp is a date to Fern's parser, so it is no example for a
         // parameter that is not temporal, and an optional one then goes
-        // unshown: the Vonage Conversation API's `date_start` writes
+        // unshown: the hand-written `ref-pointer-walk` fixture's `since` writes
         // `example: 2018-01-01 10:00:00` unquoted over a `format: dateTime` string.
         if let Ok(serde_json::Value::String(value)) =
             serde_json::from_str::<serde_json::Value>(example)

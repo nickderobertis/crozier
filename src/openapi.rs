@@ -874,6 +874,11 @@ pub struct Schema {
     /// Array item schema.
     #[serde(default, deserialize_with = "de_items")]
     pub items: Option<Box<Schema>>,
+    /// The 2020-12 `$defs` map. Nothing is generated from it; it is kept only as
+    /// a target a `properties` pointer walks through (see
+    /// `properties_reference_target`).
+    #[serde(rename = "$defs", default, deserialize_with = "de_defs")]
+    pub defs: IndexMap<String, Schema>,
     /// `uniqueItems` is accepted at the boundary; Fern's OpenAPI importer still
     /// emits a list, so generation does not change collection type for this flag.
     #[serde(rename = "uniqueItems", default)]
@@ -986,8 +991,8 @@ pub struct Schema {
     /// when that reference named `properties` and so was one Fern's importer
     /// converts as a copy at its use site. Not a wire field: a discriminated-union
     /// variant copied this way is declared under a name read off the reference
-    /// itself, as Fern's variant conversion names it (the Vonage Conversation
-    /// API's `ComponentsSchemasChannelPropertiesFromOneOf0`).
+    /// itself, as Fern's variant conversion names it (the hand-written
+    /// `ref-pointer-walk` fixture's `ComponentsSchemasRoutePropertiesFromOneOf0`).
     #[serde(skip)]
     pub ref_origin: Option<String>,
     /// Set when this node stood where a schema object was expected but the document
@@ -1228,6 +1233,26 @@ where
     Ok(SchemaProperties {
         values: raw.into_iter().map(|(k, v)| (k, v.0)).collect(),
         declared: true,
+    })
+}
+
+/// Deserialize a Schema Object's `$defs`, which is read only as a pointer walk's
+/// target. A value that is not a map defines nothing and is dropped rather than
+/// failing the document, and an entry that is not a schema object degrades as a
+/// property does in [`de_properties`].
+fn de_defs<'de, D>(deserializer: D) -> std::result::Result<IndexMap<String, Schema>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Defs {
+        Map(IndexMap<String, MaybeSchema>),
+        Other(serde::de::IgnoredAny),
+    }
+    Ok(match Defs::deserialize(deserializer)? {
+        Defs::Map(defs) => defs.into_iter().map(|(k, v)| (k, v.0)).collect(),
+        Defs::Other(_) => IndexMap::new(),
     })
 }
 
@@ -1608,6 +1633,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
+    normalize_unresolved_schema_pointers(&mut doc);
     normalize_error_class_schema_names(&mut doc);
     normalize_multi_type_schemas(&mut doc);
     normalize_unlisted_required(&mut doc);
@@ -1859,10 +1885,10 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
 /// where a string target is plain `str`.
 ///
 /// A pointer that ends *on* a composition member, one through a segment no
-/// schema is named by (a `$defs` member), and one that names nothing are left
-/// for the lowering to type as unknown, which is what Fern makes of each of
-/// them (the `array-item-pointer-walk-*` and `ref-pointer-unnamed-segment`
-/// probes). A pointer met again while its own copy is being expanded is left
+/// schema is named by (a `$defs` member, outside a pointer naming `properties`),
+/// and one that names nothing are left for the lowering to type as unknown,
+/// which is what Fern makes of each of them (the `array-item-pointer-walk-*` and
+/// `ref-pointer-unnamed-segment` probes). A pointer met again while its own copy is being expanded is left
 /// in place too, so a self-referencing subtree terminates.
 fn normalize_schema_pointer_refs(doc: &mut OpenApi) {
     let components = doc.components.schemas.clone();
@@ -1933,9 +1959,9 @@ fn inline_schema_pointers(
             // Fern's v1 importer converts *any* reference whose text names
             // `properties` as a copy at the reference (`$ref.includes("properties")`
             // in its `convertSchema`), walking the whole pointer: a plain
-            // component named `conversation_properties` and a pointer that ends on
-            // a composition member (the Vonage Conversation API's
-            // `…/channel/properties/from/oneOf/0`) are copied like the pointers
+            // component named `route_properties` and a pointer that ends on a
+            // composition member (the hand-written `ref-pointer-walk` fixture's
+            // `…/Route/properties/from/oneOf/0`) are copied like the pointers
             // above, where one without the word keeps its reference.
             if reference.contains("properties") {
                 if let Some(target) = properties_reference_target(components, &reference) {
@@ -2018,6 +2044,11 @@ fn schema_pointer_target<'a>(
 /// The schema a reference naming `properties` resolves to by a walk of the whole
 /// pointer, a composition member at its end included — Fern's
 /// `resolveSchemaReference` — or `None` where no component or segment names one.
+/// The walk enters a `$defs` member too: pinned Fern types an array item
+/// pointing at `#/components/schemas/Named/properties/label/$defs/inner`, an
+/// `inner` of `type: string`, as `List[str]` (the `356-defs-pointer` authored
+/// probe), where a pointer without the word, `…/Named/$defs/inner`, is never
+/// walked and stays unknown.
 fn properties_reference_target<'a>(
     components: &'a IndexMap<String, Schema>,
     reference: &str,
@@ -2041,6 +2072,10 @@ fn properties_reference_target<'a>(
                 Some(AdditionalProperties::Schema(value)) => value,
                 _ => return None,
             },
+            "$defs" => {
+                index += 1;
+                schema.defs.get(path.get(index)?)?
+            }
             composition @ ("allOf" | "oneOf" | "anyOf") => {
                 index += 1;
                 let members = match composition {
@@ -2365,6 +2400,146 @@ fn normalize_unresolvable_schema_refs(doc: &mut OpenApi) {
             }
         });
     });
+}
+
+/// Degrade a pointer *past* a declared component's head that names nothing —
+/// `#/components/schemas/Named/properties/absent` where `Named` declares no
+/// `absent` — to the unknown type, as [`normalize_unresolvable_schema_refs`]
+/// degrades an undeclared head.
+///
+/// Pinned Fern types such a pointer `Any` wherever it stands (the `358-absent-*`
+/// authored probes): an optional or required property, a map value, a lone
+/// `allOf` member, a request body and a response body. Left a reference, the
+/// lowering named a class for it that nothing declares and imported its module.
+/// An array's `items` keeps its pointer: the element lowering resolves it again
+/// and types what it cannot resolve unknown, the same `List[Any]` Fern emits (the
+/// hand-written `ref-pointer-walk` fixture).
+fn normalize_unresolved_schema_pointers(doc: &mut OpenApi) {
+    let mut references = std::collections::BTreeSet::new();
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            references.extend(node.reference.clone());
+        });
+    });
+    let unresolved: std::collections::BTreeSet<String> = references
+        .into_iter()
+        .filter(|reference| declared_head_walk_misses(&doc.components.schemas, reference))
+        .collect();
+    if unresolved.is_empty() {
+        return;
+    }
+    for_each_root_schema(doc, &mut |schema| {
+        degrade_unresolved_pointers(schema, &unresolved, false);
+    });
+}
+
+fn degrade_unresolved_pointers(
+    schema: &mut Schema,
+    unresolved: &std::collections::BTreeSet<String>,
+    array_item: bool,
+) {
+    // A lone `allOf` member beside nothing but annotations is its holder's
+    // schema, as `inline_schema_pointers` reads it, so the holder is what is
+    // unknown: Fern's `merged: {allOf: [→ Named/properties/absent]}` is
+    // `Optional[Any]`, not an empty model.
+    let lone_member = match schema.all_of.as_deref() {
+        Some([member]) => member.reference.as_ref(),
+        _ => None,
+    };
+    if schema.reference.is_none()
+        && schema.ty.is_none()
+        && schema.properties.is_empty()
+        && schema.one_of.is_none()
+        && schema.any_of.is_none()
+        && lone_member.is_some_and(|reference| unresolved.contains(reference))
+    {
+        schema.all_of = None;
+        schema.unresolved_reference = true;
+    }
+    if !array_item
+        && schema
+            .reference
+            .as_ref()
+            .is_some_and(|reference| unresolved.contains(reference))
+    {
+        schema.reference = None;
+        schema.unresolved_reference = true;
+    }
+    for property in schema.properties.values_mut() {
+        degrade_unresolved_pointers(property, unresolved, false);
+    }
+    if let Some(items) = &mut schema.items {
+        degrade_unresolved_pointers(items, unresolved, true);
+    }
+    if let Some(AdditionalProperties::Schema(value)) = &mut schema.additional_properties {
+        degrade_unresolved_pointers(value, unresolved, false);
+    }
+    for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of] {
+        for member in members.iter_mut().flatten() {
+            degrade_unresolved_pointers(member, unresolved, false);
+        }
+    }
+}
+
+/// Whether a component pointer's walk from a *declared* head, through nothing
+/// but `properties` keys, `items` and composition indexes with a segment after
+/// them, misses: some step names a schema that is not there. It answers `false`
+/// for every other pointer, including others that name nothing, because each of
+/// those is handled elsewhere: one carrying any other segment, or ending on a
+/// composition member, the lowering types unknown
+/// (`ir::pointer_has_unnamed_segment`), and an undeclared head is
+/// [`normalize_unresolvable_schema_refs`]'s.
+fn declared_head_walk_misses(components: &IndexMap<String, Schema>, reference: &str) -> bool {
+    let Some(pointer) = reference.strip_prefix("#/components/schemas/") else {
+        return false;
+    };
+    let segments: Vec<String> = pointer
+        .split('/')
+        .map(|segment| segment.replace("~1", "/").replace("~0", "~"))
+        .collect();
+    let Some((name, path)) = segments.split_first() else {
+        return false;
+    };
+    let Some(mut schema) = components.get(name) else {
+        return false;
+    };
+    let mut index = 0;
+    while index < path.len() {
+        match path[index].as_str() {
+            "properties" if index + 1 < path.len() => index += 2,
+            "items" => index += 1,
+            "allOf" | "oneOf" | "anyOf" if index + 2 < path.len() => index += 2,
+            _ => return false,
+        }
+    }
+    let mut index = 0;
+    while index < path.len() {
+        let next = match path[index].as_str() {
+            "properties" => {
+                index += 1;
+                schema.properties.get(&path[index])
+            }
+            "items" => schema.items.as_deref(),
+            composition => {
+                index += 1;
+                let members = match composition {
+                    "allOf" => &schema.all_of,
+                    "oneOf" => &schema.one_of,
+                    _ => &schema.any_of,
+                };
+                path[index]
+                    .parse::<usize>()
+                    .ok()
+                    .and_then(|member| members.as_ref()?.get(member))
+            }
+        };
+        let Some(next) = next else {
+            return true;
+        };
+        schema = next;
+        index += 1;
+    }
+    false
 }
 
 /// Resolve response-schema `$ref`s that point into another operation response
@@ -3306,8 +3481,8 @@ components:
             Some("string")
         );
         // A pointer whose text names `properties` is copied even where it ends
-        // on a composition member, as Fern's importer copies the Vonage
-        // Conversation API's `…/channel/properties/from/oneOf/0`, and the copy
+        // on a composition member, as Fern's importer copies the hand-written
+        // `ref-pointer-walk` fixture's `…/Route/properties/from/oneOf/0`, and the copy
         // remembers the pointer it came from.
         let member = &revision.properties["member"];
         assert!(member.reference.is_none());
@@ -3340,6 +3515,222 @@ components:
         let next = &doc.components.schemas["Loop"].properties["next"];
         assert!(next.reference.is_none());
         assert!(next.ty.is_none() && next.properties.is_empty() && next.one_of.is_none());
+    }
+
+    #[test]
+    fn a_properties_pointer_walks_through_defs() {
+        let mut doc = parse(
+            r##"
+openapi: 3.1.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Named:
+      type: object
+      $defs:
+        top: { type: integer }
+      properties:
+        label:
+          type: string
+          $defs:
+            inner: { type: string }
+        odd:
+          type: string
+          $defs: true
+    Holder:
+      type: object
+      properties:
+        names:
+          type: array
+          items: { $ref: '#/components/schemas/Named/properties/label/$defs/inner' }
+        inner: { $ref: '#/components/schemas/Named/properties/label/$defs/inner' }
+        missing: { $ref: '#/components/schemas/Named/properties/label/$defs/absent' }
+        top: { $ref: '#/components/schemas/Named/$defs/top' }
+"##,
+        );
+        // A `$defs` value that is no map defines nothing rather than failing.
+        assert!(doc.components.schemas["Named"].properties["odd"]
+            .defs
+            .is_empty());
+        normalize_schema_pointer_refs(&mut doc);
+        let holder = &doc.components.schemas["Holder"];
+        // Through `properties`, the walk enters a `$defs` member and copies it,
+        // wherever the pointer stands.
+        for copied in [
+            holder.properties["names"].items.as_deref().unwrap(),
+            &holder.properties["inner"],
+        ] {
+            assert!(copied.reference.is_none());
+            assert_eq!(
+                copied.ty.as_ref().and_then(TypeField::primary),
+                Some("string")
+            );
+        }
+        // A missing member, and a pointer without the word, are left alone.
+        for kept in ["missing", "top"] {
+            assert!(holder.properties[kept].reference.is_some(), "{kept}");
+        }
+    }
+
+    #[test]
+    fn a_nested_pointer_naming_nothing_is_unknown_except_as_an_array_item() {
+        let mut doc = parse(
+            r##"
+openapi: 3.1.0
+info: { title: T }
+paths:
+  /holder:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Named/properties/absent' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Named/properties/absent' }
+components:
+  schemas:
+    Named:
+      type: object
+      properties:
+        label: { type: string }
+    Choice:
+      oneOf:
+        - type: object
+          properties:
+            code: { type: integer }
+    Holder:
+      type: object
+      properties:
+        ghost: { $ref: '#/components/schemas/Named/properties/absent', description: gone }
+        itemless: { $ref: '#/components/schemas/Named/items' }
+        names:
+          type: array
+          items: { $ref: '#/components/schemas/Named/properties/absent' }
+        byName:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/Named/properties/absent' }
+        merged:
+          description: kept
+          allOf:
+            - $ref: '#/components/schemas/Named/properties/absent'
+        beside:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/Named/properties/absent'
+        outOfRange: { $ref: '#/components/schemas/Choice/oneOf/3/properties/code' }
+        badIndex: { $ref: '#/components/schemas/Choice/oneOf/x/properties/code' }
+        noComposition: { $ref: '#/components/schemas/Named/anyOf/0/properties/code' }
+        member: { $ref: '#/components/schemas/Choice/oneOf/0' }
+        defs: { $ref: '#/components/schemas/Named/$defs/thing' }
+        trailing: { $ref: '#/components/schemas/Named/properties' }
+        whole: { $ref: '#/components/schemas/Named' }
+        undeclared: { $ref: '#/components/schemas/Missing/properties/absent' }
+        found: { $ref: '#/components/schemas/Choice/oneOf/0/properties/code' }
+        foreign: { $ref: '#/definitions/Named/properties/absent' }
+"##,
+        );
+        // The copy pass runs first, as the loader runs it, so `found` resolves.
+        normalize_schema_pointer_refs(&mut doc);
+        normalize_unresolved_schema_pointers(&mut doc);
+        let holder = &doc.components.schemas["Holder"];
+        for unknown in [
+            "ghost",
+            "itemless",
+            "outOfRange",
+            "badIndex",
+            "noComposition",
+        ] {
+            let node = &holder.properties[unknown];
+            assert!(
+                node.reference.is_none() && node.unresolved_reference,
+                "{unknown}"
+            );
+        }
+        assert_eq!(
+            holder.properties["ghost"].description.as_deref(),
+            Some("gone")
+        );
+        let value = match &holder.properties["byName"].additional_properties {
+            Some(AdditionalProperties::Schema(value)) => value,
+            other => panic!("{other:?}"),
+        };
+        assert!(value.reference.is_none() && value.unresolved_reference);
+        // A lone member is its holder's schema, so the holder is unknown and
+        // keeps its own annotations; beside a `type` it is only a member.
+        let merged = &holder.properties["merged"];
+        assert!(merged.all_of.is_none() && merged.unresolved_reference);
+        assert_eq!(merged.description.as_deref(), Some("kept"));
+        let beside = &holder.properties["beside"];
+        assert!(!beside.unresolved_reference);
+        let member = &beside.all_of.as_ref().unwrap()[0];
+        assert!(member.reference.is_none() && member.unresolved_reference);
+        // An array's element keeps its pointer for the element lowering.
+        let names = holder.properties["names"].items.as_deref().unwrap();
+        assert!(names.reference.is_some() && !names.unresolved_reference);
+        // The lowering's unknown pointers, a whole component, an undeclared
+        // head and a pointer outside the components are not this pass's.
+        for kept in [
+            "member",
+            "defs",
+            "trailing",
+            "whole",
+            "undeclared",
+            "foreign",
+        ] {
+            let node = &holder.properties[kept];
+            assert!(
+                node.reference.is_some() && !node.unresolved_reference,
+                "{kept}"
+            );
+        }
+        assert!(
+            holder.properties["found"].reference.is_none()
+                && !holder.properties["found"].unresolved_reference
+        );
+        // Request and response bodies are degraded as any other position is.
+        let operation = doc.paths["/holder"].post.as_ref().unwrap();
+        let body = operation.request_body.as_ref().unwrap().content["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        assert!(body.reference.is_none() && body.unresolved_reference);
+        let response = operation.responses["200"].content["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        assert!(response.reference.is_none() && response.unresolved_reference);
+    }
+
+    #[test]
+    fn a_document_whose_pointers_all_resolve_is_untouched() {
+        let mut doc = parse(
+            r##"
+openapi: 3.1.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Named:
+      type: object
+      properties:
+        label: { type: string }
+    Holder:
+      type: object
+      properties:
+        whole: { $ref: '#/components/schemas/Named' }
+"##,
+        );
+        normalize_unresolved_schema_pointers(&mut doc);
+        let whole = &doc.components.schemas["Holder"].properties["whole"];
+        assert_eq!(
+            whole.reference.as_deref(),
+            Some("#/components/schemas/Named")
+        );
     }
 
     #[test]

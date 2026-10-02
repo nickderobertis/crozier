@@ -1,6 +1,6 @@
 fern_cli_version = "5.67.1"
 fern_python_sdk_version = "5.20.0"
-digest = "8025584076c1c9b83212d79a796e61147be2382679558249bc28e99caf5fb750"
+digest = "bd0514468ae522904086a4059ee3e7227c0f28ca215e3117ed7fe3456244418f"
 
 [[covers]]
 key = "ref-pointer-composition-index"
