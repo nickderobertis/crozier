@@ -1519,12 +1519,10 @@ pub(crate) fn refusal_parameter_name(node: &serde_yaml_ng::Value) -> Option<&str
 /// Declared SDK type name read off the raw source node, for the refusals
 /// classified before the typed parse; emission reads [`Schema::declared_type_name`].
 pub(crate) fn refusal_type_name(node: &serde_yaml_ng::Value) -> Option<&str> {
-    node.get("x-crozier-type-name")
-        .and_then(serde_yaml_ng::Value::as_str)
-        .or_else(|| {
-            node.get("x-fern-type-name")
-                .and_then(serde_yaml_ng::Value::as_str)
-        })
+    ["x-crozier-type-name", "x-fern-type-name"]
+        .into_iter()
+        .filter_map(|key| node.get(key).and_then(serde_yaml_ng::Value::as_str))
+        .find(|name| !name.trim().is_empty())
 }
 
 /// Read a source node's ignore flag through the ordinary schema accessor,
@@ -2198,43 +2196,44 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
 /// Rename each component schema that declares an SDK type name
 /// (`x-crozier-type-name`, or its Fern spelling `x-fern-type-name`) to that
 /// name, rewriting every reference to it, so the class, its module and every
-/// annotation naming it follow the declaration as Fern's do: the refusal
-/// registry's `schema-declared-type-name` finding declares `Gadget` on `Widget`
-/// and `Thing` on `123456`, and Fern generates `types/gadget.py`'s `Gadget` and
-/// `types/thing.py`'s `Thing`. A declared name another component already holds
-/// is left alone, as is one a `$ref` pointer could not spell.
+/// annotation naming it follow the declaration as Fern's do: the authored
+/// probe `crozier-350-declared-type-name` declares `Gadget` on `Widget` and
+/// `Thing` on `123456`, and Fern generates `types/gadget.py`'s `Gadget` and
+/// `types/thing.py`'s `Thing`.
+///
+/// A declared name another component also resolves to merges the two into one
+/// type, as Fern does; `name_refusals` refuses that merge unless the schemas are
+/// the same. A `/` or `~` in a declared name is a word break to Fern
+/// (`Gad/get` is `GadGet`) and would split a `$ref` pointer here, so the key
+/// spells it as a space, which [`crate::naming::class_name`] reads the same way.
 fn normalize_declared_type_names(doc: &mut OpenApi) {
     let renames: IndexMap<String, String> = doc
         .components
         .schemas
         .iter()
         .filter_map(|(name, schema)| {
-            let declared = schema.declared_type_name()?;
-            (declared != name).then(|| (name.clone(), declared.to_string()))
+            let declared = schema.declared_type_name()?.replace(['/', '~'], " ");
+            (declared != *name).then(|| (name.clone(), declared))
         })
-        .filter(|(_, declared)| {
-            !declared.contains(['/', '~']) && !doc.components.schemas.contains_key(declared)
-        })
-        .collect();
-    let mut targets = std::collections::BTreeSet::new();
-    let renames = renames
-        .into_iter()
-        .filter(|(_, declared)| targets.insert(declared.clone()))
         .collect();
     rename_component_schemas(doc, &renames);
 }
 
 /// Rename component schemas by `renames` (old key to new key), keeping their
 /// document order, and point every `$ref` and discriminator mapping that named
-/// an old key at its new one.
+/// an old key at its new one. Two schemas renamed to one key are one type, kept
+/// where and as the first of them stands.
 fn rename_component_schemas(doc: &mut OpenApi, renames: &IndexMap<String, String>) {
     if renames.is_empty() {
         return;
     }
-    doc.components.schemas = std::mem::take(&mut doc.components.schemas)
-        .into_iter()
-        .map(|(name, schema)| (renames.get(&name).cloned().unwrap_or(name), schema))
-        .collect();
+    let mut schemas = IndexMap::new();
+    for (name, schema) in std::mem::take(&mut doc.components.schemas) {
+        schemas
+            .entry(renames.get(&name).cloned().unwrap_or(name))
+            .or_insert(schema);
+    }
+    doc.components.schemas = schemas;
     let rewrite = |reference: &mut String| {
         let Some(name) = referenced_component_schema(reference) else {
             return;
@@ -3031,7 +3030,7 @@ components:
       x-fern-type-name: Same
       type: object
     Slashed:
-      x-fern-type-name: a/b
+      x-fern-type-name: a/b~c
       type: object
     First:
       x-fern-type-name: Twin
@@ -3042,13 +3041,14 @@ components:
 ",
         );
         normalize_declared_type_names(&mut doc);
-        // Renamed in place; a name another component holds, the key's own
-        // name, one a pointer cannot spell and a second claim on one name are
-        // all left alone.
+        // Renamed in place. A name another component resolves to is one type,
+        // kept where and as the first stands (`name_refusals` refuses it unless
+        // the schemas agree), and a pointer-splitting `/` or `~` is a space.
         assert_eq!(
             schema_keys(&doc),
-            ["Gadget", "Holder", "Taken", "Same", "Slashed", "Twin", "Second"]
+            ["Gadget", "Holder", "Same", "a b c", "Twin"]
         );
+        assert!(doc.components.schemas["Holder"].discriminator.is_some());
         let holder = &doc.components.schemas["Holder"];
         assert_eq!(
             holder.properties["widgets"]

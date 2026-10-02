@@ -1,3 +1,0 @@
-Warnings for generators.yml:
-	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-All checks passed

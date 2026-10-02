@@ -1347,34 +1347,36 @@ Four of them shape the client tree and its methods, and corpus row 108
 
 ### Three naming shapes measured on probes, not real specifications
 
-Three shapes are byte-matched against trees pinned Fern generated from
-manager-authored probes, recorded as `generates` findings of the refusal registry
-([`fern-refusals/README.md`](fern-refusals/README.md)) with each tree under
-`docs/openapi-surface/fern-refusals/finding-trees/`. That tree is what
-`generates_findings_byte_match_their_fern_trees` in `tests/e2e.rs` compares
-crozier against, in both modes. No real-specification search has been run for
-any of them and none is a hand-written fixture, so their evidence tier is
-undecided. They are not coverage.
+Three shapes are decided by manager-authored probes measured at the pin. Each
+is a case directory under `docs/openapi-surface/authored-probes/`, prefixed
+with its ticket number. A case holds the probe, Fern's `fern.log` and, where
+Fern generated, its comment-stripped `fern-expected/` tree.
+`naming_authored_probes_match_pinned_fern` in `tests/e2e.rs` holds crozier, in
+both modes, to the tree or to a refusal. No real-specification search has been
+run for any of the three, and none is a hand-written fixture, so their evidence
+tier is undecided and they are not coverage.
 
-- **`schema-declared-type-name`.** A component schema's
+- **Declared type names (#350).** A component schema's
   `x-fern-type-name`/`x-crozier-type-name` names its class, its module and every
-  reference to it: Fern generates `Widget` with `x-fern-type-name: Gadget` as
-  `types/gadget.py`'s `Gadget` and `123456` with `Thing` as `Thing`, so the
+  reference to it. Fern generates `Widget` with `x-fern-type-name: Gadget` as
+  `types/gadget.py`'s `Gadget`, and `123456` with `Thing` as `Thing`, so a
   declaration also rescues a key `type-name-not-letter-led` would refuse.
   `normalize_declared_type_names` renames the component before lowering. The
   canonical spelling alone produces the same tree, and wins when both appear
-  (`canonical_type_name_hint_names_components_like_fern_spelling`). A declared
-  name another component already holds is left unrenamed: Fern merges the two
-  and then fails `fern check` on the merged schema's example, which no class
-  records yet.
-- **`model-property-construct`.** Fern's tree carries no field that shadows
-  pydantic's `BaseModel.construct()`: a `construct` property is `construct_`
+  (`canonical_type_name_hint_names_components_like_fern_spelling`). A `/` or `~`
+  in the name breaks a word (`Gad/get` is `GadGet`). Two components resolving to
+  one name are one type to Fern. It generates the merge of identical schemas
+  (`-shared`) and refuses differing ones, whether both declare the name
+  (`-shared-differing`) or one already holds it as its key (`-taken`). crozier
+  refuses those under `type-name-collision`.
+- **`construct` properties (#354).** Fern's tree carries no field that shadows
+  pydantic's `BaseModel.construct()`. A `construct` property is `construct_`
   under `FieldMetadata(alias="construct")` and `pydantic.Field(alias="construct")`,
   as `copy`, `json` and `validate` already were, so `model_field_name` protects it.
-- **`operation-id-tag-only`.** A lone `Search_` under the tag `Search` is the
-  root client's `search` method, as `search` under `search` is, where splitting
-  `group_method` would leave an empty method that `ruff` refuses. With a second
-  operation of that tag, the root method collides with the sub-client, and
+- **Tag-only operationIds (#357).** A lone `Search_` under the tag `Search` is the
+  root client's `search` method, as `search` under `search` is. Splitting
+  `group_method` would leave an empty method there, which `ruff` refuses. With a
+  second operation of that tag, the root method collides with the sub-client and
   `generator-lint-failure` still refuses it.
 
 ## Literal enums

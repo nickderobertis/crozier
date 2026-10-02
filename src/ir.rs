@@ -7466,7 +7466,7 @@ fn operation_id_tag_prefix<'a>(id: &'a str, tag: &str) -> Option<(&'a str, &'a s
 /// (`Search_` under `Search`) is read as the tag's own spelling: Fern hoists it
 /// to the root client as `search`, exactly as it does an operationId that spells
 /// its tag, where the `group_method` split would leave an empty method. Measured
-/// on the refusal registry's `operation-id-tag-only` finding; beside another
+/// on the authored probe `crozier-357-tag-only-operation-id`; beside another
 /// operation of that tag the root method collides with the sub-client, which
 /// `generator-lint-failure` refuses.
 fn tag_spelling_id<'a>(op: &Operation, id: &'a str) -> &'a str {
@@ -14004,7 +14004,7 @@ mod tests {
     #[test]
     fn a_tag_only_operationid_is_a_root_method_named_for_the_tag() {
         use super::{endpoint_method_name, endpoint_module, module_title};
-        // The refusal registry's `operation-id-tag-only` finding: Fern hoists a
+        // The authored probe `crozier-357-tag-only-operation-id`: Fern hoists a
         // lone `Search_` under `Search` to the root client as `search`, where the
         // `group_method` split would leave an empty method in a `search` client.
         let doc: OpenApi = serde_json::from_value(serde_json::json!({
