@@ -1,0 +1,6 @@
+command: npx --yes fern-api@5.67.1 check
+exit=0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Enum name override 2fa is not a valid name. Falling back on red.
+All checks passed

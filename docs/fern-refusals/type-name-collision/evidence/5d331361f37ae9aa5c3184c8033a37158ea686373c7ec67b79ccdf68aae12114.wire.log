@@ -1,0 +1,3 @@
+baseline=2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+exit=0
+The duplicated operationId in separate Event Controller and Procedure Controller groups sends both declared PUT routes and parses both 204 responses as None; the type-check bar still fails with 72 errors.

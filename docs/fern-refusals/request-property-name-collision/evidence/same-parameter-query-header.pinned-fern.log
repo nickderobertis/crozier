@@ -1,0 +1,10 @@
+command: npx --yes fern-api@5.67.1 check
+exit=1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: openapi/openapi.yml -> paths -> /repos -> patch
+        issue: Parameters query parameter 'name', header parameter 'name' all normalize to 'name' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+Found 1 error and 0 warnings in <n> seconds.

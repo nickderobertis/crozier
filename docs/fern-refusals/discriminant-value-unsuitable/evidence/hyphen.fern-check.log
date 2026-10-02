@@ -1,0 +1,10 @@
+command: npx --yes fern-api@5.67.1 check
+exit=1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> Asset
+        issue: Discriminant value kind-name is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+Found 1 error and 0 warnings in <n> seconds.

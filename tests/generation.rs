@@ -13650,3 +13650,43 @@ fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
     assert!(err.to_string().contains("could not write"), "{err}");
     assert!(err.to_string().contains("sdk"), "{err}");
 }
+
+#[test]
+fn render_files_refuses_names_and_recovers_with_nameable_enum_values() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let output = dir.path().join("unused");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/enum-value-unnameable/probe.yml"),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let args = || GenerateArgs {
+            spec: spec.clone(),
+            output: output.clone(),
+            package_name: Some("probe".to_string()),
+            project_name: None,
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            fern_strict: strict,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+            layout: crozier::settings::Layout::Packaged,
+        };
+        std::fs::write(&spec, &probe).unwrap();
+        let error = render_files(args()).unwrap_err().to_string();
+        assert!(error.contains("enum-value-unnameable"), "{error}");
+        assert!(error.contains("10080"), "{error}");
+        assert_eq!(error.contains("fern-strict"), strict, "{error}");
+        assert!(!output.exists());
+        std::fs::write(
+            &spec,
+            probe.replace("10080", "9999").replace("20160", "9000"),
+        )
+        .unwrap();
+        let files = render_files(args()).unwrap();
+        assert!(files.iter().any(|file| file.contents.contains("9999")));
+        assert!(!output.exists());
+    }
+}

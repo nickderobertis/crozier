@@ -1,0 +1,10 @@
+exit=1
+src/probe/types/user_info_pregnancy.py:13: error: Attempted to reuse member name "_" in Enum definition "UserInfoPregnancy"  [misc]
+src/probe/types/user_info_pregnancy.py:14: error: Attempted to reuse member name "_" in Enum definition "UserInfoPregnancy"  [misc]
+src/probe/types/user_info_pregnancy.py:15: error: Attempted to reuse member name "_" in Enum definition "UserInfoPregnancy"  [misc]
+src/probe/types/user_info_gender.py:12: error: Attempted to reuse member name "_" in Enum definition "UserInfoGender"  [misc]
+src/probe/types/user_info_activity.py:12: error: Attempted to reuse member name "_" in Enum definition "UserInfoActivity"  [misc]
+src/probe/types/user_info_activity.py:13: error: Attempted to reuse member name "_" in Enum definition "UserInfoActivity"  [misc]
+src/probe/types/user_info_activity.py:14: error: Attempted to reuse member name "_" in Enum definition "UserInfoActivity"  [misc]
+src/probe/types/user_info_activity.py:15: error: Attempted to reuse member name "_" in Enum definition "UserInfoActivity"  [misc]
+Found 8 errors in 3 files (checked 45 source files)

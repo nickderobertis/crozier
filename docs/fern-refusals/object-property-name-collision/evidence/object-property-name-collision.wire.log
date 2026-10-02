@@ -1,0 +1,2 @@
+exit=0
+Two sha1 declarations in FileMini and FileConflict become one model field; one sha1 parses and serializes
