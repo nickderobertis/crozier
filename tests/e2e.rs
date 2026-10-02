@@ -1178,6 +1178,38 @@ fn witness_supply_probes_match_fern_measurements() {
     );
 }
 
+/// The array headers pinned Fern generates from (issue #353): a method argument,
+/// a required promoted client field, and a promoted header with a string
+/// `default`. Each is an authored probe whose committed Fern tree crozier must
+/// reproduce byte for byte; the shape Fern refuses is the `example-type-mismatch`
+/// class's.
+#[test]
+fn header_array_authored_probes_match_fern() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/authored-probes");
+    let mut cases: Vec<PathBuf> = std::fs::read_dir(&root)
+        .expect("the authored probes")
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.file_name()
+                .is_some_and(|name| name.to_string_lossy().starts_with("353-"))
+        })
+        .collect();
+    cases.sort();
+    assert_eq!(cases.len(), 7, "{cases:?}");
+    let mut failures = Vec::new();
+    for case in &cases {
+        let name = case.file_name().unwrap().to_string_lossy().into_owned();
+        failures.extend(filtered_tree_failures(
+            &name,
+            &case.join("openapi.yml"),
+            &case.join("fern-expected"),
+            &[],
+        ));
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
 #[test]
 fn refused_probe_inputs_report_the_unsupported_shape() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
