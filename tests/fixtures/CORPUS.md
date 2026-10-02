@@ -1280,8 +1280,9 @@ repository of the `Vonage` or `Nexmo` organisations carries the Conversation API
 description, and those that carry other OpenAPI documents grant nothing for this
 one. Its committed source, golden, `tests/e2e.rs` corpus and test, and `just
 test-corpus-match` line are removed. Every census selector it alone declared backs
-no feature, and every handling site its golden reached is still reached by a
-remaining golden or a hand-written fixture; the record is
+no feature, and every `golden-reach.tsv` site it reached is still reached by a
+remaining golden. The four behaviours only its golden executed are now carried by
+the hand-written `ref-pointer-walk` fixture, which is never a corpus row. The record is
 `docs/openapi-surface/withdrawn-witnesses/nexmo-conversation.md`.
 
 OneVoice's paths are all relative `$ref`s into sibling files, which Fern leaves
