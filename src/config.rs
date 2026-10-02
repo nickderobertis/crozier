@@ -66,6 +66,14 @@ pub struct GenerateConfig {
     /// after construction; [`GenerateConfig::new`] starts from the default
     /// [`Layout::Packaged`](crate::settings::Layout::Packaged).
     pub layout: crate::settings::Layout,
+    /// How string enums are generated (Fern's `pydantic_config.enum_type`). Set
+    /// after construction; [`GenerateConfig::new`] starts from the default
+    /// [`EnumType::PythonEnums`](crate::settings::EnumType::PythonEnums).
+    pub enum_type: crate::settings::EnumType,
+    /// The client's default maximum number of retries (Fern's
+    /// `default_max_retries`). Set after construction; [`GenerateConfig::new`]
+    /// starts from [`DEFAULT_MAX_RETRIES`](crate::settings::DEFAULT_MAX_RETRIES).
+    pub default_max_retries: u32,
 }
 
 impl GenerateConfig {
@@ -96,6 +104,8 @@ impl GenerateConfig {
             client_class_name,
             extra_fields,
             layout: crate::settings::Layout::default(),
+            enum_type: crate::settings::EnumType::default(),
+            default_max_retries: crate::settings::DEFAULT_MAX_RETRIES,
         })
     }
 }

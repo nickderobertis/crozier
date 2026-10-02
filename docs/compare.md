@@ -102,6 +102,8 @@ config` shows the resolved `reference.command` with its source.
   | `CROZIER_REFERENCE_AUDIENCES` | The audiences, comma-separated (empty for none). |
   | `CROZIER_REFERENCE_AUDIENCE_STRICT` | `true` or `false`. |
   | `CROZIER_REFERENCE_EXTRA_FIELDS` | `allow`, `ignore` or `forbid`. |
+  | `CROZIER_REFERENCE_ENUM_TYPE` | `python-enums` or `literals`. |
+  | `CROZIER_REFERENCE_DEFAULT_MAX_RETRIES` | A non-negative integer (`2` unless set). |
   | `CROZIER_REFERENCE_LAYOUT` | `packaged` or `flat`. |
 
   Every value is the resolved one, crozier's defaults included (for example

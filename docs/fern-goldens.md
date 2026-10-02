@@ -67,9 +67,9 @@ version supplied from a workflow input:
 
 Both therefore emit one `generators.yml` naming `fernapi/fern-python-sdk` at the
 resolved version, and both apply the corpus-wide `pydantic_config.enum_type:
-python_enums` that `generate-fern-fixture.sh` writes unconditionally for every
-fixture (crozier renders string enums as real `enum.Enum` classes; see
-[`matching.md`](matching.md)). A fixture's own non-default settings — audiences,
+python_enums` that `generate-fern-fixture.sh` writes for every `expected/` golden
+(crozier's default renders string enums as real `enum.Enum` classes). Only its `--enum-type literals` mode, which
+produces the [literal-enum goldens](#literal-enum-goldens), leaves it unset. A fixture's own non-default settings — audiences,
 `client_class_name`, `extra_fields` — reach the same block from
 `fern-generator-config.txt`, so a golden generated locally is the artifact the
 hosted route would have published.
@@ -241,6 +241,44 @@ golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
 - **A fetched-spec flat test needs its `just test-corpus-match` line**, like its
   packaged sibling. `every_registered_corpus_is_wired_into_the_gate` fails without
   it.
+
+### Literal-enum goldens
+
+A targeted set of registered fixtures (`KINDS` in
+`tests/e2e/overlay_goldens.rs`, chosen so that together they reach every enum shape
+crozier generates: named, inline-property, parameter, sanitized-name, optional
+and nullable enums) also carries `expected-literals/`: Fern's output for the
+same spec, pins and settings with
+`pydantic_config.enum_type` left unset (fern-python-sdk's `literals` default),
+which crozier reproduces with `--enum-type literals`.
+
+- **It is an overlay of `expected/`.** Fern's literals output differs from the
+  python-enums tree only where an enum appears, so the directory holds just the
+  files whose bytes differ, plus `.crozier-overlay.json`: the Fern
+  versions, and the `expected/` files Fern does not emit in that mode
+  (`core/enum.py`). The gate in `tests/e2e/overlay_goldens.rs` rebuilds the full tree
+  as `expected/` minus those files plus the overlay, and compares it with the
+  corpus's own residuals. The gate also fails when a listed fixture lacks the
+  overlay, when an overlay sits outside the list, and when the overlay's Fern
+  version differs from `expected/`'s provenance. Add a fixture to the set only
+  for an enum shape the set does not yet reach.
+- **Generate it locally**, after `expected/` is current:
+  `scripts/fern-overlay-goldens.sh [--jobs N] --enum-type literals <fixture>...` runs
+  `scripts/generate-fern-fixture.sh --enum-type literals` per fixture with the
+  spec `expected/` was generated from (the vendored `openapi.yml`, the committed
+  corpus source, or `just fetch-corpus` for a row with pinned remote refs), the
+  version its provenance records, and its `fern-generator-config.txt` row. It
+  needs what Route A needs and logs to `.local/fern-overlay/`.
+- **Route B and the schedule do not refresh it.** After a Fern upgrade or a
+  regenerated `expected/`, rerun the script for the affected fixtures; the
+  version check above names each stale one.
+- **Other settings use the same mechanism.** `expected-default-max-retries/` is
+  Fern with `default_max_retries: 0` for crozier's `default-max-retries: 0`, on
+  `enum-query-param` and `openfigi.com`
+  (`scripts/fern-overlay-goldens.sh --default-max-retries 0 <fixture>...`). It
+  reaches only the root `client.py` and `core/client_wrapper.py`. A new setting
+  gets a `KINDS` entry and the fewest fixtures that reach what it changes, never
+  a copy of the corpus.
 
 ### Moving a remote-`$ref` pin forward
 

@@ -49,7 +49,7 @@ editors complete and validate it against crozier's own config schema:
 
 ![crozier --help: the top-level usage listing the generate, init, config and schema subcommands](docs/screenshots/help-main.svg)
 
-![crozier generate --help: every flag — spec, output, package-name, project-name, client-class-name, audience, config, audience-strict, no-config, extra-fields and layout](docs/screenshots/help-generate.svg)
+![crozier generate --help: every flag — spec, output, package-name, project-name, client-class-name, audience, config, audience-strict, no-config, extra-fields, enum-type, default-max-retries and layout](docs/screenshots/help-generate.svg)
 
 </details>
 

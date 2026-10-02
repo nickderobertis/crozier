@@ -24,6 +24,8 @@ fn render(spec: &str) -> HashMap<String, String> {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
@@ -72,6 +74,8 @@ fn render_json(spec: &str) -> HashMap<String, String> {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
@@ -94,6 +98,8 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
@@ -592,6 +598,141 @@ fn string_enum_renders_as_enum_class() {
     );
 }
 
+/// A component enum (with a description and a value needing escapes), a
+/// hoisted inline-property enum, an enum header (a component, since Fern
+/// refuses an inline enum header schema), and a request example that names enum
+/// values.
+const LITERAL_ENUM_SPEC: &str = r#"openapi: 3.0.0
+info:
+  title: Pets
+paths:
+  /pets:
+    post:
+      operationId: createPet
+      tags: [Pets]
+      parameters:
+        - name: X-Mode
+          in: header
+          required: true
+          schema: { $ref: '#/components/schemas/Mode' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Pet' }
+            example: { status: active, size: large }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pet' }
+components:
+  schemas:
+    Mode:
+      type: string
+      enum: [fast, slow]
+    Status:
+      type: string
+      description: The pet's status.
+      enum: [active, 'say "hi" \ there']
+    Pet:
+      type: object
+      required: [status, size]
+      properties:
+        status: { $ref: '#/components/schemas/Status' }
+        size:
+          type: string
+          enum: [small, large]
+"#;
+
+fn render_enum_type(enum_type: crozier::settings::EnumType) -> HashMap<String, String> {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(&path, LITERAL_ENUM_SPEC).unwrap();
+    render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some("acme".to_string()),
+        project_name: Some("acme".to_string()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        fern_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+        layout: crozier::settings::Layout::Packaged,
+    })
+    .expect("render succeeds")
+    .into_iter()
+    .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+    .collect()
+}
+
+#[test]
+fn literal_enums_render_as_open_literal_unions_throughout_the_sdk() {
+    let files = render_enum_type(crozier::settings::EnumType::Literals);
+    // The module is one alias over the escaped values (which ruff requotes), with
+    // no description, no class and no `core` import.
+    let status = &files["src/acme/types/status.py"];
+    assert!(
+        status.ends_with(
+            "import typing\n\nStatus = typing.Union[typing.Literal[\"active\", 'say \"hi\" \\\\ there'], typing.Any]\n"
+        ),
+        "{status}"
+    );
+    assert!(!status.contains("pet's status"), "{status}");
+    assert!(
+        files["src/acme/types/pet_size.py"]
+            .contains("PetSize = typing.Union[typing.Literal[\"small\", \"large\"], typing.Any]"),
+        "{}",
+        files["src/acme/types/pet_size.py"]
+    );
+    // Fern ships the StrEnum base only for enum classes.
+    assert!(!files.contains_key("src/acme/core/enum.py"));
+    // A literal header is a plain string.
+    let raw = &files["src/acme/pets/raw_client.py"];
+    assert!(
+        raw.contains("\"X-Mode\": str(mode) if mode is not None else None"),
+        "{raw}"
+    );
+    // Examples pass strings — the header's first value, the request example's
+    // values — and import no enum.
+    let client = &files["src/acme/pets/client.py"];
+    for expected in ["mode=\"fast\"", "status=\"active\"", "size=\"large\""] {
+        assert!(client.contains(expected), "{expected}: {client}");
+    }
+    // The example's own imports name only the client, never an enum.
+    assert!(
+        client.contains("        from acme import AcmeApi\n"),
+        "{client}"
+    );
+    assert!(!client.contains("from acme.pets import"), "{client}");
+}
+
+#[test]
+fn python_enums_stay_the_default_class_form() {
+    let files = render_enum_type(crozier::settings::EnumType::PythonEnums);
+    assert!(files["src/acme/types/status.py"].contains("class Status(enum.StrEnum):"));
+    assert!(files.contains_key("src/acme/core/enum.py"));
+    // A component enum header is typed by its class and sent as its string.
+    let raw = &files["src/acme/pets/raw_client.py"];
+    assert!(raw.contains("mode: Mode,"), "{raw}");
+    assert!(
+        raw.contains("\"X-Mode\": str(mode) if mode is not None else None"),
+        "{raw}"
+    );
+    let client = &files["src/acme/pets/client.py"];
+    for expected in [
+        "mode=Mode.FAST",
+        "status=Status.ACTIVE",
+        "size=PetSize.LARGE",
+    ] {
+        assert!(client.contains(expected), "{expected}: {client}");
+    }
+}
+
 #[test]
 fn version_uses_project_name() {
     let files = render(RICH_SPEC);
@@ -617,6 +758,8 @@ fn generate_writes_files_to_disk() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("generate succeeds");
@@ -643,6 +786,8 @@ fn default_package_name_derives_from_title() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .unwrap();
@@ -1330,6 +1475,8 @@ fn empty_title_falls_back_to_client_package() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .unwrap();
@@ -1944,6 +2091,8 @@ fn api_key_scheme_without_name_is_rejected() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect_err("missing apiKey name must fail");
@@ -2009,6 +2158,8 @@ fn client_class_name_overrides_derived_root_client_name() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds")
@@ -2136,6 +2287,8 @@ fn render_with_audiences_mode(
         audience_strict: strict,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
@@ -6382,6 +6535,8 @@ fn default_package_name_sanitizes_title_punctuation_in_process() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Packaged,
     })
     .expect("render succeeds");
@@ -13185,6 +13340,8 @@ fn render_layout(
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout,
     })
     .expect("render succeeds")
@@ -13340,6 +13497,8 @@ fn generate_flat(out: &Path) -> Vec<crozier::GeneratedFile> {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Flat,
     })
     .expect("flat generate succeeds")
@@ -13408,6 +13567,8 @@ fn flat_regeneration_surfaces_a_tree_it_cannot_clear() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Flat,
     })
     .expect_err("an unclearable previous generation fails the run");
@@ -13457,6 +13618,8 @@ fn flat_readme_shield_names_the_organization_crozier_derives_from_the_package() 
             audience_strict: false,
             fern_strict: false,
             extra_fields: crozier::settings::ExtraFields::Allow,
+            enum_type: crozier::settings::EnumType::PythonEnums,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
             layout,
         })
         .expect("render succeeds")
@@ -13530,6 +13693,8 @@ fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
         audience_strict: false,
         fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
         layout: crozier::settings::Layout::Flat,
     });
     std::fs::set_permissions(&out, std::fs::Permissions::from_mode(0o755)).unwrap();
@@ -13559,6 +13724,8 @@ fn render_files_refuses_names_and_recovers_with_nameable_enum_values() {
             audience_strict: false,
             fern_strict: strict,
             extra_fields: crozier::settings::ExtraFields::Allow,
+            enum_type: crozier::settings::EnumType::PythonEnums,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
             layout: crozier::settings::Layout::Packaged,
         };
         std::fs::write(&spec, &probe).unwrap();

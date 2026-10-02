@@ -10,7 +10,13 @@
 # `--preview` — and installs it as the fixture's `expected-flat/` golden. A flat
 # golden must be declared in tests/fixtures/flat-goldens.txt. String enums
 # render as real `enum.Enum` classes (`pydantic_config.enum_type: python_enums`) to
-# match crozier — see docs/matching.md.
+# match crozier's default — see docs/matching.md. `--enum-type literals` instead
+# leaves `enum_type` unset (Fern's open `Literal`-union default, crozier's
+# `enum-type: literals`) and installs `expected-literals/`: only the files that
+# differ from the fixture's committed `expected/`, plus a manifest naming the
+# files Fern omits (scripts/golden_overlay.py). `--default-max-retries N` sets
+# Fern's `default_max_retries: N` and installs `expected-default-max-retries/`,
+# the same kind of overlay, for crozier's `default-max-retries`.
 #
 # Fern's generator only runs under a container runtime (Docker/Podman), which is
 # not available in every environment — so this is a SEPARATE, opt-in script, not
@@ -22,9 +28,14 @@
 #   - fern CLI:  npm i -g fern-api    (invoked as `fern`)
 #   - crozier built (for the comment stripper):  cargo build --release
 #
-# Usage:  scripts/generate-fern-fixture.sh [--layout packaged|flat] [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH] [DEST_PATH]
+# Usage:  scripts/generate-fern-fixture.sh [--layout packaged|flat] [--enum-type python-enums|literals] [--default-max-retries N] [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH] [DEST_PATH]
 #   --layout            `packaged` (default) installs expected/; `flat` installs
 #                       expected-flat/ from Fern's local-file-system output.
+#   --enum-type         `python-enums` (default) or `literals`, which installs
+#                       the packaged expected-literals/ overlay of expected/.
+#   --default-max-retries  a non-negative integer for Fern's default_max_retries;
+#                       installs the packaged expected-default-max-retries/
+#                       overlay of expected/.
 #   FIXTURE             fixture dir under tests/fixtures/ (default: exhaustive).
 #                       e.g. auth-schemes, inline-request-response, integer-enums.
 #   FERN_PYTHON_VERSION defaults to the latest stable tag resolved by the same
@@ -44,14 +55,20 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 
 LAYOUT=packaged
-if [ "${1:-}" = "--layout" ]; then
+ENUM_TYPE=python-enums
+DEFAULT_MAX_RETRIES=""
+while [ "${1:-}" = "--layout" ] || [ "${1:-}" = "--enum-type" ] || [ "${1:-}" = "--default-max-retries" ]; do
   [ "$#" -ge 2 ] || {
-    echo "generate-fern-fixture: --layout needs a value: packaged or flat" >&2
+    echo "generate-fern-fixture: $1 needs a value" >&2
     exit 1
   }
-  LAYOUT="$2"
+  case "$1" in
+    --layout) LAYOUT="$2" ;;
+    --enum-type) ENUM_TYPE="$2" ;;
+    --default-max-retries) DEFAULT_MAX_RETRIES="$2" ;;
+  esac
   shift 2
-fi
+done
 case "$LAYOUT" in
   packaged) golden_name=expected ;;
   flat) golden_name=expected-flat ;;
@@ -60,6 +77,31 @@ case "$LAYOUT" in
     exit 1
     ;;
 esac
+case "$ENUM_TYPE" in
+  python-enums) ;;
+  literals)
+    [ "$LAYOUT" = packaged ] || {
+      echo "generate-fern-fixture: --enum-type literals only produces a packaged golden" >&2
+      exit 1
+    }
+    golden_name=expected-literals
+    ;;
+  *)
+    echo "generate-fern-fixture: invalid enum type '$ENUM_TYPE' — use python-enums or literals" >&2
+    exit 1
+    ;;
+esac
+if [ -n "$DEFAULT_MAX_RETRIES" ]; then
+  [[ "$DEFAULT_MAX_RETRIES" =~ ^(0|[1-9][0-9]*)$ ]] || {
+    echo "generate-fern-fixture: invalid default max retries '$DEFAULT_MAX_RETRIES' — use a non-negative integer" >&2
+    exit 1
+  }
+  [ "$LAYOUT" = packaged ] && [ "$ENUM_TYPE" = python-enums ] || {
+    echo "generate-fern-fixture: --default-max-retries only produces a packaged python-enums golden" >&2
+    exit 1
+  }
+  golden_name=expected-default-max-retries
+fi
 
 FIXTURE="${1:-exhaustive}"
 # FIXTURE is spliced into paths that are later `rm -rf`'d, so hold it to a single
@@ -255,6 +297,25 @@ extra_fields_block=""
 if [ -n "${EXTRA_FIELDS:-}" ]; then
   extra_fields_block="            extra_fields: ${EXTRA_FIELDS}"$'\n'
 fi
+# crozier renders string enums as real `enum.Enum` classes by default (issue #41
+# gap 2b), which is Fern's opt-in `python_enums` mode rather than its
+# out-of-the-box open-`Literal`-union default. Every `expected/` golden therefore
+# targets `python_enums`; keep this in lockstep with the generator so a
+# regeneration does not silently flip the enum shape. A literals golden leaves
+# `enum_type` unset, exactly as crozier's `enum-type: literals` documents.
+enum_type_block=""
+[ "$ENUM_TYPE" = literals ] || enum_type_block="            enum_type: python_enums"$'\n'
+pydantic_config_block=""
+if [ -n "$enum_type_block$extra_fields_block" ]; then
+  pydantic_config_block="          pydantic_config:"$'\n'"$enum_type_block$extra_fields_block"
+fi
+
+# Optional Fern `default_max_retries` (crozier's `default-max-retries`): only an
+# overlay golden sets it, so every other golden keeps Fern's default of 2.
+default_max_retries_block=""
+if [ -n "$DEFAULT_MAX_RETRIES" ]; then
+  default_max_retries_block="          default_max_retries: ${DEFAULT_MAX_RETRIES}"$'\n'
+fi
 
 cat > "$workdir/fern/generators.yml" <<YAML
 api:
@@ -265,15 +326,7 @@ ${audiences_block}    generators:
       - name: fernapi/fern-python-sdk
         version: ${FERN_PYTHON_VERSION}
         config:
-${client_class_name_block}          # crozier renders string enums as real \`enum.Enum\` classes (issue #41
-          # gap 2b), which is Fern's opt-in \`python_enums\` mode rather than its
-          # out-of-the-box open-\`Literal\`-union default. The whole golden corpus
-          # therefore targets \`python_enums\`; keep this in lockstep with the
-          # generator so a regeneration does not silently flip the enum shape.
-          pydantic_config:
-            enum_type: python_enums
-${extra_fields_block}
-        output:
+${client_class_name_block}${default_max_retries_block}${pydantic_config_block}        output:
           location: local-file-system
           path: ../generated/python
 YAML
@@ -411,7 +464,14 @@ done
 # vendored path writes one here. Any non-default generator knob is part of the
 # golden's identity and is recorded alongside the versions — the layout too, for
 # a flat golden (a packaged record stays exactly the form it always had).
-if [ -z "$SPEC_OVERRIDE" ]; then
+if [ "$ENUM_TYPE" = literals ]; then
+  # The overlay's manifest is its provenance whichever route supplied the spec.
+  provenance="{\"fern_python_sdk_version\": \"$FERN_PYTHON_VERSION\", \"fern_cli_version\": \"$FERN_CLI_VERSION\", \"enum_type\": \"literals\", \"base\": \"expected\"}"
+  python3 "$repo_root/scripts/golden_overlay.py" reduce "$fixture_dir/expected" "$staged_dest" "$provenance"
+elif [ -n "$DEFAULT_MAX_RETRIES" ]; then
+  provenance="{\"fern_python_sdk_version\": \"$FERN_PYTHON_VERSION\", \"fern_cli_version\": \"$FERN_CLI_VERSION\", \"default_max_retries\": $DEFAULT_MAX_RETRIES, \"base\": \"expected\"}"
+  python3 "$repo_root/scripts/golden_overlay.py" reduce "$fixture_dir/expected" "$staged_dest" "$provenance"
+elif [ -z "$SPEC_OVERRIDE" ]; then
   settings=""
   flat_layout=""
   [ "$LAYOUT" = packaged ] || flat_layout="$LAYOUT"

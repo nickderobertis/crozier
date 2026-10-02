@@ -67,6 +67,12 @@ pub struct GenerateArgs {
     /// `pydantic_config.extra_fields`) — drives every model's `model_config` /
     /// `Config` `extra`.
     pub extra_fields: settings::ExtraFields,
+    /// How string enums are generated (Fern's `pydantic_config.enum_type`):
+    /// `enum.StrEnum` classes or open `typing.Literal` unions.
+    pub enum_type: settings::EnumType,
+    /// The client's default maximum number of retries for a failed request
+    /// (Fern's `default_max_retries`); Fern's default is 2.
+    pub default_max_retries: u32,
     /// Strict Fern compatibility (`--fern-strict`): refuse, as Fern does, a
     /// document crozier would otherwise generate from. It only ever decides
     /// whether an SDK is written, never a byte of one that is. The classes it
@@ -99,6 +105,8 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         &doc.info.title,
     )?;
     config.layout = args.layout;
+    config.enum_type = args.enum_type;
+    config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
@@ -172,6 +180,8 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         &doc.info.title,
     )?;
     config.layout = args.layout;
+    config.enum_type = args.enum_type;
+    config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;

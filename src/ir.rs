@@ -189,6 +189,12 @@ pub struct Ir {
     /// How generated pydantic models treat unknown fields (Fern's
     /// `pydantic_config.extra_fields`); drives every model's `extra` config.
     pub extra_fields: crate::settings::ExtraFields,
+    /// How string enums are emitted (Fern's `pydantic_config.enum_type`).
+    pub enum_type: crate::settings::EnumType,
+    /// The client's default maximum number of retries (Fern's
+    /// `default_max_retries`): the root client's `max_retries` fallback and the
+    /// client wrappers' parameter default.
+    pub default_max_retries: u32,
     /// Which tree to emit: Fern's packaged SDK or its flat module tree.
     pub layout: crate::settings::Layout,
 }
@@ -2054,6 +2060,18 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .unwrap_or_else(|| crate::config::default_client_class_name(config.package_name.as_str()));
     let environment = environment_model(doc, &client_name);
 
+    // A literal enum is a plain string at runtime: Fern serializes an enum
+    // header with `str(..)` rather than `.value`, and examples an enum value as
+    // its string rather than a member access.
+    if config.enum_type == crate::settings::EnumType::Literals {
+        for param in endpoints
+            .iter_mut()
+            .flat_map(|ep| ep.header_params.iter_mut())
+        {
+            param.enum_value = false;
+        }
+    }
+
     Ir {
         yaml_unquoted_timestamps: doc.yaml_unquoted_timestamps.clone(),
         openapi_31: doc.openapi.starts_with("3.1"),
@@ -2072,6 +2090,8 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         global_headers: global,
         environment,
         extra_fields: config.extra_fields,
+        enum_type: config.enum_type,
+        default_max_retries: config.default_max_retries,
         layout: config.layout,
     }
 }
@@ -17091,6 +17111,8 @@ mod tests {
             audience_strict: false,
             fern_strict: false,
             extra_fields: crate::settings::ExtraFields::Allow,
+            enum_type: crate::settings::EnumType::PythonEnums,
+            default_max_retries: crate::settings::DEFAULT_MAX_RETRIES,
             layout: crate::settings::Layout::Packaged,
         })
         .expect("render succeeds");

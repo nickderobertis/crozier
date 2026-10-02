@@ -22,7 +22,7 @@ use crate::ir::{
     TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
-use crate::settings::{ExtraFields, Layout};
+use crate::settings::{EnumType, ExtraFields, Layout};
 use crate::wrap::Doc;
 
 /// The header comment crozier writes atop every generated file. It differs from
@@ -1348,6 +1348,10 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .collect();
 
     // One file per generated type.
+    let decl_settings = DeclSettings {
+        extra: ir.extra_fields,
+        enum_type: ir.enum_type,
+    };
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
         let repair = repair_map.get(decl.name());
@@ -1356,7 +1360,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             decl,
             RefLoc::RootTypes,
             &tag_map,
-            ir.extra_fields,
+            decl_settings,
             forward,
             repair,
         )?;
@@ -1390,7 +1394,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 decl,
                 location,
                 &tag_map,
-                ir.extra_fields,
+                decl_settings,
                 forward,
                 repair,
             )?;
@@ -1418,6 +1422,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         ir.endpoints
             .iter()
             .any(|endpoint| endpoint.pagination.is_some()),
+        ir.enum_type,
     ));
     // Fern's flat tree has no publishing identity, so its wrapper sends no
     // `SDK-Name`/`SDK-Version` headers.
@@ -1426,6 +1431,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         packaged.then_some(ir.project_name.as_str()),
         &ir.auth,
         &ir.global_headers,
+        ir.default_max_retries,
     ));
 
     // `environment.py`: the server-environment enum, when the document declares
@@ -1521,6 +1527,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 client_name: &ir.client_name,
                 module,
                 types: &ir.types,
+                enum_type: ir.enum_type,
                 tag_decls: &ir.tag_types,
                 auth: &ir.auth,
                 has_environment: ir.environment.is_some(),
@@ -1553,6 +1560,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             client_name: &ir.client_name,
             module,
             types: &ir.types,
+            enum_type: ir.enum_type,
             tag_decls: &ir.tag_types,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
@@ -1591,11 +1599,13 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 modules: &root_modules,
                 root_endpoints: if root_emittable { &root_eps } else { &[] },
                 types: &ir.types,
+                enum_type: ir.enum_type,
                 tag_decls: &ir.tag_types,
                 tag_map: &tag_map,
                 auth: &ir.auth,
                 environment: ir.environment.as_ref(),
                 global_headers: &ir.global_headers,
+                default_max_retries: ir.default_max_retries,
             },
         )?);
     }
@@ -1649,6 +1659,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             client_name: &ir.client_name,
             module: "",
             types: &ir.types,
+            enum_type: ir.enum_type,
             tag_decls: &ir.tag_types,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
@@ -2198,6 +2209,7 @@ fn select_readme_endpoint<'a>(
 fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
     let mut ctx = ExampleCtx {
         types: &ir.types,
+        enum_type: ir.enum_type,
         yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
@@ -2408,6 +2420,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let sync_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
+            enum_type: ir.enum_type,
             yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
@@ -2441,6 +2454,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
+            enum_type: ir.enum_type,
             yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
@@ -2685,6 +2699,7 @@ fn reference_entry(
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
         types: &ir.types,
+        enum_type: ir.enum_type,
         yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
@@ -3193,10 +3208,13 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
 
 /// Emit the vendored core runtime for a package. The runtime assets are emitted
 /// verbatim; `client_wrapper.py` is generated separately (see
-/// [`client_wrapper_file`]) because Fern shapes it from the auth model.
-fn core_files(pkg: &str, paginated: bool) -> Vec<GeneratedFile> {
+/// [`client_wrapper_file`]) because Fern shapes it from the auth model. Fern
+/// ships `core/enum.py` (the `StrEnum` base) only when enums render as classes,
+/// so a literals SDK omits it.
+fn core_files(pkg: &str, paginated: bool, enum_type: EnumType) -> Vec<GeneratedFile> {
     let mut files: Vec<GeneratedFile> = CORE_ASSETS
         .iter()
+        .filter(|(rel, _)| *rel != "enum.py" || enum_type == EnumType::PythonEnums)
         .map(|(rel, content)| GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/core/{rel}")),
             contents: if paginated && *rel == "__init__.py" {
@@ -3442,13 +3460,16 @@ fn distinct_global_header_params(global_headers: &[GlobalHeader]) -> Vec<&Global
 /// Generate `core/client_wrapper.py`, shaped by the SDK's [`Auth`] model. The
 /// bearer-optional form is byte-identical to Fern's default wrapper; api-key and
 /// required-credential forms swap the constructor parameter, the header wiring,
-/// and the token helper. Assembled from literal blocks (no source-line
-/// continuations, which would eat the Python indentation).
+/// and the token helper. Every wrapper's `max_retries` parameter defaults to
+/// `default_max_retries`, as Fern's does to its `default_max_retries`.
+/// Assembled from literal blocks (no source-line continuations, which would eat
+/// the Python indentation).
 fn client_wrapper_file(
     pkg: &str,
     sdk_name: Option<&str>,
     auth: &Auth,
     global_headers: &[GlobalHeader],
+    default_max_retries: u32,
 ) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
     // Promoted global headers: a constructor parameter, an assignment, a
@@ -3522,7 +3543,7 @@ fn client_wrapper_file(
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n    ):\n");
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n    ):\n"));
     c.push_str(&gh_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
@@ -3546,13 +3567,13 @@ fn client_wrapper_file(
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            ");
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            "));
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            ");
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            "));
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
@@ -3671,6 +3692,16 @@ fn update_forward_refs_call(target: &str, repair: &ForwardRepair) -> String {
     format!("update_forward_refs({})", arguments.join(", "))
 }
 
+/// The generator settings a declaration's rendered shape reads, bundled to keep
+/// [`render_type_decl`] within the argument limit.
+#[derive(Debug, Clone, Copy, Default)]
+struct DeclSettings {
+    /// Fern's `pydantic_config.extra_fields`: every model's `extra` config.
+    extra: ExtraFields,
+    /// Fern's `pydantic_config.enum_type`: an enum's class or literal form.
+    enum_type: EnumType,
+}
+
 /// Render one type declaration to a file body. `loc` is the file's location
 /// (package-root `types/` or a tag's `types/`), which sets the `core`/type import
 /// depth; `tag_types` maps hoisted type names to their tags for those references.
@@ -3679,7 +3710,7 @@ fn render_type_decl(
     decl: &TypeDecl,
     loc: RefLoc,
     tag_types: &BTreeMap<String, String>,
-    extra: ExtraFields,
+    settings: DeclSettings,
     forward: &std::collections::HashSet<String>,
     repair: Option<&ForwardRepair>,
 ) -> Result<String> {
@@ -3688,6 +3719,7 @@ fn render_type_decl(
     let needs_forward = repair.is_some();
     let empty_repair = ForwardRepair::default();
     let repair = repair.unwrap_or(&empty_repair);
+    let DeclSettings { extra, enum_type } = settings;
     match decl {
         TypeDecl::Object(obj) => {
             let mut imports = Imports::at(loc, tag_types);
@@ -3846,6 +3878,7 @@ fn render_type_decl(
                 },
             )
         }
+        TypeDecl::Enum(e) if enum_type == EnumType::Literals => render_literal_enum(env, e),
         TypeDecl::Enum(e) => render_enum(env, e, &loc),
         TypeDecl::DiscriminatedUnion(union) => {
             render_discriminated_union(env, union, extra, loc, tag_types, forward, repair)
@@ -3910,6 +3943,37 @@ fn render_enum(
             e.name, m.name, m.visit_param
         ));
     }
+    render(
+        env,
+        "file.py",
+        &e.name,
+        context! { header => HEADER, body => body },
+    )
+}
+
+/// A literal enum value as Fern's snippet writer spells it: the wire value in
+/// double quotes, with backslashes and double quotes escaped.
+fn literal_enum_value(value: &str) -> String {
+    format!("\"{}\"", value.replace('\\', "\\\\").replace('"', "\\\""))
+}
+
+/// Render a string enum as Fern does with `enum_type` unset (its `literals`
+/// default): an open alias, `{Name} = typing.Union[typing.Literal["a", "b"],
+/// typing.Any]`, that takes any value besides the listed ones, so a response
+/// carrying a value the spec does not list still parses. Fern writes the alias
+/// without the enum's description and imports nothing from `core`; ruff wraps a
+/// long value list.
+fn render_literal_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<String> {
+    let values: Vec<String> = e
+        .members
+        .iter()
+        .map(|m| format!("\"{}\"", escape_py_str(&m.value)))
+        .collect();
+    let body = format!(
+        "import typing\n\n{} = typing.Union[typing.Literal[{}], typing.Any]",
+        e.name,
+        values.join(", ")
+    );
     render(
         env,
         "file.py",
@@ -5755,11 +5819,14 @@ struct RootClientFileCtx<'a> {
     modules: &'a [&'a String],
     root_endpoints: &'a [&'a Endpoint],
     types: &'a [TypeDecl],
+    enum_type: EnumType,
     tag_decls: &'a [TagTypeDecl],
     tag_map: &'a BTreeMap<String, String>,
     auth: &'a Auth,
     environment: Option<&'a crate::ir::Environment>,
     global_headers: &'a [GlobalHeader],
+    /// The fallback for an unset `max_retries` (Fern's `default_max_retries`).
+    default_max_retries: u32,
 }
 
 fn root_client_file(
@@ -5773,11 +5840,13 @@ fn root_client_file(
         modules,
         root_endpoints,
         types,
+        enum_type,
         tag_decls,
         tag_map,
         auth,
         environment,
         global_headers,
+        default_max_retries,
     } = cx;
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
     imports.add_plain("typing");
@@ -5822,6 +5891,7 @@ fn root_client_file(
         auth,
         environment,
         global_headers,
+        default_max_retries,
     };
     let root_methods = root_client_methods(
         env,
@@ -5830,6 +5900,7 @@ fn root_client_file(
         client_name,
         root_endpoints,
         types,
+        enum_type,
         tag_decls,
         tag_map,
         auth,
@@ -5845,6 +5916,7 @@ fn root_client_file(
         client_name,
         root_endpoints,
         types,
+        enum_type,
         tag_decls,
         tag_map,
         auth,
@@ -5918,6 +5990,7 @@ struct RootClientCfg<'a> {
     auth: &'a Auth,
     environment: Option<&'a crate::ir::Environment>,
     global_headers: &'a [GlobalHeader],
+    default_max_retries: u32,
 }
 
 #[allow(
@@ -5931,6 +6004,7 @@ fn root_client_methods(
     client_name: &str,
     endpoints: &[&Endpoint],
     types: &[TypeDecl],
+    enum_type: EnumType,
     tag_decls: &[TagTypeDecl],
     tag_map: &BTreeMap<String, String>,
     auth: &Auth,
@@ -5948,6 +6022,7 @@ fn root_client_methods(
         client_name,
         module: "",
         types,
+        enum_type,
         tag_decls,
         auth,
         has_environment,
@@ -6139,6 +6214,7 @@ fn root_client_class(
             ""
         }
         .to_string(),
+        default_max_retries: cfg.default_max_retries,
     };
     // The caller controls the separation between the sync/async classes and the
     // file's final newline, so drop the template's trailing newline.
@@ -6207,6 +6283,9 @@ struct RootClientView {
     async_token_doc: String,
     async_token_ctor: String,
     async_token_wrapper: String,
+    /// The `max_retries` fallback and its documented default (Fern's
+    /// `default_max_retries`).
+    default_max_retries: u32,
 }
 
 /// The environment-varying fragments of the root client: the docstring block, the
@@ -6312,6 +6391,8 @@ struct ClientCtx<'a> {
     client_name: &'a str,
     module: &'a str,
     types: &'a [TypeDecl],
+    /// How string enums render, for the example generator.
+    enum_type: EnumType,
     /// Hoisted tag-scoped types, for the example generator's constructors.
     tag_decls: &'a [TagTypeDecl],
     auth: &'a Auth,
@@ -6593,6 +6674,7 @@ fn client_stream_docstring(
 
     let mut ctx = ExampleCtx {
         types: cx.types,
+        enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
@@ -6723,6 +6805,7 @@ fn client_binary_stream_docstring(
 
     let mut ctx = ExampleCtx {
         types: cx.types,
+        enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
@@ -6821,6 +6904,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
 
     let mut ctx = ExampleCtx {
         types: cx.types,
+        enum_type: cx.enum_type,
         yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
@@ -7166,6 +7250,8 @@ impl Example {
 /// Threads the type table and the imports/datetime a worked example accumulates.
 struct ExampleCtx<'a> {
     types: &'a [TypeDecl],
+    /// How string enums render: a literal enum's example is its plain string.
+    enum_type: EnumType,
     /// The timestamp-like scalars a YAML document writes unquoted, `None` for
     /// JSON. Such a scalar is a date to Fern's parser, not a string, so an example
     /// spelled by one is not one a plain `str` field can take.
@@ -7590,6 +7676,9 @@ impl<'a> ExampleCtx<'a> {
                     .members
                     .iter()
                     .find(|member| member.value == value)?;
+                if self.enum_type == EnumType::Literals {
+                    return Some(Example::Atom(literal_enum_value(&member.value)));
+                }
                 let member_name = member.name.clone();
                 self.record_ref(name);
                 Some(Example::Atom(format!("{name}.{member_name}")))
@@ -8258,6 +8347,14 @@ impl<'a> ExampleCtx<'a> {
                 let target = a.target.clone();
                 self.value(&target, slot)
             }
+            // A literal enum's example is its first value as a plain string, which
+            // needs no import.
+            Some(TypeDecl::Enum(e)) if self.enum_type == EnumType::Literals => {
+                match e.members.first() {
+                    Some(m) => Example::Atom(literal_enum_value(&m.value)),
+                    None => Example::Atom("None".to_string()),
+                }
+            }
             // An enum's example is member access on its first member
             // (`TypesWeatherReport.SUNNY`), importing the enum by name.
             Some(TypeDecl::Enum(e)) => {
@@ -8303,6 +8400,8 @@ impl<'a> ExampleCtx<'a> {
                         let enum_name = m.source.as_deref().map(|source| {
                             naming::child_class_name(source, &u.discriminant_property)
                         });
+                        // The tag is a member access on its enum, imported by name,
+                        // or — for a literal enum — the discriminant string alone.
                         let member =
                             enum_name
                                 .as_deref()
@@ -8311,10 +8410,16 @@ impl<'a> ExampleCtx<'a> {
                                         .members
                                         .iter()
                                         .find(|value| value.value == m.discriminant)
-                                        .map(|value| value.name.clone()),
+                                        .map(|value| {
+                                            if self.enum_type == EnumType::Literals {
+                                                (literal_enum_value(&value.value), false)
+                                            } else {
+                                                (format!("{enum_name}.{}", value.name), true)
+                                            }
+                                        }),
                                     _ => None,
                                 });
-                        if let (Some(enum_name), Some(member)) = (enum_name, member) {
+                        if let (Some(enum_name), Some((member, imported))) = (enum_name, member) {
                             // The Python docstring writer puts the tag back in
                             // its schema position; the Markdown writers (README
                             // and `reference.md`) append it after every other
@@ -8328,12 +8433,14 @@ impl<'a> ExampleCtx<'a> {
                                     .filter(|f| f.spec_required && !f.optional)
                                     .count()
                             };
-                            self.record_ref(&enum_name);
+                            if imported {
+                                self.record_ref(&enum_name);
+                            }
                             args.insert(
                                 at.min(args.len()),
                                 (
                                     Some(naming::model_field_name(&u.discriminant_property)),
-                                    Example::Atom(format!("{enum_name}.{member}")),
+                                    Example::Atom(member),
                                 ),
                             );
                         }
@@ -10275,8 +10382,8 @@ mod tests {
         path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
         readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
         render, render_class_body, render_enum, render_type_decl, url_arg, BodySchemaShape,
-        ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
-        RenderedField, RootClientView, RootModuleView, Slot,
+        ClientCtx, DeclSettings, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc,
+        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -10574,6 +10681,7 @@ mod tests {
             async_token_doc: String::new(),
             async_token_ctor: String::new(),
             async_token_wrapper: String::new(),
+            default_max_retries: 2,
         };
         let out = render_tmpl("root_client.py", &view);
         assert!(out.starts_with("class FernApi:"));
@@ -10998,6 +11106,8 @@ mod tests {
             global_headers: Vec::new(),
             environment: None,
             extra_fields: crate::settings::ExtraFields::Allow,
+            enum_type: crate::settings::EnumType::PythonEnums,
+            default_max_retries: crate::settings::DEFAULT_MAX_RETRIES,
             layout: crate::settings::Layout::Packaged,
         }
     }
@@ -11780,6 +11890,7 @@ mod tests {
     ) -> ExampleCtx<'a> {
         ExampleCtx {
             types,
+            enum_type: crate::settings::EnumType::default(),
             yaml_unquoted_timestamps: None,
             tag_decls,
             referenced: Default::default(),
@@ -13244,6 +13355,7 @@ mod tests {
             client_name: "AcmeApi",
             module: "events",
             types: &[],
+            enum_type: crate::settings::EnumType::default(),
             tag_decls: &[],
             auth: &auth,
             has_environment: false,
@@ -13301,7 +13413,7 @@ mod tests {
             &alias,
             RefLoc::RootTypes,
             &Default::default(),
-            crate::settings::ExtraFields::Allow,
+            DeclSettings::default(),
             &std::collections::HashSet::from(["Node".to_string()]),
             None,
         )
@@ -13333,7 +13445,7 @@ mod tests {
             &singleton,
             RefLoc::RootTypes,
             &Default::default(),
-            crate::settings::ExtraFields::Allow,
+            DeclSettings::default(),
             &Default::default(),
             None,
         )

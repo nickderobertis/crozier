@@ -28,7 +28,7 @@ changes to generate or publish. The complete selection, provenance, partial-succ
 publication, and rerun contract is in
 [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
 
-**One non-default Fern setting is corpus-wide.** Every golden — managed or
+**One non-default Fern setting is corpus-wide.** Every `expected/` golden — managed or
 hand-authored — is generated with `pydantic_config.enum_type: python_enums`,
 which `scripts/generate-fern-fixture.sh` writes into `generators.yml`
 unconditionally for *all* fixtures rather than per row. It is not a column of the
@@ -37,7 +37,9 @@ config table below and no fixture opts out; Fern records it in each golden's
 shape unconditionally the e2e normalizes the block off both sides
 (`tests/e2e.rs::normalize_metadata`). Regenerate through that script, never a
 hand-rolled `fern generate`, or the golden silently comes back in Fern's
-out-of-the-box open-`Literal`-union enum shape.
+out-of-the-box open-`Literal`-union enum shape. That shape has its own goldens,
+`expected-literals/` overlays for crozier's `enum-type: literals`, from
+`scripts/fern-overlay-goldens.sh --enum-type literals` ([`fern-goldens.md`](../../docs/fern-goldens.md#literal-enum-goldens)).
 
 Per-fixture non-default settings live in **one shared table**,
 [`fern-generator-config.txt`](fern-generator-config.txt) — a single file for the
