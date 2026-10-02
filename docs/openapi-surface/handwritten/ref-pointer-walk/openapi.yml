@@ -1,3 +1,11 @@
+# Schema `$ref` pointers that walk into a component. `Holder` exercises the
+# pointer walk's arms its covers name. `/routes` and `Route` carry four shapes
+# corpus row 223 (`nexmo-conversation`) alone witnessed until it was withdrawn
+# (docs/openapi-surface/withdrawn-witnesses/nexmo-conversation.md): a reference
+# whose text names `properties` — a plain `route_properties` component, and a
+# pointer ending on a composition member — copied at the reference; a union of
+# such copies, named after the reference and tagged by its inferred `type`
+# property; and an unquoted YAML timestamp as a non-temporal query example.
 openapi: 3.1.0
 info:
   title: ref-pointer-walk fixture
@@ -13,7 +21,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Holder"
+  /routes:
+    get:
+      operationId: listRoutes
+      parameters:
+        - in: query
+          name: since
+          required: false
+          schema:
+            example: 2018-01-01 10:00:00
+            format: dateTime
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Route"
+    post:
+      operationId: createRoute
+      requestBody:
+        $ref: "#/components/requestBodies/RouteRequest"
+      responses:
+        "200":
+          description: OK
 components:
+  requestBodies:
+    RouteRequest:
+      description: Route request payload
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              properties:
+                $ref: "#/components/schemas/route_properties"
   schemas:
     Holder:
       type: object
@@ -78,3 +123,42 @@ components:
       properties:
         label:
           type: string
+    route_properties:
+      description: Route properties
+      type: object
+      properties:
+        ttl:
+          type: number
+    Route:
+      type: object
+      properties:
+        from:
+          oneOf:
+            - description: An app endpoint
+              type: object
+              required: [type, user]
+              properties:
+                type:
+                  type: string
+                  example: app
+                user:
+                  type: string
+            - type: object
+              required: [type, number]
+              properties:
+                type:
+                  type: string
+                  example: phone
+                number:
+                  type: string
+        to:
+          oneOf:
+            - $ref: "#/components/schemas/Route/properties/from/oneOf/0"
+            - type: object
+              required: [type, number]
+              properties:
+                type:
+                  type: string
+                  example: phone
+                number:
+                  $ref: "#/components/schemas/Route/properties/from/oneOf/1/properties/number"
