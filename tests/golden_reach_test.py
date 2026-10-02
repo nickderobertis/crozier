@@ -897,7 +897,7 @@ class _StageScratch(unittest.TestCase):
         directory = golden_reach_search.EVIDENCE / "jentic"
         with self.fern(fern) if licence is not None else contextlib.nullcontext():
             record = golden_reach_search.SCREEN.measure(
-                repository="jentic-public-apis", commit=self.REVISION, path=document, fetch=fetch,
+                repository="jentic/jentic-public-apis", commit=self.REVISION, path=document, fetch=fetch,
                 raw_base="http://127.0.0.1:9", logs=directory / "screens", base=directory,
                 expected_sha256=hashlib.sha256(data).hexdigest(), timeout=30)
         path = self.scratch / f"measured-{len(list(self.scratch.glob('measured-*.json')))}.json"
@@ -1658,6 +1658,44 @@ class ArmSearchStageTests(_StageScratch):
         with contextlib.redirect_stdout(io.StringIO()) as printed:
             self.assertEqual(0, golden_reach_search.main(["restate", "--key", self.KEY]))
         self.assertEqual("golden-reach-search: 0 record(s) restated\n", printed.getvalue())
+
+    def test_a_candidate_is_read_where_its_source_pinned_it(self) -> None:
+        digest = hashlib.sha256((self.root / "a.yaml").read_bytes()).hexdigest()
+        self.assertEqual(("jentic-public-apis", self.REVISION, "a.yaml", digest),
+                         golden_reach_search.candidate_ref("jentic", "a.yaml"))
+        self.assertEqual(("example/api", "b" * 40, "docs/open api.yaml", ""),
+                         golden_reach_search.candidate_ref("sourcegraph",
+                                                           f"github.com/example/api:docs/open api.yaml@{'b' * 40}"))
+        for source, candidate, remedy in (
+            ("jentic", "missing.yaml", "check the candidate's spelling against jentic's records.tsv"),
+            ("github-code-search", "example/api:openapi.yaml@main", "or pass --measured with a record"),
+        ):
+            with self.subTest(candidate=candidate), self.assertRaises(SystemExit) as refused:
+                golden_reach_search.candidate_ref(source, candidate)
+            self.assertIn(remedy, str(refused.exception))
+
+    def test_restate_refuses_a_record_its_evidence_now_reads_exhausted(self) -> None:
+        """Moving a record to `exhausted` is a full reading, which `restate` leaves to `render`."""
+        (self.root / "c.yaml").unlink()
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        manifest.write_text("".join(line + "\n" for line in manifest.read_text(encoding="utf-8").splitlines()
+                                    if "\tc.yaml\t" not in line), encoding="utf-8")
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1"]))
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": self.head[:12],
+             "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+        ])
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main([
+                "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+                "--measured", self.measured(licence=None)]))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY, "--outcome", "search-incomplete"]))
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(["restate", "--key", self.KEY])
+        self.assertIn(f"its evidence now reads `exhausted`; render it with `render --key {self.KEY}`",
+                      str(refused.exception))
 
     def test_render_as_of_an_earlier_build_keeps_the_searched_arm_and_counts_that_builds_probes(self) -> None:
         touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,

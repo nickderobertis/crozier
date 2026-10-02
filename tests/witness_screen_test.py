@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier's Python maintenance tests live in tests/ and run through just (`test-witness-screen`); no Nx workspace or project boundary exists for them.
 """The measured screening stage, driven through its real CLI and the legacy index that reads it.
 
 `scripts/witness_screen.py screen` runs as a subprocess over a temporary
@@ -296,6 +297,10 @@ class LicenceReadingTests(unittest.TestCase):
             self.assertIn(family, rule)
         self.assertIn("Apache-2.0", families)
         self.assertNotIn("other grants of that kind", " ".join(families))
+
+    def test_every_family_the_rule_admits_is_one_the_reading_recognises(self) -> None:
+        """The drift gate between the rule's enumeration and the spellings the reading knows."""
+        self.assertEqual(set(SCREEN.admissible_families()), {family for family, _ in SCREEN.RECOGNISED})
 
     def test_each_reading(self) -> None:
         centred = "                                 Apache License\n                           Version 2.0, January 2004"

@@ -1257,7 +1257,9 @@ def candidate_ref(source: str, candidate: str) -> tuple[str, str, str, str]:
     if source in QUERY_SOURCES:
         found = re.fullmatch(r"(?:github\.com/)?([^/:]+/[^/:]+):(.+)@([0-9a-f]{40})", candidate)
         if not found:
-            fail(f"{candidate} names no `<owner>/<repo>:<path>@<commit>` a screen can read at its commit")
+            fail(f"{candidate} names no `<owner>/<repo>:<path>@<commit>` a screen can read at its commit; "
+                 f"check its spelling against {source}'s records.tsv, or pass --measured with a record "
+                 "scripts/witness_screen.py measured at the document's pinned commit")
         cached = candidate_index(source).get(candidate, "")
         digest = Path(cached).stem if re.fullmatch(r"[0-9a-f]{64}", Path(cached).stem) else ""
         return found.group(1), found.group(3), found.group(2), digest
@@ -1268,7 +1270,8 @@ def candidate_ref(source: str, candidate: str) -> tuple[str, str, str, str]:
             path, prefix = row["document"], row["walk"].replace("/", "--") + "/"
             # A vendor-portal copy is filed under its repository's `<owner>--<repo>/` directory.
             return row["walk"], row["revision"], path.removeprefix(prefix), row.get("sha256", "")
-    fail(f"{candidate} is in no {source} pinned listing; check the candidate's spelling")
+    fail(f"{candidate} is in no {source} pinned listing; check the candidate's spelling against "
+         f"{source}'s records.tsv, or re-walk {source} if its listing moved")
     raise AssertionError  # unreachable: `fail` exits
 
 
@@ -1825,7 +1828,9 @@ def restate(args: argparse.Namespace) -> int:
         lines = text.split("\n")
         prefix = f"| `{key}` | `"
         stated = {CELL_BREAK.split(line)[2].strip("`") for line in lines if line.startswith(prefix)}
-        outcome = stated.pop() if len(stated) == 1 else fail(f"{path.name}: its lines read {sorted(stated)}")
+        outcome = stated.pop() if len(stated) == 1 else fail(
+            f"{path.name}: its lines read {sorted(stated)}, not one outcome; render it again with "
+            f"`render --key {key} --build {build}` before restating it")
         if outcome != "witness-found":
             restated = _outcome(tallies)
             if restated == "exhausted" and outcome != "exhausted":

@@ -72,6 +72,7 @@ LICENCE_FILES = ("LICENSE", "LICENSE.md", "LICENSE.txt", "LICENCE", "LICENCE.md"
 LICENCE_HEAD_LINES = 30
 SHA = re.compile(r"[0-9a-f]{64}")
 COMMIT = re.compile(r"[0-9a-f]{40}")
+REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 LEGACY_SOURCES = ("apis.guru", "jentic", "github-code-search", "github-publisher-trees", "sourcegraph")
 
 Fetch = Callable[[str, str], tuple[int, bytes]]
@@ -401,6 +402,8 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     `fetch(url, subject)` is the guarded acquirer's exact-commit raw route; it
     answers `(status, bytes)`. Logs land in `logs`, recorded relative to `base`.
     """
+    if not REPOSITORY.fullmatch(repository):
+        fail(f"{repository!r} is no `<owner>/<name>` repository; pass the one the candidate was acquired from")
     url = raw_url(raw_base, repository, commit, path)
     status, data = fetch(url, f"{repository}:{path}")
     sha256 = hashlib.sha256(data).hexdigest() if status == 200 else ""
@@ -488,6 +491,9 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
     if not isinstance(record.get("screened_at"), str) or not record["screened_at"]:
         missing.append("when it was measured (`screened_at`)")
     document = record.get("document") if isinstance(record.get("document"), dict) else {}
+    absent = [field for field in ("repository", "commit", "path", "sha256") if not isinstance(document.get(field), str)]
+    if absent:
+        missing.append(f"the document it read ({absent} of `document`)")
     for name in SCREENS:
         section = record.get(name)
         if not isinstance(section, dict) or not isinstance(section.get("outcome"), str):
@@ -657,7 +663,8 @@ def legacy_screen(args: argparse.Namespace) -> int:
                    "(witness-found, pending-registration, …)")
     elif (record["document"]["repository"], record["document"]["commit"], record["document"]["path"]) \
             != (args.repository, args.commit, args.path):
-        refusal = "the measured record names another document than --repository/--commit/--path"
+        refusal = ("the measured record names another document than --repository/--commit/--path; pass "
+                   "the record's own document, or drop --measured to measure this one")
     if refusal:
         if not args.measured and isinstance(record, dict):
             discard_logs(record, directory)
