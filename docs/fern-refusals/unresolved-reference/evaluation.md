@@ -79,7 +79,8 @@ the loader resolves a present one too (`crate::refs::resolve`), so the client
 keeps the credential the referenced scheme declares: the CLI journey proves the
 SDK identical, file for file, to the one from the same scheme declared inline,
 and corpus row 307 (`huatuo-node-tree`, the source tree of this class's HuaTuo
-representative) byte-matches Fern's tree with its bearer `token`. A [chained bearer declaration](evaluation-logs/fern-present-security-chain.log)
+representative) byte-matches Fern's tree with its bearer `token`
+([Fern's check and generate over that tree](evaluation-logs/fern-huatuo-node-tree.log)). A [chained bearer declaration](evaluation-logs/fern-present-security-chain.log)
 is also accepted, while a [referenced cookie declaration](evaluation-logs/fern-present-security-unimported.log)
 retains Fern's service-auth refusal. The CLI journey covers all three and proves
 identical emitted bytes between modes and between the two accepted declarations.
