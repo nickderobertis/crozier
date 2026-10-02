@@ -755,9 +755,9 @@ NAMED_GAPS_HEADING = "#### Unproven arms, named"
 def named_gap_arms(root: Path) -> dict[tuple[str, str], str]:
     """`(key, arm)` -> why the coverage report names that unreached arm an unproven gap.
 
-    The manager's ruling to the witness-screens node: an arm whose cover stops
-    qualifying, with no proof crozier can yet show in its place, is listed as a
-    gap with its reason rather than dropped or left counted.
+    An arm whose cover stops qualifying, with no proof crozier can yet show in
+    its place, is listed as a gap with its reason rather than dropped or left
+    counted as proven.
     """
     doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
     if NAMED_GAPS_HEADING not in doc:
