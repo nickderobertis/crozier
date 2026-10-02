@@ -1,0 +1,1 @@
+{"openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {"/accounts/{+accountId}": {"post": {"operationId": "probe", "parameters": [{"name": "accountId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"204": {"description": "Done"}}}}}}

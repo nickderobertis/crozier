@@ -1,0 +1,22 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> getThing -> examples[0] -> response
+        issue: Example is missing required property "response.body.data.data"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getThing -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getThing -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getThing -> examples[0] -> response
+        issue: Unexpected property "extra"
+
+Found 4 errors and 0 warnings in <n> seconds.

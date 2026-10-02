@@ -1,0 +1,8 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 0b075e70eab691389aff5ac133deb2a60e6c01aefcb951d3db0dca059f95ae2f (OGC API - Maps)
+declared: optional query f (inline enum) on every operation; tag API holds GET /api, /api/collections, /api/styles, /api/tileMatrixSets
+fern exports: ['CollectionGetMapRequestF', 'CollectionMapGetTileRequestF', 'CollectionMapGetTileSetRequestF', 'CollectionMapGetTileSetsListRequestF', 'CollectionMapGetTileSetsListResponse', 'CollectionStyleGetMapRequestF', 'CollectionStyleMapGetTileRequestF', 'CollectionStyleMapGetTileSetRequestF', 'CollectionStyleMapGetTileSetsListRequestF', 'CollectionStyleMapGetTileSetsListResponse', 'DatasetGetMapRequestF', 'DatasetMapGetTileRequestF']
+fern.client fails to import: ImportError attempted relative import beyond top-level package
+fern.api.client imports; classes: ['ApiClient', 'AsyncApiClient', 'AsyncClientWrapper', 'AsyncRawApiClient', 'Enumeration', 'GetApiCollectionsRequestF']
+fern.types.dataset_get_map_request_f fails to import: ImportError attempted relative import beyond top-level package
+exit: 0

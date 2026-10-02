@@ -10128,10 +10128,13 @@ fn operation_id_equal_to_tag_generates_on_root_client() {
     );
 }
 
+/// A lone inline header enum is a document pinned Fern fails to generate
+/// (`generator-missing-type`); a second operation without the header keeps it
+/// an endpoint parameter, the shape Fern generates and hoists.
 #[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      responses:\n        '204': { description: Found }\n",
     );
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
@@ -13702,6 +13705,134 @@ fn fern_refusal_classes_hold() {
     );
 }
 
+/// Removing an unsupported required credential recovers generation; merely
+/// declaring an unused cookie scheme is allowed, and strict mode changes no SDK
+/// bytes on that accepted document.
+#[test]
+fn service_auth_refusal_recovers_when_security_is_removed() {
+    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let probe = registry.join("service-auth-undefined/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures("service-auth-undefined", &run, "security/session", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    std::fs::write(&repaired, text.replace("security:\n  - session: []\n", "")).unwrap();
+    let normal = refusal_run(&crozier, &repaired, false).unwrap();
+    let strict = refusal_run(&crozier, &repaired, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap(),
+            "{file}"
+        );
+    }
+}
+
+#[test]
+fn unsupported_version_refusal_recovers_with_openapi_31() {
+    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let probe = registry.join("unsupported-openapi-version/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures =
+            refused_failures("unsupported-openapi-version", &run, "openapi 3.2.0", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    std::fs::write(&repaired, text.replace("openapi: 3.2.0", "openapi: 3.1.0")).unwrap();
+    let normal = refusal_run(&crozier, &repaired, false).unwrap();
+    let strict = refusal_run(&crozier, &repaired, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap(),
+            "{file}"
+        );
+    }
+}
+
+#[test]
+fn endpoint_auth_refusal_recovers_when_security_is_removed() {
+    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let probe = registry.join("endpoint-auth-undefined/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "endpoint-auth-undefined",
+            &run,
+            "GET /probe security/session",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    std::fs::write(
+        &repaired,
+        text.replace("      security:\n        - session: []\n", ""),
+    )
+    .unwrap();
+    let normal = refusal_run(&crozier, &repaired, false).unwrap();
+    let strict = refusal_run(&crozier, &repaired, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap(),
+            "{file}"
+        );
+    }
+}
+
+#[test]
+fn inherited_auth_in_a_mixed_service_names_the_private_endpoint() {
+    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let text = std::fs::read_to_string(registry.join("service-auth-undefined/probe.yml")).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let probe = dir.path().join("openapi.yml");
+    let text = text.replace(
+        "components:\n",
+        "  /public:\n    get:\n      operationId: publicProbe\n      security: []\n      responses:\n        '204': {description: No Content}\ncomponents:\n",
+    );
+    std::fs::write(&probe, &text).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "endpoint-auth-undefined",
+            &run,
+            "GET /probe security/session",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    std::fs::write(&probe, text.replace("security:\n  - session: []\n", "")).unwrap();
+    let run = refusal_run(&crozier, &probe, true).unwrap();
+    assert_eq!(run.code, Some(0), "{}", run.stderr);
+    assert!(!run.files.is_empty());
+}
+
 /// The whole gate over the committed registry, each `generate` class's
 /// `wire_test.py` included.
 #[test]
@@ -14997,6 +15128,1788 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
     );
 }
 
+/// An unresolved security Reference Object is refused before auth normalization;
+/// replacing it with the declared bearer scheme restores identical SDK bytes.
+#[test]
+fn unresolved_security_reference_recovers_with_inline_scheme() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "components/securitySchemes/BearerAuth",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(probe).unwrap();
+    std::fs::write(
+        &repaired,
+        text.replace(
+            "      $ref: './components.yaml#/components/securitySchemes/BearerAuth'",
+            "      type: http\n      scheme: bearer",
+        ),
+    )
+    .unwrap();
+    let normal = refusal_run(&crozier, &repaired, false).unwrap();
+    let strict = refusal_run(&crozier, &repaired, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn noncomponent_response_reference_recovers_when_inlined() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = "openapi: 3.0.3\ninfo: {title: Probe, version: '1'}\npaths:\n  /probe:\n    get:\n      operationId: probe\n      responses:\n        204: {description: Empty}\n        401: {$ref: '#/$defs/Denied'}\n$defs:\n  Denied: {description: Unauthorized}\n";
+    std::fs::write(&spec, text).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "paths//probe/get/responses/401",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    std::fs::write(
+        &spec,
+        text.replace("{$ref: '#/$defs/Denied'}", "{description: Unauthorized}"),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+}
+
+#[test]
+fn ignored_security_reference_uses_canonical_precedence_through_cli() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference/probe.yml");
+    let text = std::fs::read_to_string(probe)
+        .unwrap()
+        .replace("security:\n  - BearerAuth: []\n", "");
+    for (extensions, refused) in [
+        ("x-crozier-ignore: true\n      x-fern-ignore: false", false),
+        ("x-crozier-ignore: false\n      x-fern-ignore: true", true),
+    ] {
+        std::fs::write(
+            &spec,
+            text.replace(
+                "BearerAuth:\n",
+                &format!("BearerAuth:\n      {extensions}\n"),
+            ),
+        )
+        .unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            if refused {
+                let failures = refused_failures(
+                    "unresolved-reference",
+                    &run,
+                    "components/securitySchemes/BearerAuth",
+                    strict,
+                );
+                assert!(failures.is_empty(), "{}", failures.join("\n"));
+            } else {
+                assert_eq!(run.code, Some(0), "{}", run.stderr);
+                assert!(!run.files.is_empty());
+            }
+        }
+    }
+}
+
+#[test]
+fn path_without_leading_slash_recovers_with_valid_path() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("path-without-leading-slash/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures("path-without-leading-slash", &run, "paths/things", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(probe).unwrap();
+    std::fs::write(&spec, text.replace("  things:", "  /things:")).unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        text.replace(
+            "      operationId:",
+            "      x-fern-ignore: true\n      operationId:",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &ignored, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+    let normal = refusal_run(&crozier, &spec, false).unwrap();
+    let strict = refusal_run(&crozier, &spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn unreferenced_path_parameter_recovers_when_placeholder_is_added() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("path-parameter-unreferenced/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "path-parameter-unreferenced",
+            &run,
+            "GET /things parameter id",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(probe).unwrap();
+    std::fs::write(&spec, text.replace("  /things:", "  /things/{id}:")).unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        text.replace(
+            "      operationId:",
+            "      x-crozier-ignore: true\n      operationId:",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &ignored, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+    let normal = refusal_run(&crozier, &spec, false).unwrap();
+    let strict = refusal_run(&crozier, &spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn shared_referenced_path_parameter_recovers_with_placeholder() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = "openapi: 3.0.3\ninfo: {title: Probe, version: '1'}\npaths:\n  /things:\n    parameters:\n      - {$ref: '#/components/parameters/ThingId'}\n    get:\n      operationId: listThings\n      responses: {'204': {description: Empty}}\ncomponents:\n  parameters:\n    ThingId:\n      name: id\n      in: path\n      required: true\n      schema: {type: string}\n";
+    std::fs::write(&spec, text).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures(
+            "path-parameter-unreferenced",
+            &run,
+            "GET /things parameter id",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    std::fs::write(&spec, text.replace("  /things:", "  /things/{id}:")).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+}
+
+#[test]
+fn missing_parameter_component_recovers_when_definition_is_added() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("undefined-component-reference/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures =
+            refused_failures("undefined-component-reference", &run, "CartIdParam", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(probe).unwrap();
+    std::fs::write(&spec, format!("{text}    CartIdParam:\n      name: id\n      in: path\n      required: true\n      schema: {{type: string}}\n")).unwrap();
+    let unused = dir.path().join("unused.yml");
+    let repaired = std::fs::read_to_string(&spec).unwrap();
+    std::fs::write(
+        &unused,
+        format!("{repaired}    UnusedAlias:\n      $ref: '#/components/parameters/AbsentUnused'\n"),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &unused, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+    let normal = refusal_run(&crozier, &spec, false).unwrap();
+    let strict = refusal_run(&crozier, &spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn nested_named_example_reference_recovers_with_example_component() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("undefined-component-reference");
+    let probe = class.join("named-example-probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "undefined-component-reference",
+            &run,
+            "JSONEXAMPLES/value/COMPANIES_GET",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let missing_dir = tempfile::tempdir().unwrap();
+    let missing = missing_dir.path().join("missing.yml");
+    std::fs::write(
+        &missing,
+        std::fs::read_to_string(&probe).unwrap().replace(
+            "#/components/examples/JSONEXAMPLES/value/COMPANIES_GET",
+            "#/components/examples/AbsentExample",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &missing, strict).unwrap();
+        let failures = refused_failures(
+            "undefined-component-reference",
+            &run,
+            "AbsentExample",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let control = class.join("named-example-control.yml");
+    let normal = refusal_run(&crozier, &control, false).unwrap();
+    let strict = refusal_run(&crozier, &control, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let data = dir.path().join("data.yml");
+    let text = std::fs::read_to_string(control).unwrap().replace(
+        "                  companies:",
+        "                  opaque: {type: object, additionalProperties: true}\n                  companies:");
+    std::fs::write(
+        &data,
+        text.replace(
+            "value: {companies: [ACME]}",
+            "value: {companies: [ACME], opaque: {$ref: '#/components/parameters/Absent'}}",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &data, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+}
+
+#[test]
+fn response_parameter_reference_recovers_with_inline_response() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = "openapi: 3.0.3\ninfo: {title: Probe, version: '1'}\npaths:\n  /probe:\n    get:\n      operationId: probe\n      responses:\n        '204': {$ref: '#/components/parameters/ID'}\ncomponents:\n  parameters:\n    ID: {name: id, in: query, schema: {type: string}}\n";
+    std::fs::write(&spec, text).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "paths//probe/get/responses/204",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    std::fs::write(
+        &spec,
+        text.replace(
+            "{$ref: '#/components/parameters/ID'}",
+            "{description: Empty}",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+}
+
+#[test]
+fn response_component_fragment_is_not_an_operation_reference() {
+    let control = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference/response-fragment-control.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &control, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let direct = dir.path().join("direct.yml");
+    let text = std::fs::read_to_string(control).unwrap();
+    std::fs::write(
+        &direct,
+        text.replace(
+            "'204': {$ref: '#/components/responses/Empty'}",
+            "'204': {$ref: '#/x-fragment/base'}",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &direct, strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "paths//probe/get/responses/204",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+}
+
+#[test]
+fn security_reference_recovers_when_the_referenced_document_is_present() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference/probe.yml");
+    std::fs::copy(probe, &spec).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures("unresolved-reference", &run, "components.yaml", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+    std::fs::write(
+        dir.path().join("components.yaml"),
+        "components:\n  securitySchemes:\n    BearerAuth: {type: http, scheme: bearer}\n",
+    )
+    .unwrap();
+    let normal = refusal_run(&crozier, &spec, false).unwrap();
+    let strict = refusal_run(&crozier, &spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+    std::fs::write(
+        dir.path().join("components.yaml"),
+        "components:\n  securitySchemes:\n    BearerAuth: {$ref: '#/components/securitySchemes/Actual'}\n    Actual: {type: http, scheme: bearer}\n",
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert_eq!(normal.files, run.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(run.target.join(file)).unwrap()
+            );
+        }
+    }
+    std::fs::write(
+        dir.path().join("components.yaml"),
+        "components:\n  securitySchemes:\n    BearerAuth: {type: apiKey, in: cookie, name: SID}\n",
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures("service-auth-undefined", &run, "BearerAuth", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+}
+
+#[test]
+fn primitive_default_refusal_recovers_with_declared_types() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("default-not-valid-for-type");
+    for case in [
+        "probe.yml",
+        "number-string-control.yml",
+        "integer-fraction-control.yml",
+        "integer-boolean-control.yml",
+        "number-boolean-control.yml",
+        "unused-property-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures("default-not-valid-for-type", &run, "default", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("repaired.yml");
+    std::fs::write(
+        &repaired,
+        std::fs::read_to_string(class.join("probe.yml"))
+            .unwrap()
+            .replace("default: 'one'", "default: 2"),
+    )
+    .unwrap();
+    for label in ["shared-parameter", "referenced-parameter"] {
+        let text = std::fs::read_to_string(class.join(format!("{label}-control.yml"))).unwrap();
+        let spec = dir.path().join(format!("{label}.yml"));
+        std::fs::write(&spec, &text).unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures("default-not-valid-for-type", &run, "page", strict);
+            assert!(failures.is_empty(), "{label}: {}", failures.join("\n"));
+        }
+        std::fs::write(&spec, text.replace("default: one", "default: 2")).unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{label}: {}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+    let mut accepted = vec![repaired];
+    accepted.extend(
+        [
+            "integer-null-control.yml",
+            "boolean-string-control.yml",
+            "string-number-control.yml",
+            "number-valid-control.yml",
+            "integer-integral-float-control.yml",
+            "unused-integer-control.yml",
+            "response-integer-valid-yaml-control.yml",
+        ]
+        .map(|case| class.join(case)),
+    );
+    for spec in accepted {
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(
+            normal.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            normal.stderr
+        );
+        assert_eq!(
+            strict.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            strict.stderr
+        );
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn list_default_refusal_recovers_with_an_array() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("list-default-not-array");
+    for case in ["probe.yml", "boolean-default-control.yml"] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures(
+                "list-default-not-array",
+                &run,
+                "Thing/properties/tags",
+                strict,
+            );
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &class.join("header-array-control.yml"), strict).unwrap();
+        assert_eq!(run.code, Some(1));
+        assert!(run.files.is_empty());
+        assert!(
+            run.stderr
+                .contains("header parameter `value` has an unsupported array schema"),
+            "{}",
+            run.stderr
+        );
+        assert!(!run.stderr.contains(": list-default-not-array:"));
+    }
+    for case in [
+        "valid-list-control.yml",
+        "null-list-control.yml",
+        "unused-array-control.yml",
+        "query-array-control.yml",
+    ] {
+        let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
+        let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn object_extension_refusal_preserves_scalar_aliases_and_object_bases() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("object-extends-non-object");
+    for case in [
+        "probe.yml",
+        "array-base-control.yml",
+        "empty-object-base-control.yml",
+        "map-base-control.yml",
+        "two-scalar-refs-control.yml",
+        "ordered-shadowed-object-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures =
+                refused_failures("object-extends-non-object", &run, "allOf extends", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    for case in [
+        "object-base-control.yml",
+        "empty-properties-base-control.yml",
+        "scalar-alias-control.yml",
+        "scalar-constrained-control.yml",
+        "typed-two-scalar-refs-control.yml",
+        "nullable-typed-two-scalar-refs-control.yml",
+        "inline-scalar-object-control.yml",
+        "object-alias-control.yml",
+        "shadowed-object-control.yml",
+        "ordered-renamed-union-control.yml",
+    ] {
+        let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
+        let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn inline_header_enum_refusal_recovers_with_a_named_schema() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-missing-type");
+    for case in [
+        "probe.yml",
+        "optional-singleton-control.yml",
+        "two-values-control.yml",
+        "other-header-control.yml",
+        "accept-header-control.yml",
+        "inferred-type-control.yml",
+        "const-header-control.yml",
+        "two-operations-control.yml",
+        "three-of-four-control.yml",
+        "second-declaration-control.yml",
+        "referenced-header-control.yml",
+        "path-header-control.yml",
+        "ignored-operation-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures("generator-missing-type", &run, "schema", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let text = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    for spelling in ["x-fern-ignore", "x-crozier-ignore"] {
+        let spec = dir.path().join(format!("{spelling}.yml"));
+        std::fs::write(
+            &spec,
+            text.replace(
+                "            type: string",
+                &format!("            {spelling}: true\n            type: string"),
+            ),
+        )
+        .unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{spelling}: {}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+    for case in [
+        "named-enum-control.yml",
+        "partial-header-control.yml",
+        "two-of-three-control.yml",
+        "implicit-declaration-control.yml",
+        "first-declaration-control.yml",
+        "fallback-declared-control.yml",
+        "fallback-partial-control.yml",
+        "sdk-method-declared-control.yml",
+        "sdk-method-partial-control.yml",
+        "authorization-header-control.yml",
+        "user-agent-header-control.yml",
+        "content-type-header-control.yml",
+        "numeric-enum-control.yml",
+    ] {
+        let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
+        let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        // Tie the refusal's inferred declaration name to actual SDK emission,
+        // including both alternate naming branches, without changing SDK output.
+        let declaration = match case {
+            "partial-header-control.yml" => Some("list_agents_request_api_version.py"),
+            "fallback-partial-control.yml" => Some("get_agents_request_api_version.py"),
+            "sdk-method-partial-control.yml" => Some("fetch_agents_request_api_version.py"),
+            _ => None,
+        };
+        if let Some(declaration) = declaration {
+            assert!(
+                normal.files.iter().any(|file| Path::new(file)
+                    .file_name()
+                    .is_some_and(|name| name == declaration)),
+                "{case}: inferred declaration name drifted from the SDK"
+            );
+        }
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_default() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("named-type-default");
+    for case in [
+        "probe.yml",
+        "union-declaration-control.yml",
+        "multiple-values-collision-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures(
+                "named-type-default",
+                &run,
+                "ticket/properties/type/default",
+                strict,
+            );
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        std::fs::read_to_string(class.join("probe.yml"))
+            .unwrap()
+            .replace(
+                "    ticket:\n",
+                "    ticket:\n      x-crozier-ignore: true\n",
+            ),
+    )
+    .unwrap();
+    let mut accepted = vec![ignored];
+    accepted.extend(
+        [
+            "renamed-model-control.yml",
+            "no-default-control.yml",
+            "named-string-control.yml",
+            "named-object-control.yml",
+            "named-enum-control.yml",
+            "string-declaration-control.yml",
+            "enum-declaration-control.yml",
+            "null-default-control.yml",
+            "inline-object-control.yml",
+            "inline-union-control.yml",
+            "inline-map-control.yml",
+            "root-object-control.yml",
+            "reversed-unused-control.yml",
+            "typed-union-declaration-control.yml",
+        ]
+        .map(|case| class.join(case)),
+    );
+    for spec in accepted {
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(
+            normal.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            normal.stderr
+        );
+        assert_eq!(
+            strict.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            strict.stderr
+        );
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("extension-reference-cycle");
+    for (case, diagnostic) in [
+        ("probe.yml", "schemas/Node/x-"),
+        ("other-extension-control.yml", "schemas/Node/x-"),
+        ("two-schema-cycle-control.yml", "schemas/Node/x-"),
+        ("direct-link-control.json", "schemas/Node/x-link"),
+        (
+            "direct-mapped-control.json",
+            "schemas/Node/x-mapped-definition",
+        ),
+        (
+            "nested-mapped-control.json",
+            "schemas/Node/x-mapped-definition",
+        ),
+        (
+            "direct-stripe-control.json",
+            "schemas/Node/x-stripeProperty",
+        ),
+        ("qualified-root-control.json", "schemas/My.Node/x-link"),
+        (
+            "field-integer-control.json",
+            "schemas/Node/properties/id/x-link",
+        ),
+        (
+            "field-string-control.json",
+            "schemas/Node/properties/id/x-link",
+        ),
+        (
+            "field-boolean-control.json",
+            "schemas/Node/properties/id/x-link",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures("extension-reference-cycle", &run, diagnostic, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        std::fs::read_to_string(class.join("probe.yml"))
+            .unwrap()
+            .replace("    Node:\n", "    Node:\n      x-fern-ignore: true\n"),
+    )
+    .unwrap();
+    let mut accepted = vec![ignored];
+    accepted.extend(
+        [
+            "ordinary-recursion-control.yml",
+            "acyclic-extension-control.yml",
+            "ordinary-return-edge-control.yml",
+            "field-mapped-control.json",
+            "field-direct-link-control.json",
+            "field-object-mapped-control.json",
+            "field-string-mapped-control.json",
+            "qualified-field-control.json",
+            "unsigned-field-control.json",
+        ]
+        .map(|case| class.join(case)),
+    );
+    for spec in accepted {
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(
+            normal.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            normal.stderr
+        );
+        assert_eq!(
+            strict.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            strict.stderr
+        );
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-schema-reference");
+    for case in [
+        "probe.yml",
+        "deep-definitions-field-control.yml",
+        "deep-defs-field-control.yml",
+        "required-response-field-control.yml",
+        "nullable-required-field-control.yml",
+        "nullable-root-control.yml",
+        "optional-known-child-control.yml",
+        "union-first-member-control.yml",
+        "anyof-first-member-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures(
+                "unresolved-schema-reference",
+                &run,
+                "reference #/components/schemas/",
+                strict,
+            );
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        std::fs::read_to_string(class.join("probe.yml"))
+            .unwrap()
+            .replace(
+                "      operationId: createContact",
+                "      x-crozier-ignore: true\n      operationId: createContact",
+            ),
+    )
+    .unwrap();
+    let mut accepted = vec![ignored];
+    let text = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    for spelling in ["x-fern-ignore", "x-crozier-ignore"] {
+        let spec = dir.path().join(format!("schema-{spelling}.yml"));
+        std::fs::write(
+            &spec,
+            text.replace(
+                "attributes: {$ref: '#/components/schemas/custom_attributes'}",
+                &format!("attributes: {{$ref: '#/components/schemas/custom_attributes', {spelling}: true}}"),
+            ),
+        )
+        .unwrap();
+        accepted.push(spec);
+    }
+    accepted.extend(
+        [
+            "defined-field-control.yml",
+            "deep-field-control.yml",
+            "missing-response-root-control.yml",
+            "missing-request-root-control.yml",
+            "unused-missing-field-control.yml",
+            "optional-field-control.yml",
+            "unused-required-field-control.yml",
+            "optional-response-field-control.yml",
+            "deep-response-root-control.yml",
+            "unused-deep-field-control.yml",
+            "explicit-optional-request-control.yml",
+            "required-array-control.yml",
+            "optional-deep-field-control.yml",
+            "definitions-property-name-control.yml",
+            "union-second-member-control.yml",
+            "union-inline-second-member-control.yml",
+            "anyof-second-member-control.yml",
+        ]
+        .map(|case| class.join(case)),
+    );
+    for spec in accepted {
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(
+            normal.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            normal.stderr
+        );
+        assert_eq!(
+            strict.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            strict.stderr
+        );
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn recursive_inline_union_refusal_preserves_named_recursion() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("heap-exhausted");
+    for case in [
+        "probe.yml",
+        "single-child-control.yml",
+        "recursive-union-allof-control.json",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures("heap-exhausted", &run, "components/schemas", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    for spelling in ["x-fern-ignore", "x-crozier-ignore"] {
+        let spec = dir.path().join(format!("{spelling}.yml"));
+        std::fs::write(
+            &spec,
+            probe.replace(
+                "        composition:\n",
+                &format!("        composition:\n          {spelling}: true\n"),
+            ),
+        )
+        .unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{spelling}: {}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+    for case in [
+        "named-object-recursion-control.yml",
+        "nonrecursive-union-control.yml",
+        "named-binary-recursion-control.json",
+    ] {
+        let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
+        let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+/// Generates in both modes with byte-identical output.
+fn generates_identically_in_both_modes(spec: &Path) {
+    let normal = refusal_run(&crozier, spec, false).unwrap();
+    let strict = refusal_run(&crozier, spec, true).unwrap();
+    assert_eq!(
+        normal.code,
+        Some(0),
+        "{}: {}",
+        spec.display(),
+        normal.stderr
+    );
+    assert_eq!(
+        strict.code,
+        Some(0),
+        "{}: {}",
+        spec.display(),
+        strict.stderr
+    );
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("type-not-defined");
+    for (spec, element) in [
+        ("probe.yml", "POST /users responses/403"),
+        ("api-status-sweep-probe.yml", "POST /s400 responses/400"),
+        ("api-response-probe.yml", "POST /users responses/201"),
+        ("api-parameter-probe.yml", "POST /users/{f} parameter f"),
+        ("api-body-probe.yml", "POST /users requestBody"),
+        (
+            "union-member-body-probe.yml",
+            "components/schemas/Proc/properties/events/oneOf/0",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(spec), strict).unwrap();
+            let failures = refused_failures("type-not-defined", &run, element, strict);
+            assert!(failures.is_empty(), "{spec}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{spec}: {}", run.stderr);
+        }
+    }
+    // Recovery: the same operation filed under another tag, and the union
+    // with one member no longer carrying a single discriminant value.
+    let dir = tempfile::tempdir().unwrap();
+    let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    let union = std::fs::read_to_string(class.join("union-member-body-probe.yml")).unwrap();
+    for (name, text) in [
+        (
+            "users-tag.yml",
+            probe.replace("tags: [api]", "tags: [users]"),
+        ),
+        (
+            "plain-member.yml",
+            union.replace("{type: string, enum: [OPERATOR]}", "{type: string}"),
+        ),
+    ] {
+        let recovered = dir.path().join(name);
+        std::fs::write(&recovered, text).unwrap();
+        generates_identically_in_both_modes(&recovered);
+    }
+    for control in [
+        "api-file-accepted-control.yml",
+        "other-file-control.yml",
+        "group-name-control.yml",
+        "union-member-control.yml",
+    ] {
+        generates_identically_in_both_modes(&class.join(control));
+    }
+}
+
+#[test]
+fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped_variant() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("missing-discriminant-property");
+    let id = "missing-discriminant-property";
+    let probe = class.join("probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            id,
+            &run,
+            "GET /pets response 200 components/schemas/Pet discriminator kind",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    // Fern refuses every one of these with the class's diagnostic: its own example
+    // reaching a union with no mapping target, or an `x-fern-examples` value
+    // lacking the discriminant. Plain examples and `x-crozier-examples` rescue none.
+    for (case, element) in [
+        (
+            "request-absent-mapping",
+            "POST /pets request components/schemas/Pet",
+        ),
+        (
+            "optional-depth3-absent-mapping",
+            "GET /pets response 200 components/schemas/Pet",
+        ),
+        ("required-depth12-absent-mapping", "components/schemas/Pet"),
+        (
+            "optional-request-absent-mapping",
+            "POST /pets request components/schemas/Pet",
+        ),
+        ("array-item-absent-mapping", "components/schemas/Pet"),
+        ("nullable-absent-mapping", "components/schemas/Pet"),
+        (
+            "error-response-absent-mapping",
+            "GET /pets response 400 components/schemas/Pet",
+        ),
+        ("no-members-absent-mapping", "components/schemas/Pet"),
+        ("nested-union-absent-mapping", "components/schemas/Pet"),
+        ("map-value-absent-mapping", "components/schemas/Pet"),
+        ("allof-absent-mapping", "components/schemas/Pet"),
+        (
+            "x-fern-example-without-kind-mapped",
+            "GET /pets response 200 x-fern-examples/0",
+        ),
+        (
+            "x-fern-request-example-without-kind-mapped",
+            "POST /pets request x-fern-examples/0",
+        ),
+        (
+            "x-fern-example-nested-without-kind-mapped",
+            "x-fern-examples/0/pet",
+        ),
+        (
+            "x-crozier-example-with-kind-absent-mapping",
+            "components/schemas/Pet",
+        ),
+        ("example-with-kind-absent-mapping", "components/schemas/Pet"),
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures(id, &run, element, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert!(
+                run.stderr.contains("discriminator kind"),
+                "{case}: {}",
+                run.stderr
+            );
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let assert_generates_identically = |spec: &Path| {
+        let normal = refusal_run(&crozier, spec, false).unwrap();
+        let strict = refusal_run(&crozier, spec, true).unwrap();
+        let name = spec.display();
+        assert_eq!(normal.code, Some(0), "{name}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{name}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap(),
+                "{name}: {file}"
+            );
+        }
+    };
+    // One mapping target that resolves gives Fern's example its discriminant.
+    let dir = tempfile::tempdir().unwrap();
+    let recovered = dir.path().join("recovered.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    std::fs::write(&recovered, text.replace("schemas/Kitten", "schemas/Cat")).unwrap();
+    assert_generates_identically(&recovered);
+    for control in [
+        "half-absent-mapping",
+        "first-absent-mapping",
+        "anyof-absent-mapping",
+        "unused-absent-mapping",
+        "optional-depth4-absent-mapping",
+        "required3-optional-absent-mapping",
+        "nested-union-second-absent-mapping",
+        "x-fern-example-with-kind-absent-mapping",
+        "x-fern-ignore-operation-absent-mapping",
+        "example-without-kind-mapped",
+        "empty-mapping",
+        "empty-schema-mapping",
+    ] {
+        assert_generates_identically(&class.join(format!("{control}-control.yml")));
+    }
+}
+
+/// One example-value class's committed evidence, through the real CLI: the
+/// probe is refused in both modes with `diagnostic`, every other measured
+/// refused shape (`*-probe.yml`) is refused with the class, and every accepted
+/// near miss (`*-control.yml`) generates identical bytes in both modes.
+fn example_value_class_holds(id: &str, diagnostic: &str) {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join(id);
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &class.join("probe.yml"), strict).unwrap();
+        let failures = refused_failures(id, &run, diagnostic, strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+    }
+    let mut cases: Vec<_> = std::fs::read_dir(&class)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+        .filter(|name| name.ends_with("-probe.yml") || name.ends_with("-control.yml"))
+        .collect();
+    cases.sort();
+    assert!(!cases.is_empty(), "{id}: no measured shapes committed");
+    for case in cases {
+        let spec = class.join(&case);
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        if case.ends_with("-probe.yml") {
+            for (run, strict) in [(&normal, false), (&strict, true)] {
+                let failures = refused_failures(id, run, &format!("{id}: "), strict);
+                assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            }
+            continue;
+        }
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty(), "{case}");
+        assert_eq!(normal.files, strict.files, "{case}");
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap(),
+                "{case}: {file}"
+            );
+        }
+    }
+}
+
+#[test]
+fn example_type_mismatch_refusal_covers_measured_shapes() {
+    example_value_class_holds(
+        "example-type-mismatch",
+        "example-type-mismatch: GET /probe response example",
+    );
+}
+
+#[test]
+fn example_not_enum_value_refusal_covers_measured_shapes() {
+    example_value_class_holds(
+        "example-not-enum-value",
+        "example-not-enum-value: GET /activities x-fern-examples response",
+    );
+}
+
+#[test]
+fn example_unexpected_property_refusal_covers_measured_shapes() {
+    example_value_class_holds(
+        "example-unexpected-property",
+        "example-unexpected-property: GET /probe components/schemas/Thing_Item collides with ThingItem",
+    );
+}
+
+#[test]
+fn example_missing_required_property_refusal_covers_measured_shapes() {
+    example_value_class_holds(
+        "example-missing-required-property",
+        "example-missing-required-property: GET /requests/{id} response extends nullable",
+    );
+}
+
+#[test]
+fn enum_default_refusal_recovers_with_a_retained_default() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("default-not-enum-value");
+    let probe = class.join("probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "default-not-enum-value",
+            &run,
+            "ListRequest/properties/sort",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("repaired.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    std::fs::write(
+        &repaired,
+        text.replace("default: -createdAt", "default: createdAt"),
+    )
+    .unwrap();
+    let normal = refusal_run(&crozier, &repaired, false).unwrap();
+    let strict = refusal_run(&crozier, &repaired, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+    for case in [
+        "operation-scalar-collision",
+        "operation-array",
+        "unused-schema-collision",
+        "unused-object-property-collision",
+        "response-root-collision",
+        "request-root-collision",
+        "shared-parameter-collision",
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures("default-not-enum-value", &run, "default", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+        let recovered = dir.path().join(format!("{case}.yml"));
+        let text = std::fs::read_to_string(&spec).unwrap();
+        std::fs::write(
+            &recovered,
+            text.replace("default: -createdAt", "default: createdAt")
+                .replace("default: third", "default: first"),
+        )
+        .unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &recovered, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{case}: {}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+    for control in [
+        "declared-members-control.yml",
+        "canonical-empty-members-control.yml",
+        "shared-parameter-control.yml",
+        "unused-object-control.yml",
+        "response-root-control.yml",
+        "request-root-control.yml",
+    ] {
+        let spec = class.join(control);
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(normal.code, Some(0), "{control}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{control}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}
+
+/// `generator-lint-failure`: each shape whose generated Python pinned Fern's own
+/// `ruff check` rejects is refused in both modes, naming the element, while
+/// every measured near-miss Fern generates from writes the same SDK in both.
+#[test]
+fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-lint-failure");
+    for (probe, element) in [
+        (
+            "probe.yml",
+            "type Event variants \"user:account_deleted\" and \"user_account:deleted\" are both Event_UserAccountDeleted",
+        ),
+        ("root-collision-probe.yml", "GET /search root method and sub-client search"),
+        ("tag-suffix-collision-probe.yml", "GET /search method name is empty"),
+        ("untitled-summary-probe.yml", "POST /change-requests method name is empty"),
+        ("server-hyphen-probe.yml", "variable \"api-version\""),
+        ("server-dot-probe.yml", "variable \"api.version\""),
+        ("server-keyword-probe.yml", "variable \"class\""),
+        ("server-unbound-placeholder-probe.yml", "placeholder \"extra\""),
+        ("slash-property-probe.yml", "type Result property \"/\""),
+        ("empty-enum-probe.yml", "components/schemas/Result enum has no non-null value"),
+        ("null-only-enum-probe.yml", "components/schemas/Result enum has no non-null value"),
+        ("null-enum-not-nullable-probe.yml", "components/schemas/Result enum has no non-null value"),
+        (
+            "inline-null-only-enum-probe.yml",
+            "components/schemas/Result/properties/temperature/anyOf/1 enum has no non-null value",
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(probe), strict).unwrap();
+            let failures = refused_failures("generator-lint-failure", &run, element, strict);
+            assert!(failures.is_empty(), "{probe}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{probe}: {}", run.stderr);
+        }
+    }
+    for control in [
+        "distinct-discriminants-control.yml",
+        "single-root-method-control.yml",
+        "canonical-group-name-control.yml",
+        "ascii-summary-control.yml",
+        "server-identifier-control.yml",
+        "server-secondary-hyphen-control.yml",
+        "server-placeholder-without-variables-control.yml",
+        "slash-prefixed-property-control.yml",
+        "null-and-value-enum-control.yml",
+    ] {
+        let spec = class.join(control);
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(normal.code, Some(0), "{control}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{control}: {}", strict.stderr);
+        assert!(!normal.files.is_empty(), "{control}");
+        assert_eq!(normal.files, strict.files, "{control}");
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap(),
+                "{control}: {file:?}"
+            );
+        }
+    }
+}
+
+/// Asserts a spec generates, with identical bytes with and without `--fern-strict`.
+fn assert_generates_in_both_modes(spec: &Path, label: &str) {
+    let normal = refusal_run(&crozier, spec, false).unwrap();
+    let strict = refusal_run(&crozier, spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{label}: {}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{label}: {}", strict.stderr);
+    assert!(!normal.files.is_empty(), "{label}");
+    assert_eq!(normal.files, strict.files, "{label}");
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap(),
+            "{label}: {file:?}"
+        );
+    }
+}
+
+#[test]
+fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
+    let id = "duplicate-example-name";
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join(id);
+    let probe = class.join("probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            id,
+            &run,
+            "POST /probe request example name Order updated",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    // Every shape pinned Fern refuses, each named where Fern names it.
+    for (case, element) in [
+        ("response-dupe", "POST /probe response example name Same"),
+        (
+            "first-2xx-dupe-201-202",
+            "GET /probe response example name Same",
+        ),
+        (
+            "resp-200-nocontent-201-dupe",
+            "GET /probe response example name Same",
+        ),
+        (
+            "resp-200-xml-201-dupe",
+            "GET /probe response example name Same",
+        ),
+        (
+            "default-response-dupe",
+            "GET /probe response example name Same",
+        ),
+        (
+            "resp-400-and-default-dupe",
+            "GET /probe response example name Same",
+        ),
+        ("form-request-dupe", "POST /probe request example name Same"),
+        (
+            "req-vnd-dupe-then-json",
+            "POST /probe request example name Same",
+        ),
+        (
+            "x-fern-examples-dupe",
+            "POST /probe x-fern-examples name Same",
+        ),
+        (
+            "x-fern-examples-empty-list",
+            "POST /probe request example name Same",
+        ),
+        (
+            "summary-equals-key",
+            "POST /probe request example name second",
+        ),
+        ("empty-summaries", "POST /probe request example name "),
+        ("numeric-summaries", "POST /probe request example name 1"),
+        (
+            "ref-summary-override",
+            "POST /probe request example name Same",
+        ),
+        (
+            "referenced-summary",
+            "POST /probe request example name Order updated",
+        ),
+        (
+            "ignored-example",
+            "POST /probe request example name Order updated",
+        ),
+        (
+            "component-response",
+            "POST /probe response example name Same",
+        ),
+        (
+            "component-request-body",
+            "POST /probe request example name Same",
+        ),
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures(id, &run, element, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{case}");
+        }
+    }
+    // Distinct summaries recover the probe.
+    let dir = tempfile::tempdir().unwrap();
+    let recovered = dir.path().join("recovered.yml");
+    let mut text = std::fs::read_to_string(&probe).unwrap();
+    let second = text.rfind("summary: Order updated").unwrap();
+    text.insert_str(second + "summary: Order updated".len(), " again");
+    std::fs::write(&recovered, text).unwrap();
+    assert_generates_in_both_modes(&recovered, "recovered probe");
+    // Near misses pinned Fern accepts generate identical bytes in both modes.
+    for control in [
+        "req-resp-summary",
+        "across-operations",
+        "error-response-dupe",
+        "second-2xx-dupe",
+        "resp-204-206-dupe",
+        "resp-201-nocontent-default-dupe",
+        "resp-200-html-201-dupe",
+        "resp-2XX-dupe",
+        "req-json-then-form-dupe",
+        "multipart-request-dupe",
+        "second-json-media-type-dupe",
+        "req-xml-dupe-only",
+        "number-vs-string-summary",
+        "request-null-summary",
+        "ref-no-summary-same-target",
+        "x-fern-examples-plus-openapi-dupe",
+        "x-fern-examples-unnamed",
+        "x-crozier-examples-dupe",
+        "ignored-operation",
+        "ignored-path-item",
+        "webhook-dupe",
+        "unused-component-response",
+        "parameter-examples-dupe",
+        "different-case",
+        "trailing-space",
+    ] {
+        assert_generates_in_both_modes(&class.join(format!("{control}-control.yml")), control);
+    }
+}
+
+#[test]
+fn example_query_parameter_refusal_follows_the_examples_fern_checks() {
+    let id = "example-missing-required-query-parameter";
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join(id);
+    let probe = class.join("probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            id,
+            &run,
+            "GET /collections x-fern-examples/0 query parameter f",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    // Every shape pinned Fern refuses, each named where Fern names it.
+    for (case, element) in [
+        (
+            "required-default-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "required-null-value",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "path-level-required-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "response-only-example",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "wrong-case-key",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "second-entry-omits",
+            "GET /collections x-fern-examples/1 query parameter f",
+        ),
+        (
+            "renamed-param-uses-sdk-name",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "ref-param-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "two-required-one-given",
+            "GET /collections x-fern-examples/0 query parameter b",
+        ),
+        (
+            "required-object-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "required-untyped-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+        (
+            "required-content-param-omitted",
+            "GET /collections x-fern-examples/0 query parameter f",
+        ),
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures(id, &run, element, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{case}");
+        }
+    }
+    // Fern also reports the parameter missing from the example it writes for
+    // an optional named query type in its `api.yml` file; that file is the
+    // `type-not-defined` mechanism, whose refusal names the parameter first.
+    for case in [
+        "api-tag-optional-enum",
+        "api-tag-lower-optional-enum",
+        "api-tag-optional-ref-enum",
+        "api-tag-optional-array-enum",
+        "api-tag-nullable-enum",
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures =
+                refused_failures("type-not-defined", &run, "GET /things parameter f", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+        }
+    }
+    // Giving the required parameter recovers the probe.
+    let dir = tempfile::tempdir().unwrap();
+    let recovered = dir.path().join("recovered.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    assert!(text.contains("query-parameters: {}"));
+    std::fs::write(
+        &recovered,
+        text.replace("query-parameters: {}", "query-parameters: {f: json}"),
+    )
+    .unwrap();
+    assert_generates_in_both_modes(&recovered, "recovered probe");
+    // Near misses pinned Fern accepts generate identical bytes in both modes.
+    for control in [
+        "no-query-parameters-key",
+        "optional-param-omitted",
+        "required-with-example-no-ext",
+        "required-no-examples",
+        "required-nullable-omitted",
+        "x-crozier-examples-omitted",
+        "required-array-omitted",
+        "renamed-param-uses-wire-name",
+        "required-31-null-union-omitted",
+        "ignored-operation",
+        "query-parameters-null",
+        "empty-list",
+        "ignored-param-omitted",
+        "api-tag-optional-string",
+        "api-tag-optional-array-string",
+        "api-second-tag-optional-enum",
+        "other-tag-optional-enum",
+        "untagged-optional-enum",
+    ] {
+        assert_generates_in_both_modes(&class.join(format!("{control}-control.yml")), control);
+    }
+}
 /// Refusal happens before touching an existing SDK; an explicit document name
 /// recovers generation without changing the declared enum wire value.
 #[test]
@@ -15495,9 +17408,19 @@ fn inferred_path_and_body_parameter_names_share_collision_validation() {
             if strict {
                 command.arg("--fern-strict");
             }
-            command.assert().code(1).stderr(predicates::str::contains(
-                "request-property-camelcase-collision",
-            ));
+            // Pinned Fern reports both an unreferenced path parameter and the
+            // camelCase collision for `{+accountId}`
+            // (type-name-collision/evidence/reserved-expansion-path.pinned-fern.log);
+            // the document-family check names it first.
+            let class = if route.contains('+') {
+                "path-parameter-unreferenced"
+            } else {
+                "request-property-camelcase-collision"
+            };
+            command
+                .assert()
+                .code(1)
+                .stderr(predicates::str::contains(class));
             assert!(!output.exists());
         }
     }
@@ -16603,4 +18526,39 @@ fn webhook_local_object_names_refuse_and_component_names_recover() {
         .arg("--fern-strict")
         .assert()
         .success();
+}
+
+/// A tag or SDK-group enum named like a root schema: pinned Fern refuses a
+/// query parameter's as already declared, and checks and generates a header
+/// parameter's whatever its values
+/// (type-name-collision/evidence/namespaced-*.pinned-fern.log).
+#[test]
+fn namespaced_enum_collisions_follow_the_parameter_location() {
+    let evidence = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("type-name-collision/evidence");
+    for case in [
+        "namespaced-query-enum-same",
+        "namespaced-query-enum-diff",
+        "namespaced-query-enum-same-tag",
+        "namespaced-query-enum-diff-tag",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &evidence.join(format!("{case}.yml")), strict).unwrap();
+            let failures = refused_failures(
+                "type-name-collision",
+                &run,
+                "collides with a schema declaration",
+                strict,
+            );
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+        }
+    }
+    for case in [
+        "namespaced-header-enum-same",
+        "namespaced-header-enum-diff",
+        "namespaced-header-enum-diff-tag",
+    ] {
+        assert_generates_in_both_modes(&evidence.join(format!("{case}.yml")), case);
+    }
 }

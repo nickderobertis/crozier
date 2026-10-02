@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.17s
+────────────
+ Nextest run ID e711a1cc-1c45-489e-9b71-0b73741e69f5 with nextest profile: default
+    Starting 1 test across 1 binary (442 tests and 6 binaries skipped)
+        FAIL [   0.075s] (1/1) crozier::e2e inline_header_enum_refusal_recovers_with_a_named_schema
+  stdout ───
+
+    running 1 test
+    test inline_header_enum_refusal_recovers_with_a_named_schema ... FAILED
+
+    failures:
+
+    failures:
+        inline_header_enum_refusal_recovers_with_a_named_schema
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 442 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'inline_header_enum_refusal_recovers_with_a_named_schema' (211905) panicked at tests/e2e.rs:16172:13:
+    probe.yml: generator-missing-type: crozier generated from the probe in its mode; the class says it is refused (38 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.077s] 1 test run: 0 passed, 1 failed, 442 skipped
+        FAIL [   0.075s] (1/1) crozier::e2e inline_header_enum_refusal_recovers_with_a_named_schema
+error: test run failed

@@ -1,0 +1,8 @@
+Baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; public generated client boundary.
+Tagged declares allOf string Label plus object with id:string.
+response parsing failed: PydanticSchemaGenerationError Unable to generate pydantic-core schema for <class 'fern.types.tagged.Tagged'>. Set `arbitrary_types_allowed=True` in the model_config to ignore this error or implement `__get_pydantic_core_schema__` on your type to fully support it.
+
+If you got this error by calling handler(<some type>) within `__get_pydantic_core_schema__` then you likely need to call `handler.generate_schema(<some type>)` since we do not call `__get_pydantic_core_schema__` on `<some type>` otherwise to avoid infinite recursion.
+
+For further information visit https://errors.pydantic.dev/2.13/u/schema-for-unknown-type
+wire: [{"method": "GET", "url": "https://example.test/probe", "body": "", "response": {"id": "A"}}]

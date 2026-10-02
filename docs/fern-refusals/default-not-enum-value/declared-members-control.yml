@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /contacts:
+    post:
+      operationId: listContacts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListRequest'
+      responses:
+        '204':
+          description: No Content
+components:
+  schemas:
+    ListRequest:
+      type: object
+      properties:
+        sort:
+          type: string
+          enum: [createdAt, -createdAt]
+          x-fern-enum:
+            createdAt: {name: Ascending}
+            '-createdAt': {name: Descending}
+          default: -createdAt

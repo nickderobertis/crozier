@@ -1,0 +1,8 @@
+Baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; population fe8b00c68174c422b7c5410477991bd62e0beec017a9752caea02c52806fe12a
+declared query categories: array of public/consumption/transport/food/energy; explode false; default string JSON array
+default request: {"method": "POST", "url": "https://example.test/calculator", "body": {}}
+parsed response: {'categories': {}, 'categoriesPercent': 0.0, 'totalCategoriesCo2Kg': 0.0, 'totalCo2Kg': 0.0}
+explicit categories request: {"method": "POST", "url": "https://example.test/calculator?categories=public%2Cconsumption", "body": {}}
+parsed response: {'categories': {}, 'categoriesPercent': 0.0, 'totalCategoriesCo2Kg': 0.0, 'totalCo2Kg': 0.0}
+
+exit: 0

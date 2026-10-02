@@ -1,0 +1,36 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+
+=== opastorello/unifi-api-docs network v9.4.19 (1c0e05f401ff1fd67ca1b5282e066cd8f230197802a67f123e5b16c877c7c312)
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier', '--no-config', 'generate', 'python', '--spec', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/1c0e05f401ff1fd67ca1b5282e066cd8f230197802a67f123e5b16c877c7c312.json', '--output', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/missing-discriminant/reps/1c0e05f401ff1fd67ca1b5282e066cd8f230197802a67f123e5b16c877c7c312', '--package-name', 'fern']
+exit: 0
+generated 217 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/missing-discriminant/reps/1c0e05f401ff1fd67ca1b5282e066cd8f230197802a67f123e5b16c877c7c312
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python', '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python', '-m', 'mypy', '.']
+exit: 1
+src/fern/types/client_overview_page_data_item.py:12: error: Cannot find implementation or library stub for module named "fern.types.teleport_client_connection_overview_access"  [import-not-found]
+src/fern/types/client_overview_page_data_item.py:12: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+src/fern/types/client_overview_page_data_item.py:13: error: Cannot find implementation or library stub for module named "fern.types.vpn_client_connection_overview_access"  [import-not-found]
+src/fern/types/client_overview_page_data_item.py:14: error: Cannot find implementation or library stub for module named "fern.types.wired_client_overview_access"  [import-not-found]
+src/fern/types/client_overview_page_data_item.py:15: error: Cannot find implementation or library stub for module named "fern.types.wireless_client_overview_access"  [import-not-found]
+src/fern/types/client_overview_page_data_item.py:54: error: Name "access" already defined on line 49  [no-redef]
+src/fern/types/client_overview_page_data_item.py:81: error: Name "access" already defined on line 76  [no-redef]
+src/fern/types/client_overview_page_data_item.py:104: error: Name "access" already defined on line 103  [no-redef]
+src/fern/types/client_overview_page_data_item.py:127: error: Name "access" already defined on line 126  [no-redef]
+Found 8 errors in 1 file (checked 210 source files)
+
+=== jentic atlassian.com/jira (85867d23ebba2e0fd420b67ee9b279ba83d7fd03a18fec88afa0ea0d7f116408)
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier', '--no-config', 'generate', 'python', '--spec', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/85867d23ebba2e0fd420b67ee9b279ba83d7fd03a18fec88afa0ea0d7f116408.json', '--output', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/missing-discriminant/reps/85867d23ebba2e0fd420b67ee9b279ba83d7fd03a18fec88afa0ea0d7f116408', '--package-name', 'fern']
+exit: 1
+crozier: formatting src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:185:69: Expected a parameter name
+baseline crozier writes no SDK: counts against `generate`
+
+=== jentic cloudflare.com/main openapi.json (007fc39ac57873d75305243cee61e5d358c12b975bfbbee6ba0894126e820b0e)
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier', '--no-config', 'generate', 'python', '--spec', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/007fc39ac57873d75305243cee61e5d358c12b975bfbbee6ba0894126e820b0e.json', '--output', '/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/missing-discriminant/reps/007fc39ac57873d75305243cee61e5d358c12b975bfbbee6ba0894126e820b0e', '--package-name', 'fern']
+exit: 0
+generated 16500 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/missing-discriminant/reps/007fc39ac57873d75305243cee61e5d358c12b975bfbbee6ba0894126e820b0e
+command: ['/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python', '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+mypy not run: a 16500-file SDK; the probe and the unifi representative already decide the verdict

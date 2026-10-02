@@ -1,0 +1,12 @@
+openapi: 3.0.3
+info: {title: Probe, version: '1'}
+paths:
+  /probe:
+    parameters:
+      - name: page
+        in: query
+        schema: {type: integer, default: one}
+    get:
+      operationId: probe
+      responses:
+        '204': {description: OK}

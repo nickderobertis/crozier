@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.67s
+────────────
+ Nextest run ID 7fa1ea8a-f0dc-4c66-a247-9d42397805a7 with nextest profile: default
+    Starting 1 test across 1 binary (439 tests and 6 binaries skipped)
+        FAIL [   0.072s] (1/1) crozier::e2e enum_default_refusal_recovers_with_a_retained_default
+  stdout ───
+
+    running 1 test
+    test enum_default_refusal_recovers_with_a_retained_default ... FAILED
+
+    failures:
+
+    failures:
+        enum_default_refusal_recovers_with_a_retained_default
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 439 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'enum_default_refusal_recovers_with_a_retained_default' (492498) panicked at tests/e2e.rs:15978:9:
+    default-not-enum-value: crozier generated from the probe in its mode; the class says it is refused (38 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.074s] 1 test run: 0 passed, 1 failed, 439 skipped
+        FAIL [   0.072s] (1/1) crozier::e2e enum_default_refusal_recovers_with_a_retained_default
+error: test run failed

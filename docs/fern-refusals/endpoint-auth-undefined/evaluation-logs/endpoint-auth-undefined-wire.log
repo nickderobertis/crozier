@@ -1,0 +1,7 @@
+client signature: (*, base_url: str, headers: Optional[Dict[str, str]] = None, timeout: Optional[float] = None, max_retries: Optional[int] = None, stream_reconnection_enabled: Optional[bool] = None, max_stream_reconnection_attempts: Optional[int] = None, follow_redirects: Optional[bool] = True, httpx_client: Optional[httpx.Client] = None, logging: Union[fern.core.logging.LogConfig, fern.core.logging.Logger, NoneType] = None)
+response: None
+request method: GET
+request URL: https://example.com/probe
+Cookie: None
+declared required security scheme: session apiKey cookie SESSION
+wire mismatch: no SESSION cookie credential in generated client signature or emitted request

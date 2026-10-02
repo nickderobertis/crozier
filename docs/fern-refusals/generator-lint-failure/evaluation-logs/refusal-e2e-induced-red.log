@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/clone/.claude/worktrees/agent-ada1e0c6fdbf70bf4)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.58s
+────────────
+ Nextest run ID ea8cb246-e31e-4db7-b734-5d650d355c2e with nextest profile: default
+    Starting 1 test across 1 binary (448 tests and 6 binaries skipped)
+        FAIL [   0.134s] (1/1) crozier::e2e generator_lint_refusals_name_each_shape_and_spare_measured_near_misses
+  stdout ───
+
+    running 1 test
+    test generator_lint_refusals_name_each_shape_and_spare_measured_near_misses ... FAILED
+
+    failures:
+
+    failures:
+        generator_lint_refusals_name_each_shape_and_spare_measured_near_misses
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 448 filtered out; finished in 0.12s
+
+  stderr ───
+
+    thread 'generator_lint_refusals_name_each_shape_and_spare_measured_near_misses' (2708676) panicked at tests/e2e.rs:16704:13:
+    probe.yml: generator-lint-failure: crozier generated from the probe in its mode; the class says it is refused (40 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.149s] 1 test run: 0 passed, 1 failed, 448 skipped
+        FAIL [   0.134s] (1/1) crozier::e2e generator_lint_refusals_name_each_shape_and_spare_measured_near_misses
+error: test run failed

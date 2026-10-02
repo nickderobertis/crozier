@@ -1,0 +1,1 @@
+{"openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {}, "components": {"schemas": {"Node": {"type": "object", "properties": {"id": {"type": "object", "x-mapped-definition": {"$ref": "#/components/schemas/Node"}}}}}}}

@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /me:
+    get:
+      operationId: probe
+      tags: [admins]
+      parameters:
+        - {name: ver, in: query, schema: {$ref: '#/components/schemas/Ver'}}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Admin'}
+components:
+  schemas:
+    Admin: {type: object, properties: {}}
+    Ver: {type: string, default: '2.0', enum: ['1.0', '2.0']}

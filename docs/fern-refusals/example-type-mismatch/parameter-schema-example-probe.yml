@@ -1,0 +1,10 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /probe:
+    get:
+      operationId: probe
+      parameters:
+        - {name: d, in: query, schema: {type: string, format: date, example: "2006-01-02T15:04:05+00:00"}}
+      responses:
+        '204': {description: No Content}

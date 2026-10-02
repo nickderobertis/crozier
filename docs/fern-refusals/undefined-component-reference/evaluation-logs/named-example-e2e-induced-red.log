@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.87s
+────────────
+ Nextest run ID ec10a767-db81-47d9-9ec3-f69b3df7cb84 with nextest profile: default
+    Starting 1 test across 1 binary (435 tests and 6 binaries skipped)
+        FAIL [   0.093s] (1/1) crozier::e2e nested_named_example_reference_recovers_with_example_component
+  stdout ───
+
+    running 1 test
+    test nested_named_example_reference_recovers_with_example_component ... FAILED
+
+    failures:
+
+    failures:
+        nested_named_example_reference_recovers_with_example_component
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 435 filtered out; finished in 0.08s
+
+  stderr ───
+
+    thread 'nested_named_example_reference_recovers_with_example_component' (1635672) panicked at tests/e2e.rs:15776:9:
+    undefined-component-reference: crozier generated from the probe in its mode; the class says it is refused (38 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.096s] 1 test run: 0 passed, 1 failed, 435 skipped
+        FAIL [   0.093s] (1/1) crozier::e2e nested_named_example_reference_recovers_with_example_component
+error: test run failed

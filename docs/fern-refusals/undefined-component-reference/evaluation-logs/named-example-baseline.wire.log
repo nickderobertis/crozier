@@ -1,0 +1,3 @@
+request: GET https://example.com/companies
+parsed: {'companies': ['ACME']}
+named example reference affects sample selection, not this runtime wire

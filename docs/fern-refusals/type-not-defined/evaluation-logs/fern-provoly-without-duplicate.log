@@ -1,0 +1,18 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 3 errors
+    [error]
+        path: procedureController.yml -> types -> ProcedureWriteDtoEventsItem -> union -> ALERT
+        issue: Type AlertEventWriteDto is not defined.
+
+    [error]
+        path: procedureController.yml -> types -> ProcedureWriteDtoEventsItem -> union -> OPERATOR
+        issue: Type OperatorEventWriteDto is not defined.
+
+    [error]
+        path: procedureController.yml -> types -> ProcedureWriteDtoEventsItem -> union -> REPORT
+        issue: Type ReportEventWriteDto is not defined.
+
+Found 3 errors and 0 warnings in <n> seconds.

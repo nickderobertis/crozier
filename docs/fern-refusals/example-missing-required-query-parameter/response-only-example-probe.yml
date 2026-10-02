@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /collections:
+    get:
+      operationId: getCollections
+      x-fern-examples:
+      - response:
+          body: null
+      parameters:
+      - name: f
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content

@@ -1,0 +1,49 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.19s
+────────────
+ Nextest run ID dbdf68ac-cb18-4dcc-974b-a9952ddbacce with nextest profile: default
+    Starting 2 tests across 7 binaries (977 tests skipped)
+        FAIL [   0.012s] (1/2) crozier document_refusals::tests::reference_pointer_decodes_escaped_paths_and_array_indices
+  stdout ───
+
+    running 1 test
+    test document_refusals::tests::reference_pointer_decodes_escaped_paths_and_array_indices ... FAILED
+
+    failures:
+
+    failures:
+        document_refusals::tests::reference_pointer_decodes_escaped_paths_and_array_indices
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 284 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'document_refusals::tests::reference_pointer_decodes_escaped_paths_and_array_indices' (3134779) panicked at src/document_refusals.rs:435:9:
+    assertion failed: yaml_pointer(&root, "/paths/~1probe/get/parameters/0").is_some()
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 1 test still running
+        FAIL [   0.018s] (2/2) crozier document_refusals::tests::reference_objects_exclude_schemas_and_path_items_and_honor_ignores
+  stdout ───
+
+    running 1 test
+    test document_refusals::tests::reference_objects_exclude_schemas_and_path_items_and_honor_ignores ... FAILED
+
+    failures:
+
+    failures:
+        document_refusals::tests::reference_objects_exclude_schemas_and_path_items_and_honor_ignores
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 284 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'document_refusals::tests::reference_objects_exclude_schemas_and_path_items_and_honor_ignores' (3134780) panicked at src/document_refusals.rs:417:55:
+    called `Result::unwrap_err()` on an `Ok` value: ()
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.021s] 2 tests run: 0 passed, 2 failed, 977 skipped
+        FAIL [   0.012s] (1/2) crozier document_refusals::tests::reference_pointer_decodes_escaped_paths_and_array_indices
+        FAIL [   0.018s] (2/2) crozier document_refusals::tests::reference_objects_exclude_schemas_and_path_items_and_honor_ignores
+error: test run failed

@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Thing'}
+              example: {id: a, kind: c}
+components:
+  schemas:
+    Thing:
+      type: object
+      required: [id]
+      properties:
+        id: {type: string}
+        n: {type: integer}
+        kind: {type: string, enum: [a, b]}
+        when: {type: string, format: date}
+        sub:
+          type: object
+          properties:
+            x: {type: string}

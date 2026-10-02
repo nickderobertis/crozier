@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      parameters:
+      - name: Api-Version
+        in: header
+        required: true
+        schema:
+          type: string
+          enum:
+          - '2026-03-11'
+      responses:
+        '204':
+          description: No Content
+      x-fern-sdk-method-name: fetch
+      x-fern-sdk-group-name:
+      - agents
+  /users:
+    get:
+      operationId: listUsers
+      responses:
+        '204':
+          description: No Content

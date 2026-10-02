@@ -1,0 +1,12 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+source: https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/ducky.eco/ducky/3.0.0/meta/import/input-bundle.json
+digest: fe8b00c68174c422b7c5410477991bd62e0beec017a9752caea02c52806fe12a
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/fe8b00c68174c422b7c5410477991bd62e0beec017a9752caea02c52806fe12a.json'), '--output', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/default-not-enum-value/fe8b00c68174c422b7c5410477991bd62e0beec017a9752caea02c52806fe12a'), '--package-name', 'fern']
+exit: 0
+generated 308 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/default-not-enum-value/fe8b00c68174c422b7c5410477991bd62e0beec017a9752caea02c52806fe12a
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 0
+Success: no issues found in 301 source files

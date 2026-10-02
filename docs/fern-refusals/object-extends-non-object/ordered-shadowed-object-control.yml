@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info: {title: Probe, version: '1'}
+paths: {}
+components:
+  schemas:
+    parent_conditions:
+      type: object
+      properties:
+        id: {type: string}
+    other:
+      type: object
+      properties:
+        name: {type: string}
+    extended:
+      allOf:
+        - $ref: '#/components/schemas/parent_conditions'
+        - type: object
+          properties:
+            extra: {type: string}
+    parent:
+      type: object
+      properties:
+        conditions:
+          anyOf:
+            - $ref: '#/components/schemas/parent_conditions'
+            - $ref: '#/components/schemas/other'

@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+servers:
+- url: https://sdk-boundary.invalid/{extra}/{version}
+  variables:
+    version:
+      default: v1
+paths:
+  /probe:
+    get:
+      operationId: getProbe
+      responses:
+        '204':
+          description: No Content

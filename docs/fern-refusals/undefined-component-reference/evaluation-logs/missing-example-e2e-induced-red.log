@@ -1,0 +1,39 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+warning: unused variable: `root`
+   --> src/document_refusals.rs:304:5
+    |
+304 |     root: &serde_yaml_ng::Value,
+    |     ^^^^ help: if this is intentional, prefix it with an underscore: `_root`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `crozier` (lib) generated 1 warning (run `cargo fix --lib -p crozier` to apply 1 suggestion)
+warning: `crozier` (lib test) generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.48s
+────────────
+ Nextest run ID 751a2e76-c0ae-4e14-bda3-da4ab4edb18b with nextest profile: default
+    Starting 1 test across 1 binary (437 tests and 6 binaries skipped)
+        FAIL [   0.117s] (1/1) crozier::e2e nested_named_example_reference_recovers_with_example_component
+  stdout ───
+
+    running 1 test
+    test nested_named_example_reference_recovers_with_example_component ... FAILED
+
+    failures:
+
+    failures:
+        nested_named_example_reference_recovers_with_example_component
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 437 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'nested_named_example_reference_recovers_with_example_component' (3933805) panicked at tests/e2e.rs:15809:9:
+    undefined-component-reference: crozier generated from the probe in its mode; the class says it is refused (38 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.120s] 1 test run: 0 passed, 1 failed, 437 skipped
+        FAIL [   0.117s] (1/1) crozier::e2e nested_named_example_reference_recovers_with_example_component
+error: test run failed

@@ -1,0 +1,30 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/clone/.claude/worktrees/agent-a8921728008912d00)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.04s
+────────────
+ Nextest run ID 833c6862-a938-44fe-9885-703b9399c04c with nextest profile: default
+    Starting 1 test across 1 binary (448 tests and 6 binaries skipped)
+        FAIL [   0.083s] (1/1) crozier::e2e example_type_mismatch_refusal_covers_measured_shapes
+  stdout ───
+
+    running 1 test
+    test example_type_mismatch_refusal_covers_measured_shapes ... FAILED
+
+    failures:
+
+    failures:
+        example_type_mismatch_refusal_covers_measured_shapes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 448 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'example_type_mismatch_refusal_covers_measured_shapes' (2866550) panicked at tests/e2e.rs:16592:9:
+    example-type-mismatch: crozier generated from the probe in its mode; the class says it is refused (38 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.086s] 1 test run: 0 passed, 1 failed, 448 skipped
+        FAIL [   0.083s] (1/1) crozier::e2e example_type_mismatch_refusal_covers_measured_shapes
+error: test run failed
+exit: 100

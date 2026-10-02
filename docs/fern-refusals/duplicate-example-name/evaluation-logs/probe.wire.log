@@ -1,0 +1,8 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+declared: POST /probe, JSON body {id: string}; examples first {id: a} and second {id: b}, both summary "Order updated"; 204 No Content
+sent: {"method": "POST", "path": "/probe", "body": {"id": "a"}} parsed: None
+sent: {"method": "POST", "path": "/probe", "body": {"id": "b"}} parsed: None
+sent: {"method": "POST", "path": "/probe", "body": {}} parsed: None
+reference.md snippet uses the first example only: True
+both declared example bodies are sendable; wire name id preserved; the empty 204 parses as None
+exit: 0

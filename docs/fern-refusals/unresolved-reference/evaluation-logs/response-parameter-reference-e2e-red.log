@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.64s
+────────────
+ Nextest run ID e2aec794-7d9e-4d51-b2f5-ec136e6cfd58 with nextest profile: default
+    Starting 1 test across 1 binary (436 tests and 6 binaries skipped)
+        FAIL [   0.084s] (1/1) crozier::e2e response_parameter_reference_recovers_with_inline_response
+  stdout ───
+
+    running 1 test
+    test response_parameter_reference_recovers_with_inline_response ... FAILED
+
+    failures:
+
+    failures:
+        response_parameter_reference_recovers_with_inline_response
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 436 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'response_parameter_reference_recovers_with_inline_response' (3185665) panicked at tests/e2e.rs:15822:9:
+    unresolved-reference: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.087s] 1 test run: 0 passed, 1 failed, 436 skipped
+        FAIL [   0.084s] (1/1) crozier::e2e response_parameter_reference_recovers_with_inline_response
+error: test run failed

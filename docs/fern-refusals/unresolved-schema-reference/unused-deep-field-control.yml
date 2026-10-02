@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths: {}
+components:
+  schemas:
+    Thing:
+      type: object
+      properties:
+        value: {$ref: '#/components/schemas/Container/$defs/id'}
+    Container:
+      type: object
+      $defs:
+        id: {type: string}

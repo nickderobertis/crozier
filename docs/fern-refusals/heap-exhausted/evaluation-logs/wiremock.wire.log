@@ -1,0 +1,2 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; Wiremock digest 94e583d7f5868949fe8bfd835e902928733f9d05fc5983c7fcf86298c93ee1ee; package/client import: OK
+POST /__admin/mappings sends the original bodyPatterns/matchesJsonPath/expression/and/equalTo/contains names exactly; parsed response reserializes exactly: {'request': {'method': 'POST', 'url': '/example', 'bodyPatterns': [{'matchesJsonPath': {'expression': '$.data', 'and': [{'equalTo': 'value'}, {'contains': 'val'}]}}]}, 'response': {'status': 200}}

@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '201':
+          description: Nothing
+        default:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+              examples:
+                a:
+                  value:
+                    id: a
+                  summary: Same
+                b:
+                  value:
+                    id: b
+                  summary: Same

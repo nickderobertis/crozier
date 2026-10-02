@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.91s
+────────────
+ Nextest run ID 2603584e-cc63-480c-a8ff-7b90e7df0ee3 with nextest profile: default
+    Starting 1 test across 1 binary (431 tests and 6 binaries skipped)
+        FAIL [   0.067s] (1/1) crozier::e2e path_without_leading_slash_recovers_with_valid_path
+  stdout ───
+
+    running 1 test
+    test path_without_leading_slash_recovers_with_valid_path ... FAILED
+
+    failures:
+
+    failures:
+        path_without_leading_slash_recovers_with_valid_path
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'path_without_leading_slash_recovers_with_valid_path' (3396120) panicked at tests/e2e.rs:15623:9:
+    path-without-leading-slash: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.069s] 1 test run: 0 passed, 1 failed, 431 skipped
+        FAIL [   0.067s] (1/1) crozier::e2e path_without_leading_slash_recovers_with_valid_path
+error: test run failed

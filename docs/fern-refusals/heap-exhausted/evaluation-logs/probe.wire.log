@@ -1,0 +1,4 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; package/client import: OK
+GET /tools has no declared composition request body; no request field omitted or renamed
+declared recursive composition response: {'composition': {'name': 'root', 'child0': {'name': 'branch', 'child0': 'leaf', 'child1': 'leaf2'}, 'child1': 'right'}}
+parsed response reserializes exactly, with original child0/child1 or nested pipeline/steps/operation/composition fields

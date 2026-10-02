@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.26s
+────────────
+ Nextest run ID b39c3fca-3deb-49d4-9b0f-2f572d093934 with nextest profile: default
+    Starting 1 test across 1 binary (441 tests and 6 binaries skipped)
+        FAIL [   0.149s] (1/1) crozier::e2e object_extension_refusal_preserves_scalar_aliases_and_object_bases
+  stdout ───
+
+    running 1 test
+    test object_extension_refusal_preserves_scalar_aliases_and_object_bases ... FAILED
+
+    failures:
+
+    failures:
+        object_extension_refusal_preserves_scalar_aliases_and_object_bases
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 441 filtered out; finished in 0.14s
+
+  stderr ───
+
+    thread 'object_extension_refusal_preserves_scalar_aliases_and_object_bases' (3964372) panicked at tests/e2e.rs:16123:13:
+    ordered-shadowed-object-control.yml: object-extends-non-object: crozier generated from the probe in its mode; the class says it is refused (40 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.152s] 1 test run: 0 passed, 1 failed, 441 skipped
+        FAIL [   0.149s] (1/1) crozier::e2e object_extension_refusal_preserves_scalar_aliases_and_object_bases
+error: test run failed

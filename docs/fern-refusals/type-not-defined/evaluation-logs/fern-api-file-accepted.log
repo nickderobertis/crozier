@@ -1,0 +1,30 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Skipping cookie parameter, f, in POST /cookie
+[api]: No error name found for status code 427
+[api]: No error name found for status code 432
+[api]: No error name found for status code 460
+[api]: No error name found for status code 520
+[api]: No error name found for status code 599
+All checks passed
+
+generate exit: 0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/clone/.claude/worktrees/agent-ab59950dea2aacb53/.local/S/agents/type-not-defined/runs/api-tag-accepted/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Skipping cookie parameter, f, in POST /cookie
+[api]: python-sdk No error name found for status code 427
+[api]: python-sdk No error name found for status code 432
+[api]: python-sdk No error name found for status code 460
+[api]: python-sdk No error name found for status code 520
+[api]: python-sdk No error name found for status code 599
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/clone/.claude/worktrees/agent-ab59950dea2aacb53/.local/S/agents/type-not-defined/runs/api-tag-accepted/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

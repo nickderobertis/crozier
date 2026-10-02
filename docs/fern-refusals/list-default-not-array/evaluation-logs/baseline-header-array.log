@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document docs/fern-refusals/list-default-not-array/header-array-control.yml: GET /probe: header parameter `value` has an unsupported array schema in Fern's Python generator

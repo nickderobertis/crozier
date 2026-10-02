@@ -1,0 +1,99 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+source: https://raw.githubusercontent.com/stripe/openapi/58e06a3214ae1574600fba64d40b770e5da6d505/latest/openapi.spec3.sdk.json
+digest: 92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a.json'), '--output', PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a'), '--package-name', 'fern']
+exit: 0
+generated 12061 files into /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 1
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/client.py", line 12, in <module>
+    from .raw_client import AsyncRawFernApi, RawFernApi
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/raw_client.py", line 19, in <module>
+    from .types.account import Account
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/account.py", line 138, in <module>
+    from .account_external_accounts import AccountExternalAccounts
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/account_external_accounts.py", line 48, in <module>
+    from .account_invoices_settings import AccountInvoicesSettings
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/account_invoices_settings.py", line 42, in <module>
+    from .account_settings import AccountSettings
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/account_settings.py", line 48, in <module>
+    from .api_errors import ApiErrors
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/api_errors.py", line 95, in <module>
+    from .application_fee import ApplicationFee
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/application_fee.py", line 112, in <module>
+    from .application_fee_refunds import ApplicationFeeRefunds
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/application_fee_refunds.py", line 58, in <module>
+    from .automatic_tax import AutomaticTax
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/automatic_tax.py", line 63, in <module>
+    from .balance_transaction import BalanceTransaction
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/balance_transaction.py", line 126, in <module>
+    from .balance_transaction_source import BalanceTransactionSource
+  File "/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/population-sdks/extension-reference-cycle/92363b86025d012852f648554372bf5fa6146af1472fb63f3c29d7c5fe6bd19a/src/fern/types/balance_transaction_source.py", line 11, in <module>
+    from .application_fee_fee_source import ApplicationFeeFeeSource
+ModuleNotFoundError: No module named 'fern.types.application_fee_fee_source'
+command: [PosixPath('/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 1
+src/fern/types/payment_source.py:15: error: Cannot find implementation or library stub for module named "fern.types.account_groups"  [import-not-found]
+src/fern/types/payment_source.py:20: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/payment_source.py:21: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/types/external_account.py:11: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/external_account.py:12: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/types/balance_transaction_source.py:11: error: Cannot find implementation or library stub for module named "fern.types.application_fee_fee_source"  [import-not-found]
+src/fern/types/balance_transaction_source.py:16: error: Cannot find implementation or library stub for module named "fern.types.charge_payment_method_details"  [import-not-found]
+src/fern/types/balance_transaction_source.py:17: error: Cannot find implementation or library stub for module named "fern.types.charge_shipping"  [import-not-found]
+src/fern/types/balance_transaction_source.py:18: error: Cannot find implementation or library stub for module named "fern.types.charge_source"  [import-not-found]
+src/fern/types/balance_transaction_source.py:32: error: Cannot find implementation or library stub for module named "fern.types.issuing_authorization_fleet"  [import-not-found]
+src/fern/types/balance_transaction_source.py:34: error: Cannot find implementation or library stub for module named "fern.types.issuing_authorization_fuel"  [import-not-found]
+src/fern/types/balance_transaction_source.py:59: error: Cannot find implementation or library stub for module named "fern.types.payout_trace_id"  [import-not-found]
+src/fern/types/balance_transaction_source.py:67: error: Cannot find implementation or library stub for module named "fern.types.topup_payment_method_options"  [import-not-found]
+src/fern/types/balance_transaction_source.py:68: error: Cannot find implementation or library stub for module named "fern.types.topup_source"  [import-not-found]
+src/fern/types/post_customers_customer_sources_id_response.py:11: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/post_customers_customer_sources_id_response.py:12: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/types/customer_source_updated_object.py:11: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/customer_source_updated_object.py:12: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/types/customer_source_deleted_object.py:11: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/customer_source_deleted_object.py:12: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/types/customer_source_created_object.py:11: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/customer_source_created_object.py:12: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/types/account_external_account_updated_object.py:11: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/account_external_account_updated_object.py:12: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/types/account_external_account_deleted_object.py:11: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/account_external_account_deleted_object.py:12: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/types/account_external_account_created_object.py:11: error: Cannot find implementation or library stub for module named "fern.types.bank_account_future_requirements"  [import-not-found]
+src/fern/types/account_external_account_created_object.py:11: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+src/fern/types/account_external_account_created_object.py:12: error: Cannot find implementation or library stub for module named "fern.types.bank_account_requirements"  [import-not-found]
+src/fern/raw_client.py:3377: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:3433: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:3580: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:3629: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:11764: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:12911: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:12966: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:13093: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:13152: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:37623: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:37804: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:38131: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:38258: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:38585: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:38655: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:38757: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:49310: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:49366: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:49513: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:49562: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:57697: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:58844: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:58899: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:59026: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:59085: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:83557: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:83738: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:84065: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:84192: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:84519: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:84589: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:84691: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+Found 60 errors in 11 files (checked 12054 source files)

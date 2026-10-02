@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.01s
+────────────
+ Nextest run ID 9704ef16-c4d0-4516-b364-5649ee0ed022 with nextest profile: default
+    Starting 1 test across 1 binary (434 tests and 6 binaries skipped)
+        FAIL [   0.085s] (1/1) crozier::e2e missing_parameter_component_recovers_when_definition_is_added
+  stdout ───
+
+    running 1 test
+    test missing_parameter_component_recovers_when_definition_is_added ... FAILED
+
+    failures:
+
+    failures:
+        missing_parameter_component_recovers_when_definition_is_added
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 434 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'missing_parameter_component_recovers_when_definition_is_added' (32455) panicked at tests/e2e.rs:15740:9:
+    undefined-component-reference: crozier generated from the probe in its mode; the class says it is refused (35 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.091s] 1 test run: 0 passed, 1 failed, 434 skipped
+        FAIL [   0.085s] (1/1) crozier::e2e missing_parameter_component_recovers_when_definition_is_added
+error: test run failed

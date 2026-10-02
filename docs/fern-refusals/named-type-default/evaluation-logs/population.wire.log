@@ -1,0 +1,10 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; digest: 1409a459eaaf9cc95b1c87dce2083d4b0c0ff0bd85459cc19fd0b2171b06d5bb
+declared components/schemas/ticket/properties/type: string enum [ticket], default ticket; independent ticket_type object
+generated type annotation: typing.Optional[fern.types.ticket_type.TicketType]
+ticket subclient import failure: TypeError '_' already defined as '~'
+no request sent and no Ticket response returned
+public model boundary parse failure: ValidationError 1 validation error for Ticket
+type
+  Input should be a valid dictionary or instance of TicketType [type=model_type, input_value='ticket', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/model_type
+baseline failures observed; SDK is not repaired

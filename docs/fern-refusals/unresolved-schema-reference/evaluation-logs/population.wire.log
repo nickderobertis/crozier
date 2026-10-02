@@ -1,0 +1,6 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; digest: 01c4f9b4d87421faa2cb1fbb053bf6d1ac53cb8f02aeace1c8180320a415120e
+declared usage ref: #/components/schemas/TableStructureResponse/$defs/UsageInfo; object with required number images_size_mb
+generated usage annotation: typing.Any
+wire: POST https://example.com/v1/infer body: {"input":[{"type":"image_url","url":"https://example.com/image.png"}]}
+parsed: TableStructureResponse {'data': [], 'usage': {'images_size_mb': 1.5}}
+valid response values and wire names retained as a raw usage dictionary; own-configuration mypy still fails with 6 errors

@@ -1,0 +1,6 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+declared: POST /contacts, required attributes -> #/components/schemas/custom_attributes; this schema is absent
+generated attributes annotation: typing.Any; no declared referenced type exists to validate against
+wire: POST https://example.com/contacts body: {"attributes":{"id":"A"}}
+parsed: None
+outer wire field preserved; missing referenced declaration prevents a comparison against its intended inner type

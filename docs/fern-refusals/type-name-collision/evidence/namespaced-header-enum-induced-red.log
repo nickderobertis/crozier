@@ -1,0 +1,32 @@
+   Compiling crozier v0.0.90 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.65s
+────────────
+ Nextest run ID c2886d40-5063-44c6-8b99-bc72ab296f32 with nextest profile: default
+    Starting 1 test across 1 binary (532 tests and 8 binaries skipped)
+        FAIL [   0.122s] (1/1) crozier::e2e namespaced_enum_collisions_follow_the_parameter_location
+  stdout ───
+
+    running 1 test
+    test namespaced_enum_collisions_follow_the_parameter_location ... FAILED
+
+    failures:
+
+    failures:
+        namespaced_enum_collisions_follow_the_parameter_location
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 532 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'namespaced_enum_collisions_follow_the_parameter_location' (1300914) panicked at tests/e2e.rs:16641:5:
+    assertion `left == right` failed: namespaced-header-enum-same: crozier: invalid OpenAPI document /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/docs/fern-refusals/type-name-collision/evidence/namespaced-header-enum-same.yml: type-name-collision: enum FetchAgentsRequestMode in namespace agents collides with a schema declaration; give the types distinct declared names
+
+      left: Some(1)
+     right: Some(0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.125s] 1 test run: 0 passed, 1 failed, 532 skipped
+        FAIL [   0.122s] (1/1) crozier::e2e namespaced_enum_collisions_follow_the_parameter_location
+error: test run failed

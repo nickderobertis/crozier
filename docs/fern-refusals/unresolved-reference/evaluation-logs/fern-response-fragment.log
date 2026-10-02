@@ -1,0 +1,52 @@
+command: ['fern', 'check'] exit: 0
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Response fragment control
+::error title=[api]%3A::Failed to parse openapi document Response fragment control
+[api]: Failed to resolve #/x-fragment/base 
+       CliError: Failed to resolve #/x-fragment/base
+           at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37157)
+           at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37410)
+           at jwf (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137537)
+           at Hro (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:136272)
+           at gsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137996)
+           at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147167
+           at Array.forEach (<anonymous>)
+           at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147122)
+           at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+           at e.getOpenAPIIr (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:920:17537)
+::error title=[api]%3A::Failed to resolve #/x-fragment/base %0ACliError: Failed to resolve #/x-fragment/base%0A    at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37157)%0A    at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37410)%0A    at jwf (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137537)%0A    at Hro (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:136272)%0A    at gsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137996)%0A    at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147167%0A    at Array.forEach (<anonymous>)%0A    at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147122)%0A    at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)%0A    at e.getOpenAPIIr (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:920:17537)
+All checks passed
+
+command: ['fern', 'generate', '--group', 'python-sdk', '--local'] exit: 0
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document Response fragment control
+::error title=[api]%3A python-sdk::Failed to parse openapi document Response fragment control
+[api]: python-sdk Failed to resolve #/x-fragment/base 
+                  CliError: Failed to resolve #/x-fragment/base
+                      at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37157)
+                      at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37410)
+                      at jwf (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137537)
+                      at Hro (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:136272)
+                      at gsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137996)
+                      at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147167
+                      at Array.forEach (<anonymous>)
+                      at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147122)
+                      at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+                      at e.getOpenAPIIr (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:920:17537)
+::error title=[api]%3A python-sdk::Failed to resolve #/x-fragment/base %0ACliError: Failed to resolve #/x-fragment/base%0A    at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37157)%0A    at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37410)%0A    at jwf (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137537)%0A    at Hro (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:136272)%0A    at gsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137996)%0A    at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147167%0A    at Array.forEach (<anonymous>)%0A    at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147122)%0A    at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)%0A    at e.getOpenAPIIr (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:920:17537)
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-2847794-jVToZNYCCO8O
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/fern-response-fragment/generated/python
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+
+generated Python: 28

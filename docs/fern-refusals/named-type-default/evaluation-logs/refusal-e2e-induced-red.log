@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.55s
+────────────
+ Nextest run ID ec7e3e67-a633-4cd0-8373-e6002cd9dbf8 with nextest profile: default
+    Starting 1 test across 1 binary (443 tests and 6 binaries skipped)
+        FAIL [   0.078s] (1/1) crozier::e2e named_default_refusal_preserves_declared_aliases_and_recovers_without_a_default
+  stdout ───
+
+    running 1 test
+    test named_default_refusal_preserves_declared_aliases_and_recovers_without_a_default ... FAILED
+
+    failures:
+
+    failures:
+        named_default_refusal_preserves_declared_aliases_and_recovers_without_a_default
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 443 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'named_default_refusal_preserves_declared_aliases_and_recovers_without_a_default' (327735) panicked at tests/e2e.rs:16234:13:
+    probe.yml: named-type-default: crozier generated from the probe in its mode; the class says it is refused (39 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.080s] 1 test run: 0 passed, 1 failed, 443 skipped
+        FAIL [   0.078s] (1/1) crozier::e2e named_default_refusal_preserves_declared_aliases_and_recovers_without_a_default
+error: test run failed

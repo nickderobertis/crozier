@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /types:
+    get:
+      operationId: getType
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ticket_type'
+components:
+  schemas:
+    ticket:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/Label'
+          default: ticket
+    ticket_type:
+      type: object
+      properties:
+        id:
+          type: string
+    Label: {type: string, enum: [ticket, other]}

@@ -1,0 +1,32 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.67s
+────────────
+ Nextest run ID b2405c99-e132-4c97-b4ce-cc843e8dad49 with nextest profile: default
+    Starting 1 test across 1 binary (438 tests and 6 binaries skipped)
+        FAIL [   0.061s] (1/1) crozier::e2e security_reference_recovers_when_the_referenced_document_is_present
+  stdout ───
+
+    running 1 test
+    test security_reference_recovers_when_the_referenced_document_is_present ... FAILED
+
+    failures:
+
+    failures:
+        security_reference_recovers_when_the_referenced_document_is_present
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 438 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'security_reference_recovers_when_the_referenced_document_is_present' (1703557) panicked at tests/e2e.rs:15931:5:
+    assertion `left == right` failed: crozier: invalid OpenAPI document /tmp/.tmpjw2T2y/openapi.yml: service-auth-undefined: security/BearerAuth
+
+      left: Some(1)
+     right: Some(0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.064s] 1 test run: 0 passed, 1 failed, 438 skipped
+        FAIL [   0.061s] (1/1) crozier::e2e security_reference_recovers_when_the_referenced_document_is_present
+error: test run failed

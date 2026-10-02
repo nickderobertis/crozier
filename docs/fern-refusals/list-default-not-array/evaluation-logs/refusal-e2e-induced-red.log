@@ -1,0 +1,29 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.03s
+────────────
+ Nextest run ID 32a3676f-3da0-4e30-9cfb-bc9de9983d87 with nextest profile: default
+    Starting 1 test across 1 binary (440 tests and 6 binaries skipped)
+        FAIL [   0.071s] (1/1) crozier::e2e list_default_refusal_recovers_with_an_array
+  stdout ───
+
+    running 1 test
+    test list_default_refusal_recovers_with_an_array ... FAILED
+
+    failures:
+
+    failures:
+        list_default_refusal_recovers_with_an_array
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 440 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'list_default_refusal_recovers_with_an_array' (3004849) panicked at tests/e2e.rs:16069:13:
+    probe.yml: list-default-not-array: crozier generated from the probe in its mode; the class says it is refused (38 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.073s] 1 test run: 0 passed, 1 failed, 440 skipped
+        FAIL [   0.071s] (1/1) crozier::e2e list_default_refusal_recovers_with_an_array
+error: test run failed

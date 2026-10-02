@@ -1,0 +1,46 @@
+Induced earlier state: only promotion/declaration guard disabled. Restored after run.
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+warning: field `missing_header_types` is never read
+   --> src/document_refusals.rs:313:5
+    |
+307 | struct SchemaContext<'a> {
+    |        ------------- field in this struct
+...
+313 |     missing_header_types: std::collections::HashSet<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `crozier` (lib) generated 1 warning
+warning: `crozier` (lib test) generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.71s
+────────────
+ Nextest run ID 9baa845d-b942-4b06-86d7-0f1baad4cebf with nextest profile: default
+    Starting 1 test across 1 binary (445 tests and 6 binaries skipped)
+        FAIL [   0.552s] (1/1) crozier::e2e inline_header_enum_refusal_recovers_with_a_named_schema
+  stdout ───
+
+    running 1 test
+    test inline_header_enum_refusal_recovers_with_a_named_schema ... FAILED
+
+    failures:
+
+    failures:
+        inline_header_enum_refusal_recovers_with_a_named_schema
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 445 filtered out; finished in 0.54s
+
+  stderr ───
+
+    thread 'inline_header_enum_refusal_recovers_with_a_named_schema' (600925) panicked at tests/e2e.rs:16209:9:
+    assertion `left == right` failed: partial-header-control.yml: crozier: invalid OpenAPI document /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/docs/fern-refusals/generator-missing-type/partial-header-control.yml: generator-missing-type: paths//agents/get/parameters/0/Api-Version/schema
+
+      left: Some(1)
+     right: Some(0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.554s] 1 test run: 0 passed, 1 failed, 445 skipped
+        FAIL [   0.552s] (1/1) crozier::e2e inline_header_enum_refusal_recovers_with_a_named_schema
+error: test run failed

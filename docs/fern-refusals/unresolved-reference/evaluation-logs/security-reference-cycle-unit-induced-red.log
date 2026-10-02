@@ -1,0 +1,31 @@
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.18s
+────────────
+ Nextest run ID ee3cb229-4b48-4fc4-8abd-42389448f0e5 with nextest profile: default
+    Starting 1 test across 2 binaries (286 tests and 5 binaries skipped)
+        FAIL [   0.013s] (1/1) crozier document_refusals::tests::referenced_auth_reads_real_files_and_rejects_cycles_and_invalid_targets
+  stdout ───
+
+    running 1 test
+    test document_refusals::tests::referenced_auth_reads_real_files_and_rejects_cycles_and_invalid_targets ... FAILED
+
+    failures:
+
+    failures:
+        document_refusals::tests::referenced_auth_reads_real_files_and_rejects_cycles_and_invalid_targets
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 286 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'document_refusals::tests::referenced_auth_reads_real_files_and_rejects_cycles_and_invalid_targets' (2203549) panicked at src/document_refusals.rs:795:13:
+    assertion `left == right` failed: {"$ref":"../.tmpmkDnLF/components.json#/components/securitySchemes/Auth"}
+      left: true
+     right: false
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.015s] 1 test run: 0 passed, 1 failed, 286 skipped
+        FAIL [   0.013s] (1/1) crozier document_refusals::tests::referenced_auth_reads_real_files_and_rejects_cycles_and_invalid_targets
+error: test run failed

@@ -1,0 +1,18 @@
+
+running 1 test
+test endpoint_auth_refusal_recovers_when_security_is_removed ... FAILED
+
+failures:
+
+---- endpoint_auth_refusal_recovers_when_security_is_removed stdout ----
+
+thread 'endpoint_auth_refusal_recovers_when_security_is_removed' (1811473) panicked at tests/e2e.rs:14161:9:
+endpoint-auth-undefined: crozier generated from the probe in its mode; the class says it is refused (36 file(s) written)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    endpoint_auth_refusal_recovers_when_security_is_removed
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 425 filtered out; finished in 0.06s
+

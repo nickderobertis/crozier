@@ -1,0 +1,3 @@
+parsed: None
+request: GET https://example.com/base/things
+declared path things is malformed; SDK concatenates it onto the configured base

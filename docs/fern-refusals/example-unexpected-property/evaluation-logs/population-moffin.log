@@ -1,0 +1,11 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+document: 0d1c316a1cbd47629f6898cb52ba334832b1b15747db73d150195686aa5b3f06.json
+command: baseline-crozier --no-config generate python --spec 0d1c316a1cbd47629f6898cb52ba334832b1b15747db73d150195686aa5b3f06.json --output <sdk> --package-name fern
+generated 918 files into <scratch>/clio/base-moffin
+exit: 0
+command: python -c 'import fern; import fern.client'
+package and client import: OK
+command: python -m mypy .
+src/fern/querydatasources/raw_client.py:1293: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/querydatasources/raw_client.py:1360: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+Found 68 errors in 6 files (checked 911 source files)

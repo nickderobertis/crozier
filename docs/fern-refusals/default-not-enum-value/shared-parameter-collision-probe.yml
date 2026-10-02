@@ -1,0 +1,12 @@
+openapi: 3.0.3
+info: {title: Probe, version: '1'}
+paths:
+  /probe:
+    parameters:
+      - name: sort
+        in: query
+        schema: {type: string, enum: [createdAt, -createdAt], default: -createdAt}
+    get:
+      operationId: probe
+      responses:
+        '204': {description: OK}
