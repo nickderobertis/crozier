@@ -208,7 +208,7 @@ just surface-census --selector pathItem.trace      # one feature: who declares i
 just surface-census --fixture apideck.com-crm --json
 ```
 
-Every registered source is committed: the 32 original
+Every registered source is committed: the 33 original
 `tests/fixtures/<name>/openapi.*` documents and the remaining sources under
 `tests/fixtures/corpus-sources/`, including every referenced file. Pinned URLs in
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md) are rebuild provenance;
@@ -1239,8 +1239,9 @@ The six region files, read as one body of work. Two measurements feed it:
   current walk is the **2026-09-28** one, pinned by digest (`c9319995…`) in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that check runs to completion on it. Corpus
-  rows 301 to 306, registered since, and row 224's withdrawal bring the tree to
-  **236** registered sources, of which **219** carry a committed golden; the
+  rows 301 to 306 and the `crozier-property-name` feature target, registered
+  since, and row 224's withdrawal bring the tree to
+  **237** registered sources, of which **220** carry a committed golden; the
   cells their declarations move are re-read from a walk over that tree.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category

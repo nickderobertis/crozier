@@ -2625,7 +2625,7 @@ class CensusReportTests(unittest.TestCase):
         completed = run("--vendored-only", "--selector", "operation.callbacks")
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
-        self.assertIn("32 original fixtures", completed.stderr)
+        self.assertIn("33 original fixtures", completed.stderr)
 
     def test_a_valued_selector_reports_one_member_of_a_closed_set(self) -> None:
         completed = run("--vendored-only", "--selector", "parameter.in=cookie")
@@ -2752,7 +2752,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.items>schema.anyOf": {},
         "schema.items>schema.oneOf": {},
         "schema.oneOf>schema.$ref": {
-            "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
+            "crozier-property-name": 1, "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
         },
         "schema.oneOf>schema.allOf": {"exhaustive": 1},
         # hoist_union_variant's string-enum arm, cases 2a to 2d: no vendored
@@ -2791,13 +2791,13 @@ class ConjunctionCensusTests(unittest.TestCase):
         },
         "schema.properties>schema.const:string-valued": {},
         "schema.properties>schema.properties:non-empty": {
-            "inline-request-response": 2, "nested-core-imports": 1
+            "crozier-property-name": 1, "inline-request-response": 2, "nested-core-imports": 1
         },
         "schema.properties>schema.additionalProperties=false": {},
         "schema.properties>schema.oneOf:sole-non-null-member": {},
         "schema.properties>schema.anyOf:sole-non-null-member": {},
         "schema.properties>schema.type:primary=array": {
-            "crozier-sdk-extensions": 1, "exhaustive": 3, "inline-request-response": 1, "malformed-property-schema": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 1
+            "crozier-property-name": 1, "crozier-sdk-extensions": 1, "exhaustive": 3, "inline-request-response": 1, "malformed-property-schema": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 1
         },
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
@@ -2874,13 +2874,13 @@ class ConjunctionCensusTests(unittest.TestCase):
         # functions and the vendored half declares four of them, which is what a
         # residual arm should look like: `prop_type_ref`'s own residual is the
         # widest number in this table.
-        "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
+        "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "crozier-property-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
         "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
         "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {},
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf": {},
-        "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {"audience-filter": 3, "audience-filter-strict": 4, "auth-schemes": 2, "bracketed-property-names": 2, "client-class-name": 1, "cookie-parameters": 1, "crozier-sdk-extensions": 5, "digit-leading-property": 1, "discriminated-unions": 2, "enum-name-sanitization": 1, "enum-query-param": 1, "enum-receiver-collision": 1, "error-responses": 2, "exhaustive": 16, "form-bodies": 4, "inline-array-request": 2, "inline-request-response": 6, "integer-enums": 1, "nested-core-imports": 1, "oauth-client-credentials": 3, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 2, "servers-webhooks": 3, "sse-streaming": 1, "tag-based-grouping": 2, "writeonly-fields": 1},
+        "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {"audience-filter": 3, "audience-filter-strict": 4, "auth-schemes": 2, "bracketed-property-names": 2, "client-class-name": 1, "cookie-parameters": 1, "crozier-property-name": 9, "crozier-sdk-extensions": 5, "digit-leading-property": 1, "discriminated-unions": 2, "enum-name-sanitization": 1, "enum-query-param": 1, "enum-receiver-collision": 1, "error-responses": 2, "exhaustive": 16, "form-bodies": 4, "inline-array-request": 2, "inline-request-response": 6, "integer-enums": 1, "nested-core-imports": 1, "oauth-client-credentials": 3, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 2, "servers-webhooks": 3, "sse-streaming": 1, "tag-based-grouping": 2, "writeonly-fields": 1},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -6352,7 +6352,7 @@ class SourceSelectionTests(unittest.TestCase):
             allowed = run("--corpus-root", directory, "--allow-unfetched", "--selector", "openapi.info")
             self.assertEqual(0, allowed.returncode, allowed.stderr)
             self.assertIn("is missing", allowed.stderr)
-            self.assertIn("32 original fixtures, 0 corpus sources", allowed.stderr)
+            self.assertIn("33 original fixtures, 0 corpus sources", allowed.stderr)
 
             payload = json.loads(
                 run("--corpus-root", directory, "--allow-unfetched", "--json").stdout
@@ -6636,7 +6636,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         """The unscoped vendored run — the exact invocation that never returned."""
         completed = run("--vendored-only")
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertIn("32 original fixtures", completed.stderr)
+        self.assertIn("33 original fixtures", completed.stderr)
         self.assertGreater(len(rows(completed)), 100)
 
     def test_a_flow_mapping_parses_to_its_entries_not_a_list_of_its_keys(self) -> None:
