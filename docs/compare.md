@@ -11,7 +11,12 @@ For each generator it:
    directory;
 2. generates crozier's SDK into another temporary directory;
 3. compares the two whole trees under the byte-match rules in
-   [`src/parity.rs`](../src/parity.rs);
+   [`src/parity.rs`](../src/parity.rs)
+   ([how the comparison works](matching.md#how-the-comparison-works)): Python
+   comments, the SDK-identity headers and `__init__.py` import order are
+   normalized, and so is the `generatorConfig` block of Fern's own
+   `.fern/metadata.json` — that exact path only, so any other file whose name
+   ends in `metadata.json` is compared as written;
 4. records the wall time of each side.
 
 ```sh

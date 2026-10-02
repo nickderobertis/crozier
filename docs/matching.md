@@ -63,6 +63,9 @@ applied to both sides; everything else must match exactly:
   never-executed `TYPE_CHECKING` block's order does not gate the match.
 - **`.fern/metadata.json`**: the `generatorConfig` block Fern records (the
   `python_enums` setting every `expected/` golden is generated with) is dropped.
+  The rule applies to that exact SDK-relative path only: any other file whose
+  name ends in `metadata.json` (`types/user_metadata.json`, a nested
+  `foo/metadata.json`) is SDK content and is compared as written.
 - **The trees**: the comparison is bidirectional — a file on only one side is a
   difference — a symbolic link on either side is refused rather than followed,
   and a golden's `.crozier-fern-golden.json` provenance record is not part of
