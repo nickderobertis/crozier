@@ -1,7 +1,0 @@
-
-
-import typing
-
-InvokeParentObjectIdObjectType = typing.Union[
-    typing.Literal["project_logs", "experiment", "playground_logs"], typing.Any
-]

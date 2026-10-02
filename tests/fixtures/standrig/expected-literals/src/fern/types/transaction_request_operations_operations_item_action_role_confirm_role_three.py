@@ -1,7 +1,0 @@
-
-
-import typing
-
-TransactionRequestOperationsOperationsItemActionRoleConfirmRoleThree = typing.Union[
-    typing.Literal["eye-right"], typing.Any
-]

@@ -1,5 +1,0 @@
-
-
-import typing
-
-VoiceV1ByocTrunkVoiceMethod = typing.Union[typing.Literal["HEAD", "GET", "POST", "PATCH", "PUT", "DELETE"], typing.Any]

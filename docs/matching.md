@@ -1362,9 +1362,8 @@ while the open union takes it. What changes, all measured against Fern 5.20.0:
   value's string where it passed a member, so the enum is no longer imported.
 
 The flag is set once on each `ir::EnumType` (`literal`) by `ir::build`, so the
-module renderer and the example writer read the same answer. Every corpus golden
-but the seed snapshot `query-parameters-openapi` carries the literals golden it
-is held to
+module renderer and the example writer read the same answer. A targeted set of
+corpora reaching every enum shape carries the literals golden it is held to
 (`expected-literals/`, an overlay of `expected/`; see
 [`fern-goldens.md`](fern-goldens.md#literal-enum-goldens)), compared by
 `tests/e2e/literals.rs`. Fern's third mode, `forward_compatible_python_enums`,

@@ -29,8 +29,9 @@ Under that pair both of crozier's enum forms are certified, each against the
 Fern configuration it names: `enum-type: python-enums` against
 `pydantic_config.enum_type: python_enums`, and `enum-type: literals` against
 `enum_type` unset, fern-python-sdk's `literals` default. crozier's corpus gate
-holds every corpus document to Fern's output both ways
-(`expected/` and `expected-literals/`; see
+holds every corpus document to the `python_enums` output (`expected/`) and a
+targeted set reaching every enum shape to the `literals` output
+(`expected-literals/`; see
 [`fern-goldens.md`](fern-goldens.md#literal-enum-goldens)), and the script
 writes whichever one the generator is configured with (see `ENUM_TYPE` below).
 

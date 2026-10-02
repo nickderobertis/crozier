@@ -1,7 +1,0 @@
-
-
-import typing
-
-TransactionRequestOperationsOperationsItemActionDeformerBindingRemovePropertyThree = typing.Union[
-    typing.Literal["scaleX"], typing.Any
-]

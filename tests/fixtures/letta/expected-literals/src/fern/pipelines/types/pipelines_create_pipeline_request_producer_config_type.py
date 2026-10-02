@@ -1,5 +1,0 @@
-
-
-import typing
-
-PipelinesCreatePipelineRequestProducerConfigType = typing.Union[typing.Literal["slack_channel_reader"], typing.Any]

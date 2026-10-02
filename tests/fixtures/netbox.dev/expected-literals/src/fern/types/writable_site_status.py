@@ -1,7 +1,0 @@
-
-
-import typing
-
-WritableSiteStatus = typing.Union[
-    typing.Literal["planned", "staging", "active", "decommissioning", "retired"], typing.Any
-]

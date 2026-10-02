@@ -1,14 +1,15 @@
 //! `enum-type: literals` against Fern's literal-enum goldens.
 //!
-//! Every registered corpus with a Fern golden also carries
-//! `expected-literals/`: Fern's output for the same spec and settings with
-//! `pydantic_config.enum_type` unset (fern-python-sdk's `literals` default),
-//! produced by `scripts/fern-literals-goldens.sh` exactly as `expected/` is and
-//! committed as an overlay of it — only the files whose bytes differ, plus a
-//! manifest naming the files Fern does not emit in that mode. The gate rebuilds
-//! the full literals tree and byte-compares crozier's `--enum-type literals`
-//! output to it with the corpus's own residuals, the same comparison
-//! `assert_corpus_matches` makes against `expected/`.
+//! A targeted set of registered corpora ([`LITERAL_GOLDENS`]), together covering
+//! every enum shape crozier generates, also carries `expected-literals/`: Fern's
+//! output for the same spec and settings with `pydantic_config.enum_type` unset
+//! (fern-python-sdk's `literals` default), produced by
+//! `scripts/fern-literals-goldens.sh` exactly as `expected/` is and committed as
+//! an overlay of it — only the files whose bytes differ, plus a manifest naming
+//! the files Fern does not emit in that mode. The gate rebuilds the full
+//! literals tree and byte-compares crozier's `--enum-type literals` output to it
+//! with the corpus's own residuals, the same comparison `assert_corpus_matches`
+//! makes against `expected/`.
 
 use std::path::Path;
 
@@ -19,13 +20,25 @@ use super::{
 
 /// The test that byte-compares every literals golden, listed in
 /// `just test-corpus-match` like each corpus's own test.
-pub(super) const CORPUS_TEST: &str = "literals_match_fern_output_for_every_corpus";
+pub(super) const CORPUS_TEST: &str = "literals_match_fern_output_for_targeted_corpora";
 
-/// The one comparable corpus without a literals golden:
-/// `query-parameters-openapi`'s golden is Fern's seed-repository snapshot, not
-/// a `fern generate --preview` tree the literals script reproduces, and its
-/// document declares no enum for the setting to change.
-const EXEMPT: &[&str] = &["query-parameters-openapi"];
+/// The corpora held to a literals golden, each for the enum shapes it reaches:
+/// - `exhaustive`: named component enums, inline enums inside union variants,
+///   an enum request body and response, and the dropped `core/enum.py`;
+/// - `enum-name-sanitization`: values that need sanitizing into member names
+///   (`"0: Active"`) and an inline query-parameter enum of numeric strings;
+/// - `enum-query-param`: an inline query-parameter enum on a nested resource;
+/// - `enum-receiver-collision`: members whose names collide with `visit`'s
+///   receiver;
+/// - `openfigi.com`: inline property enums, optional and `nullable` ones, and a
+///   path-parameter enum, in a real corpus document.
+const LITERAL_GOLDENS: &[&str] = &[
+    "exhaustive",
+    "enum-name-sanitization",
+    "enum-query-param",
+    "enum-receiver-collision",
+    "openfigi.com",
+];
 
 /// A corpus's literals golden overlay directory, beside its `expected/`.
 const OVERLAY: &str = "expected-literals";
@@ -115,15 +128,6 @@ fn materialize(api: &str, overlay: &Overlay) -> tempfile::TempDir {
     tree
 }
 
-/// Whether a python-enums golden declares a string enum.
-fn declares_enum(expected: &Path) -> bool {
-    walk_files(expected).iter().any(|rel| {
-        rel.ends_with(".py")
-            && std::fs::read_to_string(expected.join(rel))
-                .is_ok_and(|text| text.contains("(enum.StrEnum):"))
-    })
-}
-
 /// The registered corpora with a comparable `expected/` golden.
 fn comparable_corpora() -> Vec<&'static Corpus> {
     registered_diff_corpora()
@@ -135,56 +139,58 @@ fn comparable_corpora() -> Vec<&'static Corpus> {
         .collect()
 }
 
-/// The literals gate covers exactly the corpora it should: every registered
-/// corpus with a golden has a valid literals golden — whether or not it declares
-/// an enum, since Fern's literals tree also drops `core/enum.py` — except the
-/// [`EXEMPT`] one, and no overlay sits outside the registry, where no test would
-/// read it.
-#[test]
-fn every_corpus_has_a_literals_golden() {
+/// The targeted corpora with their validated overlays.
+fn literal_corpora() -> Vec<(&'static Corpus, Overlay)> {
     let corpora = comparable_corpora();
-    let mut problems = Vec::new();
-    for corpus in &corpora {
-        let exempt = EXEMPT.contains(&corpus.api);
-        match read_overlay(corpus.api) {
-            Err(error) => problems.push(error),
-            Ok(None) if !exempt => problems.push(format!(
-                "{}: has no {OVERLAY}/; run scripts/fern-literals-goldens.sh {}",
-                corpus.api, corpus.api
-            )),
-            Ok(Some(_)) if exempt => problems.push(format!(
-                "{}: is exempt from the literals gate but has {OVERLAY}/; drop the exemption",
-                corpus.api
-            )),
-            _ => {}
-        }
-        if exempt && declares_enum(&fixture_dir(corpus.api).join("expected")) {
-            problems.push(format!(
-                "{}: now declares an enum, so it needs a literals golden",
-                corpus.api
-            ));
-        }
-    }
-    for api in EXEMPT {
-        if !corpora.iter().any(|corpus| corpus.api == *api) {
-            problems.push(format!(
-                "{api}: exempt, but no registered corpus with a golden"
-            ));
-        }
-    }
+    LITERAL_GOLDENS
+        .iter()
+        .map(|api| {
+            let corpus = corpora
+                .iter()
+                .find(|corpus| corpus.api == *api)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "{api}: listed in LITERAL_GOLDENS but no registered corpus with a golden"
+                    )
+                });
+            let overlay = read_overlay(api)
+                .unwrap_or_else(|error| panic!("{error}"))
+                .unwrap_or_else(|| {
+                    panic!("{api}: has no {OVERLAY}/; run scripts/fern-literals-goldens.sh {api}")
+                });
+            (*corpus, overlay)
+        })
+        .collect()
+}
+
+/// The literals gate covers exactly [`LITERAL_GOLDENS`]: each is a registered
+/// corpus with a valid overlay, and no overlay sits outside the list, where no
+/// test would read it.
+#[test]
+fn literal_goldens_are_exactly_the_targeted_set() {
+    assert_eq!(literal_corpora().len(), LITERAL_GOLDENS.len());
     let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
-    for entry in std::fs::read_dir(&fixtures).expect("read tests/fixtures") {
-        let name = entry.expect("fixture entry").file_name();
-        let name = name.to_string_lossy();
-        if fixtures.join(&*name).join(OVERLAY).exists()
-            && !corpora.iter().any(|corpus| corpus.api == name)
-        {
-            problems.push(format!(
-                "{name}: has {OVERLAY}/ but is no registered corpus with a golden"
-            ));
-        }
-    }
-    assert!(problems.is_empty(), "{}", problems.join("\n"));
+    let mut on_disk: Vec<String> = std::fs::read_dir(&fixtures)
+        .expect("read tests/fixtures")
+        .map(|entry| {
+            entry
+                .expect("fixture entry")
+                .file_name()
+                .to_string_lossy()
+                .into_owned()
+        })
+        .filter(|name| fixtures.join(name).join(OVERLAY).exists())
+        .collect();
+    on_disk.sort();
+    let mut listed: Vec<String> = LITERAL_GOLDENS
+        .iter()
+        .map(|api| (*api).to_string())
+        .collect();
+    listed.sort();
+    assert_eq!(
+        on_disk, listed,
+        "a fixture's {OVERLAY}/ is not in LITERAL_GOLDENS, or a listed one is missing"
+    );
 }
 
 /// The literals golden is `expected/` minus the manifest's removed files, with the
@@ -217,18 +223,11 @@ fn the_literals_golden_is_expected_minus_removed_plus_overlay() {
 }
 
 /// crozier's `--enum-type literals` output reproduces Fern's literal-enum golden
-/// byte-for-byte (under the shared parity rules) for every corpus that has one.
+/// byte-for-byte (under the shared parity rules) for every targeted corpus.
 /// Corpora run concurrently, and every failure is reported, not only the first.
 #[test]
-fn literals_match_fern_output_for_every_corpus() {
-    let corpora: Vec<(&Corpus, Overlay)> = comparable_corpora()
-        .into_iter()
-        .filter_map(|corpus| {
-            read_overlay(corpus.api)
-                .unwrap_or_else(|error| panic!("{error}"))
-                .map(|overlay| (corpus, overlay))
-        })
-        .collect();
+fn literals_match_fern_output_for_targeted_corpora() {
+    let corpora = literal_corpora();
     assert!(!corpora.is_empty(), "no corpus carries a literals golden");
     let workers = std::thread::available_parallelism().map_or(2, |n| n.get().div_ceil(2));
     let next = std::sync::atomic::AtomicUsize::new(0);

@@ -13672,6 +13672,7 @@ fn render_files_refuses_names_and_recovers_with_nameable_enum_values() {
             audience_strict: false,
             fern_strict: strict,
             extra_fields: crozier::settings::ExtraFields::Allow,
+            enum_type: crozier::settings::EnumType::PythonEnums,
             layout: crozier::settings::Layout::Packaged,
         };
         std::fs::write(&spec, &probe).unwrap();

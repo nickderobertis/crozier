@@ -245,9 +245,11 @@ golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
 
 ### Literal-enum goldens
 
-Every registered fixture with an `expected/` golden also carries
-`expected-literals/` (bar `query-parameters-openapi`, whose golden is Fern's
-seed-repository snapshot and whose document declares no enum): Fern's output for the same spec, pins and settings with
+A targeted set of registered fixtures (`LITERAL_GOLDENS` in
+`tests/e2e/literals.rs`, chosen so that together they reach every enum shape
+crozier generates: named, inline-property, parameter, sanitized-name, optional
+and nullable enums) also carries `expected-literals/`: Fern's output for the
+same spec, pins and settings with
 `pydantic_config.enum_type` left unset (fern-python-sdk's `literals` default),
 which crozier reproduces with `--enum-type literals` (see
 [`matching.md`](matching.md#literal-enums)).
@@ -258,10 +260,10 @@ which crozier reproduces with `--enum-type literals` (see
   versions, and the `expected/` files Fern does not emit in that mode
   (`core/enum.py`). The gate in `tests/e2e/literals.rs` rebuilds the full tree
   as `expected/` minus those files plus the overlay, and compares it with the
-  corpus's own residuals. A fixture without an enum still has one: Fern's
-  literals tree drops `core/enum.py`. The gate also fails when a fixture lacks
-  the overlay, when an overlay sits outside the registry, and when the overlay's
-  Fern version differs from `expected/`'s provenance.
+  corpus's own residuals. The gate also fails when a listed fixture lacks the
+  overlay, when an overlay sits outside the list, and when the overlay's Fern
+  version differs from `expected/`'s provenance. Add a fixture to the set only
+  for an enum shape the set does not yet reach.
 - **Generate it locally**, after `expected/` is current:
   `scripts/fern-literals-goldens.sh [--jobs N] <fixture>...` runs
   `scripts/generate-fern-fixture.sh --enum-type literals` per fixture with the
