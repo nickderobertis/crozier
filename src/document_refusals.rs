@@ -1218,7 +1218,20 @@ fn check_schema_resolution(
             }
             false
         });
-        if required && schema_reference.is_some() && (target.is_none() || unsupported_definition) {
+        // A pointer naming `properties` is walked rather than resolved, and Fern
+        // types one that reaches nothing as unknown rather than failing: a
+        // required property pointing at `Named/properties/absent`, or at an
+        // undeclared `Missing/properties/absent`, is a bare `Any`, and one
+        // through `Named/properties/label/$defs/inner` is that `$defs` member
+        // (the `358-absent-required-property`,
+        // `358-undeclared-head-properties-required` and
+        // `356-defs-required-property` authored probes).
+        let walked = reference.contains("properties");
+        if required
+            && !walked
+            && schema_reference.is_some()
+            && (target.is_none() || unsupported_definition)
+        {
             return refusal(
                 context.path,
                 context.strict,
@@ -2515,6 +2528,43 @@ mod tests {
         std::fs::write(&file, "paths: {/probe: {get: {responses: {401: {$ref: '#/$defs/Denied'}}}}}\n$defs: {Denied: {description: Unauthorized}}\ncomponents: {schemas: {Bound: {maximum: 18446744073709552000}}}").unwrap();
         let error = check_structure_file(&file, false).unwrap_err().to_string();
         assert!(error.contains("unresolved-reference: paths//probe/get/responses/401"));
+    }
+
+    #[test]
+    fn a_required_properties_pointer_is_walked_rather_than_refused() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("api.yml");
+        let probe = |reference: &str| {
+            format!(
+                "openapi: 3.0.3\npaths: {{/holder: {{post: {{requestBody: {{content: {{application/json: \
+                 {{schema: {{type: object, required: [ghost], properties: {{ghost: {{$ref: '{reference}'}}}}}}}}}}}}, \
+                 responses: {{'204': {{description: No Content}}}}}}}}}}\ncomponents: {{schemas: {{Named: {{type: object, \
+                 $defs: {{id: {{type: string}}}}, properties: {{label: {{type: string, $defs: {{inner: {{type: string}}}}}}}}}}}}}}\n"
+            )
+        };
+        // Pinned Fern walks a pointer naming `properties`, typing what it does
+        // not reach as unknown, so these generate.
+        for walked in [
+            "#/components/schemas/Named/properties/absent",
+            "#/components/schemas/Missing/properties/absent",
+            "#/components/schemas/Named/properties/label/$defs/inner",
+        ] {
+            std::fs::write(&file, probe(walked)).unwrap();
+            check_structure_file(&file, true).unwrap_or_else(|error| panic!("{walked}: {error}"));
+        }
+        // One without the word is resolved, and fails required.
+        for refused in [
+            "#/components/schemas/Named/items",
+            "#/components/schemas/Named/$defs/id",
+            "#/components/schemas/Missing",
+        ] {
+            std::fs::write(&file, probe(refused)).unwrap();
+            let error = check_structure_file(&file, false).unwrap_err().to_string();
+            assert!(
+                error.contains(&format!("unresolved-schema-reference: paths//holder/post/requestBody/content/application/json/schema/properties/ghost reference {refused}")),
+                "{error}"
+            );
+        }
     }
 
     #[test]
