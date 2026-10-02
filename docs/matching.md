@@ -1307,9 +1307,9 @@ These fixtures are the *packaged* SDK form (like exhaustive), reproduced with
 ### Fern-compatible extension policy
 
 crozier honours a small set of `x-*` vendor extensions that steer generation:
-audience labels, per-node ignore, enum member names, the sub-client group and
-method names, the cursor-pagination contract, and the streaming contract (with
-its `stream-condition` split). Every one follows a single
+audience labels, per-node ignore, enum member names, property names, the
+sub-client group and method names, the cursor-pagination contract, and the
+streaming contract (with its `stream-condition` split). Every one follows a single
 **dual-header policy** ([`openapi`] module docs), so a project migrating off Fern
 can point crozier at its existing, Fern-annotated specs with zero edits, confirm
 the SDKs match, then migrate the annotations to `x-crozier-*` as unhurried cleanup:
@@ -1325,7 +1325,11 @@ the SDKs match, then migrate the annotations to `x-crozier-*` as unhurried clean
 The precedence lives in the field accessors (`Operation::audiences`,
 `Operation::ignored`, `Operation::sdk_group_name`, `Operation::sdk_method_name`,
 `Operation::pagination`, `Operation::streaming`, `Schema::ignored`,
-`Schema::enum_member_names`); any future extension inherits the policy by default.
+`Schema::enum_member_names`, `Schema::property_name`); any future extension
+inherits the policy by default. The `crozier-property-name` feature target pins
+`property-name` against Fern: hellopatient's overlay renames request body
+properties clear of the same-named `practice_id` path parameter, and the target
+reproduces that through every place a property becomes a Python name.
 
 Four of them shape the client tree and its methods, and corpus row 108
 (`truefoundry-trueforge`) is the registered witness of all four:
