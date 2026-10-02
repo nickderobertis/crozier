@@ -13,6 +13,8 @@ use crate::{Error, Result};
 mod type_not_defined;
 use type_not_defined::undefined_type_reference;
 
+mod examples;
+
 #[derive(Clone, Copy)]
 enum Class {
     UnsupportedOpenapiVersion,
@@ -36,6 +38,10 @@ enum Class {
     MissingDiscriminantProperty,
     DuplicateExampleName,
     ExampleMissingRequiredQueryParameter,
+    ExampleTypeMismatch,
+    ExampleNotEnumValue,
+    ExampleUnexpectedProperty,
+    ExampleMissingRequiredProperty,
 }
 
 impl Class {
@@ -64,6 +70,10 @@ impl Class {
             Self::ExampleMissingRequiredQueryParameter => {
                 "example-missing-required-query-parameter"
             }
+            Self::ExampleTypeMismatch => "example-type-mismatch",
+            Self::ExampleNotEnumValue => "example-not-enum-value",
+            Self::ExampleUnexpectedProperty => "example-unexpected-property",
+            Self::ExampleMissingRequiredProperty => "example-missing-required-property",
         }
     }
 }
@@ -237,6 +247,9 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     check_discriminant_examples(&root, path, strict)?;
     check_example_names(&root, path, strict)?;
     check_example_query_parameters(&root, path, strict)?;
+    if let Some((class, element)) = examples::first_violation(&root) {
+        return refusal(path, strict, class, &element);
+    }
     Ok(())
 }
 

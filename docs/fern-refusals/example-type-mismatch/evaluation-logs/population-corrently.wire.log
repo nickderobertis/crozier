@@ -1,0 +1,4 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; package/client import: OK
+declared Tariffh0.ap/gp: integer (examples 22.12 and 7.5, which Fern rejects as integers)
+GET https://sdk-boundary.invalid/tariff/slph0?zipcode=69168 -> parsed declared integers: [Tariffh0(ap=22, gp=7)]
+exit: 0

@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info: {title: probe, version: 1.0.0}
+paths:
+  /probe:
+    put:
+      operationId: probe
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: {type: object, properties: {async: {type: boolean}}}
+            examples:
+              a: {value: {async: true}}
+              b: {value: {async: false}}
+      responses:
+        '202':
+          description: Async
+          content:
+            application/json:
+              schema: {type: object, properties: {}}
+        '204': {description: Done}

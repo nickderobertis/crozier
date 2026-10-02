@@ -16774,6 +16774,60 @@ fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped
     }
 }
 
+/// One example-value class's committed evidence, through the real CLI: the
+/// probe is refused in both modes with `diagnostic`, every other measured
+/// refused shape (`*-probe.yml`) is refused with the class, and every accepted
+/// near miss (`*-control.yml`) generates identical bytes in both modes.
+fn example_value_class_holds(id: &str, diagnostic: &str) {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join(id);
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &class.join("probe.yml"), strict).unwrap();
+        let failures = refused_failures(id, &run, diagnostic, strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+    }
+    let mut cases: Vec<_> = std::fs::read_dir(&class)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+        .filter(|name| name.ends_with("-probe.yml") || name.ends_with("-control.yml"))
+        .collect();
+    cases.sort();
+    assert!(!cases.is_empty(), "{id}: no measured shapes committed");
+    for case in cases {
+        let spec = class.join(&case);
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        if case.ends_with("-probe.yml") {
+            for (run, strict) in [(&normal, false), (&strict, true)] {
+                let failures = refused_failures(id, run, &format!("{id}: "), strict);
+                assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            }
+            continue;
+        }
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty(), "{case}");
+        assert_eq!(normal.files, strict.files, "{case}");
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap(),
+                "{case}: {file}"
+            );
+        }
+    }
+}
+
+#[test]
+fn example_type_mismatch_refusal_covers_measured_shapes() {
+    example_value_class_holds(
+        "example-type-mismatch",
+        "example-type-mismatch: GET /probe response example",
+    );
+}
+
 #[test]
 fn enum_default_refusal_recovers_with_a_retained_default() {
     let class = Path::new(env!("CARGO_MANIFEST_DIR"))
