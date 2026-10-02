@@ -67,9 +67,10 @@ version supplied from a workflow input:
 
 Both therefore emit one `generators.yml` naming `fernapi/fern-python-sdk` at the
 resolved version, and both apply the corpus-wide `pydantic_config.enum_type:
-python_enums` that `generate-fern-fixture.sh` writes unconditionally for every
-fixture (crozier renders string enums as real `enum.Enum` classes; see
-[`matching.md`](matching.md)). A fixture's own non-default settings — audiences,
+python_enums` that `generate-fern-fixture.sh` writes for every `expected/` golden
+(crozier's default renders string enums as real `enum.Enum` classes; see
+[`matching.md`](matching.md)). Only its `--enum-type literals` mode, which
+produces the [literal-enum goldens](#literal-enum-goldens), leaves it unset. A fixture's own non-default settings — audiences,
 `client_class_name`, `extra_fields` — reach the same block from
 `fern-generator-config.txt`, so a golden generated locally is the artifact the
 hosted route would have published.
@@ -241,6 +242,36 @@ golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
 - **A fetched-spec flat test needs its `just test-corpus-match` line**, like its
   packaged sibling. `every_registered_corpus_is_wired_into_the_gate` fails without
   it.
+
+### Literal-enum goldens
+
+Every registered fixture with an `expected/` golden also carries
+`expected-literals/` (bar `query-parameters-openapi`, whose golden is Fern's
+seed-repository snapshot and whose document declares no enum): Fern's output for the same spec, pins and settings with
+`pydantic_config.enum_type` left unset (fern-python-sdk's `literals` default),
+which crozier reproduces with `--enum-type literals` (see
+[`matching.md`](matching.md#literal-enums)).
+
+- **It is an overlay of `expected/`.** Fern's literals output differs from the
+  python-enums tree only where an enum appears, so the directory holds just the
+  files whose bytes differ, plus `.crozier-literals-overlay.json`: the Fern
+  versions, and the `expected/` files Fern does not emit in that mode
+  (`core/enum.py`). The gate in `tests/e2e/literals.rs` rebuilds the full tree
+  as `expected/` minus those files plus the overlay, and compares it with the
+  corpus's own residuals. A fixture without an enum still has one: Fern's
+  literals tree drops `core/enum.py`. The gate also fails when a fixture lacks
+  the overlay, when an overlay sits outside the registry, and when the overlay's
+  Fern version differs from `expected/`'s provenance.
+- **Generate it locally**, after `expected/` is current:
+  `scripts/fern-literals-goldens.sh [--jobs N] <fixture>...` runs
+  `scripts/generate-fern-fixture.sh --enum-type literals` per fixture with the
+  spec `expected/` was generated from (the vendored `openapi.yml`, the committed
+  corpus source, or `just fetch-corpus` for a row with pinned remote refs), the
+  version its provenance records, and its `fern-generator-config.txt` row. It
+  needs what Route A needs and logs to `.local/fern-literals/`.
+- **Route B and the schedule do not refresh it.** After a Fern upgrade or a
+  regenerated `expected/`, rerun the script for the affected fixtures; the
+  version check above names each stale one.
 
 ### Moving a remote-`$ref` pin forward
 

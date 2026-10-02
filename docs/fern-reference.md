@@ -25,6 +25,15 @@ environment variables, `FERN_REFERENCE_CLI_VERSION` and
 match: another pair differs at least in `.fern/metadata.json`, which records the
 versions, and may differ anywhere else Fern changed its output.
 
+Under that pair both of crozier's enum forms are certified, each against the
+Fern configuration it names: `enum-type: python-enums` against
+`pydantic_config.enum_type: python_enums`, and `enum-type: literals` against
+`enum_type` unset, fern-python-sdk's `literals` default. crozier's corpus gate
+holds every corpus document to Fern's output both ways
+(`expected/` and `expected-literals/`; see
+[`fern-goldens.md`](fern-goldens.md#literal-enum-goldens)), and the script
+writes whichever one the generator is configured with (see `ENUM_TYPE` below).
+
 ## Use it
 
 Save the script as `scripts/fern-reference.sh` in your repository, make it
@@ -58,11 +67,11 @@ environment `crozier compare` passes, runs Fern, and leaves the reference SDK in
 | `AUDIENCES` | The group's `audiences:` list (comma-separated values, one entry each); no `audiences:` key when empty. |
 | `AUDIENCE_STRICT` | Not written: Fern has no such setting. Its group `audiences:` filter always drops operations that carry no audience, which is crozier's `audience-strict: true`. With `false`, crozier keeps those operations and a document that has any reports `mismatched`. |
 | `EXTRA_FIELDS` | The generator's `config.pydantic_config.extra_fields`. |
+| `ENUM_TYPE` | `python-enums` sets the generator's `config.pydantic_config.enum_type: python_enums`; `literals` leaves `enum_type` unset, Fern's `literals` default; any other value exits non-zero naming it, without running `fern`. |
 | `LAYOUT` | Fern's output mode: `packaged` runs `fern generate --local --preview --output "$CROZIER_REFERENCE_OUTPUT"`, `flat` writes the tree to a `local-file-system` output whose `path` is `$CROZIER_REFERENCE_OUTPUT`; any other value exits non-zero naming it, without running `fern`. |
 | `OUTPUT` | Where Fern writes, as `LAYOUT` describes. |
 
-It also always sets `config.pydantic_config.enum_type: python_enums`, the enum
-form crozier always emits, and sets `CI` and `GITHUB_ACTIONS` to `true` only when
+It also sets `CI` and `GITHUB_ACTIONS` to `true` only when
 they are unset (Fern records how it was invoked in `.fern/metadata.json`, and
 crozier emits the form a CI run records).
 
@@ -126,7 +135,7 @@ quote() {
 }
 
 for name in OUTPUT SPEC PACKAGE_NAME PROJECT_NAME CLIENT_CLASS_NAME \
-  AUDIENCE_STRICT EXTRA_FIELDS LAYOUT; do
+  AUDIENCE_STRICT EXTRA_FIELDS ENUM_TYPE LAYOUT; do
   var="CROZIER_REFERENCE_$name"
   [ -n "${!var:-}" ] || fail "$var is not set; run this as a crozier compare reference command"
 done
@@ -152,6 +161,16 @@ case "$layout" in
     ;;
   *)
     fail "unknown layout '$layout': expected packaged or flat"
+    ;;
+esac
+
+# crozier's `python-enums` is Fern's `enum_type: python_enums`; its `literals` is
+# Fern with `enum_type` unset, which is fern-python-sdk's `literals` default.
+case "$CROZIER_REFERENCE_ENUM_TYPE" in
+  python-enums) enum_type="            enum_type: python_enums"$'\n' ;;
+  literals) enum_type="" ;;
+  *)
+    fail "unknown enum type '$CROZIER_REFERENCE_ENUM_TYPE': expected python-enums or literals"
     ;;
 esac
 
@@ -202,8 +221,7 @@ ${audiences}    generators:
         config:
           client_class_name: $q_client
           pydantic_config:
-            enum_type: python_enums
-            extra_fields: $q_extra_fields
+${enum_type}            extra_fields: $q_extra_fields
         output:
           location: local-file-system
           path: $q_output_path

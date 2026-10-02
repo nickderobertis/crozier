@@ -22,7 +22,7 @@ use crate::ir::{
     TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
-use crate::settings::{ExtraFields, Layout};
+use crate::settings::{EnumType, ExtraFields, Layout};
 use crate::wrap::Doc;
 
 /// The header comment crozier writes atop every generated file. It differs from
@@ -1418,6 +1418,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         ir.endpoints
             .iter()
             .any(|endpoint| endpoint.pagination.is_some()),
+        ir.enum_type,
     ));
     // Fern's flat tree has no publishing identity, so its wrapper sends no
     // `SDK-Name`/`SDK-Version` headers.
@@ -3193,10 +3194,13 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
 
 /// Emit the vendored core runtime for a package. The runtime assets are emitted
 /// verbatim; `client_wrapper.py` is generated separately (see
-/// [`client_wrapper_file`]) because Fern shapes it from the auth model.
-fn core_files(pkg: &str, paginated: bool) -> Vec<GeneratedFile> {
+/// [`client_wrapper_file`]) because Fern shapes it from the auth model. Fern
+/// ships `core/enum.py` (the `StrEnum` base) only when enums render as classes,
+/// so a literals SDK omits it.
+fn core_files(pkg: &str, paginated: bool, enum_type: EnumType) -> Vec<GeneratedFile> {
     let mut files: Vec<GeneratedFile> = CORE_ASSETS
         .iter()
+        .filter(|(rel, _)| *rel != "enum.py" || enum_type == EnumType::PythonEnums)
         .map(|(rel, content)| GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/core/{rel}")),
             contents: if paginated && *rel == "__init__.py" {
@@ -3846,6 +3850,7 @@ fn render_type_decl(
                 },
             )
         }
+        TypeDecl::Enum(e) if e.literal => render_literal_enum(env, e),
         TypeDecl::Enum(e) => render_enum(env, e, &loc),
         TypeDecl::DiscriminatedUnion(union) => {
             render_discriminated_union(env, union, extra, loc, tag_types, forward, repair)
@@ -3910,6 +3915,37 @@ fn render_enum(
             e.name, m.name, m.visit_param
         ));
     }
+    render(
+        env,
+        "file.py",
+        &e.name,
+        context! { header => HEADER, body => body },
+    )
+}
+
+/// A literal enum value as Fern's snippet writer spells it: the wire value in
+/// double quotes, with backslashes and double quotes escaped.
+fn literal_enum_value(value: &str) -> String {
+    format!("\"{}\"", value.replace('\\', "\\\\").replace('"', "\\\""))
+}
+
+/// Render a string enum as Fern does with `enum_type` unset (its `literals`
+/// default): an open alias, `{Name} = typing.Union[typing.Literal["a", "b"],
+/// typing.Any]`, that takes any value besides the listed ones, so a response
+/// carrying a value the spec does not list still parses. Fern writes the alias
+/// without the enum's description and imports nothing from `core`; ruff wraps a
+/// long value list.
+fn render_literal_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<String> {
+    let values: Vec<String> = e
+        .members
+        .iter()
+        .map(|m| format!("\"{}\"", escape_py_str(&m.value)))
+        .collect();
+    let body = format!(
+        "import typing\n\n{} = typing.Union[typing.Literal[{}], typing.Any]",
+        e.name,
+        values.join(", ")
+    );
     render(
         env,
         "file.py",
@@ -7590,6 +7626,9 @@ impl<'a> ExampleCtx<'a> {
                     .members
                     .iter()
                     .find(|member| member.value == value)?;
+                if enum_type.literal {
+                    return Some(Example::Atom(literal_enum_value(&member.value)));
+                }
                 let member_name = member.name.clone();
                 self.record_ref(name);
                 Some(Example::Atom(format!("{name}.{member_name}")))
@@ -8258,6 +8297,12 @@ impl<'a> ExampleCtx<'a> {
                 let target = a.target.clone();
                 self.value(&target, slot)
             }
+            // A literal enum's example is its first value as a plain string, which
+            // needs no import.
+            Some(TypeDecl::Enum(e)) if e.literal => match e.members.first() {
+                Some(m) => Example::Atom(literal_enum_value(&m.value)),
+                None => Example::Atom("None".to_string()),
+            },
             // An enum's example is member access on its first member
             // (`TypesWeatherReport.SUNNY`), importing the enum by name.
             Some(TypeDecl::Enum(e)) => {
@@ -8303,6 +8348,8 @@ impl<'a> ExampleCtx<'a> {
                         let enum_name = m.source.as_deref().map(|source| {
                             naming::child_class_name(source, &u.discriminant_property)
                         });
+                        // The tag is a member access on its enum, imported by name,
+                        // or — for a literal enum — the discriminant string alone.
                         let member =
                             enum_name
                                 .as_deref()
@@ -8311,10 +8358,16 @@ impl<'a> ExampleCtx<'a> {
                                         .members
                                         .iter()
                                         .find(|value| value.value == m.discriminant)
-                                        .map(|value| value.name.clone()),
+                                        .map(|value| {
+                                            if declared.literal {
+                                                (literal_enum_value(&value.value), false)
+                                            } else {
+                                                (format!("{enum_name}.{}", value.name), true)
+                                            }
+                                        }),
                                     _ => None,
                                 });
-                        if let (Some(enum_name), Some(member)) = (enum_name, member) {
+                        if let (Some(enum_name), Some((member, imported))) = (enum_name, member) {
                             // The Python docstring writer puts the tag back in
                             // its schema position; the Markdown writers (README
                             // and `reference.md`) append it after every other
@@ -8328,12 +8381,14 @@ impl<'a> ExampleCtx<'a> {
                                     .filter(|f| f.spec_required && !f.optional)
                                     .count()
                             };
-                            self.record_ref(&enum_name);
+                            if imported {
+                                self.record_ref(&enum_name);
+                            }
                             args.insert(
                                 at.min(args.len()),
                                 (
                                     Some(naming::model_field_name(&u.discriminant_property)),
-                                    Example::Atom(format!("{enum_name}.{member}")),
+                                    Example::Atom(member),
                                 ),
                             );
                         }
@@ -10998,6 +11053,7 @@ mod tests {
             global_headers: Vec::new(),
             environment: None,
             extra_fields: crate::settings::ExtraFields::Allow,
+            enum_type: crate::settings::EnumType::PythonEnums,
             layout: crate::settings::Layout::Packaged,
         }
     }
@@ -11958,6 +12014,7 @@ mod tests {
                     docstring: None,
                 }],
                 docstring: None,
+                literal: false,
             }),
         ];
         let auth = Auth::None;
@@ -12097,6 +12154,7 @@ mod tests {
                     docstring: None,
                 }],
                 docstring: None,
+                literal: false,
             }),
             TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
                 base_fields: Vec::new(),
@@ -12383,6 +12441,7 @@ mod tests {
                 docstring: None,
             }],
             docstring: None,
+            literal: false,
         });
         let alias = TypeDecl::Alias(AliasType {
             reach_refs: Vec::new(),
@@ -12610,6 +12669,7 @@ mod tests {
             module: "empty_enum".to_string(),
             members: Vec::new(),
             docstring: None,
+            literal: false,
         });
         let mut nullable_required = model_field("server_url", TypeRef::Primitive(Prim::Str), true);
         nullable_required.optional = true;
@@ -13353,6 +13413,7 @@ mod tests {
                     docstring: Some("Ready member.".to_string()),
                 }],
                 docstring: Some("State enum.".to_string()),
+                literal: false,
             },
             &RefLoc::RootTypes,
         )

@@ -66,6 +66,10 @@ pub struct GenerateConfig {
     /// after construction; [`GenerateConfig::new`] starts from the default
     /// [`Layout::Packaged`](crate::settings::Layout::Packaged).
     pub layout: crate::settings::Layout,
+    /// How string enums are generated (Fern's `pydantic_config.enum_type`). Set
+    /// after construction; [`GenerateConfig::new`] starts from the default
+    /// [`EnumType::PythonEnums`](crate::settings::EnumType::PythonEnums).
+    pub enum_type: crate::settings::EnumType,
 }
 
 impl GenerateConfig {
@@ -96,6 +100,7 @@ impl GenerateConfig {
             client_class_name,
             extra_fields,
             layout: crate::settings::Layout::default(),
+            enum_type: crate::settings::EnumType::default(),
         })
     }
 }

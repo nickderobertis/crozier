@@ -1,0 +1,7 @@
+
+
+import typing
+
+TeamMemberAssignedLocationsAssignmentType = typing.Union[
+    typing.Literal["ALL_CURRENT_AND_FUTURE_LOCATIONS", "EXPLICIT_LOCATIONS"], typing.Any
+]

@@ -1,0 +1,5 @@
+
+
+import typing
+
+ImageUrlDetail = typing.Union[typing.Literal["auto", "low", "high"], typing.Any]

@@ -189,6 +189,8 @@ pub struct Ir {
     /// How generated pydantic models treat unknown fields (Fern's
     /// `pydantic_config.extra_fields`); drives every model's `extra` config.
     pub extra_fields: crate::settings::ExtraFields,
+    /// How string enums are emitted (Fern's `pydantic_config.enum_type`).
+    pub enum_type: crate::settings::EnumType,
     /// Which tree to emit: Fern's packaged SDK or its flat module tree.
     pub layout: crate::settings::Layout,
 }
@@ -763,6 +765,7 @@ fn oauth_scope_enum(doc: &OpenApi) -> Option<EnumType> {
         module: "oauth_scope".to_string(),
         members,
         docstring: None,
+        literal: false,
     })
 }
 
@@ -1706,6 +1709,12 @@ pub struct EnumType {
     pub members: Vec<EnumMember>,
     /// Optional docstring.
     pub docstring: Option<String>,
+    /// Whether the enum renders as an open `typing.Literal` union rather than an
+    /// `enum.StrEnum` class (`enum-type: literals`, Fern with `enum_type` unset).
+    /// Set for every enum at once by [`build`] from the generator config, so the
+    /// module renderer and the worked examples, which both look the declaration
+    /// up, agree on the enum's shape.
+    pub literal: bool,
 }
 
 /// One member of an [`EnumType`].
@@ -1799,6 +1808,7 @@ fn build_enum(
         module: naming::module_name(name),
         members,
         docstring,
+        literal: false,
     }
 }
 
@@ -2054,6 +2064,27 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .unwrap_or_else(|| crate::config::default_client_class_name(config.package_name.as_str()));
     let environment = environment_model(doc, &client_name);
 
+    // A literal enum is a plain string at runtime: Fern serializes an enum
+    // header with `str(..)` rather than `.value`, and examples an enum value as
+    // its string rather than a member access.
+    if config.enum_type == crate::settings::EnumType::Literals {
+        for param in endpoints
+            .iter_mut()
+            .flat_map(|ep| ep.header_params.iter_mut())
+        {
+            param.enum_value = false;
+        }
+        let decls = builder
+            .types
+            .iter_mut()
+            .chain(tag_types.iter_mut().map(|tag_type| &mut tag_type.decl));
+        for decl in decls {
+            if let TypeDecl::Enum(e) = decl {
+                e.literal = true;
+            }
+        }
+    }
+
     Ir {
         yaml_unquoted_timestamps: doc.yaml_unquoted_timestamps.clone(),
         openapi_31: doc.openapi.starts_with("3.1"),
@@ -2072,6 +2103,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         global_headers: global,
         environment,
         extra_fields: config.extra_fields,
+        enum_type: config.enum_type,
         layout: config.layout,
     }
 }
@@ -17079,6 +17111,7 @@ mod tests {
             audience_strict: false,
             fern_strict: false,
             extra_fields: crate::settings::ExtraFields::Allow,
+            enum_type: crate::settings::EnumType::PythonEnums,
             layout: crate::settings::Layout::Packaged,
         })
         .expect("render succeeds");

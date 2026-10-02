@@ -576,7 +576,7 @@ fn clean_join(base: &Path, path: &Path) -> PathBuf {
 /// environment, in the order `reference_env` gives their values: where to
 /// write, then the generator's resolved settings. The one source of the names:
 /// `docs/compare.md`'s table and the Fern recipe's tests are checked against it.
-pub const REFERENCE_VARIABLES: [&str; 11] = [
+pub const REFERENCE_VARIABLES: [&str; 12] = [
     "CROZIER_REFERENCE_OUTPUT",
     "CROZIER_REFERENCE_GENERATOR",
     "CROZIER_REFERENCE_CONFIG_FILE",
@@ -587,6 +587,7 @@ pub const REFERENCE_VARIABLES: [&str; 11] = [
     "CROZIER_REFERENCE_AUDIENCES",
     "CROZIER_REFERENCE_AUDIENCE_STRICT",
     "CROZIER_REFERENCE_EXTRA_FIELDS",
+    "CROZIER_REFERENCE_ENUM_TYPE",
     "CROZIER_REFERENCE_LAYOUT",
 ];
 
@@ -604,6 +605,7 @@ fn reference_env(resolved: &Resolved, name: &str, output: &Path) -> Vec<(String,
         args.audiences.join(","),
         args.audience_strict.to_string(),
         args.extra_fields.as_str().to_string(),
+        args.enum_type.as_str().to_string(),
         args.layout.as_str().to_string(),
     ];
     REFERENCE_VARIABLES
@@ -931,7 +933,7 @@ mod tests {
         write(
         root,
         "svc/crozier.yml",
-        "spec: ./openapi.yml\naudiences: [public, internal]\ngenerators:\n  python:\n    extra-fields: forbid\n",
+        "spec: ./openapi.yml\naudiences: [public, internal]\ngenerators:\n  python:\n    extra-fields: forbid\n    enum-type: literals\n",
     );
         let dump_file = dump.path().join("env");
         let options = Options {
@@ -963,6 +965,7 @@ mod tests {
                 "CROZIER_REFERENCE_CONFIG_FILE={}",
                 svc.join("crozier.yml").display()
             ),
+            "CROZIER_REFERENCE_ENUM_TYPE=literals".to_string(),
             "CROZIER_REFERENCE_EXTRA_FIELDS=forbid".to_string(),
             "CROZIER_REFERENCE_GENERATOR=python".to_string(),
             "CROZIER_REFERENCE_LAYOUT=packaged".to_string(),

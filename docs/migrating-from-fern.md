@@ -11,8 +11,12 @@ itself.
 ### Upgrade the Fern generator first
 
 crozier certifies one pair, **Fern CLI 5.67.1** with **`fernapi/fern-python-sdk`
-5.20.0**, under `pydantic_config.enum_type: python_enums` (the pair and setting
-recorded in [`assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json)).
+5.20.0** (the pair recorded in
+[`assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json)), under
+either enum form: `pydantic_config.enum_type: python_enums`, which crozier's
+default `enum-type: python-enums` matches, or `enum_type` unset — Fern's
+`literals` default — which `enum-type: literals` matches (see the
+[options table](#pydantic_config)).
 A generator on an older release (4.x, or an older release candidate) differs
 from crozier wherever Fern's output changed since. So upgrade first, as its own
 change:
@@ -26,7 +30,9 @@ change:
             enum_type: python_enums
 ```
 
-and set `"version": "5.67.1"` in `fern.config.json`. Regenerate with Fern and
+and set `"version": "5.67.1"` in `fern.config.json`. A generator that relies on
+Fern's literal enums keeps `enum_type` unset instead, and its crozier generator
+sets `enum-type: literals`. Regenerate with Fern and
 review that diff on its own; only then compare against crozier, so the
 comparison shows crozier's differences and not Fern's. Remove any
 `pydantic_config.version` setting at the same time: crozier emits the default,
@@ -232,8 +238,8 @@ the difference, or stays on Fern.
 
 | Option | Default | crozier |
 | --- | --- | --- |
-| `pydantic_config.enum_type` | `literals` | `python_enums` only: crozier always emits it. Set it in the Fern config when you upgrade. |
-| `pydantic_config.use_str_enums` | `true` | None: Fern resets it from `enum_type`, so with `python_enums` it is `false`. Remove it. |
+| `pydantic_config.enum_type` | `literals` | `enum-type`: `python-enums` (crozier's default) matches `python_enums`; `literals` matches `literals`, set or left unset. `forward_compatible_python_enums` has no counterpart. |
+| `pydantic_config.use_str_enums` | `true` | None: Fern resets it from `enum_type` (`true` exactly under `literals`), so it has no effect. Remove it. |
 | `pydantic_config.version` | `both` | Default only: crozier emits both the pydantic v1 and v2 configuration. Remove `v1`, `v2` or `v1_on_v2`. |
 | `pydantic_config.extra_fields` | `allow` | `extra-fields` (`allow`, `ignore`, `forbid`). |
 | `pydantic_config.forbid_extra_fields` | `false` | None; Fern marks it deprecated for `extra_fields`. Replace `true` with `extra_fields: forbid`, which `extra-fields: forbid` matches. |

@@ -1,0 +1,10 @@
+{
+  "cliVersion": "5.67.1",
+  "generatorName": "fernapi/fern-python-sdk",
+  "generatorVersion": "5.20.0",
+  "generatorConfig": {
+    "client_class_name": "AcmeClient"
+  },
+  "invokedBy": "ci",
+  "ciProvider": "github"
+}

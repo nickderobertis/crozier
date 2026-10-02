@@ -102,6 +102,41 @@ impl ExtraFields {
     }
 }
 
+/// How string enums are generated — Fern's `pydantic_config.enum_type`, a
+/// **Python-generator-specific** knob (like [`ExtraFields`], it lives only on a
+/// generator, never on the shared top-level):
+///
+/// - [`PythonEnums`](EnumType::PythonEnums) (default) emits a
+///   `class {Name}(enum.StrEnum)` per enum with a member per value and a `visit`
+///   method — Fern's `enum_type: python_enums`. A value the spec does not list
+///   fails validation.
+/// - [`Literals`](EnumType::Literals) emits
+///   `{Name} = typing.Union[typing.Literal["a", "b"], typing.Any]` — what Fern
+///   emits with `enum_type` unset (its `literals` default). The `typing.Any`
+///   fallback accepts a value the spec does not list, so a server that adds an
+///   enum value does not break parsing a response.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, JsonSchema, clap::ValueEnum)]
+#[serde(rename_all = "kebab-case")]
+pub enum EnumType {
+    /// One `enum.StrEnum` class per enum (Fern's `enum_type: python_enums`).
+    #[default]
+    PythonEnums,
+    /// An open `typing.Literal` union per enum (Fern with `enum_type` unset).
+    Literals,
+}
+
+impl EnumType {
+    /// The canonical kebab-case name (`python-enums`/`literals`), matching the
+    /// config value, the CLI value, and `CROZIER_ENUM_TYPE`.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            EnumType::PythonEnums => "python-enums",
+            EnumType::Literals => "literals",
+        }
+    }
+}
+
 /// Which tree a generator writes — the two output modes Fern has, so a team
 /// migrating from Fern sets the one that matches how it ran Fern:
 ///
@@ -195,6 +230,10 @@ pub struct GeneratorSettings {
     /// here and not among the shared top-level defaults. Defaults to
     /// [`ExtraFields::Allow`] when unset.
     pub extra_fields: Option<ExtraFields>,
+    /// How string enums are generated (Fern's `pydantic_config.enum_type`):
+    /// `python-enums` classes or open `literals` unions. Python-generator-
+    /// specific, like `extra-fields`. Defaults to [`EnumType::PythonEnums`].
+    pub enum_type: Option<EnumType>,
     /// Which tree to write: `packaged` (Fern's `--preview --output`) or `flat`
     /// (Fern's `local-file-system` output). Defaults to [`Layout::Packaged`].
     pub layout: Option<Layout>,
@@ -264,6 +303,8 @@ pub struct CliOverrides {
     pub fern_strict: Option<bool>,
     /// `--extra-fields`; `None` when the flag was absent.
     pub extra_fields: Option<ExtraFields>,
+    /// `--enum-type`; `None` when the flag was absent.
+    pub enum_type: Option<EnumType>,
     /// `--layout`; `None` when the flag was absent.
     pub layout: Option<Layout>,
 }
@@ -282,6 +323,7 @@ impl CliOverrides {
             && self.audience_strict.is_none()
             && self.fern_strict.is_none()
             && self.extra_fields.is_none()
+            && self.enum_type.is_none()
             && self.layout.is_none()
     }
 }
@@ -352,6 +394,7 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
         audience_strict: over.audience_strict.or(base.audience_strict),
         fern_strict: over.fern_strict.or(base.fern_strict),
         extra_fields: over.extra_fields.or(base.extra_fields),
+        enum_type: over.enum_type.or(base.enum_type),
         layout: over.layout.or(base.layout),
         reference: ReferenceSettings::merge(base.reference, over.reference),
     }
@@ -368,7 +411,8 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
 /// `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`, `CROZIER_PROJECT_NAME`,
 /// `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES` (comma-separated),
 /// `CROZIER_AUDIENCE_STRICT`, `CROZIER_FERN_STRICT`, `CROZIER_EXTRA_FIELDS`
-/// (`allow`/`ignore`/`forbid`), `CROZIER_LAYOUT` (`packaged`/`flat`).
+/// (`allow`/`ignore`/`forbid`), `CROZIER_ENUM_TYPE` (`python-enums`/`literals`),
+/// `CROZIER_LAYOUT` (`packaged`/`flat`).
 pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSettings> {
     let read = |name: &str| get(name).filter(|v| !v.is_empty());
 
@@ -397,6 +441,17 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         ),
     };
 
+    let enum_type = match read("CROZIER_ENUM_TYPE") {
+        None => None,
+        Some(v) => Some(
+            parse_enum_type(&v).ok_or_else(|| Error::InvalidEnvOverride {
+                message: format!(
+                    "`CROZIER_ENUM_TYPE` must be `python-enums` or `literals`, got `{v}`"
+                ),
+            })?,
+        ),
+    };
+
     let layout = match read("CROZIER_LAYOUT") {
         None => None,
         Some(v) => Some(parse_layout(&v).ok_or_else(|| Error::InvalidEnvOverride {
@@ -415,6 +470,7 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         audience_strict,
         fern_strict,
         extra_fields,
+        enum_type,
         layout,
         reference: None,
     })
@@ -425,6 +481,15 @@ fn parse_layout(v: &str) -> Option<Layout> {
     match v.to_ascii_lowercase().as_str() {
         "packaged" => Some(Layout::Packaged),
         "flat" => Some(Layout::Flat),
+        _ => None,
+    }
+}
+
+/// Parse a case-insensitive `enum-type` value (`python-enums`/`literals`).
+fn parse_enum_type(v: &str) -> Option<EnumType> {
+    match v.to_ascii_lowercase().as_str() {
+        "python-enums" => Some(EnumType::PythonEnums),
+        "literals" => Some(EnumType::Literals),
         _ => None,
     }
 }
@@ -567,6 +632,13 @@ pub fn resolve(
         .or(env.extra_fields)
         .or(per.and_then(|p| p.extra_fields))
         .unwrap_or_default();
+    // `enum-type` is Python-generator-specific too: CLI > env > per-generator >
+    // the built-in `python-enums` default.
+    let enum_type = cli
+        .enum_type
+        .or(env.enum_type)
+        .or(per.and_then(|p| p.enum_type))
+        .unwrap_or_default();
     let layout = cli
         .layout
         .or(env.layout)
@@ -584,6 +656,7 @@ pub fn resolve(
         audience_strict,
         fern_strict,
         extra_fields,
+        enum_type,
         layout,
     })
 }
@@ -776,6 +849,22 @@ pub fn explain(
                 .map(|e| e.as_str().to_string()),
             None,
         ),
+        // Python-generator-specific like `extra-fields`, but never unset: with no
+        // layer supplying it, it shows the built-in `python-enums`.
+        {
+            let show = |e: EnumType| e.as_str().to_string();
+            let mut enum_type = field(
+                "enum-type",
+                cli.enum_type.map(show),
+                env.enum_type.map(show),
+                per.and_then(|p| p.enum_type).map(show),
+                None,
+            );
+            enum_type
+                .value
+                .get_or_insert_with(|| show(EnumType::default()));
+            enum_type
+        },
         layout_field(cli, env, per, config),
         // `crozier compare`'s reference command: no env layer and no default, and
         // its flag belongs to `compare`, so `crozier config` shows the file layers.
@@ -1150,6 +1239,93 @@ mod tests {
         // Env beats the per-generator value; there is no shared layer to consult.
         assert_eq!(ef.value.as_deref(), Some("ignore"));
         assert_eq!(ef.source, Source::Env);
+    }
+
+    #[test]
+    fn env_enum_type_parses_case_insensitively_and_rejects_others() {
+        for (raw, expected) in [
+            ("python-enums", EnumType::PythonEnums),
+            ("Literals", EnumType::Literals),
+            ("PYTHON-ENUMS", EnumType::PythonEnums),
+        ] {
+            let e = env_overrides(env_get(&[("CROZIER_ENUM_TYPE", raw)])).unwrap();
+            assert_eq!(e.enum_type, Some(expected), "{raw}");
+        }
+        // Fern's own spelling is not crozier's: it fails rather than defaulting.
+        let err = env_overrides(env_get(&[("CROZIER_ENUM_TYPE", "python_enums")])).unwrap_err();
+        assert!(err.to_string().contains("CROZIER_ENUM_TYPE"), "{err}");
+    }
+
+    #[test]
+    fn enum_type_is_generator_specific_and_defaults_to_python_enums() {
+        let config = parsed(
+            "generators:\n  python:\n    spec: ./a.yml\n    output: ./o\n    enum-type: literals",
+        );
+        let none = GeneratorSettings::default();
+        let resolved = |env: &GeneratorSettings, cli: &CliOverrides| {
+            resolve("python", &config, env, cli).unwrap().enum_type
+        };
+        assert_eq!(
+            resolved(&none, &CliOverrides::default()),
+            EnumType::Literals
+        );
+        let env = env_overrides(env_get(&[("CROZIER_ENUM_TYPE", "python-enums")])).unwrap();
+        assert_eq!(
+            resolved(&env, &CliOverrides::default()),
+            EnumType::PythonEnums
+        );
+        let cli = CliOverrides {
+            enum_type: Some(EnumType::Literals),
+            ..CliOverrides::default()
+        };
+        assert!(!cli.is_empty());
+        assert_eq!(resolved(&env, &cli), EnumType::Literals);
+
+        let bare = parsed("generators:\n  python:\n    spec: ./a.yml\n    output: ./o");
+        let args = resolve("python", &bare, &none, &CliOverrides::default()).unwrap();
+        assert_eq!(args.enum_type, EnumType::PythonEnums);
+        // No shared top-level form.
+        let err = parse("enum-type: literals").unwrap_err();
+        assert!(err.contains("enum-type"), "{err}");
+    }
+
+    #[test]
+    fn explain_attributes_enum_type_and_shows_the_default() {
+        let config = parsed(
+            "generators:\n  python:\n    spec: ./a.yml\n    output: ./o\n    enum-type: literals",
+        );
+        let row = |config: &FileConfig, env: &GeneratorSettings| {
+            explain("python", config, env, &CliOverrides::default())
+                .into_iter()
+                .find(|f| f.field == "enum-type")
+                .expect("enum-type present")
+        };
+        let none = GeneratorSettings::default();
+        let from_generator = row(&config, &none);
+        assert_eq!(from_generator.value.as_deref(), Some("literals"));
+        assert_eq!(from_generator.source, Source::Generator);
+        let env = env_overrides(env_get(&[("CROZIER_ENUM_TYPE", "python-enums")])).unwrap();
+        let from_env = row(&config, &env);
+        assert_eq!(from_env.value.as_deref(), Some("python-enums"));
+        assert_eq!(from_env.source, Source::Env);
+        let default = row(&FileConfig::default(), &none);
+        assert_eq!(default.value.as_deref(), Some("python-enums"));
+        assert_eq!(default.source, Source::Default);
+    }
+
+    #[test]
+    fn merge_layers_a_generator_enum_type() {
+        let base = parsed("generators:\n  python:\n    enum-type: literals");
+        let over = parsed("generators:\n  python:\n    spec: ./a.yml");
+        assert_eq!(
+            merge(base.clone(), over).generators["python"].enum_type,
+            Some(EnumType::Literals)
+        );
+        let over = parsed("generators:\n  python:\n    enum-type: python-enums");
+        assert_eq!(
+            merge(base, over).generators["python"].enum_type,
+            Some(EnumType::PythonEnums)
+        );
     }
 
     #[test]

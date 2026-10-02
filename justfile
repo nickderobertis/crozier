@@ -118,6 +118,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e client_class_name_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audience_filter_strict_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_package_name_flat_matches_fern
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e literals_match_fern_output_for_every_corpus
     python3 scripts/corpus_sources.py check
     "$(./scripts/census-python.sh)" tests/corpus_surface_census_test.py
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_crm_matches_fern_output

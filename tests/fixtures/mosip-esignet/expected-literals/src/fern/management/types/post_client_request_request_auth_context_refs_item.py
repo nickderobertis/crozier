@@ -1,0 +1,16 @@
+
+
+import typing
+
+PostClientRequestRequestAuthContextRefsItem = typing.Union[
+    typing.Literal[
+        "mosip:idp:acr:static-code",
+        "mosip:idp:acr:generated-code",
+        "mosip:idp:acr:linked-wallet",
+        "mosip:idp:acr:biometrics",
+        "mosip:idp:acr:knowledge",
+        "mosip:idp:acr:password",
+        "mosip:idp:acr:id-token",
+    ],
+    typing.Any,
+]

@@ -88,7 +88,7 @@ jobs:
           }
 
           for name in OUTPUT SPEC PACKAGE_NAME PROJECT_NAME CLIENT_CLASS_NAME \
-            AUDIENCE_STRICT EXTRA_FIELDS LAYOUT; do
+            AUDIENCE_STRICT EXTRA_FIELDS ENUM_TYPE LAYOUT; do
             var="CROZIER_REFERENCE_$name"
             [ -n "${!var:-}" ] || fail "$var is not set; run this as a crozier compare reference command"
           done
@@ -114,6 +114,16 @@ jobs:
               ;;
             *)
               fail "unknown layout '$layout': expected packaged or flat"
+              ;;
+          esac
+
+          # crozier's `python-enums` is Fern's `enum_type: python_enums`; its `literals` is
+          # Fern with `enum_type` unset, which is fern-python-sdk's `literals` default.
+          case "$CROZIER_REFERENCE_ENUM_TYPE" in
+            python-enums) enum_type="            enum_type: python_enums"$'\n' ;;
+            literals) enum_type="" ;;
+            *)
+              fail "unknown enum type '$CROZIER_REFERENCE_ENUM_TYPE': expected python-enums or literals"
               ;;
           esac
 
@@ -164,8 +174,7 @@ jobs:
                   config:
                     client_class_name: $q_client
                     pydantic_config:
-                      enum_type: python_enums
-                      extra_fields: $q_extra_fields
+          ${enum_type}            extra_fields: $q_extra_fields
                   output:
                     location: local-file-system
                     path: $q_output_path

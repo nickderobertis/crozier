@@ -271,6 +271,7 @@ const BASE: &[(&str, &str)] = &[
     ("CROZIER_REFERENCE_AUDIENCES", "public,internal"),
     ("CROZIER_REFERENCE_AUDIENCE_STRICT", "true"),
     ("CROZIER_REFERENCE_EXTRA_FIELDS", "ignore"),
+    ("CROZIER_REFERENCE_ENUM_TYPE", "python-enums"),
     ("CROZIER_REFERENCE_LAYOUT", "packaged"),
 ];
 
@@ -294,7 +295,7 @@ fn the_recipe_reads_only_variables_crozier_exports() {
         .filter(|name| name.chars().all(|c| c.is_ascii_uppercase() || c == '_'))
         .map(|name| format!("CROZIER_REFERENCE_{name}"))
         .collect();
-    assert_eq!(table.len(), 9, "the mapping table's rows: {table:?}");
+    assert_eq!(table.len(), 10, "the mapping table's rows: {table:?}");
     let script = recipe();
     let spelled = script
         .split("CROZIER_REFERENCE_")
@@ -444,6 +445,30 @@ fn packaged_builds_the_workspace_and_generates_in_preview_mode() {
     assert_eq!(recorded.env["FERN_TOKEN"], "preview-only-no-publish");
 }
 
+/// crozier's `enum-type: literals` is Fern with `enum_type` unset: the reference
+/// generator's `pydantic_config` keeps every other setting and carries no
+/// `enum_type` key, so Fern applies its `literals` default — in either layout.
+#[test]
+fn literals_leaves_fern_enum_type_unset() {
+    for layout in ["packaged", "flat"] {
+        let run = run(
+            &[
+                ("CROZIER_REFERENCE_ENUM_TYPE", "literals"),
+                ("CROZIER_REFERENCE_LAYOUT", layout),
+            ],
+            &[],
+        );
+        assert!(run.status.success(), "{layout}: {}", run.stderr);
+        let recorded = run.recorded.expect("fern ran");
+        let pydantic = &generator(&recorded)["config"]["pydantic_config"];
+        assert!(
+            pydantic.get("enum_type").is_none(),
+            "{layout}: {pydantic:?}"
+        );
+        assert_eq!(pydantic["extra_fields"], "ignore", "{layout}");
+    }
+}
+
 #[test]
 fn flat_writes_a_local_file_system_output_and_generates_without_preview() {
     let run = run(
@@ -534,6 +559,10 @@ fn values_the_recipe_cannot_reproduce_exit_without_running_fern() {
         (
             vec![("CROZIER_REFERENCE_LAYOUT", "nested")],
             "unknown layout 'nested'",
+        ),
+        (
+            vec![("CROZIER_REFERENCE_ENUM_TYPE", "python_enums")],
+            "unknown enum type 'python_enums'",
         ),
         (
             vec![("CROZIER_REFERENCE_PACKAGE_NAME", "acme")],

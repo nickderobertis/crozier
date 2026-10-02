@@ -1,0 +1,39 @@
+
+
+import typing
+
+GetApiRuleSectionsIndexRequestIndex = typing.Union[
+    typing.Literal[
+        "ability-checks",
+        "ability-scores-and-modifiers",
+        "actions-in-combat",
+        "advantage-and-disadvantage",
+        "between-adventures",
+        "casting-a-spell",
+        "cover",
+        "damage-and-healing",
+        "diseases",
+        "fantasy-historical-pantheons",
+        "madness",
+        "making-an-attack",
+        "mounted-combat",
+        "movement",
+        "movement-and-position",
+        "objects",
+        "poisons",
+        "proficiency-bonus",
+        "resting",
+        "saving-throws",
+        "sentient-magic-items",
+        "standard-exchange-rates",
+        "the-environment",
+        "the-order-of-combat",
+        "the-planes-of-existence",
+        "time",
+        "traps",
+        "underwater-combat",
+        "using-each-ability",
+        "what-is-a-spell",
+    ],
+    typing.Any,
+]

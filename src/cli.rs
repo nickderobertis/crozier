@@ -179,6 +179,13 @@ struct GenerateCmd {
     #[arg(long = "extra-fields", value_name = "MODE")]
     extra_fields: Option<crate::settings::ExtraFields>,
 
+    /// How string enums are generated (Fern's `pydantic_config.enum_type`).
+    /// `python-enums` (default) emits an `enum.StrEnum` class per enum;
+    /// `literals` emits an open `typing.Literal` union that also accepts values
+    /// the spec does not list (Fern with `enum_type` unset).
+    #[arg(long = "enum-type", value_name = "TYPE")]
+    enum_type: Option<crate::settings::EnumType>,
+
     /// Which tree to write, matching how Fern was run: `packaged` (default) is a
     /// pip-installable package with the modules under `src/<package>/` (Fern's
     /// `--preview --output`); `flat` is the bare module tree at the output root
@@ -202,6 +209,7 @@ impl GenerateCmd {
             audience_strict: self.audience_strict.then_some(true),
             fern_strict: self.fern_strict.then_some(true),
             extra_fields: self.extra_fields,
+            enum_type: self.enum_type,
             layout: self.layout,
         }
     }

@@ -1,0 +1,21 @@
+
+
+import typing
+
+GetSitePlanPlansResponseId = typing.Union[
+    typing.Literal[
+        "hosting-basic-v3",
+        "hosting-cms-v3",
+        "hosting-business-v3",
+        "hosting-ecommerce-standard-v2",
+        "hosting-ecommerce-plus-v2",
+        "hosting-ecommerce-advanced-v2",
+        "hosting-basic-v4",
+        "hosting-cms-v4",
+        "hosting-business-v4",
+        "hosting-ecommerce-standard-v3",
+        "hosting-ecommerce-plus-v3",
+        "hosting-ecommerce-advanced-v3",
+    ],
+    typing.Any,
+]

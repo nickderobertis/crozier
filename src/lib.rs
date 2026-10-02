@@ -65,6 +65,9 @@ pub struct GenerateArgs {
     /// `pydantic_config.extra_fields`) — drives every model's `model_config` /
     /// `Config` `extra`.
     pub extra_fields: settings::ExtraFields,
+    /// How string enums are generated (Fern's `pydantic_config.enum_type`):
+    /// `enum.StrEnum` classes or open `typing.Literal` unions.
+    pub enum_type: settings::EnumType,
     /// Strict Fern compatibility (`--fern-strict`): refuse, as Fern does, a
     /// document crozier would otherwise generate from. It only ever decides
     /// whether an SDK is written, never a byte of one that is. The classes it
@@ -94,6 +97,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         &doc.info.title,
     )?;
     config.layout = args.layout;
+    config.enum_type = args.enum_type;
     let ir = ir::build(&doc, &config);
     let files = emit::generate(&ir)?;
     // Regeneration is idempotent: clear the crozier-owned package tree first so a
@@ -161,6 +165,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         &doc.info.title,
     )?;
     config.layout = args.layout;
+    config.enum_type = args.enum_type;
     let ir = ir::build(&doc, &config);
     emit::generate(&ir)
 }

@@ -1,7 +1,8 @@
 # Per-fixture non-default Fern generator settings, one row per fixture, read by
 # scripts/generate-fern-fixture.sh. Not listed here: `pydantic_config.enum_type:
-# python_enums`, which that script applies to EVERY fixture unconditionally (see
-# tests/fixtures/AGENTS.md); a fixture cannot opt out of it from this table.
+# python_enums`, which that script applies to EVERY `expected/` golden (see
+# tests/fixtures/AGENTS.md); a fixture cannot opt out of it from this table. Its
+# `--enum-type literals` mode leaves it unset for `expected-literals/` instead.
 # `organization` replaces the Fern workspace's `fern` organization, which names
 # the module, the `{Organization}Api` client and the README heading — the names
 # crozier derives from `--package-name` (see docs/matching.md).

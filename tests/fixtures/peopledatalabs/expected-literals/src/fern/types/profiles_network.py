@@ -1,0 +1,40 @@
+
+
+import typing
+
+ProfilesNetwork = typing.Union[
+    typing.Literal[
+        "aboutme",
+        "angellist",
+        "behance",
+        "crunchbase",
+        "dribbble",
+        "ello",
+        "facebook",
+        "flickr",
+        "foursquare",
+        "github",
+        "gitlab",
+        "google",
+        "gravatar",
+        "indeed",
+        "instagram",
+        "klout",
+        "linkedin",
+        "linkedin_sales_navigator",
+        "medium",
+        "meetup",
+        "myspace",
+        "pinterest",
+        "quora",
+        "reddit",
+        "soundcloud",
+        "stackoverflow",
+        "twitter",
+        "vimeo",
+        "wordpress",
+        "xing",
+        "youtube",
+    ],
+    typing.Any,
+]

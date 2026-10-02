@@ -1,0 +1,23 @@
+
+
+import typing
+
+CardBrand = typing.Union[
+    typing.Literal[
+        "OTHER_BRAND",
+        "VISA",
+        "MASTERCARD",
+        "AMERICAN_EXPRESS",
+        "DISCOVER",
+        "DISCOVER_DINERS",
+        "JCB",
+        "CHINA_UNIONPAY",
+        "SQUARE_GIFT_CARD",
+        "SQUARE_CAPITAL_CARD",
+        "INTERAC",
+        "EFTPOS",
+        "FELICA",
+        "EBT",
+    ],
+    typing.Any,
+]

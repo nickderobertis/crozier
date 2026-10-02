@@ -31,6 +31,10 @@ mod action;
 #[path = "e2e/major_tag.rs"]
 mod major_tag;
 
+/// `enum-type: literals` against Fern's literal-enum goldens.
+#[path = "e2e/literals.rs"]
+mod literals;
+
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
 /// byte-for-byte today (paths relative to the output root). `unmatched` is the
@@ -1015,9 +1019,17 @@ fn assert_corpus_matches(c: &Corpus) {
         c.api
     );
     let out = generate_corpus(c);
+    assert_generated_tree_matches(c, &expected_root, out.path());
+}
+
+/// Require crozier's generated tree `out` for `c` to reproduce the Fern tree
+/// `expected_root`, under the corpus's declared residuals — the comparison
+/// [`assert_corpus_matches`] makes against `expected/`, shared with the literals
+/// gate, which makes it against a corpus's materialized literal-enum golden.
+fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
     let repository_scaffolding = repository_scaffolding(c);
     let packaged_expectations = packaged_expectations(c);
-    for rel in walk_files(&expected_root) {
+    for rel in walk_files(expected_root) {
         if c.unmatched.contains(&rel.as_str())
             || repository_scaffolding.contains(&rel.as_str())
             || packaged_expectations
@@ -1026,7 +1038,7 @@ fn assert_corpus_matches(c: &Corpus) {
         {
             continue;
         }
-        let generated = std::fs::read_to_string(out.path().join(&rel))
+        let generated = std::fs::read_to_string(out.join(&rel))
             .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
         let expected = std::fs::read_to_string(expected_root.join(&rel))
             .unwrap_or_else(|e| panic!("missing fixture {rel}: {e}"));
@@ -1055,7 +1067,7 @@ fn assert_corpus_matches(c: &Corpus) {
             "repository-scaffolding path is not in the Fern seed fixture: {rel}"
         );
         assert!(
-            !out.path().join(rel).exists(),
+            !out.join(rel).exists(),
             "{rel} is now emitted by Crozier and must move back into the byte comparison"
         );
     }
@@ -1065,7 +1077,7 @@ fn assert_corpus_matches(c: &Corpus) {
         let expected = std::fs::read_to_string(expected_root.join(rel)).unwrap_or_else(|e| {
             panic!("packaged-expectation path is not in the Fern fixture: {rel}: {e}")
         });
-        let generated = std::fs::read(out.path().join(rel)).unwrap_or_else(|e| {
+        let generated = std::fs::read(out.join(rel)).unwrap_or_else(|e| {
             panic!("Crozier stopped emitting packaged-expectation path {rel}: {e}")
         });
         assert!(
@@ -1095,14 +1107,14 @@ fn assert_corpus_matches(c: &Corpus) {
             "{rel} is now present in the seed golden and must enter byte comparison"
         );
         assert!(
-            out.path().join(rel).is_file(),
+            out.join(rel).is_file(),
             "Crozier stopped emitting packaged runtime file {rel}"
         );
     }
 
     // The comparison is bidirectional: a newly emitted Crozier file cannot hide
     // merely because Fern's seed tree lacks it.
-    for rel in walk_files(out.path()) {
+    for rel in walk_files(out) {
         assert!(
             expected_root.join(&rel).is_file()
                 || packaged_only_files(c).contains(&rel.as_str())
@@ -1114,7 +1126,7 @@ fn assert_corpus_matches(c: &Corpus) {
     // The declared crozier-only set is held to the same staleness contract as
     // `unmatched`: a listed file that reached the golden must enter byte
     // comparison, and one crozier no longer emits must leave the list.
-    let emitted: std::collections::BTreeSet<String> = walk_files(out.path()).into_iter().collect();
+    let emitted: std::collections::BTreeSet<String> = walk_files(out).into_iter().collect();
     for rel in crozier_only_files(c) {
         assert!(
             !expected_root.join(rel).is_file(),
@@ -1129,7 +1141,7 @@ fn assert_corpus_matches(c: &Corpus) {
     for rel in c.unmatched {
         let expected = std::fs::read_to_string(expected_root.join(rel))
             .unwrap_or_else(|e| panic!("unmatched path is not in the Fern fixture: {rel}: {e}"));
-        if let Ok(generated) = std::fs::read_to_string(out.path().join(rel)) {
+        if let Ok(generated) = std::fs::read_to_string(out.join(rel)) {
             assert!(
                 !generated_matches_fixture(rel, &generated, &expected),
                 "{rel} now matches Fern — remove it from `unmatched`"
@@ -3282,9 +3294,16 @@ fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
 /// shared by the gate and the gap reporter so both drive the binary
 /// identically.
 fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
+    generate_corpus_with(c, &[])
+}
+
+/// [`generate_corpus`] with `extra` flags appended to the corpus's own — the
+/// literals gate's `--enum-type literals`.
+fn generate_corpus_with(c: &Corpus, extra: &[&str]) -> tempfile::TempDir {
     let out = tempfile::tempdir().expect("tempdir");
     let (mut command, _source) = corpus_command(c, out.path());
     command
+        .args(extra)
         .assert()
         .success()
         .stderr(predicate::str::contains("generated"));
@@ -8556,6 +8575,20 @@ fn every_registered_corpus_is_wired_into_the_gate() {
         enforced.insert((*test).to_string());
     }
 
+    // The literals gate compares every enum corpus's literal-enum golden in one
+    // test, over the same committed sources; the name must still be its test's.
+    assert!(
+        include_str!("e2e/literals.rs").contains(&format!("fn {}()", literals::CORPUS_TEST)),
+        "no #[test] is named {}",
+        literals::CORPUS_TEST
+    );
+    assert!(
+        recipe.iter().any(|listed| listed == literals::CORPUS_TEST),
+        "{} is missing from `just test-corpus-match`",
+        literals::CORPUS_TEST
+    );
+    enforced.insert(literals::CORPUS_TEST.to_string());
+
     let listed: std::collections::BTreeSet<String> = recipe.iter().cloned().collect();
     assert_eq!(
         listed, enforced,
@@ -11767,6 +11800,7 @@ const CROZIER_ENV_VARS: &[&str] = &[
     "CROZIER_AUDIENCE_STRICT",
     "CROZIER_FERN_STRICT",
     "CROZIER_EXTRA_FIELDS",
+    "CROZIER_ENUM_TYPE",
     "CROZIER_LAYOUT",
 ];
 
@@ -12404,6 +12438,7 @@ fn config_labels_the_layer_every_field_came_from() {
         ("fern-strict", "false", "default"),
         ("extra-fields", "forbid", "generator"),
         // Never unset: with no layer supplying it, the value a run would use.
+        ("enum-type", "python-enums", "default"),
         ("layout", "packaged", "default"),
         // `crozier compare`'s command, from the shared block.
         ("reference.command", "./reference.sh --all", "shared"),
@@ -12441,6 +12476,7 @@ fn config_labels_the_layer_every_field_came_from() {
             // Strict Fern compatibility is off unless a layer turns it on, and
             // `config` shows the `false` a run would use.
             "fern-strict" => "false",
+            "enum-type" => "python-enums",
             "layout" => "packaged",
             _ => "(unset)",
         };
@@ -14550,6 +14586,79 @@ fn sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
         "mypy reports errors in crozier's SDK under its own pin:\n{report}{}",
         String::from_utf8_lossy(&output.stderr)
     );
+}
+
+/// `enum-type: literals` exists so a server that adds an enum value does not
+/// break parsing a response: the generated literals SDK validates a model whose
+/// enum field holds a value the spec does not list, and type-checks clean under
+/// its own `mypy` pin; the python-enums SDK over the same document rejects that
+/// value, which is the failure the setting avoids.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_literal_enums_accept_a_value_the_spec_does_not_list() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("api.yml");
+    std::fs::write(&spec, literals::ENUM_SPEC).unwrap();
+    let script = r#"
+import sys
+
+import pydantic
+
+from pets import Pet
+from pets.core.pydantic_utilities import parse_obj_as
+
+try:
+    pet = parse_obj_as(Pet, {"status": "hibernating"})
+except pydantic.ValidationError:
+    print("rejected")
+    sys.exit(0)
+assert pet.status == "hibernating", pet
+assert parse_obj_as(Pet, {"status": "active"}).status == "active"
+print("accepted")
+"#;
+    let mut outcomes = Vec::new();
+    for enum_type in ["literals", "python-enums"] {
+        let sdk = dir.path().join(enum_type);
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&sdk)
+            .args(["--package-name", "pets", "--enum-type", enum_type])
+            .assert()
+            .success();
+        let py = sdk_python_env(&sdk.join("pyproject.toml"))
+            .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+        let run = std::process::Command::new(&py)
+            .args(["-c", script])
+            .current_dir(sdk.join("src"))
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("validate a model in the generated SDK");
+        assert!(
+            run.status.success(),
+            "{enum_type}: {}",
+            String::from_utf8_lossy(&run.stderr)
+        );
+        outcomes.push(String::from_utf8_lossy(&run.stdout).trim().to_string());
+        if enum_type == "literals" {
+            let (mypy_cache, _cache_lock) =
+                lock_sdk_mypy_cache(&py).expect("lock the SDK's mypy cache");
+            let mypy = std::process::Command::new(&py)
+                .args(["-m", "mypy", "."])
+                .current_dir(&sdk)
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .env("MYPY_CACHE_DIR", &mypy_cache)
+                .output()
+                .expect("run mypy over the literals SDK");
+            assert!(
+                mypy.status.success(),
+                "mypy reports errors in the literals SDK:\n{}",
+                String::from_utf8_lossy(&mypy.stdout)
+            );
+        }
+    }
+    assert_eq!(outcomes, ["accepted", "rejected"]);
 }
 
 /// One class written into a scratch registry: its row, probe, Fern record and,

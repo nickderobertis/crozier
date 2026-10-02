@@ -35,23 +35,24 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 
 - **CLI flags** — `--spec`, `--output`, `--package-name`, `--project-name`,
   `--client-class-name`, `--audience` (repeatable), `--audience-strict`,
-  `--fern-strict`, `--extra-fields`, `--layout`. These apply to a *single* generator; passing them while more
+  `--fern-strict`, `--extra-fields`, `--enum-type`, `--layout`. These apply to a *single* generator; passing them while more
   than one would run is an error (name one, or move the values into the config
   file).
 - **Environment** — `CROZIER_SPEC`, `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`,
   `CROZIER_PROJECT_NAME`, `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES`
   (comma-separated), `CROZIER_AUDIENCE_STRICT`, `CROZIER_FERN_STRICT`,
-  `CROZIER_EXTRA_FIELDS`, `CROZIER_LAYOUT`. Empty values count as unset; a value
+  `CROZIER_EXTRA_FIELDS`, `CROZIER_ENUM_TYPE`, `CROZIER_LAYOUT`. Empty values count as unset; a value
   outside a field's set (`CROZIER_LAYOUT=nested`) is an error naming the variable.
   These are a global override layer applied to every selected generator.
 - **Config file** — a `generators.<name>` value beats the shared top-level value
-  of the same field. `extra-fields` is **Python-generator-specific**: it lives
-  only under a generator, never at the shared top level (a top-level
-  `extra-fields` is a parse error).
+  of the same field. `extra-fields` and `enum-type` are
+  **Python-generator-specific**: they live only under a generator, never at the
+  shared top level (a top-level `extra-fields` or `enum-type` is a parse error).
 - **Built-in defaults** — `package-name` defaults to a `snake_case` of the API
   title; `project-name` defaults to the package name; `client-class-name`
   defaults to `{PascalCase(package-name)}Api`; audiences default to empty (the
-  whole API); `fern-strict` defaults to `false`; `extra-fields` defaults to `allow`; `layout` defaults to
+  whole API); `fern-strict` defaults to `false`; `extra-fields` defaults to `allow`;
+  `enum-type` defaults to `python-enums`; `layout` defaults to
   `packaged`. `spec` and `output` have no default — a generator resolved without
   either is an actionable error.
 
@@ -127,6 +128,9 @@ generators:
     extra-fields: allow        # allow|ignore|forbid — pydantic behavior for unknown
                                # response fields (Python-generator-specific; not a
                                # shared top-level field)
+    enum-type: python-enums    # python-enums (enum.StrEnum classes) | literals
+                               # (Fern's enum_type unset: open Literal unions that
+                               # accept values the spec does not list)
     layout: flat               # packaged (Fern's --preview --output) | flat
                                # (Fern's local-file-system output)
     reference:

@@ -209,6 +209,17 @@
             }
           ]
         },
+        "enum-type": {
+          "description": "How string enums are generated (Fern's `pydantic_config.enum_type`):\n`python-enums` classes or open `literals` unions. Python-generator-\nspecific, like `extra-fields`. Defaults to [`EnumType::PythonEnums`].",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EnumType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "layout": {
           "description": "Which tree to write: `packaged` (Fern's `--preview --output`) or `flat`\n(Fern's `local-file-system` output). Defaults to [`Layout::Packaged`].",
           "anyOf": [
@@ -261,6 +272,21 @@
           "description": "Reject unknown fields (pydantic `extra=\"forbid\"`).",
           "type": "string",
           "const": "forbid"
+        }
+      ]
+    },
+    "EnumType": {
+      "description": "How string enums are generated — Fern's `pydantic_config.enum_type`, a\n**Python-generator-specific** knob (like [`ExtraFields`], it lives only on a\ngenerator, never on the shared top-level):\n\n- [`PythonEnums`](EnumType::PythonEnums) (default) emits a\n  `class {Name}(enum.StrEnum)` per enum with a member per value and a `visit`\n  method — Fern's `enum_type: python_enums`. A value the spec does not list\n  fails validation.\n- [`Literals`](EnumType::Literals) emits\n  `{Name} = typing.Union[typing.Literal[\"a\", \"b\"], typing.Any]` — what Fern\n  emits with `enum_type` unset (its `literals` default). The `typing.Any`\n  fallback accepts a value the spec does not list, so a server that adds an\n  enum value does not break parsing a response.",
+      "oneOf": [
+        {
+          "description": "One `enum.StrEnum` class per enum (Fern's `enum_type: python_enums`).",
+          "type": "string",
+          "const": "python-enums"
+        },
+        {
+          "description": "An open `typing.Literal` union per enum (Fern with `enum_type` unset).",
+          "type": "string",
+          "const": "literals"
         }
       ]
     }

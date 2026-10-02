@@ -84,8 +84,8 @@ pub fn normalize_init(content: &str) -> Result<String, String> {
 /// Drop the `generatorConfig` block from `.fern/metadata.json`. A reference
 /// generated with `pydantic_config.enum_type: python_enums` (so enums render as
 /// real classes — see docs/matching.md) records that config in its provenance
-/// file. crozier renders python_enums unconditionally and carries no such config,
-/// so — like the SDK-identity headers — this reference-only provenance is
+/// file. crozier's output carries no generator config whichever `enum-type` it
+/// was generated with, so — like the SDK-identity headers — this reference-only provenance is
 /// normalized out of both sides rather than faked by crozier. A no-op on content
 /// without the block. The block is the object's last key, so removing it plus the
 /// preceding comma restores the shorter form.

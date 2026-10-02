@@ -62,7 +62,7 @@ applied to both sides; everything else must match exactly:
   are dropped and the imports sorted with `ruff check --select I --fix`, so the
   never-executed `TYPE_CHECKING` block's order does not gate the match.
 - **`.fern/metadata.json`**: the `generatorConfig` block Fern records (the
-  `python_enums` setting every golden is generated with) is dropped.
+  `python_enums` setting every `expected/` golden is generated with) is dropped.
 - **The trees**: the comparison is bidirectional — a file on only one side is a
   difference — a symbolic link on either side is refused rather than followed,
   and a golden's `.crozier-fern-golden.json` provenance record is not part of
@@ -259,7 +259,8 @@ Named `components.schemas` → the Python type layer:
   `SCREAMING_SNAKE = "value"` member per value and a generated `visit(...)`
   dispatch method. This is Fern's opt-in `enum_type:
   python_enums` shape, which crozier targets and the whole golden corpus is generated
-  against (issue #41 gap 2b) — *not* Fern's out-of-the-box open `Literal` union.
+  against (issue #41 gap 2b) by default. `enum-type: literals` emits Fern's
+  out-of-the-box open `Literal` union instead ([Literal enums](#literal-enums)).
   Integer enums stay `Name = int` (`python_enums` does not affect them).
 - **Aliases** — unions (`oneOf`/`anyOf`), maps (`type: object` +
   `additionalProperties`, no properties → `Dict[..]`), nullable scalars
@@ -1236,10 +1237,10 @@ byte-match target like the rest of the corpus.
   Fern-only artifact this introduces — the `generatorConfig` block Fern writes into
   `.fern/metadata.json` — is normalized out of the comparison
   (`tests/e2e.rs::normalize_metadata`), the same posture as the SDK-identity headers,
-  since crozier renders `python_enums` unconditionally and carries no such config.
-  (Note this deliberately diverges from Fern's *out-of-the-box* default, which is the
-  open `Union[Literal[..], Any]`; per issue #41 real enums are the more useful shape
-  and the config unlocks byte-parity with them.)
+  since crozier carries no such config. (Note this default deliberately diverges
+  from Fern's *out-of-the-box* default, which is the open `Union[Literal[..], Any]`;
+  per issue #41 real enums are the more useful shape and the config unlocks
+  byte-parity with them. The open union is `enum-type: literals`, below.)
 
 - **Audience-scoped multi-SDK filtering** (`audience-filter`, issue #41 gap 3).
   `crozier generate --audience <name>` (repeatable) prunes to the operations
@@ -1342,6 +1343,32 @@ Four of them shape the client tree and its methods, and corpus row 108
 - **`streaming`** with a `stream-condition` splits one operation into two methods,
   `<name>_stream` and `<name>`, each sending the condition's request field as the
   literal that half means; the field is an argument of neither.
+
+## Literal enums
+
+`enum-type: literals` (`--enum-type literals`, `CROZIER_ENUM_TYPE=literals`) is
+Fern's `pydantic_config.enum_type` left unset, fern-python-sdk's `literals`
+default. It exists for clients that must keep parsing when a server adds an enum
+value: an enum class rejects the unknown value and with it the whole response,
+while the open union takes it. What changes, all measured against Fern 5.20.0:
+
+- every string enum module is one alias,
+  `Name = typing.Union[typing.Literal["a", "b"], typing.Any]` — no class, no
+  `visit`, no docstring (Fern's alias writer drops the description), no `core`
+  import ([`emit::render_literal_enum`]);
+- `core/enum.py` is not emitted: Fern copies it only for enum classes;
+- an enum header is sent as `str(value)` rather than `value.value`;
+- every worked example (README, `reference.md`, method docstrings) passes the
+  value's string where it passed a member, so the enum is no longer imported.
+
+The flag is set once on each `ir::EnumType` (`literal`) by `ir::build`, so the
+module renderer and the example writer read the same answer. Every corpus golden
+but the seed snapshot `query-parameters-openapi` carries the literals golden it
+is held to
+(`expected-literals/`, an overlay of `expected/`; see
+[`fern-goldens.md`](fern-goldens.md#literal-enum-goldens)), compared by
+`tests/e2e/literals.rs`. Fern's third mode, `forward_compatible_python_enums`,
+has no crozier counterpart.
 
 ## Enum name sanitization (issue #50)
 
