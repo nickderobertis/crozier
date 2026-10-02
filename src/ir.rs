@@ -9723,8 +9723,8 @@ impl Builder<'_> {
                 // A variant the loader copied from a reference naming `properties`
                 // is declared under that reference, tag and all, as Fern converts
                 // a reference variant with the reference as its breadcrumbs: the
-                // Vonage Conversation API's `to` members are
-                // `ComponentsSchemasChannelPropertiesFromOneOf0` and on.
+                // hand-written `ref-pointer-walk` fixture's `Route.to` members are
+                // `ComponentsSchemasRoutePropertiesFromOneOf0` and on.
                 let origin_name = variant.ref_origin.as_deref().map(reference_path_class_name);
                 let variant_name = origin_name
                     .clone()

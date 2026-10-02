@@ -1,6 +1,0 @@
-
-
-Name = str
-"""
-Unique name
-"""
