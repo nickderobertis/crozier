@@ -2426,7 +2426,7 @@ fn normalize_unresolved_schema_pointers(doc: &mut OpenApi) {
     });
     let unresolved: std::collections::BTreeSet<String> = references
         .into_iter()
-        .filter(|reference| pointer_names_nothing(&doc.components.schemas, reference))
+        .filter(|reference| declared_head_walk_misses(&doc.components.schemas, reference))
         .collect();
     if unresolved.is_empty() {
         return;
@@ -2484,13 +2484,15 @@ fn degrade_unresolved_pointers(
     }
 }
 
-/// Whether a component pointer walks from a declared head, through nothing but
-/// `properties` keys, `items` and composition indexes with a segment after them,
-/// to a schema that is not there. A pointer carrying any other segment, or
-/// ending on a composition member, is one the lowering already types unknown
+/// Whether a component pointer's walk from a *declared* head, through nothing
+/// but `properties` keys, `items` and composition indexes with a segment after
+/// them, misses: some step names a schema that is not there. It answers `false`
+/// for every other pointer, including others that name nothing, because each of
+/// those is handled elsewhere: one carrying any other segment, or ending on a
+/// composition member, the lowering types unknown
 /// (`ir::pointer_has_unnamed_segment`), and an undeclared head is
 /// [`normalize_unresolvable_schema_refs`]'s.
-fn pointer_names_nothing(components: &IndexMap<String, Schema>, reference: &str) -> bool {
+fn declared_head_walk_misses(components: &IndexMap<String, Schema>, reference: &str) -> bool {
     let Some(pointer) = reference.strip_prefix("#/components/schemas/") else {
         return false;
     };
