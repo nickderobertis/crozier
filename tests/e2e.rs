@@ -14642,8 +14642,11 @@ print("accepted")
         );
         outcomes.push(String::from_utf8_lossy(&run.stdout).trim().to_string());
         if enum_type == "literals" {
-            let (mypy_cache, _cache_lock) =
-                lock_sdk_mypy_cache(&py).expect("lock the SDK's mypy cache");
+            // A cache of its own: the shared one beside the environment holds
+            // other SDKs' modules at these same paths, and mypy reuses an entry
+            // whose file size and mtime match — `pets` and another test's `fern`
+            // package are the same length, written in the same second.
+            let mypy_cache = dir.path().join("mypy-cache");
             let mypy = std::process::Command::new(&py)
                 .args(["-m", "mypy", "."])
                 .current_dir(&sdk)
