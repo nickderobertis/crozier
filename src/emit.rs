@@ -3504,7 +3504,7 @@ fn client_wrapper_file(
     let (trailing, leading): (Vec<GlobalHeader>, Vec<GlobalHeader>) = global_headers
         .iter()
         .cloned()
-        .partition(|h| h.default.is_some());
+        .partition(|h| h.default().is_some());
     let tr_param: String = trailing
         .iter()
         .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
@@ -3525,13 +3525,13 @@ fn client_wrapper_file(
     let gh_param: String = distinct_global_header_params(&leading)
         .into_iter()
         .map(|h| {
-            if h.required {
-                format!("        {}: {},\n", h.py_name, h.py_type.python())
+            if h.required() {
+                format!("        {}: {},\n", h.py_name, h.py_type().python())
             } else {
                 format!(
                     "        {}: typing.Optional[{}] = None,\n",
                     h.py_name,
-                    h.py_type.python()
+                    h.py_type().python()
                 )
             }
         })
@@ -3544,18 +3544,18 @@ fn client_wrapper_file(
         .iter()
         .map(|h| {
             // A non-string header is written as its `str()`, as Fern's is.
-            let value = if h.py_type == HeaderType::Str {
+            let value = if h.py_type() == HeaderType::Str {
                 format!("self._{}", h.py_name)
             } else {
                 format!("str(self._{})", h.py_name)
             };
-            if let Some(default) = &h.default {
+            if let Some(default) = h.default() {
                 format!(
                     "        headers[\"{}\"] = {value} if {value} is not None else \"{}\"\n",
                     escape_py_str(&h.wire_name),
                     escape_py_str(default)
                 )
-            } else if h.required {
+            } else if h.required() {
                 format!(
                     "        headers[\"{}\"] = {value}\n",
                     escape_py_str(&h.wire_name)
@@ -6158,7 +6158,7 @@ fn root_client_class(
     let (trailing, global_headers): (Vec<GlobalHeader>, Vec<GlobalHeader>) = global_headers
         .iter()
         .cloned()
-        .partition(|h| h.default.is_some());
+        .partition(|h| h.default().is_some());
     let global_headers = global_headers.as_slice();
     let tr_doc: String = trailing
         .iter()
@@ -6179,10 +6179,10 @@ fn root_client_class(
     let gh_doc: String = global_headers
         .iter()
         .map(|h| {
-            let ty = if h.required {
-                h.py_type.python().to_string()
+            let ty = if h.required() {
+                h.py_type().python().to_string()
             } else {
-                format!("typing.Optional[{}]", h.py_type.python())
+                format!("typing.Optional[{}]", h.py_type().python())
             };
             format!("    {} : {ty}\n", h.py_name)
         })
@@ -6190,13 +6190,13 @@ fn root_client_class(
     let gh_ctor: String = distinct_global_header_params(global_headers)
         .into_iter()
         .map(|h| {
-            if h.required {
-                format!("        {}: {},\n", h.py_name, h.py_type.python())
+            if h.required() {
+                format!("        {}: {},\n", h.py_name, h.py_type().python())
             } else {
                 format!(
                     "        {}: typing.Optional[{}] = None,\n",
                     h.py_name,
-                    h.py_type.python()
+                    h.py_type().python()
                 )
             }
         })
@@ -9806,7 +9806,7 @@ fn build_example_inner(
             client_args.push(format!("    {arg},"));
         }
     } else {
-        for h in ctx.global_headers.iter().filter(|h| h.default.is_none()) {
+        for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
             client_args.push(format!(
                 "    {}=\"YOUR_{}\",",
                 h.py_name,
@@ -9905,7 +9905,7 @@ fn documentation_client_example_args(auth: &Auth, global_headers: &[GlobalHeader
             global_headers
                 .iter()
                 // Nor does it pass an array header, required or not.
-                .filter(|header| header.required && !header.py_type.is_list())
+                .filter(|header| header.required() && !header.py_type().is_list())
                 .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
         )
         .collect()
@@ -13079,9 +13079,7 @@ mod tests {
         let global_headers = [GlobalHeader {
             wire_name: "X-Tenant".to_string(),
             py_name: "tenant".to_string(),
-            required: true,
-            py_type: HeaderType::Str,
-            default: None,
+            presence: crate::ir::HeaderPresence::Required(HeaderType::Str),
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;

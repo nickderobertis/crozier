@@ -2485,10 +2485,9 @@ fn check_example_query_parameters(
 /// `docs/fern-refusals/example-type-mismatch/evaluation.md` records. The promotion
 /// is read from the SDK IR, so it is decided by the one rule that emits it.
 fn promoted_optional_array_header(doc: &OpenApi, ir: &crate::ir::Ir) -> Option<String> {
-    let header = ir
-        .global_headers
-        .iter()
-        .find(|header| header.py_type.is_list() && !header.required && header.default.is_none())?;
+    let header = ir.global_headers.iter().find(
+        |header| matches!(header.presence, crate::ir::HeaderPresence::Optional(ty) if ty.is_list()),
+    )?;
     let (route, method) = doc.paths.iter().find_map(|(route, item)| {
         item.operations().into_iter().find_map(|(method, op)| {
             op.parameters

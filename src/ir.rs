@@ -374,28 +374,59 @@ fn percent_encode_server_variable(value: &str) -> String {
 /// header carried by *every* operation out of the methods and applies it once at
 /// client construction — `X-Tenant` becomes the `tenant` constructor field. A
 /// header on only some operations stays a per-method parameter (e.g. exhaustive's
-/// `X-TEST-ENDPOINT-HEADER`). `required` drives the rendering: a required global
-/// header is a mandatory `str` constructor arg set unconditionally, an optional one
-/// is `Optional[str] = None` set only when provided.
+/// `X-TEST-ENDPOINT-HEADER`). Its [`HeaderPresence`] drives the rendering.
 #[derive(Debug, Clone)]
 pub struct GlobalHeader {
     /// The wire header name (the `headers` dict key), e.g. `X-Tenant`.
     pub wire_name: String,
     /// The Python field/parameter name, e.g. `tenant` (the `X-` prefix dropped).
     pub py_name: String,
-    /// Whether the header is required on every operation (so the constructor arg is
-    /// mandatory and the `get_headers` assignment is unconditional).
-    pub required: bool,
-    /// The constructor argument's Python type: `str`, or the scalar its first
-    /// declaration's schema names. Milvus's `Request-Timeout` is `type: integer`,
-    /// and Fern's wrapper takes `typing.Optional[int]` and writes
-    /// `str(self._request_timeout)` into the header.
-    pub py_type: HeaderType,
-    /// The string `default` an optional header's first declaration carries. Fern
-    /// types such a header `str` whatever its schema, moves its constructor field
-    /// after `logging`, leaves it out of every example, and sends the default when
-    /// the field is unset.
-    pub default: Option<String>,
+    /// Whether, and how, the constructor field must be given.
+    pub presence: HeaderPresence,
+}
+
+/// How a promoted header's constructor field is given. The type is that of the
+/// first declaration's schema: `str`, a scalar (Milvus's `Request-Timeout` is
+/// `type: integer`, and Fern's wrapper takes `typing.Optional[int]` and writes
+/// `str(self._request_timeout)` into the header), or a list of one.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HeaderPresence {
+    /// Required on every operation: a mandatory constructor argument, set
+    /// unconditionally.
+    Required(HeaderType),
+    /// `Optional[<type>] = None`, set only when provided.
+    Optional(HeaderType),
+    /// An optional header whose first declaration carries this string `default`.
+    /// Fern types it `str` whatever its schema, moves its constructor field after
+    /// `logging`, leaves it out of every example, and sends the default when the
+    /// field is unset.
+    Defaulted(String),
+}
+
+impl GlobalHeader {
+    /// Whether the constructor field is mandatory.
+    #[must_use]
+    pub fn required(&self) -> bool {
+        matches!(self.presence, HeaderPresence::Required(_))
+    }
+
+    /// The constructor field's Python type (`str` for a defaulted header).
+    #[must_use]
+    pub fn py_type(&self) -> HeaderType {
+        match self.presence {
+            HeaderPresence::Required(ty) | HeaderPresence::Optional(ty) => ty,
+            HeaderPresence::Defaulted(_) => HeaderType::Str,
+        }
+    }
+
+    /// The default a defaulted header sends when its field is unset.
+    #[must_use]
+    pub fn default(&self) -> Option<&str> {
+        match &self.presence {
+            HeaderPresence::Defaulted(default) => Some(default),
+            _ => None,
+        }
+    }
 }
 
 /// The Python scalar a promoted header's constructor argument takes.
@@ -515,18 +546,15 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
         .map(|(wire_name, (count, required, py_type, default))| {
             // A header short of every operation is promoted as optional
             // whatever the operations that do declare it say.
-            let required = required && count == total;
-            let default = default.filter(|_| !required);
+            let presence = match default {
+                _ if required && count == total => HeaderPresence::Required(py_type),
+                Some(default) => HeaderPresence::Defaulted(default),
+                None => HeaderPresence::Optional(py_type),
+            };
             GlobalHeader {
                 py_name: naming::field_name(header_param_stem(&wire_name)),
                 wire_name,
-                py_type: if default.is_some() {
-                    HeaderType::Str
-                } else {
-                    py_type
-                },
-                required,
-                default,
+                presence,
             }
         })
         .collect();
@@ -592,9 +620,7 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             Some(GlobalHeader {
                 py_name: naming::field_name(header_param_stem(wire_name)),
                 wire_name: wire_name.clone(),
-                required: true,
-                py_type: HeaderType::Str,
-                default: None,
+                presence: HeaderPresence::Required(HeaderType::Str),
             })
         })
         .collect()
@@ -13714,8 +13740,8 @@ mod tests {
         ] {
             let doc = one_header_doc(&format!("{{type: array, items: {items}}}"), true);
             let headers = global_headers(&doc);
-            assert_eq!(headers[0].py_type.python(), expected, "{items}");
-            assert!(headers[0].py_type.is_list());
+            assert_eq!(headers[0].py_type().python(), expected, "{items}");
+            assert!(headers[0].py_type().is_list());
         }
         // Referenced items are not a scalar this field can name.
         let schema = Schema {
@@ -13740,7 +13766,7 @@ mod tests {
             true,
         ));
         assert_eq!(array.len(), 1);
-        assert!(array[0].required);
+        assert!(array[0].required());
         assert!(global_headers(&one_header_doc("{type: string}", true)).is_empty());
     }
 
@@ -13750,20 +13776,21 @@ mod tests {
             "{type: array, items: {type: string}, default: all}",
             false,
         ));
-        assert_eq!(headers[0].default.as_deref(), Some("all"));
-        assert_eq!(headers[0].py_type, crate::ir::HeaderType::Str);
+        assert_eq!(headers[0].default(), Some("all"));
+        assert_eq!(headers[0].py_type(), crate::ir::HeaderType::Str);
         // A list default is no string default, and a required header keeps none.
         let list = global_headers(&one_header_doc(
             "{type: array, items: {type: string}, default: [a]}",
             false,
         ));
-        assert_eq!(list[0].default, None);
-        assert!(list[0].py_type.is_list());
+        assert_eq!(list[0].default(), None);
+        assert!(list[0].py_type().is_list());
         let required = global_headers(&one_header_doc(
             "{type: array, items: {type: string}, default: all}",
             true,
         ));
-        assert_eq!(required[0].default, None);
+        assert_eq!(required[0].default(), None);
+        assert!(required[0].required());
     }
 
     #[test]
@@ -13801,7 +13828,7 @@ mod tests {
         assert_eq!(headers.len(), 1);
         assert_eq!(headers[0].py_name, "authorization");
         assert_eq!(headers[0].wire_name, "Authorization");
-        assert!(headers[0].required);
+        assert!(headers[0].required());
     }
 
     #[test]
@@ -17615,7 +17642,7 @@ mod tests {
         let typed: Vec<(&str, &str)> = ir
             .global_headers
             .iter()
-            .map(|header| (header.wire_name.as_str(), header.py_type.python()))
+            .map(|header| (header.wire_name.as_str(), header.py_type().python()))
             .collect();
         assert_eq!(
             typed,
