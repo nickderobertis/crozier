@@ -6,6 +6,14 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.91](https://github.com/nickderobertis/crozier/compare/v0.0.90...v0.0.91) - 2026-10-02
+
+### Added
+
+- *(refusals)* decide and enforce the document-validity Fern refusal classes ([#344](https://github.com/nickderobertis/crozier/pull/344))
+- *(refusals)* decide and enforce the name-collision Fern refusal classes ([#342](https://github.com/nickderobertis/crozier/pull/342))
+- *(fixtures)* commit every registered corpus specification so no gate fetches one ([#334](https://github.com/nickderobertis/crozier/pull/334))
+
 ## [0.0.90](https://github.com/nickderobertis/crozier/compare/v0.0.89...v0.0.90) - 2026-10-01
 
 ### Other
