@@ -28,8 +28,9 @@ three entries:
 
 A `measured` tree in
 [`../probe-expected/MANIFEST.tsv`](../probe-expected/MANIFEST.tsv) is already a
-hand-written document Fern generated from, and may be copied here as a fixture;
-its manifest row stays where it is.
+hand-written document Fern generated from, and may be copied here as a fixture.
+Once a fixture carries that probe for the row's key, retire the row with its
+tree and its `../probes/` document, so each tree is committed once.
 
 ## `evidence.toml`
 

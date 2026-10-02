@@ -660,6 +660,82 @@ def handwritten_covers(base: Path = HANDWRITTEN) -> list[tuple[str, str, str | N
     return covers
 
 
+REFUSED_ARMS_HEADING = "## Arms only a refused document reaches"
+
+
+def refused_arm_records(root: Path) -> dict[tuple[str, str], list[str]]:
+    """`(key, arm)` -> the probe documents its record in `fern-limitations.md` links.
+
+    The record that only a document Fern refuses reaches an arm, so no Fern tree
+    exists for a hand-written fixture to byte-match.
+    """
+    ledger = (root / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+    if REFUSED_ARMS_HEADING not in ledger:
+        return {}
+    body = ledger.split(REFUSED_ARMS_HEADING, 1)[1].split("\n## ", 1)[0]
+    records = {}
+    for line in body.splitlines():
+        cells = table_cells(line, 6)
+        if not cells or not re.fullmatch(r"`[^`]+`", cells[0]):
+            continue
+        records[(cells[0].strip("`"), cells[1].strip("`"))] = re.findall(
+            r"\]\((openapi-surface/probes/[^)]+)\)", f"{cells[2]} {cells[4]}"
+        )
+    return records
+
+
+def finished_state_failures(root: Path) -> list[str]:
+    """What keeps the coverage report from its finished state, read off `root`'s ledgers.
+
+    Every `FIXTURE` `gap` row needs a registered real witness or a `handwritten`
+    cover; every unreached arm of a `golden` row needs an arm-level hand-written
+    cover or a committed record, with its minimal document and control, that
+    only a document Fern refuses reaches it; and every Fern refusal class is
+    decided, never `unevaluated`.
+    """
+    surface = root / "docs" / "openapi-surface"
+    failures = []
+    ledger = load_script("golden-reach.py").read_ledger(surface / "golden-reach.tsv")
+    witnessed = {reach.key for _rank, reach in ledger if reach.witnesses}
+    covers = handwritten_covers(surface / "handwritten")
+    for path in sorted(surface.glob("*.md")):
+        for cells in RankedBacklogTests.region_rows(path.read_text(encoding="utf-8")):
+            key = cells[0].strip("`")
+            settlement = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
+            if cells[3].strip("`") != "gap" or settlement != "FIXTURE":
+                continue
+            if key not in witnessed and not any(k == key and not arm for _f, k, arm in covers):
+                failures.append(
+                    f"{key}: a `FIXTURE` gap row with neither a registered real witness "
+                    f"nor a `handwritten` cover ({path.name})"
+                )
+    arm_covers = {(key, arm) for _fixture, key, arm in covers if arm}
+    refused = refused_arm_records(root)
+    for (key, arm), probes in sorted(refused.items()):
+        missing = [probe for probe in probes if not (root / "docs" / probe).is_file()]
+        if len(probes) != 2 or missing:
+            failures.append(
+                f"{key}: its refused-document record for `{arm}` does not link a committed "
+                f"minimal document and control (missing: {missing or probes})"
+            )
+    for _rank, reach in ledger:
+        for arm, hit, _total in reach.sites:
+            if hit or (reach.key, arm) in arm_covers or (reach.key, arm) in refused:
+                continue
+            failures.append(
+                f"{reach.key}: unreached arm `{arm}` has neither an arm-level hand-written "
+                f"cover nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md"
+            )
+    with (root / "docs" / "fern-refusals" / "classes.tsv").open(encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
+            if row["status"] == "unevaluated":
+                failures.append(
+                    f"{row['class']}: docs/fern-refusals/classes.tsv leaves the class "
+                    "`unevaluated`; decide it `generate` or `refuse`"
+                )
+    return failures
+
+
 def frozen_search_keys(contract: str) -> set[str]:
     """The keys the frozen witness-search-redo contract owns and reconciles."""
     owned = contract.split("## Owned keys", 1)[1] if "## Owned keys" in contract else ""
@@ -7264,9 +7340,7 @@ class RankedBacklogTests(unittest.TestCase):
             r"the (\d+) `limitations` rows and the (\d+) `UNREACHABLE` `gap` rows\..*?\*\*(\d+) rest "
             r"on a hand-written fixture, a weaker proof than a real specification\.\*\* These are "
             r"the `handwritten` rows\..*?They are not among the (\d+) and never count as a "
-            r"real-specification match\. (\d+) of the (\d+) unreached arms below carry an arm-level "
-            r"hand-written fixture, and each such arm is still counted as unreached by real "
-            r"specifications\. - \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
+            r"real-specification match\. - \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
             r"rows\..*?The other (\d+) are `golden` rows declared only by.*?"
             r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
             headline,
@@ -7276,7 +7350,7 @@ class RankedBacklogTests(unittest.TestCase):
         expected = [
             len(rows), categories["golden"], categories["limitations"], categories["handwritten"],
             categories["gap"], byte_match, proof, categories["limitations"],
-            len(self.gaps("UNREACHABLE")), handwritten, byte_match, len(covered), len(unreached),
+            len(self.gaps("UNREACHABLE")), handwritten, byte_match,
             unproven, fixture, no_witness, byte_match, proof, handwritten, unproven, len(rows),
         ]
         self.assertEqual(expected, [int(value) for value in stated.groups()])
@@ -7287,6 +7361,68 @@ class RankedBacklogTests(unittest.TestCase):
             proof, categories["limitations"] + len(self.gaps("UNREACHABLE")),
             "a committed proof is not exactly the `limitations` and `UNREACHABLE` rows",
         )
+        # The arms, split the same way: reached by a real specification, reached
+        # only by a hand-written fixture, reachable only by a Fern-refused document.
+        arms = [(reach.key, spec) for _rank, reach in ledger_rows for spec, _hit, _total in reach.sites]
+        refused = set(refused_arm_records(REPO)) & unreached
+        self.assertEqual(set(), covered & refused, "an arm is both hand-written and Fern-refused")
+        searches = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
+        gated = {
+            key for key, _arm in covered
+            if is_config_gated((searches / f"{key}.md").read_text(encoding="utf-8"))
+        }
+        with (REPO / "docs" / "fern-refusals" / "classes.tsv").open(encoding="utf-8", newline="") as handle:
+            classes = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        arms_stated = re.search(
+            r"The (\d+) `golden` rows declare (\d+) handling sites.*?\*\*(\d+) are reached by a "
+            r"registered real specification\.\*\*.*?\*\*(\d+) are reached only by a hand-written "
+            r"fixture\.\*\*.*?each of the (\d+) is still one of the (\d+) \[unreached arms\].*?"
+            r"The six-source searches of (\d+) read `exhausted`\. The (\d+)th, `([a-z-]+)`'s, reads "
+            r"`config-gated`.*?\*\*(\d+) are reachable only by a document Fern refuses\*\*(.*?)"
+            r"(\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes is decided `refuse`",
+            headline,
+        )
+        self.assertIsNotNone(arms_stated, "the headline no longer states the three-way arm split")
+        reached = len(arms) - len(unreached)
+        self.assertEqual(
+            [categories["golden"], len(arms), reached, len(covered), len(covered), len(unreached),
+             len(covered) - len(gated), len(covered), *sorted(gated), len(refused),
+             reached, len(covered), len(refused), len(arms), len(classes)],
+            [int(v) if v.isdigit() else v for i, v in enumerate(arms_stated.groups()) if i != 10],
+        )
+        self.assertEqual(len(ledger_rows), categories["golden"], "the reach ledger is not every golden row")
+        self.assertEqual(len(unreached), len(covered) + len(refused), "an unreached arm is unaccounted for")
+        self.assertEqual(
+            sorted({key for key, _arm in refused}),
+            sorted(set(re.findall(r"`([a-z-]+)`(?:'s)?", arms_stated.group(11))) & {k for k, _a in refused}),
+            "the headline does not name every arm only a Fern-refused document reaches",
+        )
+        self.assertEqual({"refuse"}, {row["status"] for row in classes}, "a class is no longer `refuse`")
+
+    def test_the_blind_spot_rows_count_the_unreached_arms_in_their_file(self) -> None:
+        """Each `src/` file's row states how many of the ledger's unreached arms it holds."""
+        unreached = [
+            spec.split("::", 1)[0]
+            for _rank, reach in self.reach_ledger()
+            for spec, hit, _total in reach.sites
+            if not hit
+        ]
+        section = self.section("| `src/` file | printed |", "**Where the two")
+        for line in section.splitlines():
+            row = re.match(r"\| `(src/[a-z_]+\.rs)` \|", line)
+            if not row:
+                continue
+            with self.subTest(file=row.group(1)):
+                stated = re.findall(r"(\d+) of \[the (\d+) unreached arms\]", line)
+                held = unreached.count(row.group(1))
+                self.assertEqual(
+                    [(str(held), str(len(unreached)))] if held else [], stated,
+                    "the row's unreached-arm count is not the reach ledger's",
+                )
+
+    def test_the_report_is_in_its_finished_state(self) -> None:
+        """No unproven `FIXTURE` row, no uncovered arm, no undecided refusal class."""
+        self.assertEqual([], finished_state_failures(REPO))
 
     def test_the_gap_count_paragraph_recomputes_its_own_numbers(self) -> None:
         """What `gap` means restates the gap total twice, then its two parts."""
@@ -9558,6 +9694,91 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
             self.only_failure(self.reconcile(ledger="| key | witnesses |\n|---|---|\n")),
         )
 
+
+
+class FinishedStateGateTests(unittest.TestCase):
+    """`finished_state_failures` over a copy of the committed ledgers, broken one way at a time.
+
+    The copy is the real tree's region files, reach ledger, hand-written covers,
+    `fern-limitations.md`, refusal registry and refused-arm probes, so each case
+    is the edit a later change would make, not a hand-built ledger.
+    """
+
+    def setUp(self) -> None:
+        directory = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, directory)
+        self.root = Path(directory)
+        surface = Path("docs") / "openapi-surface"
+        copies = [*(path.relative_to(REPO) for path in (REPO / surface).glob("*.md"))]
+        copies += [surface / "golden-reach.tsv", Path("docs") / "fern-limitations.md"]
+        copies += [Path("docs") / "fern-refusals" / "classes.tsv"]
+        copies += [path.relative_to(REPO) for path in HANDWRITTEN.glob("*/evidence.toml")]
+        copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
+        for relative in copies:
+            (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(REPO / relative, self.root / relative)
+
+    def edit(self, relative: str, old: str, new: str) -> None:
+        path = self.root / relative
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text, f"{relative} no longer carries the line this case edits")
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
+        self.assertEqual([], finished_state_failures(self.root))
+
+    def test_a_fixture_gap_row_with_no_witness_or_cover_is_refused(self) -> None:
+        row = (
+            "| `sample-unproven` | both | Schema Object.sample | gap | none | "
+            "`src/ir.rs::sample` | sample | **FIXTURE** — no witness found |\n"
+        )
+        with (self.root / "docs" / "openapi-surface" / "schemas.md").open("a", encoding="utf-8") as handle:
+            handle.write("\n" + row)
+        self.assertEqual(
+            ["sample-unproven: a `FIXTURE` gap row with neither a registered real witness "
+             "nor a `handwritten` cover (schemas.md)"],
+            finished_state_failures(self.root),
+        )
+
+    def test_an_unreached_arm_losing_its_hand_written_cover_is_refused(self) -> None:
+        arm = "src/ir.rs::auth_model[=_ => Auth::None,]"
+        self.edit(
+            "docs/openapi-surface/handwritten/http-dpop-unrequired/evidence.toml",
+            'key = "http-dpop"', 'key = "http-dpop-retired"',
+        )
+        self.assertEqual(
+            [f"http-dpop: unreached arm `{arm}` has neither an arm-level hand-written cover "
+             f"nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md"],
+            finished_state_failures(self.root),
+        )
+
+    def test_an_unreached_arm_losing_its_refused_document_record_is_refused(self) -> None:
+        self.edit("docs/fern-limitations.md", "| `enum-leading-digit-identifier` |", "| retired |")
+        failures = finished_state_failures(self.root)
+        self.assertEqual(1, len(failures), failures)
+        self.assertTrue(failures[0].startswith(
+            "enum-leading-digit-identifier: unreached arm `src/naming.rs::finalize_enum_ident"
+        ), failures)
+
+    def test_a_refused_document_record_without_its_committed_probe_is_refused(self) -> None:
+        (self.root / "docs" / "openapi-surface" / "probes" / "recursive-graph-refused-control.yml").unlink()
+        failures = finished_state_failures(self.root)
+        self.assertEqual(1, len(failures), failures)
+        self.assertIn("recursive-graph: its refused-document record", failures[0])
+        self.assertIn("recursive-graph-refused-control.yml", failures[0])
+
+    def test_an_unevaluated_refusal_class_is_refused(self) -> None:
+        path = self.root / "docs" / "fern-refusals" / "classes.tsv"
+        lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+        fields = lines[1].split("\t")
+        fields[6] = "unevaluated"
+        lines[1] = "\t".join(fields)
+        path.write_text("".join(lines), encoding="utf-8")
+        self.assertEqual(
+            [f"{fields[0]}: docs/fern-refusals/classes.tsv leaves the class `unevaluated`; "
+             "decide it `generate` or `refuse`"],
+            finished_state_failures(self.root),
+        )
 
 
 class CompletenessTierTests(unittest.TestCase):
