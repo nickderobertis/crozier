@@ -129,6 +129,9 @@ census = load_census()
 
 # The bound turns a wedged gate into a failing test.
 CENSUS_TIMEOUT = 60
+# One walk of the whole registry, which reads every committed golden source:
+# about a minute on a loaded host, longer on the slower release-matrix runners.
+REGISTRY_WALK_TIMEOUT = 600
 
 
 def run(*args: str) -> subprocess.CompletedProcess:
@@ -11725,7 +11728,10 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.text = (cls.REGIONS / "document-paths.md").read_text(encoding="utf-8")
         cls.rows = cls.entries(cls.text)
-        completed = run("--json")
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--json"],
+            cwd=REPO, capture_output=True, text=True, timeout=REGISTRY_WALK_TIMEOUT,
+        )
         assert completed.returncode == 0, completed.stderr
         cls.payload = json.loads(completed.stdout)
         canonical = json.dumps(cls.payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
