@@ -246,3 +246,73 @@ fn a_header_parameter_enum_named_like_a_root_schema_still_generates() {
         assert!(files > 0);
     }
 }
+
+/// hellopatient's shape: a body property named like the operation's path
+/// parameter, which `RENAME` (blank by default) can rename clear of it.
+const PATH_PARAMETER_BODY: &str = r#"paths:
+  /practice/{practice_id}/service-metadata:
+    post:
+      operationId: createServiceMetadata
+      parameters:
+        - {name: practice_id, in: path, required: true, schema: {type: string}}
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PracticeServiceMetadataCreate'}
+      responses: {'200': {description: ok}}
+  /practice/{practice_id}/intents:
+    post:
+      operationId: createIntent
+      parameters:
+        - {name: practice_id, in: path, required: true, schema: {type: string}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {practice_id: {type: string RENAME}}
+      responses: {'200': {description: ok}}
+components:
+  schemas:
+    PracticeServiceMetadataCreate:
+      type: object
+      properties: {practice_id: {type: string RENAME}, service_name: {type: string}}
+"#;
+
+#[test]
+fn a_body_property_named_like_a_path_parameter_is_refused() {
+    assert_refused(
+        &PATH_PARAMETER_BODY.replace(" RENAME", ""),
+        "request-property-name-collision",
+        r#"POST /practice/{practice_id}/service-metadata body property "practice_id" collides with another request property"#,
+    );
+}
+
+#[test]
+fn a_body_property_renamed_clear_of_a_path_parameter_generates() {
+    // Either spelling of the property-name extension, on a referenced and an
+    // inline body alike, gives the property a declared name Fern accepts.
+    for rename in [
+        ", x-fern-property-name: body_practice_id",
+        ", x-crozier-property-name: body_practice_id",
+        ", x-crozier-property-name: body_practice_id, x-fern-property-name: other_practice_id",
+    ] {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let spec = write(dir.path(), &PATH_PARAMETER_BODY.replace(" RENAME", rename));
+        for strict in [false, true] {
+            let files = render(&spec, strict).unwrap_or_else(|error| {
+                panic!("a renamed body property is refused ({rename}, strict: {strict}): {error}")
+            });
+            assert!(files > 0);
+        }
+    }
+}
+
+#[test]
+fn a_blank_property_name_leaves_the_collision_refused() {
+    assert_refused(
+        &PATH_PARAMETER_BODY.replace(" RENAME", ", x-fern-property-name: ' '"),
+        "request-property-name-collision",
+        r#"body property "practice_id" collides with another request property"#,
+    );
+}

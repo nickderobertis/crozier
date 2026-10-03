@@ -1,0 +1,179 @@
+# `x-fern-property-name` renames an object property's Python name — the model
+# field and the request keyword argument — while its JSON key stays the property's
+# key here. The request bodies below reproduce hellopatient's overlay: each body
+# declares a `practice_id` property beside the operation's `practice_id` path
+# parameter, a collision Fern and crozier both refuse until the property is
+# renamed. `PracticeServiceMetadataCreate.practice_id` and the response's
+# `practice_id` declare the name in both spellings at once, holding identical
+# values, so the golden also proves crozier reads the canonical
+# `x-crozier-property-name` (see `../crozier-sdk-extensions/openapi.yml`). The
+# remaining operations carry the extension through every other way a property
+# becomes a Python name: an inline JSON body and the inline object it nests, a
+# form body, and a discriminated union's variant.
+openapi: 3.0.3
+info: { title: Practice API, version: 1.0.0 }
+paths:
+  /practice/{practice_id}/service-metadata:
+    post:
+      operationId: createServiceMetadata
+      tags: [Practice]
+      parameters:
+        - name: practice_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PracticeServiceMetadataCreate' }
+      responses:
+        '200':
+          description: The created metadata.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PracticeServiceMetadata' }
+  /practice/{practice_id}/intents:
+    post:
+      operationId: createIntent
+      tags: [Practice]
+      parameters:
+        - name: practice_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PracticeIntentCreate' }
+      responses:
+        '200':
+          description: The created intent.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PracticeIntent' }
+  /practice/{practice_id}/insurance-products:
+    post:
+      operationId: createInsuranceProduct
+      tags: [Practice]
+      parameters:
+        - name: practice_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [practice_id]
+              properties:
+                practice_id:
+                  type: string
+                  x-fern-property-name: insurance_product_practice_id
+                coverage:
+                  type: object
+                  properties:
+                    planCode:
+                      type: string
+                      x-fern-property-name: plan
+                    tier: { type: string }
+      responses:
+        '200':
+          description: The created product's events.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PracticeEvent' }
+  /practice/{practice_id}/notes:
+    post:
+      operationId: createNote
+      tags: [Practice]
+      parameters:
+        - name: practice_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [practice_id, body]
+              properties:
+                practice_id:
+                  type: string
+                  x-fern-property-name: note_practice_id
+                body: { type: string }
+      responses:
+        '204':
+          description: Created.
+components:
+  schemas:
+    PracticeServiceMetadataCreate:
+      type: object
+      required: [practice_id, service_name]
+      properties:
+        practice_id:
+          type: string
+          x-fern-property-name: practice_service_metadata_create_practice_id
+          x-crozier-property-name: practice_service_metadata_create_practice_id
+        service_name: { type: string }
+        duration_minutes: { type: integer }
+    PracticeServiceMetadata:
+      type: object
+      required: [id, practice_id, service_name]
+      properties:
+        id: { type: string }
+        practice_id:
+          type: string
+          x-fern-property-name: owning_practice_id
+          x-crozier-property-name: owning_practice_id
+        service_name: { type: string }
+        displayName:
+          type: string
+          x-fern-property-name: label
+    PracticeIntentCreate:
+      type: object
+      required: [practice_id, intent]
+      properties:
+        practice_id:
+          type: string
+          x-fern-property-name: practiceIntentCreatePracticeId
+        intent: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+    PracticeIntent:
+      type: object
+      required: [id, intent]
+      properties:
+        id: { type: string }
+        intent: { type: string }
+    PracticeEvent:
+      oneOf:
+        - $ref: '#/components/schemas/PracticeOpened'
+        - $ref: '#/components/schemas/PracticeClosed'
+      discriminator:
+        propertyName: kind
+        mapping:
+          opened: '#/components/schemas/PracticeOpened'
+          closed: '#/components/schemas/PracticeClosed'
+    PracticeOpened:
+      type: object
+      required: [kind, practice_id]
+      properties:
+        kind: { type: string }
+        practice_id:
+          type: string
+          x-fern-property-name: opened_practice_id
+    PracticeClosed:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string }
+        closedAt:
+          type: string
+          x-fern-property-name: closed_on

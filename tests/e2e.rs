@@ -403,6 +403,19 @@ const FEATURE_TARGETS: &[Corpus] = &[
         extra_fields: None,
         unmatched: &[],
     },
+    // `x-fern-property-name` (and its canonical `x-crozier-property-name`)
+    // renaming a request-body property clear of the same-named path parameter it
+    // would collide with, and a response field, while both keep their wire keys.
+    Corpus {
+        api: "crozier-property-name",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        audience_strict: false,
+        client_class_name: None,
+        extra_fields: None,
+        unmatched: &[],
+    },
     Corpus {
         api: "auth-schemes",
         package_name: "fern",
@@ -8181,6 +8194,7 @@ macro_rules! feature_target_goldens {
 
 feature_target_goldens! {
     crozier_sdk_extensions_matches_fern_output => "crozier-sdk-extensions",
+    crozier_property_name_matches_fern_output => "crozier-property-name",
     auth_schemes_matches_fern_output => "auth-schemes",
     inline_request_response_matches_fern_output => "inline-request-response",
     cookie_parameters_matches_fern_output => "cookie-parameters",
@@ -15429,6 +15443,105 @@ print("accepted")
         }
     }
     assert_eq!(outcomes, ["accepted", "rejected"]);
+}
+
+/// `x-fern-property-name` / `x-crozier-property-name` rename a property only on
+/// the Python side: the `crozier-property-name` SDK, driven through a mock
+/// transport, sends each renamed request keyword argument under the property's
+/// JSON key — a referenced, an inline and a form body, and a nested inline
+/// object — and parses responses keyed that way into the renamed model fields,
+/// a discriminated union's variant among them, which serialize back to the key.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_renamed_properties_keep_their_json_keys_on_the_wire() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(fixture_dir("crozier-property-name").join("openapi.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "practice"])
+        .assert()
+        .success();
+    let script = r#"
+import json
+from urllib.parse import parse_qs
+
+import httpx
+
+from practice import PracticeApi
+from practice.practice import CreateInsuranceProductRequestCoverage
+
+RESPONSES = {
+    "/practice/p-1/service-metadata": {
+        "id": "m-1",
+        "practice_id": "p-owner",
+        "service_name": "checkup",
+        "displayName": "Checkup",
+    },
+    "/practice/p-1/intents": {"id": "i-1", "intent": "book"},
+    "/practice/p-1/insurance-products": {"kind": "opened", "practice_id": "p-opened"},
+}
+sent = []
+
+
+def handle(request):
+    content_type = request.headers.get("content-type", "")
+    if content_type.startswith("application/json"):
+        body = json.loads(request.content)
+    else:
+        body = {key: values[0] for key, values in parse_qs(request.content.decode()).items()}
+    sent.append((request.url.path, body))
+    if request.url.path in RESPONSES:
+        return httpx.Response(200, json=RESPONSES[request.url.path])
+    return httpx.Response(204)
+
+
+client = PracticeApi(
+    base_url="https://api.test",
+    httpx_client=httpx.Client(transport=httpx.MockTransport(handle)),
+)
+metadata = client.practice.create_service_metadata(
+    "p-1",
+    practice_service_metadata_create_practice_id="p-body",
+    service_name="checkup",
+)
+client.practice.create_intent("p-1", practice_intent_create_practice_id="p-intent", intent="book")
+event = client.practice.create_insurance_product(
+    "p-1",
+    insurance_product_practice_id="p-product",
+    coverage=CreateInsuranceProductRequestCoverage(plan="gold"),
+)
+client.practice.create_note("p-1", note_practice_id="p-note", body="hello")
+
+assert sent == [
+    ("/practice/p-1/service-metadata", {"practice_id": "p-body", "service_name": "checkup"}),
+    ("/practice/p-1/intents", {"practice_id": "p-intent", "intent": "book"}),
+    ("/practice/p-1/insurance-products", {"practice_id": "p-product", "coverage": {"planCode": "gold"}}),
+    ("/practice/p-1/notes", {"practice_id": "p-note", "body": "hello"}),
+], sent
+assert (metadata.owning_practice_id, metadata.label) == ("p-owner", "Checkup"), metadata
+assert metadata.dict()["practice_id"] == "p-owner", metadata.dict()
+assert metadata.dict()["displayName"] == "Checkup", metadata.dict()
+assert (event.kind, event.opened_practice_id) == ("opened", "p-opened"), event
+print("ok")
+"#;
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+    let run = std::process::Command::new(&py)
+        .args(["-c", script])
+        .current_dir(sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("drive the generated SDK");
+    assert!(
+        run.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&run.stdout),
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
 }
 
 /// `default-max-retries` decides how many times a generated client retries a

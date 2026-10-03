@@ -988,6 +988,18 @@ pub struct Schema {
     /// it; the two keyed forms supersede it (see [`Schema::enum_member_names`]).
     #[serde(rename = "x-enum-varnames", default)]
     pub(crate) enum_varnames: Option<Vec<String>>,
+    /// `x-crozier-property-name`: the Python name of the object property this
+    /// node is the value of — its model field and request keyword argument —
+    /// while its JSON key stays the property's key (canonical spelling). Read via
+    /// [`Schema::property_name`], which also honours the `x-fern-property-name`
+    /// variant per the [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-property-name", default)]
+    pub(crate) property_name_crozier: Option<String>,
+    /// `x-fern-property-name`: the Fern spelling of the property-name override.
+    /// Superseded by `x-crozier-property-name` when both appear (see
+    /// [`Schema::property_name`]).
+    #[serde(rename = "x-fern-property-name", default)]
+    pub(crate) property_name_fern: Option<String>,
     /// Set when this node's `type` was a list with more than one non-`null` member,
     /// which `normalize_multi_type_schemas` rewrote into the equivalent `anyOf`.
     /// Not a wire field. Fern names such a union rather than inlining it — EN
@@ -1029,6 +1041,20 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+
+    /// The declared Python name of the property this node is the value of,
+    /// canonicalizing on the `x-crozier-property-name` spelling (see the
+    /// [dual-header policy](self#fern-compatible-extensions)). The name is cased
+    /// as a property key would be; the wire key is unchanged. A blank value is no
+    /// override.
+    #[must_use]
+    pub fn property_name(&self) -> Option<&str> {
+        self.property_name_crozier
+            .as_deref()
+            .or(self.property_name_fern.as_deref())
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
     }
 
     /// The SDK type name this schema declares, canonicalizing on the
@@ -1539,6 +1565,19 @@ pub(crate) fn refusal_parameter_name(node: &serde_yaml_ng::Value) -> Option<&str
             node.get("x-fern-parameter-name")
                 .and_then(serde_yaml_ng::Value::as_str)
         })
+}
+
+/// The declared Python name of an object property, read off its source node for
+/// refusal validation with [`Schema::property_name`]'s precedence.
+pub(crate) fn refusal_property_name(node: &serde_yaml_ng::Value) -> Option<&str> {
+    node.get("x-crozier-property-name")
+        .and_then(serde_yaml_ng::Value::as_str)
+        .or_else(|| {
+            node.get("x-fern-property-name")
+                .and_then(serde_yaml_ng::Value::as_str)
+        })
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
 }
 
 /// Declared SDK type name read off the raw source node, for the refusals
@@ -4400,6 +4439,34 @@ mod refusal_name_tests {
         ] {
             let node = serde_yaml_ng::from_str(text).unwrap();
             assert_eq!(super::refusal_parameter_name(&node), expected);
+        }
+    }
+
+    /// The source-node reader and the typed accessor agree on every precedence
+    /// case: canonical first, Fern as the fallback, a blank value no override.
+    #[test]
+    fn declared_property_names_obey_dual_header_precedence() {
+        for (text, expected) in [
+            ("x-fern-property-name: fern_name", Some("fern_name")),
+            (
+                "x-crozier-property-name: crozier_name",
+                Some("crozier_name"),
+            ),
+            (
+                "x-crozier-property-name: crozier_name\nx-fern-property-name: fern_name",
+                Some("crozier_name"),
+            ),
+            (
+                "x-crozier-property-name: null\nx-fern-property-name: fern_name",
+                Some("fern_name"),
+            ),
+            ("x-fern-property-name: '  '", None),
+            ("type: string", None),
+        ] {
+            let node: serde_yaml_ng::Value = serde_yaml_ng::from_str(text).unwrap();
+            assert_eq!(super::refusal_property_name(&node), expected, "{text}");
+            let schema: super::Schema = serde_yaml_ng::from_value(node).unwrap();
+            assert_eq!(schema.property_name(), expected, "{text}");
         }
     }
 }
