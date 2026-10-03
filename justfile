@@ -85,6 +85,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e query_parameters_matches_fern_output_byte_for_byte
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_matches_fern_output_byte_for_byte
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e crozier_sdk_extensions_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e crozier_property_name_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e auth_schemes_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e inline_request_response_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cookie_parameters_matches_fern_output

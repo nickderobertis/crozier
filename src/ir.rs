@@ -1755,6 +1755,10 @@ pub struct Field {
     /// The property's `example` as a Python literal, shown in a worked snippet
     /// instead of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
+    /// The `x-crozier-property-name` / `x-fern-property-name` the Python name was
+    /// derived from instead of the wire name, kept so the request keyword
+    /// argument an inlined body derives from this field takes it too.
+    pub declared_name: Option<String>,
 }
 
 impl Field {
@@ -5496,7 +5500,7 @@ fn hoist_inline_object(
         let type_ref = hoister.copied_prop_type_ref(ctx, prop, prop_schema);
         fields.push(BodyField {
             wire_name: prop.clone(),
-            py_name: naming::request_field_name(prop),
+            py_name: naming::request_field_name(prop_schema.property_name().unwrap_or(prop)),
             convert: hoister.needs_convert(&type_ref),
             type_ref,
             optional,
@@ -6045,7 +6049,8 @@ impl InlineHoister<'_> {
             let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
-                py_name: naming::model_field_name(prop),
+                py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
+                declared_name: prop_schema.property_name().map(str::to_owned),
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
                 nullable: referenced_nullable
@@ -6646,7 +6651,7 @@ fn hoist_form_object(
             let convert = !is_file && hoister.needs_convert(&type_ref);
             BodyField {
                 wire_name: prop.clone(),
-                py_name: naming::request_field_name(prop),
+                py_name: naming::request_field_name(prop_schema.property_name().unwrap_or(prop)),
                 type_ref,
                 optional: is_optional(prop_schema) || !spec_required,
                 nullable: is_optional(prop_schema),
@@ -6828,7 +6833,7 @@ fn append_request_fields(
     }
     out.extend(obj.fields.iter().map(|f| BodyField {
         wire_name: f.wire_name.clone(),
-        py_name: naming::request_field_name(&f.wire_name),
+        py_name: naming::request_field_name(f.declared_name.as_deref().unwrap_or(&f.wire_name)),
         type_ref: f.type_ref.clone(),
         optional: f.optional,
         // The *property* is what makes an inlined body field nullable, not the
@@ -8731,7 +8736,8 @@ fn append_member_fields(
         };
         fields.push(Field {
             wire_name: prop.clone(),
-            py_name: naming::model_field_name(prop),
+            py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
+            declared_name: prop_schema.property_name().map(str::to_owned),
             type_ref,
             optional: is_optional(prop_schema) || !spec_required,
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
@@ -9694,7 +9700,8 @@ impl Builder<'_> {
                 .flatten();
             fields.push(Field {
                 wire_name: prop.clone(),
-                py_name: naming::model_field_name(prop),
+                py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
+                declared_name: prop_schema.property_name().map(str::to_owned),
                 type_ref,
                 optional,
                 nullable: referenced_nullable
@@ -9995,6 +10002,7 @@ impl Builder<'_> {
                         spec_required: true,
                         docstring: None,
                         example: None,
+                        declared_name: None,
                     }],
                     discriminant_index: None,
                     source: None,
@@ -12983,6 +12991,7 @@ mod tests {
             spec_required: required,
             docstring: None,
             example: None,
+            declared_name: None,
         }
     }
 

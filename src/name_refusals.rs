@@ -176,9 +176,7 @@ fn source_request_properties(
         if let Some(wire) = key.as_str() {
             fields.push((
                 wire.to_owned(),
-                crate::openapi::refusal_parameter_name(property)
-                    .unwrap_or(wire)
-                    .to_owned(),
+                request_property_name(property).unwrap_or(wire).to_owned(),
             ));
         }
     }
@@ -496,7 +494,7 @@ fn source_property_names(
     let node = source_target(source, node);
     for (key, property) in node["properties"].as_mapping().into_iter().flatten() {
         if let Some(wire) = key.as_str() {
-            if let Some(name) = crate::openapi::refusal_parameter_name(property) {
+            if let Some(name) = request_property_name(property) {
                 names.insert(wire.to_owned(), name.to_owned());
             }
         }
@@ -504,6 +502,14 @@ fn source_property_names(
     for member in node["allOf"].as_sequence().into_iter().flatten() {
         source_property_names(source, member, visited, names);
     }
+}
+
+/// The request name a body property declares: its `x-crozier-property-name` /
+/// `x-fern-property-name` — the Fern definition `name` the collision check
+/// compares — else the parameter-name spelling this validator also reads.
+fn request_property_name(property: &serde_yaml_ng::Value) -> Option<&str> {
+    crate::openapi::refusal_property_name(property)
+        .or_else(|| crate::openapi::refusal_parameter_name(property))
 }
 
 fn collect_property_names<'a>(
