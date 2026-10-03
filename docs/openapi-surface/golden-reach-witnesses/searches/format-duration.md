@@ -70,4 +70,4 @@ reaching the searched arm, so none reaches the successor.
 
 #### Candidates passing every screen
 
-- **Registered** (`sourcegraph`): `github.com/marinasundstrom/YourBrand:src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml@6ef617804cb34ceba4b847c62ab122042d86abbe` — corpus row 307 (`yourbrand-ticketing`), byte-matched against its Fern 5.20.0 golden; the reach ledger is not yet re-measured over it
+- **Registered** (`sourcegraph`): `github.com/marinasundstrom/YourBrand:src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml@6ef617804cb34ceba4b847c62ab122042d86abbe` — corpus row 308 (`yourbrand-ticketing`), byte-matched against its Fern 5.20.0 golden; the reach ledger is not yet re-measured over it

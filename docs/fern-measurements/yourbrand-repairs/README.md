@@ -1,6 +1,6 @@
 # The measurement behind two `src/ir.rs` repairs
 
-Registering `yourbrand-ticketing` (corpus row 307) exposed two places crozier
+Registering `yourbrand-ticketing` (corpus row 308) exposed two places crozier
 diverged from its Fern 5.20.0 golden. Each repair rests on what Fern does, so
 this directory holds the run that measured it, re-runnable rather than taken on
 trust:

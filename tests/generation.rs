@@ -12178,7 +12178,7 @@ components:
     }
 }
 
-/// Fragments of YourBrand's Ticketing API (corpus row 307), each assertion a
+/// Fragments of YourBrand's Ticketing API (corpus row 308), each assertion a
 /// line of its Fern 5.20.0 golden or of the 3.0 probe measured beside it:
 /// - a query parameter whose sole `oneOf` member is a nullable `oneOf` of one
 ///   `$ref` is that `$ref`, optional once;

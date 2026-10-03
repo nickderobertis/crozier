@@ -89,7 +89,7 @@ links splits them three ways:
   `format-duration`'s `scalar_body` plain-string arm. Its arm search now reads
   `search-incomplete`. The measured re-screen of the candidate it had settled on
   a historical screen found a real specification that reaches the arm:
-  `yourbrand-ticketing`, corpus row 307, whose Fern golden crozier byte-matches.
+  `yourbrand-ticketing`, corpus row 308, whose Fern golden crozier byte-matches.
   The reach ledger has not been re-measured over that golden, so the arm is not
   yet counted as reached, and the hand-written cover it rested on is withdrawn.
   [Unproven arms, named](#unproven-arms-named) lists it.
@@ -1252,10 +1252,14 @@ The six region files, read as one body of work. Two measurements feed it:
   current walk is the **2026-09-28** one, pinned by digest (`c9319995…`) in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that check runs to completion on it. Corpus
-  rows 301 to 307, registered since, and the withdrawals of rows 224 and 223
-  bring the tree to
-  **236** registered sources, of which **219** carry a committed golden; the
-  cells their declarations move are re-read from a walk over that tree.
+  rows 301 to 306, registered since, and the withdrawals of rows 224 and 223
+  bring the tree to 235 registered sources; the cells their declarations move
+  are re-read from a walk over that tree. Row 307 then re-registers row 13's
+  `apideck.com-ecosystem` document under a second generator setting, bringing
+  it to 236 registered sources. It declares nothing row 13 does not, so it
+  moves no row's category, and the per-fixture cells, walked before it, do not
+  list it. Row 308, `yourbrand-ticketing`, brings the tree to
+  **237** registered sources, of which **220** carry a committed golden.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
   rests on. Every `golden` row's golden-only witnesses are recomputed from it by
@@ -1402,8 +1406,11 @@ The remaining-gap searches register corpus rows 301 to 306
 `fiware-context-generator`, `hasura-metadata` and `zoonk`), bringing the walk to
 237 sources (32 vendored plus 205 `link-ok`); withdrawing row 224
 (`codat-assess`) for its disputed grant leaves 236 (32 vendored plus 204
-`link-ok`), and withdrawing row 223 (`nexmo-conversation`) for want of a
-publisher grant leaves 235 (32 vendored plus 203 `link-ok`). Rows 301 and 302 are the first
+`link-ok`), withdrawing row 223 (`nexmo-conversation`) for want of a
+publisher grant leaves 235 (32 vendored plus 203 `link-ok`), and row 307
+(`apideck.com-ecosystem-client-class-name`, row 13's document under
+`client_class_name: EcosystemClient`) makes 236 (32 vendored plus 204
+`link-ok`). Rows 301 and 302 are the first
 golden-only witnesses of `operation-external-docs` and `xml-attribute`, which
 [Golden rows with no golden-only witness](#golden-rows-with-no-golden-only-witness)
 listed until then. Rows 303 to 305 declare `schema.oneOf>schema.anyOf` and move
@@ -2127,7 +2134,7 @@ arm reached, or when its search is decided again.
 
 | key | unreached arm | why it is unproven |
 |---|---|---|
-| `format-duration` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | registered witness, reach ledger not yet re-measured: the measured re-screen read the candidate's licence (MIT at its pinned commit) and pinned Fern's acceptance, so YourBrand's Ticketing API is corpus row 307, `yourbrand-ticketing`, byte-matched against its Fern 5.20.0 golden; the reach ledger, `golden-reach.tsv`, predates it |
+| `format-duration` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | registered witness, reach ledger not yet re-measured: the measured re-screen read the candidate's licence (MIT at its pinned commit) and pinned Fern's acceptance, so YourBrand's Ticketing API is corpus row 308, `yourbrand-ticketing`, byte-matched against its Fern 5.20.0 golden; the reach ledger, `golden-reach.tsv`, predates it |
 
 #### The `example` arm, removed as a proven divergence
 
