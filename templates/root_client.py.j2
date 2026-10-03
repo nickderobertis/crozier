@@ -104,9 +104,9 @@ class {{ class_name }}:
     def {{ m.attr }}(self):
         if self._{{ m.attr }} is None:
 {% if m.wrap %}            from .{{ m.attr }}.client import (
-                {{ m.cls }},
+                {{ m.import }},
             )
-{% else %}            from .{{ m.attr }}.client import {{ m.cls }}
+{% else %}            from .{{ m.attr }}.client import {{ m.import }}
 {% endif %}
             self._{{ m.attr }} = {{ m.cls }}(client_wrapper=self._client_wrapper)
         return self._{{ m.attr }}
