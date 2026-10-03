@@ -2240,14 +2240,40 @@ timestamp drop is an open gap
 
 An unreached arm with neither an arm-level hand-written cover nor a refused-document
 record is unproven. It may stand only as a **named gap**: a row below saying why,
-over an arm search reading `search-incomplete`, which
-`finished_state_failures` in `tests/surface_census_test.py` checks. A named gap
-is never counted as proven. It leaves the list when the reach ledger shows the
-arm reached, or when its search is decided again.
+which `finished_state_failures` in `tests/surface_census_test.py` checks. Over an
+arm search the reason is that search's `search-incomplete` verdict; where no arm
+search has been run, the reason is `not searched`, its own reason, and never
+`exhausted` or `search-incomplete`. A named gap is never counted as proven. It
+leaves the list when the reach ledger shows the arm reached, or when a search
+decides it. `format-duration`'s `scalar_body` arm, the one row this table carried
+before, left it that way: the reach ledger re-measured over corpus row 308,
+`yourbrand-ticketing`, reaches it.
 
 | key | unreached arm | why it is unproven |
 |---|---|---|
-| `format-duration` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | registered witness, reach ledger not yet re-measured: the measured re-screen read the candidate's licence (MIT at its pinned commit) and pinned Fern's acceptance, so YourBrand's Ticketing API is corpus row 308, `yourbrand-ticketing`, byte-matched against its Fern 5.20.0 golden; the reach ledger, `golden-reach.tsv`, predates it |
+| `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | `not searched` — the row is new with the example predicates of #361; its three golden witnesses declare an empty-object example but none renders it through a field-less model, and no arm search has been run |
+| `schema-example-object-on-map` | `src/emit.rs::ExampleCtx::example_matches_type_through[=TypeRef::Dict\(_, _\) => value.is_object\(\),]` | `not searched` — the row is new with the example predicates of #361; its eleven golden witnesses declare an object example on an open map but none reaches the `Dict` test of a union member, and no arm search has been run |
+| `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | `not searched` — the row is new with the example predicates of #361; its three golden witnesses declare a string outside the enum but none tests it against an enum union member, and no arm search has been run |
+
+#### Unproven features, named
+
+A `FIXTURE` gap row with neither a registered witness nor a hand-written cover is
+unproven, and it may stand only as a row below, which the same gate checks. Every
+row here is one of the features the naming and example predicates of #361
+brought inside the census that no registered golden source declares. None has had
+a witness search, so each reads `not searched`; a search's verdict replaces that
+reason, and a registered witness removes the row.
+
+| key | region | why it is unproven |
+|---|---|---|
+| `operation-id-digit-leading-method` | `document-paths` | `not searched` — no registered golden source writes an `operationId` whose derived method name leads with a digit, and no witness search has been run |
+| `schema-example-fractional-on-integer` | `schemas` | `not searched` — no registered golden source writes a fractional example on an integer schema, and no witness search has been run |
+| `schema-example-array-null-element` | `schemas` | `not searched` — no registered golden source writes an array example holding a `null`, and no witness search has been run |
+| `schema-example-temporal-duplicate-element` | `schemas` | `not searched` — no registered golden source writes a date array example repeating an element, and no witness search has been run |
+| `schema-example-union-ref-sentinel` | `schemas` | `not searched` — no registered golden source writes a `$ref`-only example on a union, and no witness search has been run |
+| `schema-example-on-ref-to-object` | `schemas` | `not searched` — no registered golden source writes an example beside a `$ref` to an object schema, and no witness search has been run |
+| `schema-example-on-ref-to-enum` | `schemas` | `not searched` — no registered golden source writes an example beside a `$ref` to an enum schema, and no witness search has been run |
+| `schema-example-on-ref-to-union` | `schemas` | `not searched` — no registered golden source writes an example beside a `$ref` to a union schema, and no witness search has been run |
 
 #### The `example` arm, removed as a proven divergence
 
@@ -2338,8 +2364,9 @@ ledger, so a registration that adds a second witness removes the row here.
 #### Golden rows with no golden-only witness
 
 Rows the census classifies `golden` while every source declaring the feature is
-a registered `CORPUS.md` row that carries no committed golden — a `DROPPED` or
-`REJECTED` row the census still reads as a source. Their cells say so; the
+a `CORPUS.md` row that carries no committed golden — a `DROPPED` or `REJECTED`
+row. The census no longer reads such a row as a source (#352), so none can stand
+again. Their cells say so; the
 category itself is not this measurement's to move. None stands today: the last
 two, `operation-external-docs` (declared by `calorieninjas.com` and `github.com`)
 and `xml-attribute` (declared by `atlassian.com-jira`), gained golden-only
@@ -2348,6 +2375,32 @@ witnesses in corpus rows 301 (`ideaconsult-enanomapper`) and 302
 
 | key | region | declared only by |
 |---|---|---|
+
+#### Golden rows resting only on residual goldens
+
+Three golden tests byte-compare their golden with a measured `unmatched`
+residual: `komga` (corpus row 130, 25 files), `short-io` (row 131, 61 files) and
+`webflow-v2` (row 132, 305 files). Each is a registered golden source, and every
+file of its golden outside that list is byte-compared. A row whose only
+golden-only witnesses are among the three is proven only where the code it emits
+sits in a byte-matched file, so
+[`residual-attribution.py`](../scripts/residual-attribution.py) (`just
+residual-attribution`) answers that from crozier itself: it renders the witness
+with the feature's declaring nodes perturbed, generates both documents, and
+splits the files that move by whether the golden test compares them. Five rows
+rest on those three alone. Three land in byte-matched files and stay proven.
+Two move no generated file at all, so no byte-matched file vouches for them; they
+are open gaps, counted among the unproven, while the
+[category rules](#the-category-rules) still classify them `golden` because a
+registered golden source declares them.
+
+| key | residual witness | files the feature moves | verdict |
+|---|---|---|---|
+| `format-idn-hostname` | `short-io` | `src/fern/domains/client.py`, `src/fern/domains/raw_client.py`; also `reference.md`, which is `unmatched` | `byte-matched` |
+| `format-iri` | `short-io` | `src/fern/domains/types/get_api_domains_response_item.py`, `src/fern/domains/types/get_domains_domain_id_response.py`, `src/fern/domains/types/post_domains_response.py`, `src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url.py` | `byte-matched` |
+| `boolean-schema-true` | `webflow-v2` | `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py` | `byte-matched` |
+| `schema-example-null` | `webflow-v2` | none: replacing its three null examples with a string moves no generated file | `open gap` |
+| `extension-server` | `webflow-v2` | none: removing its one Server Object extension moves no generated file | `open gap` |
 
 ### The ranked `FIXTURE` backlog
 
@@ -3037,33 +3090,53 @@ The enum predicates read each Schema Object's enum *values*, never its property
 names. Their identifier comparison ports `enum_identifier` from `src/naming.rs`:
 Latin deburring, UUID handling, word splitting, canonical numbers, connector
 joining, digit-boundary collapse and final uppercasing. A collision counts one
-schema, as a two-key collision in `components.schemas` counts its two keys.
+schema, as a two-key collision in `components.schemas` counts its two keys. The
+branch predicates the token-level arms needed read a trace the port keeps of the
+branches each value takes, so a predicate is exact for the arm it names rather
+than a second reading of the value beside the port.
 
 | function and branch | exact selector now | enumeration hole left |
 |---|---|---|
-| `digit_word`: the one-digit numeric prefix of a UUID member | `schema.enum:digit-word-member` | None for this call site; the function's ten return words are outputs, not separate source shapes. |
-| `enum_words`: empty input, wildcard, apostrophe, UUID diversion and a value reducing to no words | `schema.enum:empty-member`, `schema.enum:wildcard-member`, `schema.enum:apostrophe-member`, `schema.enum:uuid-member`, `schema.enum:empty-identifier-member` | The connector-joining and digit-adjacent underscore arms have no token-level selector; predicates over the split word sequence and its neighbours would close them. Latin deburring likewise needs a folded-character predicate. |
-| `enum_words` into `numeric_enum_identifier`: canonical leading number of at least two digits, rejected leading-zero token and number too large for a word | `schema.enum:numeric-prefix-member`, `schema.enum:leading-zero-member`, `schema.enum:leading-digit-identifier` | A single-digit leading number and the arithmetic branches inside the accepted 0–9999 range (small, tens, hundreds, thousands) are not split; range predicates on the leading numeric token would close them. |
-| `finalize_enum_ident`: empty, still digit-leading, or reserved visit parameter | `schema.enum:empty-identifier-member`, `schema.enum:leading-digit-identifier`, `schema.enum:reserved-member` | Its output depends on the full normalized spelling. A member with a second spelling of the same output is named separately by `schema.enum:normalized-collision`; no further case of this function remains. |
-| `sanitize_identifier`: a class name retains a non-identifier character after Pascal casing | `components.schemas:nonidentifier-name` | Its leading-digit prefix on operation IDs is outside enum members; a predicate over operation IDs after their own casing transform would close that separate hole. |
+| `digit_word`: the one-digit numeric prefix of a UUID member | `schema.enum:digit-word-member` | none — the function's ten return words are outputs, not separate source shapes |
+| `enum_words`: empty input, wildcard, apostrophe, UUID diversion and a value reducing to no words | `schema.enum:empty-member`, `schema.enum:wildcard-member`, `schema.enum:apostrophe-member`, `schema.enum:uuid-member`, `schema.enum:empty-identifier-member` | none |
+| `enum_words`: connector joining — a single-letter run, and a short letter run or letter-then-digits word joined to the word before it | `schema.enum:letter-run-member`, `schema.enum:alphanumeric-join-member` | none |
+| `enum_words`: digit-adjacent underscore collapse | `schema.enum:digit-boundary-member` | none |
+| `enum_identifier`: Latin deburring | `schema.enum:deburred-member` | none |
+| `enum_words` into `numeric_enum_identifier`: canonical leading number of at least two digits, rejected leading-zero token and number too large for a word | `schema.enum:numeric-prefix-member`, `schema.enum:leading-zero-member`, `schema.enum:leading-digit-identifier` | none |
+| `enum_words` into `numeric_enum_identifier`: a single-digit leading number, and the small, tens, hundreds and thousands branches inside 0–9999 | `schema.enum:single-digit-prefix-member`, `schema.enum:numeric-small-member`, `schema.enum:numeric-tens-member`, `schema.enum:numeric-hundreds-member`, `schema.enum:numeric-thousands-member` | none |
+| `finalize_enum_ident`: empty, still digit-leading, or reserved visit parameter | `schema.enum:empty-identifier-member`, `schema.enum:leading-digit-identifier`, `schema.enum:reserved-member` | none — a member with a second spelling of the same output is named separately by `schema.enum:normalized-collision` |
+| `sanitize_identifier`: a class name retains a non-identifier character after Pascal casing | `components.schemas:nonidentifier-name` | none |
+| `sanitize_identifier`: the leading-digit prefix on an operation ID after `endpoint_method_name`'s method-name transform | `operation.operationId:digit-leading-method` | none — the transform is ported function by function and pinned by digest, and the port reproduces `src/ir.rs`'s own `endpoint_method_name` expectations |
 
 `src/emit.rs` receives examples from several OpenAPI positions, but the
 schema-level selection used by `src/ir.rs` is the one the existing
 `schema.example=object` selector had already pinned. The extension partitions
 that selection into object, array, string, number, boolean and null. It treats
 `example: null` as an absent `Option<Value>` and tries the first `examples`
-member, flattening a named Example Object map as `de_schema_examples` does.
-The table distinguishes the JSON kind
-the selector can prove from later conditions over generated types and content.
+member, flattening a named Example Object map as `de_schema_examples` does. The
+predicates the second table adds read that same selection through the type the
+node's own fields give it (resolved type), through its members (nested value),
+through the declaration a `$ref` beside it names (resolved type, across one local
+reference), or at the position it is written in (position).
 
 | function and branch | exact selector now | enumeration hole left |
 |---|---|---|
-| `example_matches_type`: object, array, string, number, boolean and null tests | the six `schema.example=<kind>` selectors | Required object fields, integer versus other JSON numbers, and the generated `TypeRef` being tested need conjunctions of the value with the resolved type and its fields. |
-| `example_is_object`: optional and named object or alias | `schema.example=object` names the incoming value's kind | The function switches on the generated `TypeRef`, not the JSON value; an exact branch selector needs a resolved-type predicate. |
-| `value_from_example`: array, object, scalar and null rendering | the same six kind selectors | Empty arrays/objects, temporal strings, union `$ref` sentinels and nested element kinds need content or nested-value predicates. |
-| `named_value_inner`: object, alias, enum and union | the kind selectors name the source example, where one exists | Its match is over `TypeDecl`, which is generated state; an exact selector needs the named declaration reached from the example site. |
-| `build_example_inner`: an object request-body example and its field values | `schema.example=object` when the source is a schema example | Media type and parameter example positions, and branch choices based on endpoint mode, need valued selectors at those positions and an endpoint-context conjunction. |
-| `flat`: atom, call, list and dictionary rendering | array and object source values are distinguished where a schema example supplies them | Its `Example` variants are an intermediate rendering tree, not JSON kinds; a selector over the construction path would close this hole. |
+| `example_matches_type`: object, array, string, number, boolean and null tests | the six `schema.example=<kind>` selectors; required object fields `schema.example:missing-required-field` and `schema.example:undeclared-field`; integer versus other numbers `schema.example:fractional-on-integer`; the enum test `schema.example:outside-enum`; the `Dict` test `schema.example:object-on-map` | none |
+| `example_is_object`: optional and named object or alias | `schema.properties:optional-example`, `schema.example:on-ref-to-object`, `schema.example:on-ref-to-alias` | none |
+| `value_from_example`: array, object, scalar and null rendering | the six kind selectors; empty arrays and objects `schema.example:empty-array`, `schema.example:empty-object`; temporal strings `schema.example:date-time-string`, `schema.example:date-string`; the float literal `schema.example:integral-on-number`; union `$ref` sentinels `schema.example:union-ref-sentinel`; nested element kinds `schema.example:array-null-element`, `schema.example:array-object-element`, `schema.example:temporal-duplicate-element`; model members `schema.example:empty-object-member`, `schema.example:empty-array-member` | none |
+| `named_value_inner`: object, alias, enum and union | `schema.example:on-ref-to-object`, `schema.example:on-ref-to-alias`, `schema.example:on-ref-to-enum`, `schema.example:on-ref-to-union` | none — each resolves the `$ref` written at the example site to the named declaration the arm switches on |
+| `build_example_inner`: an object request-body example and its field values, parameter examples, and the endpoint mode | `schema.example=object`; the parameter position `parameter.example:non-scalar-query`; the media-type position `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`; the endpoint mode `operation.responses:wildcard-binary` | none — the documentation, docstring and `reference.md` writers are three renderings of every endpoint rather than a document shape, so no selector distinguishes them |
+| `flat`: atom, call, list and dictionary rendering | atom: `schema.example=string`, `=number`, `=boolean`; call: `schema.example:date-time-string`, `schema.example:date-string`, `schema.example:on-ref-to-object`; list: `schema.example=array`; dictionary: `schema.example:object-on-map` | none — its `Example` variants are built by the arms above, each of which a selector now names |
+
+Eight of the 35 features these two tables added have no registered golden
+declarer and are `gap` rows, each `FIXTURE`, ranked in
+[the ranked `FIXTURE` backlog](#the-ranked-fixture-backlog):
+`operation-id-digit-leading-method`, `schema-example-fractional-on-integer`,
+`schema-example-array-null-element`, `schema-example-temporal-duplicate-element`,
+`schema-example-union-ref-sentinel`, `schema-example-on-ref-to-object`,
+`schema-example-on-ref-to-enum` and `schema-example-on-ref-to-union`. The other
+27 are `golden`, each on registered sources whose committed Fern golden crozier
+byte-matches, and each publishes the reach cell `just golden-reach` measures.
 
 The `hoist_union_variant` bare-object arm this reading was written for, case 11,
 is gone: Fern types a bare `type: object` union member as a map whatever example

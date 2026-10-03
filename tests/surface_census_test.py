@@ -770,6 +770,10 @@ def refused_arm_records(root: Path) -> dict[tuple[str, str], list[str]]:
 
 
 NAMED_GAPS_HEADING = "#### Unproven arms, named"
+NAMED_FEATURES_HEADING = "#### Unproven features, named"
+# The reason a named gap gives when no search backs it at all: its own
+# reason, apart from a search reading `search-incomplete` or `exhausted`.
+NOT_SEARCHED = "`not searched`"
 
 
 def named_gap_arms(root: Path) -> dict[tuple[str, str], str]:
@@ -791,20 +795,59 @@ def named_gap_arms(root: Path) -> dict[tuple[str, str], str]:
     return gaps
 
 
+def named_gap_features(root: Path) -> dict[str, str]:
+    """`key` -> why the coverage report names that `FIXTURE` gap an unproven feature."""
+    doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+    if NAMED_FEATURES_HEADING not in doc:
+        return {}
+    body = doc.split(NAMED_FEATURES_HEADING, 1)[1].split("\n#", 1)[0]
+    return {
+        cells[0].strip("` "): cells[2].strip()
+        for line in body.splitlines()
+        if (cells := table_cells(line, 3)) and re.fullmatch(r"`[^`]+`", cells[0].strip())
+    }
+
+
+RESIDUAL_HEADING = "#### Golden rows resting only on residual goldens"
+
+
+def residual_attributions(root: Path) -> dict[str, tuple[str, list[str], str]]:
+    """`key` -> (residual witness, byte-matched files named, verdict) from the coverage report."""
+    doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+    if RESIDUAL_HEADING not in doc:
+        return {}
+    body = doc.split(RESIDUAL_HEADING, 1)[1].split("\n#", 1)[0]
+    found = {}
+    for line in body.splitlines():
+        cells = table_cells(line, 4)
+        if cells and re.fullmatch(r"`[^`]+`", cells[0].strip()):
+            matched = cells[2].split("; also", 1)[0]
+            found[cells[0].strip("` ")] = (
+                cells[1].strip("` "), re.findall(r"`([^`]+)`", matched), cells[3].strip("` "),
+            )
+    return found
+
+
 def finished_state_failures(root: Path) -> list[str]:
     """What keeps the coverage report from its finished state, read off `root`'s ledgers.
 
     Every `FIXTURE` `gap` row needs a registered real witness or a `handwritten`
-    cover; every unreached arm of a `golden` row needs an arm-level hand-written
-    cover or a committed record, with its minimal document and control, that
-    only a document Fern refuses reaches it; and every Fern refusal class is
-    decided, never `unevaluated`.
+    cover, or is a row under `NAMED_FEATURES_HEADING` giving `not searched` as
+    its reason; every unreached arm of a `golden` row needs an arm-level
+    hand-written cover, a committed record, with its minimal document and
+    control, that only a document Fern refuses reaches it, or a row under
+    `NAMED_GAPS_HEADING` — over an arm search reading `search-incomplete`, or,
+    where no arm search exists, giving `not searched` as its reason; and every
+    Fern refusal class is decided, never `unevaluated`. Nothing unproven passes
+    unlisted.
     """
     surface = root / "docs" / "openapi-surface"
     failures = []
     ledger = load_script("golden-reach.py").read_ledger(surface / "golden-reach.tsv")
     witnessed = {reach.key for _rank, reach in ledger if reach.witnesses}
     covers = handwritten_covers(surface / "handwritten")
+    named_features = named_gap_features(root)
+    open_features = set()
     for path in sorted(surface.glob("*.md")):
         for cells in RankedBacklogTests.region_rows(path.read_text(encoding="utf-8")):
             key = cells[0].strip("`")
@@ -812,10 +855,23 @@ def finished_state_failures(root: Path) -> list[str]:
             if cells[3].strip("`") != "gap" or settlement != "FIXTURE":
                 continue
             if key not in witnessed and not any(k == key and not arm for _f, k, arm in covers):
+                open_features.add(key)
+                if key in named_features:
+                    if not named_features[key].startswith(NOT_SEARCHED):
+                        failures.append(
+                            f"{key}: docs/openapi-surface-coverage.md names it an unproven feature "
+                            f"without {NOT_SEARCHED} as its reason"
+                        )
+                    continue
                 failures.append(
                     f"{key}: a `FIXTURE` gap row with neither a registered real witness "
                     f"nor a `handwritten` cover ({path.name})"
                 )
+    for key in sorted(set(named_features) - open_features):
+        failures.append(
+            f"{key}: docs/openapi-surface-coverage.md names it an unproven feature, but it is "
+            "not a `FIXTURE` gap row lacking a witness and a cover; remove the row"
+        )
     arm_covers = {(key, arm) for _fixture, key, arm in covers if arm}
     refused = refused_arm_records(root)
     named = named_gap_arms(root)
@@ -836,6 +892,13 @@ def finished_state_failures(root: Path) -> list[str]:
                 continue
             if (reach.key, arm) in named:
                 record = searches / f"{reach.key}.md"
+                if not record.is_file():
+                    if not named[(reach.key, arm)].startswith(NOT_SEARCHED):
+                        failures.append(
+                            f"{reach.key}: unreached arm `{arm}` is named an unproven gap with no arm "
+                            f"search record, so its reason must be {NOT_SEARCHED}"
+                        )
+                    continue
                 verdicts = {
                     line[2].strip("`")
                     for line in exhaustive_search_lines(record.read_text(encoding="utf-8")).get(reach.key, [])
@@ -7774,12 +7837,16 @@ class RankedBacklogTests(unittest.TestCase):
         manifest = manifest_rows(
             (self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8")
         )
-        byte_match = no_witness = proof = handwritten = 0
+        byte_match = no_witness = proof = handwritten = residual_gap = 0
+        residual_open = {key for key, (_w, _f, verdict) in residual_attributions(REPO).items()
+                         if verdict == "open gap"}
         for key, (_region, cells) in self.entries.items():
             category = cells[3].strip("`")
             if category == "golden":
                 witnesses = set(ledger[key].witnesses)
-                if witnesses - vendored:
+                if key in residual_open:
+                    residual_gap += 1
+                elif witnesses - vendored:
                     byte_match += 1
                 else:
                     self.assertFalse(witnesses, f"{key} rests on hand-authored targets alone")
@@ -7865,6 +7932,35 @@ class RankedBacklogTests(unittest.TestCase):
             "the headline does not name every arm only a Fern-refused document reaches",
         )
         self.assertEqual({"refuse"}, {row["status"] for row in classes}, "a class is no longer `refuse`")
+
+    def test_every_golden_row_resting_only_on_residual_goldens_is_attributed(self) -> None:
+        """A residual golden proves a row only where its byte-matched files carry the row.
+
+        The rows whose golden-only witnesses (hand-authored targets aside) are all
+        golden tests declaring an `unmatched` residual are exactly the table's
+        rows; a `byte-matched` row names files its witness's golden test
+        compares, and an `open gap` row names none.
+        """
+        registrations = census.golden_registrations(REPO / "tests" / "e2e.rs")
+        residual = {api for api, registration in registrations.items() if registration.unmatched}
+        vendored = {path.parent.name for path in FIXTURES.glob("*/openapi.*")}
+        resting = {
+            reach.key: real
+            for _rank, reach in self.reach_ledger()
+            if (real := set(reach.witnesses) - vendored) and real <= residual
+        }
+        table = residual_attributions(REPO)
+        self.assertEqual(set(resting), set(table))
+        for key, (witness, files, verdict) in table.items():
+            with self.subTest(key=key):
+                self.assertEqual({witness}, resting[key])
+                self.assertIn(verdict, {"byte-matched", "open gap"})
+                unmatched = set(registrations[witness].unmatched)
+                if verdict == "byte-matched":
+                    self.assertTrue(files, f"{key} names no byte-matched file")
+                    self.assertEqual(set(), set(files) & unmatched, f"{key} names an unmatched file")
+                else:
+                    self.assertEqual([], files)
 
     def test_the_blind_spot_rows_count_the_unreached_arms_in_their_file(self) -> None:
         """Each `src/` file's row states how many of the ledger's unreached arms it holds."""
@@ -10281,29 +10377,70 @@ class FinishedStateGateTests(unittest.TestCase):
             finished_state_failures(self.root),
         )
 
-    NAMED_ARM = "src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\\(Prim::Str\\)]"
+    NAMED_KEY = "schema-example-outside-enum"
+    NAMED_ARM = "src/emit.rs::ExampleCtx::example_matches_type_through[=Some\\(TypeDecl::Enum\\(decl\\)\\) => value]"
 
-    def test_the_committed_named_gap_is_an_uncovered_arm_over_an_incomplete_search(self) -> None:
-        """`format-duration`'s arm has no cover and no refused record: only its named row holds it."""
-        self.assertIn(("format-duration", self.NAMED_ARM), named_gap_arms(self.root))
+    def test_the_committed_named_gap_is_an_uncovered_arm_no_search_backs(self) -> None:
+        """The arm has no cover, no refused record and no search: only its named row holds it."""
+        self.assertIn((self.NAMED_KEY, self.NAMED_ARM), named_gap_arms(self.root))
+        self.assertTrue(named_gap_arms(self.root)[(self.NAMED_KEY, self.NAMED_ARM)].startswith(NOT_SEARCHED))
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers(
             self.root / "docs" / "openapi-surface" / "handwritten")}
-        self.assertNotIn(("format-duration", self.NAMED_ARM), covered)
-        row = f"| `format-duration` | `{self.NAMED_ARM}` | registered witness"
+        self.assertNotIn((self.NAMED_KEY, self.NAMED_ARM), covered)
+        row = f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` |"
         self.edit("docs/openapi-surface-coverage.md", row,
-                  row.replace("`format-duration`", "`format-duration-retired`"))
+                  row.replace(f"`{self.NAMED_KEY}`", f"`{self.NAMED_KEY}-retired`"))
         failures = finished_state_failures(self.root)
-        self.assertIn(f"format-duration: unreached arm `{self.NAMED_ARM}` has neither", failures[0])
-        self.assertIn("format-duration-retired: docs/openapi-surface-coverage.md names", failures[1])
+        self.assertIn(f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` has neither", failures[0])
+        self.assertIn(f"{self.NAMED_KEY}-retired: docs/openapi-surface-coverage.md names", failures[1])
+
+    def test_a_named_gap_with_no_search_must_say_it_was_not_searched(self) -> None:
+        row = f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | {NOT_SEARCHED}"
+        self.edit("docs/openapi-surface-coverage.md", row,
+                  f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | searched, somewhere")
+        self.assertEqual(
+            [f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap with no arm "
+             f"search record, so its reason must be {NOT_SEARCHED}"],
+            finished_state_failures(self.root),
+        )
 
     def test_a_named_gap_over_a_search_reading_exhausted_is_refused(self) -> None:
-        record = "docs/openapi-surface/golden-reach-witnesses/searches/format-duration.md"
-        path = self.root / record
-        path.write_text(path.read_text(encoding="utf-8").replace("`search-incomplete`", "`exhausted`"),
-                        encoding="utf-8")
+        """Once a search record exists, only its `search-incomplete` verdict admits the row."""
+        searches = self.root / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
+        template = (searches / "format-duration.md").read_text(encoding="utf-8")
+        (searches / f"{self.NAMED_KEY}.md").write_text(
+            template.replace("format-duration", self.NAMED_KEY).replace("`search-incomplete`", "`exhausted`"),
+            encoding="utf-8",
+        )
         self.assertEqual(
-            [f"format-duration: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
+            [f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
              "arm search reads ['exhausted']; only a `search-incomplete` arm, with its reason, is a named gap"],
+            finished_state_failures(self.root),
+        )
+
+    def test_a_fixture_gap_named_as_not_searched_passes_and_unlisted_ones_fail(self) -> None:
+        """The committed `FIXTURE` gaps stand only because the report names each one."""
+        named = named_gap_features(self.root)
+        self.assertIn("operation-id-digit-leading-method", named)
+        self.assertTrue(all(reason.startswith(NOT_SEARCHED) for reason in named.values()))
+        self.edit("docs/openapi-surface-coverage.md", "| `operation-id-digit-leading-method` |",
+                  "| `operation-id-digit-leading-method-retired` |")
+        failures = finished_state_failures(self.root)
+        self.assertIn(
+            "operation-id-digit-leading-method: a `FIXTURE` gap row with neither a registered real "
+            "witness nor a `handwritten` cover (document-paths.md)", failures)
+        self.assertIn(
+            "operation-id-digit-leading-method-retired: docs/openapi-surface-coverage.md names it an "
+            "unproven feature, but it is not a `FIXTURE` gap row lacking a witness and a cover; "
+            "remove the row", failures)
+
+    def test_a_fixture_gap_named_without_the_not_searched_reason_is_refused(self) -> None:
+        self.edit("docs/openapi-surface-coverage.md",
+                  f"| `operation-id-digit-leading-method` | `document-paths` | {NOT_SEARCHED}",
+                  "| `operation-id-digit-leading-method` | `document-paths` | pending")
+        self.assertEqual(
+            ["operation-id-digit-leading-method: docs/openapi-surface-coverage.md names it an "
+             f"unproven feature without {NOT_SEARCHED} as its reason"],
             finished_state_failures(self.root),
         )
 
@@ -11481,6 +11618,216 @@ class PredicateSelectorTests(unittest.TestCase):
         for selector in sorted(census.PREDICATES):
             with self.subTest(selector=selector):
                 self.assertIsNone(census.selector_error(selector))
+
+
+class DocumentPathsSnapshotTests(unittest.TestCase):
+    """`document-paths.md`'s snapshot, held to one walk of the registry (#367).
+
+    The region file transcribes the census into its evidence cells and pins the
+    walk they came from by digest. This is that check, in the deterministic tier:
+    it walks every registered golden source through the real CLI, hashes the
+    canonical JSON, and fails when the registry, or the grammar, has changed the
+    census without the snapshot changing with it — then re-derives every cell the
+    snapshot owns from the same walk, joins each cited ledger key and verdict to
+    `docs/fern-limitations.md`, and holds the one-classification-per-feature rule
+    over the six region files.
+    """
+
+    REGIONS = REPO / "docs" / "openapi-surface"
+    CATEGORIES = {"golden", "limitations", "handwritten", "gap"}
+    PAIR = re.compile(r"`([^`]+)` \((\d+)\)")
+    PREFIXES = {
+        "OpenAPI Object": "openapi", "Info Object": "info", "Contact Object": "info.contact",
+        "License Object": "info.license", "Server Object": "server",
+        "Server Variable Object": "server.variables", "Path Item Object": "pathItem",
+        "Operation Object": "operation", "Tag Object": "tag",
+        "External Documentation Object": "externalDocs", "Components Object": "components",
+        "Reference Object": "reference",
+    }
+    # Rows whose cells are not one field selector's per-source list; each is
+    # reconciled by its own case below.
+    SPECIAL = {
+        "missing-operation-id", "non-identifier-operation-id", "untagged-operation",
+        "multi-tagged-operation", "duplicate-operation-id", "duplicate-normalized-paths",
+        "templated-path-segment", "several-path-template-variables",
+        "path-leading-literal-segment", "path-template-before-literal-segment",
+        "path-all-segments-templated", "nonascii-info-title", "server-description-multiword",
+        "pathitem-ref", "relative-file-ref",
+    }
+
+    @classmethod
+    def entries(cls, text: str) -> dict[str, list[str]]:
+        rows = {}
+        for line in text.splitlines():
+            cells = [cell.strip().replace("\x00", "\\|")
+                     for cell in line.replace("\\|", "\x00").split("|")[1:-1]]
+            if len(cells) == 8 and cells[3] in cls.CATEGORIES:
+                rows[cells[0]] = cells
+        return rows
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.text = (cls.REGIONS / "document-paths.md").read_text(encoding="utf-8")
+        cls.rows = cls.entries(cls.text)
+        completed = run("--json")
+        assert completed.returncode == 0, completed.stderr
+        cls.payload = json.loads(completed.stdout)
+        canonical = json.dumps(cls.payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        cls.digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        cls.measured: dict[str, dict[str, int]] = {}
+        for row in cls.payload["rows"]:
+            cls.measured.setdefault(row["selector"], {})[row["fixture"]] = row["count"]
+
+    def test_the_snapshot_is_the_registry_walk_as_it_stands(self) -> None:
+        stated = re.search(
+            r"\*\*Snapshot digest:\*\* `([0-9a-f]{64})`, over \*\*(\d+)\*\* registered golden "
+            r"sources \((\d+) original fixtures, (\d+) corpus sources\)",
+            self.text,
+        )
+        self.assertIsNotNone(stated, "document-paths.md no longer states its snapshot digest")
+        original = sum(1 for source in self.payload["sources"] if source["origin"] == "vendored")
+        self.assertEqual(
+            (len(self.payload["sources"]), original, len(self.payload["sources"]) - original),
+            tuple(int(stated.group(n)) for n in (2, 3, 4)),
+            "the registered golden sources changed; re-transcribe document-paths.md's census "
+            "cells from `just surface-census --json` and re-pin its snapshot digest with them",
+        )
+        self.assertEqual(
+            stated.group(1), self.digest,
+            "the census changed without document-paths.md's snapshot: run `just surface-census "
+            "--json`, re-transcribe every census cell this test reconciles from that one walk, "
+            "and replace the digest with the SHA-256 of its canonical JSON",
+        )
+
+    def test_one_spec_location_is_classified_in_one_region_file(self) -> None:
+        owners: dict[str, set[str]] = {}
+        for path in sorted(self.REGIONS.glob("*.md")):
+            for cells in self.entries(path.read_text(encoding="utf-8")).values():
+                owners.setdefault(cells[2], set()).add(path.name)
+        self.assertEqual({}, {loc: names for loc, names in owners.items() if len(names) > 1})
+
+    def test_every_cited_ledger_key_carries_the_ledgers_verdict(self) -> None:
+        index = (REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+        join = re.search(r"grep -oP '([^']+)' docs/fern-limitations\.md", index)
+        self.assertIsNotNone(join, "the index no longer documents the canonical ledger join")
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        # The documented join is a `grep -P` pattern; `\K` drops what precedes it
+        # from the match, which a group around what follows it reproduces.
+        before, after = join.group(1).split("\\K", 1)
+        canonical = set(re.findall(f"(?:{before})({after})", ledger, re.M))
+        self.assertTrue(canonical, "the index's canonical ledger join reads no keys")
+        cited = dict(re.findall(r"ledger `([^`]+)` — ([^;|*]+?)(?= \||;| \*\*)", self.text))
+        self.assertTrue(cited, "document-paths joins to no limitations row")
+        for key, verdict in cited.items():
+            with self.subTest(key=key):
+                self.assertIn(key, canonical, f"missing limitations key: {key}")
+                row = next(
+                    (line for line in ledger.splitlines()
+                     if line.startswith(f"| `{key}` |") and len(line.split("|")[1:-1]) == 5),
+                    None,
+                )
+                self.assertIsNotNone(row, f"no five-column docs/fern-limitations.md row for {key}")
+                cells = [cell.strip().replace("**", "") for cell in row.split("|")[1:-1]]
+                self.assertEqual(verdict, cells[3], f"verdict drift for {key}")
+
+    def test_golden_rows_publish_reach_and_gap_rows_publish_sites(self) -> None:
+        for key, cells in self.rows.items():
+            with self.subTest(key=key):
+                if cells[3] == "golden":
+                    self.assertTrue(cells[5].startswith("reach: "), f"{key} publishes no reach cell")
+                elif cells[3] == "gap":
+                    self.assertRegex(cells[5], r"`src/[a-z_]+\.rs` \d+", f"{key} publishes no site count")
+                else:
+                    self.assertFalse(cells[5], f"{key} publishes a crozier-site count")
+
+    def census_rows(self) -> int:
+        """Every census cell the snapshot owns, re-derived from the one walk."""
+        measured, rows, pair = self.measured, self.rows, self.PAIR
+        golden = {source["fixture"] for source in self.payload["sources"]}
+        count = 0
+        for key, cells in rows.items():
+            if cells[3] != "golden" or key in self.SPECIAL:
+                continue
+            obj, field = re.sub(r" \([^)]*\)$", "", cells[2]).split(".", 1)
+            selector = f"{self.PREFIXES[obj]}.{field}"
+            with self.subTest(key=key):
+                self.assertEqual(measured.get(selector, {}),
+                                 {n: int(c) for n, c in pair.findall(cells[4])})
+            count += 1
+        methods = [f"pathItem.{m}" for m in ("get", "put", "post", "delete", "options", "head", "patch", "trace")]
+        fixtures = {row["fixture"] for row in self.payload["rows"]}
+        for key, field in (("missing-operation-id", "operation.operationId"),
+                           ("untagged-operation", "operation.tags")):
+            expected = {}
+            for fixture in fixtures:
+                absent = sum(measured.get(m, {}).get(fixture, 0) for m in methods) - measured.get(field, {}).get(fixture, 0)
+                if absent:
+                    expected[fixture] = absent
+            with self.subTest(key=key):
+                self.assertEqual(expected, {n: int(c) for n, c in pair.findall(rows[key][4])})
+            count += 1
+        self.assertEqual({"operation-id-non-identifier": 2},
+                         {n: int(c) for n, c in pair.findall(rows["non-identifier-operation-id"][4])})
+        self.assertEqual(2, measured["operation.operationId"]["operation-id-non-identifier"])
+        count += 1
+        for key, selector in (("pathitem-ref", "pathItem.$ref"),
+                              ("relative-file-ref", "pathItem.$ref:relative-file"),
+                              ("nonascii-info-title", "info.title:non-ascii")):
+            with self.subTest(key=key):
+                transcribed = {n: int(c) for n, c in pair.findall(rows[key][4])}
+                self.assertEqual(measured.get(selector, {}), transcribed)
+            count += 1
+        multi = measured["operation.tags:multiple"]
+        stated = re.search(r"`operation\.tags:multiple`: (\d+) declaration sites across (\d+) registered "
+                           r"golden sources — (.+?)\. No ledger", rows["multi-tagged-operation"][4])
+        self.assertIsNotNone(stated, "multi-tagged-operation no longer states its measurement")
+        self.assertEqual((sum(multi.values()), len(multi), multi),
+                         (int(stated.group(1)), int(stated.group(2)),
+                          {n: int(c) for n, c in pair.findall(stated.group(3))}))
+        count += 1
+        for key, selector in (("duplicate-operation-id", "operation.operationId:duplicate"),
+                              ("duplicate-normalized-paths", "openapi.paths:normalized-collision")):
+            with self.subTest(key=key):
+                self.assertIn(f"`{selector}`", rows[key][4])
+                self.assertEqual(measured.get(selector, {}), {
+                    n: int(c) for n, c in re.findall(
+                        r"`([a-z0-9.-]+)` \(corpus row \d+, \*\*(\d+)\*\* sites", rows[key][4])
+                })
+            count += 1
+        for key, selector, size in (
+            ("templated-path-segment", "openapi.paths:templated-key", 8),
+            ("several-path-template-variables", "openapi.paths:several-template-expressions", 8),
+            ("path-leading-literal-segment", "openapi.paths:leading-literal-segment", 5),
+            ("path-template-before-literal-segment", "openapi.paths:template-before-literal-segment", 5),
+            ("path-all-segments-templated", "openapi.paths:all-segments-templated", 5),
+        ):
+            reported = measured[selector]
+            stated = re.search(rf"census `{re.escape(selector)}`: (\d+) declaration sites across (\d+) "
+                               r"registered golden sources.*?(?:eight|five)? ?largest (?:are|being) (.+?)\. ",
+                               rows[key][4])
+            with self.subTest(key=key):
+                self.assertIsNotNone(stated, f"{key} no longer states its measurement")
+                self.assertEqual((sum(reported.values()), len(reported)),
+                                 (int(stated.group(1)), int(stated.group(2))))
+                largest = dict(sorted(reported.items(), key=lambda item: (-item[1], item[0]))[:size])
+                self.assertEqual(largest, {n: int(c) for n, c in pair.findall(stated.group(3))})
+            count += 1
+        multiword = {n: int(c) for n, c in pair.findall(rows["server-description-multiword"][4])}
+        self.assertTrue(multiword)
+        self.assertLessEqual(set(multiword), set(measured.get("server.description", {})) & golden)
+        count += 1
+        return count
+
+    def test_every_census_cell_is_the_walks_own_and_the_counts_are_stated(self) -> None:
+        census_rows = self.census_rows()
+        ledger_keys = len(dict(re.findall(r"ledger `([^`]+)` — ([^;|*]+?)(?= \||;| \*\*)", self.text)))
+        gaps = sum(1 for cells in self.rows.values() if cells[3] == "gap")
+        stated = re.search(
+            r"document-paths evidence: ok \((\d+) census rows, (\d+) ledger keys, (\d+) gap rows?\)",
+            self.text,
+        )
+        self.assertIsNotNone(stated, "document-paths no longer states the counts this check reconciles")
+        self.assertEqual((census_rows, ledger_keys, gaps), tuple(int(g) for g in stated.groups()))
 
 
 class NamingMirrorTests(unittest.TestCase):
