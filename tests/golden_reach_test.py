@@ -536,13 +536,13 @@ class UnreadableReasonTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as scratch:
             local = Path(scratch) / ("deep/" * 12) / "openapi.yaml"
             local.parent.mkdir(parents=True)
-            local.write_text("openapi: 3.0.0\ninfo:\n  ? explicit\n  : key\n", encoding="utf-8")
+            local.write_text("openapi: 3.0.0\ninfo:\n  title: !!str tagged\n", encoding="utf-8")
             digest = hashlib.sha256(local.read_bytes()).hexdigest()
             result = golden_reach_search._census_one(
                 (str(local), digest, "yaml/Pinned-v1.yaml", (("k", ("schema.oneOf",)),), 60))
         status = result["status"]
         self.assertTrue(status.startswith("unreadable: DocumentError: yaml/Pinned-v1.yaml: line 3: "), status)
-        self.assertIn("explicit `? ` mapping keys are not supported", status)
+        self.assertIn("YAML tags are not supported", status)
         self.assertNotIn(scratch, status)
 
     @unittest.skipUnless(hasattr(__import__("signal"), "SIGALRM"), "no SIGALRM on this platform")
@@ -808,7 +808,10 @@ class _StageScratch(unittest.TestCase):
         paths: {}
         components: {schemas: {Pet: {type: string}}}
         """
-    UNREADABLE = "openapi: 3.0.0\ninfo:\n  ? explicit\n  : key\n"
+    # A YAML tag: the stdlib census reader refuses it by name on line 3, and the
+    # pinned YAML 1.2 parser reads it. (An explicit `? ` key stood here until the
+    # stdlib reader learned that form.)
+    UNREADABLE = "openapi: 3.0.0\ninfo:\n  title: !!str tagged\n"
     REVISION = "e" * 40
 
     def setUp(self) -> None:
@@ -1208,16 +1211,18 @@ class ArmSearchStageTests(_StageScratch):
         self.assertIn("re-run `refuse --source jentic`", str(refused.exception))
 
     def test_recensus_counts_what_only_the_full_parser_reads_and_names_its_loader(self) -> None:
-        """A declarer written with an explicit `? ` key leaves the unread list once counted."""
+        """A declarer written with a YAML tag leaves the unread list once counted."""
         explicit = self.root / "d.yaml"
         explicit.write_text(textwrap.dedent("""\
             openapi: 3.0.3
-            info: {title: explicit, version: "1"}
+            info:
+              title: !!str tagged
+              version: "1"
             paths: {}
             components:
               schemas:
-                ? Pet
-                : anyOf:
+                Pet:
+                  anyOf:
                     - oneOf: [{type: string}, {type: integer}]
                     - type: boolean
             """), encoding="utf-8")
@@ -1236,7 +1241,7 @@ class ArmSearchStageTests(_StageScratch):
             self.skipTest("ruamel.yaml, the YAML 1.2 parser `recensus` reads with, is not installed")
         with contextlib.redirect_stdout(io.StringIO()) as printed:
             self.assertEqual(0, golden_reach_search.main(["recensus", "--source", "jentic", "--root", str(self.root)]))
-        # `d.yaml` through the fallback; `c.yaml`'s explicit key reads too, and declares nothing.
+        # `d.yaml` through the fallback; `c.yaml`'s tag reads too, and declares nothing.
         self.assertIn("2 of 2 documents counted, 2 through ruamel.yaml", printed.getvalue())
         with gzip.open(golden_reach_search.EVIDENCE / "jentic" / "enumeration.tsv.gz", "rt", encoding="utf-8") as h:
             enumeration = {row["document"]: row for row in csv.DictReader(h, delimiter="\t")}

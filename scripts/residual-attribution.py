@@ -51,7 +51,7 @@ CENSUS = _census()
 DISTINCT = {"type": "string", "format": "date-time"}
 
 
-def _replace_format(old: str) -> Callable[[Any], int]:
+def _retype_format(old: str) -> Callable[[Any], int]:
     """Rewrite every `format: <old>` to `date-time`, which types the field differently."""
     def perturb(node: Any) -> int:
         count = 0
@@ -68,7 +68,7 @@ def _replace_format(old: str) -> Callable[[Any], int]:
     return perturb
 
 
-def _true_schemas(node: Any) -> int:
+def _retype_true_schemas(node: Any) -> int:
     """Replace every `true` schema at a property or `items` with a typed one."""
     count = 0
     if isinstance(node, dict):
@@ -81,13 +81,13 @@ def _true_schemas(node: Any) -> int:
         if node.get("items") is True:
             node["items"] = dict(DISTINCT)
             count += 1
-        count += sum(_true_schemas(value) for value in node.values())
+        count += sum(_retype_true_schemas(value) for value in node.values())
     elif isinstance(node, list):
-        count += sum(_true_schemas(value) for value in node)
+        count += sum(_retype_true_schemas(value) for value in node)
     return count
 
 
-def _null_examples(node: Any) -> int:
+def _stringify_null_examples(node: Any) -> int:
     """Give every Schema Object whose selected example is null a string one instead."""
     count = 0
     if isinstance(node, dict):
@@ -95,13 +95,13 @@ def _null_examples(node: Any) -> int:
             node.pop("example", None)
             node["examples"] = ["crozier-perturbed"]
             count += 1
-        count += sum(_null_examples(value) for value in node.values())
+        count += sum(_stringify_null_examples(value) for value in node.values())
     elif isinstance(node, list):
-        count += sum(_null_examples(value) for value in node)
+        count += sum(_stringify_null_examples(value) for value in node)
     return count
 
 
-def _server_extensions(document: Any) -> int:
+def _drop_server_extensions(document: Any) -> int:
     """Drop every `x-` extension a top-level Server Object writes."""
     count = 0
     for server in document.get("servers") or []:
@@ -113,11 +113,11 @@ def _server_extensions(document: Any) -> int:
 
 # key -> (the residual row that is its only real witness, the perturbation)
 CASES: dict[str, tuple[str, Callable[[Any], int]]] = {
-    "format-idn-hostname": ("short-io", _replace_format("idn-hostname")),
-    "format-iri": ("short-io", _replace_format("iri")),
-    "boolean-schema-true": ("webflow-v2", _true_schemas),
-    "schema-example-null": ("webflow-v2", _null_examples),
-    "extension-server": ("webflow-v2", _server_extensions),
+    "format-idn-hostname": ("short-io", _retype_format("idn-hostname")),
+    "format-iri": ("short-io", _retype_format("iri")),
+    "boolean-schema-true": ("webflow-v2", _retype_true_schemas),
+    "schema-example-null": ("webflow-v2", _stringify_null_examples),
+    "extension-server": ("webflow-v2", _drop_server_extensions),
 }
 
 
@@ -130,13 +130,17 @@ def _generate(document: Any, out: Path) -> dict[str, bytes]:
         capture_output=True, text=True,
     )
     if completed.returncode != 0:
-        sys.exit(f"residual-attribution: crozier generate failed: {completed.stderr.strip()[-600:]}")
+        sys.exit(
+            f"residual-attribution: crozier generate failed on {source.name}: "
+            f"{completed.stderr.strip()[-600:]} — fix what it names in src/, then re-run "
+            "`just residual-attribution`"
+        )
     return {path.relative_to(out).as_posix(): path.read_bytes() for path in out.rglob("*") if path.is_file()}
 
 
 def main() -> int:
     if not CROZIER.is_file():
-        sys.exit(f"residual-attribution: no {CROZIER.relative_to(REPO)}; run `cargo build` first")
+        sys.exit(f"residual-attribution: no {CROZIER.relative_to(REPO)}; run `just residual-attribution`, which builds it")
     if shutil.which("ruff") is None:
         sys.exit("residual-attribution: `ruff` is not on PATH; install it with `just bootstrap`")
     registrations = CENSUS.golden_registrations(REPO / "tests" / "e2e.rs")
@@ -144,7 +148,11 @@ def main() -> int:
         path = CENSUS.spec_in(REPO / "tests" / "fixtures" / "corpus-sources" / fixture)
         perturbed = CENSUS.load_document(path)
         if not perturb(perturbed):
-            sys.exit(f"residual-attribution: {key}'s perturbation found nothing to change in {fixture}")
+            sys.exit(
+                f"residual-attribution: {key}'s perturbation found nothing to change in {fixture}; "
+                "its witness no longer declares the feature, so re-run `just golden-reach` and "
+                "update CASES to the rows that still rest only on residual goldens"
+            )
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             before = _generate(CENSUS.load_document(path), root / "before")

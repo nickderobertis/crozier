@@ -40,12 +40,14 @@ SCRIPT = REPO / "scripts" / "witness-search-recensus.py"
 KEY = "property-sole-anyof-composed-member"
 SELECTOR = "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf"
 
-# The census's stdlib loader refuses the explicit `? ` key; YAML 1.2 reads it.
+# The census's stdlib loader refuses the YAML tag; YAML 1.2 reads it.
 DECLARER = b"""openapi: 3.0.3
-info: {title: Pets, version: '1'}
+info:
+  title: !!str Pets
+  version: '1'
 paths:
-  ? /pets
-  : get:
+  /pets:
+    get:
       responses:
         '200': {description: ok}
 components:
@@ -665,7 +667,7 @@ class ReacquireNamesakeTest(unittest.TestCase):
                        for row in INDEX.source_rows(root, "github-code-search")}
             self.assertEqual(5, len(records), records)  # the namesake's read supersedes the pinned refusal
             self.assertEqual(OLDER, records["forked"]["revision"])
-            # The stdlib loader refuses its `? ` key, so the full parser reads it as `full-yaml` would.
+            # The stdlib loader refuses its YAML tag, so the full parser reads it as `full-yaml` would.
             self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2); served by upstream/Forked",
                              records["forked"]["census"])
             self.assertEqual("outstanding", records["forked"]["disposition"])  # its screens are still owed

@@ -7970,6 +7970,34 @@ class RankedBacklogTests(unittest.TestCase):
                 else:
                     self.assertEqual([], files)
 
+    def test_the_residual_attribution_table_is_the_scripts_own_output(self) -> None:
+        """The table's files are what `residual-attribution.py` measures, run for real.
+
+        The script generates every witness twice with the built crozier, so it
+        needs the binary `just check` builds before this tier and `ruff`; it is
+        skipped, named, where either is absent.
+        """
+        binary = REPO / "target" / "debug" / ("crozier.exe" if os.name == "nt" else "crozier")
+        if not binary.is_file() or shutil.which("ruff") is None:
+            self.skipTest(f"no {binary.relative_to(REPO)} or no ruff on PATH; run `just residual-attribution`")
+        completed = subprocess.run(
+            [sys.executable, str(REPO / "scripts" / "residual-attribution.py")],
+            cwd=REPO, capture_output=True, text=True, timeout=1800,
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        measured = {
+            row["key"]: (row["fixture"], row["byte_matched"], row["unmatched"])
+            for row in map(json.loads, completed.stdout.splitlines())
+        }
+        table = residual_attributions(REPO)
+        self.assertEqual(set(table), set(measured))
+        for key, (witness, files, verdict) in table.items():
+            with self.subTest(key=key):
+                fixture, matched, _unmatched = measured[key]
+                self.assertEqual(witness, fixture)
+                self.assertEqual(sorted(files), sorted(matched))
+                self.assertEqual("byte-matched" if matched else "open gap", verdict)
+
     def test_the_blind_spot_rows_count_the_unreached_arms_in_their_file(self) -> None:
         """Each `src/` file's row states how many of the ledger's unreached arms it holds."""
         unreached = [
@@ -12070,7 +12098,8 @@ def _enum(*values: str) -> dict:
 
 
 _PET = {"type": "object", "properties": {"name": {"type": "string"}}}
-_JSON_BODY = lambda media: {"requestBody": {"content": {"application/json": media}}}  # noqa: E731
+def _JSON_BODY(media: dict) -> dict:
+    return {"requestBody": {"content": {"application/json": media}}}
 
 
 class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
