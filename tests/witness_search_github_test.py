@@ -764,6 +764,23 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(2, len(ledger.read_text(encoding="utf-8").splitlines()))
         self.assertEqual([], sorted((cache / "documents").iterdir()))
 
+        # A source that no longer serves the document leaves the new key owed, appending nothing.
+        self.server.state["raw_status"] = 404
+        unserved = self.walk_cli(evidence, "--cache", str(cache))
+        self.assertEqual(0, unserved.returncode, unserved.stderr)
+        self.assertEqual(2, len(ledger.read_text(encoding="utf-8").splitlines()))
+        self.assertEqual([], sorted((cache / "documents").iterdir()))
+
+        # A refused reacquisition leaves the publisher walk outstanding, naming the rerun.
+        self.server.state["raw_status"] = 403
+        stopped = self.walk_cli(evidence, "--cache", str(cache))
+        self.assertEqual(1, stopped.returncode)
+        self.assertIn(f"reacquiring example/api/openapi.yaml@{'c' * 40} was refused: HTTP 403; publisher walk "
+                      "outstanding; rerun --source github-publisher-trees --stage walk", stopped.stderr)
+        trees = [json.loads(line) for line in (evidence / "trees.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual("outstanding", trees[-1]["status"])
+        self.assertEqual(2, len(ledger.read_text(encoding="utf-8").splitlines()))
+
     def test_resolve_replaces_a_corrupt_copy_and_refuses_a_row_it_cannot_reacquire(self) -> None:
         digest = hashlib.sha256(DOCUMENT).hexdigest()
         row = {"source": "github-publisher-trees", "repository": "example/api", "path": "openapi.yaml",
