@@ -11796,7 +11796,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
                 else:
                     self.assertFalse(cells[5], f"{key} publishes a crozier-site count")
 
-    def census_rows(self) -> int:
+    def reconcile_census_cells(self) -> int:
         """Every census cell the snapshot owns, re-derived from the one walk."""
         measured, rows, pair = self.measured, self.rows, self.PAIR
         golden = {source["fixture"] for source in self.payload["sources"]}
@@ -11875,7 +11875,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         return count
 
     def test_every_census_cell_is_the_walks_own_and_the_counts_are_stated(self) -> None:
-        census_rows = self.census_rows()
+        census_rows = self.reconcile_census_cells()
         ledger_keys = len(dict(re.findall(r"ledger `([^`]+)` — ([^;|*]+?)(?= \||;| \*\*)", self.text)))
         gaps = sum(1 for cells in self.rows.values() if cells[3] == "gap")
         stated = re.search(
