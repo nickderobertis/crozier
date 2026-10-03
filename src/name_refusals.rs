@@ -871,7 +871,20 @@ pub(crate) fn validate_ir(
     Ok(())
 }
 
+/// A component schema's source node without its declared type name, so two
+/// declarations of one name compare on the schema they declare.
+fn without_type_names(node: &serde_yaml_ng::Value) -> serde_yaml_ng::Value {
+    let mut node = node.clone();
+    if let Some(fields) = node.as_mapping_mut() {
+        fields.remove("x-crozier-type-name");
+        fields.remove("x-fern-type-name");
+    }
+    node
+}
+
 fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) -> Result<()> {
+    let mut types: std::collections::HashMap<String, (&str, bool, serde_yaml_ng::Value)> =
+        std::collections::HashMap::new();
     for (name, node) in source["components"]["schemas"]
         .as_mapping()
         .into_iter()
@@ -884,6 +897,21 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
             continue;
         }
         let declared = crate::openapi::refusal_type_name(node).unwrap_or(name);
+        // A type name declared by one component and resolved to by another
+        // (its own key or declaration) is one type to Fern, which merges them;
+        // it generates the merge of two identical schemas and refuses two that
+        // differ (the authored probe `376-350-declared-type-name-shared`; the
+        // refusals are this class's `evidence/376-350-declared-type-name-*`).
+        let hinted = crate::openapi::refusal_type_name(node).is_some();
+        let body = without_type_names(node);
+        let resolved = crate::openapi::declared_type_key(declared);
+        if let Some((previous, previous_hinted, previous_body)) = types.get(&resolved) {
+            if (hinted || *previous_hinted) && *previous_body != body {
+                return Err(refusal(path, Class::TypeNameCollision, format!("component schemas {previous:?} and {name:?} both declare type {resolved} with different schemas; give them distinct names")));
+            }
+        } else {
+            types.insert(resolved, (name, hinted, body));
+        }
         let numeric = declared.chars().all(|ch| ch.is_ascii_digit())
             && declared.parse::<u64>().is_ok_and(|number| number > 9999);
         let relative_alias = node["$ref"].as_str().is_some_and(|reference| {
@@ -1057,6 +1085,42 @@ mod tests {
                 "{class:?} names {:?}, which is not a `names` row of classes.tsv",
                 class.id()
             );
+        }
+    }
+
+    #[test]
+    fn a_declared_type_name_two_differing_schemas_resolve_to_is_refused() {
+        let check = |components: &str| {
+            let source: serde_yaml_ng::Value = serde_yaml_ng::from_str(&format!(
+                "openapi: 3.0.3\ninfo: {{title: t, version: '1'}}\npaths: {{}}\n\
+                 components:\n  schemas:\n{components}"
+            ))
+            .unwrap();
+            let doc: OpenApi = serde_yaml_ng::from_value(source.clone()).unwrap();
+            source_type_names(&source, &doc, Path::new("api.yml"))
+        };
+        let widget = "    Widget: {x-fern-type-name: Gadget, type: object}\n";
+        // Identical schemas under one name are one type, declared or keyed.
+        check(&format!(
+            "{widget}    Other: {{x-crozier-type-name: Gadget, type: object}}\n"
+        ))
+        .unwrap();
+        check(&format!("{widget}    Gadget: {{type: object}}\n")).unwrap();
+        // Two keys alone are the key-collision check's, not this one's.
+        check("    A: {type: object}\n    B: {type: string}\n").unwrap();
+        for second in [
+            "    Other: {x-fern-type-name: Gadget, type: string}\n",
+            "    Gadget: {type: string}\n",
+            "    Gad~get: {x-fern-type-name: Gad/get, type: string}\n",
+        ] {
+            let first = if second.contains("Gad~get") {
+                "    Widget: {x-fern-type-name: Gad get, type: object}\n"
+            } else {
+                widget
+            };
+            let error = check(&format!("{first}{second}")).unwrap_err().to_string();
+            assert!(error.contains("type-name-collision"), "{error}");
+            assert!(error.contains("\"Widget\""), "{error}");
         }
     }
 

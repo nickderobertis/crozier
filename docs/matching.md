@@ -1328,11 +1328,12 @@ the SDKs match, then migrate the annotations to `x-crozier-*` as unhurried clean
 The precedence lives in the field accessors (`Operation::audiences`,
 `Operation::ignored`, `Operation::sdk_group_name`, `Operation::sdk_method_name`,
 `Operation::pagination`, `Operation::streaming`, `Schema::ignored`,
-`Schema::enum_member_names`, `Schema::property_name`); any future extension
-inherits the policy by default. The `crozier-property-name` feature target pins
-`property-name` against Fern: hellopatient's overlay renames request body
-properties clear of the same-named `practice_id` path parameter, and the target
-reproduces that through every place a property becomes a Python name.
+`Schema::enum_member_names`, `Schema::declared_type_name`,
+`Schema::property_name`); any future extension inherits the policy by default.
+The `crozier-property-name` feature target pins `property-name` against Fern:
+hellopatient's overlay renames request body properties clear of the same-named
+`practice_id` path parameter, and the target reproduces that through every place
+a property becomes a Python name.
 
 Four of them shape the client tree and its methods, and corpus row 108
 (`truefoundry-trueforge`) is the registered witness of all four:
@@ -1350,6 +1351,42 @@ Four of them shape the client tree and its methods, and corpus row 108
 - **`streaming`** with a `stream-condition` splits one operation into two methods,
   `<name>_stream` and `<name>`, each sending the condition's request field as the
   literal that half means; the field is an argument of neither.
+
+### Three naming shapes measured on probes, not real specifications
+
+Three shapes are decided by manager-authored probes measured at the pin. Each
+is a case directory under `docs/openapi-surface/authored-probes/`, prefixed
+with its ticket number. A case holds the probe, Fern's `fern.log` and, where
+Fern generated, its comment-stripped `fern-expected/` tree.
+`naming_authored_probes_match_pinned_fern` in `tests/e2e.rs` holds crozier, in
+both modes, to the tree or to a refusal. No real-specification search has been
+run for any of the three, and none is a hand-written fixture, so their evidence
+tier is undecided and they are not coverage.
+
+- **Declared type names (#350).** A component schema's
+  `x-fern-type-name`/`x-crozier-type-name` names its class, its module and every
+  reference to it. Fern generates `Widget` with `x-fern-type-name: Gadget` as
+  `types/gadget.py`'s `Gadget`, and `123456` with `Thing` as `Thing`, so a
+  declaration also rescues a key `type-name-not-letter-led` would refuse.
+  `normalize_declared_type_names` renames the component before lowering. The
+  canonical spelling alone produces the same tree, and wins when both appear
+  (`canonical_type_name_hint_names_components_like_fern_spelling`). A blank
+  declaration declares nothing: `Widget` stays `Widget` (`-blank`), and `123456`
+  is still refused as `type-name-not-letter-led` (`-blank-digit-led`). A `/` or
+  `~` in the name breaks a word (`Gad/get` is `GadGet`). Two components resolving to
+  one name are one type to Fern. It generates the merge of identical schemas
+  (`-shared`) and refuses differing ones, whether both declare the name
+  (`-shared-differing`) or one already holds it as its key (`-taken`). crozier
+  refuses those under `type-name-collision`.
+- **`construct` properties (#354).** Fern's tree carries no field that shadows
+  pydantic's `BaseModel.construct()`. A `construct` property is `construct_`
+  under `FieldMetadata(alias="construct")` and `pydantic.Field(alias="construct")`,
+  as `copy`, `json` and `validate` already were, so `model_field_name` protects it.
+- **Tag-only operationIds (#357).** A lone `Search_` under the tag `Search` is the
+  root client's `search` method, as `search` under `search` is. Splitting
+  `group_method` would leave an empty method there, which `ruff` refuses. With a
+  second operation of that tag, the root method collides with the sub-client and
+  `generator-lint-failure` still refuses it.
 
 ## Literal enums
 

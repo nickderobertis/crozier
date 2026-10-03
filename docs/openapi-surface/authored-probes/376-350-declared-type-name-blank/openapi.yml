@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /widgets:
+    post:
+      operationId: createWidget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Widget'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Holder'
+  /things:
+    get:
+      operationId: getThing
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/123456'
+components:
+  schemas:
+    Widget:
+      x-fern-type-name: ''
+      type: object
+      properties:
+        id:
+          type: string
+    Holder:
+      type: object
+      properties:
+        widget:
+          $ref: '#/components/schemas/Widget'
+        widgets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Widget'
+        thing:
+          $ref: '#/components/schemas/123456'
+    '123456':
+      x-fern-type-name: Thing
+      type: object
+      properties:
+        id:
+          type: string

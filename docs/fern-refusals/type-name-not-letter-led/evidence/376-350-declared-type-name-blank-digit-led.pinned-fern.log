@@ -1,0 +1,31 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> 123456
+        issue: Type name must begin with a letter
+
+Found 1 error and 0 warnings in 0.001 seconds.
+::error::Found 1 error and 0 warnings in 0.001 seconds.
+
+generate exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> types -> 123456
+                  __package__.yml
+                  [error] Type name must begin with a letter
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> 123456%0A__package__.yml%0A[error] Type name must begin with a letter
+[api]: python-sdk Found 1 errors and 0 warnings in 0.671 seconds.
+::error title=[api]%3A python-sdk::Found 1 errors and 0 warnings in 0.671 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
