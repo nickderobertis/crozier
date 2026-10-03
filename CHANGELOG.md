@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.98](https://github.com/nickderobertis/crozier/compare/v0.0.97...v0.0.98) - 2026-10-03
+
+### Added
+
+- *(census)* count naming and example branches and restate coverage ([#397](https://github.com/nickderobertis/crozier/pull/397))
+
 ## [0.0.97](https://github.com/nickderobertis/crozier/compare/v0.0.96...v0.0.97) - 2026-10-03
 
 ### Added
