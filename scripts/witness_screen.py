@@ -388,10 +388,13 @@ def raw_url(base: str, repository: str, commit: str, path: str) -> str:
 
 def write_log(logs: Path, base: Path, sha256: str, screen: str, text: str) -> tuple[str, str]:
     """Commit one redacted log by its own digest; its path relative to `base` and that digest."""
-    digest = hashlib.sha256(text.encode()).hexdigest()
+    data = text.encode()
+    digest = hashlib.sha256(data).hexdigest()
     path = logs / f"{sha256[:12]}.{screen}.{digest[:12]}.log"
     logs.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    # Bytes, not text: a text write turns `\n` into `\r\n` on Windows, and the
+    # committed log would then no longer carry the digest recorded for it.
+    path.write_bytes(data)
     return path.relative_to(base).as_posix(), digest
 
 
