@@ -1321,7 +1321,7 @@ declares. Each byte-matches its Fern 5.20.0 golden with `unmatched: &[]`:
 | 304 | `fiware-context-generator` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
 | 305 | `hasura-metadata` | `oneof-anyof-variant` | ✅ byte-matched after seven repairs |
 | 306 | `zoonk` | `oneof-closed-empty-object-variant` | ✅ byte-matched after four repairs |
-| 307 | `yourbrand-ticketing` | `format-duration` | ✅ byte-matched after two repairs |
+| 308 | `yourbrand-ticketing` | `format-duration` | ✅ byte-matched after two repairs |
 
 Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
 - Examples: a required enum-typed query parameter is exampled by the enum's
