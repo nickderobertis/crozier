@@ -809,8 +809,7 @@ class _StageScratch(unittest.TestCase):
         components: {schemas: {Pet: {type: string}}}
         """
     # A YAML tag: the stdlib census reader refuses it by name on line 3, and the
-    # pinned YAML 1.2 parser reads it. (An explicit `? ` key stood here until the
-    # stdlib reader learned that form.)
+    # pinned YAML 1.2 parser reads it.
     UNREADABLE = "openapi: 3.0.0\ninfo:\n  title: !!str tagged\n"
     REVISION = "e" * 40
 
