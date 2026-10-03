@@ -383,7 +383,8 @@ def licence_screen(document_text: str | None, files: list[tuple[str, int, bytes]
     return outcome, {"exit": exit_status, "pins": pins}, log
 
 
-# --- The stage ---------------------------------------------------------------
+# --- The stage: one measured record per screen, and the checks that refuse --
+# --- a success claim that lacks its pins, exit status or log digest ---------
 
 def raw_url(base: str, repository: str, commit: str, path: str) -> str:
     return f"{base.rstrip('/')}/{repository}/{commit}/{urllib.parse.quote(path)}"
