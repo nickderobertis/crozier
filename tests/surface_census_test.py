@@ -811,8 +811,9 @@ def named_gap_features(root: Path) -> dict[str, str]:
 RESIDUAL_HEADING = "#### Golden rows resting only on residual goldens"
 
 
-def residual_attributions(root: Path) -> dict[str, tuple[str, list[str], str]]:
-    """`key` -> (residual witness, byte-matched files named, verdict) from the coverage report."""
+def residual_attributions(root: Path) -> dict[str, tuple[str, list[str], list[str], str]]:
+    """`key` -> (residual witness, byte-matched files, `unmatched` files named as an open
+    gap, verdict) from the coverage report."""
     doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
     if RESIDUAL_HEADING not in doc:
         return {}
@@ -821,9 +822,11 @@ def residual_attributions(root: Path) -> dict[str, tuple[str, list[str], str]]:
     for line in body.splitlines():
         cells = table_cells(line, 4)
         if cells and re.fullmatch(r"`[^`]+`", cells[0].strip()):
-            matched = cells[2].split("; also", 1)[0]
+            matched, _, gap = cells[2].partition("; open gap:")
             found[cells[0].strip("` ")] = (
-                cells[1].strip("` "), re.findall(r"`([^`]+)`", matched), cells[3].strip("` "),
+                cells[1].strip("` "), re.findall(r"`([^`]+)`", matched),
+                [name for name in re.findall(r"`([^`]+)`", gap) if name != "unmatched"],
+                cells[3].strip("` "),
             )
     return found
 
@@ -7844,7 +7847,7 @@ class RankedBacklogTests(unittest.TestCase):
             (self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8")
         )
         byte_match = no_witness = proof = handwritten = residual_gap = 0
-        residual_open = {key for key, (_w, _f, verdict) in residual_attributions(REPO).items()
+        residual_open = {key for key, (_w, _f, _g, verdict) in residual_attributions(REPO).items()
                          if verdict == "open gap"}
         for key, (_region, cells) in self.entries.items():
             category = cells[3].strip("`")
@@ -7947,7 +7950,8 @@ class RankedBacklogTests(unittest.TestCase):
         The rows whose golden-only witnesses (hand-authored targets aside) are all
         golden tests declaring an `unmatched` residual are exactly the table's
         rows; a `byte-matched` row names files its witness's golden test
-        compares, and an `open gap` row names none.
+        compares, an `open gap` row names none, and a `split` row names both: the
+        byte-matched files that prove it and the `unmatched` ones left an open gap.
         """
         registrations = census.golden_registrations(REPO / "tests" / "e2e.rs")
         residual = {api for api, registration in registrations.items() if registration.unmatched}
@@ -7959,16 +7963,14 @@ class RankedBacklogTests(unittest.TestCase):
         }
         table = residual_attributions(REPO)
         self.assertEqual(set(resting), set(table))
-        for key, (witness, files, verdict) in table.items():
+        for key, (witness, files, gaps, verdict) in table.items():
             with self.subTest(key=key):
                 self.assertEqual({witness}, resting[key])
-                self.assertIn(verdict, {"byte-matched", "open gap"})
                 unmatched = set(registrations[witness].unmatched)
-                if verdict == "byte-matched":
-                    self.assertTrue(files, f"{key} names no byte-matched file")
-                    self.assertEqual(set(), set(files) & unmatched, f"{key} names an unmatched file")
-                else:
-                    self.assertEqual([], files)
+                self.assertEqual(set(), set(files) & unmatched, f"{key} names an unmatched file as matched")
+                self.assertLessEqual(set(gaps), unmatched, f"{key}'s open-gap files are not `unmatched`")
+                expected = "split" if files and gaps else "byte-matched" if files else "open gap"
+                self.assertEqual(expected, verdict)
 
     def test_the_residual_attribution_table_is_the_scripts_own_output(self) -> None:
         """The table's files are what `residual-attribution.py` measures, run for real.
@@ -7991,12 +7993,15 @@ class RankedBacklogTests(unittest.TestCase):
         }
         table = residual_attributions(REPO)
         self.assertEqual(set(table), set(measured))
-        for key, (witness, files, verdict) in table.items():
+        for key, (witness, files, gaps, verdict) in table.items():
             with self.subTest(key=key):
-                fixture, matched, _unmatched = measured[key]
+                fixture, matched, unmatched = measured[key]
                 self.assertEqual(witness, fixture)
                 self.assertEqual(sorted(files), sorted(matched))
-                self.assertEqual("byte-matched" if matched else "open gap", verdict)
+                self.assertEqual(sorted(gaps), sorted(unmatched),
+                                 f"{key}: every `unmatched` file it moves is an open gap the table names")
+                expected = "split" if matched and unmatched else "byte-matched" if matched else "open gap"
+                self.assertEqual(expected, verdict)
 
     def test_the_blind_spot_rows_count_the_unreached_arms_in_their_file(self) -> None:
         """Each `src/` file's row states how many of the ledger's unreached arms it holds."""

@@ -144,6 +144,11 @@ real-specification match.
 
 - **Features no proof covers (10):** the 8 `FIXTURE` gaps and the 2 residual-only
   `golden` rows above, each `not searched` or unattributable as stated there.
+- **Output of a proven row that lands in an `unmatched` file (1):**
+  `format-idn-hostname`'s `reference.md`. Its `client.py` and `raw_client.py`
+  output is byte-matched on `short-io` and proven; the `reference.md` part is
+  in `short-io`'s measured `unmatched` set, so no byte comparison covers it
+  ([the attribution](#golden-rows-resting-only-on-residual-goldens)).
 - **Arms no proof covers (3):** the 3 named gaps above, each `not searched`. No
   arm reads `search-incomplete`.
 - **Features and arms resting on hand-written fixtures only (11 features, 54
@@ -2449,15 +2454,19 @@ sits in a byte-matched file, so
 residual-attribution`) answers that from crozier itself: it renders the witness
 with the feature's declaring nodes perturbed, generates both documents, and
 splits the files that move by whether the golden test compares them. Five rows
-rest on those three alone. Three land in byte-matched files and stay proven.
-Two move no generated file at all, so no byte-matched file vouches for them; they
-are open gaps, counted among the unproven, while the
+rest on those three alone. Three land in byte-matched files and stay proven,
+and one of them, `format-idn-hostname`, also moves `reference.md`, which
+`short-io` does not byte-match: that part is an open gap of its own, and the
+row's disposition is `split` — proven where its code lands in byte-matched
+files, unproven in the `unmatched` one named. Two move no generated file at all,
+so no byte-matched file vouches for them; they are open gaps, counted among the
+unproven, while the
 [category rules](#the-category-rules) still classify them `golden` because a
 registered golden source declares them.
 
 | key | residual witness | files the feature moves | verdict |
 |---|---|---|---|
-| `format-idn-hostname` | `short-io` | `src/fern/domains/client.py`, `src/fern/domains/raw_client.py`; also `reference.md`, which is `unmatched` | `byte-matched` |
+| `format-idn-hostname` | `short-io` | `src/fern/domains/client.py`, `src/fern/domains/raw_client.py`; open gap: `reference.md`, which is `unmatched` | `split` |
 | `format-iri` | `short-io` | `src/fern/domains/types/get_api_domains_response_item.py`, `src/fern/domains/types/get_domains_domain_id_response.py`, `src/fern/domains/types/post_domains_response.py`, `src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url.py` | `byte-matched` |
 | `boolean-schema-true` | `webflow-v2` | `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py` | `byte-matched` |
 | `schema-example-null` | `webflow-v2` | none: replacing its three null examples with a string moves no generated file | `open gap` |
