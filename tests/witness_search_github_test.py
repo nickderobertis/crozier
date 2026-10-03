@@ -758,6 +758,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertIn(f"refused: example/api/openapi.yaml@{'c' * 40} served sha256 "
                       f"{hashlib.sha256(tampered).hexdigest()}, not the {recorded['sha256']} the ledger pins",
                       refused.stderr)
+        self.assertIn("pass with --cache a cache that still holds the pinned bytes", refused.stderr)
         self.assertEqual(2, len(ledger.read_text(encoding="utf-8").splitlines()))
         self.assertEqual([], sorted((cache / "documents").iterdir()))
 
@@ -788,6 +789,10 @@ class WitnessSearchGithubTests(unittest.TestCase):
         (self.root / "cache" / "documents" / f"{digest}.yaml").unlink()
         self.assertEqual(DOCUMENT, self.search.resolve(contents, "shape"))
         self.assertEqual(1, self.server.state["contents"])
+        (self.root / "cache" / "documents" / f"{digest}.yaml").unlink()
+        self.server.state["contents_status"] = 403
+        with self.assertRaisesRegex(SEARCH.SearchStopped, f"reacquiring example/api/openapi.yaml@{'b' * 40} was refused: HTTP 403"):
+            self.search.resolve(contents, "shape")
 
     def test_sourcegraph_http_error_stops_search(self) -> None:
         self.server.state["sourcegraph_status"] = 404

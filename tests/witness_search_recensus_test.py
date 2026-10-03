@@ -370,6 +370,26 @@ class FullYamlTest(unittest.TestCase):
                               f"/github.com/example/mirrored/-/raw/openapi.yaml?rev={PINNED}"], server.paths)
             self.assertEqual(DECLARER, (cache / "documents" / f"{digest}.yaml").read_bytes())
 
+            # A source that no longer serves the document leaves it unread, naming the repair.
+            gone = {**row, "repository": "github.com/example/gone", "sha256": "b" * 64, "document": f"{'b' * 64}.yaml"}
+            ledger.write_text(json.dumps(gone) + "\n", encoding="utf-8")
+            unserved = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
+                           "--cache", str(cache), env=env)
+            self.assertEqual(1, unserved.returncode)
+            self.assertIn(f"no cached copy of sha256 {'b' * 64}", unserved.stderr)
+            self.assertIn("its recorded source no longer serves it; pass the cache it was acquired into with --cache",
+                          unserved.stderr)
+
+            # With no --cache the reacquired copy lands in the gitignored default cache.
+            default = REPO / ".local" / "witness-search-cache" / "documents" / f"{digest}.yaml"
+            if not default.exists():
+                self.addCleanup(default.unlink, missing_ok=True)
+            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            defaulted = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph", env=env)
+            self.assertEqual(0, defaulted.returncode, defaulted.stderr)
+            self.assertEqual(DECLARER, default.read_bytes())
+            self.assertEqual(0, subprocess.run(["git", "check-ignore", "--quiet", str(default)], cwd=REPO).returncode)
+
     def test_a_copy_that_does_not_hash_to_its_pin_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "evidence"

@@ -1615,7 +1615,8 @@ class Acquirer:
         if served != digest:
             raise DigestRefused(
                 f"{subject} served sha256 {served}, not the {digest} the ledger pins; "
-                "the recorded source no longer holds the recorded document, so its reading cannot be repeated"
+                "the recorded source no longer holds the recorded document; pass with --cache a cache "
+                "that still holds the pinned bytes, or acquire the document again so a new row pins what is served"
             )
         documents.mkdir(parents=True, exist_ok=True)
         (documents / document_name(data)).write_bytes(data)
