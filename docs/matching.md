@@ -1468,6 +1468,19 @@ tree (`AcmeClient`/`AsyncAcmeClient`). Its Fern generator config carries
 in `.fern/metadata.json`'s `generatorConfig`, which the e2e already normalizes out
 (`normalize_metadata`), so the provenance difference does not gate.
 
+A configured name can equal a sub-client's own class name — hellopatient's
+`TinyUrlClient` over a `TinyURL` resource, or `EcosystemClient` over Apideck's
+`Ecosystem` resource. The root `client.py` defines that class itself, so an
+unaliased import would leave the sub-client property typed as the root client.
+Fern imports each colliding class as `{module}_client_{Class}`
+(`from .ecosystem.client import EcosystemClient as
+ecosystem_client_EcosystemClient`), one statement per name under
+`TYPE_CHECKING`, and uses the alias for the attribute and the lazy property;
+`emit::root_sub_client_alias` does the same. Corpus row 307
+(`apideck.com-ecosystem-client-class-name`) pins it byte for byte, and
+`sdk_env_sub_client_named_like_the_root_client_typechecks_through_its_property`
+proves a consumer's pyright resolves the sub-client's method through the property.
+
 ## Pydantic extra-fields behavior (issue #63)
 
 Generated pydantic models always set `extra="allow"` — an unknown field on a
