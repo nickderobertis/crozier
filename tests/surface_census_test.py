@@ -1311,14 +1311,11 @@ class EvidenceDirectory:
 
     Reconciling a key reads the same `records.tsv`, `probe.jsonl` and
     `screens.jsonl` for every candidate and every key it names; each is read
-    here on first use and answered from its index after. An instance holds the
-    files as they stood when it read them, so share one (`EvidenceIndex`) only
-    over a tree that does not change while it is read.
+    here on first use and answered from its index after.
     """
 
     def __init__(self, directory: Path) -> None:
         self.directory = directory
-        self._layout_failures: dict[tuple[str, ...], list[str]] = {}
 
     @functools.cached_property
     def records(self) -> list[dict[str, str]]:
@@ -1350,26 +1347,6 @@ class EvidenceDirectory:
                 if isinstance(row.get("key"), str):
                     latest.setdefault(row["key"], {})[str(row.get("candidate"))] = row
         return latest
-
-    def layout_failures(self, layout_files: tuple[str, ...]) -> list[str]:
-        """`evidence_directory_failures` without its key, which is all that varies by key."""
-        if layout_files not in self._layout_failures:
-            self._layout_failures[layout_files] = directory_layout_failures(
-                self.directory, self.records, layout_files
-            )
-        return self._layout_failures[layout_files]
-
-
-class EvidenceIndex:
-    """One `EvidenceDirectory` per directory, shared across every key reconciled over one tree."""
-
-    def __init__(self) -> None:
-        self._directories: dict[Path, EvidenceDirectory] = {}
-
-    def directory(self, directory: Path) -> EvidenceDirectory:
-        if directory not in self._directories:
-            self._directories[directory] = EvidenceDirectory(directory)
-        return self._directories[directory]
 
 
 def directory_layout_failures(
@@ -1420,8 +1397,8 @@ def evidence_directory_failures(
     row: a golden-reach arm search's `probe.jsonl` holds every declarer's
     measured reach, and its publisher-tree `pins.tsv` the resolved pin.
     """
-    evidence = evidence or EvidenceDirectory(directory)
-    return [f"{key}: {failure}" for failure in evidence.layout_failures(layout_files)]
+    records = evidence.records if evidence else evidence_records(directory)
+    return [f"{key}: {failure}" for failure in directory_layout_failures(directory, records, layout_files)]
 
 
 def exhaustive_search_failures(
@@ -1432,7 +1409,6 @@ def exhaustive_search_failures(
     directory_for: Callable[[str], Path] | None = None,
     pinned_for: Callable[[str, list[str]], list[dict[str, str]]] | None = None,
     layout_files: tuple[str, ...] = (),
-    index: EvidenceIndex | None = None,
 ) -> list[str]:
     """Every way one key's exhaustive-search record falls short of Contract B.
 
@@ -1440,12 +1416,9 @@ def exhaustive_search_failures(
     `evidence_root` the directory the `witness-search-<source>/` directories sit
     in. Refused at any outcome: a source read `unanswered` for a rate-limit cap,
     and a table that disagrees with its evidence directory either way. Refused
-    under `exhausted`: every obligation the five conditions name.
-
-    `index` shares each directory's reading across the keys of one unchanging
-    tree; without it, this call reads each evidence file at most once itself.
+    under `exhausted`: every obligation the five conditions name. Each evidence
+    file is read at most once per call.
     """
-    index = index or EvidenceIndex()
     failures: list[str] = []
     outcomes = {line[2].strip("`* ") for line in lines}
     if len(outcomes) != 1:
@@ -1481,7 +1454,7 @@ def exhaustive_search_failures(
         directory = (
             directory_for(source) if directory_for else evidence_root / f"witness-search-{source}"
         )
-        evidence = index.directory(directory)
+        evidence = EvidenceDirectory(directory)
         records = evidence.records_by_key.get(key, [])
         if not directory.is_dir():
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
@@ -8891,8 +8864,6 @@ class RankedBacklogTests(unittest.TestCase):
         refused too: a search nobody can reach from the row is not on the record.
         """
         capabilities = source_capabilities(self.DOC.read_text(encoding="utf-8"))
-        # The committed evidence does not change under the test: read it once for every key.
-        index = EvidenceIndex()
         linked = set()
         for key, (_region, cells) in sorted(self.entries.items()):
             found = re.search(r"\(golden-reach-witnesses/searches/([^)]+)\.md\)", cells[5])
@@ -8924,7 +8895,6 @@ class RankedBacklogTests(unittest.TestCase):
                         pinned_for=self.arm_search_pin,
                         layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv", "census-fallback.tsv",
                                       "fern-rescreen.jsonl"),
-                        index=index,
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"
@@ -9069,7 +9039,6 @@ class RankedBacklogTests(unittest.TestCase):
     def test_every_exhaustive_search_record_in_the_tree_meets_contract_b(self) -> None:
         """Every `(key, source)` line any region file records, against its evidence."""
         capabilities = source_capabilities(self.doc)
-        index = EvidenceIndex()
         for path in sorted(self.REGIONS.glob("*.md")):
             region = path.read_text(encoding="utf-8")
             for key, lines in sorted(exhaustive_search_lines(region).items()):
@@ -9077,7 +9046,7 @@ class RankedBacklogTests(unittest.TestCase):
                     self.assertEqual(
                         [],
                         exhaustive_search_failures(
-                            key, lines, self.REGIONS, capabilities, index=index
+                            key, lines, self.REGIONS, capabilities
                         ),
                     )
             for key, line in sorted(compact_search_lines(region).items()):
