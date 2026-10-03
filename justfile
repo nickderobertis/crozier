@@ -311,6 +311,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e docu_goapiserver_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e onevoice_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e xfsc_oidc_identity_resolver_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e huatuo_node_tree_matches_fern_output
 
 # The corpus byte-match with strict Fern compatibility on (docs/fern-refusals/):
 # a refusal class that refuses a document Fern generates from fails it. The

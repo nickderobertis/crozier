@@ -95,3 +95,39 @@ measured with the finished detector, were retrieved at their digests and
 refused in both modes: exit 1, no files, one class/element stderr line and the
 strict cause when applicable. 186 are refused by this class; the rest by
 another registered class or example-value rule that fires first.
+
+## An optional promoted array header
+
+Issue #353 extends the detector to the shape Contract A's `header-array` probe
+isolates ([its record](../../openapi-surface/probe-expected/header-array.fern-refusal.txt),
+re-measured [here](evaluation-logs/fern-header-array.log)). Fern promotes a
+header that rides every operation to a client field and fills that field's
+example with the header's name; an array header's check then rejects the name
+as no list. So the refused shape is an **optional array header crozier
+promotes** (`GlobalHeader`, the same rule that emits client fields) **with no
+string `default`**: the probe, whose one operation carries it, and each
+`header-array-*-probe.yml` here —
+[without the control's default](evaluation-logs/fern-header-array-no-default.log),
+[optional on both of two operations](evaluation-logs/fern-header-array-promoted-optional.log),
+[with a list default](evaluation-logs/fern-header-array-list-default.log),
+[with integer items](evaluation-logs/fern-header-array-integer-items.log),
+[with a schema example](evaluation-logs/fern-header-array-schema-example.log) and
+[with a parameter example](evaluation-logs/fern-header-array-parameter-example.log).
+crozier names the route and header: `example-type-mismatch: GET /probe header
+probeParam`.
+
+Fern generates from every other measured array header, and so does crozier,
+byte-matching each committed tree under
+[`../../openapi-surface/authored-probes/`](../../openapi-surface/authored-probes/):
+optional and required on one of two operations (a method argument,
+`353-method-optional-array`, `353-method-required-array`), required on every
+operation (a `typing.List[str]` client field, `353-promoted-required-array`,
+`353-solo-required-array`), and optional with a string `default`, which Fern
+types `str` and sends the default for (`353-string-default-probe`,
+`353-string-default-control`, the
+[`list-default-not-array` header control](../list-default-not-array/header-array-control.yml)).
+That control's tree is the tree of the same header declared `type: string`
+(`353-string-default-scalar`), so its `default: all` is what separates it from
+the probe. The [class journey failed with only this predicate
+disabled](evaluation-logs/header-array-e2e-induced-red.log), generating 39 files
+from `header-array-integer-items-probe.yml`.

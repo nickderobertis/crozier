@@ -1247,13 +1247,13 @@ The six region files, read as one body of work. Two measurements feed it:
   rows 301 to 306, registered since, and the withdrawals of rows 224 and 223
   bring the tree to 235 registered sources; the cells their declarations move
   are re-read from a walk over that tree. Row 307 then re-registers row 13's
-  `apideck.com-ecosystem` document under a second generator setting, and the
-  `crozier-property-name` feature target is registered beside it, bringing the
-  tree to **237** registered sources, of which **220** carry a committed golden.
-  Row 307 declares nothing row 13 does not, so it moves no row's category, and
-  the per-fixture cells, walked before it, do not list it; the cells
-  `crozier-property-name`'s declarations move are re-read from a walk over the
-  finished tree.
+  `apideck.com-ecosystem` document under a second generator setting, the
+  `crozier-property-name` feature target is registered beside it, and row 309
+  registers `huatuo-node-tree`, bringing the tree to
+  **238** registered sources, of which **221** carry a committed golden. Row
+  307 declares nothing row 13 does not, so it moves no row's category, and the per-fixture cells,
+  walked before it, do not list it; the cells `crozier-property-name`'s and row
+  309's declarations move are re-read from a walk over the finished tree.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
   rests on. Every `golden` row's golden-only witnesses are recomputed from it by
@@ -1405,7 +1405,8 @@ publisher grant leaves 235 (32 vendored plus 203 `link-ok`), and row 307
 (`apideck.com-ecosystem-client-class-name`, row 13's document under
 `client_class_name: EcosystemClient`) makes 236 (32 vendored plus 204
 `link-ok`); the `crozier-property-name` feature target makes 237 (33 vendored
-plus 204 `link-ok`). Rows 301 and 302 are the first
+plus 204 `link-ok`), and row 309 (`huatuo-node-tree`) makes 238 (33 vendored
+plus 205 `link-ok`). Rows 301 and 302 are the first
 golden-only witnesses of `operation-external-docs` and `xml-attribute`, which
 [Golden rows with no golden-only witness](#golden-rows-with-no-golden-only-witness)
 listed until then. Rows 303 to 305 declare `schema.oneOf>schema.anyOf` and move

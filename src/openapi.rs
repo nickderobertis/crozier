@@ -150,8 +150,9 @@ pub type SecurityRequirement = IndexMap<String, Vec<String>>;
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct SecurityScheme {
     /// `$ref`: the map may hold a Reference Object here instead of a Security
-    /// Scheme Object. `normalize_security_scheme_refs` resolves the in-document
-    /// spelling at load time, so nothing downstream sees this field set.
+    /// Scheme Object. `crate::refs::resolve` resolves one naming another local
+    /// document and `normalize_security_scheme_refs` the in-document spelling at
+    /// load time, so downstream sees this field set only on one neither follows.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,
     /// `type`: `apiKey`, `http`, `oauth2`, ...
@@ -1710,10 +1711,11 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     Ok(doc)
 }
 
-/// Fern's pinned Python generator refuses headers with inline string array
-/// items and crashes while lowering inline object headers with properties.
-/// Arrays of referenced objects and bare `schema: object` headers generate in
-/// registered corpus specs (Komga and Short.io), so preserve those.
+/// Fern's pinned Python generator crashes while lowering inline object headers
+/// with properties. Bare `schema: object` headers generate in a registered corpus
+/// spec (Short.io), so preserve those. Array headers generate too; the one Fern
+/// refuses is a registry class (`example-type-mismatch`, in
+/// `document_refusals::check_sdk`).
 fn reject_unemittable_parameters(doc: &OpenApi, path: &Path) -> Result<()> {
     for (route, item) in &doc.paths {
         for (method, operation) in item.operations() {
@@ -1731,11 +1733,6 @@ fn reject_unemittable_parameters(doc: &OpenApi, path: &Path) -> Result<()> {
                         .schema
                         .as_ref()
                         .is_some_and(|schema| schema.properties.declared()),
-                    Some("array") => parameter.schema.as_ref().is_some_and(|schema| {
-                        schema.items.as_ref().is_some_and(|items| {
-                            items.ty.as_ref().and_then(TypeField::primary) == Some("string")
-                        })
-                    }),
                     _ => false,
                 };
                 if refused {
@@ -1785,12 +1782,12 @@ fn reject_unemittable_operation_ids(doc: &OpenApi, path: &Path) -> Result<()> {
 /// is expected. Fern follows the in-document spelling —
 /// `#/components/securitySchemes/<name>` — and imports the referenced scheme under
 /// the *referencing* key, which is a second credential where the target is also
-/// declared under its own name. It refuses to follow a reference into another
-/// document, printing `Failed to resolve` out of `resolveSecuritySchemeReference`
-/// and parsing nothing (see `docs/openapi-surface/security.md`'s
-/// `securityscheme-ref` row). So only the in-document form is followed here; any
-/// other reference is left as the unrecognized scheme it deserialized to, which is
-/// what Fern leaves behind too.
+/// declared under its own name. A reference into another local document was
+/// already resolved by `crate::refs::resolve` (Fern follows it when that document
+/// is present, as HuaTuo's `../components.yaml` shows, and the
+/// `unresolved-reference` class refuses it when absent). So only the in-document
+/// form is followed here; any other reference is left as the unrecognized scheme
+/// it deserialized to.
 fn normalize_security_scheme_refs(doc: &mut OpenApi) {
     const PREFIX: &str = "#/components/securitySchemes/";
     let resolved: Vec<(String, SecurityScheme)> = doc
