@@ -72,28 +72,33 @@ def pyyaml_importable(interpreter_flags: list[str]) -> bool:
 class WitnessSearchAcquisitionTest(unittest.TestCase):
     """Registry, portal, Postman and local-tree acquisition driven through the real CLIs."""
 
-    def test_explicit_yaml_mapping_key_uses_optional_parser(self) -> None:
+    def test_explicit_yaml_mapping_key_is_read_by_the_stdlib_reader(self) -> None:
+        # crozier#363: the census's own YAML subset reads `?` keys, so a valid
+        # document never needs PyYAML; only a malformed one reaches the fallback.
         if not pyyaml_importable([]):
             self.skipTest("PyYAML is not installed for this interpreter")
         returncode, rows = run_explicit_key_census([])
         self.assertEqual(returncode, 1)
+        self.assertEqual(rows["hit.yaml"]["classification"], "openapi-3")
+        self.assertEqual(rows["hit.yaml"]["loader"], "stdlib-census-yaml")
         self.assertGreater(rows["hit.yaml"]["selectors"]["array"], 0)
-        self.assertIn("PyYAML", rows["hit.yaml"]["loader"])
         self.assertEqual(rows["broken.yaml"]["classification"], "unreadable")
         self.assertIn("PyYAML parse failure", rows["broken.yaml"]["error"])
 
-    def test_explicit_yaml_mapping_key_without_pyyaml_is_unreadable(self) -> None:
+    def test_explicit_yaml_mapping_key_without_pyyaml_is_still_read(self) -> None:
         # `-S` drops site-packages, which is where an installed PyYAML lives;
         # the census scripts themselves are stdlib-only.
         if pyyaml_importable(["-S"]):
             self.skipTest("PyYAML is importable even without site-packages")
         returncode, rows = run_explicit_key_census(["-S"])
         self.assertEqual(returncode, 1)
-        for document in ("hit.yaml", "broken.yaml"):
-            self.assertEqual(rows[document]["classification"], "unreadable")
-            self.assertEqual(rows[document]["loader"], "stdlib-census-yaml")
-            self.assertNotIn("selectors", rows[document])
-            self.assertNotIn("PyYAML", rows[document]["error"])
+        self.assertEqual(rows["hit.yaml"]["classification"], "openapi-3")
+        self.assertEqual(rows["hit.yaml"]["loader"], "stdlib-census-yaml")
+        self.assertGreater(rows["hit.yaml"]["selectors"]["array"], 0)
+        self.assertEqual(rows["broken.yaml"]["classification"], "unreadable")
+        self.assertEqual(rows["broken.yaml"]["loader"], "stdlib-census-yaml")
+        self.assertNotIn("selectors", rows["broken.yaml"])
+        self.assertIn("never closed", rows["broken.yaml"]["error"])
 
     def test_invalid_json_is_recorded_as_a_parse_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -687,8 +692,8 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
-        self.assertEqual(len(rows), 11)
-        self.assertEqual(len({row["key"] for row in rows}), 11)
+        self.assertEqual(len(rows), 19)
+        self.assertEqual(len({row["key"] for row in rows}), 19)
         self.assertEqual(
             [row["key"] for row in rows if row["census_status"] == "unsupported-by-census"],
             [],
