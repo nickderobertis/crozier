@@ -325,6 +325,8 @@ class FullYamlTest(unittest.TestCase):
                           "--cache", str(Path(tmp) / "empty"))
             self.assertEqual(1, missing.returncode)
             self.assertIn(f"no cached copy of sha256 {'a' * 64}", missing.stderr)
+            self.assertIn(f"and it cannot be reacquired: the ledger row for github.com/example/api/a.yaml@{'c' * 40} "
+                          "records no acquisition route to reacquire its document by", missing.stderr)
             self.assertIn("pass the cache it was acquired into with --cache", missing.stderr)
             bound = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                         "--cache", str(Path(tmp) / "empty"), "--jobs", "0")
