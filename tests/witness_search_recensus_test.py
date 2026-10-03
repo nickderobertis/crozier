@@ -392,6 +392,46 @@ class FullYamlTest(unittest.TestCase):
             self.assertEqual(DECLARER, default.read_bytes())
             self.assertEqual(0, subprocess.run(["git", "check-ignore", "--quiet", str(default)], cwd=REPO).returncode)
 
+    def test_a_copy_read_from_the_mirror_is_reacquired_from_the_mirror(self) -> None:
+        """A GitHub row the mirror served is read from the mirror again, under its host, verified first."""
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server.paths = []
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_port}"
+        env = {"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url,
+               "CROZIER_SOURCEGRAPH_URL": url, "GITHUB_TOKEN": "offline-test-token"}
+        digest = hashlib.sha256(DECLARER).hexdigest()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-github-code-search"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            row = {"source": "github-code-search", "key": KEY, "selector": SELECTOR,
+                   "repository": "example/mirrored", "path": "openapi.yaml", "commit": PINNED,
+                   "blob": git_blob(DECLARER), "acquisition_route": "sourcegraph-mirror", "sha256": digest,
+                   "document": f"{digest}.yaml", "disposition": "parse-failure",
+                   "diagnostic": "the stdlib loader refused it"}
+            ledger = evidence / "candidates.jsonl"
+            ledger.write_text(json.dumps({**row, "repository": "example/tampered"}) + "\n", encoding="utf-8")
+            refused = run("--evidence-root", str(root), "full-yaml", "--source", "github-code-search",
+                          "--cache", str(cache), env=env)
+            self.assertEqual(1, refused.returncode)
+            self.assertIn(f"refused: example/tampered/openapi.yaml@{PINNED} served sha256 "
+                          f"{hashlib.sha256(DUPLICATE).hexdigest()}, not the {digest} the ledger pins",
+                          refused.stderr)
+            self.assertFalse((cache / "documents").is_dir() and any((cache / "documents").iterdir()))
+
+            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            completed = run("--evidence-root", str(root), "full-yaml", "--source", "github-code-search",
+                            "--cache", str(cache), env=env)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertIn("1 parse-failure row(s) over 1 document(s) read again: 1 declares", completed.stdout)
+            self.assertEqual([f"/github.com/example/tampered/-/raw/openapi.yaml?rev={PINNED}",
+                              f"/github.com/example/mirrored/-/raw/openapi.yaml?rev={PINNED}"], server.paths)
+            self.assertEqual(DECLARER, (cache / "documents" / f"{digest}.yaml").read_bytes())
+
     def test_a_copy_that_does_not_hash_to_its_pin_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "evidence"

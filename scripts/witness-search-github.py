@@ -59,6 +59,14 @@ CODE_SEARCH_REFUSAL_COOLDOWN_S = 300.0
 CODE_SEARCH_PAGE_CAP = 10
 SOURCEGRAPH_SPACING_S = 10.0
 SOURCEGRAPH_REFUSAL_COOLDOWN_S = 3600.0
+# Every `acquisition_route` a ledger row records, named once: the writers here
+# and in `witness-search-recensus.py` stamp these, and `Acquirer.reacquire`
+# requests a row's document again by the same name.
+ROUTE_PINNED_RAW_GITHUB = "pinned-raw-github"
+ROUTE_SOURCEGRAPH_PACED = "sourcegraph-paced"
+ROUTE_SOURCEGRAPH_MIRROR = "sourcegraph-mirror"
+# The suffixes `document_name` gives a cached document, by its syntax.
+DOCUMENT_SUFFIXES = (".json", ".yaml")
 OPENAPI_VERSION = re.compile(r"3\.\d+\.\d+(?:[-+].*)?")
 FIELD = re.compile(r"(?:schema|securityScheme|components)\.([A-Za-z$][A-Za-z0-9$]*)")
 # Every `outcome` a queries.jsonl row carries, split by what it says of the
@@ -134,9 +142,10 @@ class DigestRefused(EvidenceError):
 def document_name(data: bytes) -> str:
     """A fetched document's cache file name: its SHA-256 and a suffix for its syntax."""
     digest = hashlib.sha256(data).hexdigest()
+    json_suffix, yaml_suffix = DOCUMENT_SUFFIXES
     if data.decode("utf-8-sig", "replace").lstrip().startswith(("{", "[")):
-        return digest + ".json"
-    return digest + ".yaml"
+        return digest + json_suffix
+    return digest + yaml_suffix
 
 
 def load(name: str, path: Path) -> Any:
@@ -724,7 +733,7 @@ class Acquirer:
                 "commit": commit,
                 "blob": item["blob"],
                 "url": url,
-                "acquisition_route": "pinned-raw-github",
+                "acquisition_route": ROUTE_PINNED_RAW_GITHUB,
             }
             try:
                 status, data = self.raw_github_get(
@@ -1131,6 +1140,18 @@ class Acquirer:
             return None
         return self._github_window(key, query, lower, upper)
 
+    def sourcegraph_raw_url(self, repository: str, path: str, commit: str) -> str:
+        """Sourcegraph's raw URL for a file of a repository it indexes, at one commit."""
+        return (
+            self.sourcegraph_url
+            + "/"
+            + urllib.parse.quote(repository, safe="/")
+            + "/-/raw/"
+            + urllib.parse.quote(path, safe="/")
+            + "?"
+            + urllib.parse.urlencode({"rev": commit})
+        )
+
     def sourcegraph_search(self, key: str, query: str) -> list[dict[str, Any]] | None:
         url = (
             self.sourcegraph_url
@@ -1289,18 +1310,10 @@ class Acquirer:
                 + "/"
                 + urllib.parse.quote(path, safe="/")
             )
-            identity["acquisition_route"] = "pinned-raw-github"
+            identity["acquisition_route"] = ROUTE_PINNED_RAW_GITHUB
         else:
-            url = (
-                self.sourcegraph_url
-                + "/"
-                + urllib.parse.quote(repo, safe="/")
-                + "/-/raw/"
-                + urllib.parse.quote(path, safe="/")
-                + "?"
-                + urllib.parse.urlencode({"rev": commit})
-            )
-            identity["acquisition_route"] = "sourcegraph-paced"
+            url = self.sourcegraph_raw_url(repo, path, commit)
+            identity["acquisition_route"] = ROUTE_SOURCEGRAPH_PACED
         identity["url"] = url
         try:
             if raw:
@@ -1473,7 +1486,7 @@ class Acquirer:
                 self.raw_github_url + "/" + urllib.parse.quote(identity["repository"], safe="/")
                 + "/" + commit + "/" + urllib.parse.quote(identity["path"], safe="/")
             )
-            identity["acquisition_route"] = "pinned-raw-github"
+            identity["acquisition_route"] = ROUTE_PINNED_RAW_GITHUB
             identity["raw_url"] = raw_url
             subject = f"{identity['repository']}/{identity['path']}@{commit}"
             try:
@@ -1600,7 +1613,7 @@ class Acquirer:
         if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
             raise EvidenceError(f"the ledger row for {subject} pins no sha256")
         documents = self.cache / "documents"
-        for name in (digest + ".json", digest + ".yaml"):
+        for name in (digest + suffix for suffix in DOCUMENT_SUFFIXES):
             if (path := documents / name).is_file():
                 data = path.read_bytes()
                 if hashlib.sha256(data).hexdigest() == digest:
@@ -1648,7 +1661,7 @@ class Acquirer:
         self, route: Any, source: Any, repository: str, path: str, commit: str, key: str, subject: str
     ) -> tuple[int, bytes | None]:
         """One request for a recorded document at its commit, by the route that first read it."""
-        if route == "pinned-raw-github":
+        if route == ROUTE_PINNED_RAW_GITHUB:
             url = (
                 self.raw_github_url
                 + "/"
@@ -1659,16 +1672,11 @@ class Acquirer:
                 + urllib.parse.quote(path, safe="/")
             )
             return self.raw_github_get(url, key, subject)
-        if route == "sourcegraph-paced":
-            url = (
-                self.sourcegraph_url
-                + "/"
-                + urllib.parse.quote(repository, safe="/")
-                + "/-/raw/"
-                + urllib.parse.quote(path, safe="/")
-                + "?"
-                + urllib.parse.urlencode({"rev": commit})
-            )
+        if route == ROUTE_SOURCEGRAPH_PACED:
+            return self.sourcegraph_get(self.sourcegraph_raw_url(repository, path, commit), key, subject)
+        if route == ROUTE_SOURCEGRAPH_MIRROR:
+            # A GitHub row read from Sourcegraph's mirror, which names it under its host.
+            url = self.sourcegraph_raw_url("github.com/" + repository.removeprefix("github.com/"), path, commit)
             return self.sourcegraph_get(url, key, subject)
         if route is None and source == "github-code-search":
             status, data, _ = self.github_contents(

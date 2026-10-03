@@ -351,7 +351,7 @@ def from_history(acquirer: Any, row: dict[str, Any], base: dict[str, Any], head:
         if got == 200 and git_blob(data) == row.get("blob"):
             return acquirer.classify_and_record(
                 {**base, "commit": sha, "blob": row["blob"], "raw_url": raw_url,
-                 "acquisition_route": "pinned-raw-github", "supersedes": row["commit"],
+                 "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB, "supersedes": row["commit"],
                  "reacquired_at_head": True, "github_refusal": refusal}, data), ""
     return None, (f"the path's history at {head} lists {len(commits)} commit(s), none serving blob "
                   f"{row.get('blob')}, at {at}")
@@ -367,14 +367,13 @@ def mirrored(acquirer: Any, row: dict[str, Any], base: dict[str, Any], refusal: 
     unwritten failure record that keeps the candidate at the commit it was
     pinned at.
     """
-    url = (f"{acquirer.sourcegraph_url}/github.com/{urllib.parse.quote(row['repository'], safe='/')}/-/raw/"
-           f"{urllib.parse.quote(row['path'], safe='/')}?rev={row['commit']}")
+    url = acquirer.sourcegraph_raw_url(f"github.com/{row['repository']}", row["path"], row["commit"])
     served_status, data = acquirer.sourcegraph_get(url, row["key"], f"{row['repository']}/{row['path']}@{row['commit']}")
     at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
     if served_status == 200 and git_blob(data) == row.get("blob"):
         return acquirer.classify_and_record(
             {**base, "commit": row["commit"], "blob": row["blob"], "url": url,
-             "acquisition_route": "sourcegraph-mirror", "reacquired_at_head": True,
+             "acquisition_route": GITHUB.ROUTE_SOURCEGRAPH_MIRROR, "reacquired_at_head": True,
              "github_refusal": refusal}, data)
     served = f"HTTP {served_status}" if served_status != 200 else f"a blob hashing to {git_blob(data)}, not {row.get('blob')}"
     return {**base, "commit": row["commit"], "blob": row.get("blob"), "disposition": "acquisition-failure",
@@ -424,7 +423,7 @@ def reacquire_head(args: argparse.Namespace) -> int:
                        + "/" + urllib.parse.quote(row["path"], safe="/"))
             got, data = acquirer.raw_github_get(raw_url, row["key"], f"{repository}/{row['path']}@{head}")
             at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
-            ident = {**base, "commit": head, "raw_url": raw_url, "acquisition_route": "pinned-raw-github",
+            ident = {**base, "commit": head, "raw_url": raw_url, "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB,
                      "supersedes": row["commit"], "reacquired_at_head": True}
             if got != 200:
                 refusal = f"{row['path']} at {head} ({note}) answered HTTP {got} at {at}"
@@ -520,7 +519,7 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
                 if got == 200 and git_blob(data) == row.get("blob"):
                     record = acquirer.classify_and_record(
                         {**base, "commit": sha, "blob": row["blob"], "raw_url": raw_url,
-                         "acquisition_route": "pinned-raw-github", "served_by": namesake,
+                         "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB, "served_by": namesake,
                          "supersedes": row["commit"], "reacquired_at_head": True, "namesakes_searched": True,
                          "github_refusal": row.get("diagnostic")}, data)
                     break
