@@ -233,6 +233,7 @@ compares it. Row 224 is the one so far.
 | 305 | `hasura-metadata` | github-raw | https://raw.githubusercontent.com/hasura/graphql-engine/94915fe51d6d21bd7f6d4452dc16221bef8cfefd/metadata.openapi.json | `94915fe51d6d21bd7f6d4452dc16221bef8cfefd` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Hasura GraphQL Engine's metadata schema as its repository publishes it: 334 component schemas and no paths; properties whose `oneOf` holds an `anyOf` |
 | 306 | `zoonk` | github-raw | https://raw.githubusercontent.com/zoonk/zoonk/4546e69762e30f245c9306acb95aa56fc69d2682/apps/apple/Zoonk/openapi.json | `4546e69762e30f245c9306acb95aa56fc69d2682` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Zoonk's API as its repository publishes it for the Apple client: 48 paths and 69 component schemas; `MeDeletion`'s `oneOf` offers a closed empty object |
 | 307 | `apideck.com-ecosystem-client-class-name` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json | `0.0.6` | Apache 2.0 | committed | Row 13's Ecosystem API regenerated with `client_class_name: EcosystemClient`, the class name of its own `Ecosystem` resource's sub-client |
+| 308 | `yourbrand-ticketing` | github-raw | https://raw.githubusercontent.com/marinasundstrom/YourBrand/6ef617804cb34ceba4b847c62ab122042d86abbe/src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml | `6ef617804cb34ceba4b847c62ab122042d86abbe` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | YourBrand's Ticketing service API as its repository publishes it for the Ticketing client: 32 paths and 64 component schemas; two `application/json` bodies are bare `{type: string, format: duration}` strings |
 | 309 | `huatuo-node-tree` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | committed | HuaTuo node API v1 as its repository authors it, the source `openapi.gen.json` (row 178) is bundled from: `components.securitySchemes.BearerAuth` is `$ref: '../components.yaml#/components/securitySchemes/BearerAuth'`, a security scheme declared in another document of the same pinned tree, and thirteen schema references name `../components.yaml#/components/schemas/…`. Fern's generated bearer `token` and `Authorization` header, and its `ErrorResponse`, `Error`, `ErrorCode` and `ObservationScope` types, derive from those references. |
 
 ## Batch 2 — byte-matched (issue #77)
@@ -1321,6 +1322,7 @@ declares. Each byte-matches its Fern 5.20.0 golden with `unmatched: &[]`:
 | 304 | `fiware-context-generator` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
 | 305 | `hasura-metadata` | `oneof-anyof-variant` | ✅ byte-matched after seven repairs |
 | 306 | `zoonk` | `oneof-closed-empty-object-variant` | ✅ byte-matched after four repairs |
+| 308 | `yourbrand-ticketing` | `format-duration` | ✅ byte-matched after two repairs |
 
 Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
 - Examples: a required enum-typed query parameter is exampled by the enum's
@@ -1360,6 +1362,14 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
   `$ref` stays in the type layer as an alias, which `reference.md` documents as
   the `request`; and a `nullable` beside a response's lone `allOf` `$ref` makes
   the method return it optionally (Zoonk).
+- Parameters and collisions: a query parameter whose sole `oneOf` member is a
+  nullable `oneOf` of one `$ref` is that `$ref`, optional once; and a body field
+  renamed for a parameter collision is sent from its renamed argument when Fern
+  drops the body schema from the type layer, from the parameter's when the
+  schema is also a response or a second request (YourBrand). Both were measured
+  on pinned Fern over the probe in
+  [`docs/fern-measurements/yourbrand-repairs/`](../../docs/fern-measurements/yourbrand-repairs/README.md)
+  before crozier was repaired.
 
 The screened documents these searches found that could not be registered are
 recorded with their measured reason in each search's record: the Open Build

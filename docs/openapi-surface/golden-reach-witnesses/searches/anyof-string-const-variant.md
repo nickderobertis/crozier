@@ -46,13 +46,19 @@ error, its version and the document's digest in the source's
 `census-refused.tsv`, it is not outstanding, and it never settles a
 search on its own.
 
+11 candidate(s) reaching the arm carry only a historical screen: one filed
+before the measured screening stage (`scripts/witness_screen.py`), with no exit
+status, pins or redacted log behind its outcomes. A historical screen is kept as
+it was filed and settles nothing, so each such candidate is outstanding — counted
+in `outstanding` below and listed in `outstanding.tsv` — until it is re-screened.
+
 | source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `apis.guru` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `jentic` | 30 | 0 | 0 | 30 | 0 | 0 | 10 | 10 | 10 | 0 |
-| `github-code-search` | 60 | 0 | 4 | 60 | 0 | 0 | 2 | 5 | 5 | 0 |
+| `jentic` | 30 | 0 | 0 | 30 | 0 | 0 | 10 | 10 | 5 | 5 |
+| `github-code-search` | 60 | 0 | 4 | 60 | 0 | 0 | 2 | 5 | 0 | 5 |
 | `github-publisher-trees` | 1 | 0 | 46 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `sourcegraph` | 25 | 0 | 0 | 25 | 0 | 0 | 1 | 2 | 2 | 0 |
+| `sourcegraph` | 25 | 0 | 0 | 25 | 0 | 0 | 1 | 2 | 1 | 1 |
 | `vendor-portals` | 0 | 0 | 161 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 #### Candidates passing every screen

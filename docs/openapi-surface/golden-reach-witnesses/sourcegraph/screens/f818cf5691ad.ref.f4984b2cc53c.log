@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/chrisdoc/hevy-mcp/d5bf066568bcbb6bef40dec329705f29dede3b6a/openapi-spec.json
+HTTP 200
+63011 bytes, sha256 f818cf5691ad481aa38e459389926e2bbc8a712489a9c3bf702248c50029b830
+pinned sha256 f818cf5691ad481aa38e459389926e2bbc8a712489a9c3bf702248c50029b830
+outcome: passed: 63011 bytes read at the immutable commit d5bf066568bcbb6bef40dec329705f29dede3b6a, sha256 f818cf5691ad481aa38e459389926e2bbc8a712489a9c3bf702248c50029b830

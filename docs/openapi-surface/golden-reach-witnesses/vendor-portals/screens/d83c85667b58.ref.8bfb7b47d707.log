@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/codatio/oas/2dbdc1f7bcdefaf769ab17fcc99fbb098ef2610b/json/Codat-Intuit-IDX.json
+HTTP 200
+64376 bytes, sha256 d83c85667b585b044807ce46449ae9e3ac4f212ab950fa0f0f59a1243a0bb86d
+pinned sha256 d83c85667b585b044807ce46449ae9e3ac4f212ab950fa0f0f59a1243a0bb86d
+outcome: passed: 64376 bytes read at the immutable commit 2dbdc1f7bcdefaf769ab17fcc99fbb098ef2610b, sha256 d83c85667b585b044807ce46449ae9e3ac4f212ab950fa0f0f59a1243a0bb86d

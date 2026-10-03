@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "yourbrand-ticketing",
+  "corpus_spec_ref": "6ef617804cb34ceba4b847c62ab122042d86abbe",
+  "corpus_spec_url": "https://raw.githubusercontent.com/marinasundstrom/YourBrand/6ef617804cb34ceba4b847c62ab122042d86abbe/src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml"
+}

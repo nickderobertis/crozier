@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/crescat-io/saloon-sdk-generator/0a95e2f59630eba99a81c202dcbb8c41e5b99470/tests/Samples/paddle-openapi.yaml
+HTTP 200
+1036462 bytes, sha256 a4a4068ff79230d86d7a3261afac0e7407a87b593b91ba4fd04bc6c8a3745d8e
+pinned sha256 a4a4068ff79230d86d7a3261afac0e7407a87b593b91ba4fd04bc6c8a3745d8e
+outcome: passed: 1036462 bytes read at the immutable commit 0a95e2f59630eba99a81c202dcbb8c41e5b99470, sha256 a4a4068ff79230d86d7a3261afac0e7407a87b593b91ba4fd04bc6c8a3745d8e

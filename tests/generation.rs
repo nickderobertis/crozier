@@ -12178,6 +12178,136 @@ components:
     }
 }
 
+/// Fragments of YourBrand's Ticketing API (corpus row 308), each assertion a
+/// line of its Fern 5.20.0 golden or of the 3.0 probe measured beside it:
+/// - a query parameter whose sole `oneOf` member is a nullable `oneOf` of one
+///   `$ref` is that `$ref`, optional once;
+/// - a `$ref` body field colliding with a query parameter is sent from its
+///   prefixed argument when the body is posted by that operation alone, and
+///   from the parameter's when the schema is also a response (Airflow's
+///   `DAG.tags`, Anchore's `PolicyBundleRecord.active`).
+#[test]
+fn yourbrand_sole_nested_one_of_parameter_and_prefixed_collision_shapes() {
+    let files = render(
+        r##"
+openapi: 3.0.0
+info: { title: Ticketing, version: v1 }
+paths:
+  /v1/Users:
+    get:
+      tags: [Users]
+      operationId: Users_GetUsers
+      parameters:
+        - name: sortDirection
+          in: query
+          schema:
+            oneOf:
+              - nullable: true
+                oneOf:
+                  - $ref: '#/components/schemas/SortDirection'
+      responses: { '200': { description: '' } }
+  /v1/Projects:
+    post:
+      tags: [Projects]
+      operationId: Projects_CreateProject
+      parameters:
+        - { name: organizationId, in: query, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateProject' }
+      responses: { '200': { description: '' } }
+  /v1/Tags:
+    patch:
+      tags: [Projects]
+      operationId: Projects_PatchTags
+      parameters:
+        - { name: tags, in: query, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Tagged' }
+      responses: { '200': { description: '' } }
+    get:
+      tags: [Projects]
+      operationId: Projects_GetTags
+      responses:
+        '200':
+          description: ''
+          content: { application/json: { schema: { $ref: '#/components/schemas/Tagged' } } }
+components:
+  schemas:
+    SortDirection: { type: string, enum: [Ascending, Descending] }
+    CreateProject:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        organizationId: { type: string, nullable: true }
+    Tagged:
+      type: object
+      properties:
+        name: { type: string }
+        tags: { type: string }
+"##,
+    );
+    let users = &files["src/acme/users/raw_client.py"];
+    assert!(
+        users.contains("        sort_direction: typing.Optional[SortDirection] = None,\n"),
+        "{users}"
+    );
+    let projects = &files["src/acme/projects/raw_client.py"];
+    assert!(
+        projects.contains("        create_project_organization_id: typing.Optional[str] = OMIT,\n"),
+        "{projects}"
+    );
+    assert!(
+        projects.contains("                \"organizationId\": create_project_organization_id,\n"),
+        "{projects}"
+    );
+    assert!(
+        projects.contains("            json={\n                \"name\": name,\n                \"tags\": tags,\n"),
+        "{projects}"
+    );
+}
+
+/// The probe `docs/fern-measurements/yourbrand-repairs/` measured on pinned Fern,
+/// rendered by crozier: every line that tells its two behaviours apart in Fern's
+/// committed `raw_client.py` — which colliding body field is sent from its
+/// renamed argument, and how the nested sole-member parameter is typed — is a
+/// line of crozier's too.
+#[test]
+fn measured_yourbrand_repair_probe_matches_its_fern_output() {
+    let dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-measurements/yourbrand-repairs");
+    let probe = std::fs::read_to_string(dir.join("probe.yaml")).expect("the committed probe");
+    let fern = std::fs::read_to_string(dir.join("fern-raw_client.py.txt"))
+        .expect("Fern's committed output");
+    let files = render(&probe);
+    let crozier = &files["src/acme/raw_client.py"];
+    let telling: Vec<&str> = fern
+        .lines()
+        .filter(|line| line.contains("\"owner\": ") || line.contains("sort_direction: "))
+        .collect();
+    assert!(
+        telling.iter().any(|line| line.contains("a_owner")),
+        "{fern}"
+    );
+    assert!(
+        telling
+            .iter()
+            .any(|line| line.trim() == "\"owner\": owner,"),
+        "{fern}"
+    );
+    let crozier_lines: Vec<&str> = crozier
+        .lines()
+        .filter(|line| line.contains("\"owner\": ") || line.contains("sort_direction: "))
+        .collect();
+    assert_eq!(telling, crozier_lines, "{crozier}");
+}
+
 /// Fragments of MockServer (corpus row 232), each assertion a line of its Fern
 /// 5.20.0 golden:
 /// - the lazy sub-client imports sort case-insensitively (`AsyncapiClient`

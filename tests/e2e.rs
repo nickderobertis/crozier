@@ -4716,6 +4716,7 @@ const CORPORA: &[&Corpus] = &[
     &ZOONK,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
+    &YOURBRAND_TICKETING,
 ];
 
 #[test]
@@ -7608,6 +7609,20 @@ const APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME: Corpus = Corpus {
     audiences: &[],
     audience_strict: false,
     client_class_name: Some("EcosystemClient"),
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `yourbrand-ticketing`: corpus row 308, YourBrand's Ticketing service API
+/// from marinasundstrom/YourBrand, whose two `format: duration` string bodies
+/// reach `scalar_body`'s plain-string arm
+const YOURBRAND_TICKETING: Corpus = Corpus {
+    api: "yourbrand-ticketing",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
     extra_fields: None,
     unmatched: &[],
 };
@@ -14154,6 +14169,11 @@ fn zoonk_matches_fern_output() {
 #[test]
 fn apideck_ecosystem_client_class_name_matches_fern_output() {
     assert_committed_corpus_matches(&APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME);
+}
+
+#[test]
+fn yourbrand_ticketing_matches_fern_output() {
+    assert_committed_corpus_matches(&YOURBRAND_TICKETING);
 }
 
 #[test]

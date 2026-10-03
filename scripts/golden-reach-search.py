@@ -47,11 +47,14 @@ Each subcommand does one stage and writes its evidence under
   count, one line each with its blocker, into
   ``golden-reach-witnesses/outstanding.tsv``: the continuation's work list.
 
-Screens are recorded by ``screen``, which takes the outcome, the evidence it
-rests on and a passing candidate's disposition (``--registered`` or
-``--declined``) from the caller: a licence, an immutable ref and Fern's acceptance are
-each a measurement taken elsewhere (the corpus licence rule, the source's pin,
-`scripts/generate-fern-fixture.sh`), and this script only files them.
+Screens are taken by ``screen``, through the one measured screening stage both
+witness-search families share (`scripts/witness_screen.py`): the candidate's
+bytes read at its pinned commit, its licence read against the corpus rule, and
+pinned Fern run over it, each outcome filed with its pins, exit status and
+redacted log. The caller supplies only a passing candidate's disposition
+(``--registered`` or ``--declined``) and any licence judgement that refuses it;
+an outcome stated as text is refused. A screen filed before that stage carries
+no measured record: it is historical, and settles no candidate.
 
 Every GitHub and Sourcegraph call goes through `scripts/rate_limit_guard.py`, by
 way of the acquirer; this script opens no socket of its own.
@@ -146,6 +149,7 @@ def _load(name: str, path: Path) -> ModuleType:
 
 REACH = _load("golden_reach", REPO / "scripts" / "golden-reach.py")
 CENSUS = _load("openapi_surface_census", REPO / "scripts" / "openapi-surface-census.py")
+SCREEN = _load("witness_screen", REPO / "scripts" / "witness_screen.py")
 
 
 def fail(message: str) -> None:
@@ -351,7 +355,10 @@ def replace_records(source: str, rows: list[dict[str, str]]) -> None:
     """Write exactly `rows` as one source's records.tsv, one line per distinct row."""
     path = source_dir(source) / "records.tsv"
     unique = {tuple(row[f] for f in RECORD_FIELDS): row for row in rows}
-    with path.open("w", encoding="utf-8", newline="") as handle:
+    # Written beside and moved into place, so a run stopped mid-write leaves the
+    # ledger it had rather than a truncated one.
+    partial = path.with_name(f".{path.name}.partial")
+    with partial.open("w", encoding="utf-8", newline="") as handle:
         # Contract B's reader splits on tabs and nothing else, so a quote is text.
         writer = csv.DictWriter(
             handle, RECORD_FIELDS, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE, quotechar=None
@@ -359,6 +366,7 @@ def replace_records(source: str, rows: list[dict[str, str]]) -> None:
         writer.writeheader()
         for row in sorted(unique.values(), key=lambda r: (r["key"], r["kind"], r["subject"], r["result"])):
             writer.writerow(row)
+    os.replace(partial, path)
 
 
 def record_guard_logs(source: str) -> None:
@@ -1244,42 +1252,116 @@ def fixture_declined(key: str, source: str) -> set[str]:
     return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(FIXTURE_DECLINE)}
 
 
+def candidate_ref(source: str, candidate: str) -> tuple[str, str, str, str]:
+    """Where a candidate's bytes are pinned: repository, commit, path, and the digest the search read."""
+    if source in QUERY_SOURCES:
+        found = re.fullmatch(r"(?:github\.com/)?([^/:]+/[^/:]+):(.+)@([0-9a-f]{40})", candidate)
+        if not found:
+            fail(f"{candidate} names no `<owner>/<repo>:<path>@<commit>` a screen can read at its commit; "
+                 f"check its spelling against {source}'s records.tsv, or pass --measured with a record "
+                 "scripts/witness_screen.py measured at the document's pinned commit")
+        cached = candidate_index(source).get(candidate, "")
+        digest = Path(cached).stem if re.fullmatch(r"[0-9a-f]{64}", Path(cached).stem) else ""
+        return found.group(1), found.group(3), found.group(2), digest
+    listing = pinned_listing(source)
+    repeated = repeated_documents(listing)
+    for row in listing:
+        if document_subject(row, repeated) == candidate:
+            path, prefix = row["document"], row["walk"].replace("/", "--") + "/"
+            # A vendor-portal copy is filed under its repository's `<owner>--<repo>/` directory.
+            return row["walk"], row["revision"], path.removeprefix(prefix), row.get("sha256", "")
+    fail(f"{candidate} is in no {source} pinned listing; check the candidate's spelling against "
+         f"{source}'s records.tsv, or re-walk {source} if its listing moved")
+    raise AssertionError  # unreachable: `fail` exits
+
+
+def file_screen(source: str, key: str, candidate: str, row: dict[str, Any]) -> None:
+    """Append one screen row and restate the candidate's `records.tsv` rows from it."""
+    census = next(
+        (r["result"] for r in read_records(source)
+         if r["key"] == key and r["kind"] == "document" and r["subject"] == candidate),
+        None,
+    )
+    if census is None:
+        fail(f"{candidate} is no declarer of {key} in {source}'s records; `walk` or `query` {source} for {key} first, or check the candidate's spelling")
+    rows = [
+        {"key": key, "kind": "candidate", "subject": candidate, "result": census, "file": "probe.jsonl"},
+        *({"key": key, "kind": "screen", "subject": f"{candidate} {name}", "result": row[name], "file": "screens.jsonl"}
+          for name in SCREEN.SCREENS),
+    ]
+    with (source_dir(source) / "screens.jsonl").open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps({"key": key, "candidate": candidate, **row}, sort_keys=True) + "\n")
+    others = [r for r in read_records(source)
+              if not (r["key"] == key and r["kind"] in ("screen", "candidate")
+                      and (r["subject"] == candidate or r["subject"].startswith(candidate + " ")))]
+    replace_records(source, others + rows)
+
+
 def screen(args: argparse.Namespace) -> int:
-    """File one candidate's three screens, each with the evidence it rests on."""
+    """Take one candidate's three screens through the measured stage and file them.
+
+    The licence, the ref and Fern are each measured by `scripts/witness_screen.py`
+    — the document read at its pinned commit through the guarded acquirer, its
+    licence read against the corpus rule, pinned Fern run over it — and filed with
+    the exit status, pins and redacted log behind each. No outcome is taken from
+    the caller: `--measured` files a record that stage measured earlier, and is
+    refused unless it is whole.
+    """
+    stated = [flag for flag, value in (("--licence", args.licence), ("--ref", args.ref), ("--fern", args.fern))
+              if value is not None]
+    if stated:
+        fail(f"{', '.join(stated)} free text is no longer a measurement: `screen` takes the licence, ref and "
+             "fern screens through the measured stage (scripts/witness_screen.py) and records each one's exit "
+             "status and redacted log — drop " + ", ".join(stated))
     if args.declined and args.registered:
         fail("a candidate is registered or declined, not both; pass one of --registered and --declined")
     if args.declined.startswith(FIXTURE_DECLINE) and not args.declined[len(FIXTURE_DECLINE):].startswith(" — "):
         fail(f"a fixture decline reads `{FIXTURE_DECLINE} — <what makes it one>`: name the repository, the "
              "path at its pinned commit, and the test or fixtures directory it sits in or the test that loads it")
-    for outcome in (args.licence, args.ref, args.fern):
-        if outcome != "passed" and not outcome.startswith("failed: "):
-            fail(f"a screen reads `passed` or `failed: <reason>`, not {outcome!r}")
-    census = next(
-        (r["result"] for r in read_records(args.source)
-         if r["key"] == args.key and r["kind"] == "document" and r["subject"] == args.candidate),
-        None,
-    )
-    if census is None:
-        fail(f"{args.candidate} is no declarer of {args.key} in {args.source}'s records; `walk` or `query` {args.source} for {args.key} first, or check the candidate's spelling")
-    rows = [
-        {"key": args.key, "kind": "candidate", "subject": args.candidate, "result": census, "file": "probe.jsonl"},
-        {"key": args.key, "kind": "screen", "subject": f"{args.candidate} licence", "result": args.licence, "file": "screens.jsonl"},
-        {"key": args.key, "kind": "screen", "subject": f"{args.candidate} ref", "result": args.ref, "file": "screens.jsonl"},
-        {"key": args.key, "kind": "screen", "subject": f"{args.candidate} fern", "result": args.fern, "file": "screens.jsonl"},
-    ]
     directory = source_dir(args.source)
-    with (directory / "screens.jsonl").open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps({"key": args.key, "candidate": args.candidate, "licence": args.licence,
-                                 "ref": args.ref, "fern": args.fern, "gap_keys": args.gap_keys,
-                                 "evidence": args.evidence, "declined": args.declined,
-                                 "registered": args.registered}, sort_keys=True) + "\n")
-    others = [r for r in read_records(args.source)
-              if not (r["key"] == args.key and r["kind"] in ("screen", "candidate")
-                      and (r["subject"] == args.candidate or r["subject"].startswith(args.candidate + " ")))]
-    replace_records(args.source, others + rows)
+    if not any(r["key"] == args.key and r["kind"] == "document" and r["subject"] == args.candidate
+               for r in read_records(args.source)):
+        fail(f"{args.candidate} is no declarer of {args.key} in {args.source}'s records; `walk` or `query` {args.source} for {args.key} first, or check the candidate's spelling")
+    if args.measured:
+        record = SCREEN.read_measured(args.measured)
+        # A record measured elsewhere is filed only against the document it read.
+        repository, commit, path, expected = candidate_ref(args.source, args.candidate)
+        document = record.get("document") if isinstance(record, dict) and isinstance(record.get("document"), dict) else {}
+        read = (document.get("repository"), document.get("commit"), document.get("path"))
+        if read != (repository, commit, path) or (expected and document.get("sha256") not in (expected, "")):
+            fail(f"--measured names {read}, not {args.candidate}'s pinned document "
+                 f"{(repository, commit, path)}{' with sha256 ' + expected if expected else ''}; pass the record "
+                 "measured for this candidate, or drop --measured to measure it now")
+    else:
+        repository, commit, path, expected = candidate_ref(args.source, args.candidate)
+        github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+        acquirer = github.Acquirer(directory, cache=CACHE / args.source, **ACQUIRER_OPTIONS)
+        record = SCREEN.measure(
+            repository=repository, commit=commit, path=path, raw_base=acquirer.raw_github_url,
+            fetch=lambda url, subject: acquirer.raw_github_get(url, args.key, subject),
+            logs=directory / SCREEN.LOG_DIR, base=directory, expected_sha256=expected,
+            licence_refusal=args.licence_refusal, timeout=args.timeout,
+        )
+        record_guard_logs(args.source)
+    missing = SCREEN.measured_failures(record, directory)
+    refusal = (f"{args.candidate}: a screen is filed only with its measured record, and this one lacks "
+               + "; ".join(missing) + " — measure it again: run `screen` without --measured") if missing else ""
+    if not refusal and args.registered and not all(
+            outcome.startswith("passed") for outcome in SCREEN.outcomes(record).values()):
+        refusal = (f"--registered claims {args.candidate} passed every screen, and its measured outcomes read "
+                   f"{SCREEN.outcomes(record)}; drop --registered to file the refusal as measured")
+    if refusal:
+        if not args.measured and isinstance(record, dict):
+            SCREEN.discard_logs(record, directory)
+        fail(refusal)
+    result = SCREEN.outcomes(record)
+    file_screen(args.source, args.key, args.candidate, {
+        **result, "measured": record, "screened_at": record["screened_at"], "gap_keys": args.gap_keys,
+        "evidence": args.evidence, "declined": args.declined, "registered": args.registered,
+    })
+    print(f"golden-reach-search: {args.source}: {args.candidate} — "
+          + ", ".join(f"{name} {outcome.split(':', 1)[0]}" for name, outcome in result.items()))
     return 0
-
-
 
 
 def _cell(text: str) -> str:
@@ -1380,12 +1462,55 @@ def _refused(key: str, source: str) -> list[tuple[str, str]]:
     return _refused_split(key, source)[0]
 
 
+HISTORICAL_SCREEN = "screened before the measured stage, with no measured record: re-screen it through `screen`"
+
+
+def screen_states(key: str, source: str) -> dict[str, str]:
+    """[`screen_states_in`] one declared source's evidence directory."""
+    return screen_states_in(source_dir(source), key)
+
+
+def screen_states_in(directory: Path, key: str) -> dict[str, str]:
+    """Each screened candidate of one key, as a live decision reads its latest screen.
+
+    `passing` and `refused` are measurements: a row whose measured record holds,
+    or a Fern refusal of a candidate whose pinned run in `fern-rescreen.jsonl`
+    `fern-rescreen` measured refusing it. Anything else is `historical` — filed before the
+    measured stage, readable, and never read as a measurement: the candidate it
+    names is still owed its screens.
+    """
+    screens = directory / "screens.jsonl"
+    if not screens.is_file():
+        return {}
+    latest: dict[str, dict[str, Any]] = {}
+    for row in read_jsonl(screens, ("key", "candidate"), "restore it from git; `screen` appends to it"):
+        if row["key"] == key:
+            latest[row["candidate"]] = row
+    rescreen = directory / RESCREEN_FILE
+    # A candidate `fern-rescreen` ran pinned Fern over and saw refused: that run,
+    # not the wording its screen row was filed with, is the measurement.
+    measured_refusals = {row["candidate"] for row in (
+        read_jsonl(rescreen, ("sha256", "candidate", "check_exit"), "restore it from git")
+        if rescreen.is_file() else []) if str(fern_verdict(row)).startswith("failed: ")}
+    states = {}
+    for candidate, row in latest.items():
+        if "measured" in row and not SCREEN.measured_failures(row["measured"], directory):
+            passed = all(outcome.startswith("passed") for outcome in SCREEN.outcomes(row["measured"]).values())
+            states[candidate] = "passing" if passed else "refused"
+        elif candidate in measured_refusals and row["fern"].startswith("failed: "):
+            states[candidate] = "refused"
+        else:
+            states[candidate] = "historical"
+    return states
+
+
 def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]]:
     """Every item one source still owes one key's search, each with what blocks it.
 
     Exactly the items [`_outstanding`] counts: a declarer with no probe of
-    `build`, one whose probe timed out or left no profile, and every document
-    the census could not read that no full standard parser refused.
+    `build`, one whose probe timed out or left no profile, a reaching candidate
+    whose only screen is historical, and every document the census could not
+    read that no full standard parser refused.
     """
     records = [r for r in read_records(source) if r["key"] == key]
     declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
@@ -1395,6 +1520,9 @@ def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]
     items = [(c, f"unprobed on build {build}") for c in sorted(declarers - set(probes))]
     items += [(c, f"probe on build {build}: {probes[c]['status']}") for c in sorted(declarers & set(probes))
               if probes[c]["status"].startswith(("timeout", "no profile"))]
+    historical = {c for c, state in screen_states(key, source).items() if state == "historical"}
+    items += [(c, HISTORICAL_SCREEN) for c in sorted((historical & _reaching(key, source, build))
+                                                       - fixture_declined(key, source))]
     return items + [(document, reason) for document, reason in _unreadable(key, source)]
 
 
@@ -1408,16 +1536,17 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
     # it read another arm's regions (see [`measured_build`]) and says nothing.
     probes = {row["candidate"]: row for row in read_probes(source)
               if row["key"] == key and row.get("build") == build}
-    screened = {r["subject"].rsplit(" ", 1)[0] for r in records if r["kind"] == "screen"}
+    states = screen_states(key, source)
+    declined = fixture_declined(key, source)
+    # A historical screen settles nothing: only a measured one, or a fixture
+    # decline, takes a candidate off the outstanding list.
+    screened = {c for c, state in states.items() if state != "historical"} | declined
+    historical = {c for c, state in states.items() if state == "historical"} - declined
     reaching = {c for c, row in probes.items() if row["reached"]}
     # A candidate is a declarer this build's probe finds reaching the arm; one
     # screened after an earlier build's probe that no longer reaches it holds
     # nothing open, however its screens read.
-    passing = {
-        candidate for candidate in (screened & reaching) - fixture_declined(key, source)
-        if all(r["result"] == "passed" for r in records
-               if r["kind"] == "screen" and r["subject"].rsplit(" ", 1)[0] == candidate)
-    }
+    passing = {c for c in (screened & reaching) - declined if states.get(c) == "passing"}
     return {
         "declarers": len(declarers),
         "unreadable": len(unreadable),
@@ -1429,6 +1558,7 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
         "unprofiled": sum(1 for c in declarers if probes.get(c, {}).get("status", "").startswith("no profile")),
         "reaching": len(reaching),
         "screened": len(reaching & screened),
+        "historical": len(reaching & historical),
         "passing": len(passing),
     }
 
@@ -1440,9 +1570,9 @@ def _reaching(key: str, source: str, build: str) -> set[str]:
 
 
 def _outstanding(tally: dict[str, int]) -> int:
-    """Declarers the arm may still be in: unprobed, timed out, unprofiled, or unreadable."""
+    """Declarers the arm may still be in: unprobed, timed out, unprofiled, unreadable, or historically screened."""
     return (tally["declarers"] - tally["probed"] + tally["timeouts"] + tally["unprofiled"]
-            + tally["unreadable"])
+            + tally["unreadable"] + tally["historical"])
 
 
 def src_commits_since(build: str) -> list[str]:
@@ -1579,18 +1709,9 @@ def render(args: argparse.Namespace) -> int:
             walks = "; ".join(
                 f"`{r['subject'].rsplit('@', 1)[0]}` at `{r['subject'].rsplit('@', 1)[1]}` → {r['result']} documents"
                 for r in records if r["kind"] == "walk") or "—"
-            reaching = [r["subject"] for r in records if r["kind"] == "candidate"]
-            candidates = ", ".join(f"`{c}`" for c in reaching) or "—"
-            screens: dict[str, dict[str, str]] = {}
-            for r in records:
-                if r["kind"] == "screen":
-                    candidate, screen_name = r["subject"].rsplit(" ", 1)
-                    screens.setdefault(candidate, {})[screen_name] = r["result"]
-            screen_cell = "; ".join(
-                f"`{c}` " + " ".join(f"{s} `{screens[c][s]}`" for s in ("licence", "ref", "fern") if s in screens[c])
-                for c in reaching if c in screens) or "—"
+            candidates, screen_cell = _candidate_cells(records)
             lines.append(
-                f"| `{key}` | `{source}` | `{outcome}` | {queries} | {walks} | {candidates} | {_cell(screen_cell)} |"
+                f"| `{key}` | `{source}` | `{outcome}` | {queries} | {walks} | {candidates} | {screen_cell} |"
             )
         lines += [
             "",
@@ -1608,6 +1729,7 @@ def render(args: argparse.Namespace) -> int:
             f"`{REFUSED_FILE}`, it is not outstanding, and it never settles a",
             "search on its own.",
         ]
+        lines += _historical_note(tallies)
         if moved:
             lines += [
                 "",
@@ -1626,22 +1748,171 @@ def render(args: argparse.Namespace) -> int:
             f"| {t['timeouts']} | {t['failed']} | {t['reaching']} | {t['screened']} | {_outstanding(t)} |"
             for source, t in tallies.items()
         ]
-        fixtures = sum(len(fixture_declined(key, source) & _reaching(key, source, build))
-                       for source in DECLARED_SOURCES)
         if outcome == "exhausted" and ledger_unreached(key):
-            lines += [
-                "",
-                f"**Verdict: `exhausted`.** No real-world document in the six declared sources "
-                "both declares this row and reaches the arm while passing every screen, so the "
-                "arm has no real witness and stays open."
-                + (f" The {fixtures} test fixture(s) that do reach it are hand-written, not "
-                   "specifications, and settle nothing." if fixtures else ""),
-            ]
+            lines += ["", _exhausted_verdict(key, build)]
         lines += _dispositions(key, build)
         path = EVIDENCE / "searches" / f"{key}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return 0
+
+
+def _candidate_cells(records: list[dict[str, str]]) -> tuple[str, str]:
+    """A source line's `candidates` and `screens` cells, off its `records.tsv` rows for one key."""
+    reaching = [r["subject"] for r in records if r["kind"] == "candidate"]
+    screens: dict[str, dict[str, str]] = {}
+    for r in records:
+        if r["kind"] == "screen":
+            candidate, screen_name = r["subject"].rsplit(" ", 1)
+            screens.setdefault(candidate, {})[screen_name] = r["result"]
+    screen_cell = "; ".join(
+        f"`{c}` " + " ".join(f"{s} `{screens[c][s]}`" for s in ("licence", "ref", "fern") if s in screens[c])
+        for c in reaching if c in screens) or "—"
+    return ", ".join(f"`{c}`" for c in reaching) or "—", _cell(screen_cell)
+
+
+HISTORICAL_NOTE = "candidate(s) reaching the arm carry only a historical screen"
+
+
+def _historical_note(tallies: dict[str, dict[str, int]]) -> list[str]:
+    historical = sum(t["historical"] for t in tallies.values())
+    return [
+        "",
+        f"{historical} {HISTORICAL_NOTE}: one filed",
+        "before the measured screening stage (`scripts/witness_screen.py`), with no exit",
+        "status, pins or redacted log behind its outcomes. A historical screen is kept as",
+        "it was filed and settles nothing, so each such candidate is outstanding — counted",
+        "in `outstanding` below and listed in `outstanding.tsv` — until it is re-screened.",
+    ] if historical else []
+
+
+def _exhausted_verdict(key: str, build: str) -> str:
+    fixtures = sum(len(fixture_declined(key, source) & _reaching(key, source, build))
+                   for source in DECLARED_SOURCES)
+    return (f"**Verdict: `exhausted`.** No real-world document in the six declared sources "
+            "both declares this row and reaches the arm while passing every screen, so the "
+            "arm has no real witness and stays open."
+            + (f" The {fixtures} test fixture(s) that do reach it are hand-written, not "
+               "specifications, and settle nothing." if fixtures else ""))
+
+
+CELL_BREAK = re.compile(r"(?<!\\) \| ")
+
+
+GENERATED_DISPOSITIONS = ("- **Hand-off**", "- **Registered**", "- **No longer a candidate**", "- **Declined**")
+
+
+def _restated_dispositions(section: list[str], generated: list[str]) -> list[str]:
+    """A record's dispositions section, the bullets `render` writes restated and any other kept.
+
+    Left exactly as it stands when those bullets have not moved, so a bullet
+    written beside them (a withdrawn registration, say) keeps its place.
+    """
+    wanted = [line for line in generated if line.startswith(GENERATED_DISPOSITIONS)]
+    if [line for line in section if line.startswith(GENERATED_DISPOSITIONS)] == wanted:
+        return section
+    kept = [line for line in section[1:] if line.startswith("- ") and not line.startswith(GENERATED_DISPOSITIONS)]
+    return ["#### Candidates passing every screen", "", *wanted, *kept, ""]
+
+
+def restate(args: argparse.Namespace) -> int:
+    """Restate what screening evidence moved since a committed record was rendered, in place.
+
+    A record is rendered once, as of its build; re-rendering one after `src/`
+    has moved past that build re-reads everything. This restates only what a
+    screen filed since changes — each line's candidates and screens, the
+    declarer table's `screened` and `outstanding`, the historical-screen note,
+    the candidates passing every screen, and the outcome where those move it —
+    and keeps the rest as rendered. A record moved to `exhausted` is refused:
+    that reading owes a full `render`.
+    """
+    keys = args.key or [p.stem for p in probed_records()]
+    changed = 0
+    for key in keys:
+        path = EVIDENCE / "searches" / f"{key}.md"
+        text = path.read_text(encoding="utf-8")
+        build = record_build(text, path)
+        tallies = {source: _tally(key, source, build) for source in DECLARED_SOURCES}
+        lines = text.split("\n")
+        prefix = f"| `{key}` | `"
+        stated = {CELL_BREAK.split(line)[2].strip("`") for line in lines if line.startswith(prefix)}
+        outcome = stated.pop() if len(stated) == 1 else fail(
+            f"{path.name}: its lines read {sorted(stated)}, not one outcome; render it again with "
+            f"`render --key {key} --build {build}` before restating it")
+        if outcome != "witness-found":
+            restated = _outcome(tallies)
+            if restated == "exhausted" and outcome != "exhausted":
+                fail(f"{path.name}: its evidence now reads `exhausted`; render it with `render --key {key}`")
+            outcome = restated
+        dispositions = _dispositions(key, build)
+        verdict = [_exhausted_verdict(key, build)] if outcome == "exhausted" else []
+        out: list[str] = []
+        in_note = in_dispositions = disposed = False
+        section: list[str] = []
+        for line in lines:
+            if in_note or in_dispositions:
+                # A paragraph runs to its blank line; the dispositions section to
+                # the next heading, which a later section of the record opens.
+                if in_note and line:
+                    continue
+                if in_dispositions and not line.startswith("#"):
+                    section.append(line)
+                    continue
+                if in_dispositions:
+                    out += _restated_dispositions(section, dispositions)
+                in_note = in_dispositions = False
+                if not line:
+                    continue
+            if line.startswith(prefix):
+                cells = CELL_BREAK.split(line)
+                source = cells[1].strip("`")
+                records = [r for r in read_records(source) if r["key"] == key]
+                candidates, screens = _candidate_cells(records)
+                line = " | ".join([*cells[:2], f"`{outcome}`", cells[3], cells[4], candidates, screens]) + " |"
+            elif (row := re.match(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", line)) and row.group(1) in tallies:
+                counts = row.group(2).split("|")[:-1]
+                t = tallies[row.group(1)]
+                counts[-2:] = [f" {t['screened']} ", f" {_outstanding(t)} "]
+                line = f"| `{row.group(1)}` |" + "|".join(counts) + "|"
+            elif line.startswith("| source | declarers |"):
+                while out and out[-1] == "":
+                    out.pop()
+                out += _historical_note(tallies) + [""]
+            elif HISTORICAL_NOTE in line:
+                in_note = True
+                if out and out[-1] == "":
+                    out.pop()
+                continue
+            elif line.startswith("**Verdict: `exhausted`.**"):
+                if out and out[-1] == "":
+                    out.pop()
+                out += [""] + verdict if verdict else []
+                continue
+            elif line == "#### Candidates passing every screen":
+                section = [line]
+                in_dispositions = disposed = True
+                continue
+            out.append(line)
+        if in_dispositions:
+            out += _restated_dispositions(section, dispositions)
+        if verdict and not any(line.startswith("**Verdict: `exhausted`.**") for line in lines):
+            fail(f"{path.name}: its evidence now reads `exhausted`; render it with `render --key {key}`")
+        if dispositions and not disposed:
+            while out and out[-1] == "":
+                out.pop()
+            out += dispositions + [""]
+        while len(out) > 1 and out[-1] == "" and out[-2] == "":
+            out.pop()
+        if out[-1] != "":
+            out.append("")
+        restated_text = "\n".join(out)
+        if restated_text != text:
+            path.write_text(restated_text, encoding="utf-8")
+            changed += 1
+    print(f"golden-reach-search: {changed} record(s) restated")
+    return 0
+
+
 
 
 OUTSTANDING = EVIDENCE / "outstanding.tsv"
@@ -2017,130 +2288,15 @@ RESCREEN_FILE = "fern-rescreen.jsonl"
 RESCREEN_CACHE = "fern-rescreen-cache.jsonl"
 
 
-def corpus_fern_pins() -> tuple[str, str, str, dict[str, Any]]:
-    """The Fern CLI, generator, generator version and config the registered goldens were generated at.
-
-    Read off each golden's own `.fern/metadata.json`, the corpus's provenance, so
-    a screen is taken at the corpus's pins without restating them; the pair most
-    goldens record is the pin (a synthetic fixture may record another).
-    """
-    counts: Counter[str] = Counter()
-    for path in sorted((REPO / "tests" / "fixtures").glob("*/expected/.fern/metadata.json")):
-        meta = json.loads(path.read_text(encoding="utf-8"))
-        counts[json.dumps([meta.get("cliVersion"), meta.get("generatorName"), meta.get("generatorVersion"),
-                           meta.get("generatorConfig")], sort_keys=True)] += 1
-    if not counts:
-        fail("no golden records its Fern pins in tests/fixtures/*/expected/.fern/metadata.json; "
-             "restore the corpus goldens from git")
-    cli, name, version, config = json.loads(counts.most_common(1)[0][0])
-    return cli, name, version, config
-
-
-def _yaml_block(value: Any, indent: int) -> list[str]:
-    """A generator config mapping as the block YAML generate-fern-fixture.sh writes."""
-    lines = []
-    for key, item in value.items():
-        if isinstance(item, dict):
-            lines += [" " * indent + f"{key}:"] + _yaml_block(item, indent + 2)
-        else:
-            lines.append(" " * indent + f"{key}: {item}")
-    return lines
-
-
-def fern_workspace_files() -> tuple[str, str]:
-    """`fern.config.json` and `generators.yml` as generate-fern-fixture.sh scaffolds them for a document.
-
-    Its install into `tests/fixtures/` is left out: a screen reads Fern's verdict
-    and never writes a golden. `tests/golden_reach_test.py` holds the YAML to
-    that script's own heredoc.
-    """
-    cli, name, version, config = corpus_fern_pins()
-    generators = [
-        "api:", "  path: openapi/openapi.yml", "groups:", "  python-sdk:", "    generators:",
-        f"      - name: {name}", f"        version: {version}", "        config:",
-        *_yaml_block(config, 10),
-        "        output:", "          location: local-file-system", "          path: ../generated/python",
-    ]
-    return json.dumps({"organization": "fern", "version": cli}) + "\n", "\n".join(generators) + "\n"
-
-
-def fern_label() -> str:
-    cli, _name, version, _config = corpus_fern_pins()
-    return f"Fern CLI {cli} / python-sdk {version}"
-
-
-UNPARSED = re.compile(r"Unexpected error|Failed to (resolve|parse)", re.I)
-
-
-def _fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, str]:
-    """One Fern command in a scratch workspace: its exit status (or `timeout`) and its output."""
-    env = dict(os.environ, FERN_TOKEN=os.environ.get("FERN_TOKEN", "preview-only-no-publish"),
-               CI="true", GITHUB_ACTIONS="true")
-    try:
-        run = subprocess.run(command, cwd=workspace, env=env, capture_output=True, text=True,
-                             errors="replace", timeout=timeout)
-    except subprocess.TimeoutExpired as expired:
-        out = expired.stdout or ""
-        return "timeout", out if isinstance(out, str) else out.decode("utf-8", "replace")
-    return str(run.returncode), run.stdout + run.stderr
-
-
-def fern_diagnostic(output: str) -> str:
-    """The first thing Fern said was wrong, as it printed it, on one line and without `; `."""
-    lines = [line.strip() for line in output.splitlines() if line.strip() and not line.startswith("::")]
-    summary = next((re.sub(r" in [\d.]+ seconds\.?$", ".", line)
-                    for line in lines if re.match(r"Found \d+ errors?", line)), "")
-    first = next((line[len("issue: "):] for line in lines if line.startswith("issue: ")), "")
-    if not first:
-        first = next((line for line in lines if UNPARSED.search(line) or re.search(r"\berror\b", line, re.I)
-                      and "deprecated" not in line), lines[-1] if lines else "no output")
-    text = f"{summary} First: {first}" if summary else first
-    # A screen cell quotes each result in backticks and joins them with `; `.
-    return text.replace("; ", ", ").replace("`", "'")[:400]
-
-
-def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[str, Any]:
-    """Fern's measured verdict on one document: `fern check`, then a generation where it passes."""
-    digest = hashlib.sha256(document.read_bytes()).hexdigest()
-    workspace = scratch / digest / "fern"
-    (workspace / "openapi").mkdir(parents=True, exist_ok=True)
-    (workspace / "openapi" / "openapi.yml").write_bytes(document.read_bytes())
-    config, generators = fern_workspace_files()
-    (workspace / "fern.config.json").write_text(config, encoding="utf-8")
-    (workspace / "generators.yml").write_text(generators, encoding="utf-8")
-    cli, _name, version, _config = corpus_fern_pins()
-    row: dict[str, Any] = {"sha256": digest, "fern_cli": cli, "generator": version}
-    status, output = _fern_run(["fern", "check"], workspace, timeout)
-    row.update(check_exit=status, check_log_sha256=hashlib.sha256(output.encode()).hexdigest(),
-               check_diagnostic=fern_diagnostic(output))
-    if status == "0":
-        preview = scratch / digest / "preview"
-        status, output = _fern_run(["fern", "generate", "--group", "python-sdk", "--local", "--preview",
-                                    "--output", str(preview), "--force"], workspace, timeout)
-        package = preview / "fern-python-sdk"
-        files = sum(1 for path in package.rglob("*.py")) if package.is_dir() else 0
-        unparsed = next((line.strip() for line in output.splitlines() if UNPARSED.search(line)), "")
-        row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(output.encode()).hexdigest(),
-                   generate_python_files=files,
-                   generate_diagnostic=(unparsed or fern_diagnostic(output)).replace("; ", ", ").replace("`", "'")[:400])
-    return row
-
-
-def fern_verdict(row: dict[str, Any]) -> str | None:
-    """A screen's `fern` result from a measured re-screen, or None when the run did not finish."""
-    check = row["check_exit"]
-    if check == "timeout" or row.get("generate_exit") == "timeout":
-        return None
-    if check != "0":
-        return f"failed: {fern_label()} fern check exit {check}: {row['check_diagnostic']}"
-    generated = row["generate_exit"]
-    if generated != "0":
-        return f"failed: {fern_label()} fern generate exit {generated} after fern check exit 0: " \
-               f"{row['generate_diagnostic']}"
-    if UNPARSED.search(row["generate_diagnostic"]) or not row["generate_python_files"]:
-        return (f"failed: {fern_label()} fern generate exit 0 over an unparsed document, "
-                f"{row['generate_python_files']} Python files: {row['generate_diagnostic']}")
-    return "passed"
+# The pinned, measured Fern runner is the screening stage's own; these names are
+# kept here because `fern-rescreen` and its tests read them off this module.
+corpus_fern_pins = SCREEN.corpus_fern_pins
+fern_workspace_files = SCREEN.fern_workspace_files
+fern_label = SCREEN.fern_label
+fern_diagnostic = SCREEN.fern_diagnostic
+fern_screen_document = SCREEN.fern_screen_document
+fern_verdict = SCREEN.fern_verdict
+UNPARSED = SCREEN.UNPARSED
 
 
 # What a kept `candidate` row's result says once the counted build's probe of it
@@ -2222,7 +2378,8 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             row = latest.get(candidate)
             # A refusal already measured here stands; only one filed without
             # Fern's exit status is taken again.
-            if not row or row["fern"] == "passed" or row["fern"].startswith(f"failed: {fern_label()} fern "):
+            if not row or "measured" in row or row["fern"] == "passed" \
+                    or row["fern"].startswith(f"failed: {fern_label()} fern "):
                 continue
             path = located.get(candidate)
             if path is None or not path.is_file():
@@ -2243,6 +2400,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
                    for digest in todo}
         for digest, future in futures.items():
             result = future.result()
+            result.pop("logs")
             cache[digest] = result
             CACHE.mkdir(parents=True, exist_ok=True)
             with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8") as handle:
@@ -2259,11 +2417,13 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             unsettled += len(uses)
             continue
         for key, candidate, row in uses:
-            screen(argparse.Namespace(
-                source=args.source, key=key, candidate=candidate, licence=row["licence"], ref=row["ref"],
-                fern=verdict, gap_keys=row.get("gap_keys", ""), declined="", registered="",
-                evidence=f"{row.get('evidence', '')} — re-screened: {RESCREEN_FILE} sha256 {digest[:12]}".lstrip(" —"),
-            ))
+            # Its licence and ref stay as historically filed; the Fern refusal is
+            # measured, and `fern-rescreen.jsonl` carries the run that measured it.
+            file_screen(args.source, key, candidate, {
+                "licence": row["licence"], "ref": row["ref"], "fern": verdict,
+                "gap_keys": row.get("gap_keys", ""), "declined": "", "registered": "",
+                "evidence": f"{row.get('evidence', '')} — re-screened: {RESCREEN_FILE} sha256 {digest[:12]}".lstrip(" —"),
+            })
             filed += 1
     evidence.write_text("".join(json.dumps(r, sort_keys=True) + "\n"
                                 for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8")
@@ -2300,9 +2460,12 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--source", required=True)
     s.add_argument("--key", required=True)
     s.add_argument("--candidate", required=True)
-    s.add_argument("--licence", required=True)
-    s.add_argument("--ref", required=True)
-    s.add_argument("--fern", required=True)
+    # Refused when given: an outcome is measured, never stated.
+    for stated in ("--licence", "--ref", "--fern"):
+        s.add_argument(stated, help=argparse.SUPPRESS)
+    s.add_argument("--measured", type=Path, help="a record scripts/witness_screen.py measured, filed as it stands")
+    s.add_argument("--licence-refusal", default="", help="refuse a licence the measured reading would pass, and why")
+    s.add_argument("--timeout", type=REACH.positive_int, default=1800)
     s.add_argument("--gap-keys", default="")
     s.add_argument("--evidence", default="")
     s.add_argument("--declined", default="", help="why a candidate passing every screen is not registered")
@@ -2319,13 +2482,15 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--key", action="append", required=True)
     r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
     r.add_argument("--build", help="re-render a committed record as of the earlier build its probes ran on")
+    rs = sub.add_parser("restate", help="restate a committed record's screens and counts from moved evidence")
+    rs.add_argument("--key", action="append", help="default: every probed record")
     sub.add_parser("outstanding")
     for name in ("refuse", "recensus"):
         x = sub.add_parser(name)
         x.add_argument("--source", required=True)
         x.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
     args = parser.parse_args(argv)
-    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "fern-rescreen": fern_rescreen, "retire": retire, "render": render,
+    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "fern-rescreen": fern_rescreen, "retire": retire, "render": render, "restate": restate,
             "outstanding": outstanding, "refuse": refuse, "recensus": recensus}[args.command](args)
 
 

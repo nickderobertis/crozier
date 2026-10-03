@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info: {title: probe, version: "1"}
+paths:
+  /a:
+    post:
+      operationId: CreateA
+      parameters: [{name: owner, in: query, schema: {type: string}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/A'}}}}
+      responses: {"200": {description: ok}}
+  /d:
+    post:
+      operationId: CreateD
+      parameters: [{name: owner, in: query, schema: {type: string}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/D'}}}}
+      responses: {"200": {description: ok}}
+    get:
+      operationId: GetD
+      responses: {"200": {description: ok, content: {application/json: {schema: {$ref: '#/components/schemas/D'}}}}}
+  /e:
+    post:
+      operationId: CreateE
+      parameters: [{name: owner, in: query, schema: {type: string}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/E'}}}}
+      responses: {"200": {description: ok}}
+    put:
+      operationId: PutE
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/E'}}}}
+      responses: {"200": {description: ok}}
+  /sorted:
+    get:
+      operationId: ListSorted
+      parameters:
+        - name: sortDirection
+          in: query
+          schema:
+            oneOf:
+              - nullable: true
+                oneOf:
+                  - $ref: '#/components/schemas/SortDirection'
+      responses: {"200": {description: ok}}
+components:
+  schemas:
+    A: {type: object, properties: {owner: {type: string}, name: {type: string}}}
+    D: {type: object, properties: {owner: {type: string}, name: {type: string}}}
+    E: {type: object, properties: {owner: {type: string}, name: {type: string}}}
+    SortDirection: {type: string, enum: [Ascending, Descending]}

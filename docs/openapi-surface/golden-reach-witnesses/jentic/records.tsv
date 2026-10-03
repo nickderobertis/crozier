@@ -1,4 +1,6 @@
 key	kind	subject	result	file
+*	wait	jentic guard log raw-github-calls.jsonl	30 entries	raw-github-calls.jsonl
+*	wait	jentic guard log raw-github-waits.jsonl	20 entries	raw-github-waits.jsonl
 annotated-ref-shape	document	apis/openapi/affinda.com/main/v3/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 annotated-ref-shape	document	apis/openapi/affinda.com/main/v3/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 annotated-ref-shape	document	apis/openapi/affinda.com/main/v3/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -21521,21 +21523,21 @@ format-email	document	apis/openapi/{user_domain}.procurify.com/main/1.0/meta/imp
 format-email	document	apis/openapi/{user_domain}.procurify.com/main/1.0/meta/import/output-bundle.json	census 23	enumeration.tsv.gz
 format-email	document	apis/openapi/{user_domain}.procurify.com/main/1.0/meta/import/output-entry.json	census 23	enumeration.tsv.gz
 format-email	document	apis/openapi/{user_domain}.procurify.com/main/1.0/openapi.json	census 23	enumeration.tsv.gz
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json fern	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json ref	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json fern	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json fern	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json ref	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json fern	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	passed	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json fern	not-run: the licence screen failed	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json fern	not-run: the licence screen failed	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json fern	not-run: the licence screen failed	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json fern	not-run: the licence screen failed	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	not-run: the licence screen failed	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
 format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 151 errors and 373 warnings in 0.024 seconds. Run fern check --warnings to print out the warnings not shown. First: Example is missing required property "response.body.messages"	screens.jsonl
 format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
 format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
@@ -22514,21 +22516,21 @@ format-password	document	apis/openapi/whmcs.com/main/1.0/meta/import/input-entry
 format-password	document	apis/openapi/whmcs.com/main/1.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
 format-password	document	apis/openapi/whmcs.com/main/1.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
 format-password	document	apis/openapi/whmcs.com/main/1.0/openapi.json	census 1	enumeration.tsv.gz
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json fern	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json ref	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json fern	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json fern	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json ref	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json fern	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	passed	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json fern	not-run: the licence screen failed	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json fern	not-run: the licence screen failed	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json fern	not-run: the licence screen failed	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json fern	not-run: the licence screen failed	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	not-run: the licence screen failed	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
 format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 151 errors and 373 warnings in 0.024 seconds. Run fern check --warnings to print out the warnings not shown. First: Example is missing required property "response.body.messages"	screens.jsonl
 format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
 format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
@@ -27875,21 +27877,21 @@ format-uri	document	apis/openapi/{user_domain}.procurify.com/main/1.0/meta/impor
 format-uri	document	apis/openapi/{user_domain}.procurify.com/main/1.0/meta/import/output-bundle.json	census 35	enumeration.tsv.gz
 format-uri	document	apis/openapi/{user_domain}.procurify.com/main/1.0/meta/import/output-entry.json	census 35	enumeration.tsv.gz
 format-uri	document	apis/openapi/{user_domain}.procurify.com/main/1.0/openapi.json	census 35	enumeration.tsv.gz
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json fern	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json ref	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json fern	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json fern	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json ref	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json fern	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	passed	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
-format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json fern	not-run: the licence screen failed	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-bundled.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json fern	not-run: the licence screen failed	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entry.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json fern	not-run: the licence screen failed	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json fern	not-run: the licence screen failed	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	not-run: the licence screen failed	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: info.license 'AppVeyor End User License Agreement (EULA) / https://www.appveyor.com/eula/' names no grant the corpus rule admits	screens.jsonl
+format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed: 215139 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2e7015779b25185dc183912bdb800c5380934ac54878f4b16cc9878b6a6afa89	screens.jsonl
 format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 151 errors and 373 warnings in 0.024 seconds. Run fern check --warnings to print out the warnings not shown. First: Example is missing required property "response.body.messages"	screens.jsonl
 format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
 format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
@@ -119706,19 +119708,19 @@ x-fern-or-crozier-ignore	document	apis/openapi/openrouter.ai/main/1.0.0/meta/imp
 x-fern-or-crozier-ignore	document	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-bundle.json	census 5	enumeration.tsv.gz
 x-fern-or-crozier-ignore	document	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-entry.json	census 5	enumeration.tsv.gz
 x-fern-or-crozier-ignore	document	apis/openapi/openrouter.ai/main/1.0.0/openapi.json	census 5	enumeration.tsv.gz
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json ref	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json ref	passed: 270121 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json ref	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json ref	passed: 270121 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json ref	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json ref	passed: 270121 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json ref	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/openapi.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json ref	passed: 270121 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/openapi.json fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/openapi.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
-x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/openapi.json ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/openapi.json ref	passed: 270121 bytes read at the immutable commit eb9d12a2684b0fbcb5aecf51e8ae54dba0929743, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87	screens.jsonl
 x-fern-or-crozier-ignore	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
