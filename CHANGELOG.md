@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.96](https://github.com/nickderobertis/crozier/compare/v0.0.95...v0.0.96) - 2026-10-03
+
+### Fixed
+
+- *(openapi)* match Fern on string-array headers and external auth ([#390](https://github.com/nickderobertis/crozier/pull/390))
+
 ## [0.0.95](https://github.com/nickderobertis/crozier/compare/v0.0.94...v0.0.95) - 2026-10-03
 
 ### Added
