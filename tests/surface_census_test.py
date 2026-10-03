@@ -1301,16 +1301,20 @@ def completeness_failures(
     entries: dict[str, tuple[str, list[str]]],
     region_texts: dict[str, str],
     manifest: dict[str, list[str]],
+    named: dict[str, str] | None = None,
 ) -> list[str]:
-    """Every non-`golden` row: a committed proof, or a searched `gap`.
+    """Every non-`golden` row: a committed proof, a searched `gap`, or a named one.
 
     A proof is a `MANIFEST.tsv` row with a non-generation verdict, cited from the
     row's own evidence cell; a `measured` row is a byte comparison over a
     generated shape and settles nothing. A searched `gap` carries one line in its
     own region file's `### Witness search (exhaustive)` compact table, and so
     does a `handwritten` row, whose fixture `handwritten_fixtures_match_fern_goldens`
-    gates: the failed search is what admitted it.
+    gates: the failed search is what admitted it. A `gap` no search has reached
+    passes only as a row of the coverage report's `NAMED_FEATURES_HEADING` table
+    whose reason is `not searched` (`named`), so it stands as a listed open gap.
     """
+    named = named or {}
     failures = []
     searched = {
         region: compact_search_lines(text) for region, text in region_texts.items()
@@ -1334,6 +1338,8 @@ def completeness_failures(
                 f"{key} ({region}.md, `{category}`): lacks a MANIFEST.tsv row carrying a "
                 f"non-generation verdict, the only thing that settles a `{category}` row"
             )
+        elif record is None and category == "gap" and named.get(key, "").startswith(NOT_SEARCHED):
+            continue
         elif record is None:
             failures.append(
                 f"{key} ({region}.md, `{category}`): lacks both halves — no MANIFEST.tsv row "
@@ -7872,17 +7878,19 @@ class RankedBacklogTests(unittest.TestCase):
             r"on a hand-written fixture, a weaker proof than a real specification\.\*\* These are "
             r"the `handwritten` rows\..*?They are not among the (\d+) and never count as a "
             r"real-specification match\. - \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
-            r"rows\..*?The other (\d+) are `golden` rows declared only by.*?"
+            r"rows\..*?(\d+) are `golden` rows resting only on residual goldens whose code moves no "
+            r"byte-matched file.*?The other (\d+) are `golden` rows declared only by.*?"
             r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
             headline,
         )
         self.assertIsNotNone(stated, "the headline no longer states its four numbers")
-        unproven = fixture + no_witness
+        unproven = fixture + residual_gap + no_witness
         expected = [
             len(rows), categories["golden"], categories["limitations"], categories["handwritten"],
             categories["gap"], byte_match, proof, categories["limitations"],
             len(self.gaps("UNREACHABLE")), handwritten, byte_match,
-            unproven, fixture, no_witness, byte_match, proof, handwritten, unproven, len(rows),
+            unproven, fixture, residual_gap, no_witness, byte_match, proof, handwritten, unproven,
+            len(rows),
         ]
         self.assertEqual(expected, [int(value) for value in stated.groups()])
         self.assertEqual(
@@ -9546,8 +9554,9 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED), reach.key)
                 cell = f"`{verdict}`"
             else:
-                # No record is no search: the arm reads incomplete, and says why.
-                cell = f"`{SEARCH_INCOMPLETE}` — no arm search has run"
+                # No record is no search, which is its own reason, never a
+                # search's verdict.
+                cell = f"{NOT_SEARCHED} — no arm search has run"
             expected.extend(
                 [str(rank), f"`{reach.key}`", f"`{spec}`", str(total), cell,
                  ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—"]
@@ -9612,7 +9621,9 @@ class RankedBacklogTests(unittest.TestCase):
             any(cells[3].strip("`") != "golden" for _region, cells in self.entries.values()),
             "no row is outside `golden`; the tier reads nothing",
         )
-        self.assertEqual([], completeness_failures(self.entries, region_texts, manifest))
+        self.assertEqual(
+            [], completeness_failures(self.entries, region_texts, manifest, named_gap_features(REPO))
+        )
 
     def test_contract_a_restatements_agree_with_the_gate(self) -> None:
         """Three facts about Contract A live beside `tests/e2e.rs`'s manifest gate,
@@ -10387,7 +10398,9 @@ class FinishedStateGateTests(unittest.TestCase):
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers(
             self.root / "docs" / "openapi-surface" / "handwritten")}
         self.assertNotIn((self.NAMED_KEY, self.NAMED_ARM), covered)
-        row = f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` |"
+        # Anchored at a line start: the unreached-arm table carries the same
+        # key and arm after its rank column.
+        row = f"\n| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` |"
         self.edit("docs/openapi-surface-coverage.md", row,
                   row.replace(f"`{self.NAMED_KEY}`", f"`{self.NAMED_KEY}-retired`"))
         failures = finished_state_failures(self.root)
@@ -10493,6 +10506,7 @@ class CompletenessTierTests(unittest.TestCase):
         evidence: str,
         manifest: str = "",
         search: str | None = None,
+        named: dict[str, str] | None = None,
     ) -> list[str]:
         root = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, root)
@@ -10521,6 +10535,7 @@ class CompletenessTierTests(unittest.TestCase):
             {"sample-shape": ("sample", rows[0])},
             {"sample": text},
             manifest_rows((root / "MANIFEST.tsv").read_text(encoding="utf-8")),
+            named,
         )
 
     def record(self, outcome: str, note: str, outstanding: int = 1) -> str:
@@ -10553,6 +10568,14 @@ class CompletenessTierTests(unittest.TestCase):
         measured = self.PROOF.replace("\tdiscards\t", "\tmeasured\t")
         found = " ".join(self.failures("gap", "census 0", measured))
         self.assertIn("lacks both halves", found)
+
+    def test_an_unsearched_gap_row_passes_only_when_named_not_searched(self) -> None:
+        reason = f"{NOT_SEARCHED} — no witness search has been run"
+        self.assertEqual([], self.failures("gap", "census 0", named={"sample-shape": reason}))
+        found = " ".join(self.failures("gap", "census 0", named={"sample-shape": "pending"}))
+        self.assertIn("lacks both halves", found)
+        found = " ".join(self.failures("limitations", "verdict discards", named={"sample-shape": reason}))
+        self.assertIn("lacks a MANIFEST.tsv row", found)
 
     def test_a_gap_row_with_its_compact_search_record_passes(self) -> None:
         search = self.record(SEARCH_INCOMPLETE, self.OWING)
