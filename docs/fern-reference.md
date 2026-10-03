@@ -111,6 +111,25 @@ Measured with Fern CLI 5.67.1 and `fernapi/fern-python-sdk` 5.20.0:
 A team whose generators use their own package names can therefore compare them
 under `layout: flat`, whatever layout it ships.
 
+## Vendor extensions
+
+The document both tools read may carry Fern's `x-fern-*` extensions. crozier
+reads each one below in Fern's spelling and in its own `x-crozier-*` alias; when
+a node carries both, the alias wins
+([dual-header policy](matching.md#fern-compatible-extension-policy)). An
+extension not listed here does not change crozier's output.
+
+| Fern | crozier alias | On | Effect |
+| --- | --- | --- | --- |
+| `x-fern-audiences` | `x-crozier-audiences` | operation | The audience labels the `audiences` setting filters on. |
+| `x-fern-ignore` | `x-crozier-ignore` | operation, component schema | Leaves the node out of the SDK. |
+| `x-fern-sdk-group-name` | `x-crozier-sdk-group-name` | operation | The sub-client the method belongs to; a list nests it. |
+| `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | operation | The method's name. |
+| `x-fern-pagination` | `x-crozier-pagination` | operation | Returns a pager over the response's items. |
+| `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response; a `stream-condition` splits the method in two. |
+| `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name for each value. |
+| `x-fern-property-name` | `x-crozier-property-name` | object property | The property's Python name, both the model field and the request keyword argument. Its JSON key on the wire stays the property's key. |
+
 ## The script
 
 ```bash

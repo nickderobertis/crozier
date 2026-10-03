@@ -147,6 +147,14 @@ config, and the Action's `paths` input does the same.
   the Action then generate and compare the flat tree, and `crozier generate`
   writes it in place; nothing is copied. `layout: packaged`, the default, matches
   `fern generate --preview --output`.
+- **Fern's vendor extensions.** crozier reads the `x-fern-*` extensions the
+  [extension map](fern-reference.md#vendor-extensions) lists, in Fern's spelling
+  or its `x-crozier-*` alias, so an annotated document or overlay needs no
+  change. Among them is `x-fern-property-name` (alias `x-crozier-property-name`),
+  which renames a property's model field and request keyword argument while its
+  JSON key stays the same. Use it to rename a request body property clear of a
+  path parameter of the same name, which crozier otherwise refuses as
+  `request-property-name-collision`, as Fern does.
 - **Bracketed property names.** Properties such as `filter[name]` generate valid
   Python parameter names since crozier 0.0.22
   ([#74](https://github.com/nickderobertis/crozier/issues/74)).

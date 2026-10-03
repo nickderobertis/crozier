@@ -1428,17 +1428,54 @@ def evidence_records(directory: Path) -> list[dict[str, str]]:
     return [dict(zip(header, line.split("\t"))) for line in lines[1:] if line]
 
 
-def evidence_directory_failures(
-    key: str, directory: Path, layout_files: tuple[str, ...] = ()
-) -> list[str]:
-    """Every file under the directory is named by a row, and every named file exists.
+class EvidenceDirectory:
+    """One source's evidence directory, each file read once and indexed by what reconciliation looks up.
 
-    `layout_files` are files the evidence layout itself defines rather than a
-    row: a golden-reach arm search's `probe.jsonl` holds every declarer's
-    measured reach, and its publisher-tree `pins.tsv` the resolved pin.
+    Reconciling a key reads the same `records.tsv`, `probe.jsonl` and
+    `screens.jsonl` for every candidate and every key it names; each is read
+    here on first use and answered from its index after.
     """
+
+    def __init__(self, directory: Path) -> None:
+        self.directory = directory
+
+    @functools.cached_property
+    def records(self) -> list[dict[str, str]]:
+        return evidence_records(self.directory)
+
+    @functools.cached_property
+    def records_by_key(self) -> dict[str | None, list[dict[str, str]]]:
+        by_key: dict[str | None, list[dict[str, str]]] = {}
+        for record in self.records:
+            by_key.setdefault(record.get("key"), []).append(record)
+        return by_key
+
+    @functools.cached_property
+    def unreached_probes(self) -> set[tuple[str, str, str]]:
+        """(key, candidate, build) of every `probe.jsonl` row reaching no site."""
+        probes = self.directory / "probe.jsonl"
+        rows = [json.loads(line) for line in probes.read_text(encoding="utf-8").splitlines()] if probes.is_file() else []
+        identities = ((row.get("key"), row.get("candidate"), row.get("build")) for row in rows if not row.get("reached"))
+        return {identity for identity in identities if all(isinstance(part, str) for part in identity)}
+
+    @functools.cached_property
+    def latest_screens(self) -> dict[str, dict[str, dict[str, object]]]:
+        """key -> candidate -> its latest `screens.jsonl` row."""
+        screens = self.directory / "screens.jsonl"
+        latest: dict[str, dict[str, dict[str, object]]] = {}
+        if screens.is_file():
+            for line in screens.read_text(encoding="utf-8").splitlines():
+                row = json.loads(line)
+                if isinstance(row.get("key"), str):
+                    latest.setdefault(row["key"], {})[str(row.get("candidate"))] = row
+        return latest
+
+
+def directory_layout_failures(
+    directory: Path, records: list[dict[str, str]], layout_files: tuple[str, ...] = ()
+) -> list[str]:
+    """`evidence_directory_failures`' findings, each still to be prefixed with its key."""
     name = directory.name
-    records = evidence_records(directory)
     failures = []
     named = {record.get("file", "") for record in records}
     # A row naming a ledger names every part the ledger was sharded into
@@ -1452,12 +1489,12 @@ def evidence_directory_failures(
     for record in records:
         if record.get("kind") not in EVIDENCE_KINDS:
             failures.append(
-                f"{key}: {name}/records.tsv carries kind `{record.get('kind')}`, "
+                f"{name}/records.tsv carries kind `{record.get('kind')}`, "
                 f"which is none of {list(EVIDENCE_KINDS)}"
             )
         if not (directory / record.get("file", "")).is_file():
             failures.append(
-                f"{key}: {name}/records.tsv names `{record.get('file')}`, which is "
+                f"{name}/records.tsv names `{record.get('file')}`, which is "
                 "not in the evidence directory"
             )
     tables = {part.name for part in _index_module.ledger_parts(directory / "records.tsv")}
@@ -1469,10 +1506,24 @@ def evidence_directory_failures(
         under = any(rel.startswith(entry) for entry in layout_files if entry.endswith("/"))
         if path.is_file() and rel not in exempt and rel not in named and not under:
             failures.append(
-                f"{key}: {name}/{rel} is evidence the table accounts for nowhere — "
+                f"{name}/{rel} is evidence the table accounts for nowhere — "
                 "no records.tsv row names it"
             )
     return failures
+
+
+def evidence_directory_failures(
+    key: str, directory: Path, layout_files: tuple[str, ...] = (),
+    evidence: EvidenceDirectory | None = None,
+) -> list[str]:
+    """Every file under the directory is named by a row, and every named file exists.
+
+    `layout_files` are files the evidence layout itself defines rather than a
+    row: a golden-reach arm search's `probe.jsonl` holds every declarer's
+    measured reach, and its publisher-tree `pins.tsv` the resolved pin.
+    """
+    records = evidence.records if evidence else evidence_records(directory)
+    return [f"{key}: {failure}" for failure in directory_layout_failures(directory, records, layout_files)]
 
 
 def exhaustive_search_failures(
@@ -1491,7 +1542,8 @@ def exhaustive_search_failures(
     `evidence_root` the directory the `witness-search-<source>/` directories sit
     in. Refused at any outcome: a source read `unanswered` for a rate-limit cap,
     and a table that disagrees with its evidence directory either way. Refused
-    under `exhausted`: every obligation the five conditions name.
+    under `exhausted`: every obligation the five conditions name. Each evidence
+    file is read at most once per call.
     """
     failures: list[str] = []
     outcomes = {line[2].strip("`* ") for line in lines}
@@ -1528,14 +1580,16 @@ def exhaustive_search_failures(
         directory = (
             directory_for(source) if directory_for else evidence_root / f"witness-search-{source}"
         )
-        records = [r for r in evidence_records(directory) if r.get("key") == key]
+        evidence = EvidenceDirectory(directory)
+        records = evidence.records_by_key.get(key, [])
         if not directory.is_dir():
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
-        failures += evidence_directory_failures(key, directory, layout_files) if directory.is_dir() else []
+        failures += evidence_directory_failures(key, directory, layout_files, evidence) if directory.is_dir() else []
         failures += exhaustive_line_failures(
             key, source, line, records, capabilities.get(source), exhausted, directory,
             pinned_for(source, line) if pinned_for and recorded_walks(line[4]) else None,
             measured_build,
+            evidence,
         )
     return failures
 
@@ -1552,7 +1606,7 @@ def golden_reach_search() -> ModuleType:
     return search
 
 
-def fixture_declined(key: str, directory: Path) -> set[str]:
+def fixture_declined(key: str, evidence: EvidenceDirectory) -> set[str]:
     """Candidates whose latest screen in `directory/screens.jsonl` declines them as a test fixture.
 
     A document written to exercise a tool is hand-written, not a specification,
@@ -1562,15 +1616,8 @@ def fixture_declined(key: str, directory: Path) -> set[str]:
     a fixture, and its arm reads `exhausted` with no real witness. The phrase is
     the arm search's own, read from `scripts/golden-reach-search.py`.
     """
-    screens = directory / "screens.jsonl"
-    if not screens.is_file():
-        return set()
     marker = golden_reach_search().FIXTURE_DECLINE + " — "
-    latest: dict[str, dict[str, object]] = {}
-    for line in screens.read_text(encoding="utf-8").splitlines():
-        row = json.loads(line)
-        if row.get("key") == key:
-            latest[str(row.get("candidate"))] = row
+    latest = evidence.latest_screens.get(key, {})
     return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(marker)}
 
 
@@ -1594,7 +1641,7 @@ def screen_states(directory: Path, key: str) -> dict[str, str]:
 
 
 def not_reaching_failures(
-    key: str, candidate: str, census_run: list[str], directory: Path
+    key: str, candidate: str, census_run: list[str], evidence: EvidenceDirectory
 ) -> list[str] | None:
     """None unless a candidate row reads `census N — <no reach on build B>`; then that claim's check.
 
@@ -1609,13 +1656,10 @@ def not_reaching_failures(
     if len(census_run) != 1 or not marked[0]:
         return [f"{key}: candidate `{candidate}` carries {census_run}, not one census reading"]
     build = marked[0].group(1)
-    probes = directory / "probe.jsonl"
-    rows = [json.loads(line) for line in probes.read_text(encoding="utf-8").splitlines()] if probes.is_file() else []
-    if any(row.get("key") == key and row.get("candidate") == candidate and row.get("build") == build
-           and not row.get("reached") for row in rows):
+    if (key, candidate, build) in evidence.unreached_probes:
         return []
     return [f"{key}: candidate `{candidate}` claims {template.format(build=build)!r}, which "
-            f"{directory.name}/probe.jsonl does not carry"]
+            f"{evidence.directory.name}/probe.jsonl does not carry"]
 
 
 def exhaustive_line_failures(
@@ -1628,23 +1672,26 @@ def exhaustive_line_failures(
     directory: Path,
     pinned: list[dict[str, str]] | None = None,
     measured_build: str | None = None,
+    evidence: EvidenceDirectory | None = None,
 ) -> list[str]:
     """One `(key, source)` line against its evidence and, when exhausted, its obligations.
 
+    `records` are the key's own; they are indexed once by `(kind, subject)`,
+    and `evidence` reads the directory's other files once for every candidate.
     With `measured_build` — an arm search's record, counted on that build, whose
     screens come from the measured stage — a candidate that build's probe finds
     reaching the arm, settled only by a historical screen, is still owed.
     """
     failures: list[str] = []
     where = f"witness-search-{source}/records.tsv"
+    evidence = evidence or EvidenceDirectory(directory)
+    results: dict[tuple[str | None, str | None], list[str | None]] = {}
+    for r in records:
+        results.setdefault((r.get("kind"), r.get("subject")), []).append(r.get("result"))
 
     def recorded(kind: str, subject: str, result: str | None = None) -> bool:
-        return any(
-            r.get("kind") == kind
-            and r.get("subject") == subject
-            and (result is None or r.get("result") == result)
-            for r in records
-        )
+        found = results.get((kind, subject))
+        return found is not None and (result is None or result in found)
 
     queries = recorded_queries(line[3])
     walks = recorded_walks(line[4])
@@ -1695,11 +1742,7 @@ def exhaustive_line_failures(
 
     # Condition 3 and 4 hold at every outcome a candidate is recorded under.
     for candidate in candidates:
-        census_run = [
-            r.get("result", "")
-            for r in records
-            if r.get("kind") == "candidate" and r.get("subject") == candidate
-        ]
+        census_run = [result or "" for result in results.get(("candidate", candidate), [])]
         outstanding = [
             result for result in census_run
             if re.fullmatch(r"(?:parse|acquisition)-failure: .+", result)
@@ -1714,7 +1757,7 @@ def exhaustive_line_failures(
         # A golden-arm candidate the counted build's probe finds reaching nothing
         # keeps its row, marked with that probe (the manager's ruling to
         # `thin-goldens-continue-2`): it is accounted for, and no candidate.
-        unreaching = not_reaching_failures(key, candidate, census_run, directory)
+        unreaching = not_reaching_failures(key, candidate, census_run, evidence)
         if unreaching is not None:
             failures += unreaching
             continue
@@ -1735,12 +1778,12 @@ def exhaustive_line_failures(
                 "and fern"
             )
         elif (exhausted and all(done[s].startswith("passed") for s in SCREENS)
-              and candidate not in fixture_declined(key, directory)):
+              and candidate not in fixture_declined(key, evidence)):
             failures.append(
                 f"{key}: an `exhausted` search keeps `{candidate}`, which passes all "
                 "three screens — that is a witness, not an absence"
             )
-        elif (exhausted and measured_build and candidate not in fixture_declined(key, directory)
+        elif (exhausted and measured_build and candidate not in fixture_declined(key, evidence)
               and reaches_on(directory, key, candidate, measured_build)
               and screen_states(directory, key).get(candidate) == "historical"):
             failures.append(
@@ -2785,7 +2828,7 @@ class CensusReportTests(unittest.TestCase):
         completed = run("--vendored-only", "--selector", "operation.callbacks")
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
-        self.assertIn("32 original fixtures", completed.stderr)
+        self.assertIn("33 original fixtures", completed.stderr)
 
     def test_a_valued_selector_reports_one_member_of_a_closed_set(self) -> None:
         completed = run("--vendored-only", "--selector", "parameter.in=cookie")
@@ -2912,7 +2955,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.items>schema.anyOf": {},
         "schema.items>schema.oneOf": {},
         "schema.oneOf>schema.$ref": {
-            "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
+            "crozier-property-name": 1, "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
         },
         "schema.oneOf>schema.allOf": {"exhaustive": 1},
         # hoist_union_variant's string-enum arm, cases 2a to 2d: no vendored
@@ -2951,13 +2994,13 @@ class ConjunctionCensusTests(unittest.TestCase):
         },
         "schema.properties>schema.const:string-valued": {},
         "schema.properties>schema.properties:non-empty": {
-            "inline-request-response": 2, "nested-core-imports": 1
+            "crozier-property-name": 1, "inline-request-response": 2, "nested-core-imports": 1
         },
         "schema.properties>schema.additionalProperties=false": {},
         "schema.properties>schema.oneOf:sole-non-null-member": {},
         "schema.properties>schema.anyOf:sole-non-null-member": {},
         "schema.properties>schema.type:primary=array": {
-            "crozier-sdk-extensions": 1, "exhaustive": 3, "inline-request-response": 1, "malformed-property-schema": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 1
+            "crozier-property-name": 1, "crozier-sdk-extensions": 1, "exhaustive": 3, "inline-request-response": 1, "malformed-property-schema": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 1
         },
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
@@ -3034,13 +3077,13 @@ class ConjunctionCensusTests(unittest.TestCase):
         # functions and the vendored half declares four of them, which is what a
         # residual arm should look like: `prop_type_ref`'s own residual is the
         # widest number in this table.
-        "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
+        "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "crozier-property-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
         "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
         "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {},
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf": {},
-        "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {"audience-filter": 3, "audience-filter-strict": 4, "auth-schemes": 2, "bracketed-property-names": 2, "client-class-name": 1, "cookie-parameters": 1, "crozier-sdk-extensions": 5, "digit-leading-property": 1, "discriminated-unions": 2, "enum-name-sanitization": 1, "enum-query-param": 1, "enum-receiver-collision": 1, "error-responses": 2, "exhaustive": 16, "form-bodies": 4, "inline-array-request": 2, "inline-request-response": 6, "integer-enums": 1, "nested-core-imports": 1, "oauth-client-credentials": 3, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 2, "servers-webhooks": 3, "sse-streaming": 1, "tag-based-grouping": 2, "writeonly-fields": 1},
+        "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {"audience-filter": 3, "audience-filter-strict": 4, "auth-schemes": 2, "bracketed-property-names": 2, "client-class-name": 1, "cookie-parameters": 1, "crozier-property-name": 9, "crozier-sdk-extensions": 5, "digit-leading-property": 1, "discriminated-unions": 2, "enum-name-sanitization": 1, "enum-query-param": 1, "enum-receiver-collision": 1, "error-responses": 2, "exhaustive": 16, "form-bodies": 4, "inline-array-request": 2, "inline-request-response": 6, "integer-enums": 1, "nested-core-imports": 1, "oauth-client-credentials": 3, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 2, "servers-webhooks": 3, "sse-streaming": 1, "tag-based-grouping": 2, "writeonly-fields": 1},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -6512,7 +6555,7 @@ class SourceSelectionTests(unittest.TestCase):
             allowed = run("--corpus-root", directory, "--allow-unfetched", "--selector", "openapi.info")
             self.assertEqual(0, allowed.returncode, allowed.stderr)
             self.assertIn("is missing", allowed.stderr)
-            self.assertIn("32 original fixtures, 0 corpus sources", allowed.stderr)
+            self.assertIn("33 original fixtures, 0 corpus sources", allowed.stderr)
 
             payload = json.loads(
                 run("--corpus-root", directory, "--allow-unfetched", "--json").stdout
@@ -6796,7 +6839,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         """The unscoped vendored run — the exact invocation that never returned."""
         completed = run("--vendored-only")
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertIn("32 original fixtures", completed.stderr)
+        self.assertIn("33 original fixtures", completed.stderr)
         self.assertGreater(len(rows(completed)), 100)
 
     def test_a_flow_mapping_parses_to_its_entries_not_a_list_of_its_keys(self) -> None:
@@ -10511,6 +10554,84 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     def test_a_record_meeting_all_five_conditions_is_accepted(self) -> None:
         """The same interface, no special case: a complete record passes."""
         self.assertEqual([], self.failures())
+
+    def add_jentic_candidates(self, start: int, stop: int) -> None:
+        """Declaring candidates the gate settles off the directory's other files.
+
+        Half are marked unreaching, so their check reads `probe.jsonl`; half pass
+        every screen and are declined as a test fixture, so theirs reads
+        `screens.jsonl`. Each is recorded as the arm search records it.
+        """
+        directory = self.root / "witness-search-jentic"
+        search = golden_reach_search()
+        note = search.NOT_REACHING.format(build="4828cc2b93f0")
+        rows, probes, screens = [], [], []
+        for number in range(start, stop):
+            unreaching = f"apis/openapi/u{number}.example/openapi.json"
+            rows.append((self.KEY, "candidate", unreaching, f"census 2 — {note}", "probe.jsonl"))
+            probes.append({"key": self.KEY, "candidate": unreaching, "build": "4828cc2b93f0", "reached": []})
+            fixture = f"apis/openapi/f{number}.example/openapi.json"
+            rows.append((self.KEY, "candidate", fixture, "census 2", "screens.jsonl"))
+            rows.extend((self.KEY, "screen", f"{fixture} {screen}", "passed", "screens.jsonl") for screen in SCREENS)
+            screens.append({"key": self.KEY, "candidate": fixture,
+                            "declined": f"{search.FIXTURE_DECLINE} — `f/example` at `{self.COMMIT}`, `test/openapi.json`"})
+            self.table["jentic"][2] += f"; `{unreaching}`; `{fixture}`"
+            self.table["jentic"][3] += f"; `{fixture}` licence `passed` ref `passed` fern `passed`"
+        with self.evidence("jentic").open("a", encoding="utf-8") as index:
+            index.writelines("\t".join(row) + "\n" for row in rows)
+        for name, filed in (("probe.jsonl", probes), ("screens.jsonl", screens)):
+            with (directory / name).open("a", encoding="utf-8") as handle:
+                handle.writelines(json.dumps(row) + "\n" for row in filed)
+
+    def test_each_evidence_file_is_read_and_scanned_a_bounded_number_of_times_however_many_candidates(self) -> None:
+        """Reconciliation costs one reading of the evidence, not one per candidate.
+
+        Every read of a file under an evidence directory is counted at the real
+        `Path.read_text` that `records.tsv`'s ledger parts and the JSON-lines
+        files are read through, and every pass over a line's records at the
+        records themselves. Two candidates and forty are reconciled — and accepted
+        — with the same readings, each file read at most once per call.
+        """
+        reads: Counter[str] = Counter()
+        read_text = Path.read_text
+
+        def counted(path: Path, *args: object, **kwargs: object) -> str:
+            if path.is_relative_to(self.root) and path.parent != self.root:
+                reads[path.relative_to(self.root).as_posix()] += 1
+            return read_text(path, *args, **kwargs)
+
+        class Passes(list):
+            """A key's records, counting every pass made over them."""
+
+            def __init__(self, records: list[dict[str, str]]) -> None:
+                super().__init__(records)
+                self.passes = 0
+
+            def __iter__(self):
+                self.passes += 1
+                return super().__iter__()
+
+        self.addCleanup(setattr, Path, "read_text", read_text)
+        directory = self.root / "witness-search-jentic"
+        measured = []
+        for start, stop in ((0, 1), (1, 20)):
+            self.add_jentic_candidates(start, stop)
+            reads.clear()
+            Path.read_text = counted
+            failures = self.failures()
+            Path.read_text = read_text
+            self.assertEqual([], failures, f"{2 * stop} candidates")
+            self.assertTrue(reads, "the gate read no evidence file; the count observes nothing")
+            line = next(cells for cells in exhaustive_search_lines(
+                (self.root / "sample.md").read_text(encoding="utf-8"))[self.KEY] if "jentic" in cells[1])
+            records = Passes([r for r in evidence_records(directory) if r["key"] == self.KEY])
+            self.assertEqual([], exhaustive_line_failures(
+                self.KEY, "jentic", line, records, self.capabilities["jentic"], True, directory
+            ))
+            measured.append((dict(reads), records.passes))
+        self.assertEqual(measured[0], measured[-1], "the readings grow with the candidates")
+        self.assertEqual({}, {path: n for path, n in measured[-1][0].items() if n > 1},
+                         "an evidence file read more than once in one call")
 
     def test_a_record_dropping_a_declared_source_is_refused(self) -> None:
         del self.table["sourcegraph"]

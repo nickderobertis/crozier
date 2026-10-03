@@ -4095,6 +4095,7 @@ fn render_discriminated_union(
                 spec_required: true,
                 docstring: None,
                 example: None,
+                declared_name: None,
             },
             &mut imports,
         );
@@ -11993,6 +11994,7 @@ mod tests {
             spec_required: required,
             docstring: None,
             example: None,
+            declared_name: None,
         }
     }
 
