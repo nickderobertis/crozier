@@ -49,6 +49,8 @@ tree	folio-mod-authtoken	src/main/resources/openapi/schemas/tokenResponseLegacy.
 tree	folio-mod-authtoken	src/main/resources/openapi/token-1.0.yaml	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/token-1.0.yaml	337d8f437811d2d12d3bc1e80c2406e88d6f1a66adf472eada134fe9832ee0a8
 
 # Complete relative-reference tree for corpus row 140; each member uses the row’s revision.
+tree	huatuo-node-tree	apis/v1/components.yaml	https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/components.yaml	fab1d7b9590197a2f5aa04021429559ae96fc76cdee179c56eb9d909902f4af0
+tree	huatuo-node-tree	apis/v1/node/openapi.yaml	https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml	2e49fdc63bcf90614020270c9648b47cb634aad678ac045ba75cef775da8f6d1
 tree	raybot	api/openapi/components/parameters/paging.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/parameters/paging.yml	c05a040842413fcfba6c091c5fb83bea8a79adf647e497602c5a25c27879926e
 tree	raybot	api/openapi/components/schemas/alarm.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/alarm.yml	6e82d05ed714b73feec256622cd2092e1ceaf1b4295b287b13422ddb73e364a8
 tree	raybot	api/openapi/components/schemas/app-connection.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/app-connection.yml	f66253e10a7070377100a4d8fec7c0922c1ab6c09378ca1b6ae388fe3bb36132

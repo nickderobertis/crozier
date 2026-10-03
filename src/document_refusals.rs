@@ -1966,6 +1966,9 @@ pub fn check_sdk(
 ) -> Result<()> {
     let fern_ir = fern_naming_ir(doc, config);
     let ir = fern_ir.as_ref().unwrap_or(ir);
+    if let Some(element) = promoted_optional_array_header(doc, ir) {
+        return refusal(path, strict, Class::ExampleTypeMismatch, &element);
+    }
     let class = Class::GeneratorLintFailure;
     for decl in ir
         .types
@@ -2488,6 +2491,31 @@ fn check_example_query_parameters(
     Ok(())
 }
 
+/// An optional array header Fern promotes to a client field
+/// (`example-type-mismatch`): its check fills the field's example with the
+/// header's name and rejects that string as no list. A required one, one left on
+/// a subset of operations as a method argument, and one whose string `default`
+/// makes Fern type it `str` each generate, as
+/// `docs/fern-refusals/example-type-mismatch/evaluation.md` records. The promotion
+/// is read from the SDK IR, so it is decided by the one rule that emits it.
+fn promoted_optional_array_header(doc: &OpenApi, ir: &crate::ir::Ir) -> Option<String> {
+    let header = ir.global_headers.iter().find(
+        |header| matches!(header.presence, crate::ir::HeaderPresence::Optional(ty) if ty.is_list()),
+    )?;
+    let (route, method) = doc.paths.iter().find_map(|(route, item)| {
+        item.operations().into_iter().find_map(|(method, op)| {
+            op.parameters
+                .iter()
+                .any(|parameter| {
+                    parameter.location == Some(ParameterLocation::Header)
+                        && parameter.name == header.wire_name
+                })
+                .then_some((route, method))
+        })
+    })?;
+    Some(format!("{method} {route} header {}", header.wire_name))
+}
+
 fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()> {
     Err(Error::InvalidSpec {
         path: path.to_path_buf(),
@@ -2502,6 +2530,63 @@ fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The header element `promoted_optional_array_header` reports for a
+    /// document whose every operation carries `header`, or `None`.
+    fn promoted_array_refusal(operations: usize, header: &str) -> Option<String> {
+        let mut spec = String::from("openapi: 3.0.3\ninfo: {title: Api, version: '1'}\npaths:\n");
+        for index in 0..operations {
+            spec.push_str(&format!(
+                "  /p{index}:\n    get:\n      parameters: [{header}]\n      responses: {{'204': {{description: OK}}}}\n"
+            ));
+        }
+        let doc: OpenApi = serde_yaml_ng::from_str(&spec).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        promoted_optional_array_header(&doc, &crate::ir::build(&doc, &config))
+    }
+
+    #[test]
+    fn only_an_optional_promoted_array_header_without_a_string_default_is_refused() {
+        let optional = "{name: X-Things, in: header, schema: {type: array, items: {type: string}}}";
+        assert_eq!(
+            promoted_array_refusal(2, optional).as_deref(),
+            Some("GET /p0 header X-Things")
+        );
+        assert_eq!(
+            promoted_array_refusal(1, "{name: X-Things, in: header, schema: {type: array, items: {type: integer}, default: [1]}}")
+                .as_deref(),
+            Some("GET /p0 header X-Things")
+        );
+        for generated in [
+            "{name: X-Things, in: header, required: true, schema: {type: array, items: {type: string}}}",
+            "{name: X-Things, in: header, schema: {type: array, items: {type: string}, default: all}}",
+            "{name: X-Things, in: header, schema: {type: string}}",
+        ] {
+            assert_eq!(promoted_array_refusal(1, generated), None, "{generated}");
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.yml");
+        let error = refusal(
+            &spec,
+            true,
+            Class::ExampleTypeMismatch,
+            "GET /p0 header X-Things",
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(
+            error.contains("example-type-mismatch: GET /p0 header X-Things (fern-strict refusal)")
+        );
+    }
 
     #[test]
     fn reference_objects_exclude_schemas_and_path_items_and_honor_ignores() {

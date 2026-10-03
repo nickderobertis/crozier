@@ -1206,7 +1206,7 @@ fn refused_probe_inputs_report_the_unsupported_shape() {
     for (probe, diagnostic) in [
         (
             probes.join("header-array.yml"),
-            "GET /probe: header parameter `probeParam` has an unsupported array schema",
+            "example-type-mismatch: GET /probe header probeParam",
         ),
         (
             probes.join("header-object.yml"),
@@ -1214,7 +1214,7 @@ fn refused_probe_inputs_report_the_unsupported_shape() {
         ),
         (
             path_item_probe,
-            "GET /probe: header parameter `probeParam` has an unsupported array schema",
+            "example-type-mismatch: GET /probe header probeParam",
         ),
         (
             probes.join("nonascii-operationId.yml"),
@@ -4714,6 +4714,7 @@ const CORPORA: &[&Corpus] = &[
     &FIWARE_CONTEXT_GENERATOR,
     &HASURA_METADATA,
     &ZOONK,
+    &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
 ];
@@ -7338,6 +7339,21 @@ const HUATUO_NODE: Corpus = Corpus {
 /// HuaTuo server API v1 — corpus row 179, the publisher's own description.
 const HUATUO_SERVER: Corpus = Corpus {
     api: "huatuo-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// HuaTuo node API v1 as its repository authors it — corpus row 309, the
+/// two-file tree row 178 is bundled from. Its `BearerAuth` names the scheme
+/// `../components.yaml` declares, so its bearer credential witnesses a security
+/// scheme resolved from another document.
+const HUATUO_NODE_TREE: Corpus = Corpus {
+    api: "huatuo-node-tree",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14056,6 +14072,11 @@ fn huatuo_server_matches_fern_output() {
 }
 
 #[test]
+fn huatuo_node_tree_matches_fern_output() {
+    assert_committed_corpus_matches(&HUATUO_NODE_TREE);
+}
+
+#[test]
 fn viskit_studio_matches_fern_output() {
     assert_committed_corpus_matches(&VISKIT_STUDIO);
 }
@@ -16482,6 +16503,38 @@ fn security_reference_recovers_when_the_referenced_document_is_present() {
             std::fs::read(strict.target.join(file)).unwrap()
         );
     }
+    // The referenced scheme authenticates exactly as the same scheme declared
+    // in the document does: one `token` credential, sent as a bearer header.
+    let inline = dir.path().join("inline.yml");
+    std::fs::write(
+        &inline,
+        std::fs::read_to_string(&spec).unwrap().replace(
+            "$ref: './components.yaml#/components/securitySchemes/BearerAuth'",
+            "{type: http, scheme: bearer}",
+        ),
+    )
+    .unwrap();
+    let declared = refusal_run(&crozier, &inline, false).unwrap();
+    assert_eq!(declared.code, Some(0), "{}", declared.stderr);
+    assert_eq!(normal.files, declared.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read_to_string(normal.target.join(file)).unwrap(),
+            std::fs::read_to_string(declared.target.join(file)).unwrap(),
+            "{file}"
+        );
+    }
+    let wrapper = normal
+        .files
+        .iter()
+        .find(|file| file.ends_with("core/client_wrapper.py"))
+        .expect("a client wrapper");
+    let wrapper = std::fs::read_to_string(normal.target.join(wrapper)).unwrap();
+    assert!(
+        wrapper.contains("token: typing.Union[str, typing.Callable[[], str]]")
+            && wrapper.contains("headers[\"Authorization\"] = f\"Bearer {self._get_token()}\""),
+        "{wrapper}"
+    );
     std::fs::write(
         dir.path().join("components.yaml"),
         "components:\n  securitySchemes:\n    BearerAuth: {$ref: '#/components/securitySchemes/Actual'}\n    Actual: {type: http, scheme: bearer}\n",
@@ -16614,19 +16667,8 @@ fn list_default_refusal_recovers_with_an_array() {
             assert_eq!(run.stderr.lines().count(), 1);
         }
     }
-    for strict in [false, true] {
-        let run = refusal_run(&crozier, &class.join("header-array-control.yml"), strict).unwrap();
-        assert_eq!(run.code, Some(1));
-        assert!(run.files.is_empty());
-        assert!(
-            run.stderr
-                .contains("header parameter `value` has an unsupported array schema"),
-            "{}",
-            run.stderr
-        );
-        assert!(!run.stderr.contains(": list-default-not-array:"));
-    }
     for case in [
+        "header-array-control.yml",
         "valid-list-control.yml",
         "null-list-control.yml",
         "unused-array-control.yml",

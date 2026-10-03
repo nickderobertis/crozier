@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info: {title: header-array, version: 1.0.0}
+servers: [{url: https://probe.invalid}]
+paths:
+  /probe:
+    get:
+      operationId: probe
+      parameters:
+        - {name: probeParam, in: header, required: false, schema: {type: array, items: {type: string}}}
+      responses:
+        '204': {description: OK}
+  /other:
+    get:
+      operationId: other
+      parameters: []
+      responses:
+        '204': {description: OK}

@@ -1,0 +1,18 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "huatuo-node-tree",
+  "corpus_spec_ref": "36175d6e91fdc7b79e818496e1587eb0ca79a18d",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml",
+  "corpus_tree_pins": [
+    {
+      "path": "apis/v1/components.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/components.yaml",
+      "sha256": "fab1d7b9590197a2f5aa04021429559ae96fc76cdee179c56eb9d909902f4af0"
+    },
+    {
+      "path": "apis/v1/node/openapi.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml",
+      "sha256": "2e49fdc63bcf90614020270c9648b47cb634aad678ac045ba75cef775da8f6d1"
+    }
+  ]
+}

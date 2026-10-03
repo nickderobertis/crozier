@@ -234,6 +234,7 @@ compares it. Row 224 is the one so far.
 | 306 | `zoonk` | github-raw | https://raw.githubusercontent.com/zoonk/zoonk/4546e69762e30f245c9306acb95aa56fc69d2682/apps/apple/Zoonk/openapi.json | `4546e69762e30f245c9306acb95aa56fc69d2682` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Zoonk's API as its repository publishes it for the Apple client: 48 paths and 69 component schemas; `MeDeletion`'s `oneOf` offers a closed empty object |
 | 307 | `apideck.com-ecosystem-client-class-name` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json | `0.0.6` | Apache 2.0 | committed | Row 13's Ecosystem API regenerated with `client_class_name: EcosystemClient`, the class name of its own `Ecosystem` resource's sub-client |
 | 308 | `yourbrand-ticketing` | github-raw | https://raw.githubusercontent.com/marinasundstrom/YourBrand/6ef617804cb34ceba4b847c62ab122042d86abbe/src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml | `6ef617804cb34ceba4b847c62ab122042d86abbe` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | YourBrand's Ticketing service API as its repository publishes it for the Ticketing client: 32 paths and 64 component schemas; two `application/json` bodies are bare `{type: string, format: duration}` strings |
+| 309 | `huatuo-node-tree` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | committed | HuaTuo node API v1 as its repository authors it, the source `openapi.gen.json` (row 178) is bundled from: `components.securitySchemes.BearerAuth` is `$ref: '../components.yaml#/components/securitySchemes/BearerAuth'`, a security scheme declared in another document of the same pinned tree, and thirteen schema references name `../components.yaml#/components/schemas/…`. Fern's generated bearer `token` and `Authorization` header, and its `ErrorResponse`, `Error`, `ErrorCode` and `ObservationScope` types, derive from those references. |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1376,3 +1377,20 @@ Service API (`opensuse.org/obs/2.10.50`, GPL-2.0, which declares
 `xml.attribute` 164 times) passes `fern check` and its generate exits 0 over a
 document Fern never parsed (`Failed to resolve
 #/paths/~1architectures/get/responses/401`), writing an empty SDK.
+
+## Row 309 — a security scheme declared in another document (issue #351)
+
+A `components.securitySchemes` entry may be a Reference Object naming a scheme
+in another document. Pinned Fern follows one into a document present beside
+it, so a client generated from such a description keeps its credential; the
+absent document is the `unresolved-reference` refusal class. The row pins the
+two-file tree with `tree` records in `corpus-remote-ref-pins.tsv`:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 309 | `huatuo-node-tree` | `securityscheme-ref` across documents | ✅ byte-matched after two repairs |
+
+The repairs: a security scheme a relative `$ref` names is resolved from that
+document, following a reference inside it, and a sibling file's
+`#/components/schemas/<Name>` is imported as the component it names with the
+components of that file it references, rather than inlined.

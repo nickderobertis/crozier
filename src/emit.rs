@@ -2404,9 +2404,14 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // error/raw-response calls are ruff-wrapped at the snippet width 88. A golden
     // refresh that reintroduces body-shape-sensitive placeholders is a Fern behavior
     // change, not a regression here.
+    // An array header is no argument here: Fern writes `client.probe()` for an
+    // endpoint whose only parameter is one, required or not.
     let has_arguments = !first.path_params.is_empty()
         || !first.query_params.is_empty()
-        || !first.header_params.is_empty()
+        || first
+            .header_params
+            .iter()
+            .any(|header| !matches!(header.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
         || first.request_body.is_some();
     let complex = first.method_name != "_" && has_arguments;
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
@@ -2825,7 +2830,13 @@ fn reference_entry(
             .iter()
             .find(|query| query.py_name == dp.name)
             .is_some_and(|query| !query.allow_multiple);
-        let annotation = if is_body || query_is_list {
+        // A header's signature takes `typing.Sequence`; the reference documents it
+        // as `typing.List`, as it does a body.
+        let is_header = ep
+            .header_params
+            .iter()
+            .any(|header| header.py_name == dp.name);
+        let annotation = if is_body || query_is_list || is_header {
             let annotation = reference_list_annotation(&dp.annotation);
             if annotation == "bytes"
                 && ep
@@ -3442,6 +3453,22 @@ fn auth_example_args(auth: &Auth) -> Vec<&'static str> {
     }
 }
 
+/// A header parameter's synthesized example. Fern fills a header with its own
+/// name, and an array header with two such elements
+/// (`probe_param=["probeParam", "probeParam"]`) where a list anywhere else holds
+/// one.
+fn header_example(value: Example) -> Example {
+    match value {
+        Example::List(items) if items.len() == 1 => {
+            Example::List(vec![items[0].clone(), items[0].clone()])
+        }
+        Example::ReferenceList(items) if items.len() == 1 => {
+            Example::ReferenceList(vec![items[0].clone(), items[0].clone()])
+        }
+        other => other,
+    }
+}
+
 /// The subsequence of promoted global headers that carries a distinct Python
 /// parameter name, keeping the first of each. Two header apiKey schemes can
 /// normalize alike — EN 18222 declares both `X-API-KEY` and `API-KEY`, and both
@@ -3472,26 +3499,45 @@ fn client_wrapper_file(
     default_max_retries: u32,
 ) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
+    // A defaulted header trails every built-in field instead (see
+    // [`GlobalHeader::default`]), so it is split off the leading ones. The
+    // `353-string-default-*` authored probes byte-match this file end to end.
+    let (trailing, leading): (Vec<GlobalHeader>, Vec<GlobalHeader>) = global_headers
+        .iter()
+        .cloned()
+        .partition(|h| h.default().is_some());
+    let tr_param: String = trailing
+        .iter()
+        .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
+        .collect();
+    let tr_assign: String = trailing
+        .iter()
+        .map(|h| format!("        self._{0} = {0}\n", h.py_name))
+        .collect();
+    let tr_super: String = trailing
+        .iter()
+        .map(|h| format!("            {0}={0},\n", h.py_name))
+        .collect();
     // Promoted global headers: a constructor parameter, an assignment, a
     // `get_headers` block, and a `super().__init__` argument — all emitted before
     // the auth credential's, matching Fern's ordering. A required header is a
     // mandatory `str` set unconditionally; an optional one is `Optional[str] = None`
     // set only when provided.
-    let gh_param: String = distinct_global_header_params(global_headers)
+    let gh_param: String = distinct_global_header_params(&leading)
         .into_iter()
         .map(|h| {
-            if h.required {
-                format!("        {}: {},\n", h.py_name, h.py_type.python())
+            if h.required() {
+                format!("        {}: {},\n", h.py_name, h.py_type().python())
             } else {
                 format!(
                     "        {}: typing.Optional[{}] = None,\n",
                     h.py_name,
-                    h.py_type.python()
+                    h.py_type().python()
                 )
             }
         })
         .collect();
-    let gh_assign: String = global_headers
+    let gh_assign: String = leading
         .iter()
         .map(|h| format!("        self._{0} = {0}\n", h.py_name))
         .collect();
@@ -3499,12 +3545,18 @@ fn client_wrapper_file(
         .iter()
         .map(|h| {
             // A non-string header is written as its `str()`, as Fern's is.
-            let value = if h.py_type == HeaderType::Str {
+            let value = if h.py_type() == HeaderType::Str {
                 format!("self._{}", h.py_name)
             } else {
                 format!("str(self._{})", h.py_name)
             };
-            if h.required {
+            if let Some(default) = h.default() {
+                format!(
+                    "        headers[\"{}\"] = {value} if {value} is not None else \"{}\"\n",
+                    escape_py_str(&h.wire_name),
+                    escape_py_str(default)
+                )
+            } else if h.required() {
                 format!(
                     "        headers[\"{}\"] = {value}\n",
                     escape_py_str(&h.wire_name)
@@ -3518,7 +3570,7 @@ fn client_wrapper_file(
             }
         })
         .collect();
-    let gh_super: String = distinct_global_header_params(global_headers)
+    let gh_super: String = distinct_global_header_params(&leading)
         .into_iter()
         .map(|h| format!("{0}={0}, ", h.py_name))
         .collect();
@@ -3533,7 +3585,7 @@ fn client_wrapper_file(
         )
     });
     let get_headers_head = format!(
-        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n        self._max_retries = max_retries\n        self._stream_reconnection_enabled = stream_reconnection_enabled\n        self._max_stream_reconnection_attempts = max_stream_reconnection_attempts\n        self._logging = logging\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        import platform\n\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-Runtime\": f\"python/{{platform.python_version()}}\",\n            \"X-Crozier-Platform\": f\"{{platform.system().lower()}}/{{platform.release()}}\",\n{sdk_identity}            **(self.get_custom_headers() or {{}}),\n        }}\n"
+        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n        self._max_retries = max_retries\n        self._stream_reconnection_enabled = stream_reconnection_enabled\n        self._max_stream_reconnection_attempts = max_stream_reconnection_attempts\n        self._logging = logging\n{tr_assign}\n    def get_headers(self) -> typing.Dict[str, str]:\n        import platform\n\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-Runtime\": f\"python/{{platform.python_version()}}\",\n            \"X-Crozier-Platform\": f\"{{platform.system().lower()}}/{{platform.release()}}\",\n{sdk_identity}            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
     // Lead with the generated-file header (like every other emitted module): it
@@ -3543,7 +3595,7 @@ fn client_wrapper_file(
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n    ):\n"));
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}    ):\n"));
     c.push_str(&gh_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
@@ -3567,16 +3619,20 @@ fn client_wrapper_file(
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            "));
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            "));
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
-    c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
+    c.push_str(&tr_super);
+    c.push_str("        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            "));
+    c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            "));
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
-    c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
+    c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
+    c.push_str(&tr_super);
+    c.push_str("        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
     GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/core/client_wrapper.py")),
         contents: c,
@@ -4420,7 +4476,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         .iter()
         .map(|hp| {
             optional_arg(
-                raw_type_str(&hp.type_ref, imports),
+                raw_type_str_ctx(&hp.type_ref, imports, true),
                 hp.required,
                 hp.docstring.clone(),
                 hp.py_name.clone(),
@@ -6113,6 +6169,26 @@ fn root_client_class(
         || "base_url".to_string(),
         |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
     );
+    // A defaulted header trails `logging` instead and is in no example (see
+    // [`GlobalHeader::default`]); the `353-string-default-*` authored probes
+    // byte-match the resulting `client.py` end to end.
+    let (trailing, global_headers): (Vec<GlobalHeader>, Vec<GlobalHeader>) = global_headers
+        .iter()
+        .cloned()
+        .partition(|h| h.default().is_some());
+    let global_headers = global_headers.as_slice();
+    let tr_doc: String = trailing
+        .iter()
+        .map(|h| format!("    {} : typing.Optional[str]\n", h.py_name))
+        .collect();
+    let tr_ctor: String = trailing
+        .iter()
+        .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
+        .collect();
+    let tr_wrapper: String = trailing
+        .iter()
+        .map(|h| format!("            {0}={0},\n", h.py_name))
+        .collect();
     // Promoted global headers: a docstring/ctor/example/wrapper line each, emitted
     // right after `base_url` and before the auth credential. A required header is a
     // mandatory `str`; an optional one is `Optional[str] = None` — matching the
@@ -6120,10 +6196,10 @@ fn root_client_class(
     let gh_doc: String = global_headers
         .iter()
         .map(|h| {
-            let ty = if h.required {
-                h.py_type.python().to_string()
+            let ty = if h.required() {
+                h.py_type().python().to_string()
             } else {
-                format!("typing.Optional[{}]", h.py_type.python())
+                format!("typing.Optional[{}]", h.py_type().python())
             };
             format!("    {} : {ty}\n", h.py_name)
         })
@@ -6131,13 +6207,13 @@ fn root_client_class(
     let gh_ctor: String = distinct_global_header_params(global_headers)
         .into_iter()
         .map(|h| {
-            if h.required {
-                format!("        {}: {},\n", h.py_name, h.py_type.python())
+            if h.required() {
+                format!("        {}: {},\n", h.py_name, h.py_type().python())
             } else {
                 format!(
                     "        {}: typing.Optional[{}] = None,\n",
                     h.py_name,
-                    h.py_type.python()
+                    h.py_type().python()
                 )
             }
         })
@@ -6205,6 +6281,9 @@ fn root_client_class(
         gh_ctor,
         gh_example,
         gh_wrapper,
+        tr_doc,
+        tr_ctor,
+        tr_wrapper,
         raw_client_cls: if root_methods.is_empty() {
             String::new()
         } else if is_async {
@@ -6297,6 +6376,12 @@ struct RootClientView {
     gh_ctor: String,
     gh_example: String,
     gh_wrapper: String,
+    /// Defaulted global-header lines (empty without any): the docstring
+    /// `Parameters` entries, the constructor parameters and the client-wrapper call
+    /// arguments, all placed after `logging`.
+    tr_doc: String,
+    tr_ctor: String,
+    tr_wrapper: String,
     raw_client_cls: String,
     root_methods: Vec<String>,
     modules: Vec<RootModuleView>,
@@ -9114,7 +9199,7 @@ fn build_example_inner(
             .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
             .unwrap_or_else(|| {
                 let slot = header_slot(&hp.wire_name);
-                ctx.value(&hp.type_ref, Slot::Named(&slot))
+                header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
             });
         args.push((Some(hp.py_name.clone()), v));
     }
@@ -9131,7 +9216,7 @@ fn build_example_inner(
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
                 .unwrap_or_else(|| {
                     let slot = header_slot(&hp.wire_name);
-                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                    header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
                 });
             args.push((Some(hp.py_name.clone()), value));
         }
@@ -9169,7 +9254,7 @@ fn build_example_inner(
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
                 .unwrap_or_else(|| {
                     let slot = header_slot(&hp.wire_name);
-                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                    header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
                 });
             args.push((Some(hp.py_name.clone()), value));
         }
@@ -9185,7 +9270,7 @@ fn build_example_inner(
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
                 .unwrap_or_else(|| {
                     let slot = header_slot(&hp.wire_name);
-                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                    header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
                 });
             args.push((Some(hp.py_name.clone()), value));
         }
@@ -9234,7 +9319,7 @@ fn build_example_inner(
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
                 .unwrap_or_else(|| {
                     let slot = header_slot(&hp.wire_name);
-                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                    header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
                 });
             args.push((Some(hp.py_name.clone()), value));
         }
@@ -9249,7 +9334,7 @@ fn build_example_inner(
             .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
             .unwrap_or_else(|| {
                 let slot = header_slot(&hp.wire_name);
-                ctx.value(&hp.type_ref, Slot::Named(&slot))
+                header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
             });
         args.push((Some(hp.py_name.clone()), value));
     }
@@ -9765,7 +9850,7 @@ fn build_example_inner(
             client_args.push(format!("    {arg},"));
         }
     } else {
-        for h in ctx.global_headers {
+        for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
             client_args.push(format!(
                 "    {}=\"YOUR_{}\",",
                 h.py_name,
@@ -9863,7 +9948,8 @@ fn documentation_client_example_args(auth: &Auth, global_headers: &[GlobalHeader
         .chain(
             global_headers
                 .iter()
-                .filter(|header| header.required)
+                // Nor does it pass an array header, required or not.
+                .filter(|header| header.required() && !header.py_type().is_list())
                 .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
         )
         .collect()
@@ -10462,6 +10548,127 @@ mod tests {
             .collect()
     }
 
+    /// `GET /probe` carrying the header `probeParam` with `schema`, beside a
+    /// `GET /other` that carries it only when `everywhere` is set.
+    fn header_array_document(
+        schema: serde_json::Value,
+        required: bool,
+        everywhere: bool,
+    ) -> serde_json::Value {
+        let header = serde_json::json!([
+            {"name": "probeParam", "in": "header", "required": required, "schema": schema}
+        ]);
+        let other = if everywhere {
+            header.clone()
+        } else {
+            serde_json::json!([])
+        };
+        serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {
+                "/probe": {"get": {"operationId": "probe", "parameters": header,
+                    "responses": {"204": {"description": "OK"}}}},
+                "/other": {"get": {"operationId": "other", "parameters": other,
+                    "responses": {"204": {"description": "OK"}}}}
+            }
+        })
+    }
+
+    #[test]
+    fn a_method_array_header_is_a_sequence_documented_as_a_list() {
+        let files = files_for(header_array_document(
+            serde_json::json!({"type": "array", "items": {"type": "string"}}),
+            true,
+            false,
+        ));
+        let client = file(&files, "src/api/client.py");
+        assert!(
+            client.contains("probe_param: typing.Sequence[str]"),
+            "{client}"
+        );
+        // Fern fills an array header's example with two copies of its name.
+        assert!(
+            client.contains("probe_param=[\"probeParam\", \"probeParam\"]"),
+            "{client}"
+        );
+        let reference = file(&files, "reference.md");
+        assert!(
+            reference.contains("**probe_param:** `typing.List[str]`"),
+            "{reference}"
+        );
+        // And the abbreviated README calls take no `...` for it.
+        let readme = file(&files, "README.md");
+        assert!(readme.contains("client.probe()"), "{readme}");
+        assert!(!readme.contains("client.probe(...)"), "{readme}");
+    }
+
+    #[test]
+    fn a_promoted_array_header_is_a_list_field_left_out_of_markdown_examples() {
+        let files = files_for(header_array_document(
+            serde_json::json!({"type": "array", "items": {"type": "string"}}),
+            true,
+            true,
+        ));
+        let wrapper = file(&files, "src/api/core/client_wrapper.py");
+        assert!(
+            wrapper.contains("probe_param: typing.List[str],"),
+            "{wrapper}"
+        );
+        assert!(
+            wrapper.contains("headers[\"probeParam\"] = str(self._probe_param)"),
+            "{wrapper}"
+        );
+        let readme = file(&files, "README.md");
+        assert!(!readme.contains("probe_param=\"<probeParam>\""), "{readme}");
+    }
+
+    #[test]
+    fn a_defaulted_promoted_header_trails_logging_and_sends_its_default() {
+        let files = files_for(header_array_document(
+            serde_json::json!({"type": "array", "items": {"type": "string"}, "default": "all"}),
+            false,
+            true,
+        ));
+        let wrapper = file(&files, "src/api/core/client_wrapper.py");
+        let logging = "        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n";
+        let field = "        probe_param: typing.Optional[str] = None,\n";
+        assert_eq!(
+            wrapper.matches(&format!("{logging}{field}")).count(),
+            3,
+            "{wrapper}"
+        );
+        assert!(wrapper.contains(
+            "        self._logging = logging\n        self._probe_param = probe_param\n"
+        ));
+        assert!(wrapper.contains(
+            "headers[\"probeParam\"] = self._probe_param if self._probe_param is not None else \"all\""
+        ));
+        assert_eq!(
+            wrapper
+                .matches("            logging=logging,\n            probe_param=probe_param,\n")
+                .count(),
+            2,
+            "{wrapper}"
+        );
+        let client = file(&files, "src/api/client.py");
+        assert!(
+            client.contains(&format!("{logging}{field}    ):")),
+            "{client}"
+        );
+        assert!(
+            client.contains("    probe_param : typing.Optional[str]\n    Examples"),
+            "{client}"
+        );
+        assert!(
+            client.contains("            logging=logging,\n            probe_param=probe_param,\n")
+        );
+        assert!(
+            !client.contains("probe_param=\"YOUR_PROBE_PARAM\""),
+            "{client}"
+        );
+    }
+
     fn file<'a>(files: &'a [(String, String)], suffix: &str) -> &'a str {
         files
             .iter()
@@ -10713,6 +10920,9 @@ mod tests {
             gh_ctor: String::new(),
             gh_example: String::new(),
             gh_wrapper: String::new(),
+            tr_doc: String::new(),
+            tr_ctor: String::new(),
+            tr_wrapper: String::new(),
             raw_client_cls: String::new(),
             root_methods: Vec::new(),
             modules: vec![RootModuleView {
@@ -12945,8 +13155,7 @@ mod tests {
         let global_headers = [GlobalHeader {
             wire_name: "X-Tenant".to_string(),
             py_name: "tenant".to_string(),
-            required: true,
-            py_type: HeaderType::Str,
+            presence: crate::ir::HeaderPresence::Required(HeaderType::Str),
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;
