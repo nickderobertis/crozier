@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.97](https://github.com/nickderobertis/crozier/compare/v0.0.96...v0.0.97) - 2026-10-03
+
+### Added
+
+- *(witness)* measure every screen and keep rate-limit caps open ([#391](https://github.com/nickderobertis/crozier/pull/391))
+
 ## [0.0.96](https://github.com/nickderobertis/crozier/compare/v0.0.95...v0.0.96) - 2026-10-03
 
 ### Fixed
