@@ -73,6 +73,9 @@ LICENCE_HEAD_LINES = 30
 SHA = re.compile(r"[0-9a-f]{64}")
 COMMIT = re.compile(r"[0-9a-f]{40}")
 REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
+# The legacy witness-search ledgers this stage files screens into: every
+# `witness-search-<source>/` that carries a `screens.jsonl`, which
+# `tests/witness_screen_test.py` reconciles against the committed tree.
 LEGACY_SOURCES = ("apis.guru", "jentic", "github-code-search", "github-publisher-trees", "sourcegraph")
 
 Fetch = Callable[[str, str], tuple[int, bytes]]

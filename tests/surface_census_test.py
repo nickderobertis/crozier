@@ -906,8 +906,6 @@ COMPACT_SEGMENT = re.compile(
 CAPABILITY_SECTION = "#### What makes a search exhaustive"
 SCREENS = ("licence", "ref", "fern")
 EVIDENCE_KINDS = ("query", "walk", "document", "candidate", "screen", "wait")
-# Where the measured screening stage files its redacted logs, in an evidence directory.
-LOG_DIR = "screens"
 # A bucket reaching its cap is the search's to wait out, never a source declining
 # to answer, so an `unanswered` giving any of these as its reason is refused.
 RATE_LIMIT_REASON = re.compile(
@@ -9071,7 +9069,7 @@ class RankedBacklogTests(unittest.TestCase):
                         directory_for=lambda source: self.ARM_SEARCHES / source,
                         pinned_for=self.arm_search_pin,
                         layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv", "census-fallback.tsv",
-                                      "fern-rescreen.jsonl", f"{LOG_DIR}/"),
+                                      "fern-rescreen.jsonl", f"{golden_reach_search().SCREEN.LOG_DIR}/"),
                         measured_build=re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1),
                     ),
                 )

@@ -325,6 +325,13 @@ class HistoricalRowTests(unittest.TestCase):
 class CommittedScreenTests(unittest.TestCase):
     """Every screen row the tree commits, read the way the two families read it."""
 
+    def test_the_legacy_sources_are_the_ledgers_that_carry_screens(self) -> None:
+        surface = REPO / "docs" / "openapi-surface"
+        ledgers = {screens.parent.name.removeprefix("witness-search-")
+                   for screens in surface.glob("witness-search-*/screens.jsonl")}
+        self.assertEqual(ledgers, set(SCREEN.LEGACY_SOURCES),
+                         "`screen --source` must offer exactly the legacy ledgers that file screens")
+
     def test_every_committed_screen_is_measured_whole_or_historical(self) -> None:
         surface = REPO / "docs" / "openapi-surface"
         measured = []
