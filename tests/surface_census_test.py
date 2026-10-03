@@ -12103,7 +12103,7 @@ def _enum(*values: str) -> dict:
 
 
 _PET = {"type": "object", "properties": {"name": {"type": "string"}}}
-def _JSON_BODY(media: dict) -> dict:
+def _json_body(media: dict) -> dict:
     return {"requestBody": {"content": {"application/json": media}}}
 
 
@@ -12231,11 +12231,11 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
                  "example": ["a"]}]}),
         ),
         "mediaType.examples:named-beside-example": (
-            _operation_document(_JSON_BODY({"example": {"a": 1}, "examples": {"one": {"value": {"a": 2}}}})),
-            _operation_document(_JSON_BODY({"example": {"a": 1}, "examples": {"one": {"summary": "no value"}}})),
+            _operation_document(_json_body({"example": {"a": 1}, "examples": {"one": {"value": {"a": 2}}}})),
+            _operation_document(_json_body({"example": {"a": 1}, "examples": {"one": {"summary": "no value"}}})),
         ),
         "mediaType.examples:named-only": (
-            _operation_document(_JSON_BODY({"examples": {"one": {"$ref": "#/components/examples/E"}}}),
+            _operation_document(_json_body({"examples": {"one": {"$ref": "#/components/examples/E"}}}),
                                 components={"examples": {"E": {"value": {"a": 1}}}}),
             _operation_document({"requestBody": {"content": {"text/plain": {
                 "examples": {"one": {"value": "a"}}}}}}),
