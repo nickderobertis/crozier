@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.95](https://github.com/nickderobertis/crozier/compare/v0.0.94...v0.0.95) - 2026-10-03
+
+### Added
+
+- *(python)* honour Fern's x-fern-property-name on schema properties ([#389](https://github.com/nickderobertis/crozier/pull/389))
+
 ## [0.0.94](https://github.com/nickderobertis/crozier/compare/v0.0.93...v0.0.94) - 2026-10-03
 
 ### Fixed
