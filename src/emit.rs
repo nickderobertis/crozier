@@ -3500,7 +3500,8 @@ fn client_wrapper_file(
 ) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
     // A defaulted header trails every built-in field instead (see
-    // [`GlobalHeader::default`]), so it is split off the leading ones.
+    // [`GlobalHeader::default`]), so it is split off the leading ones. The
+    // `353-string-default-*` authored probes byte-match this file end to end.
     let (trailing, leading): (Vec<GlobalHeader>, Vec<GlobalHeader>) = global_headers
         .iter()
         .cloned()
@@ -6168,7 +6169,8 @@ fn root_client_class(
         |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
     );
     // A defaulted header trails `logging` instead and is in no example (see
-    // [`GlobalHeader::default`]).
+    // [`GlobalHeader::default`]); the `353-string-default-*` authored probes
+    // byte-match the resulting `client.py` end to end.
     let (trailing, global_headers): (Vec<GlobalHeader>, Vec<GlobalHeader>) = global_headers
         .iter()
         .cloned()

@@ -399,7 +399,8 @@ pub enum HeaderPresence {
     /// An optional header whose first declaration carries this string `default`.
     /// Fern types it `str` whatever its schema, moves its constructor field after
     /// `logging`, leaves it out of every example, and sends the default when the
-    /// field is unset.
+    /// field is unset. The `353-string-default-*` authored probes pin it end
+    /// to end (`authored_probe_measurements_match_fern`).
     Defaulted(String),
 }
 
@@ -535,7 +536,8 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             // promoted; `marimo`'s `Marimo-Session-Id` rides 55 of 88 and stays
             // a per-method parameter.
             // An array header is the exception: Fern promotes a required solo
-            // one too.
+            // one too (the `353-solo-required-array` and
+            // `353-promoted-required-array` authored probes).
             total > 0
                 && *count * 4 >= total * 3
                 && (!*required || total > 1 || py_type.is_list())
