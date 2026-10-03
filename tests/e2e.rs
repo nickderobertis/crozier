@@ -1856,6 +1856,243 @@ fn sha256_matches_the_fips_180_4_test_vectors() {
 
 const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 
+/// The naming tickets' (#350, #354, #357) authored probes are the case
+/// directories `376-<ticket>-<shape>`; `authored_probe_measurements_match_fern`
+/// byte-compares each against Fern's tree by default. A document Fern refused
+/// is no authored probe: it is an `evidence/376-*` probe of the registry class
+/// crozier refuses it under.
+const NAMING_TICKETS: [&str; 3] = ["376-350-", "376-354-", "376-357-"];
+
+/// Every naming input Fern refused: the registry class crozier refuses it under,
+/// the probe's stem in that class's `evidence/` (beside its `.pinned-fern.log`),
+/// and the element its refusal line names. The two collisions fail Fern's check
+/// on the merged type's example; the manager ruled them `type-name-collision`.
+const NAMING_REFUSALS: [(&str, &str, &str); 3] = [
+    (
+        "type-name-not-letter-led",
+        "376-350-declared-type-name-blank-digit-led",
+        "123456",
+    ),
+    (
+        "type-name-collision",
+        "376-350-declared-type-name-shared-differing",
+        "\"Widget\"",
+    ),
+    (
+        "type-name-collision",
+        "376-350-declared-type-name-taken",
+        "\"Widget\"",
+    ),
+];
+
+/// Where pinned Fern generated, crozier byte-matches its tree over `probe` in
+/// both modes.
+fn authored_probe_tree_failures(case: &str, probe: &Path, tree: &Path) -> Vec<String> {
+    let mut failures = filtered_tree_failures(case, probe, tree, &[]);
+    let strict = tempfile::tempdir().expect("strict output tempdir");
+    match probe_command(probe, strict.path())
+        .arg("--fern-strict")
+        .output()
+    {
+        Ok(result) if result.status.success() => {
+            if walk_files(strict.path()) != walk_files(tree) {
+                failures.push(format!(
+                    "{case}: crozier's --fern-strict file set over {} differs from {}",
+                    probe.display(),
+                    tree.display()
+                ));
+            }
+        }
+        Ok(result) => failures.push(format!(
+            "{case}: crozier --fern-strict refused a probe Fern generates from: {}",
+            String::from_utf8_lossy(&result.stderr)
+        )),
+        Err(error) => failures.push(format!("{case}: could not run crozier: {error}")),
+    }
+    failures
+}
+
+/// Where pinned Fern refused, crozier refuses in both modes under `class`,
+/// naming `element` and writing nothing.
+fn authored_probe_refusal_failures(
+    case: &str,
+    probe: &Path,
+    class: &str,
+    element: &str,
+) -> Vec<String> {
+    let mut failures = Vec::new();
+    for strict in [false, true] {
+        let out = tempfile::tempdir().expect("probe output tempdir");
+        let target = out.path().join("sdk");
+        let mut command = probe_command(probe, &target);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = match command.output() {
+            Ok(result) => result,
+            Err(error) => return vec![format!("{case}: could not run crozier: {error}")],
+        };
+        let stderr = String::from_utf8_lossy(&result.stderr);
+        if result.status.code() != Some(1)
+            || !stderr.contains(class)
+            || !stderr.contains(element)
+            || stderr.contains("fern-strict") != strict
+            || target.exists()
+        {
+            failures.push(format!(
+                "{case}: crozier (strict {strict}) must exit 1 naming {class} and {element}, \
+                 writing nothing, where Fern refused; it exited {:?}: {stderr}",
+                result.status.code()
+            ));
+        }
+    }
+    failures
+}
+
+/// Every naming probe Fern generated from also generates under `--fern-strict`,
+/// and every one it refused is refused in both modes under its registry class.
+#[test]
+fn naming_authored_probes_match_pinned_fern() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut cases: Vec<String> = std::fs::read_dir(root.join(AUTHORED_PROBES_DIR))
+        .expect("the authored probes")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_dir())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .filter(|case| NAMING_TICKETS.iter().any(|ticket| case.starts_with(ticket)))
+        .collect();
+    cases.sort();
+    for ticket in NAMING_TICKETS {
+        assert!(
+            cases.iter().any(|case| case.starts_with(ticket)),
+            "no authored probe for {ticket}"
+        );
+    }
+    let mut failures = Vec::new();
+    for case in &cases {
+        let dir = root.join(AUTHORED_PROBES_DIR).join(case);
+        failures.extend(authored_probe_tree_failures(
+            case,
+            &dir.join("openapi.yml"),
+            &dir.join("fern-expected"),
+        ));
+    }
+    for (class, stem, element) in NAMING_REFUSALS {
+        let evidence = root.join(FERN_REFUSALS_DIR).join(class).join("evidence");
+        let log = std::fs::read_to_string(evidence.join(format!("{stem}.pinned-fern.log")))
+            .unwrap_or_default();
+        if !log.starts_with("Fern CLI 5.67.1, python-sdk 5.20.0\n")
+            || !log.contains("\ngenerate exit: 1\n")
+        {
+            failures.push(format!(
+                "{stem}: its pinned-fern.log is no refusal measured at the pin"
+            ));
+        }
+        failures.extend(authored_probe_refusal_failures(
+            stem,
+            &evidence.join(format!("{stem}.yml")),
+            class,
+            element,
+        ));
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// A webhook payload's reference to a component with a declared type name
+/// follows the rename, as an operation's does, rather than dangling to the
+/// unknown type.
+#[test]
+fn webhook_payload_references_follow_a_declared_type_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    std::fs::write(
+        &spec,
+        r"openapi: 3.1.0
+info: { title: probe, version: 1.0.0 }
+paths: {}
+webhooks:
+  widgetMade:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                widget: { $ref: '#/components/schemas/Widget' }
+      responses:
+        '200': { description: OK }
+components:
+  schemas:
+    Widget:
+      x-crozier-type-name: Gadget
+      type: object
+      properties:
+        id: { type: string }
+",
+    )
+    .unwrap();
+    let out = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .assert()
+        .success();
+    let types = out.join("src/probe/types");
+    assert!(std::fs::read_to_string(types.join("gadget.py"))
+        .unwrap()
+        .contains("class Gadget("));
+    assert!(!types.join("widget.py").exists());
+    let payload = std::fs::read_to_string(types.join("post_widget_made_payload.py")).unwrap();
+    assert!(payload.contains("from .gadget import Gadget"), "{payload}");
+    assert!(
+        payload.contains("widget: typing.Optional[Gadget] = None"),
+        "{payload}"
+    );
+}
+
+/// `x-crozier-type-name` is the canonical spelling of `x-fern-type-name`
+/// (AGENTS.md, the dual-header policy): alone it names a component exactly as
+/// the Fern spelling with the same value does, and beside a different Fern
+/// spelling it wins. Both variants are held to the tree Fern generated from the
+/// `x-fern-type-name` probe.
+#[test]
+fn canonical_type_name_hint_names_components_like_fern_spelling() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let probe = std::fs::read_to_string(
+        root.join(AUTHORED_PROBES_DIR)
+            .join("376-350-declared-type-name/openapi.yml"),
+    )
+    .expect("the declared type-name probe");
+    assert_eq!(probe.matches("x-fern-type-name: ").count(), 2, "{probe}");
+    let dir = tempfile::tempdir().unwrap();
+    let canonical_only = probe.replace("x-fern-type-name: ", "x-crozier-type-name: ");
+    let both = probe
+        .replace(
+            "x-fern-type-name: Gadget",
+            "x-fern-type-name: Decoy\n      x-crozier-type-name: Gadget",
+        )
+        .replace(
+            "x-fern-type-name: Thing",
+            "x-fern-type-name: '9'\n      x-crozier-type-name: Thing",
+        );
+    let mut failures = Vec::new();
+    for (name, document) in [("canonical-only", canonical_only), ("both", both)] {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(&spec, document).unwrap();
+        failures.extend(authored_probe_tree_failures(
+            name,
+            &spec,
+            &root
+                .join(AUTHORED_PROBES_DIR)
+                .join("376-350-declared-type-name/fern-expected"),
+        ));
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
 /// Every authored-probe measurement, found by listing
 /// `docs/openapi-surface/authored-probes/` and nothing else: crozier's output
 /// over each case's `openapi.yml` byte-matches the `fern-expected/` tree pinned
@@ -17144,7 +17381,10 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
             "type Event variants \"user:account_deleted\" and \"user_account:deleted\" are both Event_UserAccountDeleted",
         ),
         ("root-collision-probe.yml", "GET /search root method and sub-client search"),
-        ("tag-suffix-collision-probe.yml", "GET /search method name is empty"),
+        (
+            "tag-suffix-collision-probe.yml",
+            "GET /search root method and sub-client search",
+        ),
         ("untitled-summary-probe.yml", "POST /change-requests method name is empty"),
         ("server-hyphen-probe.yml", "variable \"api-version\""),
         ("server-dot-probe.yml", "variable \"api.version\""),
@@ -18701,10 +18941,19 @@ fn numeric_type_names_refuse_and_valid_declared_names_recover() {
         .arg("--fern-strict")
         .assert()
         .success();
+    // The canonical declaration names the class, its module and the method's
+    // return annotation, as Fern names a component by its `x-fern-type-name`
+    // (the authored probe `376-350-declared-type-name`).
     assert!(
-        std::fs::read_to_string(declared.join("src/probe/types/one23456.py"))
+        std::fs::read_to_string(declared.join("src/probe/types/thing.py"))
             .unwrap()
-            .contains("class One23456(")
+            .contains("class Thing(")
+    );
+    assert!(!declared.join("src/probe/types/one23456.py").exists());
+    assert!(
+        std::fs::read_to_string(declared.join("src/probe/client.py"))
+            .unwrap()
+            .contains("-> Thing:")
     );
     document["components"]["schemas"]["123456"]
         .as_object_mut()
