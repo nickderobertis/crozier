@@ -63,6 +63,9 @@ applied to both sides; everything else must match exactly:
   never-executed `TYPE_CHECKING` block's order does not gate the match.
 - **`.fern/metadata.json`**: the `generatorConfig` block Fern records (the
   `python_enums` setting every `expected/` golden is generated with) is dropped.
+  The rule applies to that exact SDK-relative path only: any other file whose
+  name ends in `metadata.json` (`types/user_metadata.json`, a nested
+  `foo/metadata.json`) is SDK content and is compared as written.
 - **The trees**: the comparison is bidirectional — a file on only one side is a
   difference — a symbolic link on either side is refused rather than followed,
   and a golden's `.crozier-fern-golden.json` provenance record is not part of
@@ -1471,6 +1474,19 @@ tree (`AcmeClient`/`AsyncAcmeClient`). Its Fern generator config carries
 `client_class_name: AcmeClient`; the value is recorded
 in `.fern/metadata.json`'s `generatorConfig`, which the e2e already normalizes out
 (`normalize_metadata`), so the provenance difference does not gate.
+
+A configured name can equal a sub-client's own class name — hellopatient's
+`TinyUrlClient` over a `TinyURL` resource, or `EcosystemClient` over Apideck's
+`Ecosystem` resource. The root `client.py` defines that class itself, so an
+unaliased import would leave the sub-client property typed as the root client.
+Fern imports each colliding class as `{module}_client_{Class}`
+(`from .ecosystem.client import EcosystemClient as
+ecosystem_client_EcosystemClient`), one statement per name under
+`TYPE_CHECKING`, and uses the alias for the attribute and the lazy property;
+`emit::root_sub_client_alias` does the same. Corpus row 307
+(`apideck.com-ecosystem-client-class-name`) pins it byte for byte, and
+`sdk_env_sub_client_named_like_the_root_client_typechecks_through_its_property`
+proves a consumer's pyright resolves the sub-client's method through the property.
 
 ## Pydantic extra-fields behavior (issue #63)
 
