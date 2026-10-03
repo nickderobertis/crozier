@@ -762,17 +762,16 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(2, len(ledger.read_text(encoding="utf-8").splitlines()))
         self.assertEqual([], sorted((cache / "documents").iterdir()))
 
-    def test_resolve_refuses_a_cached_copy_and_a_row_it_cannot_reacquire(self) -> None:
+    def test_resolve_replaces_a_corrupt_copy_and_refuses_a_row_it_cannot_reacquire(self) -> None:
         digest = hashlib.sha256(DOCUMENT).hexdigest()
         row = {"source": "github-publisher-trees", "repository": "example/api", "path": "openapi.yaml",
                "commit": "c" * 40, "sha256": digest, "acquisition_route": "pinned-raw-github"}
-        (self.root / "cache" / "documents").mkdir(parents=True)
-        (self.root / "cache" / "documents" / f"{digest}.yaml").write_bytes(b"openapi: 3.0.0\n")
-        with self.assertRaisesRegex(SEARCH.DigestRefused, "delete it so the document is reacquired"):
-            self.search.resolve(row, "publisher-trees")
-        (self.root / "cache" / "documents" / f"{digest}.yaml").unlink()
+        copy = self.root / "cache" / "documents" / f"{digest}.yaml"
+        copy.parent.mkdir(parents=True)
+        copy.write_bytes(b"openapi: 3.0.0\n")
         self.assertEqual(DOCUMENT, self.search.resolve(row, "publisher-trees"))
-        self.assertEqual(1, self.server.state["raw_hits"])
+        self.assertEqual(1, self.server.state["raw_hits"], "a copy holding other bytes is reacquired")
+        self.assertEqual(DOCUMENT, copy.read_bytes())
         self.assertEqual(DOCUMENT, self.search.resolve(row, "publisher-trees"))
         self.assertEqual(1, self.server.state["raw_hits"], "a verified copy is read from the cache")
         for broken, message in (
@@ -1134,48 +1133,80 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(1, sum("shared_with_key" in row for row in rows))
         self.assertFalse((evaluation / "documents").exists())
 
-    def test_cli_evaluate_reads_a_document_an_earlier_run_fetched_from_the_cache(self) -> None:
-        """A later run's key reuses the bytes an earlier run's key fetched, unless they no longer match."""
+    def test_cli_evaluate_reuses_the_bytes_an_earlier_run_pinned_and_refuses_changed_ones(self) -> None:
+        """A later run's key reuses the document an earlier run's key read, at the digest that run pinned.
+
+        A cached copy that is missing or holds other bytes is reacquired at the
+        recorded commit and reused once it hashes to the pin; a source now
+        serving other bytes there is refused, and no replacement digest is
+        recorded or cached.
+        """
         script = REPO / "scripts/witness-search-github.py"
         evaluation = self.root / "cli-later"
         evaluation.mkdir()
         cache = self.root / "cli-later-cache"
+        ledger = evaluation / "candidates.jsonl"
         item = {
             "repository": "example/api",
             "path": "openapi.yaml",
             "sha": "a" * 40,
             "url": f"{self.url}/repos/example/api/contents/openapi.yaml?ref={'b' * 40}",
         }
-        first, second, third = tuple(sorted(SEARCH.derive_keys(REPO / "docs/openapi-surface"))[:3])
+        first, second, third, fourth, fifth = tuple(sorted(SEARCH.derive_keys(REPO / "docs/openapi-surface"))[:5])
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}
 
-        def evaluate(key: str) -> None:
-            with (evaluation / "queries.jsonl").open("a", encoding="utf-8") as ledger:
-                ledger.write(json.dumps({"source": "github-code-search", "key": key, "query": f"q {key}",
-                                         "outcome": "answered", "results": [item]}) + "\n")
-            evaluated = subprocess.run(
+        def evaluate(key: str) -> subprocess.CompletedProcess[str]:
+            with (evaluation / "queries.jsonl").open("a", encoding="utf-8") as queries:
+                queries.write(json.dumps({"source": "github-code-search", "key": key, "query": f"q {key}",
+                                          "outcome": "answered", "results": [item]}) + "\n")
+            return subprocess.run(
                 [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evaluation),
                  "--cache", str(cache), "--source", "github-code-search", "--stage", "evaluate", "--key", key],
                 env=env, capture_output=True, text=True,
             )
+
+        def rows() -> list[dict]:
+            return [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()]
+
+        for key in (first, second):
+            evaluated = evaluate(key)
             self.assertEqual(0, evaluated.returncode, evaluated.stderr)
-
-        evaluate(first)
-        evaluate(second)
         self.assertEqual(1, self.server.state["contents"])
-        rows = [json.loads(line) for line in (evaluation / "candidates.jsonl").read_text(encoding="utf-8").splitlines()]
-        self.assertEqual([first, second], [row["key"] for row in rows])
-        self.assertEqual(first, rows[1]["shared_with_key"])
-        self.assertEqual(rows[0]["sha256"], rows[1]["sha256"])
-        self.assertEqual("does-not-declare", rows[1]["disposition"])
+        recorded = rows()
+        self.assertEqual([first, second], [row["key"] for row in recorded])
+        self.assertEqual(first, recorded[1]["shared_with_key"])
+        self.assertEqual(recorded[0]["sha256"], recorded[1]["sha256"])
+        self.assertEqual("does-not-declare", recorded[1]["disposition"])
+        digest = recorded[0]["sha256"]
+        copy = cache / "documents" / recorded[0]["document"]
 
-        # A cached copy that no longer hashes to its pin is no reading: the document is fetched again.
-        (cache / "documents" / rows[0]["document"]).write_bytes(b"openapi: 3.0.0\n")
-        evaluate(third)
-        self.assertEqual(2, self.server.state["contents"])
-        last = json.loads((evaluation / "candidates.jsonl").read_text(encoding="utf-8").splitlines()[-1])
-        self.assertEqual(third, last["key"])
-        self.assertNotIn("shared_with_key", last)
+        for key, damage in ((third, "corrupt"), (fourth, "missing")):
+            with self.subTest(cache=damage):
+                if damage == "corrupt":
+                    copy.write_bytes(b"openapi: 3.0.0\n")
+                else:
+                    copy.unlink()
+                before = self.server.state["contents"]
+                evaluated = evaluate(key)
+                self.assertEqual(0, evaluated.returncode, evaluated.stderr)
+                self.assertEqual(before + 1, self.server.state["contents"], "the pinned document is read once more")
+                last = rows()[-1]
+                self.assertEqual(key, last["key"])
+                self.assertIn("shared_with_key", last)
+                self.assertEqual(digest, last["sha256"])
+                self.assertEqual(DOCUMENT, copy.read_bytes())
+
+        copy.unlink()
+        changed = DOCUMENT + b"# changed upstream at the same commit\n"
+        self.server.state["contents_payload"] = {"encoding": "base64", "content": base64.b64encode(changed).decode()}
+        count = len(rows())
+        refused = evaluate(fifth)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(f"refused: example/api/openapi.yaml@{'b' * 40} served sha256 "
+                      f"{hashlib.sha256(changed).hexdigest()}, not the {digest} the ledger pins", refused.stderr)
+        self.assertEqual(count, len(rows()), "no row records the changed bytes")
+        self.assertNotIn(fifth, {row["key"] for row in rows()})
+        self.assertEqual([], sorted((cache / "documents").iterdir()))
 
     def test_cli_evaluate_raw_route_downloads_at_the_commit_off_the_rest_buckets(self) -> None:
         """Exact-commit raw download: no contents read, paced lane, sharded identities."""

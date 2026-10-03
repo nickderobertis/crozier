@@ -1588,11 +1588,12 @@ class Acquirer:
         """The bytes a ledger row pins: from the cache, or reacquired at its recorded source.
 
         A cached copy is used only if it hashes to the row's `sha256`. Without
-        one, the document is requested again at the row's commit through the
-        route that first read it, and its bytes are cached and used only if they
-        hash to that digest too. Either mismatch is refused with `DigestRefused`.
-        None means the source answered something other than the document, as an
-        acquisition records that as a failure rather than a reading.
+        one, or over one holding other bytes, the document is requested again at
+        the row's commit through the route that first read it, and its bytes are
+        cached and used only if they hash to that digest too; served bytes that
+        do not are refused with `DigestRefused`, never recorded under a new
+        digest. None means the source answered something other than the
+        document, as an acquisition records that as a failure, not a reading.
         """
         digest = row.get("sha256")
         subject = f"{row.get('repository')}/{row.get('path')}@{row.get('commit')}"
@@ -1602,12 +1603,8 @@ class Acquirer:
         for name in (digest + ".json", digest + ".yaml"):
             if (path := documents / name).is_file():
                 data = path.read_bytes()
-                if hashlib.sha256(data).hexdigest() != digest:
-                    raise DigestRefused(
-                        f"{path} does not hash to the sha256 {digest} the ledger pins for {subject}; "
-                        "delete it so the document is reacquired at its commit"
-                    )
-                return data
+                if hashlib.sha256(data).hexdigest() == digest:
+                    return data
         data = self.reacquire(row, key)
         if data is None:
             return None
@@ -1673,11 +1670,6 @@ class Acquirer:
         if status in (403, 429):
             raise SearchStopped(f"reacquiring {subject} was refused: HTTP {status}")
         return data if status == 200 else None
-
-    def cached(self, fetched: dict[str, Any]) -> bool:
-        """Whether a ledger row's document is in the cache, holding the bytes it pinned."""
-        path = self.cache / "documents" / str(fetched.get("document"))
-        return path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == fetched.get("sha256")
 
     def reuse(
         self, fetched: dict[str, Any], key: str, selector: str
@@ -2031,22 +2023,23 @@ def _main() -> int:
                 continue
             documents.setdefault(identity[1:], []).append((identity[0], item))
         # A document an earlier run read for another key is the same repository,
-        # path and revision: its cached bytes are classified again rather than
-        # fetched again, wherever they still hash to the digest that run pinned.
+        # path and revision: the bytes that run pinned are classified again,
+        # through `resolve`, which reacquires them at that revision when the cache
+        # lacks them and refuses any that no longer hash to the pinned digest.
         earlier = {
             (row["repository"], row["path"], row.get("commit") or row.get("blob")): row
             for row in jsonl(args.evidence / "candidates.jsonl")
             if row.get("document") and row.get("disposition") != "acquisition-failure"
         }
         for document, members in documents.items():
-            read = earlier.get(document)
-            if read is not None and acquirer.cached(read):
-                for other, _ in members:
-                    acquirer.reuse(read, other, keys[other]["selector"])
-                continue
             key, item = members[0]
             selector = keys[key]["selector"]
             try:
+                read = earlier.get(document)
+                if read is not None and acquirer.resolve(read, read["key"]) is not None:
+                    for other, _ in members:
+                        acquirer.reuse(read, other, keys[other]["selector"])
+                    continue
                 if args.source == "sourcegraph":
                     fetched = acquirer.sourcegraph_document(key, selector, item)
                 else:
