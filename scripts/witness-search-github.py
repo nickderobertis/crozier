@@ -1635,7 +1635,19 @@ class Acquirer:
                 "and commit SHA to reacquire its document at"
             )
         subject = f"{repository}/{path}@{commit}"
-        route = row.get("acquisition_route")
+        try:
+            status, data = self._reacquire(row.get("acquisition_route"), row.get("source"),
+                                           repository, path, commit, key, subject)
+        except SecondaryLimit as error:
+            raise SearchStopped(f"reacquiring {subject}: {error}") from error
+        if status in (403, 429):
+            raise SearchStopped(f"reacquiring {subject} was refused: HTTP {status}")
+        return data if status == 200 else None
+
+    def _reacquire(
+        self, route: Any, source: Any, repository: str, path: str, commit: str, key: str, subject: str
+    ) -> tuple[int, bytes | None]:
+        """One request for a recorded document at its commit, by the route that first read it."""
         if route == "pinned-raw-github":
             url = (
                 self.raw_github_url
@@ -1646,8 +1658,8 @@ class Acquirer:
                 + "/"
                 + urllib.parse.quote(path, safe="/")
             )
-            status, data = self.raw_github_get(url, key, subject)
-        elif route == "sourcegraph-paced":
+            return self.raw_github_get(url, key, subject)
+        if route == "sourcegraph-paced":
             url = (
                 self.sourcegraph_url
                 + "/"
@@ -1657,19 +1669,16 @@ class Acquirer:
                 + "?"
                 + urllib.parse.urlencode({"rev": commit})
             )
-            status, data = self.sourcegraph_get(url, key, subject)
-        elif route is None and row.get("source") == "github-code-search":
+            return self.sourcegraph_get(url, key, subject)
+        if route is None and source == "github-code-search":
             status, data, _ = self.github_contents(
                 f"/repos/{urllib.parse.quote(repository, safe='/')}/contents/"
                 f"{urllib.parse.quote(path, safe='/')}?ref={commit}"
             )
-        else:
-            raise EvidenceError(
-                f"the ledger row for {subject} records no acquisition route to reacquire its document by"
-            )
-        if status in (403, 429):
-            raise SearchStopped(f"reacquiring {subject} was refused: HTTP {status}")
-        return data if status == 200 else None
+            return status, data
+        raise EvidenceError(
+            f"the ledger row for {subject} records no acquisition route to reacquire its document by"
+        )
 
     def reuse(
         self, fetched: dict[str, Any], key: str, selector: str

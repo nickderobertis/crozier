@@ -369,6 +369,8 @@ class LocalServer(BaseHTTPRequestHandler):
                 )
                 self.end_headers()
                 self.wfile.write(document)
+        elif self.path.startswith("/github.com/example/refused/-/raw/"):
+            self.reply(429, {"message": "wait"}, {"Retry-After": "0"})
         elif self.path.startswith("/.api/search/stream"):
             state["sourcegraph"] += 1
             if state["sourcegraph_status"]:
@@ -793,6 +795,24 @@ class WitnessSearchGithubTests(unittest.TestCase):
         with self.assertRaisesRegex(SEARCH.SearchStopped, f"reacquiring example/api/openapi.yaml@{'b' * 40} was refused: HTTP 403"):
             self.search.resolve(contents, "shape")
 
+    def test_reacquisition_the_guard_stops_is_a_stopped_search(self) -> None:
+        """A lane the guard gives up on during reacquisition stops the run as any refusal does.
+
+        Only the lane's pacing table is narrowed, so the real guard exhausts its
+        budget against the loopback refusals in moments rather than minutes.
+        """
+        row = {"source": "sourcegraph", "repository": "github.com/example/refused", "path": "openapi.yaml",
+               "commit": "c" * 40, "sha256": "f" * 64, "acquisition_route": "sourcegraph-paced"}
+        lane = guard_module.PacedLane(spacing_s=0.0, backoff_base_s=0.01, attempt_budget=2)
+        with patch.dict(guard_module.PACED_LANES, {"sourcegraph": lane}):
+            acquirer = SEARCH.Acquirer(self.root / "guarded", cache=self.root / "guarded-cache",
+                                       github_url=self.url, sourcegraph_url=self.url, raw_github_url=self.url,
+                                       sourcegraph_spacing_s=0.0, sourcegraph_refusal_cooldown_s=0.01)
+            with self.assertRaisesRegex(SEARCH.SearchStopped,
+                                        f"reacquiring github.com/example/refused/openapi.yaml@{'c' * 40}: "
+                                        "sourcegraph 'sourcegraph' refused 2 consecutive calls"):
+                acquirer.resolve(row, "shape")
+
     def test_sourcegraph_http_error_stops_search(self) -> None:
         self.server.state["sourcegraph_status"] = 404
         with self.assertRaisesRegex(SEARCH.SearchStopped, "HTTP 404"):
@@ -1207,6 +1227,15 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(count, len(rows()), "no row records the changed bytes")
         self.assertNotIn(fifth, {row["key"] for row in rows()})
         self.assertEqual([], sorted((cache / "documents").iterdir()))
+
+        # A refused reacquisition stops the run, naming the rerun, and records nothing.
+        self.server.state["contents_payload"] = None
+        self.server.state["contents_status"] = 403
+        stopped = evaluate(fifth)
+        self.assertEqual(1, stopped.returncode)
+        self.assertIn(f"reacquiring example/api/openapi.yaml@{'b' * 40} was refused: HTTP 403; wait for the "
+                      "guard's backoff, then rerun --source github-code-search --stage evaluate", stopped.stderr)
+        self.assertEqual(count, len(rows()))
 
     def test_cli_evaluate_raw_route_downloads_at_the_commit_off_the_rest_buckets(self) -> None:
         """Exact-commit raw download: no contents read, paced lane, sharded identities."""
