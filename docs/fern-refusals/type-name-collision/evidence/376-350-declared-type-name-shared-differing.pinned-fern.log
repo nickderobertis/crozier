@@ -1,0 +1,40 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> createWidget -> examples[0] -> response
+        issue: Unexpected property "count"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getThing -> examples[0] -> response
+        issue: Unexpected property "count"
+
+Found 2 errors and 0 warnings in 0.001 seconds.
+::error::Found 2 errors and 0 warnings in 0.001 seconds.
+
+generate exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> createWidget -> examples[0] -> response
+                  __package__.yml
+                  [error] Unexpected property "count"
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> createWidget -> examples[0] -> response%0A__package__.yml%0A[error] Unexpected property "count"
+[api]: python-sdk __package__.yml -> service -> endpoints -> getThing -> examples[0] -> response
+                  __package__.yml
+                  [error] Unexpected property "count"
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> getThing -> examples[0] -> response%0A__package__.yml%0A[error] Unexpected property "count"
+[api]: python-sdk Found 2 errors and 0 warnings in 0.621 seconds.
+::error title=[api]%3A python-sdk::Found 2 errors and 0 warnings in 0.621 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

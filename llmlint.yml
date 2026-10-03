@@ -30,6 +30,10 @@ files:
     # golden target each fixture's openapi.yml is byte-gated against, not
     # crozier's code. The fixtures' openapi.yml and evidence.toml stay linted.
     - "docs/openapi-surface/handwritten/*/fern-expected/**"
+    # The authored probes' Fern trees — the same vendored Fern output, the
+    # tree each case's openapi.yml is byte-gated against, not crozier's code.
+    # Each case's openapi.yml and fern.log stay linted.
+    - "docs/openapi-surface/authored-probes/*/fern-expected/**"
     # screencomp visual-docs artifacts — generated captures, not hand-written
     # code: the committed SVG screenshots (each ~370KB of base64-embedded font),
     # the animated GIF, the digest baseline, and the vendored binary font. They
