@@ -458,6 +458,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.addCleanup(self.rate_url.stop)
         self.search = SEARCH.Acquirer(
             self.root,
+            cache=self.root / "cache",
             github_url=self.url,
             sourcegraph_url=self.url,
             raw_github_url=self.url,
@@ -676,6 +677,118 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.search.publisher_walk(publisher, grown)
         self.assertEqual(len(after), len(ledger.read_text(encoding="utf-8").splitlines()), "a counted key is not counted twice")
 
+    def walk_cli(self, evidence: Path, *extra: str) -> subprocess.CompletedProcess[str]:
+        """One `--stage walk` of the local publisher through the acquisition CLI."""
+        publisher_file = self.root / "walk-publisher.json"
+        publisher_file.write_text(json.dumps({"publishers": [
+            {"repository": "example/api", "commit": "c" * 40, "scope": "", "derivation": "local API publisher"}
+        ]}), encoding="utf-8")
+        return subprocess.run(
+            [sys.executable, str(REPO / "scripts/witness-search-github.py"), *SOURCE_COMMIT,
+             "--evidence", str(evidence), "--source", "github-publisher-trees", "--stage", "walk",
+             "--publisher-file", str(publisher_file), *extra],
+            env={**os.environ, "CROZIER_GITHUB_API_URL": self.url, "CROZIER_RAW_GITHUB_URL": self.url,
+                 "GITHUB_TOKEN": "offline-test-token"},
+            capture_output=True, text=True,
+        )
+
+    def test_cli_without_cache_keeps_fetched_documents_out_of_the_evidence_directory(self) -> None:
+        """With no `--cache`, fetched bytes land in the gitignored `.local` cache, not beside the ledgers.
+
+        The document carries this test's temporary directory name, so its digest
+        names a cache file no other run writes, and that one file is removed after.
+        """
+        document = DOCUMENT + f"# {self.root.name}\n".encode()
+        self.server.state["raw_document"] = document
+        digest = hashlib.sha256(document).hexdigest()
+        cached = REPO / ".local" / "witness-search-cache" / "documents" / f"{digest}.yaml"
+        self.addCleanup(cached.unlink, missing_ok=True)
+        evidence = self.root / "cli-default-cache"
+
+        walked = self.walk_cli(evidence)
+        self.assertEqual(0, walked.returncode, walked.stderr)
+        row = json.loads((evidence / "documents.jsonl").read_text(encoding="utf-8").splitlines()[0])
+        self.assertEqual(digest, row["sha256"])
+        self.assertFalse((evidence / "documents").exists(), "fetched bytes were written into the evidence directory")
+        self.assertEqual(document, cached.read_bytes())
+        ignored = subprocess.run(["git", "check-ignore", "--quiet", str(cached)], cwd=REPO)
+        self.assertEqual(0, ignored.returncode, f"{cached} is not gitignored")
+        self.assertEqual(cached.parent.parent, SEARCH.DEFAULT_CACHE)
+
+    def test_cli_walk_reacquires_a_removed_cached_document_and_refuses_other_bytes(self) -> None:
+        """A recount reads a ledger row's bytes at its recorded commit when the cache no longer holds them.
+
+        The reacquired bytes are used, and cached again, only because they hash
+        to the row's recorded SHA-256; a source serving other bytes at that commit
+        is refused, and nothing is appended or cached for it.
+        """
+        evidence = self.root / "cli-reacquire"
+        cache = self.root / "cli-reacquire-cache"
+        evidence.mkdir()
+        keys = {"closed-object": {"selector": "schema.additionalProperties=false"}}
+        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8")
+        first = self.walk_cli(evidence, "--cache", str(cache))
+        self.assertEqual(0, first.returncode, first.stderr)
+        ledger = evidence / "documents.jsonl"
+        recorded = json.loads(ledger.read_text(encoding="utf-8").splitlines()[0])
+        copy = cache / "documents" / f"{recorded['sha256']}.yaml"
+        self.assertEqual(DOCUMENT, copy.read_bytes())
+        fetched = self.server.state["raw_hits"]
+
+        copy.unlink()
+        keys["one-of"] = {"selector": "schema.oneOf"}
+        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8")
+        recounted = self.walk_cli(evidence, "--cache", str(cache))
+        self.assertEqual(0, recounted.returncode, recounted.stderr)
+        self.assertEqual(fetched + 1, self.server.state["raw_hits"], "the removed copy is requested once more")
+        rows = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(2, len(rows))
+        self.assertEqual(["one-of"], rows[-1]["recounted_keys"])
+        self.assertEqual(recorded["sha256"], rows[-1]["sha256"])
+        self.assertEqual(recorded["url"], rows[-1]["url"])
+        self.assertEqual(DOCUMENT, copy.read_bytes())
+
+        copy.unlink()
+        tampered = DOCUMENT + b"# not the recorded bytes\n"
+        self.server.state["raw_document"] = tampered
+        keys["string-const"] = {"selector": "schema.const"}
+        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8")
+        refused = self.walk_cli(evidence, "--cache", str(cache))
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(f"refused: example/api/openapi.yaml@{'c' * 40} served sha256 "
+                      f"{hashlib.sha256(tampered).hexdigest()}, not the {recorded['sha256']} the ledger pins",
+                      refused.stderr)
+        self.assertEqual(2, len(ledger.read_text(encoding="utf-8").splitlines()))
+        self.assertEqual([], sorted((cache / "documents").iterdir()))
+
+    def test_resolve_refuses_a_cached_copy_and_a_row_it_cannot_reacquire(self) -> None:
+        digest = hashlib.sha256(DOCUMENT).hexdigest()
+        row = {"source": "github-publisher-trees", "repository": "example/api", "path": "openapi.yaml",
+               "commit": "c" * 40, "sha256": digest, "acquisition_route": "pinned-raw-github"}
+        (self.root / "cache" / "documents").mkdir(parents=True)
+        (self.root / "cache" / "documents" / f"{digest}.yaml").write_bytes(b"openapi: 3.0.0\n")
+        with self.assertRaisesRegex(SEARCH.DigestRefused, "delete it so the document is reacquired"):
+            self.search.resolve(row, "publisher-trees")
+        (self.root / "cache" / "documents" / f"{digest}.yaml").unlink()
+        self.assertEqual(DOCUMENT, self.search.resolve(row, "publisher-trees"))
+        self.assertEqual(1, self.server.state["raw_hits"])
+        self.assertEqual(DOCUMENT, self.search.resolve(row, "publisher-trees"))
+        self.assertEqual(1, self.server.state["raw_hits"], "a verified copy is read from the cache")
+        for broken, message in (
+            ({"sha256": None}, "pins no sha256"),
+            ({"sha256": "f" * 64, "commit": "main"}, "records no repository, path and commit SHA"),
+            ({"sha256": "f" * 64, "acquisition_route": "elsewhere"}, "records no acquisition route"),
+        ):
+            with self.subTest(message=message), self.assertRaisesRegex(SEARCH.EvidenceError, message):
+                self.search.resolve({**row, **broken}, "publisher-trees")
+        self.server.state["raw_status"] = 404
+        self.assertIsNone(self.search.resolve({**row, "sha256": "f" * 64}, "publisher-trees"))
+        contents = {**{k: v for k, v in row.items() if k != "acquisition_route"},
+                    "source": "github-code-search", "commit": "b" * 40}
+        (self.root / "cache" / "documents" / f"{digest}.yaml").unlink()
+        self.assertEqual(DOCUMENT, self.search.resolve(contents, "shape"))
+        self.assertEqual(1, self.server.state["contents"])
+
     def test_sourcegraph_http_error_stops_search(self) -> None:
         self.server.state["sourcegraph_status"] = 404
         with self.assertRaisesRegex(SEARCH.SearchStopped, "HTTP 404"):
@@ -811,6 +924,8 @@ class WitnessSearchGithubTests(unittest.TestCase):
             *SOURCE_COMMIT,
             "--evidence",
             str(evaluation),
+            "--cache",
+            str(self.root / "cli-evaluate-cache"),
             "--source",
             "github-code-search",
             "--stage",
@@ -837,7 +952,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         ]}), encoding="utf-8")
         walked = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(walk_evidence),
-             "--source", "github-publisher-trees", "--stage", "walk",
+             "--cache", str(self.root / "cli-walk-cache"), "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(publisher_file)],
             env={**env, "CROZIER_RAW_GITHUB_URL": self.url},
             capture_output=True,
@@ -1217,7 +1332,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
     def test_search_transport_errors_leave_a_record(self) -> None:
         unavailable = "http://127.0.0.1:1"
         search = SEARCH.Acquirer(
-            self.root / "transport", github_url=unavailable,
+            self.root / "transport", cache=self.root / "transport-cache", github_url=unavailable,
             sourcegraph_url=unavailable, code_search_spacing_s=0,
             sourcegraph_spacing_s=0,
         )
@@ -1252,7 +1367,8 @@ components:
         self.assertEqual(1, result["selector_count"])
         self.assertNotIn("selector_method", result)
         self.assertIsNone(SEARCH.CENSUS.selector_error("securityScheme:$ref"))
-        self.assertTrue((self.root / "documents" / result["document"]).is_file())
+        self.assertTrue((self.root / "cache" / "documents" / result["document"]).is_file())
+        self.assertFalse((self.root / "documents").exists())
 
     def test_document_failures_keep_their_census_dispositions(self) -> None:
         publisher = {"repository": "example/api", "commit": "c" * 40,
@@ -1265,7 +1381,8 @@ components:
             with self.subTest(label=label):
                 self.server.state["raw_document"] = document
                 acquirer = SEARCH.Acquirer(
-                    self.root / label, github_url=self.url, sourcegraph_url=self.url,
+                    self.root / label, cache=self.root / f"{label}-cache",
+                    github_url=self.url, sourcegraph_url=self.url,
                     raw_github_url=self.url, code_search_spacing_s=0.01,
                     sourcegraph_spacing_s=0.01,
                 )
@@ -1372,7 +1489,7 @@ components:
         """Breadth first: a count per query now, partitions and pages on resume."""
         self.server.state["partition"] = True
         breadth = SEARCH.Acquirer(
-            self.root, github_url=self.url, sourcegraph_url=self.url,
+            self.root, cache=self.root / "cache", github_url=self.url, sourcegraph_url=self.url,
             raw_github_url=self.url, code_search_spacing_s=0.01,
             sourcegraph_spacing_s=0.01, first_page_only=True,
         )
@@ -1392,7 +1509,7 @@ components:
     def test_first_page_only_stops_a_small_query_after_page_one(self) -> None:
         self.server.state["early_empty"] = True
         breadth = SEARCH.Acquirer(
-            self.root, github_url=self.url, sourcegraph_url=self.url,
+            self.root, cache=self.root / "cache", github_url=self.url, sourcegraph_url=self.url,
             raw_github_url=self.url, code_search_spacing_s=0.01,
             sourcegraph_spacing_s=0.01, first_page_only=True,
         )
@@ -1422,7 +1539,7 @@ components:
         """An empty page before the reported count splits the window by size."""
         self.server.state["early_empty"] = True
         split = SEARCH.Acquirer(
-            self.root, github_url=self.url, sourcegraph_url=self.url, raw_github_url=self.url,
+            self.root, cache=self.root / "cache", github_url=self.url, sourcegraph_url=self.url, raw_github_url=self.url,
             code_search_spacing_s=0.01, sourcegraph_spacing_s=0.01,
             split_truncated_floor=100001, split_budget=1,
         )
@@ -1445,7 +1562,7 @@ components:
                 self.assertIsInstance(row[field], int, (row["outcome"], field))
         self.assertLessEqual(set(SEARCH.INDEX_LIMIT_FIELDS), set(SEARCH.ANSWER_OUTCOMES))
         spent = SEARCH.Acquirer(
-            self.root / "spent", github_url=self.url, sourcegraph_url=self.url, raw_github_url=self.url,
+            self.root / "spent", cache=self.root / "spent-cache", github_url=self.url, sourcegraph_url=self.url, raw_github_url=self.url,
             code_search_spacing_s=0.01, sourcegraph_spacing_s=0.01,
             split_truncated_floor=1, split_budget=0,
         )
@@ -2157,7 +2274,7 @@ components:
             probe.bind(("127.0.0.1", 0))
             closed_port = probe.getsockname()[1]
         unreachable = SEARCH.Acquirer(
-            self.root / "unreachable", github_url=self.url, sourcegraph_url=self.url,
+            self.root / "unreachable", cache=self.root / "unreachable-cache", github_url=self.url, sourcegraph_url=self.url,
             raw_github_url=f"http://127.0.0.1:{closed_port}",
         )
         failed = unreachable.github_document("closed-object", item, route="raw")

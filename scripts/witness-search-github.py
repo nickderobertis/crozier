@@ -101,6 +101,11 @@ CALL_LEDGERS = (CALLS_FILE, RAW_CALLS)
 WAIT_LEDGERS = (WAITS_FILE, INDEX_PACING_WAITS, RAW_WAITS)
 # Every call and wait log an acquisition writes into its evidence directory.
 GUARD_LOGS = (*CALL_LEDGERS, *WAIT_LEDGERS)
+# Fetched documents are disposable, content-addressed bytes, so by default they
+# live in this gitignored cache rather than beside the tracked evidence ledgers.
+# A ledger row pins its document by SHA-256 and its source by repository, path
+# and commit; `Acquirer.resolve` reacquires bytes the cache lacks from there.
+DEFAULT_CACHE = REPO / ".local" / "witness-search-cache"
 DOCUMENT_NAMES = (
     "openapi.yaml",
     "openapi.yml",
@@ -120,6 +125,18 @@ class MissingScope(ValueError):
 
 class EvidenceError(ValueError):
     """A recorded acquisition cannot be resumed until its ledger is repaired."""
+
+
+class DigestRefused(EvidenceError):
+    """Bytes offered for a ledger row do not hash to the SHA-256 the row pins."""
+
+
+def document_name(data: bytes) -> str:
+    """A fetched document's cache file name: its SHA-256 and a suffix for its syntax."""
+    digest = hashlib.sha256(data).hexdigest()
+    if data.decode("utf-8-sig", "replace").lstrip().startswith(("{", "[")):
+        return digest + ".json"
+    return digest + ".yaml"
 
 
 def load(name: str, path: Path) -> Any:
@@ -397,7 +414,7 @@ class Acquirer:
         self.split_truncated_floor = split_truncated_floor
         self.split_budget = split_budget
         evidence.mkdir(parents=True, exist_ok=True)
-        self.cache = cache or evidence
+        self.cache = cache or DEFAULT_CACHE
         self.cache.mkdir(parents=True, exist_ok=True)
         self.github_url = checked_service_url(
             github_url or github_api_url(), "CROZIER_GITHUB_API_URL", "api.github.com"
@@ -748,11 +765,11 @@ class Acquirer:
 
         A key joins the search after the trees were walked; the walk read each
         document once, for the keys it had then. A readable document whose row
-        lacks a key is read again from the cache at its recorded digest, and a
-        row carrying every key's count is appended, the recorded counts kept
-        as they were. Without cached bytes, or where the census no longer reads
-        them, nothing is written, and the index reads the uncounted key as
-        outstanding for that document.
+        lacks a key is read again at its recorded digest, through `resolve`, and
+        a row carrying every key's count is appended, the recorded counts kept
+        as they were. Where its source no longer serves it, or the census no
+        longer reads it, nothing is written, and the index reads the uncounted
+        key as outstanding for that document.
         """
         counts = row.get("selector_counts")
         if row.get("status") != "readable" or not isinstance(counts, dict):
@@ -761,14 +778,8 @@ class Acquirer:
         digest = row.get("sha256")
         if not missing or not isinstance(digest, str):
             return
-        cached = [
-            path for suffix in (".json", ".yaml")
-            if (path := self.cache / "documents" / (digest + suffix)).is_file()
-        ]
-        if not cached:
-            return
-        data = cached[0].read_bytes()
-        if hashlib.sha256(data).hexdigest() != digest:
+        data = self.resolve(row, "publisher-trees")
+        if data is None:
             return
         result = self.census_tree_document(data, missing)
         if result.get("status") != "readable":
@@ -788,12 +799,7 @@ class Acquirer:
         self, data: bytes, keys: dict[str, dict[str, str]]
     ) -> dict[str, Any]:
         digest = hashlib.sha256(data).hexdigest()
-        suffix = (
-            ".json"
-            if data.decode("utf-8-sig", "replace").lstrip().startswith(("{", "["))
-            else ".yaml"
-        )
-        path = self.cache / "documents" / (digest + suffix)
+        path = self.cache / "documents" / document_name(data)
         path.parent.mkdir(exist_ok=True)
         if not path.exists():
             path.write_bytes(data)
@@ -1535,14 +1541,9 @@ class Acquirer:
     ) -> dict[str, Any]:
         """Cache bytes and record the selector engine's declaration verdict."""
         digest = hashlib.sha256(data).hexdigest()
-        suffix = (
-            ".json"
-            if data.decode("utf-8-sig", "replace").lstrip().startswith(("{", "["))
-            else ".yaml"
-        )
         cache = self.cache / "documents"
         cache.mkdir(exist_ok=True)
-        path = cache / (digest + suffix)
+        path = cache / document_name(data)
         if not path.exists():
             path.write_bytes(data)
         record = {
@@ -1582,6 +1583,95 @@ class Acquirer:
             )
         self.write("candidates.jsonl", record)
         return record
+
+    def resolve(self, row: dict[str, Any], key: str) -> bytes | None:
+        """The bytes a ledger row pins: from the cache, or reacquired at its recorded source.
+
+        A cached copy is used only if it hashes to the row's `sha256`. Without
+        one, the document is requested again at the row's commit through the
+        route that first read it, and its bytes are cached and used only if they
+        hash to that digest too. Either mismatch is refused with `DigestRefused`.
+        None means the source answered something other than the document, as an
+        acquisition records that as a failure rather than a reading.
+        """
+        digest = row.get("sha256")
+        subject = f"{row.get('repository')}/{row.get('path')}@{row.get('commit')}"
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise EvidenceError(f"the ledger row for {subject} pins no sha256")
+        documents = self.cache / "documents"
+        for name in (digest + ".json", digest + ".yaml"):
+            if (path := documents / name).is_file():
+                data = path.read_bytes()
+                if hashlib.sha256(data).hexdigest() != digest:
+                    raise DigestRefused(
+                        f"{path} does not hash to the sha256 {digest} the ledger pins for {subject}; "
+                        "delete it so the document is reacquired at its commit"
+                    )
+                return data
+        data = self.reacquire(row, key)
+        if data is None:
+            return None
+        served = hashlib.sha256(data).hexdigest()
+        if served != digest:
+            raise DigestRefused(
+                f"{subject} served sha256 {served}, not the {digest} the ledger pins; "
+                "the recorded source no longer holds the recorded document, so its reading cannot be repeated"
+            )
+        documents.mkdir(parents=True, exist_ok=True)
+        (documents / document_name(data)).write_bytes(data)
+        return data
+
+    def reacquire(self, row: dict[str, Any], key: str) -> bytes | None:
+        """Request a ledger row's document again at the commit it records, by its route."""
+        repository = row.get("served_by") or row.get("repository")
+        path = row.get("path")
+        commit = row.get("commit")
+        if (
+            not isinstance(repository, str)
+            or not isinstance(path, str)
+            or not isinstance(commit, str)
+            or not re.fullmatch(r"[0-9a-f]{40}", commit)
+        ):
+            raise EvidenceError(
+                f"the ledger row for {repository}/{path}@{commit} records no repository, path "
+                "and commit SHA to reacquire its document at"
+            )
+        subject = f"{repository}/{path}@{commit}"
+        route = row.get("acquisition_route")
+        if route == "pinned-raw-github":
+            url = (
+                self.raw_github_url
+                + "/"
+                + urllib.parse.quote(repository.removeprefix("github.com/"), safe="/")
+                + "/"
+                + commit
+                + "/"
+                + urllib.parse.quote(path, safe="/")
+            )
+            status, data = self.raw_github_get(url, key, subject)
+        elif route == "sourcegraph-paced":
+            url = (
+                self.sourcegraph_url
+                + "/"
+                + urllib.parse.quote(repository, safe="/")
+                + "/-/raw/"
+                + urllib.parse.quote(path, safe="/")
+                + "?"
+                + urllib.parse.urlencode({"rev": commit})
+            )
+            status, data = self.sourcegraph_get(url, key, subject)
+        elif route is None and row.get("source") == "github-code-search":
+            status, data, _ = self.github_contents(
+                f"/repos/{urllib.parse.quote(repository, safe='/')}/contents/"
+                f"{urllib.parse.quote(path, safe='/')}?ref={commit}"
+            )
+        else:
+            raise EvidenceError(
+                f"the ledger row for {subject} records no acquisition route to reacquire its document by"
+            )
+        if status in (403, 429):
+            raise SearchStopped(f"reacquiring {subject} was refused: HTTP {status}")
+        return data if status == 200 else None
 
     def cached(self, fetched: dict[str, Any]) -> bool:
         """Whether a ledger row's document is in the cache, holding the bytes it pinned."""
@@ -1631,7 +1721,11 @@ class Acquirer:
 def _main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence", type=Path, required=True)
-    parser.add_argument("--cache", type=Path)
+    parser.add_argument(
+        "--cache",
+        type=Path,
+        help=f"where fetched documents are kept as documents/<sha256>.<suffix>; defaults to the gitignored {DEFAULT_CACHE.relative_to(REPO)}",
+    )
     parser.add_argument("--regions", type=Path, default=REPO / "docs/openapi-surface")
     parser.add_argument("--derive-only", action="store_true")
     parser.add_argument("--publisher-file", type=Path)
@@ -1977,6 +2071,9 @@ def main() -> int:
             f"witness-search-github: filesystem error: {error}; make --evidence and --cache writable, then rerun",
             file=sys.stderr,
         )
+        return 1
+    except DigestRefused as error:
+        print(f"witness-search-github: refused: {error}", file=sys.stderr)
         return 1
     except (EvidenceError, KeyError, TypeError, AttributeError, ValueError) as error:
         print(

@@ -12,7 +12,8 @@ Two stages, each appending to a query or walk source's own ledger
 
 `full-yaml` reads every candidate whose latest ledger row is a `parse-failure`
 of the census's standard-library loader again, from its cached copy (verified
-against the digest the ledger pins), with the full YAML 1.2 parser the
+against the digest the ledger pins, and reacquired at its recorded commit when no
+cache holds it), with the full YAML 1.2 parser the
 golden-reach arm search pins, and where its strict construction refuses one (a
 duplicate key, an application tag) with that parser relaxed on those two rules
 alone. What either reading reads is censused by the census's own selector engine
@@ -250,6 +251,18 @@ def uncounted(source: str, row: dict[str, Any], wanted: set[str]) -> bool:
             and bool(wanted - set(row.get("selector_counts") or {})))
 
 
+def service_acquirer(evidence: Path, cache: Path) -> Any:
+    """An acquirer honouring the acquisition CLI's service overrides, so an offline test drives it locally."""
+    return GITHUB.Acquirer(
+        evidence, cache=cache,
+        sourcegraph_url=GITHUB.checked_service_url(
+            os.environ.get("CROZIER_SOURCEGRAPH_URL", GITHUB.SOURCEGRAPH_URL), "CROZIER_SOURCEGRAPH_URL",
+            "sourcegraph.com"),
+        raw_github_url=GITHUB.checked_service_url(
+            os.environ.get("CROZIER_RAW_GITHUB_URL", GITHUB.RAW_GITHUB_URL), "CROZIER_RAW_GITHUB_URL",
+            "raw.githubusercontent.com"))
+
+
 def full_yaml(args: argparse.Namespace) -> int:
     evidence = args.evidence_root / f"witness-search-{args.source}"
     keys = INDEX.read_keys(evidence)
@@ -264,14 +277,27 @@ def full_yaml(args: argparse.Namespace) -> int:
         if wanted and args.source != "github-publisher-trees" and row["key"] not in wanted:
             continue
         pending.append((row, row["sha256"]))
+    roots = args.cache or [GITHUB.DEFAULT_CACHE]
+    acquirer = None
     copies: dict[str, Path] = {}
-    for _, digest in pending:
+    for row, digest in pending:
         if digest in copies:
             continue
-        local = find_copy(digest, args.cache)
+        local = find_copy(digest, roots)
         if local is None:
-            fail(f"no cached copy of sha256 {digest} under {[str(r) for r in args.cache]}; "
-                 "pass the cache it was acquired into with --cache")
+            # No cache holds it: reacquire it at its recorded commit into the first.
+            acquirer = acquirer or service_acquirer(evidence, roots[0])
+            try:
+                acquirer.resolve(row, row.get("key", "publisher-trees"))
+            except GITHUB.DigestRefused as error:
+                fail(f"refused: {error}")
+            except (GITHUB.EvidenceError, GITHUB.SearchStopped, GITHUB.SecondaryLimit, OSError) as error:
+                fail(f"no cached copy of sha256 {digest} under {[str(r) for r in roots]}, and it cannot be "
+                     f"reacquired: {error}; pass the cache it was acquired into with --cache")
+            local = find_copy(digest, roots)
+            if local is None:
+                fail(f"no cached copy of sha256 {digest} under {[str(r) for r in roots]}, and its recorded "
+                     "source no longer serves it; pass the cache it was acquired into with --cache")
         if hashlib.sha256(local.read_bytes()).hexdigest() != digest:
             fail(f"{local} does not hash to the pinned sha256 {digest}; re-acquire it at its commit")
         copies[digest] = local
@@ -367,16 +393,7 @@ def reacquire_head(args: argparse.Namespace) -> int:
                and (not wanted or row["key"] in wanted)]
     # A row an earlier head request superseded is re-requested at the commit it pinned.
     pending = [{**row, "commit": row.get("supersedes") or row["commit"]} for row in pending]
-    # The same service overrides the acquisition CLI honours, so an offline test
-    # drives this stage against a loopback server.
-    acquirer = GITHUB.Acquirer(
-        evidence, cache=args.cache_dir,
-        sourcegraph_url=GITHUB.checked_service_url(
-            os.environ.get("CROZIER_SOURCEGRAPH_URL", GITHUB.SOURCEGRAPH_URL), "CROZIER_SOURCEGRAPH_URL",
-            "sourcegraph.com"),
-        raw_github_url=GITHUB.checked_service_url(
-            os.environ.get("CROZIER_RAW_GITHUB_URL", GITHUB.RAW_GITHUB_URL), "CROZIER_RAW_GITHUB_URL",
-            "raw.githubusercontent.com"))
+    acquirer = service_acquirer(evidence, args.cache_dir)
     heads: dict[str, tuple[int, str, str]] = {}
     tally: dict[str, int] = {}
     for row in pending:
@@ -533,8 +550,10 @@ def main() -> int:
     stages = parser.add_subparsers(dest="stage", required=True)
     full = stages.add_parser("full-yaml", help="census each parse failure again through the full YAML parser")
     full.add_argument("--source", choices=INDEX.SOURCES, required=True)
-    full.add_argument("--cache", type=Path, action="append", required=True,
-                      help="an acquisition cache holding documents/<sha256>.<suffix>; repeatable")
+    full.add_argument("--cache", type=Path, action="append",
+                      help="an acquisition cache holding documents/<sha256>.<suffix>; repeatable; defaults to "
+                           f"the gitignored {GITHUB.DEFAULT_CACHE.relative_to(REPO)}, and a document no cache "
+                           "holds is reacquired into the first at its recorded commit")
     full.add_argument("--key", action="append", default=[])
     full.add_argument("--jobs", type=int, default=4)
     full.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_S)

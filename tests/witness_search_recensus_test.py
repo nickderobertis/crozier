@@ -7,6 +7,8 @@ a temporary cache: one only the full YAML parser reads, one only its lenient
 reading reads, one no reading reads, one that is YAML but no OpenAPI
 description, and one that names Swagger 2.0. Each ledger row it appends, and the `records.tsv` row
 `witness-search-github-index.py` derives from it, says what was read and how.
+A parse failure no cache holds is read again at its recorded commit from a
+loopback Sourcegraph, and refused where what it serves is not the pinned digest.
 
 `reacquire-head` against a loopback server standing in for api.github.com,
 raw.githubusercontent.com and Sourcegraph: a file the head still holds, a
@@ -328,6 +330,45 @@ class FullYamlTest(unittest.TestCase):
                         "--cache", str(Path(tmp) / "empty"), "--jobs", "0")
             self.assertEqual(2, bound.returncode)
             self.assertIn("--jobs and --timeout must be positive", bound.stderr)
+
+    def test_a_copy_no_cache_holds_is_reacquired_at_its_commit_and_refused_if_it_differs(self) -> None:
+        """A parse failure whose bytes no cache holds is read from its recorded source, verified first."""
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server.paths = []
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        env = {"CROZIER_SOURCEGRAPH_URL": f"http://127.0.0.1:{server.server_port}"}
+        digest = hashlib.sha256(DECLARER).hexdigest()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-sourcegraph"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            row = {"source": "sourcegraph", "key": KEY, "selector": SELECTOR,
+                   "repository": "github.com/example/mirrored", "path": "openapi.yaml", "commit": PINNED,
+                   "acquisition_route": "sourcegraph-paced", "sha256": digest, "document": f"{digest}.yaml",
+                   "disposition": "parse-failure", "diagnostic": "the stdlib loader refused it"}
+            ledger = evidence / "candidates.jsonl"
+            ledger.write_text(json.dumps({**row, "repository": "github.com/example/tampered"}) + "\n",
+                              encoding="utf-8")
+            refused = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
+                          "--cache", str(cache), env=env)
+            self.assertEqual(1, refused.returncode)
+            self.assertIn(f"refused: github.com/example/tampered/openapi.yaml@{PINNED} served sha256 "
+                          f"{hashlib.sha256(DUPLICATE).hexdigest()}, not the {digest} the ledger pins",
+                          refused.stderr)
+            self.assertEqual(1, len(ledger.read_text(encoding="utf-8").splitlines()))
+            self.assertEqual([], list((cache / "documents").glob("*")) if (cache / "documents").is_dir() else [])
+
+            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
+                            "--cache", str(cache), env=env)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertIn("1 parse-failure row(s) over 1 document(s) read again: 1 declares", completed.stdout)
+            self.assertEqual([f"/github.com/example/tampered/-/raw/openapi.yaml?rev={PINNED}",
+                              f"/github.com/example/mirrored/-/raw/openapi.yaml?rev={PINNED}"], server.paths)
+            self.assertEqual(DECLARER, (cache / "documents" / f"{digest}.yaml").read_bytes())
 
     def test_a_copy_that_does_not_hash_to_its_pin_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
