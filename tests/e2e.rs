@@ -7097,7 +7097,7 @@ const HUATUO_SERVER: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// HuaTuo node API v1 as its repository authors it — corpus row 308, the
+/// HuaTuo node API v1 as its repository authors it — corpus row 309, the
 /// two-file tree row 178 is bundled from. Its `BearerAuth` names the scheme
 /// `../components.yaml` declares, so its bearer credential witnesses a security
 /// scheme resolved from another document.
