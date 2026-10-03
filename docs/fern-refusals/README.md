@@ -176,7 +176,7 @@ refuses. Both keep Fern's logs under
   never parsed. With the referenced document placed beside the probe,
   `fern check` resolves it and passes, so the class is a reference Fern cannot
   follow, not the scheme. `fern generate` then keeps the referenced scheme's
-  credential, and crozier resolves it the same way: corpus row 307
+  credential, and crozier resolves it the same way: corpus row 308
   (`huatuo-node-tree`) is a real tree whose `BearerAuth` names
   `../components.yaml`, and its golden byte-matches (issue #351).
 - **The generator's own crashes** are classes too, measured in `fern generate`
