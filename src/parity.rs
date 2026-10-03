@@ -13,8 +13,11 @@
 //! - `.py`: Python comments are stripped ([`crate::strip_python_comments`]);
 //! - `__init__.py`: additionally, leading blank lines are dropped and the imports
 //!   are sorted with `ruff check --select I --fix` ([`normalize_init`]);
-//! - `metadata.json` (the reference's `.fern/metadata.json`): the
-//!   `generatorConfig` block is dropped ([`normalize_metadata`]);
+//! - exactly `.fern/metadata.json` (Fern's own provenance record, at the SDK
+//!   root — [`FERN_METADATA`]): the `generatorConfig` block is dropped
+//!   ([`normalize_metadata`]). Any other file whose name ends in
+//!   `metadata.json` (say `types/user_metadata.json`) is SDK content, so it
+//!   gets no such rule;
 //! - anything else is compared as-is.
 //!
 //! The tree rules ([`tree_differences`]): the comparison is bidirectional (a file
@@ -36,6 +39,11 @@ use crate::strip_python_comments;
 /// The provenance record a committed golden tree carries beside the reference
 /// output. It is not reference output, so neither side's walk includes it.
 pub const PROVENANCE_FILE: &str = ".crozier-fern-golden.json";
+
+/// The SDK-relative path of Fern's own metadata record — the one file
+/// [`normalize_metadata`] applies to. `rel` is always `/`-separated (see
+/// [`walk_files`]), so this exact match holds on Windows too.
+pub const FERN_METADATA: &str = ".fern/metadata.json";
 
 /// Normalize the SDK-identity headers out of the comparison. crozier brands its
 /// own `X-Crozier-*` headers rather than impersonating the reference, and —
@@ -182,7 +190,7 @@ pub fn normalized_pair(
             strip_python_comments(&crozier),
             strip_python_comments(&reference),
         ))
-    } else if rel.ends_with("metadata.json") {
+    } else if rel == FERN_METADATA {
         Ok((normalize_metadata(&crozier), normalize_metadata(&reference)))
     } else {
         Ok((crozier, reference))
@@ -533,6 +541,43 @@ mod tests {
         assert_ne!(c, r);
         assert!(files_match("README.md", "same\n", "same\n").unwrap());
         assert!(!files_match("a.py", "x = 1\n", "x = 2\n").unwrap());
+    }
+
+    /// Whether `rel` matches when the two sides differ only in their
+    /// `generatorConfig` block.
+    fn matches_despite_generator_config(rel: &str) -> bool {
+        let reference = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 1}\n}";
+        let crozier = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 2}\n}";
+        files_match(rel, crozier, reference).unwrap()
+    }
+
+    #[test]
+    fn fern_metadata_generator_config_is_normalized() {
+        assert!(matches_despite_generator_config(".fern/metadata.json"));
+    }
+
+    // Any other `…metadata.json` is SDK content: its `generatorConfig` is
+    // compared as written, whatever its name or depth.
+    #[test]
+    fn user_metadata_json_generator_config_is_compared() {
+        assert!(!matches_despite_generator_config(
+            "types/user_metadata.json"
+        ));
+    }
+
+    #[test]
+    fn nested_metadata_json_generator_config_is_compared() {
+        assert!(!matches_despite_generator_config("foo/metadata.json"));
+    }
+
+    #[test]
+    fn root_metadata_json_generator_config_is_compared() {
+        assert!(!matches_despite_generator_config("metadata.json"));
+    }
+
+    #[test]
+    fn nested_fern_metadata_generator_config_is_compared() {
+        assert!(!matches_despite_generator_config("foo/.fern/metadata.json"));
     }
 
     #[test]
