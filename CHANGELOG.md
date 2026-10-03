@@ -6,6 +6,16 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.94](https://github.com/nickderobertis/crozier/compare/v0.0.93...v0.0.94) - 2026-10-03
+
+### Fixed
+
+- *(naming)* match Fern on type-name hints, construct, tag-only ids ([#386](https://github.com/nickderobertis/crozier/pull/386))
+- *(parity)* normalize only .fern/metadata.json in SDK comparisons ([#385](https://github.com/nickderobertis/crozier/pull/385))
+- *(python)* alias a sub-client import that collides with the client class name ([#387](https://github.com/nickderobertis/crozier/pull/387))
+- *(fixtures)* hold the Nexmo witness to the publisher-grant screen ([#384](https://github.com/nickderobertis/crozier/pull/384))
+- *(openapi)* match Fern on defs and unresolved property pointers ([#380](https://github.com/nickderobertis/crozier/pull/380))
+
 ## [0.0.93](https://github.com/nickderobertis/crozier/compare/v0.0.92...v0.0.93) - 2026-10-02
 
 ### Added
