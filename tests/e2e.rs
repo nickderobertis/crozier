@@ -2471,9 +2471,9 @@ fn handwritten_documents(
 }
 
 /// The gate's name keeps it out of the golden-only tier, which selects every
-/// `*matches_fern_output*` test in `scripts/fixtures-coverage.sh` and
-/// `scripts/golden-reach.py`: a hand-written fixture never counts as a corpus
-/// golden.
+/// `*matches_fern_output*` test in `scripts/fixtures-coverage.sh` and in
+/// `scripts/openapi-surface-census.py`, whose selector `scripts/golden-reach.py`
+/// imports: a hand-written fixture never counts as a corpus golden.
 #[test]
 fn the_handwritten_gate_is_outside_the_golden_only_tier() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -2483,9 +2483,10 @@ fn the_handwritten_gate_is_outside_the_golden_only_tier() {
             "test(/matches_fern_output/)",
         ),
         (
-            "scripts/golden-reach.py",
-            "re.compile(r\"matches_fern_output\")",
+            "scripts/openapi-surface-census.py",
+            "GOLDEN_TEST = re.compile(r\"matches_fern_output\")",
         ),
+        ("scripts/golden-reach.py", "_census_module().GOLDEN_TEST"),
     ] {
         let text = std::fs::read_to_string(root.join(script)).expect("tier selector script");
         assert!(

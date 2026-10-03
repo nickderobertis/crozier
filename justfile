@@ -498,6 +498,15 @@ golden-reach:
 golden-reach-report:
     python3 scripts/golden-reach.py report --write
 
+# Which generated files each `golden` row resting only on a residual golden
+# (komga, short-io, webflow-v2) lands in, split by whether that golden test
+# byte-compares them: renders the witness with the feature perturbed and diffs
+# crozier's two outputs. Restated in docs/openapi-surface-coverage.md. Outside
+# `check`: it needs a built crozier and ruff.
+residual-attribution:
+    cargo build --locked -q
+    python3 scripts/residual-attribution.py
+
 # Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md):
 # how many regions of its arm an instrumented crozier run over that fixture's
 # openapi.yml alone executes, one run per fixture as `golden-reach` scopes one

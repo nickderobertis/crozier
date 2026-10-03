@@ -72,9 +72,12 @@ def sample_document(url: str, sha256: str) -> Path:
 
 
 # Sampled forms the stdlib loader now reads although the sample pinned them as
-# refused: a quote inside a flow plain scalar (dashy's `page's config`). Both
-# loaders must agree on these rather than the stdlib loader refusing them.
-STDLIB_READS = {"flow-collection"}
+# refused: a quote inside a flow plain scalar (dashy's `page's config`), and
+# explicit `? ` mapping keys (Adyen's long example names, and the pinned Stripe
+# description's three long component names, whose declarations the stdlib walk
+# now counts as the full loader always did). Both loaders must agree on these
+# rather than the stdlib loader refusing them.
+STDLIB_READS = {"flow-collection", "explicit-key"}
 
 
 class FallbackAgreementTests(unittest.TestCase):
@@ -114,7 +117,9 @@ class FallbackAgreementTests(unittest.TestCase):
                     document, loader = reading
                     self.assertTrue(loader.startswith(search.YAML_LOADER), loader)
                 counts = search.CENSUS.census_document(document, root_path=path)
-                declared = dict(pair.split("=") for pair in row["declares"].split(";"))
+                # A selector may itself carry `=` (`schema.type:primary=array`): the
+                # count is what follows the last one.
+                declared = dict(pair.rsplit("=", 1) for pair in row["declares"].split(";"))
                 self.assertEqual({selector: int(n) for selector, n in declared.items()},
                                  {selector: counts.get(selector, 0) for selector in declared})
 

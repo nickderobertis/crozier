@@ -33,6 +33,8 @@ census's YAML fallback reader to the stdlib loader:
 
   * Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf
     yaml/BalancePlatformNegativeBalanceCompensationWarningNotification-v1.yaml (MIT)
+  * stripe/openapi@58e06a3214ae1574600fba64d40b770e5da6d505
+    latest/openapi.spec3.yaml (MIT)
   * PaloAltoNetworks/pan.dev@4e989cdd4bbda669dc73c0d3f5db90bb4989bee3
     openapi-specs/dlp/ReportsAPI.yaml (MIT)
   * lissy93/dashy@6d7a394da71d083e719e32f3e365fa99fec320c2

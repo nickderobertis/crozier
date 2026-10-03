@@ -9,7 +9,7 @@ crozier vouches for — the gate stays green whatever crozier does with it — s
 knowing the list is the first step to closing it
 (`docs/openapi-surface-coverage.md`).
 
-Three rules make the number honest; none of them a `grep` obeys.
+Four rules make the number honest; none of them a `grep` obeys.
 
 * **Source documents only, never generated output.** A specification is what
   *declares* a feature; the emitted Python is not. A census that read an
@@ -27,10 +27,18 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 206 of the 239 registered sources live in `corpus-sources/` (a split
+  and 189 of the 222 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
+* **A registered source is one whose Fern golden crozier byte-matches.** A
+  `CORPUS.md` row is acquisition: Fern can drop the document after it is
+  committed (`axesso.de`), and a witness can be acquired as evidence only. The
+  golden population is read off the golden tests of `tests/e2e.rs`
+  (`golden_registrations`), and each member's document path is resolved from
+  the acquisition manifest separately (`acquisition_sources`). A golden test
+  that declares a measured `unmatched` residual byte-compares every other file
+  of its golden; the residual is part of its registration.
 
 The selector grammar, the region boundaries and how a census result becomes a
 classified row are `docs/openapi-surface-coverage.md`; they are not restated
@@ -66,7 +74,8 @@ import corpus_remote_ref_pins as corpus_pins
 # library — the gate installs no Python packages, so PyYAML is not available.
 # The loader below therefore reads the block-YAML subset OpenAPI documents are
 # written in (mappings, sequences, the three scalar styles, block scalars,
-# anchors/aliases/merge keys, flow collections) and REFUSES anything else by
+# anchors/aliases/merge keys, flow collections, explicit `? ` keys) and REFUSES
+# anything else by
 # name and line. Refusing is the point: a census built on a loader that guessed
 # would be wrong quietly, which is the one failure mode the instrument cannot
 # have.
@@ -182,8 +191,8 @@ class _YamlReader:
             return None
         if line.text == "-" or line.text.startswith("- "):
             return self.parse_sequence(line.indent)
-        if line.text == "?" or line.text.startswith("? "):
-            self.fail(line.index, "explicit `? ` mapping keys are not supported")
+        if self.explicit(line.text):
+            return self.parse_mapping(line.indent)
         if line.text == ":" or line.text.startswith(": "):
             self.fail(line.index, "an empty mapping key is not supported")
         if self.split_key(line.text) is None:
@@ -206,15 +215,18 @@ class _YamlReader:
                 self.fail(line.index, "unexpected indentation inside a block mapping")
             if line.text == "-" or line.text.startswith("- "):
                 self.fail(line.index, "a sequence item where a mapping key was expected")
-            if line.text == ":" or line.text.startswith(": "):
-                self.fail(line.index, "an empty mapping key is not supported")
-            split = self.split_key(line.text)
-            if split is None:
-                self.fail(line.index, f"expected a `key: value` mapping entry, got {line.text!r}")
-            key_text, rest = split
-            key = self.parse_key(line, key_text)
-            self.pos = line.index + 1
-            value = self.parse_value(rest, indent, line.index)
+            if self.explicit(line.text):
+                key, value = self.explicit_entry(line, indent)
+            else:
+                if line.text == ":" or line.text.startswith(": "):
+                    self.fail(line.index, "an empty mapping key is not supported")
+                split = self.split_key(line.text)
+                if split is None:
+                    self.fail(line.index, f"expected a `key: value` mapping entry, got {line.text!r}")
+                key_text, rest = split
+                key = self.parse_key(line, key_text)
+                self.pos = line.index + 1
+                value = self.parse_value(rest, indent, line.index)
             if key == "<<":
                 merges.append(value)
             else:
@@ -243,7 +255,10 @@ class _YamlReader:
                 self.pos = line.index + 1
                 items.append(self.parse_block(indent + 1))
                 continue
-            if rest.startswith("- ") or rest == "-" or self.split_key(rest) is not None:
+            if (
+                rest.startswith("- ") or rest == "-" or self.explicit(rest)
+                or self.split_key(rest) is not None
+            ):
                 # A nested collection opening on the dash line: blank the dash so
                 # the item's own lines all sit at one indentation, then parse it
                 # as an ordinary block. Rewriting the line (rather than threading
@@ -257,6 +272,69 @@ class _YamlReader:
             self.pos = line.index + 1
             items.append(self.parse_value(rest, indent, line.index))
         return items
+
+    @staticmethod
+    def explicit(text: str) -> bool:
+        """Whether a line opens an explicit `? ` mapping entry."""
+        return text == "?" or text.startswith("? ")
+
+    def explicit_entry(self, line: _Line, indent: int) -> tuple[Any, Any]:
+        """One `? key` / `: value` entry of the block mapping at `indent`.
+
+        Read the way ruamel.yaml 0.19.1 — the full YAML 1.2 parser
+        `scripts/golden-reach-search.py` pins as this loader's fallback — and
+        PyYAML's safe loader read it: the key is any node, written on the `?`
+        line, compact on it (`? - a`), or indented under it; the value is the
+        node after a `:` at the entry's own indentation, and an entry with no
+        `:` line has a null value. A sequence key becomes a tuple, as the pinned
+        parser makes it (PyYAML refuses one); a mapping key is refused by both
+        and so here, because no object model a census walks holds it.
+        """
+        key = self.indicated_node(line, indent)
+        following = self.peek()
+        value = None
+        if (
+            following is not None and following.indent == indent
+            and (following.text == ":" or following.text.startswith(": "))
+        ):
+            value = self.indicated_node(following, indent)
+        return self.hashable_key(line, key), value
+
+    def indicated_node(self, line: _Line, indent: int) -> Any:
+        """The node after a one-character block indicator (`?` or `:`) on `line`."""
+        rest = line.text[1:].lstrip(" ")
+        if rest and (
+            rest.startswith("- ") or rest == "-" or self.explicit(rest)
+            or self.split_key(rest) is not None
+        ):
+            # A compact collection opening on the indicator line: blank the
+            # indicator, as `parse_sequence` blanks a dash, so the collection's
+            # own lines sit at one indentation and keep their source indices.
+            raw = self.lines[line.index]
+            self.lines[line.index] = raw[: line.indent] + " " + raw[line.indent + 1 :]
+            return self.parse_block(indent + 1)
+        self.pos = line.index + 1
+        if rest == "":
+            following = self.peek()
+            if following is not None and following.indent > indent:
+                return self.parse_block(following.indent)
+            if (
+                following is not None and following.indent == indent
+                and line.text[0] == ":"
+                and (following.text == "-" or following.text.startswith("- "))
+            ):
+                return self.parse_block(indent)  # a value sequence at its key's indentation
+            return None
+        return self.parse_value(rest, indent, line.index)
+
+    def hashable_key(self, line: _Line, key: Any) -> Any:
+        if isinstance(key, list):
+            key = tuple(key)
+        if isinstance(key, dict) or (
+            isinstance(key, tuple) and any(isinstance(item, (dict, list)) for item in key)
+        ):
+            self.fail(line.index, "a mapping or nested collection is used as a mapping key")
+        return key
 
     def split_key(self, text: str) -> tuple[str, str] | None:
         """Split `key: value` into its halves, or None when `text` is not an entry."""
@@ -273,8 +351,6 @@ class _YamlReader:
         return text[: match.start()], text[match.end() :].lstrip(" ")
 
     def parse_key(self, line: _Line, key_text: str) -> Any:
-        if key_text.startswith("? "):
-            self.fail(line.index, "explicit `? ` mapping keys are not supported")
         if key_text.startswith("!"):
             self.fail(line.index, "YAML tags are not supported")
         if key_text[0] in "\"'":
@@ -937,6 +1013,41 @@ PREDICATES = {
     "schema.enum:reserved-member": "one per Schema Object with a string enum member whose normalized visit parameter is reserved and finalize_enum_ident suffixes",
     "schema.enum:normalized-collision": "one per Schema Object with two string enum members that collide after crozier enum identifier normalization",
     "schema.enum:numeric-member": "one per Schema Object with a numeric enum member; string_enum_values does not generate a named member for it",
+    "schema.enum:deburred-member": "one per Schema Object with a string enum member holding a Latin-1 Supplement or Latin Extended-A letter, which enum_identifier's deburr folds to ASCII before naming it",
+    "schema.enum:letter-run-member": "one per Schema Object with a string enum member whose split words hold consecutive single letters, which enum_words joins into one word (u.s. is US)",
+    "schema.enum:alphanumeric-join-member": "one per Schema Object with a string enum member where enum_words joins a word to the one before it: a short letter run after a digits-then-letter word, or a letter-then-digits word after a single letter",
+    "schema.enum:digit-boundary-member": "one per Schema Object with a string enum member whose joined words carry an underscore beside a digit, which enum_words collapses (DB-25 is DB25)",
+    "schema.enum:single-digit-prefix-member": "one per Schema Object with a string enum member whose leading numeric run, as written, is one digit that enum_words spells through numeric_enum_identifier (5G is FIVE_G)",
+    "schema.enum:numeric-small-member": "one per Schema Object with a string enum member whose number enum_words spells through numeric_enum_identifier is below 20, its SMALL-table branch",
+    "schema.enum:numeric-tens-member": "one per Schema Object with a string enum member whose number enum_words spells through numeric_enum_identifier is 20 to 99, its tens branch",
+    "schema.enum:numeric-hundreds-member": "one per Schema Object with a string enum member whose number enum_words spells through numeric_enum_identifier is 100 to 999, its hundreds branch",
+    "schema.enum:numeric-thousands-member": "one per Schema Object with a string enum member whose number enum_words spells through numeric_enum_identifier is 1000 to 9999, its thousands branch",
+    "operation.operationId:digit-leading-method": "one per Operation Object under the Paths Object whose operationId-derived method name, after endpoint_method_name's tag, group, FastAPI-suffix and template transforms, starts with a digit, so sanitize_identifier prefixes it with _; an operation naming its method by extension, or by no id, is not one",
+    "schema.example:date-time-string": "one per Schema Object writing format date-time whose selected example is a string, which value_from_example renders through datetime.datetime.fromisoformat",
+    "schema.example:date-string": "one per Schema Object writing format date whose selected example is a string, which value_from_example renders through datetime.date.fromisoformat",
+    "schema.example:integral-on-number": "one per Schema Object whose primary type is number and whose selected example is a JSON integer, which value_from_example writes with a .0 for the float annotation",
+    "schema.example:fractional-on-integer": "one per Schema Object whose primary type is integer and whose selected example is a JSON fraction, which example_matches_type's integer arm refuses",
+    "schema.example:empty-array": "one per Schema Object whose selected example is an empty array",
+    "schema.example:empty-object": "one per Schema Object whose selected example is an empty object",
+    "schema.example:array-null-element": "one per Schema Object whose selected example is an array holding a null, which value_from_example's list arm replaces with a synthesized element",
+    "schema.example:array-object-element": "one per Schema Object whose selected example is an array holding an object, a nested element value_from_example renders through the item type",
+    "schema.example:temporal-duplicate-element": "one per Schema Object whose items write format date or date-time and whose selected example is an array repeating an element, which value_from_example's list arm de-duplicates",
+    "schema.example:union-ref-sentinel": "one per Schema Object declaring oneOf or anyOf whose selected example is an object holding only $ref, which value_from_example's union arm answers with its list member",
+    "schema.example:missing-required-field": "one per Schema Object with a non-empty properties map whose selected example is an object omitting a property its required list names, which example_matches_type's object arm refuses",
+    "schema.example:undeclared-field": "one per Schema Object with a non-empty properties map whose selected example is an object holding a key that map does not declare, which example_matches_type's object arm refuses",
+    "schema.example:empty-object-member": "one per Schema Object whose selected example is an object one of whose values is an empty object, which selects no argument for an optional model field",
+    "schema.example:empty-array-member": "one per Schema Object whose selected example is an object one of whose values is an empty array, which carries no example value for that field",
+    "schema.example:object-on-map": "one per Schema Object writing additionalProperties as true or a schema, with no non-empty properties map, whose selected example is an object: a Dict the example renders as a dictionary",
+    "schema.example:outside-enum": "one per Schema Object with a string-valued enum whose selected example is a string none of its members is, which example_matches_type's enum arm refuses",
+    "schema.example:on-ref-to-object": "one per Schema Object with a selected example whose $ref resolves, in this document's components.schemas, to a schema declaring a non-empty properties map and no oneOf, anyOf or string-valued enum: the named object example_is_object and named_value_inner take",
+    "schema.example:on-ref-to-enum": "one per Schema Object with a selected example whose $ref resolves in components.schemas to a schema declaring a string-valued enum and no oneOf or anyOf: the named enum",
+    "schema.example:on-ref-to-union": "one per Schema Object with a selected example whose $ref resolves in components.schemas to a schema declaring oneOf or anyOf: the named union",
+    "schema.example:on-ref-to-alias": "one per Schema Object with a selected example whose $ref resolves in components.schemas to a schema declaring none of a non-empty properties map, allOf, oneOf, anyOf or a string-valued enum: the named alias the example arms follow to its target",
+    "schema.properties:optional-example": "one per Schema Object one of whose properties its required list does not name selects an example: the optional field the example arms unwrap first",
+    "parameter.example:non-scalar-query": "one per query Parameter Object declaring an example whose schema, after one local $ref, is neither a string, integer, number or boolean nor an array of one, so build_example_inner does not render the declared example",
+    "mediaType.examples:named-beside-example": "one per request body's selected JSON media type writing both a non-null example and a named example that resolves to a value, so reference.md documents the singular example",
+    "mediaType.examples:named-only": "one per request body's selected JSON media type writing a named example that resolves to a value and no non-null example, so reference.md documents the first named one",
+    "operation.responses:wildcard-binary": "one per Operation Object whose success response, chosen as has_wildcard_binary_response chooses it, serves */* with an inline string schema of format binary: the endpoint mode build_example_inner reads before it renders any parameter example",
     "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
     "securityScheme:$ref": (
         "one per `components.securitySchemes` entry that is a Reference Object rather "
@@ -1994,7 +2105,8 @@ def split_words(text: str) -> list[str]:
 
 
 def to_snake_case(text: str) -> str:
-    """`naming::to_snake_case`: a word after a digit-bearing word joins it."""
+    """`naming::to_snake_case`: a word after a digit-bearing word joins it, and so
+    does a digit-led word carrying a letter (`login_2fa` is `login2fa`)."""
     out = ""
     for word in split_words(text):
         last = out.rsplit("_", 1)[-1]
@@ -2005,7 +2117,8 @@ def to_snake_case(text: str) -> str:
             and _is_digit(last[-1])
             and any(_is_alpha(char) for char in last)
         )
-        if out and not after_digit_word:
+        digit_led_word = bool(word) and _is_digit(word[0]) and any(_is_alpha(char) for char in word)
+        if out and not after_digit_word and not digit_led_word:
             out += "_"
         out += word
     return out
@@ -2157,6 +2270,7 @@ NAMING_PORT_DIGESTS = {
     "deburr_letter": "f5488da97d3f0dde",
     "collapse_digit_boundaries": "24c31560b089ab63",
     "split_words": "225b4ae99e3ce99a",
+    "to_snake_case": "3c9366b3588a08c6",
     "class_name": "c91fec9908234a17",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
 }
@@ -2170,8 +2284,25 @@ _WHOLE_VALUE_ENUM_WORDS = {
 }
 
 
-def enum_identifier(value: str) -> str:
-    """The enum_words path of naming.rs, including its numeric and join rules."""
+def _numeric_range(number: int) -> str:
+    """Which arithmetic branch of `numeric_enum_identifier` spells `number` (0..9999)."""
+    if number < 20:
+        return "numeric-small"
+    if number < 100:
+        return "numeric-tens"
+    return "numeric-hundreds" if number < 1000 else "numeric-thousands"
+
+
+def enum_identifier(value: str, trace: set[str] | None = None) -> str:
+    """The enum_words path of naming.rs, including its numeric and join rules.
+
+    `trace`, when given, collects the branches of `enum_words` and
+    `numeric_enum_identifier` this value takes that no other reading names: the
+    deburr fold, each arithmetic range a spelled number falls in, a one-digit
+    leading run, the two word-joining arms and the digit-boundary collapse. The
+    `schema.enum:` predicates of the same names read it.
+    """
+    trace = set() if trace is None else trace
     folded = "".join(
         _ENUM_DEBURR_EXCEPTIONS[char] if char in _ENUM_DEBURR_EXCEPTIONS else
         unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode()
@@ -2179,6 +2310,8 @@ def enum_identifier(value: str) -> str:
         else char
         for char in value
     )
+    if folded != value:
+        trace.add("deburred")
     uuid_parts = folded.split("-")
     if len(uuid_parts) == 5 and all(
         len(part) == size and all(char in "0123456789abcdefABCDEF" for char in part)
@@ -2214,6 +2347,7 @@ def enum_identifier(value: str) -> str:
     if len(folded) > 1 and folded[0] == "0" and folded.isascii() and folded.isdigit():
         number = int(folded)
         if number <= 9999:
+            trace.add(_numeric_range(number))
             return numeric_enum_name(number)
     spaced = "".join(
         "" if char in "'\u2019" else
@@ -2237,10 +2371,14 @@ def enum_identifier(value: str) -> str:
                 significant = number.lstrip("0") or "0"
                 if int(significant) <= 9999:
                     spelled = numeric_enum_name(int(significant))
+                    trace.add(_numeric_range(int(significant)))
                 elif len(folded.encode()) > digits:
                     spelled = "undefined"
             elif len(number) <= 4 and (len(number) == 1 or number[0] != "0"):
                 spelled = numeric_enum_name(int(number))
+                trace.add(_numeric_range(int(number)))
+            if spelled is not None and spelled != "undefined" and digits == 1:
+                trace.add("single-digit-prefix")
             if spelled is not None:
                 words[0] = spelled + ("_" + first[digits:] if first[digits:] else "")
     merged: list[str] = []
@@ -2249,6 +2387,7 @@ def enum_identifier(value: str) -> str:
         single = len(word) == 1 and word.isascii() and word.isalpha()
         if single and previous_single:
             merged[-1] += word
+            trace.add("letter-run")
         else:
             merged.append(word)
         previous_single = single
@@ -2261,10 +2400,16 @@ def enum_identifier(value: str) -> str:
         letter_digits = len(current) > 1 and current[0].isalpha() and current[1:].isascii() and current[1:].isdigit()
         if short_letters and numeric_letter or single_letter and letter_digits:
             merged[index - 1] += merged.pop(index)
+            trace.add("alphanumeric-join")
         else:
             index += 1
     identifier = "_".join(merged)
-    return identifier if leading_zero else _collapse_enum_digit_boundaries(identifier)
+    if leading_zero:
+        return identifier
+    collapsed = _collapse_enum_digit_boundaries(identifier)
+    if collapsed != identifier:
+        trace.add("digit-boundary")
+    return collapsed
 
 
 def _collapse_enum_digit_boundaries(name: str) -> str:
@@ -2289,6 +2434,232 @@ def numeric_enum_name(value: int) -> str:
         return tens[value // 10] + ("_" + small[value % 10] if value % 10 else "")
     divisor, label = (100, "hundred") if value < 1000 else (1000, "thousand")
     return small[value // divisor] + "_" + label + ("_" + numeric_enum_name(value % divisor) if value % divisor else "")
+
+
+# ---------------------------------------------------------------------------
+# The operationId method-name port
+# ---------------------------------------------------------------------------
+#
+# `operation.operationId:digit-leading-method` asks whether the Python method
+# name crozier derives from an operation's `operationId` takes
+# `sanitize_identifier`'s leading-digit `_` prefix. That name is
+# `endpoint_method_name` of `src/ir.rs`, which strips a tag, a group, a FastAPI
+# suffix or a template before the name reaches `sanitize_identifier`, so whether
+# the prefix fires is decided by which of its arms the id takes. The arms are
+# ported below, each named for the Rust function it mirrors; the offline tier
+# recomputes each one's normalized-body digest (`METHOD_NAME_PORT_DIGESTS`), so a
+# branch edited in `src/ir.rs` fails until it is read again here.
+
+METHOD_NAME_PORT_DIGESTS = {
+    "endpoint_method_name": "b48213e563c71a3d",
+    "tag_spelling_id": "f1c4b306fa5fbeda",
+    "operation_id_matches_tag_spelling": "f272f8b33d154d30",
+    "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
+    "method_from_dotted_id": "9b5cc4e4625b43d2",
+    "method_from_groupless_id": "7b4f62c5899ec99b",
+    "operation_id_tag_prefix": "6b9d3e0baac71cd4",
+    "stripped_suffix_has_acronym": "2fc2a5586fdf1c7d",
+    "fastapi_endpoint_name": "00ebd39bf3393e58",
+    "method_from_grouped_id": "9a11a75c28c3f3a0",
+    "group_prefix_is_tag": "f1defc0f47feecb2",
+    "first_segment_is_tag": "bf92317b81b95eff",
+    "fern_location_tokens": "e26dd8f74b3d5c03",
+    "is_fern_camel_case": "7d911765a9cc2c34",
+    "method_after_tag_tokens": "af8a264218349d19",
+    "method_after_first_segment": "308f21e2613e97e9",
+    "alnum_lower": "8cd0862ada69b572",
+    "module_from_grouped_id": "bf86b1b040ed87b3",
+    "first_tag": "3b8dc95ae8810543",
+}
+
+_ASCII_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def _ascii_lower(text: str) -> str:
+    return text.translate(str.maketrans(_ASCII_UPPER, _ASCII_UPPER.lower()))
+
+
+def _is_ascii_alnum(char: str) -> bool:
+    return char.isascii() and char.isalnum()
+
+
+def _byte_split(text: str, at: int) -> tuple[str, str] | None:
+    """`text.get(..at)` and `text.get(at..)` over UTF-8 bytes, or None off a char boundary."""
+    data = text.encode("utf-8")
+    if at > len(data):
+        return None
+    try:
+        return data[:at].decode("utf-8"), data[at:].decode("utf-8")
+    except UnicodeDecodeError:
+        return None
+
+
+def _first_tag(operation: dict[Any, Any]) -> str | None:
+    tags = operation.get("tags")
+    for tag in tags if isinstance(tags, list) else []:
+        if isinstance(tag, str) and tag.strip():
+            return tag.strip()
+    return None
+
+
+def _matches_tag_spelling(text: str, tag: str) -> bool:
+    return _ascii_lower(text) == _ascii_lower(tag) and (
+        any(char in _ASCII_UPPER for char in tag) or to_snake_case(text) == to_snake_case(tag)
+    )
+
+
+def _alnum_lower(text: str) -> str:
+    return "".join(char.lower() for char in text if _is_ascii_alnum(char))
+
+
+def _module_from_grouped_id(text: str) -> str:
+    prefix = text.rsplit("_", 1)[0] if "_" in text else text
+    return to_snake_case(prefix) if "_" in prefix else prefix.lower()
+
+
+def _fern_camel(name: str) -> bool:
+    data = name.encode("utf-8")
+    return bool(data) and 97 <= data[0] <= 122 and all(
+        97 <= byte <= 122 or (65 <= byte <= 90 and index + 1 < len(data) and 97 <= data[index + 1] <= 122)
+        for index, byte in enumerate(data)
+    )
+
+
+def _fern_location_tokens(name: str) -> list[str]:
+    if _fern_camel(name):
+        starts = [0, *(index for index, char in enumerate(name) if char in _ASCII_UPPER), len(name)]
+        words = [name[a:b] for a, b in zip(starts, starts[1:])]
+    else:
+        words = re.split(r"[^A-Za-z0-9]", name)
+    return [_ascii_lower(word) for word in words if word]
+
+
+def _sanitized(name: str) -> tuple[str, bool]:
+    """`sanitize_identifier`, and whether its leading-digit prefix fired: the
+    name's first character is an ASCII digit, which no other mapping changes."""
+    return sanitize_identifier(name), bool(name) and _is_digit(name[0])
+
+
+def _fastapi_endpoint_name(text: str, url: str, method: str) -> str | None:
+    path = re.split(r"[^A-Za-z0-9{}]", url)
+    segment = ""
+    for index, piece in enumerate(path):
+        if index > 0 and not piece and index + 1 < len(path):
+            continue
+        if index > 0:
+            segment += "_"
+        segment += piece
+    suffix = f"{segment.replace('{', '_').replace('}', '_')}_{_ascii_lower(method)}"
+    if text.endswith(suffix) and len(text) > len(suffix):
+        return text[: -len(suffix)]
+    return None
+
+
+def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
+    snake = to_snake_case(text)
+    tag_snake = to_snake_case(tag) if tag is not None else ""
+    suffix = None
+    if tag is not None:
+        split = _byte_split(text, len(tag.encode("utf-8")))
+        if split is not None:
+            prefix, rest = split
+            if rest and _matches_tag_spelling(prefix, tag) and rest[0] in _ASCII_UPPER:
+                suffix = rest
+    acronym = False
+    if tag is not None:
+        data, head = text.encode("utf-8"), len(tag.encode("utf-8"))
+        split = _byte_split(text, head)
+        acronym = (
+            len(data) > head and split is not None and _ascii_lower(split[0]) == _ascii_lower(tag)
+            and any(65 <= a <= 90 and 65 <= b <= 90 for a, b in zip(data[head:], data[head + 1:]))
+        )
+    if not tag_snake or acronym or (suffix is not None and _ascii_lower(suffix) == "info"):
+        method = snake
+    elif suffix is not None:
+        method = to_snake_case(suffix)
+    else:
+        method = snake[len(tag_snake) + 1:] if snake.startswith(f"{tag_snake}_") else snake
+    ident, prefixed = _sanitized(method)
+    reserved = is_reserved(ident) if tag is None else (ident in _PYTHON_KEYWORDS or ident == "all")
+    return (f"{ident}_" if reserved else ident), prefixed
+
+
+def operation_method_prefixed(operation: dict[Any, Any], method: str, url: str) -> bool:
+    """Whether `endpoint_method_name` gives this operation's id the leading-digit `_`."""
+    derived = operation_method_name(operation, method, url)
+    return derived is not None and derived[1]
+
+
+def operation_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[str, bool] | None:
+    """`endpoint_method_name`'s name for an operation's `operationId`, and whether
+    `sanitize_identifier`'s leading-digit prefix fired on the way to it.
+
+    None for an operation whose method is not derived from its `operationId`:
+    one declaring an SDK method-name extension, or none (or a blank) id.
+    """
+    derived = _id_method_name(operation, method, url)
+    if derived is None:
+        return None
+    name, prefixed = derived
+    return (f"{name}_" if name in _PYTHON_KEYWORDS else name), prefixed
+
+
+def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[str, bool] | None:
+    for extension in ("x-crozier-sdk-method-name", "x-fern-sdk-method-name"):
+        named = operation.get(extension)
+        if isinstance(named, str) and named.strip():
+            return None
+    operation_id = operation.get("operationId")
+    if not isinstance(operation_id, str) or not operation_id.strip():
+        return None
+    tag = _first_tag(operation)
+    text = operation_id.strip()
+    if text.endswith("_") and tag is not None and _matches_tag_spelling(text[:-1], tag):
+        text = text[:-1]
+    ends_on_template = text.endswith("}") and "{{" not in text
+    if not ends_on_template and any(char in text for char in "{}/:"):
+        text = "".join(
+            char if char.isalnum() or char in "_." else " " for char in text
+        ).strip()
+    if "_" in text:
+        head, digits = text.rsplit("_", 1)
+        if digits and digits.isascii() and digits.isdigit() and "_" not in head and head and _is_ascii_alnum(head[-1]):
+            text = head + digits
+    if ends_on_template and "{" in text:
+        rest = text.rsplit("{", 1)[1]
+        if "}" in rest:
+            inner = rest.split("}", 1)[0]
+            if inner.strip():
+                return _sanitized(to_snake_case(inner))
+    if not text:
+        return None  # the summary or route fallback names this method, not the id
+    if "." in text and all(_is_ascii_alnum(char) for char in text.split(".", 1)[0]):
+        group = text.split(".", 1)[0]
+        if group[:1].isascii() and group[:1].islower() and any(char in _ASCII_UPPER for char in group):
+            return _sanitized(to_snake_case(text))
+        dotted_group, _, dotted_method = text.rpartition(".")
+        if not dotted_group or (tag is not None and _matches_tag_spelling(dotted_group, tag)):
+            return _sanitized(_ascii_lower(dotted_method))
+        return _sanitized(to_snake_case(text))
+    if "_" in text:
+        if tag is None:
+            return _sanitized(to_snake_case(text))
+        fastapi = _fastapi_endpoint_name(text, url, method)
+        if fastapi is not None:
+            return _sanitized(to_snake_case(fastapi))
+        first, rest = text.split("_", 1)
+        if "_" in rest and _alnum_lower(first) == _alnum_lower(tag):
+            return _sanitized(to_snake_case(rest))
+        tag_words, id_words = _fern_location_tokens(tag), _fern_location_tokens(text)
+        if len(tag_words) >= 2 and len(id_words) > len(tag_words) and id_words[: len(tag_words)] == tag_words:
+            remainder = id_words[len(tag_words):]
+            camel = remainder[0] + "".join(word[:1].upper() + word[1:] for word in remainder[1:])
+            return _sanitized(to_snake_case(camel))
+        if _alnum_lower(_module_from_grouped_id(text)) == _alnum_lower(tag):
+            group, _, rest = text.rpartition("_")
+            return _sanitized(to_snake_case(text) if "_" in group else rest.lower())
+        return _sanitized(to_snake_case(text))
+    return _groupless_method(text, tag)
 
 
 def normalized_path(template: str) -> str:
@@ -2693,6 +3064,15 @@ def selected_example_kind(node: dict[Any, Any]) -> str | None:
     return None
 
 
+# The `enum_identifier` trace entries that are a `schema.enum:<entry>-member`
+# predicate of their own.
+_TRACED_ENUM_BRANCHES = frozenset({
+    "deburred", "letter-run", "alphanumeric-join", "digit-boundary",
+    "single-digit-prefix", "numeric-small", "numeric-tens", "numeric-hundreds",
+    "numeric-thousands",
+})
+
+
 def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
     """Count the member spellings that naming.rs branches on, once per schema."""
     values = node.get("enum")
@@ -2724,7 +3104,9 @@ def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
             first = split_words(value)[0]
             if len(first) > 1 and first[0].isdigit() and not first[1].isdigit():
                 found.add("schema.enum:digit-word-member")
-        name = enum_identifier(value)
+        trace: set[str] = set()
+        name = enum_identifier(value, trace)
+        found.update(f"schema.enum:{branch}-member" for branch in trace & _TRACED_ENUM_BRANCHES)
         if value and not name:
             found.add("schema.enum:empty-identifier-member")
         if name and name[0].isdigit():
@@ -2735,6 +3117,104 @@ def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
     if any(count > 1 for count in names.values()):
         found.add("schema.enum:normalized-collision")
     return sorted(found)
+
+
+def _is_integer(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def example_content_predicates(node: dict[Any, Any]) -> list[str]:
+    """The example predicates read off one Schema Object's own fields.
+
+    Each asks what `value_from_example` and `example_matches_type` of
+    `src/emit.rs` would branch on for this node's selected example, read through
+    the type its own fields give it, which is all a node-local reading can see.
+    """
+    if selected_example_kind(node) is None:
+        return []
+    example = schema_example(node)
+    found: list[str] = []
+    fmt = node.get("format")
+    if isinstance(example, str) and fmt == "date-time":
+        found.append("schema.example:date-time-string")
+    if isinstance(example, str) and fmt == "date":
+        found.append("schema.example:date-string")
+    primary = primary_type(node.get("type"))
+    if primary == "number" and _is_integer(example):
+        found.append("schema.example:integral-on-number")
+    if primary == "integer" and isinstance(example, float):
+        found.append("schema.example:fractional-on-integer")
+    if example == [] and isinstance(example, list):
+        found.append("schema.example:empty-array")
+    if example == {} and isinstance(example, dict):
+        found.append("schema.example:empty-object")
+    if isinstance(example, list):
+        if any(element is None for element in example):
+            found.append("schema.example:array-null-element")
+        if any(isinstance(element, dict) for element in example):
+            found.append("schema.example:array-object-element")
+        items = node.get("items")
+        if isinstance(items, dict) and items.get("format") in {"date", "date-time"} and any(
+            element == other for index, element in enumerate(example) for other in example[:index]
+        ):
+            found.append("schema.example:temporal-duplicate-element")
+    if (
+        isinstance(example, dict) and list(example) == ["$ref"]
+        and any(isinstance(node.get(field), list) for field in ("oneOf", "anyOf"))
+    ):
+        found.append("schema.example:union-ref-sentinel")
+    properties = node.get("properties")
+    if isinstance(example, dict) and isinstance(properties, dict) and properties:
+        required = node.get("required")
+        required = required if isinstance(required, list) else []
+        if any(name in properties and name not in example for name in required):
+            found.append("schema.example:missing-required-field")
+        if any(key not in properties for key in example):
+            found.append("schema.example:undeclared-field")
+    if isinstance(example, dict):
+        values = list(example.values())
+        if any(isinstance(value, dict) and not value for value in values):
+            found.append("schema.example:empty-object-member")
+        if any(isinstance(value, list) and not value for value in values):
+            found.append("schema.example:empty-array-member")
+        additional = node.get("additionalProperties")
+        if (additional is True or isinstance(additional, dict)) and not (
+            isinstance(properties, dict) and properties
+        ):
+            found.append("schema.example:object-on-map")
+    members = string_enum_values(node) if "enum" in node else None
+    if isinstance(example, str) and members is not None and example not in members:
+        found.append("schema.example:outside-enum")
+    return found
+
+
+def optional_property_example(node: dict[Any, Any]) -> bool:
+    """`schema.properties:optional-example`: a property `required` omits selects an example."""
+    properties = node.get("properties")
+    if not isinstance(properties, dict):
+        return False
+    required = node.get("required")
+    required = set(required) if isinstance(required, list) else set()
+    return any(
+        name not in required and isinstance(value, dict) and selected_example_kind(value) is not None
+        for name, value in properties.items()
+    )
+
+
+def named_target_kind(target: Any) -> str | None:
+    """What a resolved component declares, as the four named-declaration arms read it."""
+    if not isinstance(target, dict):
+        return None
+    if any(isinstance(target.get(field), list) for field in ("oneOf", "anyOf")):
+        return "union"
+    if "enum" in target and string_valued(target, target.get("enum")):
+        return "enum"
+    properties = target.get("properties")
+    if isinstance(properties, dict) and properties:
+        return "object"
+    if "allOf" in target:
+        return None
+    return "alias"
 
 
 def example_is_schema_definition(example: Any) -> bool:
@@ -3183,6 +3663,70 @@ def selector_error(text: str) -> str | None:
     )
 
 
+_HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
+
+
+def operation_routes(document: Any) -> dict[int, tuple[str, str]]:
+    """`id()` of each Paths-Object operation -> its (HTTP method, Paths key)."""
+    routes: dict[int, tuple[str, str]] = {}
+    paths = document.get("paths") if isinstance(document, dict) else None
+    for url, item in paths.items() if isinstance(paths, dict) else []:
+        if not isinstance(item, dict) or not isinstance(url, str):
+            continue
+        for method in _HTTP_METHODS:
+            if isinstance(item.get(method), dict):
+                routes[id(item[method])] = (method, url)
+    return routes
+
+
+def is_json_like_media_type(media_type: str) -> bool:
+    """`is_json_like_media_type` of `src/ir.rs`."""
+    base = media_type.split(";", 1)[0].strip()
+    return (
+        base == "application/json" or base.endswith("+json") or base.endswith("/ndjson")
+        or (base.startswith("application/") and "json" in base[len("application/"):])
+    )
+
+
+def request_body_media(document: Any) -> set[int]:
+    """`id()` of every request body's selected JSON media type, as `reference_body_example` selects it."""
+    bodies: list[Any] = []
+    paths = document.get("paths") if isinstance(document, dict) else None
+    for item in paths.values() if isinstance(paths, dict) else []:
+        for method in _HTTP_METHODS:
+            operation = item.get(method) if isinstance(item, dict) else None
+            if isinstance(operation, dict):
+                bodies.append(operation.get("requestBody"))
+    components = document.get("components") if isinstance(document, dict) else None
+    shared = components.get("requestBodies") if isinstance(components, dict) else None
+    bodies += list(shared.values()) if isinstance(shared, dict) else []
+    selected: set[int] = set()
+    for body in bodies:
+        content = body.get("content") if isinstance(body, dict) else None
+        if not isinstance(content, dict):
+            continue
+        media = content.get("application/json")
+        if media is None:
+            media = next(
+                (value for key, value in content.items() if isinstance(key, str) and is_json_like_media_type(key)),
+                None,
+            )
+        if isinstance(media, dict):
+            selected.add(id(media))
+    return selected
+
+
+def parameter_schema_is_scalar(schema: Any) -> bool:
+    """`example_is_scalar`'s test of a query parameter's (once-resolved) schema."""
+    def scalar(candidate: Any) -> bool:
+        return isinstance(candidate, dict) and primary_type(candidate.get("type")) in {
+            "string", "integer", "number", "boolean"
+        }
+    return isinstance(schema, dict) and (
+        scalar(schema) or primary_type(schema.get("type")) == "array" and scalar(schema.get("items"))
+    )
+
+
 class Census:
     """One document's declaration-site counts, keyed by selector."""
 
@@ -3216,6 +3760,17 @@ class Census:
         # each other, so it cannot be decided at the declaration site the way every
         # other selector is; the values are gathered here and counted by `finish`.
         self.operation_ids: list[str] = []
+        # Three predicates read where a node stands as well as what it declares:
+        # `endpoint_method_name` reads an operation's HTTP method and Paths key,
+        # and `reference_body_example` reads only a request body's selected JSON
+        # media type. The walk reaches either object without that position, so
+        # both are read off the document once here, keyed by the object's `id()`.
+        self.operation_routes: dict[int, tuple[str, str]] = operation_routes(document)
+        self.request_media: set[int] = request_body_media(document)
+        self.components: dict[Any, Any] = (
+            document.get("components") if isinstance(document, dict)
+            and isinstance(document.get("components"), dict) else {}
+        )
         # One node's own selectors are asked for twice — once to record them, once
         # per conjunction group matched against them — and a document's objects
         # live for the whole walk, so `id()` keys a stable cache.
@@ -3259,6 +3814,104 @@ class Census:
     def record(self, selector: str) -> None:
         self.counts[selector] += 1
 
+    def component_target(self, reference: str) -> Any:
+        """The `components.schemas` entry a local `#/components/schemas/<name>` names."""
+        if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
+            return None
+        name = reference[len(_COMPONENT_SCHEMAS_PREFIX):]
+        if "/" in name:
+            return None
+        return self.component_schemas.get(unquote(name).replace("~1", "/").replace("~0", "~"))
+
+    def local_component(self, section: str, value: Any) -> Any:
+        """A `#/components/<section>/<name>` Reference Object resolved once, else the value."""
+        if isinstance(value, dict) and isinstance(value.get("$ref"), str):
+            prefix = f"#/components/{section}/"
+            reference = value["$ref"]
+            entries = self.components.get(section)
+            if reference.startswith(prefix) and isinstance(entries, dict):
+                return entries.get(reference[len(prefix):])
+        return value
+
+    def position_predicates(self, node: dict[Any, Any], kind_name: str) -> list[str]:
+        """The predicates that read where a parameter, media type or operation stands."""
+        found: list[str] = []
+        if kind_name == "operation" and id(node) in self.operation_routes:
+            method, url = self.operation_routes[id(node)]
+            if operation_method_prefixed(node, method, url):
+                found.append("operation.operationId:digit-leading-method")
+            if self.wildcard_binary_response(node):
+                found.append("operation.responses:wildcard-binary")
+        if kind_name == "mediaType" and id(node) in self.request_media:
+            named = self.resolvable_named_example(node.get("examples"))
+            if named:
+                found.append(
+                    "mediaType.examples:named-beside-example"
+                    if node.get("example") is not None else "mediaType.examples:named-only"
+                )
+        if kind_name == "parameter" and node.get("in") == "query" and self.declares_parameter_example(node):
+            schema = node.get("schema")
+            schema = self.component_target(schema["$ref"]) if (
+                isinstance(schema, dict) and isinstance(schema.get("$ref"), str)
+            ) else schema
+            if not parameter_schema_is_scalar(schema):
+                found.append("parameter.example:non-scalar-query")
+        return found
+
+    def resolvable_named_example(self, examples: Any) -> bool:
+        """Whether a named `examples` map holds one example resolving to a value."""
+        if not isinstance(examples, dict):
+            return False
+        for example in examples.values():
+            seen: set[str] = set()
+            while isinstance(example, dict):
+                if example.get("value") is not None:
+                    return True
+                reference = example.get("$ref")
+                if not isinstance(reference, str) or not reference.startswith("#/components/examples/"):
+                    break
+                name = reference[len("#/components/examples/"):]
+                if name in seen:
+                    break
+                seen.add(name)
+                entries = self.components.get("examples")
+                example = entries.get(name) if isinstance(entries, dict) else None
+        return False
+
+    def declares_parameter_example(self, parameter: dict[Any, Any]) -> bool:
+        return parameter.get("example") is not None or self.resolvable_named_example(parameter.get("examples"))
+
+    def wildcard_binary_response(self, operation: dict[Any, Any]) -> bool:
+        """`has_wildcard_binary_response` of `src/ir.rs`, over `success_response_entry`."""
+        responses = operation.get("responses")
+        if not isinstance(responses, dict):
+            return False
+        resolved = {str(code): self.local_component("responses", value) for code, value in responses.items()}
+
+        def dispatchable(response: Any) -> bool:
+            content = response.get("content") if isinstance(response, dict) else None
+            if not isinstance(content, dict) or not content:
+                return True
+            return any(
+                isinstance(media, str) and "/" in media and all(media.split("/", 1))
+                for media in content
+            )
+
+        success = resolved.get("200") if dispatchable(resolved.get("200")) and "200" in resolved else None
+        if success is None:
+            success = next(
+                (response for code, response in resolved.items()
+                 if code.isdigit() and 200 <= int(code) < 300 and dispatchable(response)),
+                resolved.get("default"),
+            )
+        content = success.get("content") if isinstance(success, dict) else None
+        media = content.get("*/*") if isinstance(content, dict) else None
+        schema = media.get("schema") if isinstance(media, dict) else None
+        return (
+            isinstance(schema, dict) and "$ref" not in schema
+            and primary_type(schema.get("type")) == "string" and schema.get("format") == "binary"
+        )
+
     def declared_here(self, node: dict[Any, Any], kind_name: str, prefix: str) -> list[str]:
         """Every selector this one node declares, with repetition.
 
@@ -3284,6 +3937,7 @@ class Census:
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
+        found += self.position_predicates(node, kind_name)
         if kind_name == "schema" and not is_reference_node(node, kind_name):
             found += self.schema_predicates(node)
             example_kind = selected_example_kind(node)
@@ -3574,10 +4228,18 @@ class Census:
             found.append("schema.const:string-valued")
         if example_is_schema_definition(schema_example(node)):
             found.append("schema.example:schema-shaped")
+        found += example_content_predicates(node)
+        if optional_property_example(node):
+            found.append("schema.properties:optional-example")
         if annotated_all_of_ref(node):
             found.append("schema.allOf:annotated-ref")
         found += self.discriminated_union_predicates(node)
         reference = node.get("$ref")
+        if isinstance(reference, str) and selected_example_kind(node) is not None:
+            target = self.component_target(reference)
+            kind = named_target_kind(target)
+            if kind is not None:
+                found.append(f"schema.example:on-ref-to-{kind}")
         if isinstance(reference, str):
             found += pointer_form_predicates(reference)
             found += self.pointer_target_predicates(reference)
@@ -3840,8 +4502,78 @@ def pinned_tree_root(fixtures_root: Path, corpus_root: Path, fixture: str) -> Pa
     return path if path.is_file() else None
 
 
-def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bool) -> list[Source]:
-    """Every registered golden source: original fixtures and committed corpus files."""
+# A golden test of `tests/e2e.rs` is one whose name says it compares a tree
+# against Fern's: `<api>_matches_fern_output`, as `scripts/golden-reach.py`
+# scopes one instrumented run to it.
+GOLDEN_TEST = re.compile(r"matches_fern_output")
+_CORPUS_HELPER = re.compile(r"assert_(?:link_ok_|committed_)?corpus_matches\(&(\w+)\)")
+
+
+@dataclass(frozen=True)
+class GoldenRegistration:
+    """One fixture directory a golden test of `tests/e2e.rs` byte-compares.
+
+    `unmatched` is the measured residual that test declares: the golden's files
+    crozier does not reproduce yet, each of which fails the gate the moment it
+    starts matching. Every other file of the golden is byte-compared.
+    """
+
+    api: str
+    test: str
+    unmatched: tuple[str, ...]
+
+
+def golden_registrations(e2e: Path) -> dict[str, GoldenRegistration]:
+    """Fixture directory -> its golden registration, read off `tests/e2e.rs`.
+
+    A `Corpus { api, …, unmatched }` literal names a fixture directory and its
+    residual; a `fn …matches_fern_output` that drives `&CONST` through one of the
+    corpus assertion helpers, or a `feature_target_goldens!` entry naming the
+    `api`, is that directory's golden test. A literal no golden test drives (the
+    known-upstream-failure rows) is not a registration.
+    """
+    source = e2e.read_text(encoding="utf-8")
+    literals: dict[str, tuple[str, tuple[str, ...]]] = {}
+    unmatched_of: dict[str, tuple[str, ...]] = {}
+    for match in re.finditer(
+        r"(?:^const (\w+): Corpus = )?Corpus \{\s*api: \"([^\"]+)\",(.*?)\n\s*\}",
+        source, re.M | re.S,
+    ):
+        constant, api, body = match.groups()
+        residual = re.search(r"unmatched: &\[(.*?)\]", body, re.S)
+        files = tuple(re.findall(r'"([^"]+)"', residual.group(1))) if residual else ()
+        unmatched_of[api] = files
+        if constant:
+            literals[constant] = (api, files)
+    registrations: dict[str, GoldenRegistration] = {}
+    current = None
+    for line in source.splitlines():
+        fn = re.match(r"^fn (\w+)\(", line)
+        if fn:
+            current = fn.group(1)
+        drive = _CORPUS_HELPER.search(line)
+        if drive and current and GOLDEN_TEST.search(current) and drive.group(1) in literals:
+            api, files = literals[drive.group(1)]
+            registrations[api] = GoldenRegistration(api, current, files)
+    for test, api in re.findall(r"^\s*(\w+_matches_fern_output) => \"([^\"]+)\"", source, re.M):
+        registrations[api] = GoldenRegistration(api, test, unmatched_of.get(api, ()))
+    return registrations
+
+
+def golden_registry(fixtures_root: Path) -> Path:
+    """Where the golden tests of a fixtures root are declared: its sibling `e2e.rs`."""
+    return fixtures_root.parent / "e2e.rs"
+
+
+def acquisition_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bool) -> list[Source]:
+    """Every acquired source: original fixtures and every committed corpus row.
+
+    This is the acquisition half the golden population is drawn from, and what
+    a reader resolving a `CORPUS.md` row to its committed document wants. It is
+    *not* the golden population: a row Fern dropped (`axesso.de`) is acquired
+    and committed without ever carrying a golden. `registered_sources` is that
+    population.
+    """
     sources: list[Source] = []
     vendored: dict[str, Source] = {}
     for directory in sorted(p for p in fixtures_root.iterdir() if p.is_dir()):
@@ -3871,6 +4603,40 @@ def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bo
             )
         )
     return sources
+
+
+def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bool) -> list[Source]:
+    """The golden sources: every registered document whose Fern golden crozier byte-matches.
+
+    An original fixture's document is vendored beside its golden, so its
+    directory is its registration. A corpus row is a golden source only when its
+    fixture directory carries a committed `expected/` tree **and** a golden test
+    of `tests/e2e.rs` byte-compares it (`golden_registrations`); its document
+    path is then resolved from the acquisition manifest, separately. A row Fern
+    dropped, or one acquired as witness evidence only, carries no golden and is
+    not a source here, whatever its `CORPUS.md` decision reads.
+    """
+    acquired = acquisition_sources(fixtures_root, corpus_root, vendored_only)
+    if vendored_only:
+        return acquired
+    corpus = [source for source in acquired if source.origin == "corpus"]
+    if not corpus:
+        return acquired
+    registry = golden_registry(fixtures_root)
+    if not registry.is_file():
+        raise SystemExit(
+            f"openapi-surface-census: missing golden registry {registry} — the corpus rows "
+            "of CORPUS.md are golden sources only where a golden test there compares "
+            "them; run from the repo root, or pass --vendored-only"
+        )
+    registrations = golden_registrations(registry)
+    aliases = corpus_aliases(fixtures_root)
+
+    def carries_golden(source: Source) -> bool:
+        fixture = aliases.get(source.fixture, source.fixture)
+        return fixture in registrations and (fixtures_root / fixture / "expected").is_dir()
+
+    return [source for source in acquired if source.origin == "vendored" or carries_golden(source)]
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -3951,10 +4717,20 @@ def main(argv: list[str] | None = None) -> int:
         known = {source.fixture for source in sources}
         unknown = sorted(wanted - known)
         if unknown:
+            acquired_only = {
+                source.fixture
+                for source in acquisition_sources(fixtures_root, corpus_root, args.original_fixtures_only)
+            } - known
+            why = (
+                " It is an acquired CORPUS.md row that carries no Fern golden crozier "
+                "byte-matches, so it is not a golden source."
+                if unknown[0] in acquired_only else ""
+            )
             print(
-                f"openapi-surface-census: no registered source is named {unknown[0]!r}. "
+                f"openapi-surface-census: no registered source is named {unknown[0]!r}.{why} "
                 "The registered sources are the tests/fixtures/<name>/openapi.* documents "
-                "and the committed rows of tests/fixtures/CORPUS.md.",
+                "and the CORPUS.md rows whose committed Fern golden a golden test of "
+                "tests/e2e.rs byte-compares.",
                 file=sys.stderr,
             )
             return 1

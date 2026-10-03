@@ -9,13 +9,13 @@ media-type-examples	mediaType.examples	src/ir.rs::media_example,src/ir.rs::refer
 encoding-object	mediaType.encoding	src/ir.rs::hoist_form_object,src/emit.rs::append_request_call_args[if let Some\(content_type\) = &f\.form_content_type]	
 media-type-concrete	requestBody.content,response.content	src/ir.rs::has_dispatchable_media	
 media-type-key-parameters	fixture=openbanking.org.uk-account-info-openapi,fixture=sftpgo,fixture=vtex-pricing	src/ir.rs::is_json_like_media_type,src/ir.rs::is_text_response_media	
-media-type-suffix-json	fixture=anchore.io,fixture=apicurio.local-registry,fixture=box.com,fixture=github.com,fixture=redocly.com-museum,fixture=free5gc-pdu-session,fixture=free5gc-namf-communication,fixture=openepcis-dpp-ready	src/ir.rs::is_json_like_media_type,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema	
-media-type-suffix-xml	fixture=atlassian.com-jira,fixture=color.pizza,fixture=traccar.org	none	
-media-type-wildcard	fixture=6-dot-authentiqio.appspot.com,fixture=apache.org-qakka,fixture=apicurio.local-registry,fixture=apideck.com-file-storage,fixture=apideck.com-proxy,fixture=atlassian.com-jira,fixture=bintable.com,fixture=bungie.net,fixture=openfigi.com	src/ir.rs::RequestBody::is_wildcard_media,src/ir.rs::has_wildcard_binary_response,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema,src/ir.rs::resolve_request_body[let binary_media = \x7c]	
+media-type-suffix-json	fixture=anchore.io,fixture=apicurio.local-registry,fixture=redocly.com-museum,fixture=free5gc-pdu-session,fixture=free5gc-namf-communication,fixture=openepcis-dpp-ready	src/ir.rs::is_json_like_media_type,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema	
+media-type-suffix-xml	fixture=color.pizza,fixture=traccar.org	none	
+media-type-wildcard	fixture=6-dot-authentiqio.appspot.com,fixture=apache.org-qakka,fixture=apicurio.local-registry,fixture=apideck.com-file-storage,fixture=apideck.com-proxy,fixture=bintable.com,fixture=bungie.net,fixture=openfigi.com	src/ir.rs::RequestBody::is_wildcard_media,src/ir.rs::has_wildcard_binary_response,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema,src/ir.rs::resolve_request_body[let binary_media = \x7c]	
 media-type-range	fixture=sftpgo,fixture=torrentarr,fixture=audiobookshelf,fixture=api-openverse-org,fixture=komga	src/ir.rs::resolve_request_body[\.find\(\x7c\(media_type\x2c media\)\x7c \{],src/ir.rs::is_binary_response,src/ir.rs::has_binary_schema_response	
-media-type-multipart	fixture=form-bodies,fixture=anchore.io,fixture=appwrite.io-client,fixture=appwrite.io-server,fixture=asana.com,fixture=atlassian.com-jira,fixture=box.com,fixture=discourse.local,fixture=microcks.local,fixture=appng-rest-api,fixture=free5gc-pdu-session,fixture=letta,fixture=free5gc-namf-communication,fixture=livepeer-ai-runner	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(\"multipart/related\"\)],src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::form_body_source_names	
-media-type-form-urlencoded	fixture=bracketed-property-names,fixture=form-bodies,fixture=anchore.io,fixture=box.com,fixture=conjur.local,fixture=traccar.org,fixture=twilio.com-twilio_voice_v1,fixture=twilio.com-twilio_messaging_v1	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::urlencoded_body_source_names,src/ir.rs::form_body_source_names	
-media-type-octet-stream	fixture=exhaustive,fixture=apache.org-qakka,fixture=box.com,fixture=conjur.local,fixture=github.com	src/ir.rs::resolve_request_body[if rb\.content\.contains_key\(\"application/octet-stream\"\)],src/ir.rs::is_binary_response	
+media-type-multipart	fixture=form-bodies,fixture=anchore.io,fixture=appwrite.io-client,fixture=appwrite.io-server,fixture=discourse.local,fixture=microcks.local,fixture=free5gc-pdu-session,fixture=letta,fixture=free5gc-namf-communication,fixture=livepeer-ai-runner	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(\"multipart/related\"\)],src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::form_body_source_names	
+media-type-form-urlencoded	fixture=bracketed-property-names,fixture=form-bodies,fixture=anchore.io,fixture=traccar.org,fixture=twilio.com-twilio_voice_v1,fixture=twilio.com-twilio_messaging_v1	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::urlencoded_body_source_names,src/ir.rs::form_body_source_names	
+media-type-octet-stream	fixture=exhaustive,fixture=apache.org-qakka	src/ir.rs::resolve_request_body[if rb\.content\.contains_key\(\"application/octet-stream\"\)],src/ir.rs::is_binary_response	
 media-type-event-stream	fixture=sse-streaming,fixture=maif.local-otoroshi,fixture=electric-sql,fixture=letta,fixture=exa-gate	src/ir.rs::is_streaming,src/ir.rs::stream_chunk_type	
 media-type-malformed-key	fixture=eozilla,fixture=free5gc-pdu-session,fixture=anchore.io	src/ir.rs::has_dispatchable_media	
 encoding-content-type	mediaType.encoding.contentType	src/ir.rs::hoist_form_object,src/emit.rs::append_request_call_args[if let Some\(content_type\) = &f\.form_content_type]	
@@ -464,3 +464,30 @@ boolean-schema-true	fixture=webflow-v2	none
 xml-wrapped	schema.xml.wrapped	none	
 apiKey-query	fixture=groupe-psa,fixture=ziptax-node	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{]	
 oneof-anyof-variant	schema.oneOf>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::composed_variant	
+enum-deburred-member	schema.enum:deburred-member	src/naming.rs::deburr,src/naming.rs::deburr_letter	
+enum-letter-run-member	schema.enum:letter-run-member	src/naming.rs::enum_words[if is_single_letter && single_letter_run \{]	
+enum-alphanumeric-join-member	schema.enum:alphanumeric-join-member	src/naming.rs::enum_words[if current_is_short_letter_run && previous_is_numeric_letter]	
+enum-digit-boundary-member	schema.enum:digit-boundary-member	src/naming.rs::enum_words[=collapse_digit_boundaries\(&identifier\)],src/naming.rs::collapse_digit_boundaries	
+enum-single-digit-prefix-member	schema.enum:single-digit-prefix-member	src/naming.rs::enum_words[if digits > 0 \{],src/naming.rs::below_hundred[if value < 20 \{]	
+enum-numeric-small-member	schema.enum:numeric-small-member	src/naming.rs::below_hundred[if value < 20 \{]	
+enum-numeric-tens-member	schema.enum:numeric-tens-member	src/naming.rs::below_hundred[=let mut words = TENS]	
+enum-numeric-hundreds-member	schema.enum:numeric-hundreds-member	src/naming.rs::below_thousand[=let mut words = format!\("\{\}_hundred"]	
+enum-numeric-thousands-member	schema.enum:numeric-thousands-member	src/naming.rs::numeric_enum_identifier[=let mut words = format!\("\{\}_thousand"]	
+schema-example-date-time-string	schema.example:date-time-string	src/emit.rs::ExampleCtx::value_from_example[if matches!\(t, TypeRef::Primitive\(Prim::Datetime \x7c Prim::Date\)\) \{],src/emit.rs::ExampleCtx::value_from_example[let constructor = if matches!\(t, TypeRef::Primitive\(Prim::Datetime\)\) \{]	
+schema-example-date-string	schema.example:date-string	src/emit.rs::ExampleCtx::value_from_example[if matches!\(t, TypeRef::Primitive\(Prim::Datetime \x7c Prim::Date\)\) \{],src/emit.rs::ExampleCtx::value_from_example[=^\s*"datetime.date.fromisoformat"]	
+schema-example-integral-on-number	schema.example:integral-on-number	src/emit.rs::ExampleCtx::value_from_example[^\s*TypeRef::Primitive\(Prim::Float\)$]	
+schema-example-empty-array	schema.example:empty-array	src/emit.rs::ExampleCtx::value_from_example[if let TypeRef::List\(inner\) \x7c TypeRef::Set\(inner\) = t \{]	
+schema-example-empty-object	schema.example:empty-object	src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]	
+schema-example-array-object-element	schema.example:array-object-element	src/emit.rs::ExampleCtx::value_from_example[if let TypeRef::List\(inner\) \x7c TypeRef::Set\(inner\) = t \{]	
+schema-example-missing-required-field	schema.example:missing-required-field	src/emit.rs::ExampleCtx::example_matches_type_through[Some\(TypeDecl::Object\(object\)\) => value.as_object\(\).is_some_and]	
+schema-example-undeclared-field	schema.example:undeclared-field	src/emit.rs::ExampleCtx::example_matches_type_through[Some\(TypeDecl::Object\(object\)\) => value.as_object\(\).is_some_and]	
+schema-example-empty-object-member	schema.example:empty-object-member	src/emit.rs::ExampleCtx::value_from_example[=!value.as_object\(\).is_some_and\(serde_json::Map::is_empty\)]	
+schema-example-empty-array-member	schema.example:empty-array-member	src/emit.rs::ExampleCtx::value_from_example[Some\(serde_json::Value::Array\(items\)\) if items.is_empty\(\) => \{]	
+schema-example-object-on-map	schema.example:object-on-map	src/emit.rs::ExampleCtx::example_matches_type_through[=TypeRef::Dict\(_, _\) => value.is_object\(\),]	
+schema-example-outside-enum	schema.example:outside-enum	src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]	
+schema-example-on-ref-to-alias	schema.example:on-ref-to-alias	src/emit.rs::ExampleCtx::value_from_example[if let Some\(TypeDecl::Alias\(alias\)\) = self.find\(name\) \{]	
+property-optional-example	schema.properties:optional-example	src/emit.rs::ExampleCtx::value_from_example[if let TypeRef::Optional\(inner\) = t \{]	
+parameter-example-non-scalar-query	parameter.example:non-scalar-query	src/ir.rs::build_endpoint[let example_is_scalar = schema.is_some_and],src/emit.rs::build_example_inner[let v = if let Some\(ex\) = qp.example.as_ref\(\).filter]	
+request-media-named-beside-example	mediaType.examples:named-beside-example	src/ir.rs::reference_body_example	
+request-media-named-only-example	mediaType.examples:named-only	src/ir.rs::reference_body_example	
+operation-wildcard-binary-response	operation.responses:wildcard-binary	src/ir.rs::has_wildcard_binary_response,src/emit.rs::build_example_inner[=let suppressed = ep.wildcard_binary_response]	

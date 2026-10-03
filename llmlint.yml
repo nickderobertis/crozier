@@ -58,6 +58,12 @@ files:
     - "docs/openapi-surface/witness-search-*/**/*.txt"
     - "docs/openapi-surface/witness-search-*/**/LICENSE*"
     - "docs/openapi-surface/witness-search-*/licences/**"
+    # The census-fallback samples — unmodified publisher OpenAPI documents, each
+    # pinned by commit and SHA-256 in tests/data/census-fallback-sample.tsv and
+    # attributed in NOTICE. The pinned Stripe description (7 MB) overflows the
+    # judge as the fetched specifications above do; the manifest and the tests
+    # that read the samples stay linted.
+    - "tests/data/census-fallback-sample/*.y*ml"
     # The golden-reach arm searches' evidence is the same kind of data, written by
     # scripts/golden-reach-search.py: walk enumerations, query and call logs,
     # probe results and screens. The per-row records (searches/*.md), the README
