@@ -21,6 +21,7 @@ import tempfile
 import textwrap
 import threading
 import unittest
+import unittest.mock
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -264,6 +265,31 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertEqual(2, zero.returncode)
         self.assertIn("0 is not a positive number of seconds", zero.stderr)
         self.assertEqual([], self.rows())
+
+
+class WindowsNewlineTests(unittest.TestCase):
+    """A committed log carries the digest recorded for it under Windows' text-mode newlines."""
+
+    def test_a_log_written_under_crlf_translation_still_carries_its_recorded_digest(self) -> None:
+        opened = Path.open
+
+        def windows_open(path: Path, mode: str = "r", buffering: int = -1, encoding: str | None = None,
+                         errors: str | None = None, newline: str | None = None):
+            # Windows' text mode: an unset `newline` writes each `\n` as `\r\n`.
+            if "b" not in mode and newline is None:
+                newline = "\r\n"
+            return opened(path, mode, buffering, encoding, errors, newline)
+
+        with tempfile.TemporaryDirectory(prefix="witness-screen-") as directory:
+            base = Path(directory)
+            with unittest.mock.patch.object(Path, "open", windows_open):
+                # A 404 fails the ref screen, so its log is written and no later screen runs.
+                record = SCREEN.measure(repository="acme/shop", commit=COMMIT, path="openapi.yaml",
+                                        fetch=lambda _url, _subject: (404, b""), raw_base="http://127.0.0.1:9",
+                                        logs=base / "screens", base=base, timeout=30)
+            self.assertTrue(record["ref"]["outcome"].startswith("failed: HTTP 404"))
+            self.assertIn(b"\n", (base / record["ref"]["log"]).read_bytes())
+            self.assertEqual([], SCREEN.measured_failures(record, base))
 
 
 class HistoricalRowTests(unittest.TestCase):
