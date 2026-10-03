@@ -162,6 +162,26 @@ def write_fixture(root: Path, name: str, document: str) -> Path:
     return directory
 
 
+def write_golden_registry(fixtures: Path, *apis: str, residual: dict[str, list[str]] | None = None) -> None:
+    """Register each corpus `api` as a golden source, the way `tests/e2e.rs` does.
+
+    A `Corpus` constant, the golden test driving it, and a committed `expected/`
+    tree: the three things `golden_registrations` and `registered_sources` read.
+    """
+    residual = residual or {}
+    blocks = []
+    for index, api in enumerate(apis):
+        files = ", ".join(f'"{name}"' for name in residual.get(api, []))
+        blocks.append(
+            f"const ROW_{index}: Corpus = Corpus {{\n    api: \"{api}\",\n"
+            f"    package_name: \"fern\",\n    unmatched: &[{files}],\n}};\n\n"
+            f"#[test]\nfn row_{index}_matches_fern_output() {{\n"
+            f"    assert_committed_corpus_matches(&ROW_{index});\n}}\n"
+        )
+        (fixtures / api / "expected").mkdir(parents=True, exist_ok=True)
+    (fixtures.parent / "e2e.rs").write_text("\n".join(blocks), encoding="utf-8")
+
+
 # --- the amended settlement rule -------------------------------------------
 # `docs/openapi-surface-coverage.md`'s `#### The settlement rule, as amended`
 # is the prose; these are the same rule as something that fails. A row whose
@@ -2264,6 +2284,16 @@ class GrammarContractTests(unittest.TestCase):
         "schema.oneOf:discriminated-union",
         "schema.anyOf:discriminated-union",
         "schema.discriminator:inheritance-union",
+        # Read where the node stands, or resolve one local reference (#361).
+        "operation.operationId:digit-leading-method",
+        "operation.responses:wildcard-binary",
+        "parameter.example:non-scalar-query",
+        "mediaType.examples:named-beside-example",
+        "mediaType.examples:named-only",
+        "schema.example:on-ref-to-object",
+        "schema.example:on-ref-to-enum",
+        "schema.example:on-ref-to-union",
+        "schema.example:on-ref-to-alias",
     })
 
     def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
@@ -2282,7 +2312,9 @@ class GrammarContractTests(unittest.TestCase):
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
+            "Sixty-seven": 67,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
+            "seventeen": 17,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -3647,6 +3679,34 @@ POINTER_FORM_PREDICATES = frozenset({
 })
 
 
+# The naming and example branches #361 brought inside the census, discriminated
+# by `NamingAndExampleBranchDiscriminationTests`: the enum_words and
+# numeric_enum_identifier arms, the operationId leading-digit prefix, and the
+# example arms of `src/emit.rs` read through resolved types, nested values and
+# positions.
+NAMING_AND_EXAMPLE_BRANCH_PREDICATES = frozenset({
+    "schema.enum:deburred-member", "schema.enum:letter-run-member",
+    "schema.enum:alphanumeric-join-member", "schema.enum:digit-boundary-member",
+    "schema.enum:single-digit-prefix-member", "schema.enum:numeric-small-member",
+    "schema.enum:numeric-tens-member", "schema.enum:numeric-hundreds-member",
+    "schema.enum:numeric-thousands-member",
+    "operation.operationId:digit-leading-method",
+    "schema.example:date-time-string", "schema.example:date-string",
+    "schema.example:integral-on-number", "schema.example:fractional-on-integer",
+    "schema.example:empty-array", "schema.example:empty-object",
+    "schema.example:array-null-element", "schema.example:array-object-element",
+    "schema.example:temporal-duplicate-element", "schema.example:union-ref-sentinel",
+    "schema.example:missing-required-field", "schema.example:undeclared-field",
+    "schema.example:empty-object-member", "schema.example:empty-array-member",
+    "schema.example:object-on-map", "schema.example:outside-enum",
+    "schema.example:on-ref-to-object", "schema.example:on-ref-to-enum",
+    "schema.example:on-ref-to-union", "schema.example:on-ref-to-alias",
+    "schema.properties:optional-example", "parameter.example:non-scalar-query",
+    "mediaType.examples:named-beside-example", "mediaType.examples:named-only",
+    "operation.responses:wildcard-binary",
+})
+
+
 # The four `hoist_union_variant` gained with its nested-composition arm (cases
 # 13a to 13d), discriminated by `NestedCompositionSelectorDiscriminationTests`.
 NESTED_COMPOSITION_SELECTORS = frozenset({
@@ -4182,7 +4242,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - POINTER_WALK_SELECTORS - NEGATION_SELECTORS - NESTED_COMPOSITION_SELECTORS \
         - {name for name in census.PREDICATES
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
-        - {"components.schemas:nonidentifier-name", "securityScheme:$ref"}
+        - {"components.schemas:nonidentifier-name", "securityScheme:$ref"} \
+        - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -6414,6 +6475,7 @@ class PinnedTreeWalkTests(unittest.TestCase):
             f"tree\ttree-proof\tnested/pathitem.yml\thttps://raw.githubusercontent.com/example/api/{sha}/nested/pathitem.yml\t{'0' * 64}\n"
             f"tree\ttree-proof\topenapi.yml\t{url}\t{'0' * 64}\n"
         )
+        write_golden_registry(self.fixtures, "tree-proof")
 
     def measure(self) -> dict[tuple[str, str], int]:
         completed = run(
@@ -6482,6 +6544,101 @@ class PinnedTreeWalkTests(unittest.TestCase):
             '    "200":\n      description: OK\n      content:\n        application/json:\n          schema:\n            $ref: ../openapi.yml#/components/schemas/Local\n'
         ))
         self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
+
+
+class GoldenSourcePopulationTests(unittest.TestCase):
+    """The golden sources are the registered goldens, not the acquired rows (#352).
+
+    A `CORPUS.md` row records acquisition; whether Fern generated a golden from
+    the document, and whether a golden test compares it, are later facts. Both
+    directions are pinned: a row carrying a compared golden is a source, and an
+    acquired row carrying none — Fern dropped it, or it was acquired as evidence
+    only — is not, however its `decision` cell reads.
+    """
+
+    DOCUMENT = 'openapi: 3.0.3\ninfo: {title: t, version: "1"}\npaths:\n  /x:\n    trace:\n      responses:\n        "200": {description: ok}\n'
+
+    def test_a_corpus_row_is_a_source_only_when_a_golden_test_compares_its_golden(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixtures, corpus = root / "fixtures", root / "corpus"
+            fixtures.mkdir()
+            rows_md = [
+                "| # | name | method | source | pinned ref | license | decision | shapes |",
+                "|---:|---|---|---|---|---|---|---|",
+            ]
+            for number, name in enumerate(("compared", "dropped", "uncompared", "residual"), 1):
+                rows_md.append(
+                    f"| {number} | `{name}` | api-guru | https://example.test/{name}.yml | `1` | MIT | committed | t |"
+                )
+                (corpus / name).mkdir(parents=True)
+                (corpus / name / "openapi.yml").write_text(self.DOCUMENT, encoding="utf-8")
+            (fixtures / "CORPUS.md").write_text("\n".join(rows_md) + "\n", encoding="utf-8")
+            write_golden_registry(fixtures, "compared", "residual", residual={"residual": ["reference.md"]})
+            # A golden tree with no test comparing it is not a registration either.
+            (fixtures / "uncompared" / "expected").mkdir(parents=True)
+            completed = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus),
+                            "--selector", "pathItem.trace", "--json")
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(["compared", "residual"], [s["fixture"] for s in payload["sources"]])
+            self.assertEqual(
+                {"compared", "residual"}, {row["fixture"] for row in payload["rows"]}
+            )
+            refused = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus),
+                          "--fixture", "dropped")
+            self.assertEqual(1, refused.returncode, refused.stdout)
+            self.assertIn("carries no Fern golden", refused.stderr)
+
+            (fixtures.parent / "e2e.rs").unlink()
+            unregistered = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus))
+            self.assertEqual(1, unregistered.returncode, unregistered.stdout)
+            self.assertIn("missing golden registry", unregistered.stderr)
+
+    def test_the_real_population_is_exactly_the_compared_goldens(self) -> None:
+        corpus_root = REPO / "tests" / "fixtures" / "corpus-sources"
+        acquired = census.acquisition_sources(FIXTURES, corpus_root, False)
+        registered = census.registered_sources(FIXTURES, corpus_root, False)
+        registrations = census.golden_registrations(REPO / "tests" / "e2e.rs")
+        aliases = census.corpus_aliases(FIXTURES)
+
+        def compared(fixture: str) -> bool:
+            directory = aliases.get(fixture, fixture)
+            return directory in registrations and (FIXTURES / directory / "expected").is_dir()
+
+        self.assertEqual(
+            sorted(s.fixture for s in acquired if compared(s.fixture)),
+            sorted(s.fixture for s in registered),
+        )
+        names = {s.fixture for s in registered}
+        self.assertIn("axesso.de", {s.fixture for s in acquired})
+        self.assertNotIn("axesso.de", names, "Fern dropped axesso.de; it carries no golden")
+        self.assertNotIn("calorieninjas.com", names, "no golden; its test pins Fern's failure")
+        self.assertIn("apideck.com-crm", names)
+        # The residual rows are golden sources whose registration names what
+        # they do not byte-match yet.
+        for fixture in ("komga", "short-io", "webflow-v2"):
+            with self.subTest(fixture=fixture):
+                self.assertIn(fixture, names)
+                self.assertTrue(registrations[fixture].unmatched)
+        self.assertEqual((), registrations["apideck.com-crm"].unmatched)
+
+    def test_the_reach_join_reads_the_census_registrations(self) -> None:
+        """`golden-reach` scopes one run per golden test; it must find every source's."""
+        spec = importlib.util.spec_from_file_location(
+            "golden_reach_population", REPO / "scripts" / "golden-reach.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        try:
+            spec.loader.exec_module(module)
+            tests = module.fixture_test_map(REPO)
+        finally:
+            del sys.modules[spec.name]
+        registered = census.registered_sources(
+            FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", False
+        )
+        self.assertEqual([], [s.fixture for s in registered if s.fixture not in tests])
 
 
 class SourceSelectionTests(unittest.TestCase):
@@ -6800,13 +6957,92 @@ class YamlSubsetTests(unittest.TestCase):
             ("a:\n\t- 1\n", "tabs cannot indent YAML"),
             ('a: "unterminated\n', "never closed"),
             ("a: [1, 2\n", "never closed"),
-            ("? [a]\n: 1\n", "explicit `? ` mapping keys"),
+            ("? {a: 1}\n: 1\n", "a mapping or nested collection is used as a mapping key"),
+            ("? a: 1\n: v\n", "a mapping or nested collection is used as a mapping key"),
             (": 1\n", "an empty mapping key"),
             ("info:\n  : 1\n", "an empty mapping key"),
             ("a: 1\nb\n", "expected a `key: value` mapping entry"),
         ):
             with self.subTest(document=document):
                 self.assertIn(expected, self.refusal(document))
+
+    # Explicit `? ` keys, read as ruamel.yaml 0.19.1 (the full parser
+    # `scripts/golden-reach-search.py` pins) reads them; each expectation was
+    # taken from that parser, and PyYAML's safe loader agrees on every one but
+    # the sequence key, which it refuses as unhashable.
+    EXPLICIT_KEYS = (
+        ("? k\n: v\n", {"k": "v"}),
+        ("? 2\n: two\n", {2: "two"}),
+        ("? lone\nnext: 1\n", {"lone": None, "next": 1}),
+        ("? long\n  key\n: v\n", {"long key": "v"}),
+        ('? "q k"\n: \'v\'\n', {"q k": "v"}),
+        ("? &x k\n: *x\n", {"k": "k"}),
+        ("?\n  indented\n: v\n", {"indented": "v"}),
+        ("? |\n  block\n: v\n", {"block\n": "v"}),
+        ("?\n: v\n", {None: "v"}),
+        ("? k\n: - 1\n  - 2\n", {"k": [1, 2]}),
+        ("? k\n:\n- 1\n- 2\n", {"k": [1, 2]}),
+        ("? k\n: a: 1\n  b: 2\nz: 3\n", {"k": {"a": 1, "b": 2}, "z": 3}),
+        ("? k\n:\n  nested: 1\n", {"k": {"nested": 1}}),
+        ("- ? k\n  : v\n- x\n", [{"k": "v"}, "x"]),
+        ("? - a\n  - b\n: v\n", {("a", "b"): "v"}),
+        ("? [a, b]\n: v\n", {("a", "b"): "v"}),
+    )
+
+    def test_explicit_keys_read_as_the_pinned_full_parser_reads_them(self) -> None:
+        for document, expected in self.EXPLICIT_KEYS:
+            with self.subTest(document=document):
+                self.assertEqual(expected, self.load(document))
+
+    def test_every_explicit_key_sample_reads_on_the_standard_path(self) -> None:
+        """#363: the committed publisher documents need no fallback any more.
+
+        `tests/data/census-fallback-sample.tsv` records the counts the pinned full
+        parser gives each sample (`just test-census-fallback` holds the two
+        readings together); here the stdlib reader alone, with nothing
+        installed, reads each explicit-key sample to exactly those counts. The
+        pinned Stripe description is one of them.
+        """
+        with (REPO / "tests/data/census-fallback-sample.tsv").open(encoding="utf-8", newline="") as handle:
+            samples = [row for row in csv.DictReader(handle, delimiter="\t") if row["form"] == "explicit-key"]
+        self.assertIn(
+            "https://raw.githubusercontent.com/stripe/openapi/58e06a3214ae1574600fba64d40b770e5da6d505/latest/openapi.spec3.yaml",
+            [row["url"] for row in samples],
+        )
+        for row in samples:
+            with self.subTest(url=row["url"]):
+                path = REPO / "tests/data/census-fallback-sample" / f"{row['sha256']}{Path(row['url']).suffix}"
+                counts = census.census_document(census.load_document(path), root_path=path)
+                declared = dict(pair.rsplit("=", 1) for pair in row["declares"].split(";"))
+                self.assertEqual(
+                    {selector: int(n) for selector, n in declared.items()},
+                    {selector: counts.get(selector, 0) for selector in declared},
+                )
+
+    def test_an_explicit_key_is_a_name_among_the_implicit_ones(self) -> None:
+        """Stripe's shape: three long component names written as `? ` keys among plain ones."""
+        loaded = self.load("""\
+            components:
+              schemas:
+                plain:
+                  type: string
+                ? a_component_name_too_long_for_an_implicit_key
+                : title: Long
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                after:
+                  type: integer
+            """)
+        self.assertEqual(
+            ["plain", "a_component_name_too_long_for_an_implicit_key", "after"],
+            list(loaded["components"]["schemas"]),
+        )
+        self.assertEqual(
+            {"title": "Long", "type": "object", "properties": {"status": {"type": "string"}}},
+            loaded["components"]["schemas"]["a_component_name_too_long_for_an_implicit_key"],
+        )
 
     def test_a_json_source_is_read_as_json(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -7157,6 +7393,33 @@ class PyYamlOracleTests(unittest.TestCase):
                 mine = census.census_document(census.load_document(path))
                 theirs = census.census_document(yaml.safe_load(path.read_text(encoding="utf-8")))
                 self.assertEqual(theirs, mine)
+
+    def test_explicit_keys_match_pyyaml_wherever_pyyaml_reads_them(self) -> None:
+        try:
+            import yaml
+        except ImportError:
+            self.skipTest(f"PyYAML is not importable on {sys.executable}")
+        for document, expected in YamlSubsetTests.EXPLICIT_KEYS:
+            with self.subTest(document=document):
+                if any(isinstance(key, tuple) for key in (expected if isinstance(expected, dict) else {})):
+                    with self.assertRaises(yaml.YAMLError):
+                        yaml.safe_load(document)
+                    continue
+                self.assertEqual(yaml.safe_load(document), expected)
+
+    def test_the_pinned_stripe_description_counts_as_pyyaml_counts_it(self) -> None:
+        """The publisher document #363 named: its explicit keys no longer need a fallback."""
+        try:
+            import yaml
+        except ImportError:
+            self.skipTest(f"PyYAML is not importable on {sys.executable}")
+        path = REPO / "tests/data/census-fallback-sample/4b23d81eeb8a0d4d789baa362841c0c14f181b579ff3458c3ab002eb6aa1b553.yaml"
+        loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+        theirs = yaml.load(path.read_text(encoding="utf-8"), Loader=loader)
+        self.assertEqual(
+            census.census_document(theirs, root_path=path),
+            census.census_document(census.load_document(path), root_path=path),
+        )
 
 
 
@@ -11304,6 +11567,64 @@ class NamingMirrorTests(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertEqual(pinned, actual, f"re-derive {name}'s enum predicates from src/naming.rs")
 
+    def test_the_method_name_port_reproduces_croziers_own_expectations(self) -> None:
+        """`src/ir.rs` pins `endpoint_method_name` against Fern's measured names;
+        those expectations are read out of the Rust source and re-asserted here."""
+        source = (REPO / "src" / "ir.rs").read_text(encoding="utf-8")
+        cases = []
+        # Each `let o` binding starts a block; only those built by the test
+        # module's `op(id, tag)` helper are read, up to the next binding.
+        for block in re.split(r"\blet o\b(?::[^=]*)?\s*=\s*", source)[1:]:
+            built = re.match(r'op\("((?:[^"\\]|\\.)*)", "((?:[^"\\]|\\.)*)"\);', block)
+            if built is None:
+                continue
+            body = block.split("\n    }\n", 1)[0]
+            for method, url, expected in re.findall(
+                r'endpoint_method_name\(&o, "([^"]+)", "([^"]+)"\),\s*"([^"]*)"', body
+            ):
+                cases.append((built.group(1), built.group(2), method, url, expected))
+        self.assertGreaterEqual(len(cases), 6, "src/ir.rs no longer pins endpoint_method_name")
+        for operation_id, tag, method, url, expected in cases:
+            with self.subTest(operation_id=operation_id, tag=tag):
+                derived = census.operation_method_name(
+                    {"operationId": operation_id, "tags": [tag]}, method.lower(), url
+                )
+                self.assertIsNotNone(derived)
+                self.assertEqual(expected, derived[0])
+
+    def test_the_method_name_port_tracks_its_rust_functions(self) -> None:
+        """`operation.operationId:digit-leading-method` ports `endpoint_method_name`.
+
+        Each ported function of `src/ir.rs` is pinned by the same normalized-body
+        digest the enum port uses, so an arm edited there fails here until the
+        port is read again.
+        """
+        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
+        for name, pinned in census.METHOD_NAME_PORT_DIGESTS.items():
+            start = next(
+                (index for index, line in enumerate(lines)
+                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+            )
+            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            depth, started = 0, False
+            for end in range(start, len(lines)):
+                for char in lines[end]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                if started and depth == 0:
+                    break
+            kept = [
+                " ".join(line.split()) for line in lines[start:end + 1]
+                if line.strip() and not line.strip().startswith("//")
+            ]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-derive operation.operationId:digit-leading-method from src/ir.rs's {name}",
+                )
+
     def test_the_port_reproduces_croziers_own_class_name_expectations(self) -> None:
         """The class-name side of the same mirror.
 
@@ -11355,6 +11676,220 @@ class NamingMirrorTests(unittest.TestCase):
             census.normalized_path("/users/{userId}/roles/{roleID}"),
         )
         self.assertEqual("/users/userId", census.normalized_path("/users/userId"))
+
+
+def _root_document(root: dict, **components: dict) -> dict:
+    return {
+        "openapi": "3.1.0", "info": {"title": "control", "version": "1"}, "paths": {},
+        "components": {"schemas": {"Root": root, **components}},
+    }
+
+
+def _operation_document(operation: dict, *, url: str = "/things/{id}", components: dict | None = None) -> dict:
+    document = {
+        "openapi": "3.0.3", "info": {"title": "control", "version": "1"},
+        "paths": {url: {"get": {"responses": {"200": {"description": "ok"}}, **operation}}},
+    }
+    if components:
+        document["components"] = components
+    return document
+
+
+def _enum(*values: str) -> dict:
+    return _root_document({"type": "string", "enum": list(values)})
+
+
+_PET = {"type": "object", "properties": {"name": {"type": "string"}}}
+_JSON_BODY = lambda media: {"requestBody": {"content": {"application/json": media}}}  # noqa: E731
+
+
+class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
+    """Every #361 branch, counted on the document that takes it and not on its near miss.
+
+    Each case is two documents run through the real CLI: `select` takes the
+    branch once, `near` differs from it by the one thing the branch reads and
+    must not count. The near misses are the neighbouring arm wherever one
+    exists — a two-digit run beside a one-digit one, `format: date` beside
+    `date-time`, a `required` list naming the field beside one that does not —
+    so a predicate that read the wrong property passes neither half.
+    """
+
+    CASES: dict[str, tuple[dict, dict]] = {
+        "schema.enum:deburred-member": (_enum("SUBSTÂNCIA"), _enum("SUBSTANCIA")),
+        "schema.enum:letter-run-member": (_enum("u.s. virgin islands"), _enum("us virgin islands")),
+        "schema.enum:alphanumeric-join-member": (_enum("a b12"), _enum("ab b12")),
+        "schema.enum:digit-boundary-member": (_enum("DB-25"), _enum("DB-XY")),
+        "schema.enum:single-digit-prefix-member": (_enum("5G"), _enum("50G")),
+        "schema.enum:numeric-small-member": (_enum("12 items"), _enum("20 items")),
+        "schema.enum:numeric-tens-member": (_enum("25 cents"), _enum("19 cents")),
+        "schema.enum:numeric-hundreds-member": (_enum("150ms"), _enum("1500ms")),
+        "schema.enum:numeric-thousands-member": (_enum("1200 bps"), _enum("120 bps")),
+        "operation.operationId:digit-leading-method": (
+            _operation_document({"operationId": "2faVerify"}),
+            _operation_document({"operationId": "verify2fa"}),
+        ),
+        "schema.example:date-time-string": (
+            _root_document({"type": "string", "format": "date-time", "example": "2020-01-01T00:00:00Z"}),
+            _root_document({"type": "string", "format": "date", "example": "2020-01-01T00:00:00Z"}),
+        ),
+        "schema.example:date-string": (
+            _root_document({"type": "string", "format": "date", "example": "2020-01-01"}),
+            _root_document({"type": "string", "format": "date-time", "example": "2020-01-01"}),
+        ),
+        "schema.example:integral-on-number": (
+            _root_document({"type": "number", "example": 3}),
+            _root_document({"type": "number", "example": 3.5}),
+        ),
+        "schema.example:fractional-on-integer": (
+            _root_document({"type": "integer", "example": 3.5}),
+            _root_document({"type": "integer", "example": 3}),
+        ),
+        "schema.example:empty-array": (
+            _root_document({"type": "array", "example": []}),
+            _root_document({"type": "array", "example": [1]}),
+        ),
+        "schema.example:empty-object": (
+            _root_document({"type": "object", "example": {}}),
+            _root_document({"type": "object", "example": {"a": 1}}),
+        ),
+        "schema.example:array-null-element": (
+            _root_document({"type": "array", "example": [1, None]}),
+            _root_document({"type": "array", "example": [1, 2]}),
+        ),
+        "schema.example:array-object-element": (
+            _root_document({"type": "array", "example": [{"a": 1}]}),
+            _root_document({"type": "array", "example": [[1]]}),
+        ),
+        "schema.example:temporal-duplicate-element": (
+            _root_document({"type": "array", "items": {"type": "string", "format": "date"},
+                            "example": ["2020-01-01", "2020-01-01"]}),
+            _root_document({"type": "array", "items": {"type": "string"},
+                            "example": ["2020-01-01", "2020-01-01"]}),
+        ),
+        "schema.example:union-ref-sentinel": (
+            _root_document({"oneOf": [{"type": "string"}, {"type": "array"}], "example": {"$ref": "x"}}),
+            _root_document({"oneOf": [{"type": "string"}, {"type": "array"}], "example": {"$ref": "x", "a": 1}}),
+        ),
+        "schema.example:missing-required-field": (
+            _root_document({"properties": {"a": {}, "b": {}}, "required": ["a", "b"], "example": {"a": 1}}),
+            _root_document({"properties": {"a": {}, "b": {}}, "required": ["a"], "example": {"a": 1}}),
+        ),
+        "schema.example:undeclared-field": (
+            _root_document({"properties": {"a": {}}, "example": {"a": 1, "z": 2}}),
+            _root_document({"properties": {"a": {}, "z": {}}, "example": {"a": 1, "z": 2}}),
+        ),
+        "schema.example:empty-object-member": (
+            _root_document({"type": "object", "example": {"a": {}}}),
+            _root_document({"type": "object", "example": {"a": {"b": 1}}}),
+        ),
+        "schema.example:empty-array-member": (
+            _root_document({"type": "object", "example": {"a": []}}),
+            _root_document({"type": "object", "example": {"a": [1]}}),
+        ),
+        "schema.example:object-on-map": (
+            _root_document({"type": "object", "additionalProperties": True, "example": {"k": 1}}),
+            _root_document({"type": "object", "additionalProperties": False, "example": {"k": 1}}),
+        ),
+        "schema.example:outside-enum": (
+            _root_document({"type": "string", "enum": ["a", "b"], "example": "c"}),
+            _root_document({"type": "string", "enum": ["a", "b"], "example": "a"}),
+        ),
+        "schema.example:on-ref-to-object": (
+            _root_document({"$ref": "#/components/schemas/T", "example": {"name": "x"}}, T=_PET),
+            _root_document({"$ref": "#/components/schemas/T", "example": {"name": "x"}},
+                           T={"oneOf": [_PET, {"type": "string"}]}),
+        ),
+        "schema.example:on-ref-to-enum": (
+            _root_document({"$ref": "#/components/schemas/T", "example": "a"}, T={"type": "string", "enum": ["a"]}),
+            _root_document({"$ref": "#/components/schemas/T", "example": "a"}, T={"type": "string"}),
+        ),
+        "schema.example:on-ref-to-union": (
+            _root_document({"$ref": "#/components/schemas/T", "example": "a"},
+                           T={"anyOf": [{"type": "string"}, {"type": "integer"}]}),
+            _root_document({"$ref": "#/components/schemas/T", "example": "a"},
+                           T={"allOf": [{"type": "string"}]}),
+        ),
+        "schema.example:on-ref-to-alias": (
+            _root_document({"$ref": "#/components/schemas/T", "example": ["a"]},
+                           T={"type": "array", "items": {"type": "string"}}),
+            _root_document({"$ref": "#/components/schemas/T"},
+                           T={"type": "array", "items": {"type": "string"}}),
+        ),
+        "schema.properties:optional-example": (
+            _root_document({"properties": {"a": {"type": "string", "example": "x"}}, "required": []}),
+            _root_document({"properties": {"a": {"type": "string", "example": "x"}}, "required": ["a"]}),
+        ),
+        "parameter.example:non-scalar-query": (
+            _operation_document({"parameters": [
+                {"name": "f", "in": "query", "schema": {"type": "object"}, "example": {"a": 1}}]}),
+            _operation_document({"parameters": [
+                {"name": "f", "in": "query", "schema": {"type": "array", "items": {"type": "string"}},
+                 "example": ["a"]}]}),
+        ),
+        "mediaType.examples:named-beside-example": (
+            _operation_document(_JSON_BODY({"example": {"a": 1}, "examples": {"one": {"value": {"a": 2}}}})),
+            _operation_document(_JSON_BODY({"example": {"a": 1}, "examples": {"one": {"summary": "no value"}}})),
+        ),
+        "mediaType.examples:named-only": (
+            _operation_document(_JSON_BODY({"examples": {"one": {"$ref": "#/components/examples/E"}}}),
+                                components={"examples": {"E": {"value": {"a": 1}}}}),
+            _operation_document({"requestBody": {"content": {"text/plain": {
+                "examples": {"one": {"value": "a"}}}}}}),
+        ),
+        "operation.responses:wildcard-binary": (
+            _operation_document({"responses": {"200": {"description": "ok", "content": {
+                "*/*": {"schema": {"type": "string", "format": "binary"}}}}}}),
+            _operation_document({"responses": {"200": {"description": "ok", "content": {
+                "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}}}}}),
+        ),
+    }
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for index, (select, near) in enumerate(cls.CASES.values()):
+                write_json_fixture(root, f"select-{index}", select)
+                write_json_fixture(root, f"near-{index}", near)
+            arguments = ["--vendored-only", "--fixtures-root", str(root), "--json"]
+            for selector in cls.CASES:
+                arguments += ["--selector", selector]
+            completed = run(*arguments)
+        assert completed.returncode == 0, completed.stderr
+        cls.reported = {
+            (row["selector"], row["fixture"]): row["count"]
+            for row in json.loads(completed.stdout)["rows"]
+        }
+
+    def test_the_cases_are_exactly_the_family(self) -> None:
+        self.assertEqual(NAMING_AND_EXAMPLE_BRANCH_PREDICATES, set(self.CASES))
+        self.assertLessEqual(NAMING_AND_EXAMPLE_BRANCH_PREDICATES, set(census.PREDICATES))
+
+    def test_each_branch_counts_its_document_and_not_its_near_miss(self) -> None:
+        for index, selector in enumerate(self.CASES):
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, f"select-{index}"), 0))
+                self.assertEqual(0, self.reported.get((selector, f"near-{index}"), 0))
+
+    def test_an_extension_named_method_is_not_an_operation_id_method(self) -> None:
+        """The SDK method-name extension pre-empts the id, so its digit is no case."""
+        named = _operation_document({"operationId": "2faVerify", "x-fern-sdk-method-name": "verify"})
+        grouped = _operation_document({"operationId": "auth_2fa", "tags": ["auth"]})
+        stripped = _operation_document({"operationId": "auth_2fa_check", "tags": ["auth"]})
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, body in (("named", named), ("grouped", grouped), ("stripped", stripped)):
+                write_json_fixture(root, name, body)
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", "operation.operationId:digit-leading-method")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        # `auth_2fa` under tag `auth` leaves the method `2fa`; `auth_2fa_check`
+        # strips the tag segment and joins the digit-led word (`2fa_check`).
+        self.assertEqual(
+            {("operation.operationId:digit-leading-method", "grouped"): 1,
+             ("operation.operationId:digit-leading-method", "stripped"): 1},
+            rows(completed),
+        )
 
 
 class ExampleAndEnumSelectorControls(unittest.TestCase):

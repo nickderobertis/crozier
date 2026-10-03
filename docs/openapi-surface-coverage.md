@@ -318,7 +318,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-49, declared in `scripts/openapi-surface-census.py` and restated here, with a
+84, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -391,6 +391,100 @@ drift gate over the pair:
   members yielding the same crozier member identifier after normalization.
 - `schema.enum:numeric-member` — one per schema with a numeric enum member;
   `string_enum_values` does not yield a named member from it.
+- `schema.enum:deburred-member` — one per schema with a string enum member
+  holding a Latin-1 Supplement or Latin Extended-A letter, which
+  `enum_identifier`'s `deburr` folds to ASCII before naming it (`SUBSTÂNCIA` is
+  `SUBSTANCIA`).
+- `schema.enum:letter-run-member` — one per schema with a string enum member
+  whose split words hold consecutive single letters, which `enum_words` joins
+  into one word (`u.s. virgin islands` is `US_VIRGIN_ISLANDS`).
+- `schema.enum:alphanumeric-join-member` — one per schema with a string enum
+  member where `enum_words` joins a word to the one before it: a letter run of
+  at most two after a digits-then-letter word, or a letter-then-digits word
+  after a single letter (`a b12` is `AB12`).
+- `schema.enum:digit-boundary-member` — one per schema with a string enum
+  member whose joined words carry an underscore beside a digit, which
+  `enum_words` collapses (`DB-25` is `DB25`).
+- `schema.enum:single-digit-prefix-member` — one per schema with a string enum
+  member whose leading numeric run, as written, is one digit that `enum_words`
+  spells through `numeric_enum_identifier` (`5G` is `FIVE_G`).
+- `schema.enum:numeric-small-member`, `schema.enum:numeric-tens-member`,
+  `schema.enum:numeric-hundreds-member` and
+  `schema.enum:numeric-thousands-member` — one per schema with a string enum
+  member whose number `enum_words` spells through `numeric_enum_identifier`
+  falls in that function's below-20, 20-to-99, 100-to-999 or 1000-to-9999
+  branch. Each reads the number the function is handed — a zero-led whole value
+  read without its zeros, or a leading run — so `05` is small and `1200 bps`
+  thousands.
+- `operation.operationId:digit-leading-method` — one per Operation Object under
+  the Paths Object whose `operationId`-derived method name starts with a digit,
+  so `sanitize_identifier` prefixes it with `_`. The name is
+  `endpoint_method_name`'s after its tag, group, FastAPI-suffix, duplicate-suffix
+  and template transforms, which the census ports function by function; an
+  operation naming its method by extension, or by no id, is not one.
+- `schema.example:date-time-string` and `schema.example:date-string` — one per
+  schema writing `format: date-time` (or `date`) whose selected example is a
+  string, which `value_from_example` renders through
+  `datetime.datetime.fromisoformat` (or `datetime.date.fromisoformat`).
+- `schema.example:integral-on-number` — one per schema whose primary type is
+  `number` and whose selected example is a JSON integer, which
+  `value_from_example` writes with a `.0` for the float annotation.
+- `schema.example:fractional-on-integer` — one per schema whose primary type is
+  `integer` and whose selected example is a JSON fraction, which
+  `example_matches_type`'s integer arm refuses.
+- `schema.example:empty-array` and `schema.example:empty-object` — one per
+  schema whose selected example is `[]` (or `{}`).
+- `schema.example:array-null-element` — one per schema whose selected example
+  is an array holding a `null`, which `value_from_example`'s list arm replaces
+  with a synthesized element.
+- `schema.example:array-object-element` — one per schema whose selected example
+  is an array holding an object, a nested element the list arm renders through
+  the item type.
+- `schema.example:temporal-duplicate-element` — one per schema whose `items`
+  write `format: date` or `date-time` and whose selected example repeats an
+  element, which the list arm de-duplicates.
+- `schema.example:union-ref-sentinel` — one per schema declaring `oneOf` or
+  `anyOf` whose selected example is an object holding only `$ref`, which
+  `value_from_example`'s union arm answers with its list member.
+- `schema.example:missing-required-field` and `schema.example:undeclared-field`
+  — one per schema with a non-empty `properties` map whose selected example is
+  an object omitting a property `required` names (or holding a key the map does
+  not declare); `example_matches_type`'s object arm refuses either.
+- `schema.example:empty-object-member` and `schema.example:empty-array-member`
+  — one per schema whose selected example is an object one of whose values is
+  `{}` (no argument for an optional model field) or `[]` (no example value for
+  the field).
+- `schema.example:object-on-map` — one per schema writing
+  `additionalProperties` as `true` or a schema, with no non-empty `properties`
+  map, whose selected example is an object: the `Dict` an example renders as a
+  dictionary.
+- `schema.example:outside-enum` — one per schema with a string-valued `enum`
+  whose selected example is a string none of its members is, which
+  `example_matches_type`'s enum arm refuses.
+- `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
+  `schema.example:on-ref-to-union` and `schema.example:on-ref-to-alias` — one
+  per schema with a selected example whose `$ref` resolves, in the document's
+  own `components.schemas`, to a schema declaring a non-empty `properties` map
+  (object), a string-valued `enum` (enum), a `oneOf` or `anyOf` (union), or none
+  of those nor an `allOf` (alias): the named declaration `named_value_inner` and
+  `example_is_object` switch on, reached from the example site. A target
+  declaring a union counts as one before anything else it declares, and an enum
+  before an object.
+- `schema.properties:optional-example` — one per schema one of whose
+  properties its `required` list does not name selects an example: the
+  `Optional` the example arms unwrap first.
+- `parameter.example:non-scalar-query` — one per query Parameter Object
+  declaring an example whose schema, after one local `$ref`, is neither a
+  string, integer, number or boolean nor an array of one, so
+  `build_example_inner` does not render the declared example.
+- `mediaType.examples:named-beside-example` and `mediaType.examples:named-only`
+  — one per request body's selected JSON media type writing a named example that
+  resolves to a value, beside a non-null `example` (which `reference.md` then
+  documents) or without one (the first named one is documented).
+- `operation.responses:wildcard-binary` — one per Operation Object whose success
+  response, chosen as `has_wildcard_binary_response` chooses it, serves `*/*`
+  with an inline string schema of format `binary`: the endpoint mode
+  `build_example_inner` reads before it renders any parameter example.
 - `openapi.paths:leading-literal-segment` — one per Paths Object key whose
   first non-empty `/`-separated segment is not wholly a `{expression}`
   template expression, which is the segment `src/ir.rs`'s `path_group`
@@ -542,7 +636,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Forty-one of the 49 are node-local**, which is what makes them one family:
+**Sixty-seven of the 84 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -550,20 +644,32 @@ in exactly that sense — a `$ref` *value* is one of the node's own declared
 fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further. The other
-eight — `operation.operationId:duplicate`,
+seventeen — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
-`schema.anyOf:discriminated-union` and
-`schema.discriminator:inheritance-union` — compare one document's
-own values against each other, and say so in their own sentence. Those two
-numbers partition the closed list, and a check reconciles the split with it. The last five of
-them read **the document context**: the census carries the document's own
-`components.schemas` map and the set of its keys, reachable from every node it
-walks, and it is the document being censused and nothing else — no fetch, no
-cross-document resolution, no second document. A property that would need the
-*shape* of the schema a `$ref` points at is still not a predicate of either kind
-and is declared nowhere: that is what the `~>` operator below descends for.
+`schema.anyOf:discriminated-union`,
+`schema.discriminator:inheritance-union`,
+`operation.operationId:digit-leading-method`,
+`operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`,
+`mediaType.examples:named-beside-example`, `mediaType.examples:named-only`,
+`schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
+`schema.example:on-ref-to-union` and `schema.example:on-ref-to-alias` — read
+the document beyond the node, and say so in their own sentence. The first eight
+compare one document's own values against each other; the last nine read where
+the node stands (an operation's route, a request body's selected media type) or
+resolve one local `#/components/...` reference. Those two
+numbers partition the closed list, and a check reconciles the split with it. Every
+document-reading predicate reads **the document context**: the census carries the
+document's own `components` maps, its route and request-body positions, and the
+set of its schema keys, reachable from every node it walks, and it is the
+document being censused and nothing else — no fetch, no cross-document
+resolution, no second document. A property that would need the *shape* of the
+schema a `$ref` points at is a predicate in one case only: the four
+`on-ref-to` example readings, because the arms they are read off are
+`src/emit.rs`'s, which no `src/ir.rs` case can carry a `~>` conjunction for.
+Everywhere else it is declared nowhere: that is what the `~>` operator below
+descends for.
 
 A predicate selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name, and reports an undeclared one

@@ -63,7 +63,6 @@ LEDGER = REGIONS_DIR / "golden-reach.tsv"
 DEFAULT_OUT = REPO / ".local" / "golden-reach"
 # What a native binary's file name ends in: the llvm tools and cargo's outputs carry it.
 EXE = ".exe" if os.name == "nt" else ""
-GOLDEN_TEST = re.compile(r"matches_fern_output")
 CATEGORIES = ("golden", "limitations", "handwritten", "gap")
 CELL_PREFIX = "reach:"
 # A site spec may hold a comma inside its `[regex]`, so the ledger separates
@@ -431,10 +430,11 @@ def measure(args: argparse.Namespace) -> int:
     if listed.returncode != 0:
         fail(f"{e2e} --list exited {listed.returncode}: {listed.stderr.strip()[-400:]} — rebuild it with `just golden-reach`")
     listing = listed.stdout
+    golden_test = _census_module().GOLDEN_TEST
     tests = sorted(
         line.rsplit(": test", 1)[0]
         for line in listing.splitlines()
-        if line.endswith(": test") and GOLDEN_TEST.search(line)
+        if line.endswith(": test") and golden_test.search(line)
     )
     if args.tests:
         selected = re.compile(args.tests)
@@ -769,42 +769,19 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
 def fixture_test_map(repo_root: Path) -> dict[str, str]:
     """census fixture name -> the golden test comparing its committed golden.
 
-    Read off `tests/e2e.rs` itself: a `const X: Corpus` names its `api`, the test
-    that drives `&X` is that fixture's golden test, and a feature target's test is
-    the one `feature_target_goldens!` names for its `api`. The census reports a
-    corpus by its `CORPUS.md` fixture name, which `corpus_aliases` maps back.
+    The census reads `tests/e2e.rs` for its golden-source population
+    (`golden_registrations`), so the reach join reads the same registrations
+    rather than a second parse: a corpus helper or a feature-target macro one
+    reader recognises and the other did not would leave a golden source with no
+    scoped run. The census reports a corpus by its `CORPUS.md` fixture name,
+    which `corpus_aliases` maps back.
     """
-    source = (repo_root / "tests" / "e2e.rs").read_text(encoding="utf-8")
-    constants: dict[str, str] = {}
-    pending = None
-    for line in source.splitlines():
-        header = re.match(r"^const (\w+): Corpus = Corpus \{", line)
-        if header:
-            pending = header.group(1)
-            continue
-        api = re.match(r'^\s*api: "([^"]+)",', line)
-        if api and pending:
-            constants[pending] = api.group(1)
-            pending = None
-    tests: dict[str, str] = {}
-    current = None
-    for line in source.splitlines():
-        fn = re.match(r"^fn (\w+)\(", line)
-        if fn:
-            current = fn.group(1)
-        drive = re.search(r"assert_(?:link_ok_|committed_)?corpus_matches\(&(\w+)\)", line)
-        if drive and current and GOLDEN_TEST.search(current) and drive.group(1) in constants:
-            tests[constants[drive.group(1)]] = current
-    for test, api in re.findall(r"^\s*(\w+_matches_fern_output) => \"([^\"]+)\"", source, re.M):
-        tests[api] = test
     census = _census_module()
-    aliases = census.corpus_aliases(repo_root / "tests" / "fixtures")
-    by_fixture = {}
-    for api, test in tests.items():
-        by_fixture[api] = test
-    for fixture, api in aliases.items():
-        if api in tests:
-            by_fixture[fixture] = tests[api]
+    registrations = census.golden_registrations(repo_root / "tests" / "e2e.rs")
+    by_fixture = {api: registration.test for api, registration in registrations.items()}
+    for fixture, api in census.corpus_aliases(repo_root / "tests" / "fixtures").items():
+        if api in registrations:
+            by_fixture[fixture] = registrations[api].test
     return by_fixture
 
 
