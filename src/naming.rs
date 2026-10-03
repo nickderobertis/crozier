@@ -980,15 +980,16 @@ pub fn is_reserved(name: &str) -> bool {
 /// `EventActionFilesystemConfig.copy` is `copy_` under an `alias="copy"` in its
 /// golden, and embedpdf-cloudpdf's `PdfFieldActions.validate` (`BaseModel.validate()`)
 /// is `validate_`, and MockServer's `json` bodies (`BaseModel.json()`) are
-/// `json_`. The protection is *model-scoped*, so an enum visitor's `copy` argument
-/// (otoroshi's `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its
-/// spelling.
+/// `json_`, and `construct` (`BaseModel.construct()`) is `construct_`, measured
+/// on the authored probe `376-354-model-property-construct`. The protection
+/// is *model-scoped*, so an enum visitor's `copy` argument (otoroshi's
+/// `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its spelling.
 #[must_use]
 pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
     if matches!(
         name.as_str(),
-        "copy" | "json" | "kwargs" | "schema" | "self" | "validate"
+        "construct" | "copy" | "json" | "kwargs" | "schema" | "self" | "validate"
     ) {
         format!("{name}_")
     } else {
@@ -1103,6 +1104,8 @@ mod tests {
         assert_eq!(field_name("name"), "name");
         assert_eq!(field_name("tags"), "tags");
         assert_eq!(model_field_name("self"), "self_");
+        assert_eq!(model_field_name("construct"), "construct_");
+        assert_eq!(field_name("construct"), "construct");
     }
 
     #[test]

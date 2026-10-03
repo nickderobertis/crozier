@@ -15,3 +15,12 @@ All 6 retrievable population documents refuse with exit 1 and no output under st
 Pinned Fern controls: [type-led-digit-word.pinned-fern](evidence/type-led-digit-word.pinned-fern.log), [type-led-name-override.pinned-fern](evidence/type-led-name-override.pinned-fern.log), [type-led-punctuation.pinned-fern](evidence/type-led-punctuation.pinned-fern.log), [type-led-type-override.pinned-fern](evidence/type-led-type-override.pinned-fern.log), [type-led-underscore.pinned-fern](evidence/type-led-underscore.pinned-fern.log).
 
 The numeric boundary is measured: [9999 is accepted](evidence/type-numeric-9999.pinned-fern.log), [10000 is refused](evidence/type-numeric-10000.pinned-fern.log), and [leading zeroes alone do not trigger it](evidence/type-numeric-00001.pinned-fern.log). The empty-name population uses [object references to legacy definitions](evidence/object-type-ref-definitions.pinned-fern.log), [webhook-local object references](evidence/object-type-ref-webhook.pinned-fern.log), or [unavailable relative component aliases](evidence/component-type-ref-relative.pinned-fern.log). Direct response relative references and component-local definitions are accepted controls. Available relative files continue through the existing loader.
+
+A declared type name (`x-fern-type-name` or `x-crozier-type-name`) replaces the
+key Fern checks, so a hinted `123456` generates as its declared name (the
+authored probe
+[`376-350-declared-type-name`](../../openapi-surface/authored-probes/376-350-declared-type-name/)).
+A blank declaration declares nothing: Fern falls back to the key and refuses it
+([probe](evidence/376-350-declared-type-name-blank-digit-led.yml),
+[pinned Fern](evidence/376-350-declared-type-name-blank-digit-led.pinned-fern.log)),
+and crozier refuses it in both modes, naming `123456`.

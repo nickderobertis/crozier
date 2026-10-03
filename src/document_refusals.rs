@@ -2036,9 +2036,10 @@ pub fn check_sdk(
             );
         }
         // A syntax error: a method with no name. Fern empties one named from a
-        // summary with no ASCII word; one whose operationId only repeats its tag
-        // it instead hoists to the root, which collides with that tag's
-        // sub-client only when the tag keeps another operation.
+        // summary with no ASCII word. An operationId that only repeats its tag
+        // is hoisted to the root by the IR, so the collision check above names
+        // it; a name still left empty refuses only beside another operation of
+        // its sub-client.
         if endpoint.method_name.is_empty() {
             let named_by_summary = doc
                 .paths

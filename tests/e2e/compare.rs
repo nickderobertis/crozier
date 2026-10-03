@@ -923,6 +923,55 @@ fn compare_with_no_paths_searches_the_whole_repository() {
         .stderr(predicates::str::contains("No crozier config was found"));
 }
 
+/// Only Fern's own `.fern/metadata.json` has its `generatorConfig` normalized
+/// (issue #341): a reference recording a different generator config there still
+/// matches, while a `types/user_metadata.json` carrying a `generatorConfig` block
+/// is SDK content and is reported. crozier never emits such a file, so through
+/// the binary it can only be reference-side; the both-sides case is pinned by
+/// `parity`'s unit tests.
+#[cfg(unix)]
+#[test]
+fn compare_normalizes_the_generator_config_of_fern_metadata_only() {
+    let repo = small_repo(
+        "crozier.yml",
+        "  fern-config:\n    reference:\n      command: ./scripts/metadata.sh fern\n\
+         \x20 sdk-file:\n    reference:\n      command: ./scripts/metadata.sh sdk\n",
+    );
+    let root = repo.path();
+    write_script(
+        root,
+        "scripts/metadata.sh",
+        &format!(
+            "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
+             cp -R '{}'/expected/. \"$out\"\n\
+             if [ \"$1\" = fern ]; then\n\
+             \x20 sed 's/python_enums/literals/' \"$out/.fern/metadata.json\" > \"$out/m.tmp\"\n\
+             \x20 mv \"$out/m.tmp\" \"$out/.fern/metadata.json\"\n\
+             else\n\
+             \x20 mkdir -p \"$out/types\"\n\
+             \x20 printf '{{\\n  \"id\": 1,\\n  \"generatorConfig\": {{}}\\n}}\\n' > \"$out/types/user_metadata.json\"\n\
+             fi\n",
+            fixture_root().display()
+        ),
+    );
+    let assert = compare_cmd(root).args(["--json", "-"]).assert().code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+
+    let fern = result(&report, "crozier.yml", "fern-config");
+    assert_eq!(fern["status"], "matched", "{fern:#}");
+
+    let sdk = result(&report, "crozier.yml", "sdk-file");
+    assert_eq!(sdk["status"], "mismatched", "{sdk:#}");
+    let comparison = &sdk["comparison"];
+    assert_eq!(
+        comparison["only_in_reference"],
+        serde_json::json!(["types/user_metadata.json"])
+    );
+    assert_eq!(comparison["differing"], serde_json::json!([]));
+    assert_eq!(comparison["only_in_crozier"], serde_json::json!([]));
+}
+
 /// A `--json` target that cannot be written is refused with exit 1 before any
 /// reference command runs, so a run never spends every reference and then
 /// discards the result.
