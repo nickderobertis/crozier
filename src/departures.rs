@@ -812,10 +812,8 @@ mod tests {
     }
 
     fn entry_text(id: &str, kind: &str, evidence: &str) -> String {
-        format!(
-            "- id: {id}\n  kind: {kind}\n  trigger: t\n  fern: f\n  crozier: c\n  reason: r\n  \
-             evidence: {evidence}\n"
-        )
+        let keys = "  trigger: t\n  fern: f\n  crozier: c\n  reason: r\n";
+        format!("- id: {id}\n  kind: {kind}\n{keys}  evidence: {evidence}\n")
     }
 
     fn failures_of(text: &str) -> Vec<String> {
@@ -921,8 +919,10 @@ mod tests {
         }
         assert!(
             committed == rendered,
-            "docs/departures/README.md's catalog differs from assets/departures.yml; \
-             regenerate it with `CROZIER_UPDATE_DEPARTURES=1 cargo test --lib departures`"
+            concat!(
+                "docs/departures/README.md's catalog differs from assets/departures.yml; ",
+                "regenerate it with `CROZIER_UPDATE_DEPARTURES=1 cargo test --lib departures`"
+            )
         );
     }
 
@@ -1100,9 +1100,11 @@ mod tests {
 
     #[test]
     fn the_metadata_rule_takes_only_generator_config_differences() {
-        let crozier_text = "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    \
-                            \"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    \
-                            }\n  },\n  \"invokedBy\": \"ci\"\n}";
+        let crozier_text = concat!(
+            "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    ",
+            "\"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    ",
+            "}\n  },\n  \"invokedBy\": \"ci\"\n}"
+        );
         let crozier = lines(crozier_text);
         let region = |fern: &str, rel: &str| {
             let fern = lines(fern);
@@ -1159,15 +1161,16 @@ mod tests {
     #[test]
     fn the_import_order_rule_takes_only_a_reordered_type_checking_block() {
         let crozier = lines(
-            "import typing\n\nif typing.TYPE_CHECKING:\n    from .a import A\n    from .b import B\n\
-             _dynamic_imports = {}\n",
+            concat!("import typing\n\nif typing.TYPE_CHECKING:\n    from .a import A\n    from .b import B\n", "_dynamic_imports = {}\n"),
         );
         let region = |fern: &str, rel: &str| {
             let fern = lines(fern);
             init_type_checking_import_order(&pair(rel, &fern, &crozier)).unwrap()
         };
-        let reordered = "import typing\n\nif typing.TYPE_CHECKING:\n    from .b import B\n    \
-                         from .a import A\n_dynamic_imports = {}\n";
+        let reordered = concat!(
+            "import typing\n\nif typing.TYPE_CHECKING:\n    from .b import B\n    ",
+            "from .a import A\n_dynamic_imports = {}\n"
+        );
         assert_eq!(
             region(reordered, "src/acme/__init__.py"),
             Some(Region {

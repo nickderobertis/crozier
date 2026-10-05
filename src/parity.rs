@@ -589,10 +589,14 @@ mod tests {
 
     #[test]
     fn identity_headers_are_departures_line_by_line() {
-        let crozier = "# crozier\nh = {\n    \"X-Crozier-Language\": \"Python\",\n    \
-                       \"X-Crozier-SDK-Name\": \"x\",\n    \"X-Crozier-SDK-Version\": \"0.0.0\",\n}\n";
-        let reference = "\nh = {\n    \"X-Fern-Language\": \"Python\",\n    \
-                         \"X-Fern-SDK-Name\": \"x\",\n    \"X-Fern-SDK-Version\": \"0.0.0\",\n}\n";
+        let crozier = concat!(
+            "# crozier\nh = {\n    \"X-Crozier-Language\": \"Python\",\n    ",
+            "\"X-Crozier-SDK-Name\": \"x\",\n    \"X-Crozier-SDK-Version\": \"0.0.0\",\n}\n"
+        );
+        let reference = concat!(
+            "\nh = {\n    \"X-Fern-Language\": \"Python\",\n    ",
+            "\"X-Fern-SDK-Name\": \"x\",\n    \"X-Fern-SDK-Version\": \"0.0.0\",\n}\n"
+        );
         let compared = compare(WRAPPER, crozier, reference);
         assert!(compared.matches(), "{:?}", compared.diff());
         assert_eq!(
@@ -682,12 +686,14 @@ mod tests {
 
     #[test]
     fn init_import_order_is_one_departure_at_crozier_s_first_moved_line() {
-        let crozier =
-            "# crozier\nimport typing\n\nif typing.TYPE_CHECKING:\n    from .a import A\n    \
-                       from .b import B\n    from .c import C\n_dynamic_imports = {}\n";
-        let reference =
-            "\n\n\nimport typing\n\nif typing.TYPE_CHECKING:\n    from .b import B\n    \
-                         from .a import A\n    from .c import C\n_dynamic_imports = {}\n";
+        let crozier = concat!(
+            "# crozier\nimport typing\n\nif typing.TYPE_CHECKING:\n    from .a import A\n    ",
+            "from .b import B\n    from .c import C\n_dynamic_imports = {}\n"
+        );
+        let reference = concat!(
+            "\n\n\nimport typing\n\nif typing.TYPE_CHECKING:\n    from .b import B\n    ",
+            "from .a import A\n    from .c import C\n_dynamic_imports = {}\n"
+        );
         let compared = compare("src/acme/__init__.py", crozier, reference);
         assert!(compared.matches(), "{:?}", compared.diff());
         assert_eq!(ids(&compared), [(5, "init-type-checking-import-order")]);
@@ -703,9 +709,11 @@ mod tests {
 
     #[test]
     fn metadata_generator_config_is_one_departure_on_that_path_only() {
-        let crozier = "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    \
-                       \"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    }\n  },\n  \
-                       \"invokedBy\": \"ci\"\n}";
+        let crozier = concat!(
+            "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    ",
+            "\"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    }\n  },\n  ",
+            "\"invokedBy\": \"ci\"\n}"
+        );
         let reference = crozier.replace("python_enums", "literals");
         let compared = compare(FERN_METADATA, crozier, &reference);
         assert!(compared.matches(), "{:?}", compared.diff());
