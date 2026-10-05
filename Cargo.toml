@@ -1,6 +1,6 @@
 [package]
 name = "crozier"
-version = "0.0.98"
+version = "0.0.99"
 edition = "2021"
 description = "Ultra-fast OpenAPI-to-SDK code generator that matches Fern's output, byte for byte."
 license = "Apache-2.0"
@@ -54,6 +54,7 @@ thiserror = "2"
 assert_cmd = "2"
 predicates = "3"
 tempfile = "3"
+toml = "1"
 
 [profile.release]
 opt-level = 3
