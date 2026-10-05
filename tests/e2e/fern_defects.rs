@@ -36,7 +36,7 @@ pub struct Defect {
 }
 
 /// The whole file: the `defect` array and nothing else.
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Document {
     #[serde(default)]
@@ -187,10 +187,28 @@ pub fn parse(text: &str) -> Result<Vec<Defect>, String> {
         .map(|document| document.defect)
         .map_err(|error| {
             format!(
-                "{REGISTRY}: every [[defect]] holds exactly the string keys id, gap, golden, \
-                 file, fern, crozier, reason and evidence: {error}"
+                "{REGISTRY}: every [[defect]] holds exactly the keys {}, all strings: {error}",
+                keys().join(", ")
             )
         })
+}
+
+/// The keys a `[[defect]]` table holds, in declaration order, read from the
+/// loader itself — the deserializer's refusal of an unknown key lists them — so
+/// the documentation of the keys is checked against [`Defect`], not a copy.
+pub fn keys() -> Vec<String> {
+    let refusal = toml::from_str::<Document>("[[defect]]\n_ = \"\"\n")
+        .expect_err("an unknown key is refused")
+        .to_string();
+    let listed = refusal
+        .split_once("expected one of ")
+        .map_or("", |(_, listed)| listed);
+    listed
+        .split('`')
+        .skip(1)
+        .step_by(2)
+        .map(str::to_string)
+        .collect()
 }
 
 /// Every way `defects` breaks the contract on its own, before any comparison.

@@ -34,16 +34,16 @@
 #
 # For example (not an entry):
 #
-#   [[defect]]
-#   id = "readme-imports-undefined-client"
-#   gap = "<the gap's name in the proof index>"
-#   golden = "tests/fixtures/<api>/expected"
-#   file = "README.md"
-#   fern = """
-#   from acme import AcmeClient
-#   """
-#   crozier = """
-#   from acme import Acme
-#   """
-#   reason = "the README imports AcmeClient, which the package does not define"
-#   evidence = "docs/fern-defects/readme-imports-undefined-client.md"
+#     [[defect]]
+#     id = "readme-imports-undefined-client"
+#     gap = "<the gap's name in the proof index>"
+#     golden = "tests/fixtures/<api>/expected"
+#     file = "README.md"
+#     fern = """
+#     from acme import AcmeClient
+#     """
+#     crozier = """
+#     from acme import Acme
+#     """
+#     reason = "the README imports AcmeClient, which the package does not define"
+#     evidence = "docs/fern-defects/readme-imports-undefined-client.md"

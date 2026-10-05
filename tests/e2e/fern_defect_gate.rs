@@ -567,3 +567,31 @@ fn an_overlay_takes_base_entries_only_for_the_files_it_inherits() {
         ["README.md"]
     );
 }
+
+/// The keys `docs/matching.md`'s table and the registry's header comment
+/// document are exactly the keys the loader admits, in its order.
+#[test]
+fn the_documented_keys_are_the_loaders() {
+    let keys = fern_defects::keys();
+    assert_eq!(keys.len(), 8, "{keys:?}");
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let matching = std::fs::read_to_string(root.join("docs/matching.md")).unwrap();
+    let section = matching
+        .split_once("## Fern defects crozier does not reproduce\n")
+        .and_then(|(_, rest)| rest.split("\n## ").next())
+        .expect("docs/matching.md has the section");
+    let table: Vec<String> = section
+        .lines()
+        .filter_map(|line| line.strip_prefix("| `"))
+        .filter_map(|line| line.split_once('`').map(|(key, _)| key.to_string()))
+        .collect();
+    assert_eq!(table, keys, "docs/matching.md's key table");
+    let registry = std::fs::read_to_string(root.join(fern_defects::REGISTRY)).unwrap();
+    let header: Vec<String> = registry
+        .lines()
+        .filter_map(|line| line.strip_prefix("#   "))
+        .filter(|line| !line.starts_with(' '))
+        .filter_map(|line| line.split_whitespace().next().map(str::to_string))
+        .collect();
+    assert_eq!(header, keys, "{}'s header comment", fern_defects::REGISTRY);
+}
