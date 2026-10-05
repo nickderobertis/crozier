@@ -17,9 +17,9 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    is_json_like_media_type, Auth, BodyField, BodySchemaShape, Endpoint, EndpointPagination,
-    ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim, QueryParam, RequestBody,
-    TagTypeDecl, TypeDecl, TypeRef,
+    is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Endpoint,
+    EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim,
+    QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -1431,6 +1431,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         packaged.then_some(ir.project_name.as_str()),
         &ir.auth,
         &ir.global_headers,
+        &ir.client_path_parameters,
         ir.default_max_retries,
     ));
 
@@ -1533,6 +1534,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 has_environment: ir.environment.is_some(),
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
+                client_path_parameters: &ir.client_path_parameters,
                 empty_namespace: false,
                 children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
             };
@@ -1566,6 +1568,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             has_environment: ir.environment.is_some(),
             tag_types: &tag_map,
             global_headers: &ir.global_headers,
+            client_path_parameters: &ir.client_path_parameters,
             empty_namespace: false,
             children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
         };
@@ -1605,6 +1608,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 auth: &ir.auth,
                 environment: ir.environment.as_ref(),
                 global_headers: &ir.global_headers,
+                client_path_parameters: &ir.client_path_parameters,
                 default_max_retries: ir.default_max_retries,
             },
         )?);
@@ -1665,6 +1669,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             has_environment: ir.environment.is_some(),
             tag_types: &empty_namespace_tag_map,
             global_headers: &ir.global_headers,
+            client_path_parameters: &ir.client_path_parameters,
             empty_namespace: true,
             children: &[],
         };
@@ -2145,6 +2150,40 @@ fn root_init_file(
     })
 }
 
+/// A lifted base-path parameter's constructor argument line: a required `str`,
+/// or an `Optional[str]` defaulting to its declared default on the client and
+/// to `None` in the wrapper beneath it.
+fn client_path_parameter_param(parameter: &ClientPathParameter, on_client: bool) -> String {
+    match &parameter.default {
+        None => format!("        {}: str,\n", parameter.py_name),
+        Some(value) if on_client => format!(
+            "        {}: typing.Optional[str] = \"{}\",\n",
+            parameter.py_name,
+            escape_py_str(value)
+        ),
+        Some(_) => format!(
+            "        {}: typing.Optional[str] = None,\n",
+            parameter.py_name
+        ),
+    }
+}
+
+/// A lifted base-path parameter's example argument: its default by keyword, or
+/// the placeholder a required constructor argument takes. Fern writes the
+/// default positionally, `FernApi("v2")`, which a keyword-only constructor
+/// rejects with a `TypeError`; crozier names it by keyword instead (a
+/// registered Fern defect, see `docs/fern-defects/`).
+fn client_path_parameter_example(parameter: &ClientPathParameter) -> String {
+    match &parameter.default {
+        Some(value) => format!("{}=\"{}\"", parameter.py_name, escape_py_str(value)),
+        None => format!(
+            "{}=\"YOUR_{}\"",
+            parameter.py_name,
+            parameter.py_name.to_uppercase()
+        ),
+    }
+}
+
 /// A promoted header's constructor annotation, before any `Optional[...]`: its
 /// scalar or list type, or the one-value `typing.Literal` a subset-promoted
 /// string header with a `default` takes.
@@ -2231,6 +2270,7 @@ fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
+        client_path_parameters: &ir.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -2444,6 +2484,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
+            client_path_parameters: &ir.client_path_parameters,
             building: Default::default(),
             expanding_aliases: Vec::new(),
             documentation: false,
@@ -2478,6 +2519,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
+            client_path_parameters: &ir.client_path_parameters,
             building: Default::default(),
             expanding_aliases: Vec::new(),
             documentation: false,
@@ -2498,10 +2540,11 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .join("\n")
     };
 
-    let mut streaming_args = documentation_client_example_args(&ir.auth, &ir.global_headers)
-        .into_iter()
-        .map(|arg| format!("    {arg},\n"))
-        .collect::<String>();
+    let mut streaming_args =
+        documentation_client_example_args(&ir.auth, &ir.global_headers, &ir.client_path_parameters)
+            .into_iter()
+            .map(|arg| format!("    {arg},\n"))
+            .collect::<String>();
     if ir.environment.is_none() {
         streaming_args.push_str("    base_url=\"https://yourhost.com/path/to/api\",\n");
     }
@@ -2723,6 +2766,7 @@ fn reference_entry(
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
+        client_path_parameters: &ir.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -3503,6 +3547,7 @@ fn client_wrapper_file(
     sdk_name: Option<&str>,
     auth: &Auth,
     global_headers: &[GlobalHeader],
+    client_path_parameters: &[ClientPathParameter],
     default_max_retries: u32,
 ) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
@@ -3530,28 +3575,35 @@ fn client_wrapper_file(
     // the auth credential's, matching Fern's ordering. A required header is a
     // mandatory `str` set unconditionally; an optional one is `Optional[str] = None`
     // set only when provided.
-    let gh_param: String = distinct_global_header_params(&leading)
-        .into_iter()
-        .map(|h| {
-            if h.required() {
-                format!("        {}: {},\n", h.py_name, global_header_annotation(h))
-            } else {
-                format!(
-                    "        {}: typing.Optional[{}] = None,\n",
-                    h.py_name,
-                    global_header_annotation(h)
-                )
-            }
-        })
-        .collect();
-    let gh_assign: String = leading
+    // A lifted base-path parameter leads them: a field the routes read, never a
+    // header.
+    let path_param: String = client_path_parameters
         .iter()
-        .map(|h| format!("        self._{0} = {0}\n", h.py_name))
+        .map(|parameter| client_path_parameter_param(parameter, false))
         .collect();
-    // A lifted base-path parameter is read by the routes, never sent as a header.
+    let gh_param: String = path_param
+        + &distinct_global_header_params(&leading)
+            .into_iter()
+            .map(|h| {
+                if h.required() {
+                    format!("        {}: {},\n", h.py_name, global_header_annotation(h))
+                } else {
+                    format!(
+                        "        {}: typing.Optional[{}] = None,\n",
+                        h.py_name,
+                        global_header_annotation(h)
+                    )
+                }
+            })
+            .collect::<String>();
+    let gh_assign: String = client_path_parameters
+        .iter()
+        .map(|parameter| &parameter.py_name)
+        .chain(leading.iter().map(|h| &h.py_name))
+        .map(|name| format!("        self._{name} = {name}\n"))
+        .collect();
     let gh_header: String = global_headers
         .iter()
-        .filter(|h| !h.is_base_path_parameter())
         .map(|h| {
             // A non-string header is written as its `str()`, as Fern's is.
             let value = if h.py_type() == HeaderType::Str {
@@ -3579,9 +3631,15 @@ fn client_wrapper_file(
             }
         })
         .collect();
-    let gh_super: String = distinct_global_header_params(&leading)
-        .into_iter()
-        .map(|h| format!("{0}={0}, ", h.py_name))
+    let gh_super: String = client_path_parameters
+        .iter()
+        .map(|parameter| &parameter.py_name)
+        .chain(
+            distinct_global_header_params(&leading)
+                .into_iter()
+                .map(|h| &h.py_name),
+        )
+        .map(|name| format!("{name}={name}, "))
         .collect();
     // crozier brands its own SDK-identity headers rather than impersonating Fern;
     // the e2e byte-match normalizes the `X-Crozier-` prefix back to `X-Fern-` so
@@ -5899,6 +5957,7 @@ struct RootClientFileCtx<'a> {
     auth: &'a Auth,
     environment: Option<&'a crate::ir::Environment>,
     global_headers: &'a [GlobalHeader],
+    client_path_parameters: &'a [ClientPathParameter],
     /// The fallback for an unset `max_retries` (Fern's `default_max_retries`).
     default_max_retries: u32,
 }
@@ -5920,6 +5979,7 @@ fn root_client_file(
         auth,
         environment,
         global_headers,
+        client_path_parameters,
         default_max_retries,
     } = cx;
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
@@ -5979,6 +6039,7 @@ fn root_client_file(
         auth,
         environment,
         global_headers,
+        client_path_parameters,
         default_max_retries,
     };
     let root_methods = root_client_methods(
@@ -5993,6 +6054,7 @@ fn root_client_file(
         tag_map,
         auth,
         global_headers,
+        client_path_parameters,
         environment.is_some(),
         false,
         &mut imports,
@@ -6009,6 +6071,7 @@ fn root_client_file(
         tag_map,
         auth,
         global_headers,
+        client_path_parameters,
         environment.is_some(),
         true,
         &mut imports,
@@ -6078,6 +6141,7 @@ struct RootClientCfg<'a> {
     auth: &'a Auth,
     environment: Option<&'a crate::ir::Environment>,
     global_headers: &'a [GlobalHeader],
+    client_path_parameters: &'a [ClientPathParameter],
     default_max_retries: u32,
 }
 
@@ -6097,6 +6161,7 @@ fn root_client_methods(
     tag_map: &BTreeMap<String, String>,
     auth: &Auth,
     global_headers: &[GlobalHeader],
+    client_path_parameters: &[ClientPathParameter],
     has_environment: bool,
     is_async: bool,
     imports: &mut Imports,
@@ -6116,6 +6181,7 @@ fn root_client_methods(
         has_environment,
         tag_types: tag_map,
         global_headers,
+        client_path_parameters,
         empty_namespace: false,
         children: &[],
     };
@@ -6210,55 +6276,66 @@ fn root_client_class(
     // right after `base_url` and before the auth credential. A required header is a
     // mandatory `str`; an optional one is `Optional[str] = None` — matching the
     // client wrapper.
-    let gh_doc: String = global_headers
+    // A lifted base-path parameter leads the promoted headers on every line.
+    let client_path_parameters = cfg.client_path_parameters;
+    let gh_doc: String = client_path_parameters
         .iter()
-        .map(|h| {
+        .map(|parameter| {
+            let ty = if parameter.default.is_some() {
+                "typing.Optional[str]"
+            } else {
+                "str"
+            };
+            format!("    {} : {ty}\n", parameter.py_name)
+        })
+        .chain(global_headers.iter().map(|h| {
             let ty = if h.required() {
                 global_header_annotation(h)
             } else {
                 format!("typing.Optional[{}]", global_header_annotation(h))
             };
             format!("    {} : {ty}\n", h.py_name)
-        })
+        }))
         .collect();
-    let gh_ctor: String = distinct_global_header_params(global_headers)
-        .into_iter()
-        .map(|h| {
-            if h.required() {
-                format!("        {}: {},\n", h.py_name, global_header_annotation(h))
-            } else {
-                // A lifted base-path parameter defaults to its own value on the
-                // client, and to `None` in the wrapper beneath it.
-                let default = h.client_default().map_or_else(
-                    || "None".to_string(),
-                    |value| format!("\"{}\"", escape_py_str(value)),
-                );
-                format!(
-                    "        {}: typing.Optional[{}] = {default},\n",
-                    h.py_name,
-                    global_header_annotation(h)
-                )
-            }
-        })
-        .collect();
-    // Fern writes a defaulted base-path parameter's example positionally,
-    // `FernApi("v2")`, which a keyword-only constructor rejects with a
-    // `TypeError`; crozier names it by keyword instead (a registered Fern
-    // defect, see docs/fern-defects/).
-    let gh_example: String = global_headers
+    let gh_ctor: String = client_path_parameters
         .iter()
-        .map(|h| match h.client_default() {
-            Some(value) => format!("        {}=\"{}\",\n", h.py_name, escape_py_str(value)),
-            None => format!(
+        .map(|parameter| client_path_parameter_param(parameter, true))
+        .chain(
+            distinct_global_header_params(global_headers)
+                .into_iter()
+                .map(|h| {
+                    if h.required() {
+                        format!("        {}: {},\n", h.py_name, global_header_annotation(h))
+                    } else {
+                        format!(
+                            "        {}: typing.Optional[{}] = None,\n",
+                            h.py_name,
+                            global_header_annotation(h)
+                        )
+                    }
+                }),
+        )
+        .collect();
+    let gh_example: String = client_path_parameters
+        .iter()
+        .map(|parameter| format!("        {},\n", client_path_parameter_example(parameter)))
+        .chain(global_headers.iter().map(|h| {
+            format!(
                 "        {}=\"YOUR_{}\",\n",
                 h.py_name,
                 h.py_name.to_uppercase()
-            ),
-        })
+            )
+        }))
         .collect();
-    let gh_wrapper: String = distinct_global_header_params(global_headers)
-        .into_iter()
-        .map(|h| format!("            {0}={0},\n", h.py_name))
+    let gh_wrapper: String = client_path_parameters
+        .iter()
+        .map(|parameter| &parameter.py_name)
+        .chain(
+            distinct_global_header_params(global_headers)
+                .into_iter()
+                .map(|h| &h.py_name),
+        )
+        .map(|name| format!("            {name}={name},\n"))
         .collect();
     let module_views: Vec<RootModuleView> = modules
         .iter()
@@ -6554,6 +6631,7 @@ struct ClientCtx<'a> {
     has_environment: bool,
     tag_types: &'a BTreeMap<String, String>,
     global_headers: &'a [GlobalHeader],
+    client_path_parameters: &'a [ClientPathParameter],
     /// Whether this tag client is Fern's explicit empty dotted namespace.
     empty_namespace: bool,
     /// Nested sub-client modules this client exposes as lazy properties, in the
@@ -6841,6 +6919,7 @@ fn client_stream_docstring(
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
+        client_path_parameters: cx.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -6972,6 +7051,7 @@ fn client_binary_stream_docstring(
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
+        client_path_parameters: cx.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -7071,6 +7151,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
+        client_path_parameters: cx.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -7441,6 +7522,7 @@ struct ExampleCtx<'a> {
     /// Promoted global headers, shown as `tenant="YOUR_TENANT"` example lines
     /// before the auth credential in the client instantiation.
     global_headers: &'a [GlobalHeader],
+    client_path_parameters: &'a [ClientPathParameter],
     /// Named types currently being expanded on the active path, so a recursive
     /// schema (a tree node, a recursive union) terminates instead of overflowing
     /// the stack (issue #84): a list of an ancestor type renders empty, matching
@@ -9898,17 +9980,23 @@ fn build_example_inner(
     // Method docstrings follow constructor order (global headers, auth). Fern's
     // Markdown snippets instead lead with auth and omit optional global headers.
     if documentation {
-        for arg in documentation_client_example_args(ctx.auth, ctx.global_headers) {
+        for arg in documentation_client_example_args(
+            ctx.auth,
+            ctx.global_headers,
+            ctx.client_path_parameters,
+        ) {
             client_args.push(format!("    {arg},"));
         }
     } else {
+        for parameter in ctx.client_path_parameters {
+            client_args.push(format!("    {},", client_path_parameter_example(parameter)));
+        }
         for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
-            // A defaulted base-path parameter is named by keyword with its default
-            // (Fern passes it positionally, which the constructor rejects).
-            client_args.push(match h.client_default() {
-                Some(value) => format!("    {}=\"{}\",", h.py_name, escape_py_str(value)),
-                None => format!("    {}=\"YOUR_{}\",", h.py_name, h.py_name.to_uppercase()),
-            });
+            client_args.push(format!(
+                "    {}=\"YOUR_{}\",",
+                h.py_name,
+                h.py_name.to_uppercase()
+            ));
         }
         for arg in auth_example_args(ctx.auth) {
             client_args.push(format!("    {arg},"));
@@ -9995,32 +10083,25 @@ fn build_example_inner(
 
 /// The client-constructor arguments Fern's Markdown snippets pass: auth first,
 /// then every *required* global header (optional ones are left out).
-fn documentation_client_example_args(auth: &Auth, global_headers: &[GlobalHeader]) -> Vec<String> {
+fn documentation_client_example_args(
+    auth: &Auth,
+    global_headers: &[GlobalHeader],
+    client_path_parameters: &[ClientPathParameter],
+) -> Vec<String> {
     // Fern's Markdown leaves a required base-path parameter out of the
     // constructor, which then raises a `TypeError` for the missing argument;
     // crozier passes it first, with the placeholder the method docstrings use
-    // (a registered Fern defect, see docs/fern-defects/).
-    let base_path = global_headers
+    // (a registered Fern defect, see `docs/fern-defects/`).
+    client_path_parameters
         .iter()
-        .filter(|parameter| parameter.is_base_path_parameter() && parameter.required())
-        .map(|parameter| {
-            format!(
-                "{}=\"YOUR_{}\"",
-                parameter.py_name,
-                parameter.py_name.to_uppercase()
-            )
-        });
-    base_path
+        .filter(|parameter| parameter.default.is_none())
+        .map(client_path_parameter_example)
         .chain(documentation_auth_example_args(auth))
         .chain(
             global_headers
                 .iter()
                 // Nor does it pass an array header, required or not.
-                .filter(|header| {
-                    !header.is_base_path_parameter()
-                        && header.required()
-                        && !header.py_type().is_list()
-                })
+                .filter(|header| header.required() && !header.py_type().is_list())
                 .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
         )
         .collect()
@@ -11459,6 +11540,7 @@ mod tests {
             errors: Vec::new(),
             auth: Auth::None,
             global_headers: Vec::new(),
+            client_path_parameters: Vec::new(),
             environment: None,
             extra_fields: crate::settings::ExtraFields::Allow,
             enum_type: crate::settings::EnumType::PythonEnums,
@@ -12259,6 +12341,7 @@ mod tests {
             auth,
             has_environment: false,
             global_headers: &[],
+            client_path_parameters: &[],
             building: Default::default(),
             expanding_aliases: Vec::new(),
             documentation: false,
@@ -13725,6 +13808,7 @@ mod tests {
             has_environment: false,
             tag_types: &tags,
             global_headers: &[],
+            client_path_parameters: &[],
             empty_namespace: false,
             children: &[],
         };

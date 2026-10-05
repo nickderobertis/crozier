@@ -182,6 +182,9 @@ pub struct Ir {
     /// lifts an optional operation header, e.g. `X-Tenant` → `tenant`, out of the
     /// method signature and sets it once at client construction).
     pub global_headers: Vec<GlobalHeader>,
+    /// The document's base-path placeholders, lifted to client constructor
+    /// arguments ahead of the promoted headers (see [`ClientPathParameter`]).
+    pub client_path_parameters: Vec<ClientPathParameter>,
     /// The server-environment model, when the document declares `servers`. Drives
     /// `environment.py` and threads an `environment`/optional-`base_url` through
     /// the root client.
@@ -409,38 +412,31 @@ pub enum HeaderPresence {
     /// set only when provided; without the default, or with a non-string one,
     /// the same header is plain `Optional[<type>]`.
     Literal(String),
-    /// Not a header: a `{placeholder}` of the document's base path
-    /// (`x-crozier-base-path` / `x-fern-base-path`), lifted out of every method
-    /// into a client constructor argument that the routes read back from the
-    /// client wrapper. It is a required `str`, or, given a string `default`, an
-    /// `Optional[str]` defaulting to it on the client (the wrapper's own
-    /// argument defaults to `None`). It never reaches the request headers.
-    BasePath(Option<String>),
+}
+
+/// A `{placeholder}` of the document's base path (`x-crozier-base-path` /
+/// `x-fern-base-path`), lifted out of every method into a client constructor
+/// argument that the routes read back from the client wrapper. Measured at Fern
+/// 5.20.0 on the object form `{path: /{edition}, paths-include-base-path: true,
+/// parameters: {edition: {type: string, default: v2}}}`: the client takes
+/// `edition: Optional[str] = "v2"` ahead of every promoted header and the
+/// credential, the wrapper `edition: Optional[str] = None`, and no method takes
+/// it. Without a default it is a required `str` on both.
+#[derive(Debug, Clone)]
+pub struct ClientPathParameter {
+    /// The placeholder's name, e.g. `edition`.
+    pub wire_name: String,
+    /// The Python argument and wrapper attribute name.
+    pub py_name: String,
+    /// The string default its map-form schema declares, if any.
+    pub default: Option<String>,
 }
 
 impl GlobalHeader {
     /// Whether the constructor field is mandatory.
     #[must_use]
     pub fn required(&self) -> bool {
-        matches!(
-            self.presence,
-            HeaderPresence::Required(_) | HeaderPresence::BasePath(None)
-        )
-    }
-
-    /// Whether this is a lifted base-path parameter rather than a header.
-    #[must_use]
-    pub fn is_base_path_parameter(&self) -> bool {
-        matches!(self.presence, HeaderPresence::BasePath(_))
-    }
-
-    /// The value a lifted base-path parameter defaults to on the client.
-    #[must_use]
-    pub fn client_default(&self) -> Option<&str> {
-        match &self.presence {
-            HeaderPresence::BasePath(default) => default.as_deref(),
-            _ => None,
-        }
+        matches!(self.presence, HeaderPresence::Required(_))
     }
 
     /// The constructor field's Python type (`str` for a defaulted header).
@@ -448,9 +444,7 @@ impl GlobalHeader {
     pub fn py_type(&self) -> HeaderType {
         match self.presence {
             HeaderPresence::Required(ty) | HeaderPresence::Optional(ty) => ty,
-            HeaderPresence::Defaulted(_)
-            | HeaderPresence::Literal(_)
-            | HeaderPresence::BasePath(_) => HeaderType::Str,
+            HeaderPresence::Defaulted(_) | HeaderPresence::Literal(_) => HeaderType::Str,
         }
     }
 
@@ -619,19 +613,15 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 
 /// The client constructor arguments the document's base path lifts out of its
 /// methods: one per `{placeholder}` (see [`crate::openapi::BasePath::parameters`]).
-/// Measured at Fern 5.20.0 on the object form `{path: /{edition},
-/// paths-include-base-path: true, parameters: {edition: {type: string,
-/// default: v2}}}`: the client takes `edition: Optional[str] = "v2"`, every
-/// route reads `self._client_wrapper._edition`, and no method takes it.
-fn base_path_client_parameters(doc: &OpenApi) -> Vec<GlobalHeader> {
+fn base_path_client_parameters(doc: &OpenApi) -> Vec<ClientPathParameter> {
     doc.base_path()
         .map(crate::openapi::BasePath::parameters)
         .unwrap_or_default()
         .into_iter()
-        .map(|parameter| GlobalHeader {
+        .map(|parameter| ClientPathParameter {
             py_name: naming::field_name(&parameter.name),
             wire_name: parameter.name,
-            presence: HeaderPresence::BasePath(parameter.default),
+            default: parameter.default,
         })
         .collect()
 }
@@ -2085,10 +2075,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // body's fields and to decide which of them serialize through the convert
     // wrapper, so it runs after the type layer is built. It also hoists inline
     // request/response bodies into their tags' own `types/` packages.
-    // A lifted base-path parameter is a constructor argument ahead of every
-    // promoted header and the auth credential, in the order the path names it.
-    let mut global = base_path_client_parameters(doc);
-    global.extend(global_headers(doc));
+    let global = global_headers(doc);
     let (mut endpoints, mut tag_types) = endpoints(doc, &builder.types, &global);
     let empty_endpoint_namespace = doc.paths.values().any(|item| {
         item.operations().into_iter().any(|(_, operation)| {
@@ -2262,6 +2249,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         errors,
         auth: auth_model(doc),
         global_headers: global,
+        client_path_parameters: base_path_client_parameters(doc),
         environment,
         extra_fields: config.extra_fields,
         enum_type: config.enum_type,
@@ -2526,11 +2514,8 @@ fn endpoints(
     types: &[TypeDecl],
     global: &[GlobalHeader],
 ) -> (Vec<Endpoint>, Vec<TagTypeDecl>) {
-    let global_names: std::collections::HashSet<&str> = global
-        .iter()
-        .filter(|h| !h.is_base_path_parameter())
-        .map(|h| h.wire_name.as_str())
-        .collect();
+    let global_names: std::collections::HashSet<&str> =
+        global.iter().map(|h| h.wire_name.as_str()).collect();
     let mut out = Vec::new();
     let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
