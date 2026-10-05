@@ -43,6 +43,16 @@ mod default_max_retries;
 #[path = "e2e/overlay_goldens.rs"]
 mod overlay_goldens;
 
+/// The Fern defect registry every golden comparison applies.
+#[path = "e2e/fern_defects.rs"]
+mod fern_defects;
+
+use fern_defects::{Registry, TreeDefects};
+
+/// The registry's contract, driven through the gates' own comparison.
+#[path = "e2e/fern_defect_gate.rs"]
+mod fern_defect_gate;
+
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
 /// byte-for-byte today (paths relative to the output root). `unmatched` is the
@@ -844,6 +854,120 @@ fn fixture_dir(api: &str) -> PathBuf {
         .join(api)
 }
 
+/// The repository's Fern defect registry, loaded once per test process against
+/// every golden this suite compares; a registry that breaks its contract fails
+/// whichever comparison loads it first, naming each broken entry.
+fn fern_defects() -> &'static Registry {
+    static REGISTRY: std::sync::OnceLock<Registry> = std::sync::OnceLock::new();
+    REGISTRY.get_or_init(|| {
+        load_fern_defects(Path::new(env!("CARGO_MANIFEST_DIR"))).unwrap_or_else(|failures| {
+            panic!(
+                "{} breaks its contract (docs/matching.md, \"Fern defects crozier does not \
+                 reproduce\"):\n{}",
+                fern_defects::REGISTRY,
+                failures.join("\n")
+            )
+        })
+    })
+}
+
+/// `root`'s registry, validated against the goldens `root` holds that this
+/// suite compares — the one load every comparison goes through.
+fn load_fern_defects(root: &Path) -> Result<Registry, Vec<String>> {
+    Registry::load(root, &compared_goldens(root))
+}
+
+/// Every committed Fern golden tree under `root` a comparison in this suite
+/// reads crozier's output against, keyed by its repository-relative path: each
+/// registered corpus's `expected/`, each flat and overlay golden, and each
+/// probe, authored-probe and hand-written tree. An overlay golden is keyed by its
+/// own directory and holds only the files it carries; a file it takes from
+/// `expected/` unchanged is accounted for under `expected/`.
+fn compared_goldens(root: &Path) -> fern_defects::Goldens {
+    let mut goldens = fern_defects::Goldens::new();
+    let mut add = |golden: String| {
+        let dir = root.join(&golden);
+        goldens.insert(golden, vec![dir]);
+    };
+    for corpus in registered_diff_corpora() {
+        add(format!("tests/fixtures/{}/expected", corpus.api));
+    }
+    for golden in FLAT_GOLDENS {
+        add(format!(
+            "tests/fixtures/{}/{FLAT_GOLDEN_DIR}",
+            golden.fixture
+        ));
+    }
+    for golden in overlay_goldens::golden_paths() {
+        add(golden);
+    }
+    for dir in [AUTHORED_PROBES_DIR, HANDWRITTEN_DIR] {
+        let Ok(entries) = std::fs::read_dir(root.join(dir)) else {
+            continue;
+        };
+        for entry in entries.filter_map(Result::ok) {
+            if entry.path().join("fern-expected").is_dir() {
+                add(format!(
+                    "{dir}/{}/fern-expected",
+                    entry.file_name().to_string_lossy()
+                ));
+            }
+        }
+    }
+    let manifest = std::fs::read_to_string(root.join(PROBE_EXPECTED_DIR).join("MANIFEST.tsv"))
+        .unwrap_or_default();
+    for proof in parse_probe_manifest(&manifest).0 {
+        match proof.form.as_str() {
+            "absent-tree" => add(proof.artifact),
+            "differential" => {
+                add(proof.artifact);
+                add(format!("{PROBE_EXPECTED_DIR}/{}", proof.control));
+            }
+            _ => {}
+        }
+    }
+    goldens
+}
+
+/// `path`'s repository-relative, `/`-separated spelling — how a registry entry
+/// names a golden. A tree outside the repository keeps its absolute spelling,
+/// which no entry names.
+fn golden_path(path: &Path) -> String {
+    path.strip_prefix(env!("CARGO_MANIFEST_DIR"))
+        .map(|rel| {
+            rel.components()
+                .map(|part| part.as_os_str().to_string_lossy())
+                .collect::<Vec<_>>()
+                .join("/")
+        })
+        .unwrap_or_else(|_| path.display().to_string())
+}
+
+/// The entries `registry` holds for corpus `c`'s golden `golden`, refused when
+/// one names a file `c` already carves out at file level.
+fn corpus_tree_defects<'r>(
+    registry: &'r Registry,
+    golden: &str,
+    c: &Corpus,
+) -> Result<TreeDefects<'r>, Vec<String>> {
+    let pinned: Vec<&str> = packaged_expectations(c)
+        .iter()
+        .map(|expectation| expectation.path)
+        .collect();
+    registry.tree(
+        golden,
+        &[
+            ("an `unmatched` entry", c.unmatched),
+            ("a crozier-only file", crozier_only_files(c)),
+            ("a file pinned to crozier's own bytes", &pinned),
+            (
+                "repository scaffolding crozier does not emit",
+                repository_scaffolding(c),
+            ),
+        ],
+    )
+}
+
 const KNOWN_FERN_FAILURE_FILE: &str = "known-fern-failure.json";
 
 #[derive(Debug)]
@@ -1040,14 +1164,22 @@ fn assert_corpus_matches(c: &Corpus) {
         c.api
     );
     let out = generate_corpus(c);
-    assert_generated_tree_matches(c, &expected_root, out.path());
+    let defects = corpus_tree_defects(fern_defects(), &golden_path(&expected_root), c)
+        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    assert_generated_tree_matches(c, &defects, &expected_root, out.path());
 }
 
 /// Require crozier's generated tree `out` for `c` to reproduce the Fern tree
 /// `expected_root`, under the corpus's declared residuals — the comparison
 /// [`assert_corpus_matches`] makes against `expected/`, shared with the overlay
-/// gate, which makes it against a corpus's materialized overlay golden.
-fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
+/// gate, which makes it against a corpus's materialized overlay golden. Each
+/// file `defects` names is held to Fern's file with the entries substituted.
+fn assert_generated_tree_matches(
+    c: &Corpus,
+    defects: &TreeDefects,
+    expected_root: &Path,
+    out: &Path,
+) {
     let repository_scaffolding = repository_scaffolding(c);
     let packaged_expectations = packaged_expectations(c);
     for rel in walk_files(expected_root) {
@@ -1063,6 +1195,9 @@ fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
             .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
         let expected = std::fs::read_to_string(expected_root.join(&rel))
             .unwrap_or_else(|e| panic!("missing fixture {rel}: {e}"));
+        let expected = defects
+            .expected(&rel, &generated, &expected, generated_matches_fixture)
+            .unwrap_or_else(|failure| panic!("{failure}"));
         if !generated_matches_fixture(&rel, &generated, &expected) {
             // Show the exact gate-relevant diff inline instead of a bare "does not
             // match" — the normalized bytes the comparison actually decides on, so a
@@ -1650,19 +1785,51 @@ fn filtered_tree_failures(
             String::from_utf8_lossy(&result.stderr)
         )];
     }
+    let defects = match fern_defects().tree(&golden_path(expected_root), &[]) {
+        Ok(defects) => defects,
+        Err(failures) => return failures,
+    };
+    golden_tree_failures(
+        key,
+        &probe.display().to_string(),
+        &defects,
+        expected_root,
+        out.path(),
+    )
+}
+
+/// Every way crozier's tree `out` differs from the committed Fern tree
+/// `expected_root` once `defects` are substituted into it: a different file
+/// set, or a file that differs under the gate's normalization or breaks an
+/// entry. The comparison behind every probe, authored-probe and hand-written
+/// gate; `source` names what crozier generated `out` from.
+fn golden_tree_failures(
+    key: &str,
+    source: &str,
+    defects: &TreeDefects,
+    expected_root: &Path,
+    out: &Path,
+) -> Vec<String> {
     let expected_files = walk_files(expected_root);
-    let generated_files = walk_files(out.path());
+    let generated_files = walk_files(out);
     if generated_files != expected_files {
         return vec![format!(
-            "{key}: crozier's file set over {} differs from {}",
-            probe.display(),
+            "{key}: crozier's file set over {source} differs from {}",
             expected_root.display()
         )];
     }
     let mut failures = Vec::new();
     for rel in expected_files {
-        let generated = std::fs::read_to_string(out.path().join(&rel)).unwrap_or_default();
+        let generated = std::fs::read_to_string(out.join(&rel)).unwrap_or_default();
         let expected = std::fs::read_to_string(expected_root.join(&rel)).unwrap_or_default();
+        let expected =
+            match defects.expected(&rel, &generated, &expected, generated_matches_fixture) {
+                Ok(expected) => expected,
+                Err(failure) => {
+                    failures.push(format!("{key}: {failure}"));
+                    continue;
+                }
+            };
         if !generated_matches_fixture(&rel, &generated, &expected) {
             let (actual, expected) = normalized_pair(&rel, &generated, &expected);
             let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
@@ -8378,6 +8545,75 @@ fn try_generate_flat(golden: &FlatGolden) -> Result<Option<tempfile::TempDir>, S
     Ok(Some(out))
 }
 
+/// `differences` — [`parity::tree_differences`] of the Fern tree `expected_root`
+/// and crozier's `out` — once `defects` are substituted into the Fern files they
+/// name: a named file is dropped when crozier equals the substituted file and
+/// re-diffed against it when not. Fails, naming each entry, where an entry
+/// cannot apply.
+fn differences_after_defects(
+    defects: &TreeDefects,
+    expected_root: &Path,
+    out: &Path,
+    mut differences: Vec<(String, Difference)>,
+    include_text_diffs: bool,
+) -> Result<Vec<(String, Difference)>, Vec<String>> {
+    let mut failures = Vec::new();
+    for rel in defects.files() {
+        let (Ok(fern), Ok(generated)) = (
+            std::fs::read_to_string(expected_root.join(rel)),
+            std::fs::read_to_string(out.join(rel)),
+        ) else {
+            continue;
+        };
+        match defects.expected(rel, &generated, &fern, generated_matches_fixture) {
+            Ok(expected) => {
+                differences.retain(|(path, _)| path != rel);
+                if !generated_matches_fixture(rel, &generated, &expected) {
+                    let diff = include_text_diffs.then(|| {
+                        let (actual, expected) = normalized_pair(rel, &generated, &expected);
+                        parity::unified_diff(&expected, &actual).unwrap_or_default()
+                    });
+                    differences.push((rel.to_string(), Difference::Text(diff)));
+                }
+            }
+            Err(failure) => failures.push(failure),
+        }
+    }
+    differences.sort_by(|left, right| left.0.cmp(&right.0));
+    if failures.is_empty() {
+        Ok(differences)
+    } else {
+        Err(failures)
+    }
+}
+
+/// [`parity::tree_differences`] of the Fern tree `expected_root` and crozier's
+/// `out` with `defects` — the registry's entries for that golden, or why they
+/// cannot apply — substituted: the comparison the reporters print.
+fn golden_differences(
+    expected_root: &Path,
+    out: &Path,
+    file_filter: Option<&str>,
+    include_text_diffs: bool,
+    defects: Result<TreeDefects, Vec<String>>,
+) -> Result<Vec<(String, Difference)>, String> {
+    let defects = defects.map_err(|failures| failures.join("\n"))?;
+    let differences =
+        parity::tree_differences(expected_root, out, file_filter, include_text_diffs)?;
+    let mut differences = differences_after_defects(
+        &defects,
+        expected_root,
+        out,
+        differences,
+        include_text_diffs,
+    )
+    .map_err(|failures| failures.join("\n"))?;
+    if let Some(filter) = file_filter {
+        differences.retain(|(rel, _)| rel.contains(filter));
+    }
+    Ok(differences)
+}
+
 /// Require crozier's `--layout flat` output to equal the flat golden file for
 /// file, in both directions, under the packaged goldens' normalization.
 fn assert_flat_golden_matches(fixture: &str) {
@@ -8398,8 +8634,14 @@ fn assert_flat_golden_matches(fixture: &str) {
         );
         return;
     };
-    let differences = parity::tree_differences(&expected_root, out.path(), None, true)
-        .unwrap_or_else(|error| panic!("{fixture}: {error}"));
+    let differences = golden_differences(
+        &expected_root,
+        out.path(),
+        None,
+        true,
+        fern_defects().tree(&golden_path(&expected_root), &[]),
+    )
+    .unwrap_or_else(|error| panic!("{fixture}: {error}"));
     let report: Vec<String> = differences
         .iter()
         .map(|(rel, difference)| match difference {
@@ -8573,6 +8815,8 @@ fn report_fixture_gaps() {
     for corpus in corpora {
         let expected_root = fixture_dir(corpus.api).join("expected");
         let expected_files = walk_files(&expected_root);
+        let defects = corpus_tree_defects(fern_defects(), &golden_path(&expected_root), corpus)
+            .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
         let out = generate_corpus(corpus);
         let confirmed: std::collections::HashSet<String> = expected_files
             .iter()
@@ -8583,6 +8827,9 @@ fn report_fixture_gaps() {
                 ) else {
                     return false;
                 };
+                let expected = defects
+                    .expected(rel, &generated, &expected, generated_matches_fixture)
+                    .unwrap_or_else(|failure| panic!("{failure}"));
                 generated_matches_fixture(rel, &generated, &expected)
             })
             .cloned()
@@ -8645,8 +8892,14 @@ fn report_fixture_gaps() {
         let out = try_generate_flat(golden)
             .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture))
             .expect("only flat goldens with an available spec are selected");
-        let differences = parity::tree_differences(&expected_root, out.path(), None, false)
-            .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
+        let differences = golden_differences(
+            &expected_root,
+            out.path(),
+            None,
+            false,
+            fern_defects().tree(&golden_path(&expected_root), &[]),
+        )
+        .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
         let expected_files = walk_files(&expected_root).len();
         println!("\n=== {} ({FLAT_GOLDEN_DIR}) ===", golden.fixture);
         println!("  {expected_files} expected file(s).");
@@ -8812,11 +9065,12 @@ fn report_fixture_diffs() {
             println!("{}", known_fern_failure_marker(c, &known_failure));
             continue;
         }
-        let differences = match parity::tree_differences(
+        let differences = match golden_differences(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
             include_text_diffs,
+            corpus_tree_defects(fern_defects(), &golden_path(&expected_root), c),
         ) {
             Ok(differences) => differences,
             Err(error) => {
@@ -8848,11 +9102,13 @@ fn report_fixture_diffs() {
             }
         };
         println!("\n=== {label} ===");
-        let differences = match parity::tree_differences(
-            &fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR),
+        let expected_root = fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR);
+        let differences = match golden_differences(
+            &expected_root,
             out.path(),
             file_filter.as_deref(),
             include_text_diffs,
+            fern_defects().tree(&golden_path(&expected_root), &[]),
         ) {
             Ok(differences) => differences,
             Err(error) => {
@@ -13905,6 +14161,13 @@ fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
     assert!(!output.exists());
     std::fs::copy(source, &spec).unwrap();
     command().assert().success();
+    let golden = fixture_dir(PAYPAL_CATALOG_PRODUCTS.api).join("expected");
+    let defects = corpus_tree_defects(
+        fern_defects(),
+        &golden_path(&golden),
+        &PAYPAL_CATALOG_PRODUCTS,
+    )
+    .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
     for relative in [
         "src/fern/types/four_hundred_details_item.py",
         "src/fern/types/error_default.py",
@@ -13914,12 +14177,10 @@ fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
         "reference.md",
     ] {
         let actual = std::fs::read_to_string(output.join(relative)).unwrap();
-        let expected = std::fs::read_to_string(
-            fixture_dir(PAYPAL_CATALOG_PRODUCTS.api)
-                .join("expected")
-                .join(relative),
-        )
-        .unwrap();
+        let expected = std::fs::read_to_string(golden.join(relative)).unwrap();
+        let expected = defects
+            .expected(relative, &actual, &expected, generated_matches_fixture)
+            .unwrap_or_else(|failure| panic!("{failure}"));
         assert!(
             generated_matches_fixture(relative, &actual, &expected),
             "{relative}"

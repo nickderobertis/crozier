@@ -188,6 +188,72 @@ Non-Python matched files (the scaffolding) are Fern's verbatim output and compar
 without comment stripping; `.py` files are still comment-stripped before the
 comparison.
 
+## Fern defects crozier does not reproduce
+
+Matching Fern does not mean copying its bugs. A **Fern defect** is output that is
+wrong on its own terms: an example or README snippet that would not import or
+run, an example value invalid for its own schema, or output contradicting the
+code Fern generated beside it. Where crozier writes the correct output instead,
+the committed golden still holds Fern's bytes, so the comparison needs an exact
+account of the difference. That account is
+[`tests/fixtures/fern-defects.toml`](../tests/fixtures/fern-defects.toml); its
+loader and substitution are `tests/e2e/fern_defects.rs`, and every comparison
+uses that one definition.
+
+**Shape.** An array of `[[defect]]` tables, sorted by `id`, each with exactly
+these string keys and no other:
+
+| Key | Holds |
+| --- | --- |
+| `id` | a unique lower-kebab slug naming the shape in crozier's own terms |
+| `gap` | the gap the entry belongs to, as the coverage report's proof index names it |
+| `golden` | the repository-relative path of the committed Fern golden tree |
+| `file` | the path of one file inside that tree |
+| `fern` | one or more whole lines exactly as the golden holds them, occurring once in that file |
+| `crozier` | the whole lines crozier writes in their place (empty only where it writes none) |
+| `reason` | one line saying why Fern's lines are wrong on their own terms |
+| `evidence` | a committed note under `docs/fern-defects/` recording the command that shows the defect and its result |
+
+**The substitution.** Every comparison of crozier's output with a committed Fern
+golden — each corpus's `expected/` with `fern-strict` off and on, the overlay
+and flat goldens, the probe, authored-probe and hand-written trees, and the gap
+and diff reporters — first replaces, in each file an entry names, the entry's
+`fern` lines with its `crozier` lines, then requires crozier's file to equal the
+result under the gate's usual normalization. An overlay golden takes the entries
+naming `expected/` for the files it inherits unchanged, and its own entries for
+the files it carries. With no entry, every comparison is exactly the one it was.
+
+**What each failure means.** The comparison fails, naming the entry, when:
+
+- the `fern` lines do not occur in the file, or occur more than once — the entry
+  no longer locates one construct, so it cannot be trusted to replace only it;
+- the entry names a golden no comparison reads, or a file that golden lacks — it
+  accounts for nothing a gate checks;
+- `fern` equals `crozier` — it accounts for no difference;
+- crozier's file already equals the unsubstituted Fern file — the entry is
+  stale, and must be removed rather than left to excuse a future regression;
+- `reason` is empty (or more than one line), or `evidence` is not a committed
+  file under `docs/fern-defects/` — the claim that Fern is wrong is unsupported;
+- the same file is also carved out at file level — an `unmatched` entry, a
+  crozier-only file, a file pinned to crozier's own bytes, or repository
+  scaffolding crozier does not emit — so it would be accounted for twice;
+- ids are duplicated or out of order, or a table carries a key that is missing,
+  unknown or not a string.
+
+**Why line-level, and stricter than the residual manifest.** The residual
+manifest above is file-level: an `unmatched` path stops the comparison of a whole
+file, and a coarse residual of that kind once hid a real gap in this corpus. A
+defect entry instead excuses only the exact lines it quotes, once, in one file;
+every other byte of that file is still compared, and the entry fails the moment
+crozier stops needing it. Unlike an `unmatched` path it records a decision —
+Fern is wrong here — rather than an open gap, so it carries its reason and its
+evidence with it.
+
+The `crozier compare` journeys that use a golden as a stand-in for a user's own
+reference SDK apply no entry: the command compares a user's reference, which the
+registry knows nothing about. An entry on such a golden makes those journeys
+report the difference rather than hide it.
+
 ## Verifying the tool as a user runs it
 
 Byte-matching proves *equality to Fern* on the specs Fern has generated. The e2e

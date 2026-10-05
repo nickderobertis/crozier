@@ -8,6 +8,15 @@ use std::path::{Path, PathBuf};
 
 use crozier::{generate, render_files, GenerateArgs};
 
+/// The Fern defect registry, for the in-process fixture comparison below.
+#[allow(
+    dead_code,
+    reason = "this binary applies the substitution only; the registry's validation and \
+              carve-out checks belong to the e2e gate, which uses the rest of the module"
+)]
+#[path = "e2e/fern_defects.rs"]
+mod fern_defects;
+
 /// Write `spec` to a temp `.yml` and render it in-process, returning
 /// path-string -> contents for every generated file.
 fn render(spec: &str) -> HashMap<String, String> {
@@ -3997,6 +4006,8 @@ fn committed_feature_fixture_python_matches_in_process() {
     }
     fixtures.sort();
     assert!(fixtures.len() >= 25, "fixture corpus unexpectedly shrank");
+    let defects = fern_defects::read(Path::new(env!("CARGO_MANIFEST_DIR")))
+        .unwrap_or_else(|error| panic!("{error}"));
 
     for fixture in fixtures {
         let name = fixture.file_name().unwrap().to_string_lossy();
@@ -4010,6 +4021,8 @@ fn committed_feature_fixture_python_matches_in_process() {
             .unwrap();
         let package = expected_src.file_name().unwrap().to_str().unwrap();
         let files = render_package(&spec, package);
+        let golden = format!("tests/fixtures/{name}/expected");
+        let tree = fern_defects::TreeDefects::of(&defects, &golden);
         let mut compared = 0;
         let mut expected_files = Vec::new();
         python_files_below(&expected_src, &mut expected_files);
@@ -4026,7 +4039,14 @@ fn committed_feature_fixture_python_matches_in_process() {
                 continue;
             };
             let expected = std::fs::read_to_string(&path).unwrap();
-            if crozier::strip_python_comments(actual) == crozier::strip_python_comments(&expected) {
+            let matches = |_: &str, actual: &str, expected: &str| {
+                crozier::strip_python_comments(actual) == crozier::strip_python_comments(expected)
+            };
+            // A file an entry cannot apply to is the e2e gate's to report.
+            let Ok(expected) = tree.expected(&rel, actual, &expected, matches) else {
+                continue;
+            };
+            if matches(&rel, actual, &expected) {
                 compared += 1;
             }
         }

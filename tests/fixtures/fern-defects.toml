@@ -1,0 +1,49 @@
+# Fern defects crozier does not reproduce.
+#
+# A Fern defect is output wrong on its own terms: an example or README snippet
+# that would not import or run, an example value invalid for its own schema, or
+# output contradicting the code Fern generated alongside it. Where crozier writes
+# the correct output instead, the committed golden still holds Fern's bytes, and
+# this file is the exact, line-level account of the difference. The rule, and
+# what each failure means, are in docs/matching.md, "Fern defects crozier does
+# not reproduce"; the loader is tests/e2e/fern_defects.rs.
+#
+# Every comparison of crozier's output with a committed Fern golden replaces, in
+# each file an entry names, the entry's `fern` lines with its `crozier` lines,
+# then requires crozier's file to equal the result under the gate's
+# normalization. The comparison fails, naming the entry, when the `fern` lines
+# do not occur exactly once, when crozier already equals the unsubstituted file
+# (the entry is stale), or when the file is also carved out at file level.
+#
+# Entries are `[[defect]]` tables sorted by `id`, each with exactly these string
+# keys:
+#
+#   id        a unique lower-kebab slug naming the shape in crozier's own terms
+#   gap       the gap the entry belongs to, as the coverage report's proof
+#             index names it
+#   golden    the repository-relative path of the committed Fern golden tree
+#   file      the path of one file inside that tree
+#   fern      one or more whole lines exactly as the golden holds them,
+#             occurring exactly once in that file
+#   crozier   the whole lines crozier writes in their place (empty only where
+#             crozier writes none)
+#   reason    one line saying why Fern's lines are wrong on their own terms
+#   evidence  the repository-relative path of a committed note under
+#             docs/fern-defects/ recording the command that shows the defect
+#             and its result
+#
+# For example (not an entry):
+#
+#   [[defect]]
+#   id = "readme-imports-undefined-client"
+#   gap = "<the gap's name in the proof index>"
+#   golden = "tests/fixtures/<api>/expected"
+#   file = "README.md"
+#   fern = """
+#   from acme import AcmeClient
+#   """
+#   crozier = """
+#   from acme import Acme
+#   """
+#   reason = "the README imports AcmeClient, which the package does not define"
+#   evidence = "docs/fern-defects/readme-imports-undefined-client.md"
