@@ -2998,6 +2998,18 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # resemblance is the whole point: a `discriminator` written beside a `oneOf` is
 # neither necessary nor sufficient for any of the three arms these predicates
 # name.
+#
+# Two union rules are ported with a normalized-body digest of the Rust each
+# reads, recomputed by the offline tier as `METHOD_NAME_PORT_DIGESTS` is, so an
+# edit to either function fails until the port is read again: the unrequired-tag
+# clause of `_candidate_tag_values` reads `inferred_discriminant_property_with`,
+# and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
+# scalar arms of `base_type_ref`.
+UNION_PORT_DIGESTS = {
+    "inferred_discriminant_property_with": "e89b0d632c061c3f",
+    "same_primitive_union_last": "46bacd9b81edeea4",
+    "base_type_ref": "f433a87f0ba17562",
+}
 
 
 def required_names(node: dict[Any, Any]) -> list[str]:
