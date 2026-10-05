@@ -14387,7 +14387,10 @@ mod parameter_lowering_tests {
             "{readme}"
         );
         assert_eq!(readme.matches("edition=").count(), 3, "{readme}");
-        assert!(!readme.contains("    edition=\"v2\",\n    name="), "{readme}");
+        assert!(
+            !readme.contains("    edition=\"v2\",\n    name="),
+            "{readme}"
+        );
 
         // Without a default the argument is required, and the Markdown constructs
         // the client with it.
