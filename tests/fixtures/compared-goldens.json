@@ -527,6 +527,7 @@
     "tests/fixtures/steaminputdb/expected": {},
     "tests/fixtures/strapi-rest-api/expected": {},
     "tests/fixtures/svix-webhooks/expected": {},
+    "tests/fixtures/swagger-petstore-organization/expected-flat": {},
     "tests/fixtures/swagger-petstore/expected": {},
     "tests/fixtures/tag-based-grouping/expected": {},
     "tests/fixtures/tally/expected": {},

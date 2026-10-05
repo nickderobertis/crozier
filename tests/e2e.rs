@@ -8638,10 +8638,10 @@ struct FlatGolden {
 /// it by `flat_goldens_are_the_declared_set`). Between them they exercise every
 /// setting that changes the flat tree: the default names (`exhaustive`), a
 /// client class name, audiences with strictness, a non-default `extra-fields`,
-/// and a custom package and project name. Fern's `organization` is what names
-/// the module, client and README the way crozier's `--package-name` does, and a
-/// flat tree carries no distribution, so the project name reaches no file of it
-/// (see docs/matching.md).
+/// a custom package and project name, and a mixed-case package name. Fern's
+/// `organization` is what names the module, client and README the way crozier's
+/// `--package-name` does, and a flat tree carries no distribution, so the
+/// project name reaches no file of it (see docs/matching.md).
 const FLAT_GOLDENS: &[FlatGolden] = &[
     FlatGolden {
         fixture: "exhaustive",
@@ -8665,6 +8665,24 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
             api: "exhaustive",
             package_name: "acme",
             project_name: "acme-dist",
+            audiences: &[],
+            audience_strict: false,
+            client_class_name: None,
+            extra_fields: None,
+            unmatched: &[],
+        }),
+    },
+    // Fern's organization with an inner capital and no client class name: the
+    // code names `PetStoreApi`, and so does crozier everywhere, where Fern's
+    // README lowers the inner capital (the `readme-client-class-casing`
+    // departure). Its docstrings import a tag package's type from a package not
+    // named `fern`, which Fern's isort pass groups with the root import.
+    FlatGolden {
+        fixture: "swagger-petstore-organization",
+        corpus: Some(&Corpus {
+            api: "swagger-petstore",
+            package_name: "PetStore",
+            project_name: "PetStore",
             audiences: &[],
             audience_strict: false,
             client_class_name: None,
@@ -8802,6 +8820,7 @@ flat_goldens! {
     audience_filter_strict_flat_matches_fern => "audience-filter-strict",
     eos_extra_fields_forbid_flat_matches_fern => "eos.local-extra-fields-forbid",
     exhaustive_package_name_flat_matches_fern => "exhaustive-package-name",
+    swagger_petstore_organization_flat_matches_fern => "swagger-petstore-organization",
 }
 
 /// `tests/fixtures/flat-goldens.txt` as `(fixture, spec fixture)` rows, the spec
@@ -8872,14 +8891,20 @@ fn flat_goldens_are_the_declared_set() {
 
     for golden in FLAT_GOLDENS {
         let corpus = flat_golden_corpus(golden);
-        // A spec-less golden rides a vendored document; any other uses its own.
+        // A spec-less golden rides a vendored or committed document; any other
+        // uses its own.
         if golden.corpus.is_some() {
             assert!(
                 !fixture_dir(golden.fixture).join("openapi.yml").exists(),
                 "{}: a golden with its own spec must not name another",
                 golden.fixture
             );
-            assert!(fixture_dir(corpus.api).join("openapi.yml").is_file());
+            assert!(
+                corpus_spec(corpus.api).is_some_and(|spec| spec.is_file()),
+                "{}: names `{}`, which has no vendored or committed spec",
+                golden.fixture,
+                corpus.api
+            );
         }
         // Provenance names the layout, so a flat golden is never mistaken for
         // (or refreshed as) a packaged one.

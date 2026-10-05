@@ -1277,6 +1277,128 @@ fn compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference
     );
 }
 
+/// The same journey over the corpus's mixed-case organization golden: Fern's
+/// flat tree for the Swagger Petstore under the organization `PetStore` with no
+/// client class name. Its README and `reference.md` name `PetstoreApi`,
+/// `AsyncPetstoreApi` and `PetstoreApiEnvironment`, which the package does not
+/// define, and crozier names the classes it does; every other file, the
+/// docstring imports of the `pet` package's types among them, matches. Any
+/// other difference fails, naming its file: a README line beside the corrected
+/// ones, or a docstring import split back into two groups.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_readme_casing_departure_on_the_mixed_case_organization_golden() {
+    let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let golden = "tests/fixtures/swagger-petstore-organization/expected-flat";
+    let repo = tempfile::tempdir().expect("repo tempdir");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yaml",
+        &std::fs::read_to_string(
+            manifest.join("tests/fixtures/corpus-sources/swagger-petstore/openapi.yaml"),
+        )
+        .unwrap(),
+    );
+    // `reference.sh [readme|docstring]`: copy the committed Fern tree, then edit
+    // one line of README.md, or split a docstring's imports as Fern does only
+    // for a package named `fern`.
+    write_script(
+        root,
+        "scripts/reference.sh",
+        &format!(
+            "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
+             cp -R '{}'/. \"$out\"\n\
+             case \"${{1:-}}\" in\n\
+             \x20 readme) file=README.md; edit='s/^# PetStore Python Library$/# PetStore Python SDK/' ;;\n\
+             \x20 docstring) file=pet/client.py; edit='0,/^        from PetStore.pet import/s//\\n        from PetStore.pet import/' ;;\n\
+             \x20 *) exit 0 ;;\n\
+             esac\n\
+             sed \"$edit\" \"$out/$file\" > \"$out/edited.tmp\"\n\
+             mv \"$out/edited.tmp\" \"$out/$file\"\n",
+            manifest.join(golden).display()
+        ),
+    );
+    let config = |generators: &str| {
+        format!(
+            "spec: ./openapi.yaml\nlayout: flat\npackage-name: PetStore\n\
+             project-name: PetStore\ngenerators:\n{generators}"
+        )
+    };
+    write(
+        root,
+        "crozier.yml",
+        &config("  python:\n    reference:\n      command: ./scripts/reference.sh\n"),
+    );
+    write(
+        root,
+        "edited.yml",
+        &config(
+            "  readme:\n    reference:\n      command: ./scripts/reference.sh readme\n\
+             \x20 docstring:\n    reference:\n      command: ./scripts/reference.sh docstring\n",
+        ),
+    );
+
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "crozier.yml"])
+        .assert()
+        .code(0);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let python = result(&report, "crozier.yml", "python");
+    assert_eq!(python["status"], "matched", "{python:#}");
+    let observed: Vec<super::departures_ledger::Observed> = python["comparison"]["departures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|departure| {
+            (
+                departure["file"].as_str().unwrap().to_string(),
+                usize::try_from(departure["line"].as_u64().unwrap()).unwrap(),
+                departure["id"].as_str().unwrap().to_string(),
+            )
+        })
+        .collect();
+    let casing_files: std::collections::BTreeSet<&str> = observed
+        .iter()
+        .filter(|(_, _, id)| id == "readme-client-class-casing")
+        .map(|(file, _, _)| file.as_str())
+        .collect();
+    assert_eq!(
+        casing_files,
+        std::collections::BTreeSet::from(["README.md", "reference.md"])
+    );
+    // Exactly the ledger's rows for the golden.
+    let ledger = super::departure_ledger()
+        .golden(golden, &[])
+        .unwrap_or_else(|failures| panic!("{failures:?}"));
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains("      README.md:58 readme-client-class-casing\n")
+            && stderr.contains("Result: every checked generator matched the reference"),
+        "{stderr}"
+    );
+
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "edited.yml"])
+        .assert()
+        .code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    for (generator, file) in [("readme", "README.md"), ("docstring", "pet/client.py")] {
+        let edited = result(&report, "edited.yml", generator);
+        assert_eq!(edited["status"], "mismatched", "{edited:#}");
+        assert_eq!(
+            edited["comparison"]["differing"],
+            serde_json::json!([file]),
+            "{generator}: {edited:#}"
+        );
+    }
+}
+
 /// The packaged golden's file `rel`, with `from` replaced by `to` — which must
 /// occur in it.
 #[cfg(unix)]
