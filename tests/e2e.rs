@@ -4718,6 +4718,7 @@ const CORPORA: &[&Corpus] = &[
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
+    &LOOTLOG_BATTLELOG,
 ];
 
 #[test]
@@ -7355,6 +7356,21 @@ const HUATUO_SERVER: Corpus = Corpus {
 /// scheme resolved from another document.
 const HUATUO_NODE_TREE: Corpus = Corpus {
     api: "huatuo-node-tree",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Lootlog's Battle Log API — corpus row 310, the publisher's own description.
+/// Its `POST /internal/delete-user-data` takes an optional header spelled
+/// `authorization` beside an `http: bearer` scheme, which Fern keeps as a method
+/// argument because only the exact spelling `Authorization` is the credential's.
+const LOOTLOG_BATTLELOG: Corpus = Corpus {
+    api: "lootlog-battlelog",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14075,6 +14091,11 @@ fn huatuo_server_matches_fern_output() {
 #[test]
 fn huatuo_node_tree_matches_fern_output() {
     assert_committed_corpus_matches(&HUATUO_NODE_TREE);
+}
+
+#[test]
+fn lootlog_battlelog_matches_fern_output() {
+    assert_committed_corpus_matches(&LOOTLOG_BATTLELOG);
 }
 
 #[test]

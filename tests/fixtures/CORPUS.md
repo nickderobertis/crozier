@@ -235,6 +235,7 @@ compares it. Row 224 is the one so far.
 | 307 | `apideck.com-ecosystem-client-class-name` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json | `0.0.6` | Apache 2.0 | committed | Row 13's Ecosystem API regenerated with `client_class_name: EcosystemClient`, the class name of its own `Ecosystem` resource's sub-client |
 | 308 | `yourbrand-ticketing` | github-raw | https://raw.githubusercontent.com/marinasundstrom/YourBrand/6ef617804cb34ceba4b847c62ab122042d86abbe/src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml | `6ef617804cb34ceba4b847c62ab122042d86abbe` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | YourBrand's Ticketing service API as its repository publishes it for the Ticketing client: 32 paths and 64 component schemas; two `application/json` bodies are bare `{type: string, format: duration}` strings |
 | 309 | `huatuo-node-tree` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | committed | HuaTuo node API v1 as its repository authors it, the source `openapi.gen.json` (row 178) is bundled from: `components.securitySchemes.BearerAuth` is `$ref: '../components.yaml#/components/securitySchemes/BearerAuth'`, a security scheme declared in another document of the same pinned tree, and thirteen schema references name `../components.yaml#/components/schemas/…`. Fern's generated bearer `token` and `Authorization` header, and its `ErrorResponse`, `Error`, `ErrorCode` and `ObservationScope` types, derive from those references. |
+| 310 | `lootlog-battlelog` | github-raw | https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml | `e2796c4f48ca4a749f53fdc5a127eece50567b56` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Lootlog's Battle Log API as its repository publishes it: OpenAPI 3.0.0, one `http: bearer` scheme, and `POST /internal/delete-user-data` declares an optional header parameter spelled `authorization` in lower case |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1394,3 +1395,21 @@ The repairs: a security scheme a relative `$ref` names is resolved from that
 document, following a reference inside it, and a sibling file's
 `#/components/schemas/<Name>` is imported as the component it names with the
 components of that file it references, rather than inlined.
+
+## Row 310 — a lower-case `authorization` header beside a bearer scheme
+
+Fern drops an operation's header parameter only when its name is exactly the
+header a declared security scheme writes: `Authorization` for a bearer, basic or
+OAuth2 scheme, an apiKey scheme's own `name` otherwise. Any other spelling stays
+an ordinary optional method argument, sent under the name it declares. Every
+`Authorization` header parameter the corpus held before this row was spelled
+exactly so, so a case-insensitive comparison matched it too:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 310 | `lootlog-battlelog` | a header parameter spelled `authorization` beside an `http: bearer` scheme | ✅ byte-matched after two repairs |
+
+The repairs: the credential-header check compares the spelling exactly, and a
+component property's nested names are re-cased across the owner/property join,
+so the map value under the one-letter `f.w` properties is
+`CreateBattleDtoEventsItemFwValue`.
