@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .list_cooling_firings_request_atmosphere_one_item import ListCoolingFiringsRequestAtmosphereOneItem
+from .list_cooling_firings_request_atmosphere_zero import ListCoolingFiringsRequestAtmosphereZero
+
+ListCoolingFiringsRequestAtmosphere = typing.Union[
+    ListCoolingFiringsRequestAtmosphereZero, typing.List[ListCoolingFiringsRequestAtmosphereOneItem]
+]

@@ -2470,6 +2470,36 @@ fn handwritten_documents(
     (evidence, failures)
 }
 
+/// The measured parameter-lowering cases under
+/// `docs/fern-measurements/parameter-lowering/`: every case with a committed
+/// `fern-expected/` tree is generated with crozier and compared whole, under the
+/// same normalization the hand-written gate applies. Its README states the rule
+/// each case pins.
+#[test]
+fn parameter_lowering_measurements_match_fern() {
+    let root =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-measurements/parameter-lowering");
+    let mut cases: Vec<PathBuf> = std::fs::read_dir(&root)
+        .expect("the measurement directory exists")
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.join("fern-expected").is_dir())
+        .collect();
+    cases.sort();
+    assert!(cases.len() >= 6, "the measured cases are missing: {cases:?}");
+    let failures: Vec<String> = cases
+        .iter()
+        .flat_map(|case| {
+            let name = case
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            filtered_tree_failures(&name, &case.join("openapi.yml"), &case.join("fern-expected"), &[])
+        })
+        .collect();
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
 /// The gate's name keeps it out of the golden-only tier, which selects every
 /// `*matches_fern_output*` test in `scripts/fixtures-coverage.sh` and in
 /// `scripts/openapi-surface-census.py`, whose selector `scripts/golden-reach.py`

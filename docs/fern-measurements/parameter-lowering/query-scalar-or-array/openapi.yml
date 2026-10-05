@@ -1,0 +1,92 @@
+openapi: 3.1.0
+info:
+  title: Kiln Scheduler
+  version: 1.0.0
+paths:
+  /firings:
+    get:
+      operationId: listFirings
+      tags: [firings]
+      parameters:
+        - name: cone
+          in: query
+          schema:
+            type: integer
+        - name: shelf
+          in: query
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+        - name: glaze
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+      responses:
+        "200":
+          description: Scheduled firings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /firings/cooling:
+    get:
+      operationId: listCoolingFirings
+      tags: [firings]
+      parameters:
+        - name: kiln
+          in: query
+          schema:
+            oneOf:
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+        - name: batch
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+              - type: "null"
+        - name: atmosphere
+          in: query
+          schema:
+            anyOf:
+              - type: string
+                enum: [oxidation, reduction]
+              - type: array
+                items:
+                  type: string
+                  enum: [oxidation, reduction]
+        - name: pyrometer
+          in: query
+          schema:
+            anyOf:
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+              - type: "null"
+      responses:
+        "200":
+          description: Firings that are cooling.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

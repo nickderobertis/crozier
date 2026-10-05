@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .list_weighed_harvests_request_unit_one import ListWeighedHarvestsRequestUnitOne
+from .list_weighed_harvests_request_unit_zero import ListWeighedHarvestsRequestUnitZero
+
+ListWeighedHarvestsRequestUnit = typing.Union[ListWeighedHarvestsRequestUnitZero, ListWeighedHarvestsRequestUnitOne]

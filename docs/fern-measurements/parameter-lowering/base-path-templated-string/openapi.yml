@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Atlas Tiles
+  version: 1.0.0
+x-fern-base-path: /{edition}
+servers:
+- url: https://tiles.example.org
+paths:
+  /layers:
+    post:
+      operationId: createLayer
+      tags:
+      - layers
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Layer'
+      responses:
+        '200':
+          description: The created layer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layer'
+  /layers/{layer_id}:
+    get:
+      operationId: getLayer
+      tags:
+      - layers
+      parameters:
+      - name: layer_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: One layer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layer'
+components:
+  schemas:
+    Layer:
+      type: object
+      required:
+      - title
+      properties:
+        title:
+          type: string
+        opacity:
+          type: number
