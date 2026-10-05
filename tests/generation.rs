@@ -8082,7 +8082,11 @@ paths:
         size.contains("FilesUploadRequestFileSize = typing.Union[str, int]"),
         "{size}"
     );
-    let product = &files["src/acme/files/types/files_upload_request_product_name.py"];
+    // An optional, non-null query composition is declared in the package root
+    // whatever its `title`: measured at Fern 5.20.0 in
+    // `docs/fern-measurements/parameter-lowering/` (oSPARC's own `product_name`
+    // is a required path parameter, which stays in its tag).
+    let product = &files["src/acme/types/files_upload_request_product_name.py"];
     assert!(
         product.contains(
             "FilesUploadRequestProductName = typing.Union[str, FilesUploadRequestProductNameOne]"
@@ -8090,7 +8094,7 @@ paths:
         "{product}"
     );
     assert!(
-        files.contains_key("src/acme/files/types/files_upload_request_product_name_one.py"),
+        files.contains_key("src/acme/types/files_upload_request_product_name_one.py"),
         "the enum alternative is hoisted under its ordinal name"
     );
     assert!(
@@ -9939,6 +9943,7 @@ paths:
         - in: query
           name: sortOrder
           schema:
+            enum: [asc, desc]
             anyOf:
               - { type: string, enum: [asc] }
               - { type: string, enum: [desc] }
@@ -10030,7 +10035,9 @@ components:
                 jobId: { type: number }
 "##,
     );
-    // An enum-only composition on a query parameter is a tag-local enum.
+    // An enum-only composition with a sibling `enum`, Fergus's spelling, is that
+    // enum to Fern, and tag-local like one; without the sibling an optional one
+    // is a union in the package root.
     assert!(files.contains_key("src/acme/customers/types/get_customers_request_sort_order.py"));
     let customer = &files["src/acme/types/customer.py"];
     // The lone composition beside `null` is the alias itself, documented by it.
