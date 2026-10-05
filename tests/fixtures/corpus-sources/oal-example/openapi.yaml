@@ -1,0 +1,230 @@
+openapi: 3.0.3
+info:
+  title: Example
+  description: Example
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /some/path/{id}/template:
+    get:
+      tags:
+      - blah
+      summary: does something else
+      operationId: get-some-path-id-template
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+        style: form
+      responses:
+        default:
+          description: some content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/obj1'
+              examples:
+                default:
+                  externalValue: examples/stuff.json
+    put:
+      summary: does something
+      operationId: put-some-path-id-template
+      parameters:
+      - in: query
+        name: n
+        schema:
+          example: 42.0
+          type: number
+          minimum: 0.0
+          maximum: 99.99
+        style: form
+      requestBody:
+        description: some content
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/obj1'
+            examples:
+              default:
+                externalValue: examples/stuff.json
+      responses:
+        default:
+          description: some content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/obj1'
+              examples:
+                default:
+                  externalValue: examples/stuff.json
+    patch:
+      summary: does something
+      operationId: patch-some-path-id-template
+      parameters:
+      - in: query
+        name: n
+        schema:
+          example: 42.0
+          type: number
+          minimum: 0.0
+          maximum: 99.99
+        style: form
+      requestBody:
+        description: some content
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/obj1'
+            examples:
+              default:
+                externalValue: examples/stuff.json
+      responses:
+        default:
+          description: some content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/obj1'
+              examples:
+                default:
+                  externalValue: examples/stuff.json
+    parameters:
+    - in: path
+      name: id
+      description: some parameter
+      required: true
+      schema:
+        title: some identifier
+        type: number
+      style: simple
+  /something:
+    get:
+      summary: get-something
+      operationId: get-something
+      parameters:
+      - in: header
+        name: If-None-Match
+        description: makes the request conditional
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: all good
+          headers:
+            ETag:
+              description: identifier for a specific version of a resource
+              style: simple
+              required: true
+              schema:
+                example: 675af34563dc-tr34
+                type: string
+          content:
+            application/vnd.blah+json:
+              schema:
+                $ref: '#/components/schemas/obj3'
+              examples:
+                default:
+                  externalValue: examples/other_stuff.json
+        5XX:
+          description: internal error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+        4XX:
+          description: bad request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+        '204':
+          description: no content
+    parameters:
+    - in: query
+      name: q
+      required: true
+      schema:
+        type: string
+      style: form
+components:
+  schemas:
+    obj1:
+      description: some stuff
+      type: object
+      properties:
+        firstName:
+          example: sarah
+          title: First name
+          type: string
+          pattern: ^[a-z]+$
+        lastName:
+          example: sarah
+          title: Last name
+          type: string
+          pattern: ^[a-z]+$
+        middleNames:
+          title: Middle names
+          type: array
+          items:
+            example: sarah
+            type: string
+            pattern: ^[a-z]+$
+        email:
+          title: E-mail address
+          type: string
+          format: email
+      required:
+      - firstName
+      - lastName
+    obj3:
+      description: some other stuff
+      allOf:
+      - $ref: '#/components/schemas/obj2'
+      - oneOf:
+        - type: object
+          properties:
+            height:
+              type: number
+        - type: object
+          properties:
+            stuff:
+              anyOf:
+              - oneOf:
+                - title: some identifier
+                  type: number
+                - type: string
+              - $ref: '#/components/schemas/obj2'
+              - example: /some/path/_id_number_/template
+                type: string
+                format: uri-reference
+              - $ref: '#/components/schemas/hash-d31b2f251c984df5575331831c174f719158747bfcbc58788d44da87badfa415'
+    obj2:
+      allOf:
+      - $ref: '#/components/schemas/obj1'
+      - type: object
+        properties:
+          age:
+            type: integer
+            minimum: 0
+            maximum: 999
+    hash-d31b2f251c984df5575331831c174f719158747bfcbc58788d44da87badfa415:
+      type: object
+      properties:
+        name:
+          example: sarah
+          type: string
+          pattern: ^[a-z]+$
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/hash-d31b2f251c984df5575331831c174f719158747bfcbc58788d44da87badfa415'
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer

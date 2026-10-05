@@ -11064,8 +11064,9 @@ impl Builder<'_> {
                             // A member composing two or more alternatives of its
                             // own is the named union `{Owner}{Prop}{Ordinal}`, as
                             // it is in a component union, whether or not they are
-                            // discriminated. Measured at 5.20.0 on the hand-written
-                            // `property-composed-members` fixture.
+                            // discriminated: the OAL example's `obj3.stuff` offers
+                            // an inline `oneOf` first, and Fern declares
+                            // `Obj3StuffZero` (corpus row 312).
                             if is_composed_member(m) {
                                 return self.variant_ref(&name, index, m, members);
                             }

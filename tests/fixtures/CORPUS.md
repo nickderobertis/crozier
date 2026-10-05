@@ -237,6 +237,7 @@ compares it. Row 224 is the one so far.
 | 309 | `huatuo-node-tree` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | committed | HuaTuo node API v1 as its repository authors it, the source `openapi.gen.json` (row 178) is bundled from: `components.securitySchemes.BearerAuth` is `$ref: '../components.yaml#/components/securitySchemes/BearerAuth'`, a security scheme declared in another document of the same pinned tree, and thirteen schema references name `../components.yaml#/components/schemas/…`. Fern's generated bearer `token` and `Authorization` header, and its `ErrorResponse`, `Error`, `ErrorCode` and `ObservationScope` types, derive from those references. |
 | 310 | `openfoodfacts-taxonomy-editor` | github-raw | https://raw.githubusercontent.com/openfoodfacts/taxonomy-editor/dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3/backend/openapi/openapi.json | `dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3` | AGPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Open Food Facts taxonomy editor's API as its FastAPI backend publishes it: 25 paths and 16 component schemas; `EntryNodeSearchResult.filters` items are a `filterType`-discriminated `oneOf` of seven `$ref` members whose `readOnly` properties `required` also lists |
 | 311 | `qontract-api` | github-raw | https://raw.githubusercontent.com/app-sre/qontract-reconcile/4f643a29084cb9b9e8c90e878e03bbe6ac80a5db/qontract_api/openapi.json | `4f643a29084cb9b9e8c90e878e03bbe6ac80a5db` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Qontract API as qontract-reconcile's FastAPI service publishes it: 34 paths and 145 component schemas; the Quay-repository and Slack-usergroup task results' `actions` items are `$ref`-only unions whose members tag `action_type` with a one-value `enum` that `required` leaves out |
+| 312 | `oal-example` | github-raw | https://raw.githubusercontent.com/oxlip-lang/oal/9c76fd5fd74c1f64c62a219aa2156b021a820f4a/examples/openapi.yaml | `9c76fd5fd74c1f64c62a219aa2156b021a820f4a` | Apache-2.0 (`info.license`, and the publisher repository's pinned `LICENSE.txt`) | committed | The example description the OAL project compiles from its own API language and publishes: 4 paths and 6 component schemas; `obj3.stuff` is an `anyOf` whose first member is an inline `oneOf` beside an inline object |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1429,3 +1430,19 @@ read an unrequired tag only under the names it had met (`message_type`,
 `mcp_server_type`, `name`, a `const` `type`); and a docstring example's
 `from … import` names are ordered case-insensitively, as isort orders them
 (`OcmGroupsCluster` before `OcmGroupUser`).
+
+## Row 312 — a property `anyOf` holding an inline composition
+
+A model property's `anyOf` whose member is itself an inline `oneOf` or `anyOf`
+beside another non-`null` member is a union with a named member to Fern: the
+member is the union `{Model}{Prop}{Ordinal}`, discriminated or not, as it is in
+a component union. The OAL example's `obj3.stuff` offers an inline `oneOf`
+first:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 312 | `oal-example` | `anyof-oneof-variant` at a model property | ✅ byte-matched after one repair |
+
+The repair: a property union's member composing two or more alternatives of
+its own is hoisted to `{Owner}{Prop}{Ordinal}` rather than inlined as a nested
+`typing.Union`.

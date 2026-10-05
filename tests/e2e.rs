@@ -4717,6 +4717,7 @@ const CORPORA: &[&Corpus] = &[
     &ZOONK,
     &OPENFOODFACTS_TAXONOMY_EDITOR,
     &QONTRACT_API,
+    &OAL_EXAMPLE,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7619,6 +7620,19 @@ const OPENFOODFACTS_TAXONOMY_EDITOR: Corpus = Corpus {
 /// one-value `enum` that `required` leaves out
 const QONTRACT_API: Corpus = Corpus {
     api: "qontract-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `oal-example`: corpus row 312, the OAL project's example description,
+/// whose `obj3.stuff` property `anyOf` holds an inline `oneOf` member
+const OAL_EXAMPLE: Corpus = Corpus {
+    api: "oal-example",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14205,6 +14219,11 @@ fn openfoodfacts_taxonomy_editor_matches_fern_output() {
 #[test]
 fn qontract_api_matches_fern_output() {
     assert_committed_corpus_matches(&QONTRACT_API);
+}
+
+#[test]
+fn oal_example_matches_fern_output() {
+    assert_committed_corpus_matches(&OAL_EXAMPLE);
 }
 
 #[test]
