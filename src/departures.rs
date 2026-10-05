@@ -274,14 +274,16 @@ pub fn render_reference(entries: &[Departure]) -> String {
 }
 
 /// What a rule may consult about the two trees a file pair belongs to: the
-/// top-level class names each tree's Python modules define, read on first use.
-/// A file compared on its own has an empty context, so no rule that needs one
+/// top-level class names each tree's Python modules define, and the
+/// distribution name crozier's `pyproject.toml` declares, read on first use. A
+/// file compared on its own has an empty context, so no rule that needs one
 /// applies to it.
 #[derive(Debug, Default)]
 pub struct Context {
     roots: Option<(std::path::PathBuf, std::path::PathBuf)>,
     reference_classes: OnceLock<BTreeSet<String>>,
     crozier_classes: OnceLock<BTreeSet<String>>,
+    crozier_project: OnceLock<Option<String>>,
 }
 
 impl Context {
@@ -290,10 +292,16 @@ impl Context {
         reference: impl IntoIterator<Item = (&'a str, &'a str)>,
         crozier: impl IntoIterator<Item = (&'a str, &'a str)>,
     ) -> Self {
+        let crozier: Vec<(&str, &str)> = crozier.into_iter().collect();
+        let project = crozier
+            .iter()
+            .find(|(path, _)| *path == "pyproject.toml")
+            .and_then(|(_, text)| project_name(text));
         Context {
             roots: None,
             reference_classes: OnceLock::from(classes(reference)),
             crozier_classes: OnceLock::from(classes(crozier)),
+            crozier_project: OnceLock::from(project),
         }
     }
 
@@ -319,6 +327,17 @@ impl Context {
             .get_or_init(|| self.tree_classes(|(_, crozier)| crozier))
     }
 
+    /// The distribution name crozier's `pyproject.toml` declares, if its tree
+    /// has one.
+    pub fn crozier_project(&self) -> Option<&str> {
+        self.crozier_project
+            .get_or_init(|| {
+                let (_, crozier) = self.roots.as_ref()?;
+                project_name(&std::fs::read_to_string(crozier.join("pyproject.toml")).ok()?)
+            })
+            .as_deref()
+    }
+
     /// The classes of the tree `side` picks, or none without trees.
     fn tree_classes(
         &self,
@@ -342,6 +361,14 @@ impl Context {
                 .map(|(rel, text)| (rel.as_str(), text.as_str())),
         )
     }
+}
+
+/// The first `name = "…"` a `pyproject.toml` declares: its `[project]` name.
+fn project_name(pyproject: &str) -> Option<String> {
+    pyproject
+        .lines()
+        .find_map(|line| line.strip_prefix("name = \"")?.strip_suffix('"'))
+        .map(str::to_string)
 }
 
 /// The top-level class names the `.py` files among `sources` define.
@@ -447,86 +474,155 @@ pub fn rule(id: &str) -> Option<Rule> {
 /// The SDK-relative path of Fern's own metadata record.
 pub const FERN_METADATA: &str = ".fern/metadata.json";
 
-/// `fern-metadata-generator-config`: in `.fern/metadata.json`, the lines that
-/// differ lie within the `generatorConfig` object of each side (or on the line
-/// before it, whose trailing comma depends on whether a key follows), and
-/// removing the object from both sides leaves them equal.
+/// `fern-metadata-generator-config`: crozier's `.fern/metadata.json` is exactly
+/// its fixed record; read as JSON, the two objects are equal but for their
+/// `generatorConfig` member, which differs; and every line that differs lies
+/// within that member on each side. The member's lines are found string-aware, so a brace or quote inside a
+/// string can neither hide a difference nor stretch the member.
 fn metadata_generator_config(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if pair.rel != FERN_METADATA {
         return Ok(None);
     }
-    let (fern, crozier) = (pair.fern.join("\n"), pair.crozier.join("\n"));
-    if without_generator_config(&fern) != without_generator_config(&crozier) {
+    let (fern_text, crozier_text) = (pair.fern.join("\n"), pair.crozier.join("\n"));
+    if crozier_text != crate::emit::FERN_METADATA_RECORD {
         return Ok(None);
     }
-    let Some(region) = differing_window(pair.fern, pair.crozier) else {
+    let (Ok(serde_json::Value::Object(mut fern)), Ok(serde_json::Value::Object(mut crozier))) = (
+        serde_json::from_str::<serde_json::Value>(&fern_text),
+        serde_json::from_str::<serde_json::Value>(&crozier_text),
+    ) else {
         return Ok(None);
     };
-    // Each side's differing lines are its block, or the line before it, whose
-    // comma depends on whether a key follows the block; a side with no block
-    // differs on that one line at most.
-    let within = |lines: &[&str], range: &std::ops::Range<usize>| {
-        range.is_empty()
-            || match generator_config_lines(lines) {
-                Some(block) => range.start + 1 >= block.start && range.end <= block.end,
-                None => range.len() == 1,
-            }
+    let (fern_config, crozier_config) = (
+        fern.remove("generatorConfig"),
+        crozier.remove("generatorConfig"),
+    );
+    if fern != crozier || fern_config == crozier_config {
+        return Ok(None);
+    }
+    let (Some(window), Member::Lines(crozier_block)) = (
+        differing_window(pair.fern, pair.crozier),
+        generator_config_member(&crozier_text),
+    ) else {
+        return Ok(None);
     };
-    Ok(
-        (within(pair.fern, &region.fern) && within(pair.crozier, &region.crozier))
-            .then_some(region),
-    )
+    let within = |range: &std::ops::Range<usize>, block: &std::ops::Range<usize>| {
+        range.is_empty() || (range.start >= block.start && range.end <= block.end)
+    };
+    let holds = match generator_config_member(&fern_text) {
+        Member::Lines(fern_block) => {
+            within(&window.fern, &fern_block) && within(&window.crozier, &crozier_block)
+        }
+        // crozier's member is not its record's last, so where Fern has none,
+        // crozier's member lines are all that differ.
+        Member::Absent => window.fern.is_empty() && within(&window.crozier, &crozier_block),
+        Member::Shared => false,
+    };
+    Ok(holds.then_some(window))
 }
 
-/// The lines of `lines`' `"generatorConfig": {…}` object, from its key line to
-/// its closing brace, if it has one.
-fn generator_config_lines(lines: &[&str]) -> Option<std::ops::Range<usize>> {
-    let start = lines
-        .iter()
-        .position(|line| line.trim_start().starts_with("\"generatorConfig\""))?;
-    let mut depth = 0i32;
-    for (index, line) in lines.iter().enumerate().skip(start) {
-        for ch in line.chars() {
-            match ch {
-                '{' => depth += 1,
-                '}' => depth -= 1,
-                _ => {}
-            }
-        }
-        if depth <= 0 {
-            return Some(start..index + 1);
+/// Where a JSON document's top-level `generatorConfig` member sits.
+#[derive(Debug, PartialEq, Eq)]
+enum Member {
+    /// The document has no such member.
+    Absent,
+    /// The member owns these whole lines: nothing but indentation before its
+    /// key, nothing but a comma after its value.
+    Lines(std::ops::Range<usize>),
+    /// The member shares a line with other text.
+    Shared,
+}
+
+/// The byte after the closing quote of the JSON string opening at `start` in
+/// `bytes`, if it closes.
+fn string_end(bytes: &[u8], start: usize) -> Option<usize> {
+    let mut index = start + 1;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'\\' => index += 2,
+            b'"' => return Some(index + 1),
+            _ => index += 1,
         }
     }
     None
 }
 
-/// `content` without its `"generatorConfig"` object and the comma that joins it
-/// to the key before it.
-fn without_generator_config(content: &str) -> String {
-    let Some(start) = content.find("\"generatorConfig\"") else {
-        return content.to_string();
-    };
-    let before = content[..start].trim_end();
-    let before = before.strip_suffix(',').unwrap_or(before);
-    let rest = &content[start..];
-    let (mut depth, mut started, mut end) = (0i32, false, rest.len());
-    for (i, ch) in rest.char_indices() {
-        match ch {
-            '{' => {
-                depth += 1;
-                started = true;
+/// The top-level `generatorConfig` member of the JSON object `text`, located
+/// string-aware: braces, brackets and quotes inside strings are text.
+fn generator_config_member(text: &str) -> Member {
+    let bytes = text.as_bytes();
+    let (mut depth, mut index, mut found) = (0usize, 0usize, None);
+    while index < bytes.len() {
+        match bytes[index] {
+            b'"' => {
+                let Some(end) = string_end(bytes, index) else {
+                    return Member::Absent;
+                };
+                let after = text[end..].trim_start();
+                if depth == 1
+                    && &text[index..end] == "\"generatorConfig\""
+                    && after.starts_with(':')
+                {
+                    found = Some((index, text.len() - after.len() + 1));
+                    break;
+                }
+                index = end;
+                continue;
             }
-            '}' if started => {
+            b'{' | b'[' => depth += 1,
+            b'}' | b']' => depth = depth.saturating_sub(1),
+            _ => {}
+        }
+        index += 1;
+    }
+    let Some((key, value_start)) = found else {
+        return Member::Absent;
+    };
+    // The value runs to the close of what it opens, or to the next `,` or
+    // closer at its own level.
+    let (mut depth, mut index, mut value_end) = (0usize, value_start, None);
+    while index < bytes.len() {
+        match bytes[index] {
+            b'"' => {
+                let Some(end) = string_end(bytes, index) else {
+                    return Member::Absent;
+                };
+                if depth == 0 {
+                    value_end = Some(end);
+                }
+                index = end;
+                continue;
+            }
+            b'{' | b'[' => depth += 1,
+            b'}' | b']' if depth == 0 => break,
+            b'}' | b']' => {
                 depth -= 1;
                 if depth == 0 {
-                    end = i + 1;
+                    value_end = Some(index + 1);
                     break;
                 }
             }
+            b',' if depth == 0 => break,
+            byte if depth == 0 && !byte.is_ascii_whitespace() => value_end = Some(index + 1),
             _ => {}
         }
+        index += 1;
     }
-    format!("{before}{}", &rest[end..])
+    let Some(value_end) = value_end else {
+        return Member::Absent;
+    };
+    let line_of = |offset: usize| text[..offset].matches('\n').count();
+    let line_start = text[..key].rfind('\n').map_or(0, |newline| newline + 1);
+    let line_end = text[value_end..]
+        .find('\n')
+        .map_or(text.len(), |newline| value_end + newline);
+    let owns = text[line_start..key].trim().is_empty()
+        && matches!(text[value_end..line_end].trim(), "" | ",");
+    if owns {
+        Member::Lines(line_of(key)..line_of(value_end) + 1)
+    } else {
+        Member::Shared
+    }
 }
 
 /// The smallest window of lines outside which `fern` and `crozier` are equal:
@@ -738,9 +834,25 @@ fn identity_pair_line<'l>(line: &'l str, prefix: &str) -> Option<(&'l str, &'l s
         .then_some((indent, header, value))
 }
 
+/// Whether `value` is exactly what crozier writes on its `header` identity
+/// line: its project name, as its `pyproject.toml` declares it, or its fixed
+/// packaged version.
+fn is_crozier_identity_value(pair: &Pair<'_>, header: &str, value: &str) -> bool {
+    let expected = if header.starts_with("SDK-Name") {
+        match pair.context.crozier_project() {
+            Some(project) => format!("\"{project}\""),
+            None => return false,
+        }
+    } else {
+        format!("\"{}\"", crate::emit::DEFAULT_SDK_VERSION)
+    };
+    value == expected
+}
+
 /// `sdk-name-version-headers`, aligned half: in the client wrapper, Fern's
 /// `X-Fern-SDK-Name`/`-Version` line and crozier's `X-Crozier-` one name the
-/// same header at the same indentation with different string values.
+/// same header at the same indentation with different string values, crozier's
+/// being exactly its project name or its fixed packaged version.
 fn sdk_name_version_header(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !is_client_wrapper(pair.rel) {
         return false;
@@ -750,17 +862,22 @@ fn sdk_name_version_header(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
         identity_pair_line(crozier, "X-Crozier-"),
     ) {
         (Some(fern), Some(crozier)) => {
-            fern.0 == crozier.0 && fern.1 == crozier.1 && fern.2 != crozier.2
+            fern.0 == crozier.0
+                && fern.1 == crozier.1
+                && fern.2 != crozier.2
+                && is_crozier_identity_value(pair, crozier.1, crozier.2)
         }
         _ => false,
     }
 }
 
 /// `sdk-name-version-headers`, added half: in the client wrapper, crozier
-/// writes an `X-Crozier-SDK-Name`/`-Version` line where the reference has none.
+/// writes an `X-Crozier-SDK-Name`/`-Version` line, carrying exactly its project
+/// name or its fixed packaged version, where the reference has none.
 fn sdk_name_version_header_added(pair: &Pair<'_>, crozier: &str) -> bool {
     is_client_wrapper(pair.rel)
-        && identity_pair_line(crozier, "X-Crozier-").is_some()
+        && identity_pair_line(crozier, "X-Crozier-")
+            .is_some_and(|(_, header, value)| is_crozier_identity_value(pair, header, value))
         && !pair
             .fern
             .iter()
@@ -1038,58 +1155,109 @@ mod tests {
             "\"X-Crozier-Language\": \"Python\","
         ));
         assert!(!sdk_identity_header_prefix(&wrapper, "x = 1", "x = 1"));
+    }
 
+    /// A client-wrapper pair whose crozier tree declares the project `acme`.
+    fn wrapper_pair<'a>(rel: &'a str, fern: &'a [&'a str]) -> Pair<'a> {
+        static PROJECT: OnceLock<Context> = OnceLock::new();
+        Pair {
+            rel,
+            fern,
+            crozier: &[],
+            context: PROJECT.get_or_init(|| {
+                Context::from_sources([], [("pyproject.toml", "[project]\nname = \"acme\"\n")])
+            }),
+        }
+    }
+
+    #[test]
+    fn the_sdk_pair_rule_takes_only_crozier_s_own_name_and_fixed_version() {
+        let wrapper = wrapper_pair("src/acme/core/client_wrapper.py", &[]);
         assert!(sdk_name_version_header(
             &wrapper,
             "    \"X-Fern-SDK-Version\": \"1.4.2\",",
             "    \"X-Crozier-SDK-Version\": \"0.0.0\","
         ));
-        // The same value is the prefix rule's; another header, indentation or
+        assert!(sdk_name_version_header(
+            &wrapper,
+            "    \"X-Fern-SDK-Name\": \"acme-sdk\",",
+            "    \"X-Crozier-SDK-Name\": \"acme\","
+        ));
+        // crozier's value is exactly its fixed version and its project name;
+        // the same value is the prefix rule's; another header, indentation or
         // shape is no departure.
         for (fern, crozier) in [
             (
-                "\"X-Fern-SDK-Name\": \"a\",",
-                "\"X-Crozier-SDK-Name\": \"a\",",
+                "\"X-Fern-SDK-Version\": \"1.4.2\",",
+                "\"X-Crozier-SDK-Version\": \"9.9.9\",",
             ),
             (
                 "\"X-Fern-SDK-Name\": \"a\",",
-                "\"X-Crozier-SDK-Version\": \"b\",",
+                "\"X-Crozier-SDK-Name\": \"other\",",
+            ),
+            (
+                "\"X-Fern-SDK-Name\": \"acme\",",
+                "\"X-Crozier-SDK-Name\": \"acme\",",
+            ),
+            (
+                "\"X-Fern-SDK-Name\": \"a\",",
+                "\"X-Crozier-SDK-Version\": \"0.0.0\",",
             ),
             (
                 "  \"X-Fern-SDK-Name\": \"a\",",
-                "\"X-Crozier-SDK-Name\": \"b\",",
+                "\"X-Crozier-SDK-Name\": \"acme\",",
             ),
-            ("\"X-Fern-SDK-Name\": a,", "\"X-Crozier-SDK-Name\": \"b\","),
+            (
+                "\"X-Fern-SDK-Name\": a,",
+                "\"X-Crozier-SDK-Name\": \"acme\",",
+            ),
             (
                 "\"X-Fern-SDK-Name\": \"a\"",
-                "\"X-Crozier-SDK-Name\": \"b\"",
+                "\"X-Crozier-SDK-Name\": \"acme\"",
             ),
             (
                 "\"X-Fern-Language\": \"a\",",
-                "\"X-Crozier-Language\": \"b\",",
+                "\"X-Crozier-Language\": \"0.0.0\",",
             ),
         ] {
-            assert!(!sdk_name_version_header(&wrapper, fern, crozier), "{fern}");
+            assert!(
+                !sdk_name_version_header(&wrapper, fern, crozier),
+                "{crozier}"
+            );
         }
+        // Without a crozier tree, nothing says what its project is.
+        let lines: [&str; 0] = [];
+        assert!(!sdk_name_version_header(
+            &pair("core/client_wrapper.py", &lines, &lines),
+            "\"X-Fern-SDK-Name\": \"a\",",
+            "\"X-Crozier-SDK-Name\": \"acme\","
+        ));
 
         let without = ["headers = {", "}"];
-        let added = pair("core/client_wrapper.py", &without, &lines);
+        let added = wrapper_pair("core/client_wrapper.py", &without);
         assert!(sdk_name_version_header_added(
             &added,
             "    \"X-Crozier-SDK-Name\": \"acme\","
         ));
-        assert!(!sdk_name_version_header_added(
+        assert!(sdk_name_version_header_added(
             &added,
-            "    \"X-Crozier-Language\": \"Python\","
+            "    \"X-Crozier-SDK-Version\": \"0.0.0\","
         ));
+        for crozier in [
+            "    \"X-Crozier-SDK-Name\": \"other\",",
+            "    \"X-Crozier-SDK-Version\": \"0.0.1\",",
+            "    \"X-Crozier-Language\": \"Python\",",
+        ] {
+            assert!(!sdk_name_version_header_added(&added, crozier), "{crozier}");
+        }
         // Where the reference has the pair, an added line is no departure.
         let with = ["    \"X-Fern-SDK-Name\": \"acme\","];
         assert!(!sdk_name_version_header_added(
-            &pair("core/client_wrapper.py", &with, &lines),
+            &wrapper_pair("core/client_wrapper.py", &with),
             "    \"X-Crozier-SDK-Version\": \"0.0.0\","
         ));
         assert!(!sdk_name_version_header_added(
-            &pair("client.py", &without, &lines),
+            &wrapper_pair("client.py", &without),
             "    \"X-Crozier-SDK-Name\": \"acme\","
         ));
     }
@@ -1098,63 +1266,115 @@ mod tests {
         text.split('\n').collect()
     }
 
-    #[test]
-    fn the_metadata_rule_takes_only_generator_config_differences() {
-        let crozier_text = concat!(
-            "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    ",
-            "\"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    ",
-            "}\n  },\n  \"invokedBy\": \"ci\"\n}"
-        );
-        let crozier = lines(crozier_text);
-        let region = |fern: &str, rel: &str| {
-            let fern = lines(fern);
-            metadata_generator_config(&pair(rel, &fern, &crozier)).unwrap()
-        };
-        // A different value inside the block.
-        let literals = crozier_text.replace("python_enums", "literals");
-        assert_eq!(
-            region(&literals, FERN_METADATA),
-            Some(Region {
-                fern: 4..5,
-                crozier: 4..5
-            })
-        );
-        // No block on Fern's side at all.
-        let absent = "{\n  \"cliVersion\": \"5.67.1\",\n  \"invokedBy\": \"ci\"\n}";
-        assert_eq!(
-            region(absent, FERN_METADATA),
-            Some(Region {
-                fern: 2..2,
-                crozier: 2..7
-            })
-        );
-        // Anything else differing too, another path, or no difference at all.
-        assert_eq!(
-            region(&literals.replace("ci", "manual"), FERN_METADATA),
-            None
-        );
-        assert_eq!(region(&literals, "types/user_metadata.json"), None);
-        assert_eq!(region(crozier_text, FERN_METADATA), None);
+    /// The metadata rule's region for Fern's `fern` against `crozier`.
+    fn metadata_region(fern: &str, crozier: &str, rel: &str) -> Option<Region> {
+        let (fern, crozier) = (lines(fern), lines(crozier));
+        metadata_generator_config(&pair(rel, &fern, &crozier)).unwrap()
     }
 
     #[test]
-    fn the_metadata_rule_takes_a_final_block_and_its_comma() {
-        let crozier = lines(
-            "{\n  \"generatorVersion\": \"5.20.0\",\n  \"generatorConfig\": {\n    \"x\": 1\n  }\n}",
-        );
-        let fern = lines("{\n  \"generatorVersion\": \"5.20.0\"\n}");
+    fn the_metadata_rule_takes_only_generator_config_differences() {
+        let record = crate::emit::FERN_METADATA_RECORD;
+        let region = |fern: &str| metadata_region(fern, record, FERN_METADATA);
+        // A different value inside the member.
+        let literals = record.replace("python_enums", "literals");
         assert_eq!(
-            metadata_generator_config(&pair(FERN_METADATA, &fern, &crozier)).unwrap(),
+            region(&literals),
             Some(Region {
-                fern: 1..2,
-                crozier: 1..5
+                fern: 6..7,
+                crozier: 6..7
             })
         );
-        // A comma change elsewhere is not the block's.
-        let fern = lines("{\n  \"generatorVersion\": \"5.20.0\"\n,}");
+        // Braces and quotes inside a string are text, inside the member.
+        let braced = record.replace("python_enums", "lit}{\\\"erals");
+        assert!(region(&braced).is_some(), "{braced}");
+        // No member on Fern's side at all: crozier's member lines.
+        let start = record.find("  \"generatorConfig\"").unwrap();
+        let end = record.find("  \"invokedBy\"").unwrap();
+        let absent = format!("{}{}", &record[..start], &record[end..]);
         assert_eq!(
-            metadata_generator_config(&pair(FERN_METADATA, &fern, &crozier)).unwrap(),
+            region(&absent),
+            Some(Region {
+                fern: 4..4,
+                crozier: 4..9
+            })
+        );
+        // Anything else differing too — even with braces in the member's
+        // strings — another path, or no difference at all.
+        assert_eq!(region(&literals.replace("github", "gitlab")), None);
+        assert_eq!(region(&braced.replace("github", "gitlab")), None);
+        assert_eq!(
+            region(&literals.replace("\"ci\",", "\"ci\" ,")),
+            None,
+            "a formatting change outside the member"
+        );
+        assert_eq!(
+            metadata_region(&literals, record, "types/user_metadata.json"),
             None
+        );
+        assert_eq!(region(record), None);
+        // Fern's member sharing a line with another member, or a document
+        // that is not JSON.
+        let shared = literals.replace(
+            "\"generatorVersion\": \"5.20.0\",\n  \"generatorConfig\"",
+            "\"generatorVersion\": \"5.20.0\", \"generatorConfig\"",
+        );
+        assert_ne!(shared, literals);
+        assert_eq!(region(&shared), None);
+        assert_eq!(region("{ not json"), None);
+    }
+
+    #[test]
+    fn the_metadata_rule_takes_only_crozier_s_fixed_record() {
+        let record = crate::emit::FERN_METADATA_RECORD;
+        let fern = record.replace("python_enums", "literals");
+        // crozier's member changed is no departure, whatever Fern holds.
+        for crozier in [
+            record.replace("python_enums", "literals_too"),
+            record.replace("python_enums", "literals"),
+            record.replace("\"ci\"", "\"manual\""),
+        ] {
+            assert_eq!(metadata_region(&fern, &crozier, FERN_METADATA), None);
+        }
+    }
+
+    #[test]
+    fn the_member_is_located_string_aware() {
+        assert_eq!(
+            generator_config_member("{\n  \"a\": \"}{\",\n  \"generatorConfig\": {\n    \"x\": \"}\"\n  },\n  \"b\": 1\n}"),
+            Member::Lines(2..5)
+        );
+        assert_eq!(
+            generator_config_member("{\n  \"generatorConfig\": \"x,}\"\n}"),
+            Member::Lines(1..2)
+        );
+        assert_eq!(
+            generator_config_member("{\n  \"generatorConfig\": [1, {\"a\": 2}],\n  \"b\": 1\n}"),
+            Member::Lines(1..2)
+        );
+        assert_eq!(
+            generator_config_member("{\n  \"generatorConfig\": 12\n}"),
+            Member::Lines(1..2)
+        );
+        assert_eq!(
+            generator_config_member("{\"a\": 1, \"generatorConfig\": {}}"),
+            Member::Shared
+        );
+        // Only the top-level member, and only a key.
+        assert_eq!(
+            generator_config_member(
+                "{\n  \"x\": {\"generatorConfig\": {}},\n  \"y\": \"generatorConfig\"\n}"
+            ),
+            Member::Absent
+        );
+        assert_eq!(generator_config_member("{\"a\": \"open"), Member::Absent);
+        assert_eq!(
+            generator_config_member("{\"generatorConfig\": \"open"),
+            Member::Absent
+        );
+        assert_eq!(
+            generator_config_member("{\"generatorConfig\": }"),
+            Member::Absent
         );
     }
 

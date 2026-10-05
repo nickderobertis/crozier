@@ -597,6 +597,11 @@ mod tests {
             "\nh = {\n    \"X-Fern-Language\": \"Python\",\n    ",
             "\"X-Fern-SDK-Name\": \"x\",\n    \"X-Fern-SDK-Version\": \"0.0.0\",\n}\n"
         );
+        // crozier's tree names its project `x`, which its SDK-Name line carries.
+        let context = Context::from_sources([], [("pyproject.toml", "name = \"x\"\n")]);
+        let compare = |rel: &str, crozier: &str, reference: &str| {
+            compare_file(&context, rel, crozier, reference).unwrap()
+        };
         let compared = compare(WRAPPER, crozier, reference);
         assert!(compared.matches(), "{:?}", compared.diff());
         assert_eq!(
@@ -631,6 +636,20 @@ mod tests {
                 (5, "sdk-name-version-headers"),
             ]
         );
+        // A crozier version other than its fixed one is no departure: the line
+        // fails, naming it.
+        let wrong = crozier.replace("\"0.0.0\"", "\"9.9.9\"");
+        let compared = compare(WRAPPER, &wrong, &released);
+        assert!(!compared.matches());
+        assert!(
+            compared
+                .diff()
+                .unwrap()
+                .contains("+     \"X-Crozier-SDK-Version\": \"9.9.9\","),
+            "{:?}",
+            compared.diff()
+        );
+        assert!(!compare(WRAPPER, &wrong, unpackaged).matches());
     }
 
     #[test]
@@ -709,19 +728,21 @@ mod tests {
 
     #[test]
     fn metadata_generator_config_is_one_departure_on_that_path_only() {
-        let crozier = concat!(
-            "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    ",
-            "\"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    }\n  },\n  ",
-            "\"invokedBy\": \"ci\"\n}"
-        );
+        let crozier = crate::emit::FERN_METADATA_RECORD;
         let reference = crozier.replace("python_enums", "literals");
         let compared = compare(FERN_METADATA, crozier, &reference);
         assert!(compared.matches(), "{:?}", compared.diff());
-        assert_eq!(ids(&compared), [(5, "fern-metadata-generator-config")]);
-        let absent = "{\n  \"cliVersion\": \"5.67.1\",\n  \"invokedBy\": \"ci\"\n}";
-        let compared = compare(FERN_METADATA, crozier, absent);
+        assert_eq!(ids(&compared), [(7, "fern-metadata-generator-config")]);
+        let start = crozier.find("  \"generatorConfig\"").unwrap();
+        let end = crozier.find("  \"invokedBy\"").unwrap();
+        let absent = format!("{}{}", &crozier[..start], &crozier[end..]);
+        let compared = compare(FERN_METADATA, crozier, &absent);
         assert!(compared.matches(), "{:?}", compared.diff());
-        assert_eq!(ids(&compared), [(3, "fern-metadata-generator-config")]);
+        assert_eq!(ids(&compared), [(5, "fern-metadata-generator-config")]);
+        // crozier's own member changed is no departure: the file fails.
+        let wrong = crozier.replace("python_enums", "literals");
+        let compared = compare(FERN_METADATA, &wrong, &absent);
+        assert!(!compared.matches() && compared.departures.is_empty());
         // Any other `…metadata.json` is SDK content, compared as written.
         for rel in [
             "types/user_metadata.json",

@@ -3117,8 +3117,13 @@ const SDK_VERSION_PLACEHOLDER: &str = "@@CROZIER_SDK_VERSION@@";
 /// The import package name (directory under `src/`) placeholder in `pyproject.toml`.
 const PACKAGE_PLACEHOLDER: &str = "@@CROZIER_PACKAGE@@";
 /// Default SDK version stamped into the runtime (Fern uses `0.0.0` when none is
-/// configured). Not yet exposed as a flag.
-const DEFAULT_SDK_VERSION: &str = "0.0.0";
+/// configured). Not yet exposed as a flag. The `sdk-name-version-headers`
+/// departure recognises exactly this value.
+pub(crate) const DEFAULT_SDK_VERSION: &str = "0.0.0";
+
+/// The one `.fern/metadata.json` crozier writes, whatever it is configured with;
+/// the `fern-metadata-generator-config` departure recognises exactly this record.
+pub(crate) const FERN_METADATA_RECORD: &str = include_str!("../assets/scaffolding/metadata.json");
 
 /// Project scaffolding Fern emits verbatim apart from project/package names and
 /// the SDK version. The Python test/default-client templates carry the same
@@ -3195,7 +3200,7 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
     files.extend([
         GeneratedFile {
             path: PathBuf::from(".fern/metadata.json"),
-            contents: include_str!("../assets/scaffolding/metadata.json").to_string(),
+            contents: FERN_METADATA_RECORD.to_string(),
         },
         GeneratedFile {
             path: PathBuf::from("CONTRIBUTING.md"),

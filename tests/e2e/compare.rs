@@ -1276,3 +1276,199 @@ fn compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference
         "{stderr}"
     );
 }
+
+/// The packaged golden's file `rel`, with `from` replaced by `to` — which must
+/// occur in it.
+fn edited_golden(rel: &str, from: &str, to: &str) -> String {
+    let text = std::fs::read_to_string(fixture_root().join("expected").join(rel)).unwrap();
+    assert!(text.contains(from), "{rel} holds no {from:?}");
+    text.replacen(from, to, 1)
+}
+
+/// The catalog's rules take crozier's exact replacement and nothing looser, as
+/// `crozier compare` reports it. A reference released under another version, or
+/// whose `generatorConfig` holds braces and quotes inside its strings, matches
+/// with the departure reported; the same member beside any other change to the
+/// record, or sharing a line with another member, fails, naming the file.
+#[cfg(unix)]
+#[test]
+fn compare_applies_the_packaging_and_metadata_departures_exactly() {
+    let wrapper = "src/fern/core/client_wrapper.py";
+    let metadata = ".fern/metadata.json";
+    let repo = small_repo(
+        "crozier.yml",
+        "  released:\n    reference:\n      command: ./scripts/overlay.sh released\n\
+         \x20 braced:\n    reference:\n      command: ./scripts/overlay.sh braced\n\
+         \x20 braced-and-other:\n    reference:\n      command: ./scripts/overlay.sh braced-and-other\n\
+         \x20 shared-line:\n    reference:\n      command: ./scripts/overlay.sh shared-line\n",
+    );
+    let root = repo.path();
+    // `overlay.sh <name>`: copy the packaged golden, then the files under
+    // `refs/<name>/` over it.
+    write_script(
+        root,
+        "scripts/overlay.sh",
+        &format!(
+            "cp -R '{}'/expected/. \"$CROZIER_REFERENCE_OUTPUT\"\n\
+             cp -R \"refs/$1/.\" \"$CROZIER_REFERENCE_OUTPUT\"\n",
+            fixture_root().display()
+        ),
+    );
+    let released = edited_golden(
+        wrapper,
+        "\"X-Fern-SDK-Version\": \"0.0.0\"",
+        "\"X-Fern-SDK-Version\": \"2.3.1\"",
+    );
+    write(root, &format!("refs/released/{wrapper}"), &released);
+    let braced = edited_golden(
+        metadata,
+        "\"client_class_name\": \"AcmeClient\"",
+        "\"client_class_name\": \"Acme}{\\\"Client\"",
+    );
+    write(root, &format!("refs/braced/{metadata}"), &braced);
+    write(
+        root,
+        &format!("refs/braced-and-other/{metadata}"),
+        &braced.replacen("\"github\"", "\"gitlab\"", 1),
+    );
+    write(
+        root,
+        &format!("refs/shared-line/{metadata}"),
+        &edited_golden(
+            metadata,
+            "\"generatorVersion\": \"5.20.0\",\n  \"generatorConfig\"",
+            "\"generatorVersion\": \"5.20.0\", \"generatorConfig\"",
+        ),
+    );
+
+    let assert = compare_cmd(root).args(["--json", "-"]).assert().code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let departure = |generator: &str, file: &str, id: &str| {
+        result(&report, "crozier.yml", generator)["comparison"]["departures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|departure| departure["file"] == file && departure["id"] == id)
+    };
+    for (generator, file, id) in [
+        ("released", wrapper, "sdk-name-version-headers"),
+        ("braced", metadata, "fern-metadata-generator-config"),
+    ] {
+        let matched = result(&report, "crozier.yml", generator);
+        assert_eq!(matched["status"], "matched", "{generator}: {matched:#}");
+        assert!(departure(generator, file, id), "{generator}: {matched:#}");
+    }
+    for generator in ["braced-and-other", "shared-line"] {
+        let failed = result(&report, "crozier.yml", generator);
+        assert_eq!(failed["status"], "mismatched", "{generator}: {failed:#}");
+        assert_eq!(
+            failed["comparison"]["differing"],
+            serde_json::json!([metadata]),
+            "{generator}"
+        );
+        assert!(
+            !departure(generator, metadata, "fern-metadata-generator-config"),
+            "{generator}: {failed:#}"
+        );
+    }
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains("  braced-and-other: mismatched")
+            && stderr.contains("    differing (1):\n      .fern/metadata.json\n"),
+        "{stderr}"
+    );
+}
+
+/// crozier's own side of the two departures, mutated. `crozier compare`
+/// generates crozier's tree itself and offers no way to alter it, so this
+/// drives the binary's real output through `parity::compare_trees` — the one
+/// comparison `crozier compare` calls — with crozier's file edited on disk: an
+/// SDK version other than crozier's fixed `0.0.0`, or a `generatorConfig` other
+/// than its fixed record's, is no departure, and the comparison names the file.
+#[test]
+fn crozier_s_own_sdk_version_or_metadata_record_changed_fails_the_comparison() {
+    let wrapper = "src/fern/core/client_wrapper.py";
+    let metadata = ".fern/metadata.json";
+    let out = tempfile::tempdir().expect("crozier output");
+    let crozier_root = out.path().join("sdk");
+    crozier()
+        .args(["generate", "python", "--spec"])
+        .arg(fixture_root().join("openapi.yml"))
+        .arg("--output")
+        .arg(&crozier_root)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+            "--client-class-name",
+            "AcmeClient",
+        ])
+        .assert()
+        .success();
+    let reference = tempfile::tempdir().expect("reference");
+    let copy = |from: &Path, to: &Path| {
+        for rel in crozier::parity::walk_files(from).unwrap() {
+            let text = std::fs::read(from.join(&rel)).unwrap();
+            std::fs::create_dir_all(to.join(&rel).parent().unwrap()).unwrap();
+            std::fs::write(to.join(&rel), text).unwrap();
+        }
+    };
+    copy(&fixture_root().join("expected"), reference.path());
+    // A reference released as 2.3.1: crozier's 0.0.0 is the departure.
+    write(
+        reference.path(),
+        wrapper,
+        &edited_golden(
+            wrapper,
+            "\"X-Fern-SDK-Version\": \"0.0.0\"",
+            "\"X-Fern-SDK-Version\": \"2.3.1\"",
+        ),
+    );
+    let compare = || {
+        crozier::parity::compare_trees(reference.path(), &crozier_root, None, true)
+            .expect("the trees compare")
+    };
+    let compared = compare();
+    assert!(compared.differences.is_empty(), "{compared:?}");
+    let applied = |id: &str, file: &str| {
+        compare()
+            .departures
+            .iter()
+            .any(|departure| departure.id == id && departure.file == file)
+    };
+    assert!(applied("sdk-name-version-headers", wrapper));
+    assert!(applied("fern-metadata-generator-config", metadata));
+
+    let edit = |rel: &str, from: &str, to: &str| {
+        let path = crozier_root.join(rel);
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(text.contains(from), "crozier's {rel} holds no {from:?}");
+        std::fs::write(&path, text.replacen(from, to, 1)).unwrap();
+    };
+    edit(
+        wrapper,
+        "\"X-Crozier-SDK-Version\": \"0.0.0\"",
+        "\"X-Crozier-SDK-Version\": \"9.9.9\"",
+    );
+    let compared = compare();
+    let differing: Vec<&str> = compared
+        .differences
+        .iter()
+        .map(|(rel, _)| rel.as_str())
+        .collect();
+    assert_eq!(differing, [wrapper], "{compared:?}");
+    assert!(!applied("sdk-name-version-headers", wrapper));
+
+    edit(wrapper, "\"9.9.9\"", "\"0.0.0\"");
+    edit(metadata, "\"python_enums\"", "\"literals\"");
+    let compared = compare();
+    let differing: Vec<&str> = compared
+        .differences
+        .iter()
+        .map(|(rel, _)| rel.as_str())
+        .collect();
+    assert_eq!(differing, [metadata], "{compared:?}");
+    assert!(!applied("fern-metadata-generator-config", metadata));
+}

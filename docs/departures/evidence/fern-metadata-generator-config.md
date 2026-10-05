@@ -26,4 +26,7 @@ That block is this departure. The goldens generated with `client_class_name`,
 object instead, and each is this departure on its first differing line; their rows are in
 `tests/fixtures/departures-ledger.tsv`. The rule applies to the SDK root's
 `.fern/metadata.json` alone: any other file whose name ends in `metadata.json`
-is SDK content and is compared as written.
+is SDK content and is compared as written. It takes crozier's side only when it
+is that fixed record byte for byte, reads both sides as JSON so only the
+`generatorConfig` member may differ, and locates the member string-aware, so a
+brace inside a string can neither hide another difference nor stretch it.
