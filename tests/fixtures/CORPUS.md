@@ -235,6 +235,7 @@ compares it. Row 224 is the one so far.
 | 307 | `apideck.com-ecosystem-client-class-name` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json | `0.0.6` | Apache 2.0 | committed | Row 13's Ecosystem API regenerated with `client_class_name: EcosystemClient`, the class name of its own `Ecosystem` resource's sub-client |
 | 308 | `yourbrand-ticketing` | github-raw | https://raw.githubusercontent.com/marinasundstrom/YourBrand/6ef617804cb34ceba4b847c62ab122042d86abbe/src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml | `6ef617804cb34ceba4b847c62ab122042d86abbe` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | YourBrand's Ticketing service API as its repository publishes it for the Ticketing client: 32 paths and 64 component schemas; two `application/json` bodies are bare `{type: string, format: duration}` strings |
 | 309 | `huatuo-node-tree` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | committed | HuaTuo node API v1 as its repository authors it, the source `openapi.gen.json` (row 178) is bundled from: `components.securitySchemes.BearerAuth` is `$ref: '../components.yaml#/components/securitySchemes/BearerAuth'`, a security scheme declared in another document of the same pinned tree, and thirteen schema references name `../components.yaml#/components/schemas/…`. Fern's generated bearer `token` and `Authorization` header, and its `ErrorResponse`, `Error`, `ErrorCode` and `ObservationScope` types, derive from those references. |
+| 310 | `openfoodfacts-taxonomy-editor` | github-raw | https://raw.githubusercontent.com/openfoodfacts/taxonomy-editor/dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3/backend/openapi/openapi.json | `dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3` | AGPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Open Food Facts taxonomy editor's API as its FastAPI backend publishes it: 25 paths and 16 component schemas; `EntryNodeSearchResult.filters` items are a `filterType`-discriminated `oneOf` of seven `$ref` members whose `readOnly` properties `required` also lists |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1394,3 +1395,17 @@ The repairs: a security scheme a relative `$ref` names is resolved from that
 document, following a reference inside it, and a sibling file's
 `#/components/schemas/<Name>` is imported as the component it names with the
 components of that file it references, rather than inlined.
+
+## Row 310 — a required `readOnly` property on a discriminated-union member
+
+A property both `required` and `readOnly` is server-populated, so Fern types it
+`Optional` in a model; it does the same inside the variant class a member of a
+discriminated union becomes. The taxonomy editor's search-filter members
+declare `negated`, `language`, `inherited` and the property pair that way:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 310 | `openfoodfacts-taxonomy-editor` | `read-only` on a discriminated-union member | ✅ byte-matched after one repair |
+
+The repair: a variant class's field is optional when its property is
+`readOnly`, as a plain model's is.

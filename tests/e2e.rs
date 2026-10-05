@@ -4715,6 +4715,7 @@ const CORPORA: &[&Corpus] = &[
     &FIWARE_CONTEXT_GENERATOR,
     &HASURA_METADATA,
     &ZOONK,
+    &OPENFOODFACTS_TAXONOMY_EDITOR,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7589,6 +7590,20 @@ const HASURA_METADATA: Corpus = Corpus {
 /// `oneOf` offers a closed empty object
 const ZOONK: Corpus = Corpus {
     api: "zoonk",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openfoodfacts-taxonomy-editor`: corpus row 310, the Open Food Facts
+/// taxonomy editor's API, whose discriminated search-filter members list
+/// `readOnly` properties in `required`
+const OPENFOODFACTS_TAXONOMY_EDITOR: Corpus = Corpus {
+    api: "openfoodfacts-taxonomy-editor",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14165,6 +14180,11 @@ fn hasura_metadata_matches_fern_output() {
 #[test]
 fn zoonk_matches_fern_output() {
     assert_committed_corpus_matches(&ZOONK);
+}
+
+#[test]
+fn openfoodfacts_taxonomy_editor_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENFOODFACTS_TAXONOMY_EDITOR);
 }
 
 #[test]
