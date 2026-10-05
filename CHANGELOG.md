@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.99](https://github.com/nickderobertis/crozier/compare/v0.0.98...v0.0.99) - 2026-10-05
+
+### Added
+
+- *(matching)* record Fern defects crozier corrects, line by line ([#408](https://github.com/nickderobertis/crozier/pull/408))
+
 ## [0.0.98](https://github.com/nickderobertis/crozier/compare/v0.0.97...v0.0.98) - 2026-10-03
 
 ### Added
