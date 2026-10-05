@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: Star Charts
+  version: 1.0.0
+paths:
+  /observatories:
+    post:
+      operationId: register_observatory
+      tags: [observatories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Observatory"
+      responses:
+        "200":
+          description: The registered observatory.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Observatory"
+  /telescopes/{telescope_id}:
+    get:
+      operationId: get_telescope
+      tags: [telescopes]
+      parameters:
+        - name: telescope_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One telescope.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Telescope"
+components:
+  schemas:
+    Reflector:
+      type: object
+      required: [aperture_mm, serial]
+      properties:
+        variety:
+          type: string
+          enum: [reflector]
+        aperture_mm:
+          type: integer
+        serial:
+          type: string
+          readOnly: true
+    Refractor:
+      type: object
+      required: [focal_mm]
+      properties:
+        variety:
+          type: string
+          enum: [refractor]
+        focal_mm:
+          type: integer
+    Telescope:
+      oneOf:
+        - $ref: "#/components/schemas/Reflector"
+        - $ref: "#/components/schemas/Refractor"
+    Imager:
+      type: object
+      required: [pixels]
+      properties:
+        stage:
+          type: string
+          enum: [imaging]
+        pixels:
+          type: integer
+    Spectrograph:
+      type: object
+      required: [resolution]
+      properties:
+        stage:
+          type: string
+          enum: [spectroscopy]
+        resolution:
+          type: number
+    Observatory:
+      type: object
+      required: [site]
+      properties:
+        site:
+          type: string
+        instruments:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/Imager"
+              - $ref: "#/components/schemas/Spectrograph"

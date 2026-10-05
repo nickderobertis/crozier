@@ -1,0 +1,78 @@
+openapi: 3.1.0
+info:
+  title: Orchard Ledger
+  version: 1.0.0
+paths:
+  /harvests:
+    post:
+      operationId: record_harvest
+      tags: [harvests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Harvest"
+      responses:
+        "200":
+          description: The recorded harvest.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Harvest"
+components:
+  schemas:
+    Crate:
+      type: object
+      required: [kind, weight_kg]
+      properties:
+        kind:
+          type: string
+          enum: [crate]
+        weight_kg:
+          type: number
+    Basket:
+      type: object
+      required: [kind, handles]
+      properties:
+        kind:
+          type: string
+          enum: [basket]
+        handles:
+          type: integer
+    Harvest:
+      type: object
+      required: [orchard]
+      properties:
+        orchard:
+          type: string
+        yield_note:
+          anyOf:
+            - oneOf:
+                - type: number
+                - type: string
+            - type: boolean
+        grade:
+          anyOf:
+            - type: integer
+            - anyOf:
+                - type: string
+                  format: date
+                - type: number
+        container:
+          anyOf:
+            - oneOf:
+                - $ref: "#/components/schemas/Crate"
+                - $ref: "#/components/schemas/Basket"
+              discriminator:
+                propertyName: kind
+            - type: string
+        holder:
+          anyOf:
+            - type: string
+            - anyOf:
+                - $ref: "#/components/schemas/Crate"
+                - $ref: "#/components/schemas/Basket"
+              discriminator:
+                propertyName: kind
+            - type: "null"

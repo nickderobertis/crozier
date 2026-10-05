@@ -1,0 +1,17 @@
+
+
+import typing
+
+from .is_filter_search_term_filter_value_four import IsFilterSearchTermFilterValueFour
+from .is_filter_search_term_filter_value_one import IsFilterSearchTermFilterValueOne
+from .is_filter_search_term_filter_value_three import IsFilterSearchTermFilterValueThree
+from .is_filter_search_term_filter_value_two import IsFilterSearchTermFilterValueTwo
+from .is_filter_search_term_filter_value_zero import IsFilterSearchTermFilterValueZero
+
+IsFilterSearchTermFilterValue = typing.Union[
+    IsFilterSearchTermFilterValueZero,
+    IsFilterSearchTermFilterValueOne,
+    IsFilterSearchTermFilterValueTwo,
+    IsFilterSearchTermFilterValueThree,
+    IsFilterSearchTermFilterValueFour,
+]

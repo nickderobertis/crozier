@@ -26,6 +26,8 @@
     "docs/openapi-surface/authored-probes/376-350-declared-type-name/fern-expected": {},
     "docs/openapi-surface/authored-probes/376-354-model-property-construct/fern-expected": {},
     "docs/openapi-surface/authored-probes/376-357-tag-only-operation-id/fern-expected": {},
+    "docs/openapi-surface/authored-probes/parity-property-anyof-composed-members/fern-expected": {},
+    "docs/openapi-surface/authored-probes/parity-unrequired-tag-variant-classes/fern-expected": {},
     "docs/openapi-surface/handwritten/array-item-inheritance-union/fern-expected": {},
     "docs/openapi-surface/handwritten/array-item-pointer-walk-oneof/fern-expected": {},
     "docs/openapi-surface/handwritten/composition-index-pointer/fern-expected": {},
@@ -45,6 +47,7 @@
     "docs/openapi-surface/handwritten/property-sole-oneof-empty-object-member/fern-expected": {},
     "docs/openapi-surface/handwritten/ref-pointer-ignored-head/fern-expected": {},
     "docs/openapi-surface/handwritten/ref-pointer-walk/fern-expected": {},
+    "docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected": {},
     "docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-closed-object": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-composed": {},
@@ -381,6 +384,7 @@
     "tests/fixtures/nextgen/expected": {},
     "tests/fixtures/nimisampo/expected": {},
     "tests/fixtures/npq-registration/expected": {},
+    "tests/fixtures/oal-example/expected": {},
     "tests/fixtures/oauth-client-credentials/expected": {},
     "tests/fixtures/onevoice/expected": {},
     "tests/fixtures/openaire-graph/expected": {},
@@ -400,6 +404,7 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/openfoodfacts-taxonomy-editor/expected": {},
     "tests/fixtures/openintegrationhub-secret-service/expected": {},
     "tests/fixtures/openlinksw-osdb/expected": {},
     "tests/fixtures/operation-id-non-identifier/expected": {},
@@ -417,6 +422,7 @@
     "tests/fixtures/portfoliooptimizer.io/expected": {},
     "tests/fixtures/prometheus-x-edge-computing/expected": {},
     "tests/fixtures/pydantic-extra-fields/expected": {},
+    "tests/fixtures/qontract-api/expected": {},
     "tests/fixtures/qredence-fleet-rlm/expected": {},
     "tests/fixtures/query-parameters-openapi/expected": {
       "carve_outs": {
