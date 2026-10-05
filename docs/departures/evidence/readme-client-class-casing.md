@@ -70,5 +70,7 @@ lines, where it names the classes its code defines (`LanternHarborApi`,
 `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`). `crozier compare` over
 the two reports each such line as this departure and matches; the
 `compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference`
-journey in `tests/e2e/compare.rs` drives exactly that, and its rows in
-`tests/fixtures/departures-ledger.tsv` are the lines above.
+journey in `tests/e2e/compare.rs` drives exactly that, and the tree's
+`readme-client-class-casing` rows in `tests/fixtures/departures-ledger.tsv` are
+the lines above (its other rows are the client wrapper's
+`sdk-identity-header-prefix` lines).
