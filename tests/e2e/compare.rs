@@ -1279,6 +1279,7 @@ fn compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference
 
 /// The packaged golden's file `rel`, with `from` replaced by `to` — which must
 /// occur in it.
+#[cfg(unix)]
 fn edited_golden(rel: &str, from: &str, to: &str) -> String {
     let text = std::fs::read_to_string(fixture_root().join("expected").join(rel)).unwrap();
     assert!(text.contains(from), "{rel} holds no {from:?}");
