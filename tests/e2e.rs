@@ -871,35 +871,61 @@ fn fern_defects() -> &'static Registry {
     })
 }
 
-/// `root`'s registry, validated against the goldens `root` holds that this
-/// suite compares — the one load every comparison goes through.
-fn load_fern_defects(root: &Path) -> Result<Registry, Vec<String>> {
-    Registry::load(root, &compared_goldens(root))
+/// Require the committed inventory to record `golden`, the tree a comparison
+/// is about to read, so the registry is validated against every golden read.
+fn assert_inventoried(golden: &str) {
+    assert!(
+        fern_defects().compares(golden),
+        "{golden} is not in {}; regenerate it (see compared_goldens_inventory_is_current)",
+        fern_defects::INVENTORY
+    );
 }
 
-/// Every committed Fern golden tree under `root` a comparison in this suite
-/// reads crozier's output against, keyed by its repository-relative path: each
-/// registered corpus's `expected/`, each flat and overlay golden, and each
-/// probe, authored-probe and hand-written tree. An overlay golden is keyed by its
-/// own directory and holds only the files it carries; a file it takes from
-/// `expected/` unchanged is accounted for under `expected/`.
-fn compared_goldens(root: &Path) -> fern_defects::Goldens {
-    let mut goldens = fern_defects::Goldens::new();
-    let mut add = |golden: String| {
-        let dir = root.join(&golden);
-        goldens.insert(golden, vec![dir]);
+/// `root`'s registry, validated against `root`'s committed inventory of
+/// compared goldens — the one load every comparison goes through.
+fn load_fern_defects(root: &Path) -> Result<Registry, Vec<String>> {
+    Registry::load(root)
+}
+
+/// The inventory of compared goldens, derived from the comparisons' own
+/// registrations under `root`: each registered corpus's `expected/` and each
+/// overlay golden of one, with that corpus's file-level carve-outs; each flat
+/// golden; and each probe, authored-probe and hand-written tree. An overlay
+/// golden holds the files it carries but its manifest; a file it takes from
+/// `expected/` unchanged is accounted for under `expected/`. The committed
+/// [`fern_defects::INVENTORY`] is held to this by
+/// `compared_goldens_inventory_is_current`.
+fn compared_goldens(root: &Path) -> fern_defects::Inventory {
+    let mut inventory = fern_defects::Inventory::default();
+    let mut add = |golden: String, compared: fern_defects::ComparedGolden| {
+        inventory.goldens.insert(golden, compared);
     };
     for corpus in registered_diff_corpora() {
-        add(format!("tests/fixtures/{}/expected", corpus.api));
+        let golden = format!("tests/fixtures/{}/expected", corpus.api);
+        if root.join(&golden).is_dir() {
+            add(
+                golden,
+                fern_defects::ComparedGolden {
+                    excluded: Vec::new(),
+                    carve_outs: recorded_carve_outs(corpus),
+                },
+            );
+        }
+    }
+    for (golden, corpus, excluded) in overlay_goldens::compared() {
+        add(
+            golden,
+            fern_defects::ComparedGolden {
+                excluded,
+                carve_outs: recorded_carve_outs(corpus),
+            },
+        );
     }
     for golden in FLAT_GOLDENS {
-        add(format!(
-            "tests/fixtures/{}/{FLAT_GOLDEN_DIR}",
-            golden.fixture
-        ));
-    }
-    for golden in overlay_goldens::golden_paths() {
-        add(golden);
+        add(
+            format!("tests/fixtures/{}/{FLAT_GOLDEN_DIR}", golden.fixture),
+            fern_defects::ComparedGolden::default(),
+        );
     }
     for dir in [AUTHORED_PROBES_DIR, HANDWRITTEN_DIR] {
         let Ok(entries) = std::fs::read_dir(root.join(dir)) else {
@@ -907,10 +933,13 @@ fn compared_goldens(root: &Path) -> fern_defects::Goldens {
         };
         for entry in entries.filter_map(Result::ok) {
             if entry.path().join("fern-expected").is_dir() {
-                add(format!(
-                    "{dir}/{}/fern-expected",
-                    entry.file_name().to_string_lossy()
-                ));
+                add(
+                    format!(
+                        "{dir}/{}/fern-expected",
+                        entry.file_name().to_string_lossy()
+                    ),
+                    fern_defects::ComparedGolden::default(),
+                );
             }
         }
     }
@@ -918,15 +947,50 @@ fn compared_goldens(root: &Path) -> fern_defects::Goldens {
         .unwrap_or_default();
     for proof in parse_probe_manifest(&manifest).0 {
         match proof.form.as_str() {
-            "absent-tree" => add(proof.artifact),
+            "absent-tree" => add(proof.artifact, fern_defects::ComparedGolden::default()),
             "differential" => {
-                add(proof.artifact);
-                add(format!("{PROBE_EXPECTED_DIR}/{}", proof.control));
+                add(proof.artifact, fern_defects::ComparedGolden::default());
+                add(
+                    format!("{PROBE_EXPECTED_DIR}/{}", proof.control),
+                    fern_defects::ComparedGolden::default(),
+                );
             }
             _ => {}
         }
     }
-    goldens
+    inventory
+}
+
+/// Corpus `c`'s file-level carve-outs, each as its slug in
+/// [`fern_defects::CARVE_OUT_KINDS`] and the files it covers.
+fn corpus_carve_outs(c: &Corpus) -> Vec<(&'static str, Vec<&'static str>)> {
+    vec![
+        ("unmatched", c.unmatched.to_vec()),
+        ("crozier-only", crozier_only_files(c).to_vec()),
+        (
+            "pinned",
+            packaged_expectations(c)
+                .iter()
+                .map(|expectation| expectation.path)
+                .collect(),
+        ),
+        ("scaffolding", repository_scaffolding(c).to_vec()),
+    ]
+}
+
+/// [`corpus_carve_outs`] as the inventory records them: only the kinds that
+/// cover a file.
+fn recorded_carve_outs(c: &Corpus) -> std::collections::BTreeMap<String, Vec<String>> {
+    corpus_carve_outs(c)
+        .into_iter()
+        .filter(|(_, files)| !files.is_empty())
+        .map(|(slug, files)| {
+            (
+                slug.to_string(),
+                files.into_iter().map(str::to_string).collect(),
+            )
+        })
+        .collect()
 }
 
 /// `path`'s repository-relative, `/`-separated spelling — how a registry entry
@@ -950,22 +1014,12 @@ fn corpus_tree_defects<'r>(
     golden: &str,
     c: &Corpus,
 ) -> Result<TreeDefects<'r>, Vec<String>> {
-    let pinned: Vec<&str> = packaged_expectations(c)
+    let carve_outs = corpus_carve_outs(c);
+    let carve_outs: Vec<(&str, &[&str])> = carve_outs
         .iter()
-        .map(|expectation| expectation.path)
+        .map(|(slug, files)| (*slug, files.as_slice()))
         .collect();
-    registry.tree(
-        golden,
-        &[
-            ("an `unmatched` entry", c.unmatched),
-            ("a crozier-only file", crozier_only_files(c)),
-            ("a file pinned to crozier's own bytes", &pinned),
-            (
-                "repository scaffolding crozier does not emit",
-                repository_scaffolding(c),
-            ),
-        ],
-    )
+    registry.tree(golden, &carve_outs)
 }
 
 const KNOWN_FERN_FAILURE_FILE: &str = "known-fern-failure.json";
@@ -1163,8 +1217,10 @@ fn assert_corpus_matches(c: &Corpus) {
         "{} has no Fern golden to compare",
         c.api
     );
+    let golden = golden_path(&expected_root);
+    assert_inventoried(&golden);
     let out = generate_corpus(c);
-    let defects = corpus_tree_defects(fern_defects(), &golden_path(&expected_root), c)
+    let defects = corpus_tree_defects(fern_defects(), &golden, c)
         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
     assert_generated_tree_matches(c, &defects, &expected_root, out.path());
 }
@@ -1180,6 +1236,8 @@ fn assert_generated_tree_matches(
     expected_root: &Path,
     out: &Path,
 ) {
+    let unwritten = defects.unwritten(out);
+    assert!(unwritten.is_empty(), "{}", unwritten.join("\n"));
     let repository_scaffolding = repository_scaffolding(c);
     let packaged_expectations = packaged_expectations(c);
     for rel in walk_files(expected_root) {
@@ -1810,15 +1868,20 @@ fn golden_tree_failures(
     expected_root: &Path,
     out: &Path,
 ) -> Vec<String> {
+    let mut failures: Vec<String> = defects
+        .unwritten(out)
+        .into_iter()
+        .map(|failure| format!("{key}: {failure}"))
+        .collect();
     let expected_files = walk_files(expected_root);
     let generated_files = walk_files(out);
     if generated_files != expected_files {
-        return vec![format!(
+        failures.push(format!(
             "{key}: crozier's file set over {source} differs from {}",
             expected_root.display()
-        )];
+        ));
+        return failures;
     }
-    let mut failures = Vec::new();
     for rel in expected_files {
         let generated = std::fs::read_to_string(out.join(&rel)).unwrap_or_default();
         let expected = std::fs::read_to_string(expected_root.join(&rel)).unwrap_or_default();
@@ -8559,10 +8622,12 @@ fn differences_after_defects(
 ) -> Result<Vec<(String, Difference)>, Vec<String>> {
     let mut failures = Vec::new();
     for rel in defects.files() {
-        let (Ok(fern), Ok(generated)) = (
-            std::fs::read_to_string(expected_root.join(rel)),
-            std::fs::read_to_string(out.join(rel)),
-        ) else {
+        let Ok(fern) = std::fs::read_to_string(expected_root.join(rel)) else {
+            failures.push(defects.cannot_apply(rel, "Fern's golden holds no"));
+            continue;
+        };
+        let Ok(generated) = std::fs::read_to_string(out.join(rel)) else {
+            failures.push(defects.cannot_apply(rel, "crozier wrote no"));
             continue;
         };
         match defects.expected(rel, &generated, &fern, generated_matches_fixture) {
@@ -8634,6 +8699,7 @@ fn assert_flat_golden_matches(fixture: &str) {
         );
         return;
     };
+    assert_inventoried(&golden_path(&expected_root));
     let differences = golden_differences(
         &expected_root,
         out.path(),

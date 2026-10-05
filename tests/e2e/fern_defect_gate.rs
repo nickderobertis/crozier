@@ -7,9 +7,9 @@ use std::path::Path;
 
 use super::fern_defects::{self, Registry};
 use super::{
-    assert_generated_tree_matches, corpus_tree_defects, golden_differences, golden_tree_failures,
-    load_fern_defects, Corpus, CORPORA, EXHAUSTIVE, QUERY_PARAMETERS, WEBFLOW_V2,
-    WEBFLOW_V2_CROZIER_ONLY,
+    assert_generated_tree_matches, compared_goldens, corpus_tree_defects, golden_differences,
+    golden_tree_failures, load_fern_defects, Corpus, CORPORA, EXHAUSTIVE, QUERY_PARAMETERS,
+    WEBFLOW_V2, WEBFLOW_V2_CROZIER_ONLY,
 };
 
 /// The authored golden every test compares against, as an entry names it.
@@ -78,8 +78,24 @@ fn repository(registry: &str, fern_readme: &str) -> tempfile::TempDir {
     );
     write(root.path(), &format!("{GOLDEN}/README.md"), fern_readme);
     write(root.path(), &format!("{GOLDEN}/src/demo/client.py"), CLIENT);
+    write(root.path(), fern_defects::INVENTORY, SCRATCH_INVENTORY);
     root
 }
+
+/// The scratch repository's inventory: [`GOLDEN`] and the corpus and overlay
+/// goldens the corpus-gate tests author, with no carve-out recorded.
+const SCRATCH_INVENTORY: &str = r#"{
+  "goldens": {
+    "docs/openapi-surface/authored-probes/demo/fern-expected": {},
+    "tests/fixtures/exhaustive/expected": {},
+    "tests/fixtures/exhaustive/expected-literals": {
+      "excluded": [".crozier-overlay.json"]
+    },
+    "tests/fixtures/query-parameters-openapi/expected": {},
+    "tests/fixtures/webflow-v2/expected": {}
+  }
+}
+"#;
 
 /// crozier's authored output tree, with its README `readme`.
 fn output(readme: &str) -> tempfile::TempDir {
@@ -254,7 +270,7 @@ fn an_entry_naming_a_golden_or_file_no_comparison_reads_is_refused() {
     assert_names(
         &load_failures(unread_file.path()),
         "unread-file",
-        "is not in golden",
+        "is not a file any comparison of",
     );
 }
 
@@ -558,10 +574,11 @@ fn an_overlay_takes_base_entries_only_for_the_files_it_inherits() {
     );
     let registry = load_fern_defects(root.path()).expect("a valid registry");
     let own = ["src/demo/client.py".to_string()].into_iter().collect();
-    let defects = registry
-        .tree(&overlay, &[])
-        .unwrap()
-        .inherit(registry.tree(&base, &[]).unwrap(), &own);
+    let defects = registry.tree(&overlay, &[]).unwrap().inherit(
+        registry.tree(&base, &[]).unwrap(),
+        &own,
+        &[],
+    );
     assert_eq!(
         defects.files().into_iter().collect::<Vec<_>>(),
         ["README.md"]
@@ -594,4 +611,290 @@ fn the_documented_keys_are_the_loaders() {
         .filter_map(|line| line.split_whitespace().next().map(str::to_string))
         .collect();
     assert_eq!(header, keys, "{}'s header comment", fern_defects::REGISTRY);
+}
+
+/// One `[[defect]]` table over `README.md` in [`GOLDEN`] with a fixed reason.
+fn readme_entry(id: &str, fern: &str, crozier: &str) -> String {
+    entry_with(
+        id,
+        GOLDEN,
+        "README.md",
+        fern,
+        crozier,
+        "the README's lines are wrong on their own terms",
+        EVIDENCE,
+    )
+}
+
+#[test]
+fn overlapping_occurrences_are_all_counted() {
+    // `x\nx\n` starts at the second and the third line of the three.
+    let root = repository(
+        &readme_entry("overlapping-lines", "x\nx\n", "y\n"),
+        "# Demo\nx\nx\nx\n",
+    );
+    let out = output("# Demo\ny\nx\n");
+    assert_names(
+        &compare(root.path(), out.path()),
+        "overlapping-lines",
+        "occur 2 times",
+    );
+}
+
+#[test]
+fn two_entries_in_one_file_are_both_applied() {
+    let registry = format!(
+        "{}{}",
+        readme_entry("a-heading", "# Demo\n", "# Demo SDK\n"),
+        readme_entry("b-client", "client = DemoClient()\n", "client = Demo()\n"),
+    );
+    let root = repository(&registry, FERN_README);
+    let out = output("# Demo SDK\n\nfrom demo import DemoClient\nclient = Demo()\n");
+    assert_eq!(compare(root.path(), out.path()), Vec::<String>::new());
+}
+
+#[test]
+fn an_entry_whose_lines_only_another_substitution_writes_is_absent() {
+    // `b-beta`'s lines occur only in what `a-import` writes, never in Fern's file.
+    let registry = format!(
+        "{}{}",
+        readme_entry(
+            "a-import",
+            "from demo import DemoClient\n",
+            "from demo import Demo\nbeta = Beta()\n",
+        ),
+        readme_entry("b-beta", "beta = Beta()\n", "beta = Demo()\n"),
+    );
+    let root = repository(&registry, FERN_README);
+    let out = output("# Demo\n\nfrom demo import Demo\nbeta = Demo()\nclient = DemoClient()\n");
+    assert_names(&compare(root.path(), out.path()), "b-beta", "occur 0 times");
+}
+
+#[test]
+fn an_entry_whose_second_occurrence_another_substitution_removes_still_occurs_twice() {
+    let fern =
+        "# Demo\nfrom demo import DemoClient\nclient = DemoClient()\nclient = DemoClient()\n";
+    let registry = format!(
+        "{}{}",
+        readme_entry(
+            "a-import",
+            "from demo import DemoClient\nclient = DemoClient()\n",
+            "from demo import Demo\n",
+        ),
+        readme_entry("b-client", "client = DemoClient()\n", "client = Demo()\n"),
+    );
+    let root = repository(&registry, fern);
+    let out = output("# Demo\nfrom demo import Demo\nclient = Demo()\n");
+    let failures = compare(root.path(), out.path());
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains("`b-client`") && failure.contains("occur 2 times")),
+        "{failures:#?}"
+    );
+}
+
+#[test]
+fn overlapping_spans_of_two_entries_are_refused_naming_both() {
+    let registry = format!(
+        "{}{}",
+        readme_entry("a-first", "p\nq\n", "P\n"),
+        readme_entry("b-second", "q\nr\n", "R\n"),
+    );
+    let root = repository(&registry, "# Demo\np\nq\nr\n");
+    let out = output("# Demo\nP\nR\n");
+    let failures = compare(root.path(), out.path());
+    assert!(
+        failures.len() == 1
+            && failures[0].contains("`a-first`")
+            && failures[0].contains("`b-second`")
+            && failures[0].contains("overlap"),
+        "{failures:#?}"
+    );
+}
+
+/// One entry over `file` in [`GOLDEN`], whose README lines it quotes.
+fn file_entry(id: &str, file: &str) -> String {
+    entry_with(
+        id,
+        GOLDEN,
+        file,
+        "from demo import DemoClient\n",
+        "from demo import Demo\n",
+        "the snippet imports DemoClient, which the package does not define",
+        EVIDENCE,
+    )
+}
+
+#[test]
+fn a_file_path_escaping_its_golden_is_refused() {
+    let scratch = repository("", FERN_README);
+    let absolute = scratch.path().join(GOLDEN).join("README.md");
+    let absolute = absolute.to_string_lossy().into_owned();
+    for file in [
+        absolute.as_str(),
+        "../fern-expected/README.md",
+        "./README.md",
+        "src//demo/client.py",
+        "src\\demo\\client.py",
+    ] {
+        let root = repository(&file_entry("escaping-path", file), FERN_README);
+        assert_names(
+            &load_failures(root.path()),
+            "escaping-path",
+            "is not a relative path inside its golden",
+        );
+    }
+}
+
+#[test]
+fn a_file_no_comparison_reads_is_refused() {
+    // The provenance record sits in the golden, but no comparison reads it.
+    let root = repository(
+        &file_entry("provenance-record", ".crozier-fern-golden.json"),
+        FERN_README,
+    );
+    write(
+        root.path(),
+        &format!("{GOLDEN}/.crozier-fern-golden.json"),
+        "from demo import DemoClient\n",
+    );
+    assert_names(
+        &load_failures(root.path()),
+        "provenance-record",
+        "is not a file any comparison of",
+    );
+    // Nor does any comparison read an overlay's manifest.
+    let overlay = format!("tests/fixtures/{}/expected-literals", EXHAUSTIVE.api);
+    let root = repository(
+        &entry_with(
+            "overlay-manifest",
+            &overlay,
+            ".crozier-overlay.json",
+            "from demo import DemoClient\n",
+            "from demo import Demo\n",
+            "the snippet imports DemoClient, which the package does not define",
+            EVIDENCE,
+        ),
+        FERN_README,
+    );
+    write(
+        root.path(),
+        &format!("{overlay}/.crozier-overlay.json"),
+        "from demo import DemoClient\n",
+    );
+    assert_names(
+        &load_failures(root.path()),
+        "overlay-manifest",
+        "is not a file any comparison of",
+    );
+}
+
+#[test]
+fn a_carve_out_the_inventory_records_is_refused_at_load() {
+    let (root, _) = corpus_repository(EXHAUSTIVE.api, "README.md");
+    write(
+        root.path(),
+        fern_defects::INVENTORY,
+        r#"{"goldens": {"tests/fixtures/exhaustive/expected": {"carve_outs": {"unmatched": ["README.md"]}}}}"#,
+    );
+    assert_names(
+        &load_failures(root.path()),
+        "carved-out-file",
+        "also an `unmatched` entry",
+    );
+}
+
+#[test]
+fn a_file_crozier_did_not_write_fails_naming_the_entry_on_every_path() {
+    let root = repository(&valid_entry(), FERN_README);
+    let out = output(CROZIER_README);
+    std::fs::remove_file(out.path().join("README.md")).unwrap();
+    let id = "`readme-imports-undefined-client`";
+    let failures = compare(root.path(), out.path());
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains(id) && failure.contains("crozier wrote no README.md")),
+        "{failures:#?}"
+    );
+    let registry = load_fern_defects(root.path()).expect("a valid registry");
+    let error = golden_differences(
+        &root.path().join(GOLDEN),
+        out.path(),
+        None,
+        true,
+        registry.tree(GOLDEN, &[]),
+    )
+    .expect_err("an entry crozier wrote no file for fails");
+    assert!(
+        error.contains(id) && error.contains("crozier wrote no README.md"),
+        "{error}"
+    );
+    let (root, golden) = corpus_repository(EXHAUSTIVE.api, "README.md");
+    let registry = load_fern_defects(root.path()).expect("a valid registry");
+    let defects = corpus_tree_defects(&registry, &golden, &EXHAUSTIVE).expect("no carve-out");
+    let empty = tempfile::tempdir().unwrap();
+    let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        assert_generated_tree_matches(
+            &EXHAUSTIVE,
+            &defects,
+            &root.path().join(&golden),
+            empty.path(),
+        );
+    }))
+    .expect_err("the corpus gate fails");
+    let message = panic.downcast_ref::<String>().cloned().unwrap_or_default();
+    assert!(
+        message.contains("`carved-out-file`") && message.contains("crozier wrote no README.md"),
+        "{message}"
+    );
+}
+
+#[test]
+fn a_comment_only_registry_leaves_every_comparison_as_it_was() {
+    let root = repository("# no entry\n", FERN_README);
+    let matching = output(FERN_README);
+    assert_eq!(compare(root.path(), matching.path()), Vec::<String>::new());
+    let differing = output(CROZIER_README);
+    let failures = compare(root.path(), differing.path());
+    assert!(
+        failures.len() == 1 && failures[0].contains("generated README.md differs"),
+        "{failures:#?}"
+    );
+    let registry = load_fern_defects(root.path()).expect("an empty registry");
+    let differences = golden_differences(
+        &root.path().join(GOLDEN),
+        differing.path(),
+        None,
+        false,
+        registry.tree(GOLDEN, &[]),
+    )
+    .expect("no entry");
+    assert!(
+        matches!(&differences[..], [(rel, crozier::parity::Difference::Text(None))] if rel == "README.md"),
+        "{differences:?}"
+    );
+}
+
+/// The committed inventory of compared goldens is exactly the one the
+/// comparisons' registrations derive, so the in-process comparison of
+/// `tests/generation.rs`, which reads it, validates against the same list.
+#[test]
+fn compared_goldens_inventory_is_current() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let derived = compared_goldens(root).render();
+    let path = root.join(fern_defects::INVENTORY);
+    if std::env::var_os("CROZIER_UPDATE_COMPARED_GOLDENS").is_some() {
+        std::fs::write(&path, &derived).expect("write the inventory");
+        return;
+    }
+    let committed = std::fs::read_to_string(&path).unwrap_or_default();
+    assert!(
+        committed == derived,
+        "{} is not the inventory the registered comparisons derive; regenerate it with \
+         `CROZIER_UPDATE_COMPARED_GOLDENS=1 cargo nextest run --locked -E \
+         'binary(e2e) and test(compared_goldens_inventory_is_current)'` and commit it",
+        fern_defects::INVENTORY
+    );
 }

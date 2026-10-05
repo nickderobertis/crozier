@@ -168,32 +168,42 @@ fn materialize(kind: &Kind, api: &str, overlay: &Overlay) -> tempfile::TempDir {
     tree
 }
 
-/// The repository-relative path of every overlay golden the gate compares.
-pub(super) fn golden_paths() -> Vec<String> {
-    KINDS
-        .iter()
-        .flat_map(|kind| {
-            kind.fixtures
-                .iter()
-                .map(move |api| format!("tests/fixtures/{api}/{}", kind.dir))
+/// Every overlay golden the gate compares: its repository-relative path, the
+/// corpus whose residuals it is compared under, and the files in it no
+/// comparison reads (its manifest).
+pub(super) fn compared() -> Vec<(String, &'static Corpus, Vec<String>)> {
+    overlay_corpora()
+        .into_iter()
+        .map(|(kind, corpus, _)| {
+            (
+                format!("tests/fixtures/{}/{}", corpus.api, kind.dir),
+                corpus,
+                vec![MANIFEST.to_string()],
+            )
         })
         .collect()
 }
 
 /// The registry entries the `kind` golden of `corpus` applies: those naming the
 /// overlay for a file it carries, and those naming `expected/` for every file
-/// it takes from there unchanged.
+/// it takes from there unchanged — never one `overlay` removes.
 fn overlay_tree_defects(
     kind: &Kind,
     corpus: &Corpus,
+    overlay: &Overlay,
 ) -> Result<super::TreeDefects<'static>, Vec<String>> {
     let base = format!("tests/fixtures/{}/expected", corpus.api);
     let own = walk_files(&fixture_dir(corpus.api).join(kind.dir))
         .into_iter()
         .collect();
-    let overlay = format!("tests/fixtures/{}/{}", corpus.api, kind.dir);
-    Ok(corpus_tree_defects(fern_defects(), &overlay, corpus)?
-        .inherit(corpus_tree_defects(fern_defects(), &base, corpus)?, &own))
+    let golden = format!("tests/fixtures/{}/{}", corpus.api, kind.dir);
+    Ok(
+        corpus_tree_defects(fern_defects(), &golden, corpus)?.inherit(
+            corpus_tree_defects(fern_defects(), &base, corpus)?,
+            &own,
+            &overlay.removed,
+        ),
+    )
 }
 
 /// Every `(kind, corpus, overlay)` the gate compares, validated: each listed
@@ -353,7 +363,7 @@ fn overlay_goldens_match_fern_output() {
                 };
                 let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                     let golden = materialize(kind, corpus.api, overlay);
-                    let defects = overlay_tree_defects(kind, corpus)
+                    let defects = overlay_tree_defects(kind, corpus, overlay)
                         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
                     let out = generate_corpus_with(corpus, kind.flags);
                     assert_generated_tree_matches(corpus, &defects, golden.path(), out.path());

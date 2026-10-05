@@ -216,19 +216,40 @@ these string keys and no other:
 
 **The substitution.** Every comparison of crozier's output with a committed Fern
 golden — each corpus's `expected/` with `fern-strict` off and on, the overlay
-and flat goldens, the probe, authored-probe and hand-written trees, and the gap
-and diff reporters — first replaces, in each file an entry names, the entry's
-`fern` lines with its `crozier` lines, then requires crozier's file to equal the
-result under the gate's usual normalization. An overlay golden takes the entries
-naming `expected/` for the files it inherits unchanged, and its own entries for
-the files it carries. With no entry, every comparison is exactly the one it was.
+and flat goldens, the probe, authored-probe and hand-written trees, the gap and
+diff reporters, and the in-process fixture comparison of `tests/generation.rs` —
+first replaces, in each file an entry names, the entry's `fern` lines with its
+`crozier` lines, then requires crozier's file to equal the result under the
+gate's usual normalization. Each entry's lines are located in the original Fern
+file, trying every line start so overlapping occurrences count, and every entry
+for a file is applied at once, so no substitution can create or remove another
+entry's occurrence. An overlay golden takes the entries naming `expected/` for
+the files it inherits unchanged (never one its manifest removes), and its own
+entries for the files it carries. With no entry, every comparison is exactly the
+one it was; the generation comparison still just leaves a mismatching module
+uncounted.
+
+**Validated once, against the compared goldens.** Both test binaries load the
+registry through the same loader, which validates every entry against
+[`tests/fixtures/compared-goldens.json`](../tests/fixtures/compared-goldens.json):
+each golden a comparison reads, the files in it no comparison reads (an
+overlay's manifest; the provenance record is never walked), and the corpus's
+file-level carve-outs. `tests/e2e.rs` derives that inventory from the
+comparisons' own registrations, and `compared_goldens_inventory_is_current`
+fails, printing the command that regenerates it, when the committed copy
+differs — after registering a corpus, an overlay or a flat golden, for
+instance. Every registry error is fatal wherever it is found.
 
 **What each failure means.** The comparison fails, naming the entry, when:
 
-- the `fern` lines do not occur in the file, or occur more than once — the entry
-  no longer locates one construct, so it cannot be trusted to replace only it;
-- the entry names a golden no comparison reads, or a file that golden lacks — it
-  accounts for nothing a gate checks;
+- the `fern` lines do not start exactly one line of the original file, or two
+  entries' lines overlap — the entry no longer locates one construct of its own,
+  so it cannot be trusted to replace only it;
+- the entry names a golden the inventory does not record, a `file` that is not
+  a plain relative path inside it (absolute, or with an empty, `.` or `..`
+  part, or a backslash), or a file no comparison of it reads — it accounts for
+  nothing a gate checks;
+- crozier wrote no file the entry names — it cannot apply;
 - `fern` equals `crozier` — it accounts for no difference;
 - crozier's file already equals the unsubstituted Fern file — the entry is
   stale, and must be removed rather than left to excuse a future regression;
