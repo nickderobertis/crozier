@@ -2788,6 +2788,54 @@ fn parameter_lowering_measurements_match_fern() {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
+/// `x-crozier-base-path` is `x-fern-base-path` under crozier's own spelling: on
+/// its own it generates the tree Fern measured for the `x-fern-base-path`
+/// document, and beside an `x-fern-base-path` naming another base path it wins,
+/// whichever of the two forms each one takes. The last case is the control:
+/// that other base path, read alone, does not generate the same tree.
+#[test]
+fn crozier_base_path_alias_matches_and_wins() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(PARAMETER_LOWERING_DIR);
+    let lifted = root.join("base-path-lifted-unincluded");
+    let literal = root.join("base-path-string");
+    let document = std::fs::read_to_string(lifted.join("openapi.yml")).unwrap();
+    let object = "x-fern-base-path:\n  path: /{edition}\n  parameters:\n    edition:\n      type: string\n      default: v2\n";
+    assert!(
+        document.contains(object),
+        "the lifted document's extension moved"
+    );
+    let crozier_object = object.replace("x-fern-base-path:", "x-crozier-base-path:");
+    let cases = [
+        ("alias-alone", crozier_object.clone(), &lifted),
+        (
+            "alias-wins-over-a-literal",
+            format!("x-fern-base-path: /v2\n{crozier_object}"),
+            &lifted,
+        ),
+        (
+            "alias-wins-over-an-object",
+            format!("{object}x-crozier-base-path: /v2\n"),
+            &literal,
+        ),
+    ];
+    let work = tempfile::tempdir().expect("alias tempdir");
+    for (name, extension, golden) in cases {
+        let spec = work.path().join(format!("{name}.yml"));
+        std::fs::write(&spec, document.replace(object, &extension)).unwrap();
+        let expected = golden.join("fern-expected");
+        let failures = filtered_tree_failures(name, &golden_path(&expected), &spec, &expected, &[]);
+        assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+    }
+    let spec = work.path().join("control.yml");
+    std::fs::write(&spec, document.replace(object, "x-fern-base-path: /v2\n")).unwrap();
+    let expected = lifted.join("fern-expected");
+    assert!(
+        !filtered_tree_failures("control", &golden_path(&expected), &spec, &expected, &[])
+            .is_empty(),
+        "the literal base path alone generated the lifted tree"
+    );
+}
+
 /// The gate's name keeps it out of the golden-only tier, which selects every
 /// `*matches_fern_output*` test in `scripts/fixtures-coverage.sh` and in
 /// `scripts/openapi-surface-census.py`, whose selector `scripts/golden-reach.py`

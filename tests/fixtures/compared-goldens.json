@@ -1,6 +1,12 @@
 {
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
+    "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
+    "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
+    "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},
+    "docs/fern-measurements/parameter-lowering/base-path-lifted-required/fern-expected": {},
+    "docs/fern-measurements/parameter-lowering/base-path-lifted-unincluded/fern-expected": {},
+    "docs/fern-measurements/parameter-lowering/base-path-object-literal/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-string/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/header-default-literal/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-array-union-items/fern-expected": {},

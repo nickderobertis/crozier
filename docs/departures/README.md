@@ -162,7 +162,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 1 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 3 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -185,6 +185,24 @@ when the two differ.
 - **crozier writes:** The same import statements, in crozier's sorted order.
 - **Why:** The block exists only for type checkers and is never executed, and the two blocks import exactly the same names: sorted with ruff's isort, they are identical. crozier emits a deterministic sorted order rather than reproducing Fern's collection order.
 - **Evidence:** [`docs/departures/evidence/init-type-checking-import-order.md`](../../docs/departures/evidence/init-type-checking-import-order.md)
+
+### `lifted-base-path-docs-examples`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A document-level `x-fern-base-path` (or `x-crozier-base-path`) object whose `path` names a `{placeholder}`, which the client lifts out of every method into a constructor argument: `README.md` and `reference.md`.
+- **Fern writes:** Method snippets passing the lifted argument (`edition="v2"`) to methods that do not take it, a `reference.md` parameter block documenting it under each such method, and client constructors that leave it out — even where it is required.
+- **crozier writes:** Method snippets and parameter lists without it, and every snippet's constructor passing it first, by keyword: its default (`edition="v2"`), or the `YOUR_EDITION` placeholder Fern's own docstrings use when it has none.
+- **Why:** The examples contradict the generated code: each method call raises `TypeError` for an unexpected keyword argument, a required lifted argument left out of the constructor raises `TypeError` for the missing one, and `reference.md` documents an argument the method does not have.
+- **Evidence:** [`docs/departures/evidence/lifted-base-path-docs-examples.md`](../../docs/departures/evidence/lifted-base-path-docs-examples.md)
+
+### `lifted-base-path-positional-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A lifted base-path parameter (see `lifted-base-path-docs-examples`) with a string `default`: the client constructor examples in the docstrings of the root client and every resource client.
+- **Fern writes:** The default passed positionally, `FernApi("v2",)`.
+- **crozier writes:** The default passed by keyword, `FernApi(edition="v2",)`.
+- **Why:** The generated constructor is keyword-only, so the example call does not match its signature: it raises `TypeError` (`takes 1 positional argument but 2 were given`).
+- **Evidence:** [`docs/departures/evidence/lifted-base-path-positional-example.md`](../../docs/departures/evidence/lifted-base-path-positional-example.md)
 
 ### `readme-client-class-casing`
 

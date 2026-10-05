@@ -2175,8 +2175,8 @@ fn client_path_parameter_param(parameter: &ClientPathParameter, on_client: bool)
 /// A lifted base-path parameter's example argument: its default by keyword, or
 /// the placeholder a required constructor argument takes. Fern writes the
 /// default positionally, `FernApi("v2")`, which a keyword-only constructor
-/// rejects with a `TypeError`; crozier names it by keyword instead (a
-/// registered Fern defect, see `docs/fern-defects/`).
+/// rejects with a `TypeError`; crozier names it by keyword instead (the
+/// `lifted-base-path-positional-example` departure).
 fn client_path_parameter_example(parameter: &ClientPathParameter) -> String {
     match &parameter.default {
         Some(value) => format!("{}=\"{}\"", parameter.py_name, escape_py_str(value)),
@@ -2612,10 +2612,20 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         )
         .replace(
             "@@ENVIRONMENTS@@\n\n",
-            if ir.environment.is_some() {
-                "## Environments\n\nThis SDK allows you to configure different environments for API requests.\n\n```python\nfrom @@PKG@@ import @@CLIENT@@\nfrom @@PKG@@.environment import @@CLIENT@@Environment\n\nclient = @@CLIENT@@(\n    environment=@@ENV_DEFAULT@@,\n)\n```\n\n"
+            &if ir.environment.is_some() {
+                // A lifted base-path parameter leads the constructor here too,
+                // as in every snippet (the `lifted-base-path-docs-examples`
+                // departure): without a default, Fern's call misses it.
+                let lifted: String = ir
+                    .client_path_parameters
+                    .iter()
+                    .map(|parameter| format!("    {},\n", client_path_parameter_example(parameter)))
+                    .collect();
+                format!(
+                    "## Environments\n\nThis SDK allows you to configure different environments for API requests.\n\n```python\nfrom @@PKG@@ import @@CLIENT@@\nfrom @@PKG@@.environment import @@CLIENT@@Environment\n\nclient = @@CLIENT@@(\n{lifted}    environment=@@ENV_DEFAULT@@,\n)\n```\n\n"
+                )
             } else {
-                ""
+                String::new()
             },
         )
         // Fern's shield credits the organization. Only the flat layout follows
@@ -10097,13 +10107,12 @@ fn documentation_client_example_args(
     global_headers: &[GlobalHeader],
     client_path_parameters: &[ClientPathParameter],
 ) -> Vec<String> {
-    // Fern's Markdown leaves a required base-path parameter out of the
-    // constructor, which then raises a `TypeError` for the missing argument;
-    // crozier passes it first, with the placeholder the method docstrings use
-    // (a registered Fern defect, see `docs/fern-defects/`).
+    // Fern's Markdown passes a lifted base-path parameter to each method, which
+    // does not take it, and leaves it out of the constructor; crozier passes it
+    // to the constructor, first, by keyword: its default, or the placeholder the
+    // method docstrings use (the `lifted-base-path-docs-examples` departure).
     client_path_parameters
         .iter()
-        .filter(|parameter| parameter.default.is_none())
         .map(client_path_parameter_example)
         .chain(documentation_auth_example_args(auth))
         .chain(
@@ -14369,11 +14378,16 @@ mod parameter_lowering_tests {
             "{raw}"
         );
         assert!(!raw.contains("content-type"), "{raw}");
+        // The Markdown passes it by keyword with its default to the three
+        // constructors that name arguments (sync, async, environments), and to
+        // no method.
+        let readme = &defaulted["README.md"];
         assert!(
-            !defaulted["README.md"].contains("edition="),
-            "{}",
-            defaulted["README.md"]
+            readme.contains("client = ApiApi(\n    edition=\"v2\",\n)"),
+            "{readme}"
         );
+        assert_eq!(readme.matches("edition=").count(), 3, "{readme}");
+        assert!(!readme.contains("    edition=\"v2\",\n    name="), "{readme}");
 
         // Without a default the argument is required, and the Markdown constructs
         // the client with it.

@@ -274,15 +274,16 @@ pub fn render_reference(entries: &[Departure]) -> String {
 }
 
 /// What a rule may consult about the two trees a file pair belongs to: the
-/// top-level class names each tree's Python modules define, and the
-/// distribution name crozier's `pyproject.toml` declares, read on first use. A
-/// file compared on its own has an empty context, so no rule that needs one
-/// applies to it.
+/// top-level class names each tree's Python modules define, the base-path
+/// parameters crozier's routes read from the client, and the distribution name
+/// crozier's `pyproject.toml` declares, read on first use. A file compared on
+/// its own has an empty context, so no rule that needs one applies to it.
 #[derive(Debug, Default)]
 pub struct Context {
     roots: Option<(std::path::PathBuf, std::path::PathBuf)>,
     reference_classes: OnceLock<BTreeSet<String>>,
     crozier_classes: OnceLock<BTreeSet<String>>,
+    crozier_lifted: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
 }
 
@@ -300,7 +301,8 @@ impl Context {
         Context {
             roots: None,
             reference_classes: OnceLock::from(classes(reference)),
-            crozier_classes: OnceLock::from(classes(crozier)),
+            crozier_classes: OnceLock::from(classes(crozier.iter().copied())),
+            crozier_lifted: OnceLock::from(lifted_parameters(crozier)),
             crozier_project: OnceLock::from(project),
         }
     }
@@ -327,6 +329,23 @@ impl Context {
             .get_or_init(|| self.tree_classes(|(_, crozier)| crozier))
     }
 
+    /// The base-path parameters crozier's routes read from the client wrapper
+    /// rather than take as method arguments: each `X` of a route's
+    /// `encode_path_param(self._client_wrapper._X)`.
+    pub fn crozier_lifted_parameters(&self) -> &BTreeSet<String> {
+        self.crozier_lifted.get_or_init(|| {
+            let Some((_, root)) = self.roots.as_ref() else {
+                return BTreeSet::new();
+            };
+            let sources: Vec<(String, String)> = python_sources(root);
+            lifted_parameters(
+                sources
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            )
+        })
+    }
+
     /// The distribution name crozier's `pyproject.toml` declares, if its tree
     /// has one.
     pub fn crozier_project(&self) -> Option<&str> {
@@ -346,21 +365,51 @@ impl Context {
         let Some(root) = self.roots.as_ref().map(side) else {
             return BTreeSet::new();
         };
-        let sources: Vec<(String, String)> = crate::parity::walk_files(root)
-            .unwrap_or_default()
-            .into_iter()
-            .filter(|rel| rel.ends_with(".py"))
-            .filter_map(|rel| {
-                let text = std::fs::read_to_string(root.join(&rel)).ok()?;
-                Some((rel, text))
-            })
-            .collect();
+        let sources = python_sources(root);
         classes(
             sources
                 .iter()
                 .map(|(rel, text)| (rel.as_str(), text.as_str())),
         )
     }
+}
+
+/// Every `.py` file under `root` as `(relative path, text)`; a module that
+/// cannot be read is left out.
+fn python_sources(root: &std::path::Path) -> Vec<(String, String)> {
+    crate::parity::walk_files(root)
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|rel| rel.ends_with(".py"))
+        .filter_map(|rel| {
+            let text = std::fs::read_to_string(root.join(&rel)).ok()?;
+            Some((rel, text))
+        })
+        .collect()
+}
+
+/// The names `X` the `.py` files among `sources` read as
+/// `encode_path_param(self._client_wrapper._X)`: base-path parameters a route
+/// takes from the client.
+fn lifted_parameters<'a>(
+    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> BTreeSet<String> {
+    const READ: &str = "encode_path_param(self._client_wrapper._";
+    sources
+        .into_iter()
+        .filter(|(path, _)| path.ends_with(".py"))
+        .flat_map(|(_, text)| {
+            text.match_indices(READ)
+                .map(move |(at, _)| &text[at + READ.len()..])
+        })
+        .filter_map(|rest| {
+            let name: String = rest
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+            (!name.is_empty() && rest[name.len()..].starts_with(')')).then_some(name)
+        })
+        .collect()
 }
 
 /// The first `name = "…"` a `pyproject.toml` declares: its `[project]` name.
@@ -433,9 +482,11 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 5] = [
+pub const RULE_IDS: [&str; 7] = [
     "fern-metadata-generator-config",
     "init-type-checking-import-order",
+    "lifted-base-path-docs-examples",
+    "lifted-base-path-positional-example",
     "readme-client-class-casing",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
@@ -452,6 +503,14 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "init-type-checking-import-order" => Rule {
             region: Some(init_type_checking_import_order),
+            ..none
+        },
+        "lifted-base-path-docs-examples" => Rule {
+            region: Some(lifted_base_path_docs_examples),
+            ..none
+        },
+        "lifted-base-path-positional-example" => Rule {
+            line: Some(lifted_base_path_positional_example),
             ..none
         },
         "readme-client-class-casing" => Rule {
@@ -807,6 +866,162 @@ fn readme_client_class_casing(pair: &Pair<'_>, fern: &str, crozier: &str) -> boo
     renamed > 0
 }
 
+/// `NAME` of an argument line `<indent>NAME=<value>,` whose `NAME` is one of
+/// `names`.
+fn lifted_argument<'l>(line: &'l str, names: &BTreeSet<String>) -> Option<&'l str> {
+    let trimmed = line.trim_start();
+    if trimmed.len() == line.len() || !line.ends_with(',') {
+        return None;
+    }
+    let (name, _) = trimmed.split_once('=')?;
+    names.contains(name).then_some(name)
+}
+
+/// The line opening the call whose argument list holds line `index`: the
+/// nearest line above it ending in `(`.
+fn call_opener<'l>(lines: &[&'l str], index: usize) -> Option<&'l str> {
+    lines[..index]
+        .iter()
+        .rev()
+        .find(|line| line.ends_with('('))
+        .map(|line| line.trim_start())
+}
+
+/// Whether `opener` opens a call of an endpoint method, `client.<…>(` or
+/// `await client.<…>(`, rather than the client's constructor.
+fn opens_method_call(opener: &str) -> bool {
+    let call = opener.strip_prefix("await ").unwrap_or(opener);
+    call.starts_with("client.")
+}
+
+/// Whether `opener` opens a client constructor call, `client = <Class>(`.
+fn opens_constructor_call(opener: &str) -> bool {
+    opener.strip_prefix("client = ").is_some_and(|class| {
+        class.strip_suffix('(').is_some_and(|name| {
+            !name.is_empty() && name.chars().all(|c| c.is_alphanumeric() || c == '_')
+        })
+    })
+}
+
+/// The length of the `reference.md` parameter block starting at `lines[at]`
+/// that documents one of `names` — `<dl>`, `<dd>`, a blank line, `**NAME:** …`,
+/// a whitespace-only line, `</dd>`, `</dl>` and a blank line — if one starts
+/// there.
+fn lifted_parameter_block(lines: &[&str], at: usize, names: &BTreeSet<String>) -> Option<usize> {
+    let block = lines.get(at..at + 8)?;
+    let documented = block[3]
+        .strip_prefix("**")
+        .and_then(|rest| rest.split_once(":** "))
+        .is_some_and(|(name, _)| names.contains(name));
+    (block[0] == "<dl>"
+        && block[1] == "<dd>"
+        && block[2].is_empty()
+        && documented
+        && block[4].trim().is_empty()
+        && block[5] == "</dd>"
+        && block[6] == "</dl>"
+        && block[7].is_empty())
+    .then_some(8)
+}
+
+/// Fern's documentation lines with its lifted-argument defects taken out: each
+/// method call's argument line naming a lifted parameter, and each
+/// `reference.md` block documenting one. `None` when there is none to take out.
+fn fern_docs_without_lifted<'l>(
+    lines: &[&'l str],
+    names: &BTreeSet<String>,
+) -> Option<Vec<&'l str>> {
+    let mut kept = Vec::with_capacity(lines.len());
+    let mut index = 0;
+    while index < lines.len() {
+        if let Some(length) = lifted_parameter_block(lines, index, names) {
+            index += length;
+            continue;
+        }
+        let in_method_call = lifted_argument(lines[index], names).is_some()
+            && call_opener(lines, index).is_some_and(opens_method_call);
+        if !in_method_call {
+            kept.push(lines[index]);
+        }
+        index += 1;
+    }
+    (kept.len() < lines.len()).then_some(kept)
+}
+
+/// crozier's documentation lines with its lifted constructor arguments taken
+/// out, a constructor call left empty closing on its opening line
+/// (`client = FernApi()`), as Fern writes it. `None` when there is none.
+fn crozier_docs_without_lifted(lines: &[&str], names: &BTreeSet<String>) -> Option<Vec<String>> {
+    let mut kept: Vec<String> = Vec::with_capacity(lines.len());
+    let mut removed = false;
+    for (index, line) in lines.iter().enumerate() {
+        if lifted_argument(line, names).is_some()
+            && call_opener(lines, index).is_some_and(opens_constructor_call)
+        {
+            removed = true;
+            continue;
+        }
+        let closes_empty = *line == ")"
+            && kept
+                .last()
+                .is_some_and(|opener| opens_constructor_call(opener));
+        match kept.last_mut() {
+            Some(opener) if closes_empty => opener.push(')'),
+            _ => kept.push((*line).to_string()),
+        }
+    }
+    removed.then_some(kept)
+}
+
+/// `lifted-base-path-docs-examples`: in `README.md` or `reference.md`, Fern's
+/// file is crozier's once three things move back to where Fern puts them —
+/// every lifted base-path parameter crozier passes to the client constructor
+/// leaves it (a constructor left empty closes on its own line,
+/// `client = FernApi()`), and Fern's method calls passing a lifted parameter and
+/// `reference.md` blocks documenting one under a method are set aside. Both
+/// sides must carry the construct. The region is the two files' differing
+/// window, so any other difference in the file is left unexplained.
+fn lifted_base_path_docs_examples(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let names = pair.context.crozier_lifted_parameters();
+    if names.is_empty() {
+        return Ok(None);
+    }
+    let (Some(fern), Some(crozier)) = (
+        fern_docs_without_lifted(pair.fern, names),
+        crozier_docs_without_lifted(pair.crozier, names),
+    ) else {
+        return Ok(None);
+    };
+    if fern.len() != crozier.len()
+        || fern
+            .iter()
+            .zip(&crozier)
+            .any(|(left, right)| *left != right)
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// `lifted-base-path-positional-example`: in a `.py` file, Fern's line passes a
+/// string positionally, `<indent>"<value>",`, where crozier's line passes the
+/// same string by the keyword of a lifted base-path parameter,
+/// `<indent>NAME="<value>",`.
+fn lifted_base_path_positional_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !pair.rel.ends_with(".py") {
+        return false;
+    }
+    let Some(name) = lifted_argument(crozier, pair.context.crozier_lifted_parameters()) else {
+        return false;
+    };
+    let indent = &crozier[..crozier.len() - crozier.trim_start().len()];
+    let value = &crozier.trim_start()[name.len() + 1..];
+    value.starts_with('"') && fern.strip_prefix(indent) == Some(value)
+}
+
 /// Whether `rel` is an SDK's client wrapper, where the identity headers are set.
 fn is_client_wrapper(rel: &str) -> bool {
     rel == "core/client_wrapper.py" || rel.ends_with("/core/client_wrapper.py")
@@ -1132,6 +1347,170 @@ mod tests {
             &other,
             "x = LanternharborApi",
             "x = LanternHarborApi"
+        ));
+    }
+
+    /// A context whose crozier tree's routes read `edition` from the client.
+    fn lifted_context() -> Context {
+        Context::from_sources(
+            [],
+            [(
+                "src/acme/layers/raw_client.py",
+                "f\"{encode_path_param(self._client_wrapper._edition)}/layers\",\n",
+            )],
+        )
+    }
+
+    #[test]
+    fn lifted_parameters_are_read_from_routes_reading_the_client_wrapper() {
+        assert_eq!(
+            lifted_context().crozier_lifted_parameters(),
+            &BTreeSet::from(["edition".to_string()])
+        );
+        // An attribute read anywhere else, or not closed at once: none.
+        let other = Context::from_sources(
+            [("a.py", "encode_path_param(self._client_wrapper._edition)\n")],
+            [
+                ("README.md", "encode_path_param(self._client_wrapper._a)\n"),
+                (
+                    "b.py",
+                    "self._client_wrapper._b\nencode_path_param(self._client_wrapper._c.x)\n",
+                ),
+            ],
+        );
+        assert!(other.crozier_lifted_parameters().is_empty());
+        let crozier = tempfile::tempdir().unwrap();
+        std::fs::write(
+            crozier.path().join("raw_client.py"),
+            "encode_path_param(self._client_wrapper._tenant)\n",
+        )
+        .unwrap();
+        let reference = tempfile::tempdir().unwrap();
+        assert_eq!(
+            Context::from_trees(reference.path(), crozier.path()).crozier_lifted_parameters(),
+            &BTreeSet::from(["tenant".to_string()])
+        );
+        assert!(Context::default().crozier_lifted_parameters().is_empty());
+    }
+
+    const LIFTED_FERN: &str = "client = FernApi()\n\nclient.layers.create_layer(\n    edition=\"v2\",\n    title=\"title\",\n)\n\n<dl>\n<dd>\n\n**edition:** `str` \n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**request:** `Layer` \n";
+    const LIFTED_CROZIER: &str = "client = FernApi(\n    edition=\"v2\",\n)\n\nclient.layers.create_layer(\n    title=\"title\",\n)\n\n<dl>\n<dd>\n\n**request:** `Layer` \n";
+
+    fn docs_region(rel: &str, fern: &str, crozier: &str, context: &Context) -> Option<Region> {
+        let fern: Vec<&str> = fern.split('\n').collect();
+        let crozier: Vec<&str> = crozier.split('\n').collect();
+        let pair = Pair {
+            rel,
+            fern: &fern,
+            crozier: &crozier,
+            context,
+        };
+        lifted_base_path_docs_examples(&pair).unwrap()
+    }
+
+    #[test]
+    fn the_lifted_docs_rule_takes_exactly_the_three_constructs() {
+        let context = lifted_context();
+        assert_eq!(
+            docs_region("reference.md", LIFTED_FERN, LIFTED_CROZIER, &context),
+            Some(Region {
+                fern: 0..14,
+                crozier: 0..7,
+            })
+        );
+        // The required form: crozier adds the argument to a constructor that
+        // keeps another, and an awaited method call loses it.
+        assert!(docs_region(
+            "README.md",
+            "client = AsyncFernApi(\n    environment=E,\n)\n    await client.layers.get(\n        edition=\"edition\",\n    )",
+            "client = AsyncFernApi(\n    edition=\"YOUR_EDITION\",\n    environment=E,\n)\n    await client.layers.get(\n    )",
+            &context,
+        )
+        .is_some());
+        // One more line differing anywhere, another argument only Fern passes,
+        // a lifted argument crozier passes to a method, or a name the routes do
+        // not lift: not this.
+        for (fern, crozier) in [
+            (format!("{LIFTED_FERN}x"), format!("{LIFTED_CROZIER}y")),
+            (
+                LIFTED_FERN.replace("    title=", "    opacity=1,\n    title="),
+                LIFTED_CROZIER.to_string(),
+            ),
+            (
+                LIFTED_FERN.to_string(),
+                LIFTED_CROZIER.replace("    title=", "    edition=\"v2\",\n    title="),
+            ),
+            (
+                LIFTED_FERN.replace("**edition:**", "**tenant:**"),
+                LIFTED_CROZIER.to_string(),
+            ),
+            (
+                LIFTED_FERN.to_string(),
+                LIFTED_CROZIER.replace("    edition=\"v2\",\n", "    tenant=\"v2\",\n"),
+            ),
+            (
+                LIFTED_FERN.replace("client = FernApi()", "client = FernApi(1)"),
+                LIFTED_CROZIER.to_string(),
+            ),
+        ] {
+            assert_eq!(
+                docs_region("reference.md", &fern, &crozier, &context),
+                None,
+                "{fern}\n---\n{crozier}"
+            );
+        }
+        // Only the README and the endpoint reference, only with lifted
+        // parameters, and only where both sides carry the construct.
+        assert_eq!(
+            docs_region("client.py", LIFTED_FERN, LIFTED_CROZIER, &context),
+            None
+        );
+        assert_eq!(
+            docs_region(
+                "README.md",
+                LIFTED_FERN,
+                LIFTED_CROZIER,
+                &Context::default()
+            ),
+            None
+        );
+        assert_eq!(
+            docs_region("README.md", LIFTED_FERN, LIFTED_FERN, &context),
+            None
+        );
+        assert_eq!(
+            docs_region("README.md", LIFTED_CROZIER, LIFTED_CROZIER, &context),
+            None
+        );
+    }
+
+    #[test]
+    fn the_positional_rule_takes_only_the_lifted_keyword_with_the_same_value() {
+        let context = lifted_context();
+        let lines: [&str; 0] = [];
+        let pair = Pair {
+            rel: "src/acme/client.py",
+            fern: &lines,
+            crozier: &lines,
+            context: &context,
+        };
+        let holds =
+            |fern: &str, crozier: &str| lifted_base_path_positional_example(&pair, fern, crozier);
+        assert!(holds("        \"v2\",", "        edition=\"v2\","));
+        assert!(!holds("        \"v3\",", "        edition=\"v2\","));
+        assert!(!holds("    \"v2\",", "        edition=\"v2\","));
+        assert!(!holds("        \"v2\",", "        tenant=\"v2\","));
+        assert!(!holds("        edition=\"v2\",", "        edition=\"v2\","));
+        assert!(!holds("        2,", "        edition=2,"));
+        assert!(!holds("\"v2\",", "edition=\"v2\","));
+        let readme = Pair {
+            rel: "README.md",
+            ..pair
+        };
+        assert!(!lifted_base_path_positional_example(
+            &readme,
+            "    \"v2\",",
+            "    edition=\"v2\","
         ));
     }
 

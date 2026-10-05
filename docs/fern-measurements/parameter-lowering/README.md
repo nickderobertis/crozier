@@ -24,9 +24,9 @@ rules is corpus row 313, `lootlog-battlelog`; why the others have none yet is
 | [`query-scalar-or-array`](query-scalar-or-array/openapi.yml) | when `oneOf`/`anyOf: [scalar, array of that scalar]` is the one-or-many shorthand and when it is a named union |
 | [`query-union-enum-member`](query-union-enum-member/openapi.yml) | a union naming a component string enum, with no array member, reaches the URL raw |
 | [`header-default-literal`](header-default-literal/openapi.yml) | a string header with a `default`, promoted from three of four operations, is a one-value `Literal` |
-| [`base-path-string`](base-path-string/openapi.yml) | `x-fern-base-path: /v2` prefixes every route |
+| [`base-path-string`](base-path-string/openapi.yml), [`base-path-object-literal`](base-path-object-literal/openapi.yml) | `x-fern-base-path: /v2`, and its object form `{path: /v2}`, prefix every route |
 | [`base-path-templated-string`](base-path-templated-string/openapi.yml) | the string form naming a placeholder: [refused](base-path-templated-string/fern-refusal.txt) |
-| [`base-path-lifted-default`](base-path-lifted-default/openapi.yml), [`base-path-lifted-unincluded`](base-path-lifted-unincluded/openapi.yml), [`base-path-lifted-required`](base-path-lifted-required/openapi.yml) | the object form's placeholder lifted to the client, with and without `paths-include-base-path` and a `default`; their trees carry Fern defects, so they are compared once the Fern defect registry can account for those lines |
+| [`base-path-lifted-default`](base-path-lifted-default/openapi.yml), [`base-path-lifted-unincluded`](base-path-lifted-unincluded/openapi.yml), [`base-path-lifted-required`](base-path-lifted-required/openapi.yml), [`base-path-lifted-list`](base-path-lifted-list/openapi.yml), [`base-path-lifted-bare`](base-path-lifted-bare/openapi.yml) | the object form's placeholder lifted to the client, with and without `paths-include-base-path` and a `default`, with `parameters` as a list and with none; their trees carry the Fern defects the [`lifted-base-path-docs-examples`](../../departures/evidence/lifted-base-path-docs-examples.md) and [`lifted-base-path-positional-example`](../../departures/evidence/lifted-base-path-positional-example.md) departures correct, and match through them |
 
 ## The rules
 
@@ -82,15 +82,15 @@ A lifted operation's JSON body loses its `content-type` header, as an operation
 with no parameters does. The string form naming a placeholder is refused, with
 or without the routes including it:
 
-| spelling | Fern |
-|---|---|
-| `x-fern-base-path: /v2` | generates; routes `v2/…` |
-| `{path: /v2}` | generates; the same tree |
-| `{path: /{edition}, paths-include-base-path: true, parameters: {edition: {type: string, default: v2}}}` | generates; `edition: Optional[str] = "v2"` |
-| the same without `paths-include-base-path`, routes not prefixed | generates; the same client |
-| `parameters` a list of Parameter Objects with a `default` | generates; `edition: str`, the default not read |
-| no `parameters`, or a map entry without `default` | generates; `edition: str` |
-| `x-fern-base-path: /{edition}` | refuses: `File has missing path-parameter: edition` |
+| spelling | Fern | case |
+|---|---|---|
+| `x-fern-base-path: /v2` | generates; routes `v2/…` | `base-path-string` |
+| `{path: /v2}` | generates; the same tree | `base-path-object-literal` |
+| `{path: /{edition}, paths-include-base-path: true, parameters: {edition: {type: string, default: v2}}}` | generates; `edition: Optional[str] = "v2"` | `base-path-lifted-default` |
+| the same without `paths-include-base-path`, routes not prefixed | generates; the same client | `base-path-lifted-unincluded` |
+| `parameters` a list of Parameter Objects with a `default` | generates; `edition: str`, the default not read | `base-path-lifted-list` |
+| no `parameters`, or a map entry without `default` | generates; `edition: str` | `base-path-lifted-bare`, `base-path-lifted-required` |
+| `x-fern-base-path: /{edition}` | refuses: `File has missing path-parameter: edition` | `base-path-templated-string` |
 
 crozier reads `x-crozier-base-path` the same way, and it wins when both appear.
 Where Fern refuses the templated string form, crozier lifts its placeholder as a
