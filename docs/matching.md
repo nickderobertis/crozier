@@ -226,8 +226,8 @@ for a file is applied at once, so no substitution can create or remove another
 entry's occurrence. An overlay golden takes the entries naming `expected/` for
 the files it inherits unchanged (never one its manifest removes), and its own
 entries for the files it carries. With no entry, every comparison is exactly the
-one it was; the generation comparison still just leaves a mismatching module
-uncounted.
+one it was; the generation comparison still leaves a mismatching module no
+entry names uncounted, and fails one an entry names.
 
 **Validated once, against the compared goldens.** Both test binaries load the
 registry through the same loader, which validates every entry against

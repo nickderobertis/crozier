@@ -225,6 +225,17 @@ impl<'r> TreeDefects<'r> {
         )
     }
 
+    /// The failure for the entries naming `rel` when crozier's file still
+    /// differs from Fern's once they are substituted; `diff` is the normalized
+    /// difference that remains.
+    pub fn still_differs(&self, rel: &str, diff: &str) -> String {
+        format!(
+            "fern defect {}: crozier's {rel} still differs from Fern's golden after the \
+             substitution — fix the generator or the entry\n{diff}",
+            ids(self.named(rel).as_slice())
+        )
+    }
+
     /// One failure per file an entry names that crozier's tree `out` lacks.
     pub fn unwritten(&self, out: &Path) -> Vec<String> {
         self.files()

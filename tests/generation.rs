@@ -4024,9 +4024,10 @@ fn committed_feature_fixture_python_matches_in_process() {
 /// How many concrete Python modules crozier renders in-process for the
 /// committed fixture `fixture` match its Fern golden, once `registry`'s entries
 /// for that golden are substituted. A module that differs is simply not
-/// counted; every registry error is a failure naming its entries — a golden the
-/// inventory does not record, an entry that cannot apply, or one naming a
-/// module crozier does not render.
+/// counted unless an entry names it; every registry error is a failure naming
+/// its entries — a golden the inventory does not record, an entry that cannot
+/// apply, one naming a module crozier does not render, or a module an entry
+/// names that still differs once substituted.
 fn fixture_match_count(
     fixture: &Path,
     registry: &fern_defects::Registry,
@@ -4080,6 +4081,20 @@ fn fixture_match_count(
         };
         let expected = std::fs::read_to_string(&path).unwrap();
         match tree.expected(&rel, actual, &expected, gate_matches) {
+            // A module an entry names must match once substituted, under the
+            // gate's normalization; any other module that differs is uncounted.
+            Ok(expected) if entry_files.contains(rel.as_str()) => {
+                if gate_matches(&rel, actual, &expected) {
+                    compared += 1;
+                } else {
+                    let diff = crozier::parity::normalized_pair(&rel, actual, &expected)
+                        .map(|(actual, expected)| {
+                            crozier::parity::unified_diff(&expected, &actual).unwrap_or_default()
+                        })
+                        .unwrap_or_else(|error| error);
+                    failures.push(tree.still_differs(&rel, &diff));
+                }
+            }
             Ok(expected) if matches(&rel, actual, &expected) => compared += 1,
             Ok(_) => {}
             Err(failure) => failures.push(failure),
@@ -4267,6 +4282,36 @@ fn every_registry_error_is_fatal_in_process() {
         &root,
         "unrendered-module",
         "crozier wrote no src/demo/types/extra.py",
+    );
+}
+
+#[test]
+fn a_mismatch_left_after_a_substitution_is_fatal_in_process() {
+    let baseline = defect_fixture_count(&defect_fixture("# no entry\n", str::to_string, "{}"))
+        .expect("an empty registry");
+    // Five other modules match, so the count floor alone would let this pass.
+    assert!(baseline >= 6, "{baseline}");
+    // Fern's module differs on three lines; two entries account for two, and
+    // `BETA = 2` is left unaccounted.
+    let fern = |text: &str| format!("{}ALPHA = 1\nBETA = 2\n", fern_widget(text));
+    let registry = format!(
+        "{}{}",
+        defect_entry("alpha-constant", WIDGET, "ALPHA = 1\n", ""),
+        defect_entry(
+            "widget-named-gadget",
+            WIDGET,
+            &widget_line(true),
+            &widget_line(false)
+        ),
+    );
+    let failures = defect_fixture_count(&defect_fixture(&registry, fern, "{}"))
+        .expect_err("a mismatch an entry names is fatal");
+    assert!(
+        failures.len() == 1
+            && failures[0].contains("`alpha-constant`, `widget-named-gadget`")
+            && failures[0].contains("still differs")
+            && failures[0].contains("BETA = 2"),
+        "{failures:#?}"
     );
 }
 
