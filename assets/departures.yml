@@ -7,20 +7,8 @@
 # files, is the function of the same id in src/departures.rs.
 #
 # docs/departures/README.md holds the rendered reference (a drift test keeps it
-# equal to this file), the defect rule, and how a fix adds an entry.
-#
-# Entries are sorted by `id`, and each holds exactly these keys, all strings:
-#
-#   id        a unique lower-kebab slug naming the shape in crozier's own terms
-#   kind      fern-defect, branding, packaging, provenance or ordering
-#   trigger   the input and file that produce the departure
-#   fern      what Fern writes there
-#   crozier   what crozier writes instead
-#   reason    why the departure is intended; for a fern-defect, why Fern's
-#             output is wrong under the defect rule
-#   evidence  the repository-relative path of a committed note under
-#             docs/departures/evidence/ recording the command that shows the
-#             departure and its result
+# equal to this file), what each key holds, the defect rule, and how a fix adds
+# an entry. Entries are sorted by `id`.
 
 - id: fern-metadata-generator-config
   kind: provenance
