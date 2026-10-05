@@ -5461,7 +5461,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // unaffected.
                         && !(ep.query_params.is_empty()
                             && matches!(body, RequestBody::Inline(_))
-                            && (ep.body_all_of || ep.body_response_same_ref)
+                            && ep.body_response_same_ref
                             && !resource_envelope)
                         && !(ep.query_params.is_empty()
                             && matches!(body, RequestBody::Inline(fields)
@@ -5475,8 +5475,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         && ep.body_description_missing
                                         && !ep.body_schema_documented
                                         && fields.iter().filter(|field| field.spec_required).count() == 1)))
-                        && (!(ep.body_description_empty
-                            || ep.body_schema_has_example
+                        && (!(ep.body_schema_has_example
                                 && ep.body_schema_documented
                                 && !ep.body_schema_example_wrapped
                             || ep.body_schema_example_wrapped

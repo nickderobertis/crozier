@@ -6640,7 +6640,6 @@ const SHORT_IO: Corpus = Corpus {
         "src/fern/__init__.py",
         "src/fern/link_management/__init__.py",
         "src/fern/link_management/client.py",
-        "src/fern/link_management/raw_client.py",
         "src/fern/link_management/types/__init__.py",
         "src/fern/link_management/types/post_links_bulk_request_links_item_created_at.py",
         "src/fern/link_management/types/post_links_bulk_request_links_item_expires_at.py",
@@ -11378,16 +11377,20 @@ fn all_of_request_bodies_flatten_inherited_fields() {
     );
 }
 
+/// A single-use `allOf` body Fern drops from the type layer is flattened into the
+/// method like any dropped `$ref` body, and keeps the JSON content-type header
+/// that a surviving schema's body leaves to httpx: measured at Fern 5.20.0 on this
+/// document, with the `$ref` member first, last, or under a `type: object`.
 #[test]
-fn pathless_all_of_bodies_omit_explicit_content_type() {
+fn pathless_single_use_all_of_bodies_send_the_content_type() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/test:\n    post:\n      operationId: testWidget\n      tags: [widgets]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/Widget' }\n      responses:\n        '200': { description: OK }\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string }\n    Widget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            active: { type: boolean }\n",
     );
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
     assert!(
-        !raw.contains("\"content-type\": \"application/json\""),
-        "pathless allOf request bodies should leave content type to the transport: {raw}"
+        raw.contains("\"content-type\": \"application/json\""),
+        "a single-use allOf request body sends the JSON content type: {raw}"
     );
 }
 

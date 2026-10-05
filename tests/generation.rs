@@ -10699,8 +10699,8 @@ components:
 
 /// Skool's `GET …/comments/` answers `$ref: SuccessResponse`, a component the
 /// document never declares. Fern types the body `typing.Any` and guards an empty
-/// response, where a written `{}` success schema in a 3.0 document is typed the
-/// same but left unguarded.
+/// response, and a written `{}` success schema in a 3.0 document is typed and
+/// guarded the same: measured at Fern 5.20.0, the version does not gate the guard.
 #[test]
 fn an_undeclared_success_component_guards_the_empty_body_like_skool() {
     let files = render(
@@ -10745,7 +10745,11 @@ components:
     assert!(comments.contains("typing.Any"), "{raw}");
     let likes = &raw[raw.find("def list_likes").expect(raw)..];
     let likes = &likes[..likes.find("class AsyncRawPostsClient").expect(raw)];
-    assert!(!likes.contains("_response.text.strip()"), "{raw}");
+    assert!(
+        likes.contains("if _response is None or not _response.text.strip():"),
+        "{raw}"
+    );
+    assert!(likes.contains("typing.Any"), "{raw}");
 }
 
 /// Spendesk's `request_access_token` posts a bare `type: object` and answers a

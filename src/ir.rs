@@ -960,7 +960,11 @@ fn inline_body_source_names(
     let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for (path, item) in &doc.paths {
         for (method, op) in item.operations() {
-            if !surviving.contains(&(path.as_str(), method)) {
+            // A GET or HEAD body is ignored, so it inlines nothing and its schema
+            // keeps its model whatever it is named: Letta's `Body_export_agent`
+            // (a GET) is kept, while a FastAPI `Body_*` posted once is dropped
+            // like any other single-use body.
+            if !surviving.contains(&(path.as_str(), method)) || matches!(method, "GET" | "HEAD") {
                 continue;
             }
             let Some(rb) = &op.request_body else { continue };
@@ -1046,25 +1050,6 @@ fn urlencoded_body_source_names(doc: &OpenApi) -> std::collections::HashSet<Stri
         // multipart, and Fern emits no standalone model for it.
         .filter(|body| selected_json_request_media(body).is_none())
         .filter_map(|body| body.content.get("application/x-www-form-urlencoded"))
-        .filter_map(|media| media.schema.as_ref()?.reference.as_deref())
-        .map(ref_to_class)
-        .collect()
-}
-
-fn form_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
-    doc.paths
-        .values()
-        .flat_map(crate::openapi::PathItem::operations)
-        .filter_map(|(_, operation)| operation.request_body.as_ref())
-        .flat_map(|body| {
-            [
-                "multipart/form-data",
-                "multipart/related",
-                "application/x-www-form-urlencoded",
-            ]
-            .into_iter()
-            .filter_map(|media_type| body.content.get(media_type))
-        })
         .filter_map(|media| media.schema.as_ref()?.reference.as_deref())
         .map(ref_to_class)
         .collect()
@@ -2063,7 +2048,6 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         }
     }
     let inline_sources = inline_body_source_names(doc, &endpoints);
-    let form_sources = form_body_source_names(doc);
     let urlencoded_sources = urlencoded_body_source_names(doc);
     // A `stream-condition` operation sends its body from two methods, and Fern
     // keeps the request model rather than flattening it away into one of them.
@@ -2074,11 +2058,6 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             !referenced.contains(*name)
                 && !urlencoded_sources.contains(name.as_str())
                 && !stream_condition_sources.contains(name.as_str())
-                && !doc.components.schemas.keys().any(|key| {
-                    key.starts_with("Body_")
-                        && naming::class_name(key) == name.as_str()
-                        && !form_sources.contains(name.as_str())
-                })
         })
         .cloned()
         .collect();
@@ -3627,9 +3606,11 @@ fn build_endpoint(
         response,
         response_may_be_empty: has_bodyless_success(op)
             || success_response_entry(op).is_some_and(|response| response.reference.is_some())
-            || doc.openapi.starts_with("3.1")
-                && success_response_schema(op).is_some_and(is_unknown)
-            || doc.openapi.starts_with("3.1") && success_names_unknown
+            // An unknown success body (`schema: {}`, inline or through a
+            // component that is itself `{}`) may be empty in any OpenAPI version:
+            // measured at Fern 5.20.0, the same 3.0 and 3.1 documents guard it alike.
+            || success_response_schema(op).is_some_and(is_unknown)
+            || success_names_unknown
             // A success schema pointing at a component the document never
             // declares is unknown too, and may be empty: Skool's `GET
             // …/comments/` answers `$ref: SuccessResponse`, which no component
@@ -4284,8 +4265,7 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
                 // `application/octet-stream` alone and streams. A binary
                 // *schema* wins either way: apicurio's `application/zip` names
                 // one beside an `application/json` and streams.
-                (media_type.starts_with("image/") || media_type == "application/octet-stream")
-                    && !resp.content.contains_key("application/json")
+                is_download_media_type(media_type) && !resp.content.contains_key("application/json")
                     || media.schema.as_ref().is_some_and(|schema| {
                         let schema = schema
                             .reference
@@ -4297,6 +4277,25 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
                     })
             })
     })
+}
+
+/// Whether a success media type is one Fern streams back as bytes whatever its
+/// schema says, or with none. It is narrower than the request side's
+/// [`is_binary_media_type`]: measured at Fern 5.20.0, a schemaless
+/// `application/octet-stream`, `application/pdf`, `image/*`, `audio/*` or
+/// `video/*` response is a download, while `application/zip`, `application/gzip`,
+/// `application/x-tar`, `application/x-pdf`, `font/*` and `model/*` return nothing.
+fn is_download_media_type(media_type: &str) -> bool {
+    let base = media_type
+        .split_once(';')
+        .map_or(media_type, |(base, _)| base)
+        .trim()
+        .to_ascii_lowercase();
+    base == "application/octet-stream"
+        || base == "application/pdf"
+        || ["image/", "audio/", "video/"]
+            .iter()
+            .any(|family| base.starts_with(family))
 }
 
 fn has_binary_schema_response(doc: &OpenApi, op: &Operation) -> bool {
@@ -4346,6 +4345,68 @@ fn path_param_position(path: &str, name: &str) -> Option<usize> {
 fn success_response_doc(op: &Operation) -> Option<String> {
     let response = success_response_entry(op)?;
     clean_doc(response.description.as_deref())
+}
+
+/// An operation's error (non-`2xx`) responses, one per status Fern reads off
+/// the keys (see [`response_key_status`]), each with its status and in document
+/// order. Two keys naming one status declare it once, and a spelled-out key
+/// (`"429 (burst)"`) wins over the plain one (`"429"`) whichever comes first:
+/// Fern walks a canonical integer key before every other key, so the later,
+/// spelled-out declaration overrides it. Measured at Fern 5.20.0 with the
+/// spelled-out key both after and before the plain one.
+fn error_response_entries(op: &Operation) -> Vec<(u16, &Response)> {
+    let canonical = |code: &str| {
+        !code.is_empty()
+            && code.bytes().all(|byte| byte.is_ascii_digit())
+            && (code == "0" || !code.starts_with('0'))
+            && code.parse::<u32>().is_ok_and(|value| value < u32::MAX)
+    };
+    let mut winners: IndexMap<u16, (bool, usize)> = IndexMap::new();
+    let mut entries = Vec::new();
+    for (index, (code, response)) in op.responses.iter().enumerate() {
+        if code.starts_with('2') {
+            continue;
+        }
+        let Some(status) = response_key_status(code) else {
+            continue;
+        };
+        let rank = (!canonical(code), index);
+        let winner = winners.entry(status).or_insert(rank);
+        if rank > *winner {
+            *winner = rank;
+        }
+        entries.push((index, status, response));
+    }
+    entries
+        .into_iter()
+        .filter(|(index, status, _)| {
+            winners
+                .get(status)
+                .is_some_and(|(_, winner)| winner == index)
+        })
+        .map(|(_, status, response)| (status, response))
+        .collect()
+}
+
+/// The status a Responses Object key declares, read the way Fern reads one: its
+/// leading integer, after any leading whitespace and an optional sign, with
+/// whatever follows ignored. So `"429 (live)"` declares 429, `"404abc"` 404 and
+/// `"409 "` 409, while a range (`4XX`, `5xx`) declares its single leading digit,
+/// which no error status is, and `"x-200:err message"` declares none. Measured
+/// at Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0: every one of those
+/// spellings raises exactly the error class its leading number names.
+pub(crate) fn response_key_status(key: &str) -> Option<u16> {
+    let rest = key.trim_start();
+    let (negative, rest) = match rest.as_bytes().first() {
+        Some(b'-') => (true, &rest[1..]),
+        Some(b'+') => (false, &rest[1..]),
+        _ => (false, rest),
+    };
+    let digits = rest.bytes().take_while(u8::is_ascii_digit).count();
+    if digits == 0 || negative {
+        return None;
+    }
+    rest[..digits].parse().ok()
 }
 
 /// The generated exception class name for an HTTP status code, reproducing Fern's
@@ -4482,13 +4543,7 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     let mut superseded_enums: IndexMap<String, Schema> = IndexMap::new();
     for (_, item) in &doc.paths {
         for (_, op) in item.operations() {
-            for (code, resp) in &op.responses {
-                if code.starts_with('2') {
-                    continue;
-                }
-                let Ok(status) = code.parse::<u16>() else {
-                    continue;
-                };
+            for (status, resp) in error_response_entries(op) {
                 let Some(class) = error_class_name(status) else {
                     continue;
                 };
@@ -4678,11 +4733,8 @@ fn multiply_declared_error_statuses(doc: &OpenApi) -> std::collections::HashSet<
     let mut seen: IndexMap<String, (usize, bool)> = IndexMap::new();
     for (_, item) in &doc.paths {
         for (_, op) in item.operations() {
-            for (code, response) in &op.responses {
-                if code.starts_with('2') {
-                    continue;
-                }
-                let Some(class) = code.parse::<u16>().ok().and_then(error_class_name) else {
+            for (status, response) in error_response_entries(op) {
+                let Some(class) = error_class_name(status) else {
                     continue;
                 };
                 let entry = seen.entry(class.to_string()).or_insert((0, true));
@@ -4726,13 +4778,7 @@ fn composed_error_base(doc: &OpenApi, schema: &Schema) -> Option<String> {
 /// `ApiError`), and any renderable body shape is accepted.
 fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
     let mut out = Vec::new();
-    for (code, resp) in &op.responses {
-        if code.starts_with('2') {
-            continue;
-        }
-        let Ok(status) = code.parse::<u16>() else {
-            continue;
-        };
+    for (status, resp) in error_response_entries(op) {
         let Some(class) = error_class_name(status) else {
             continue;
         };
@@ -5208,7 +5254,8 @@ fn resolve_request_body(
     }
     // An inline map body (`type: object` + `additionalProperties`): a single
     // `request` argument, convert-wrapped when its values are objects/unions. Like
-    // any inline container, it carries no content-type header.
+    // an inline array, it carries the content-type header exactly when its schema
+    // names or describes itself (see [`inline_container_carries_content_type`]).
     if is_map(schema) {
         let type_ref = base_type_ref(schema);
         let convert = type_needs_convert(&type_ref, types);
@@ -5216,13 +5263,12 @@ fn resolve_request_body(
             type_ref,
             required,
             convert,
-            content_type_override.is_some(),
+            content_type_override.is_some() || inline_container_carries_content_type(schema),
             content_type_override,
         ));
     }
-    // An inline array body: a single `request` argument. Fern adds the JSON
-    // content type for arrays whose item is a component reference, but not for
-    // scalar or inline-object item schemas.
+    // An inline array body: a single `request` argument, carrying the JSON content
+    // type exactly when its schema names or describes itself.
     if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
         let items = schema.items.as_ref()?;
         // An array of *inline* objects hoists its element into `{request_ctx}Item`
@@ -5251,7 +5297,7 @@ fn resolve_request_body(
             TypeRef::List(Box::new(item)),
             required,
             convert,
-            doc.openapi.starts_with("3.1") && items.reference.is_some(),
+            inline_container_carries_content_type(schema),
         );
         // So is an array body's: Primula Tracker's bulk lead-stage update
         // declares one item, and the golden constructs it.
@@ -5286,7 +5332,7 @@ fn resolve_request_body(
             ),
             required,
             false,
-            clean_doc(schema.description.as_deref()).is_some(),
+            inline_container_carries_content_type(schema),
             content_type_override,
         );
         // Its worked example is the media type's own: MockServer's `tcpChaos`
@@ -5333,11 +5379,16 @@ fn resolve_request_body(
         return Some(body);
     }
     scalar_body(schema).map(|(type_ref, content_type)| {
+        // A described scalar carries the header as a described container does,
+        // where a `title` alone does not move it: measured at Fern 5.20.0, an
+        // inline `{type: string, description: …}` body sends it and a titled
+        // `{type: integer}` or `{type: string}` one does not.
+        let described = schema.reference.is_none() && schema.description.is_some();
         let mut body = single_with_override(
             type_ref,
             required,
             false,
-            content_type,
+            content_type || described,
             content_type_override,
         );
         // The media type's example, else the schema's own: NextGen posts a bare
@@ -5483,15 +5534,24 @@ fn selected_json_request_media(
 }
 
 fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
-    !rb.content.contains_key("application/json")
-        && !rb.content.contains_key("application/octet-stream")
-        && !rb.content.contains_key("multipart/form-data")
-        && !rb.content.contains_key("multipart/related")
-        && !rb.content.contains_key("application/x-www-form-urlencoded")
-        && !rb
-            .content
-            .keys()
-            .any(|media| is_json_like_media_type(media))
+    // A JSON body that declares no schema at all (`application/json: {}`) sends
+    // nothing either: measured at Fern 5.20.0, its method takes no `request`,
+    // passes no `json=` and sends no content-type header.
+    let schemaless_json = !rb.content.is_empty()
+        && rb.content.iter().all(|(media_type, media)| {
+            media.schema.is_none()
+                && (media_type == "application/json" || is_json_like_media_type(media_type))
+        });
+    schemaless_json
+        || !rb.content.contains_key("application/json")
+            && !rb.content.contains_key("application/octet-stream")
+            && !rb.content.contains_key("multipart/form-data")
+            && !rb.content.contains_key("multipart/related")
+            && !rb.content.contains_key("application/x-www-form-urlencoded")
+            && !rb
+                .content
+                .keys()
+                .any(|media| is_json_like_media_type(media))
 }
 
 /// Hoist an inline object body's properties into request [`BodyField`]s. Mirrors
@@ -6728,6 +6788,20 @@ fn hoist_form_object(
 }
 
 /// A one-argument request body.
+/// Whether an inline container request body — an array, a map or a bare object,
+/// sent whole as one `request` argument — carries the JSON content-type header
+/// when nothing else (a parameter, a media-type override) decides it. Measured at
+/// Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, the header follows the
+/// schema alone: a `title` or a `description` on it — even an empty one — sends
+/// the header, and an untitled, undescribed one leaves the content type to httpx. Neither the
+/// OpenAPI version, a `$ref` item, `requestBody.required` nor the request body's
+/// own `description` moves it: deepsearch-ds-v2's and letta's titled `$ref`-item
+/// arrays, FastAPI's `title: Data` bodies and blackadi-oauth2's described bare
+/// objects all carry it.
+fn inline_container_carries_content_type(schema: &Schema) -> bool {
+    schema.title.is_some() || schema.description.is_some()
+}
+
 fn single(type_ref: TypeRef, required: bool, convert: bool, content_type: bool) -> RequestBody {
     single_with_override(type_ref, required, convert, content_type, None)
 }
@@ -7084,13 +7158,13 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
                 .content
                 .iter()
                 .find(|(media_type, _)| is_text_response_media(media_type))
-                .and_then(|(_, media)| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
         })
         // A JSON body declaring no schema is unknown JSON, under a
         // structured-suffix media type as under `application/json`:
         // LiveBuildings answers `application/ld+json` with examples alone, and
-        // Fern's method returns `typing.Any`.
+        // Fern's method returns `typing.Any`. So does a schemaless `*/*`, which
+        // Fern parses as JSON too.
         .or_else(|| {
             let response = success_response_entry(op)?;
             response
@@ -7103,34 +7177,26 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
                         .find(|(media_type, _)| is_json_like_media_type(media_type))
                         .map(|(_, media)| media)
                 })
+                .or_else(|| response.content.get("*/*"))
                 .filter(|media| media.schema.is_none())?;
             Some(TypeRef::Primitive(Prim::Any))
         })
 }
 
-/// The response media types Fern reads back as one plain `str` body.
-/// `text/event-stream` is deliberately absent: an SSE response is generated as a
-/// stream of parsed events, not as a single text body.
-const TEXT_RESPONSE_MEDIA: &[&str] = &[
-    "text/plain",
-    "text/html",
-    "text/markdown",
-    "text/xml",
-    "text/csv",
-];
-
-/// Whether a content-map key names one of [`TEXT_RESPONSE_MEDIA`], ignoring any
-/// media-type parameters after it: SFTPGo keys its `/healthz` body on
-/// `text/plain; charset=utf-8` and Fern reads it back as the same plain `str` it
-/// reads a bare `text/plain` as.
+/// Whether a content-map key is a text media type Fern reads back as one plain
+/// `str` body: any `text/*` type, schema or not, ignoring media-type parameters
+/// after it. SFTPGo keys its `/healthz` body on `text/plain; charset=utf-8`, and
+/// measured at Fern 5.20.0 a schemaless `text/csv`, `text/plain`,
+/// `text/tab-separated-values`, `text/calendar` or `text/xml` success returns
+/// `str` alike. `text/event-stream` is the exception: an SSE response is
+/// generated as a stream of parsed events, not as a single text body.
 fn is_text_response_media(media_type: &str) -> bool {
     let base = media_type
         .split_once(';')
         .map_or(media_type, |(base, _)| base)
-        .trim();
-    TEXT_RESPONSE_MEDIA
-        .iter()
-        .any(|candidate| base.eq_ignore_ascii_case(candidate))
+        .trim()
+        .to_ascii_lowercase();
+    base.starts_with("text/") && base != "text/event-stream"
 }
 
 fn has_text_response(op: &Operation) -> bool {
@@ -16299,29 +16365,6 @@ mod tests {
     }
 
     #[test]
-    fn form_body_sources_are_identified_for_type_pruning() {
-        let doc: OpenApi = serde_json::from_value(serde_json::json!({
-            "paths": {
-                "/upload": { "post": { "requestBody": { "content": {
-                    "multipart/form-data": { "schema": {
-                        "$ref": "#/components/schemas/Body_upload"
-                    } }
-                } } } },
-                "/json": { "post": { "requestBody": { "content": {
-                    "application/json": { "schema": {
-                        "$ref": "#/components/schemas/Body_json"
-                    } }
-                } } } }
-            }
-        }))
-        .expect("document deserializes");
-        assert_eq!(
-            super::form_body_source_names(&doc),
-            std::collections::HashSet::from(["BodyUpload".to_string()])
-        );
-    }
-
-    #[test]
     fn nullable_request_schema_makes_the_body_optional() {
         let doc: OpenApi = serde_json::from_value(serde_json::json!({ "openapi": "3.1.0" }))
             .expect("3.1 document deserializes");
@@ -16398,16 +16441,47 @@ mod tests {
         );
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
 
-        let array: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
-            "required": true,
-            "content": { "application/json": { "schema": {
-                "type": "array", "items": { "$ref": "#/components/schemas/Block" }
-            } } }
-        }))
-        .expect("array request body deserializes");
-        let resolved =
-            super::resolve_request_body(&doc, &[], &array, &mut hoister, "BatchRequest", false);
-        assert!(matches!(resolved, Some(RequestBody::Single(body)) if body.content_type));
+        // An inline array's content-type header follows its schema's own title
+        // or description, not its `$ref` items or the document version.
+        let array = |schema: serde_json::Value| -> crate::openapi::RequestBody {
+            serde_json::from_value(serde_json::json!({
+                "required": true,
+                "content": { "application/json": { "schema": schema } }
+            }))
+            .expect("array request body deserializes")
+        };
+        let block_items = serde_json::json!({ "$ref": "#/components/schemas/Block" });
+        for (schema, header) in [
+            (
+                serde_json::json!({ "type": "array", "items": block_items }),
+                false,
+            ),
+            (
+                serde_json::json!({ "type": "array", "title": "Blocks", "items": block_items }),
+                true,
+            ),
+            (
+                serde_json::json!({ "type": "array", "description": "Blocks", "items": block_items }),
+                true,
+            ),
+            (
+                serde_json::json!({ "type": "array", "description": "", "items": block_items }),
+                true,
+            ),
+        ] {
+            let resolved = super::resolve_request_body(
+                &doc,
+                &[],
+                &array(schema.clone()),
+                &mut hoister,
+                "BatchRequest",
+                false,
+            );
+            assert!(
+                matches!(resolved, Some(RequestBody::Single(ref body)) if body.content_type == header),
+                "{schema}: {resolved:?}"
+            );
+        }
     }
 
     #[test]
@@ -18093,6 +18167,290 @@ mod tests {
                 ("X-Untyped", "str"),
             ]
         );
+    }
+
+    #[test]
+    fn a_response_key_declares_the_status_its_leading_integer_reads() {
+        for (key, status) in [
+            ("429", Some(429)),
+            ("429 (live)", Some(429)),
+            ("404abc", Some(404)),
+            ("409 ", Some(409)),
+            (" 503", Some(503)),
+            ("+422", Some(422)),
+            ("4xx", Some(4)),
+            ("5XX", Some(5)),
+            ("-429", None),
+            ("x-200:err message", None),
+            ("default", None),
+            ("", None),
+            ("99999999", None),
+        ] {
+            assert_eq!(super::response_key_status(key), status, "{key}");
+        }
+    }
+
+    #[test]
+    fn a_spelled_out_error_key_overrides_the_plain_one_in_either_order() {
+        let op = |responses: serde_json::Value| -> Operation {
+            serde_json::from_value(serde_json::json!({ "responses": responses }))
+                .expect("operation deserializes")
+        };
+        let described = |op: &Operation| -> Vec<(u16, String)> {
+            super::error_response_entries(op)
+                .into_iter()
+                .map(|(status, response)| {
+                    (status, response.description.clone().unwrap_or_default())
+                })
+                .collect()
+        };
+        let after = op(serde_json::json!({
+            "200": { "description": "ok" },
+            "429": { "description": "plain" },
+            "429 (burst)": { "description": "burst" },
+            "4xx": { "description": "range" },
+            "x-200:err message": { "description": "vendor" }
+        }));
+        assert_eq!(
+            described(&after),
+            [(429, "burst".to_string()), (4, "range".to_string())]
+        );
+        let before = op(serde_json::json!({
+            "423 (sealed)": { "description": "sealed" },
+            "423": { "description": "plain" },
+            "0423": { "description": "padded" }
+        }));
+        assert_eq!(described(&before), [(423, "padded".to_string())]);
+        let errors = super::resolve_errors(&after);
+        assert_eq!(
+            errors
+                .iter()
+                .map(|error| (error.status_code, error.class_name.as_str()))
+                .collect::<Vec<_>>(),
+            [(429, "TooManyRequestsError")]
+        );
+    }
+
+    #[test]
+    fn a_download_is_a_streamed_media_family_or_pdf() {
+        for download in [
+            "application/octet-stream",
+            "application/pdf",
+            "image/png",
+            "image/*",
+            "audio/mpeg",
+            "Audio/WAV; rate=44100",
+            "video/mp4",
+        ] {
+            assert!(super::is_download_media_type(download), "{download}");
+        }
+        for other in [
+            "application/zip",
+            "application/gzip",
+            "application/x-tar",
+            "application/x-pdf",
+            "font/woff2",
+            "model/gltf-binary",
+            "text/csv",
+            "*/*",
+        ] {
+            assert!(!super::is_download_media_type(other), "{other}");
+        }
+    }
+
+    #[test]
+    fn every_text_media_type_but_an_event_stream_reads_back_as_text() {
+        for text in [
+            "text/csv",
+            "text/plain; charset=utf-8",
+            "TEXT/Calendar",
+            "text/tab-separated-values",
+            "text/xml",
+        ] {
+            assert!(super::is_text_response_media(text), "{text}");
+        }
+        for other in [
+            "text/event-stream",
+            "application/xml",
+            "application/json",
+            "*/*",
+        ] {
+            assert!(!super::is_text_response_media(other), "{other}");
+        }
+    }
+
+    #[test]
+    fn schemaless_success_media_type_the_method_as_fern_does() {
+        let op = |content: serde_json::Value| -> Operation {
+            serde_json::from_value(serde_json::json!({
+                "responses": { "200": { "description": "ok", "content": content } }
+            }))
+            .expect("operation deserializes")
+        };
+        for (content, response) in [
+            (
+                serde_json::json!({ "text/csv": {} }),
+                Some(TypeRef::Primitive(Prim::Str)),
+            ),
+            (
+                serde_json::json!({ "text/calendar": { "schema": { "type": "string" } } }),
+                Some(TypeRef::Primitive(Prim::Str)),
+            ),
+            (
+                serde_json::json!({ "*/*": {} }),
+                Some(TypeRef::Primitive(Prim::Any)),
+            ),
+            (serde_json::json!({ "application/zip": {} }), None),
+        ] {
+            assert_eq!(
+                super::success_response(&op(content.clone())),
+                response,
+                "{content}"
+            );
+        }
+        let doc: OpenApi =
+            serde_json::from_value(serde_json::json!({ "openapi": "3.0.3" })).expect("document");
+        for (content, binary) in [
+            (serde_json::json!({ "audio/mpeg": {} }), true),
+            (
+                serde_json::json!({ "audio/mpeg": { "schema": { "type": "string" } } }),
+                true,
+            ),
+            (serde_json::json!({ "application/pdf": {} }), true),
+            (
+                serde_json::json!({ "video/mp4": {}, "application/json": { "schema": {} } }),
+                false,
+            ),
+            (serde_json::json!({ "application/zip": {} }), false),
+        ] {
+            assert_eq!(
+                super::is_binary_response(&doc, &op(content.clone())),
+                binary,
+                "{content}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_schemaless_json_request_body_is_ignored() {
+        let body = |value: serde_json::Value| -> crate::openapi::RequestBody {
+            serde_json::from_value(value).expect("request body deserializes")
+        };
+        assert!(super::request_body_ignored(&body(serde_json::json!({
+            "required": true, "content": { "application/json": {} }
+        }))));
+        assert!(super::request_body_ignored(&body(serde_json::json!({
+            "content": { "application/vnd.api+json": {} }
+        }))));
+        assert!(!super::request_body_ignored(&body(serde_json::json!({
+            "content": { "application/json": { "schema": {} } }
+        }))));
+        assert!(!super::request_body_ignored(&body(serde_json::json!({
+            "content": { "application/json": {}, "multipart/form-data": {} }
+        }))));
+    }
+
+    fn build_document(document: serde_json::Value) -> super::Ir {
+        let doc: OpenApi = serde_json::from_value(document).expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Nursery",
+        )
+        .expect("the config is well formed");
+        super::build(&doc, &config)
+    }
+
+    #[test]
+    fn a_body_on_a_get_keeps_its_model_whatever_its_name() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Nursery", "version": "1" },
+            "paths": {
+                "/sow": { "post": {
+                    "requestBody": { "required": true, "content": { "application/json": {
+                        "schema": { "$ref": "#/components/schemas/Body_sow_post" } } } },
+                    "responses": { "204": { "description": "sown" } } } },
+                "/export": { "get": {
+                    "requestBody": { "content": { "application/json": {
+                        "schema": { "$ref": "#/components/schemas/Body_export_get" } } } },
+                    "responses": { "204": { "description": "exported" } } } },
+                "/preview": { "get": {
+                    "requestBody": { "content": { "application/json": {
+                        "schema": { "$ref": "#/components/schemas/PreviewFilter" } } } },
+                    "responses": { "204": { "description": "previewed" } } } }
+            },
+            "components": { "schemas": {
+                "Body_sow_post": { "type": "object", "properties": { "seed": { "type": "string" } } },
+                "Body_export_get": { "type": "object", "properties": { "season": { "type": "string" } } },
+                "PreviewFilter": { "type": "object", "properties": { "row": { "type": "integer" } } }
+            } }
+        }));
+        let mut kept: Vec<&str> = ir.types.iter().map(TypeDecl::name).collect();
+        kept.sort_unstable();
+        assert_eq!(kept, ["BodyExportGet", "PreviewFilter"]);
+        let sow = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.path == "/sow")
+            .expect("sow");
+        assert!(sow.body_schema_dropped);
+        assert!(
+            matches!(&sow.request_body, Some(RequestBody::Inline(fields)) if fields.len() == 1)
+        );
+    }
+
+    #[test]
+    fn a_described_scalar_body_carries_the_content_type_and_a_titled_one_does_not() {
+        let body = |schema: serde_json::Value| {
+            let ir = build_document(serde_json::json!({
+                "openapi": "3.0.3",
+                "info": { "title": "Loom", "version": "1" },
+                "paths": { "/pattern": { "post": {
+                    "requestBody": { "required": true, "content": { "application/json": {
+                        "schema": schema } } },
+                    "responses": { "204": { "description": "set" } } } } }
+            }));
+            match &ir.endpoints[0].request_body {
+                Some(RequestBody::Single(single)) => Some(single.content_type),
+                _ => None,
+            }
+        };
+        for (schema, header) in [
+            (serde_json::json!({ "type": "string" }), false),
+            (
+                serde_json::json!({ "type": "string", "title": "Pattern" }),
+                false,
+            ),
+            (
+                serde_json::json!({ "type": "integer", "title": "Count" }),
+                false,
+            ),
+            (
+                serde_json::json!({ "type": "string", "description": "A pattern" }),
+                true,
+            ),
+            (
+                serde_json::json!({ "type": "object", "title": "Settings" }),
+                true,
+            ),
+            (serde_json::json!({ "type": "object" }), false),
+            (
+                serde_json::json!({ "type": "object", "title": "Counts",
+                    "additionalProperties": { "type": "integer" } }),
+                true,
+            ),
+            (
+                serde_json::json!({ "type": "object", "additionalProperties": { "type": "integer" } }),
+                false,
+            ),
+        ] {
+            assert_eq!(body(schema.clone()), Some(header), "{schema}");
+        }
     }
 
     #[test]
