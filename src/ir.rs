@@ -552,12 +552,10 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             }
         }
     }
-    // Promote a header that rides *every* operation. A required header on a
-    // *single* operation is that call's own argument, not an SDK-wide setting, so
-    // it stays a per-method parameter (Fern only promotes a solo header when it is
-    // optional). With more than one operation, "on every one" is a deliberate
-    // cross-cutting header and promotes regardless of required-ness. `User-Agent` is
-    // never promoted — the client owns it — so it is dropped even when ubiquitous.
+    // Promote a header that rides *every* operation, required or not — on a
+    // single-operation document too, where Fern makes the operation's required
+    // header a required constructor field. `User-Agent` is never promoted — the
+    // client owns it — so it is dropped even when ubiquitous.
     let api_key_headers = additional_api_key_global_headers(doc);
     let api_key_wire_names: std::collections::HashSet<&str> = api_key_headers
         .iter()
@@ -565,19 +563,15 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
         .collect();
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
-        .filter(|(wire_name, (count, required, py_type, _))| {
+        .filter(|(wire_name, (count, _, _, _))| {
             // Fern promotes a header carried by *every* operation with its own
             // declared optionality, and one carried by at least three quarters
             // of them as an unconditionally optional constructor field.
             // Flowdapt's `x-api-version` rides 24 of its 26 operations and is
             // promoted; `marimo`'s `Marimo-Session-Id` rides 55 of 88 and stays
             // a per-method parameter.
-            // An array header is the exception: Fern promotes a required solo
-            // one too (the `353-solo-required-array` and
-            // `353-promoted-required-array` authored probes).
             total > 0
                 && *count * 4 >= total * 3
-                && (!*required || total > 1 || py_type.is_list())
                 && !is_transport_managed_parameter(wire_name)
                 && !is_promotion_reserved_header(wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
@@ -1221,11 +1215,12 @@ pub struct Endpoint {
     pub query_params: Vec<QueryParam>,
     /// Header parameters, in declaration order.
     pub header_params: Vec<HeaderParam>,
-    /// Optional string headers with schema defaults, sent on every request but
-    /// omitted from the public method signature.
+    /// String headers with schema defaults, sent on every request but omitted
+    /// from the public method signature.
     pub constant_headers: Vec<(String, String)>,
-    /// Declared descriptions for constant headers retained by Markdown examples.
-    pub constant_header_descriptions: IndexMap<String, String>,
+    /// The wire names of `header_params` and `constant_headers` together, in
+    /// declaration order: the order the request's `headers` dict sends them.
+    pub header_order: Vec<String>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
     /// Whether OpenAPI marks the operation's request body as required.
@@ -1438,8 +1433,13 @@ pub struct QueryParam {
     pub py_name: String,
     /// The parameter's base type (optionality is carried by `required`).
     pub type_ref: TypeRef,
-    /// Whether the parameter is required; optional params get `Optional[..] = None`.
+    /// Whether the document marks the parameter required: a worked example
+    /// passes it. Its argument is required only when it is not also `nullable`.
     pub required: bool,
+    /// Whether the parameter's own schema admits `null`. A required one is an
+    /// optional argument to Fern, `Optional[str] = None`, though its worked
+    /// example still passes it as a required one's would.
+    pub nullable: bool,
     /// Whether the value serializes through `convert_and_respect_annotation_metadata`
     /// in the `params` dict — true for an object/union type carrying field aliases,
     /// as Fern wraps an object-typed query parameter.
@@ -1468,6 +1468,15 @@ pub struct QueryParam {
     pub aliased_datetime: Option<Prim>,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
+}
+
+impl QueryParam {
+    /// Whether the method's argument is required: the document marks it so and
+    /// its schema does not admit `null`.
+    #[must_use]
+    pub fn argument_required(&self) -> bool {
+        self.required && !self.nullable
+    }
 }
 
 /// A resolved header parameter, rendered as a keyword-only method argument and a
@@ -2972,6 +2981,7 @@ fn build_endpoint(
                 py_name: naming::field_name(&p.name),
                 type_ref,
                 required,
+                nullable: p.schema.as_ref().is_some_and(Schema::explicitly_nullable),
                 convert,
                 comma_separated,
                 allow_multiple,
@@ -2987,9 +2997,12 @@ fn build_endpoint(
     let constant_headers: Vec<(String, String)> = op
         .parameters
         .iter()
+        // A header whose schema defaults to a string is sent as that constant,
+        // required or not, and leaves the method: Fern measured it for a
+        // required `type: string` header and a required inline string enum
+        // alike, while an integer default keeps the argument.
         .filter(|p| {
             p.location == Some(ParameterLocation::Header)
-                && p.required != Some(true)
                 && !global_headers.contains(p.name.as_str())
                 && !is_transport_managed_parameter(&p.name)
                 && !is_auth_managed_header(doc, &p.name)
@@ -3392,6 +3405,19 @@ fn build_endpoint(
                     })
             });
 
+    let header_order: Vec<String> = op
+        .parameters
+        .iter()
+        .filter(|parameter| {
+            constant_headers
+                .iter()
+                .any(|(name, _)| name == &parameter.name)
+                || header_params
+                    .iter()
+                    .any(|header| header.wire_name == parameter.name)
+        })
+        .map(|parameter| parameter.name.clone())
+        .collect();
     Endpoint {
         openapi_31: doc.openapi.starts_with("3.1"),
         module,
@@ -3405,22 +3431,7 @@ fn build_endpoint(
         pagination: endpoint_pagination(doc, op, &query_params),
         query_params,
         header_params,
-        constant_header_descriptions: op
-            .parameters
-            .iter()
-            .filter_map(|parameter| {
-                constant_headers
-                    .iter()
-                    .any(|(name, _)| name == &parameter.name)
-                    .then(|| {
-                        parameter
-                            .description
-                            .as_ref()
-                            .map(|description| (parameter.name.clone(), description.clone()))
-                    })
-                    .flatten()
-            })
-            .collect(),
+        header_order,
         constant_headers,
         request_body,
         request_body_required: op
@@ -14121,14 +14132,12 @@ mod tests {
     }
 
     #[test]
-    fn a_required_solo_header_is_promoted_only_when_it_is_an_array() {
-        let array = global_headers(&one_header_doc(
-            "{type: array, items: {type: string}}",
-            true,
-        ));
-        assert_eq!(array.len(), 1);
-        assert!(array[0].required());
-        assert!(global_headers(&one_header_doc("{type: string}", true)).is_empty());
+    fn a_required_solo_header_is_promoted_whatever_its_type() {
+        for schema in ["{type: array, items: {type: string}}", "{type: string}"] {
+            let headers = global_headers(&one_header_doc(schema, true));
+            assert_eq!(headers.len(), 1, "{schema}");
+            assert!(headers[0].required(), "{schema}");
+        }
     }
 
     #[test]
@@ -14256,6 +14265,118 @@ mod tests {
         assert_eq!(
             endpoint.constant_headers,
             vec![("storage-unit".to_string(), "GB".to_string())]
+        );
+    }
+
+    /// The one `GET /beds` operation of a document whose other operation keeps
+    /// every header a method argument, built with `parameters`.
+    fn beds_endpoint(parameters: serde_json::Value) -> crate::ir::Endpoint {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Beds", "version": "1" },
+            "paths": {
+                "/beds": { "get": {
+                    "operationId": "listBeds",
+                    "parameters": parameters,
+                    "responses": { "204": { "description": "ok" } }
+                } },
+                "/beds/count": { "get": {
+                    "operationId": "countBeds",
+                    "responses": { "204": { "description": "ok" } }
+                } }
+            }
+        }))
+        .expect("document deserializes");
+        let operation = doc.paths["/beds"].get.as_ref().expect("GET operation");
+        build_endpoint(
+            &doc,
+            &[],
+            "/beds",
+            "GET",
+            operation,
+            &mut Vec::new(),
+            &std::collections::HashSet::new(),
+        )
+    }
+
+    #[test]
+    fn string_header_defaults_are_constants_required_or_not_in_declaration_order() {
+        let header = |name: &str, required: bool, schema: serde_json::Value| serde_json::json!({ "name": name, "in": "header", "required": required, "schema": schema });
+        let endpoint = beds_endpoint(serde_json::json!([
+            header(
+                "X-Watts",
+                true,
+                serde_json::json!({ "type": "integer", "default": 40 })
+            ),
+            header(
+                "X-Hue",
+                true,
+                serde_json::json!({ "type": "string", "default": "amber" })
+            ),
+            header(
+                "X-Vent",
+                true,
+                serde_json::json!({ "type": "string", "enum": ["open", "shut"] })
+            ),
+            header(
+                "X-Valve",
+                true,
+                serde_json::json!({ "type": "string", "enum": ["drip", "spray"], "default": "drip" })
+            ),
+        ]));
+        assert_eq!(
+            endpoint.constant_headers,
+            vec![
+                ("X-Hue".to_string(), "amber".to_string()),
+                ("X-Valve".to_string(), "drip".to_string()),
+            ]
+        );
+        let arguments: Vec<&str> = endpoint
+            .header_params
+            .iter()
+            .map(|header| header.wire_name.as_str())
+            .collect();
+        assert_eq!(arguments, ["X-Watts", "X-Vent"]);
+        assert_eq!(
+            endpoint.header_order,
+            ["X-Watts", "X-Hue", "X-Vent", "X-Valve"]
+        );
+    }
+
+    #[test]
+    fn a_required_nullable_query_parameter_is_an_optional_argument() {
+        let query = |name: &str, required: bool, schema: serde_json::Value| serde_json::json!({ "name": name, "in": "query", "required": required, "schema": schema });
+        let endpoint = beds_endpoint(serde_json::json!([
+            query(
+                "soil",
+                true,
+                serde_json::json!({ "type": "string", "nullable": true })
+            ),
+            query("depth", true, serde_json::json!({ "type": "integer" })),
+            query(
+                "tint",
+                false,
+                serde_json::json!({ "type": "string", "nullable": true })
+            ),
+        ]));
+        let flags: Vec<(&str, bool, bool)> = endpoint
+            .query_params
+            .iter()
+            .map(|query| {
+                (
+                    query.py_name.as_str(),
+                    query.required,
+                    query.argument_required(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            flags,
+            [
+                ("soil", true, false),
+                ("depth", true, true),
+                ("tint", false, false)
+            ]
         );
     }
 

@@ -1277,23 +1277,23 @@ fn compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference
     );
 }
 
-/// The lifted base-path defects
-/// (`docs/departures/evidence/lifted-base-path-docs-examples.md` and
-/// `lifted-base-path-positional-example.md`): the reference is the certified
-/// pair's tree for a crozier-authored document whose `x-fern-base-path` lifts a
-/// defaulted `{edition}` to the client. Fern's README and endpoint reference pass
-/// it to methods that do not take it, document it under them and leave it out of
-/// the constructor, and its docstrings pass the default positionally to a
-/// keyword-only constructor. `crozier compare` matches it, reporting each
-/// departure by catalog id, file and line — exactly the ledger's rows for that
-/// tree — and fails, naming the file, when one more line of the README, the
-/// endpoint reference or a docstring differs.
+/// `crozier compare` over a measured parameter-lowering case and the certified
+/// pair's committed tree for it: the comparison matches, reporting exactly the
+/// departures `expected` lists among those whose id starts `lifted-`,
+/// `constant-` or `nullable-` — each by catalog id, file and line, and exactly
+/// the ledger's rows for that golden — and it fails, naming the file, once the
+/// reference is edited by any of `edits` (`name`, file, `sed` expression) so one
+/// more line differs.
 #[cfg(unix)]
-#[test]
-fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_difference() {
+fn parameter_docs_departure_journey(
+    case: &str,
+    expected: &[(&str, usize, &str)],
+    edits: &[(&str, &str, &str)],
+) {
+    let golden = format!("docs/fern-measurements/parameter-lowering/{case}/fern-expected");
     let case = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("docs/fern-measurements/parameter-lowering/base-path-lifted-default");
-    let golden = "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected";
+        .join(&golden)
+        .join("..");
     let repo = tempfile::tempdir().expect("repo tempdir");
     let root = repo.path();
     git(root, &["init", "-q"]);
@@ -1302,9 +1302,12 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
         "openapi.yml",
         &std::fs::read_to_string(case.join("openapi.yml")).unwrap(),
     );
-    // `reference.sh [edit]`: copy the committed Fern tree, then make one more
-    // line differ — inside a method call the departure corrects, elsewhere in
-    // the README or the endpoint reference, or on a docstring line it corrects.
+    // `reference.sh [edit]`: copy the committed Fern tree, then apply one edit,
+    // failing when it changes nothing.
+    let arms: String = edits
+        .iter()
+        .map(|(name, file, edit)| format!("\x20 {name}) file={file}; edit='{edit}' ;;\n"))
+        .collect();
     write_script(
         root,
         "scripts/reference.sh",
@@ -1312,10 +1315,7 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
             "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
              cp -R '{}'/. \"$out\"\n\
              case \"${{1:-}}\" in\n\
-             \x20 readme-call) file=README.md; edit='s/^    title=\"title\",$/    title=\"title\",\\n    opacity=1,/' ;;\n\
-             \x20 readme-other) file=README.md; edit='s/^## Environments$/## Environment/' ;;\n\
-             \x20 reference-other) file=reference.md; edit='s/^## Layers$/## Layer/' ;;\n\
-             \x20 docstring) file=src/fern/client.py; edit='0,/^        \"v2\",$/s//        \"v3\",/' ;;\n\
+             {arms}\
              \x20 *) exit 0 ;;\n\
              esac\n\
              sed \"$edit\" \"$out/$file\" > \"$out/edited.tmp\"\n\
@@ -1335,19 +1335,13 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
         "crozier.yml",
         &config("  python:\n    reference:\n      command: ./scripts/reference.sh\n"),
     );
-    let edits = [
-        ("readme-call", "README.md"),
-        ("readme-other", "README.md"),
-        ("reference-other", "reference.md"),
-        ("docstring", "src/fern/client.py"),
-    ];
     write(
         root,
         "edited.yml",
         &config(
             &edits
                 .iter()
-                .map(|(edit, _)| {
+                .map(|(edit, _, _)| {
                     format!(
                         "  {edit}:\n    reference:\n      command: ./scripts/reference.sh {edit}\n"
                     )
@@ -1377,38 +1371,26 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
             )
         })
         .collect();
-    let lifted: Vec<(&str, usize, &str)> = observed
+    let reported: Vec<(&str, usize, &str)> = observed
         .iter()
-        .filter(|(_, _, id)| id.starts_with("lifted-base-path-"))
+        .filter(|(_, _, id)| {
+            ["lifted-", "constant-", "nullable-"]
+                .iter()
+                .any(|p| id.starts_with(p))
+        })
         .map(|(file, line, id)| (file.as_str(), *line, id.as_str()))
         .collect();
-    let (docs, positional) = (
-        "lifted-base-path-docs-examples",
-        "lifted-base-path-positional-example",
-    );
-    assert_eq!(
-        lifted,
-        [
-            ("README.md", 40, docs),
-            ("reference.md", 20, docs),
-            ("src/fern/client.py", 64, positional),
-            ("src/fern/client.py", 177, positional),
-            ("src/fern/layers/client.py", 56, positional),
-            ("src/fern/layers/client.py", 84, positional),
-            ("src/fern/layers/client.py", 138, positional),
-            ("src/fern/layers/client.py", 174, positional),
-        ]
-    );
+    assert_eq!(reported, expected);
     // Exactly the ledger's rows for the golden.
     let ledger = super::departure_ledger()
-        .golden(golden, &[])
+        .golden(&golden, &[])
         .unwrap_or_else(|failures| panic!("{failures:?}"));
     let failures = ledger.check(&observed, &|_| true);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    let (file, line, id) = expected[0];
     assert!(
-        stderr.contains("      README.md:40 lifted-base-path-docs-examples\n")
-            && stderr.contains("      src/fern/client.py:64 lifted-base-path-positional-example\n")
+        stderr.contains(&format!("      {file}:{line} {id}\n"))
             && stderr.contains("Result: every checked generator matched the reference"),
         "{stderr}"
     );
@@ -1420,7 +1402,7 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
         .code(3);
     let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
     validate_against_committed_schema(&report);
-    for (edit, file) in edits {
+    for (edit, file, _) in edits {
         let edited = result(&report, "edited.yml", edit);
         assert_eq!(edited["status"], "mismatched", "{edit}: {edited:#}");
         let comparison = &edited["comparison"];
@@ -1428,6 +1410,102 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
         assert_eq!(comparison["only_in_reference"], serde_json::json!([]));
         assert_eq!(comparison["only_in_crozier"], serde_json::json!([]));
     }
+}
+
+/// The lifted base-path defects
+/// (`docs/departures/evidence/lifted-base-path-docs-examples.md` and
+/// `lifted-base-path-positional-example.md`): Fern's README and endpoint
+/// reference pass a defaulted `{edition}` lifted to the client to methods that do
+/// not take it, document it under them and leave it out of the constructor, and
+/// its docstrings pass the default positionally to a keyword-only constructor.
+/// One more line of the README, the endpoint reference or a docstring — inside a
+/// method call the departure corrects, or elsewhere — fails the comparison.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_difference() {
+    let (docs, positional) = (
+        "lifted-base-path-docs-examples",
+        "lifted-base-path-positional-example",
+    );
+    parameter_docs_departure_journey(
+        "base-path-lifted-default",
+        &[
+            ("README.md", 40, docs),
+            ("reference.md", 20, docs),
+            ("src/fern/client.py", 64, positional),
+            ("src/fern/client.py", 177, positional),
+            ("src/fern/layers/client.py", 56, positional),
+            ("src/fern/layers/client.py", 84, positional),
+            ("src/fern/layers/client.py", 138, positional),
+            ("src/fern/layers/client.py", 174, positional),
+        ],
+        &[
+            (
+                "readme-call",
+                "README.md",
+                r#"s/^    title="title",$/    title="title",\n    opacity=1,/"#,
+            ),
+            (
+                "readme-other",
+                "README.md",
+                "s/^## Environments$/## Environment/",
+            ),
+            ("reference-other", "reference.md", "s/^## Layers$/## Layer/"),
+            (
+                "docstring",
+                "src/fern/client.py",
+                r#"0,/^        "v2",$/s//        "v3",/"#,
+            ),
+        ],
+    );
+}
+
+/// The constant-header and nullable-items documentation defects
+/// (`docs/departures/evidence/constant-header-docs-arguments.md` and
+/// `nullable-items-docs.md`): Fern's README and endpoint reference pass headers
+/// the request sends as constants, and document them, and they document nullable
+/// array items the signature drops and pass `[None]` for them. One more line of
+/// either file — inside a call the departure corrects, or elsewhere — fails the
+/// comparison.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_parameter_docs_departures_and_fails_on_any_other_difference() {
+    let constant = "constant-header-docs-arguments";
+    parameter_docs_departure_journey(
+        "header-default-constants",
+        &[("README.md", 47, constant), ("reference.md", 28, constant)],
+        &[
+            (
+                "readme-call",
+                "README.md",
+                r#"s/^    hatch_mode="down",$/    hatch_mode="down",\n    fan_speed=3,/"#,
+            ),
+            (
+                "readme-other",
+                "README.md",
+                "s/^## Environments$/## Environment/",
+            ),
+            ("reference-other", "reference.md", "s/^## Beds$/## Bed/"),
+        ],
+    );
+    let nullable = "nullable-items-docs";
+    parameter_docs_departure_journey(
+        "query-nullable-30",
+        &[("README.md", 45, nullable), ("reference.md", 26, nullable)],
+        &[
+            (
+                "readme-call",
+                "README.md",
+                r#"0,/^        None$/s//        None,\n        None/"#,
+            ),
+            (
+                "readme-other",
+                "README.md",
+                "s/^## Environments$/## Environment/",
+            ),
+            ("reference-other", "reference.md", "s/^## Beds$/## Bed/"),
+        ],
+    );
 }
 
 /// The packaged golden's file `rel`, with `from` replaced by `to` — which must

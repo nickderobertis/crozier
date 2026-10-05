@@ -614,8 +614,8 @@ fn string_enum_renders_as_enum_class() {
 
 /// A component enum (with a description and a value needing escapes), a
 /// hoisted inline-property enum, an enum header (a component, since Fern
-/// refuses an inline enum header schema), and a request example that names enum
-/// values.
+/// refuses an inline enum header schema) on one of two operations, so it stays
+/// that method's argument, and a request example that names enum values.
 const LITERAL_ENUM_SPEC: &str = r#"openapi: 3.0.0
 info:
   title: Pets
@@ -641,6 +641,13 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Pet' }
+  /pets/count:
+    get:
+      operationId: countPets
+      tags: [Pets]
+      responses:
+        '204':
+          description: Counted.
 components:
   schemas:
     Mode:
@@ -1311,8 +1318,17 @@ paths:
       responses:
         "204":
           description: ""
+  /h/status:
+    get:
+      operationId: hdr_status
+      tags: [Hdr]
+      responses:
+        "204":
+          description: ""
 "##;
 
+/// The header rides one of two operations, so it stays that method's argument
+/// rather than being promoted to the client.
 #[test]
 fn header_param_strips_x_prefix_and_forces_content_type() {
     let files = render(HEADER_SPEC);
@@ -2228,17 +2244,22 @@ fn cookie_dropped_and_optional_header_promoted_to_client_wrapper() {
     assert!(client.contains("tenant=tenant,"));
 }
 
-/// A required operation header is *not* promoted — it stays a per-method parameter
-/// and no `tenant`-style global field appears on the client wrapper.
+/// A required header on a document's only operation is promoted to a required
+/// client-wrapper field, as Fern does (`single-operation-headers` under
+/// `docs/fern-measurements/parameter-lowering/`): the method no longer takes it.
 #[test]
-fn required_header_is_not_promoted() {
+fn single_operation_required_header_is_promoted() {
     let files = render(
         "openapi: 3.0.1\ninfo:\n  title: Rh\npaths:\n  /ping:\n    get:\n      operationId: pings_get\n      tags: [Pings]\n      parameters:\n        - name: X-Trace\n          in: header\n          required: true\n          schema: { type: string }\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Pong\" }\ncomponents:\n  schemas:\n    Pong:\n      type: object\n      required: [ok]\n      properties:\n        ok: { type: boolean }\n",
     );
     let raw = &files["src/acme/pings/raw_client.py"];
-    assert!(raw.contains("trace: str"));
-    // The required header is not lifted to a client-wrapper field.
-    assert!(!files["src/acme/core/client_wrapper.py"].contains("self._trace"));
+    assert!(!raw.contains("trace"), "{raw}");
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("        trace: str,\n"), "{wrapper}");
+    assert!(
+        wrapper.contains("headers[\"X-Trace\"] = self._trace"),
+        "{wrapper}"
+    );
 }
 
 /// An inline (non-`$ref`) request body hoists its nested inline objects into the
@@ -5964,8 +5985,15 @@ paths:
           example: 7
           schema: { type: integer }
       responses: { '204': { description: Done } }
+  /search/health:
+    get:
+      operationId: search_health
+      tags: [Search]
+      responses: { '204': { description: Done } }
 "##,
     );
+    // The second operation keeps `X-Limit` a method argument rather than a
+    // promoted client field.
     let raw = &files["src/acme/search/raw_client.py"];
     let client = &files["src/acme/search/client.py"];
     assert!(raw.contains("page: int"), "{raw}");

@@ -24,6 +24,9 @@ rules is corpus row 313, `lootlog-battlelog`; why the others have none yet is
 | [`query-scalar-or-array`](query-scalar-or-array/openapi.yml) | when `oneOf`/`anyOf: [scalar, array of that scalar]` is the one-or-many shorthand and when it is a named union |
 | [`query-union-enum-member`](query-union-enum-member/openapi.yml) | a union naming a component string enum, with no array member, reaches the URL raw |
 | [`header-default-literal`](header-default-literal/openapi.yml) | a string header with a `default`, promoted from three of four operations, is a one-value `Literal` |
+| [`header-default-constants`](header-default-constants/openapi.yml) | an unpromoted header whose schema defaults to a string — plain or an inline enum, required or not — is sent as that constant and leaves the method; an integer default keeps the argument. Fern's Markdown still passes and documents it, a defect the [`constant-header-docs-arguments`](../../departures/evidence/constant-header-docs-arguments.md) departure corrects |
+| [`query-nullable-30`](query-nullable-30/openapi.yml), [`query-nullable-31`](query-nullable-31/openapi.yml) | a required query parameter whose schema admits `null` is an optional argument; array items that admit `null` lose their `Optional` in the signature and exampled `[]` in a docstring. Fern's `reference.md` and worked calls keep the items' nullability, a defect the [`nullable-items-docs`](../../departures/evidence/nullable-items-docs.md) departure corrects |
+| [`single-operation-headers`](single-operation-headers/openapi.yml) | a document's only operation has its headers promoted to the client, required ones as required fields |
 | [`base-path-string`](base-path-string/openapi.yml), [`base-path-object-literal`](base-path-object-literal/openapi.yml) | `x-fern-base-path: /v2`, and its object form `{path: /v2}`, prefix every route |
 | [`base-path-templated-string`](base-path-templated-string/openapi.yml) | the string form naming a placeholder: [refused](base-path-templated-string/fern-refusal.txt) |
 | [`base-path-lifted-default`](base-path-lifted-default/openapi.yml), [`base-path-lifted-unincluded`](base-path-lifted-unincluded/openapi.yml), [`base-path-lifted-required`](base-path-lifted-required/openapi.yml), [`base-path-lifted-list`](base-path-lifted-list/openapi.yml), [`base-path-lifted-bare`](base-path-lifted-bare/openapi.yml) | the object form's placeholder lifted to the client, with and without `paths-include-base-path` and a `default`, with `parameters` as a list and with none; their trees carry the Fern defects the [`lifted-base-path-docs-examples`](../../departures/evidence/lifted-base-path-docs-examples.md) and [`lifted-base-path-positional-example`](../../departures/evidence/lifted-base-path-positional-example.md) departures correct, and match through them |
@@ -65,6 +68,21 @@ name is exactly the header a declared scheme writes: `Authorization` for bearer,
 basic or OAuth2, an apiKey header scheme's own `name`. `authorization`,
 `AUTHORIZATION` and `x-kite-key` beside `X-Kite-Key` stay method arguments. A
 header argument never makes the README's abbreviated calls read `(...)`.
+
+**Constant headers.** A header no promotion takes, whose schema's `default` is
+a string — `type: string` or an inline string enum, nullable or not, required
+or not — is sent as that constant in the order the operation declares its
+headers, and the method does not take it. An integer default keeps the
+argument.
+
+**Nullable query parameters.** A required query parameter whose own schema
+admits `null` (`nullable: true`, a `type` list naming `null`, a `null`
+alternative) is `Optional[T] = None`, yet its worked example still passes it. A
+one-or-many array whose items admit `null` is `Optional[Union[T, Sequence[T]]]`
+and a docstring passes `[]` for it.
+
+**Promotion.** A header on every operation is promoted to the client with its
+declared optionality — on a single-operation document too.
 
 **Defaulted headers.** A header promoted from at least three quarters but not
 all of the operations, whose first declaration is a string with a string

@@ -2877,17 +2877,9 @@ fn reference_entry(
             }
         }
     }
-    let mut reference_header = mp.header;
-    reference_header.extend(
-        ep.constant_header_descriptions
-            .iter()
-            .map(|(name, description)| DocParam {
-                name: naming::field_name(name),
-                annotation: "typing.Literal".to_string(),
-                default: None,
-                description: Some(description.clone()),
-            }),
-    );
+    // Nor does it document a constant header, which Fern's does (the
+    // `constant-header-docs-arguments` departure).
+    let reference_header = mp.header;
     for dp in ordered_keyword_params(&mp.query, &reference_header, &reference_body) {
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
         let query_is_list = ep
@@ -2986,18 +2978,6 @@ fn reference_entry(
             suffix: reference_param_suffix(description),
         });
     }
-    params.extend(
-        ep.constant_headers
-            .iter()
-            .filter(|(name, _)| !ep.constant_header_descriptions.contains_key(name))
-            .map(|(wire_name, _)| ParamRow {
-                name: naming::field_name(wire_name)
-                    .trim_end_matches('_')
-                    .to_string(),
-                annot: "typing.Literal".to_string(),
-                suffix: " ".to_string(),
-            }),
-    );
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
@@ -4531,7 +4511,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             // the same way — the null alternative only supplies the `Optional`
             // this arm already writes.
             let array = match &qp.type_ref {
-                TypeRef::List(inner) => Some((inner, qp.required)),
+                TypeRef::List(inner) => Some((inner, qp.argument_required())),
                 TypeRef::Optional(inner) => match inner.as_ref() {
                     TypeRef::List(item) => Some((item, false)),
                     _ => None,
@@ -4540,6 +4520,13 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             };
             if let Some((inner, required)) = array {
                 if qp.allow_multiple {
+                    // Nullable items lose their `Optional` here, as in Fern's
+                    // signature; its `reference.md` keeps it (the
+                    // `nullable-items-docs` departure).
+                    let inner = match inner.as_ref() {
+                        TypeRef::Optional(item) => item,
+                        _ => inner,
+                    };
                     let item = raw_type_str(inner, imports);
                     return DocParam {
                         name: qp.py_name.clone(),
@@ -4559,7 +4546,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             }
             optional_arg(
                 raw_type_str(&qp.type_ref, imports),
-                qp.required,
+                qp.argument_required(),
                 qp.docstring.clone(),
                 qp.py_name.clone(),
             )
@@ -5139,7 +5126,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             } else if type_serializes_as(&qp.type_ref, Prim::Date)
                 || qp.aliased_datetime == Some(Prim::Date)
             {
-                let value = if qp.required {
+                let value = if qp.argument_required() {
                     format!("str({})", qp.py_name)
                 } else {
                     format!(
@@ -5152,7 +5139,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 || qp.aliased_datetime == Some(Prim::Datetime)
             {
                 imports.add_core("datetime_utils", "serialize_datetime");
-                let value = if qp.required {
+                let value = if qp.argument_required() {
                     format!("serialize_datetime({})", qp.py_name)
                 } else {
                     format!(
@@ -5586,20 +5573,44 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         if let Some(value) = content_type {
             lines.push(format!("                \"content-type\": \"{value}\","));
         }
-        for (name, value) in &ep.constant_headers {
-            lines.push(format!("                \"{name}\": {value:?},"));
-        }
-        for hp in &ep.header_params {
-            let value = if hp.enum_value {
-                format!("{}.value", hp.py_name)
-            } else {
-                format!("str({})", hp.py_name)
-            };
-            lines.push(format!(
-                "                \"{}\": {value} if {} is not None else None,",
-                hp.wire_name, hp.py_name
-            ));
-        }
+        // Constants and arguments together, in the order the operation declares
+        // them.
+        let constant = |wire: &str| {
+            ep.constant_headers
+                .iter()
+                .find(|(name, _)| name == wire)
+                .map(|(name, value)| format!("                \"{name}\": {value:?},"))
+        };
+        let argument = |wire: &str| {
+            ep.header_params
+                .iter()
+                .find(|hp| hp.wire_name == wire)
+                .map(|hp| {
+                    let value = if hp.enum_value {
+                        format!("{}.value", hp.py_name)
+                    } else {
+                        format!("str({})", hp.py_name)
+                    };
+                    format!(
+                        "                \"{}\": {value} if {} is not None else None,",
+                        hp.wire_name, hp.py_name
+                    )
+                })
+        };
+        // A header the order does not name (an endpoint built by hand) follows,
+        // constants first.
+        let unordered = ep
+            .constant_headers
+            .iter()
+            .map(|(name, _)| name)
+            .chain(ep.header_params.iter().map(|hp| &hp.wire_name))
+            .filter(|wire| !ep.header_order.contains(wire));
+        lines.extend(
+            ep.header_order
+                .iter()
+                .chain(unordered)
+                .filter_map(|wire| constant(wire).or_else(|| argument(wire))),
+        );
         lines.push("            },".to_string());
     }
     lines.push("            request_options=request_options,".to_string());
@@ -9322,6 +9333,13 @@ fn build_example_inner(
         } else if let TypeRef::List(inner) = &qp.type_ref {
             if qp.one_or_many && !reference {
                 ctx.value(inner, Slot::Named(&qp.wire_name))
+            } else if matches!(inner.as_ref(), TypeRef::Optional(_)) && !documentation {
+                // Nullable items: a docstring passes an empty list. The Markdown
+                // passes one element, the non-null one Fern renders for the same
+                // items without `nullable`, where Fern's own passes `None`, which
+                // the signature's `Sequence[int]` rejects (the
+                // `nullable-items-docs` departure).
+                Example::List(Vec::new())
             } else {
                 Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
             }
@@ -9506,16 +9524,8 @@ fn build_example_inner(
         args.extend(headers);
         args.extend(rest);
     }
-    if documentation && !suppressed {
-        for (name, value) in &ep.constant_headers {
-            if ep.constant_header_descriptions.contains_key(name) {
-                args.push((
-                    Some(naming::field_name(name)),
-                    Example::Atom(format!("{value:?}")),
-                ));
-            }
-        }
-    }
+    // A constant header is no argument, so no call passes it, though Fern's
+    // Markdown does (the `constant-header-docs-arguments` departure).
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
             let mut v = if let Some(example) = body_example {
@@ -11495,7 +11505,7 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             constant_headers: Vec::new(),
-            constant_header_descriptions: Default::default(),
+            header_order: Vec::new(),
             request_body: None,
             request_body_required: false,
             request_body_has_multipart_related: false,
@@ -12054,10 +12064,8 @@ mod tests {
             &std::collections::BTreeMap::new(),
         )
         .expect("reference entry renders");
-        assert!(
-            reference.contains("**storage_unit:** `typing.Literal` "),
-            "{reference}"
-        );
+        // The reference documents no argument the method does not take.
+        assert!(!reference.contains("storage_unit"), "{reference}");
 
         ep.request_body = Some(RequestBody::Inline(vec![BodyField {
             wire_name: "1st".to_string(),
@@ -12274,6 +12282,7 @@ mod tests {
             py_name: "tag".to_string(),
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
+            nullable: false,
             convert: false,
             comma_separated: true,
             allow_multiple: true,
@@ -12319,6 +12328,7 @@ mod tests {
             py_name: "start".to_string(),
             type_ref: TypeRef::Primitive(Prim::Datetime),
             required: false,
+            nullable: false,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -13300,6 +13310,7 @@ mod tests {
                 py_name: "tags".to_string(),
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
                 required: true,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -13314,6 +13325,7 @@ mod tests {
                 py_name: "limit".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -13662,6 +13674,7 @@ mod tests {
             py_name: "filter".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
             required: false,
+            nullable: false,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -13710,6 +13723,7 @@ mod tests {
                 py_name: "where_".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -13724,6 +13738,7 @@ mod tests {
                 py_name: "order".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -13738,6 +13753,7 @@ mod tests {
                 py_name: "page".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -13786,6 +13802,7 @@ mod tests {
             py_name: "cursor".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
             required: true,
+            nullable: false,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -14442,5 +14459,82 @@ mod parameter_lowering_tests {
         assert!(files
             .values()
             .any(|text| text.contains("class DtoFwValue(")));
+    }
+
+    /// One `GET /beds` operation (beside a second operation, so no header is
+    /// promoted) taking `parameters`.
+    fn beds_document(parameters: Value) -> Value {
+        json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Beds", "version": "1"},
+            "paths": {
+                "/beds": {"get": {
+                    "operationId": "listBeds",
+                    "tags": ["beds"],
+                    "parameters": parameters,
+                    "responses": {"204": {"description": "ok"}}
+                }},
+                "/beds/count": {"get": {
+                    "operationId": "countBeds",
+                    "tags": ["beds"],
+                    "responses": {"204": {"description": "ok"}}
+                }}
+            }
+        })
+    }
+
+    #[test]
+    fn nullable_array_items_lose_their_optional_in_the_signature_and_docs() {
+        let files = files(beds_document(json!([{
+            "name": "trays", "in": "query", "required": true,
+            "schema": {"type": "array", "items": {"type": "string", "nullable": true}}
+        }])));
+        let annotation = "typing.Optional[typing.Union[str, typing.Sequence[str]]]";
+        let client = &files["src/api/beds/client.py"];
+        assert!(
+            client.contains(&format!("trays: {annotation} = None,")),
+            "{client}"
+        );
+        // A docstring passes an empty list; the Markdown one non-null element.
+        assert!(client.contains("            trays=[],\n"), "{client}");
+        let reference = &files["reference.md"];
+        assert!(
+            reference.contains(&format!("**trays:** `{annotation}`")),
+            "{reference}"
+        );
+        assert!(
+            reference.contains("    trays=[\n        \"trays\"\n    ],"),
+            "{reference}"
+        );
+        assert!(!reference.contains("None"), "{reference}");
+    }
+
+    #[test]
+    fn constant_headers_are_sent_in_order_and_left_out_of_the_docs() {
+        let header = |name: &str, required: bool, schema: Value| json!({"name": name, "in": "header", "required": required, "schema": schema});
+        let files = files(beds_document(json!([
+            header("X-Watts", true, json!({"type": "integer", "default": 40})),
+            header("X-Hue", true, json!({"type": "string", "default": "amber"})),
+            header(
+                "X-Mist",
+                false,
+                json!({"type": "string", "enum": ["fine", "coarse"], "default": "fine"})
+            ),
+        ])));
+        let raw = &files["src/api/beds/raw_client.py"];
+        assert!(
+            raw.contains(
+                "                \"X-Watts\": str(watts) if watts is not None else None,\n                \"X-Hue\": \"amber\",\n                \"X-Mist\": \"fine\",\n"
+            ),
+            "{raw}"
+        );
+        for doc in ["README.md", "reference.md"] {
+            let text = &files[doc];
+            assert!(text.contains("watts=1"), "{doc}: {text}");
+            assert!(
+                !text.contains("hue") && !text.contains("mist"),
+                "{doc}: {text}"
+            );
+        }
     }
 }

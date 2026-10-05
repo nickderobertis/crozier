@@ -10,6 +10,25 @@
 # equal to this file), what each key holds, the defect rule, and how a fix adds
 # an entry. Entries are sorted by `id`.
 
+- id: constant-header-docs-arguments
+  kind: fern-defect
+  trigger: >-
+    An operation header whose schema defaults to a string (a plain string or an
+    inline string enum, required or not), which the method does not take and
+    the request sends as that constant: `README.md` and `reference.md`.
+  fern: >-
+    Method snippets passing the header as an argument with its default
+    (`mist_mode="fine"`), and a `reference.md` parameter block documenting it
+    under the method as `typing.Literal`.
+  crozier: >-
+    Method snippets and parameter lists without it.
+  reason: >-
+    The examples contradict the generated code: the method has no such
+    argument, so the documented call raises `TypeError` for an unexpected
+    keyword argument, and `reference.md` documents an argument the method does
+    not have.
+  evidence: docs/departures/evidence/constant-header-docs-arguments.md
+
 - id: fern-metadata-generator-config
   kind: provenance
   trigger: >-
@@ -83,6 +102,25 @@
     match its signature: it raises `TypeError` (`takes 1 positional argument but
     2 were given`).
   evidence: docs/departures/evidence/lifted-base-path-positional-example.md
+
+- id: nullable-items-docs
+  kind: fern-defect
+  trigger: >-
+    A query parameter whose inline array `items` admit `null` (`nullable: true`,
+    or a 3.1 `type` list naming `null`), typed `Optional[Union[T, Sequence[T]]]`
+    in the signature: `README.md` and `reference.md`.
+  fern: >-
+    `reference.md` documenting the parameter as
+    `Optional[Union[Optional[T], Sequence[Optional[T]]]]`, and a required one's
+    worked call passing `[None]`.
+  crozier: >-
+    The signature's own type, and the element Fern's worked call passes for the
+    same items without `nullable` (`[1]`, `["trays"]`).
+  reason: >-
+    The docs contradict the generated code: `reference.md` documents a type the
+    method's signature does not have, and the documented call passes `None`
+    items that the signature's `Sequence[T]` rejects.
+  evidence: docs/departures/evidence/nullable-items-docs.md
 
 - id: readme-client-class-casing
   kind: fern-defect

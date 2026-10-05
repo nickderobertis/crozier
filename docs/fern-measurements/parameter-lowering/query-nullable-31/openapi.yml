@@ -1,0 +1,84 @@
+openapi: 3.1.0
+info:
+  title: Greenhouse
+  version: 1.0.0
+servers:
+  - url: https://greenhouse.example.org
+paths:
+  /beds:
+    get:
+      operationId: listBeds
+      tags: [beds]
+      parameters:
+        - name: soil
+          in: query
+          required: true
+          schema:
+            type: [string, "null"]
+        - name: depth
+          in: query
+          required: false
+          schema:
+            type: [integer, "null"]
+        - name: crops
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: [string, "null"]
+        - name: rows
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: [integer, "null"]
+        - name: trays
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: [string, "null"]
+        - name: shade
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: string
+              - type: integer
+              - type: "null"
+        - name: pots
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+      responses:
+        "200":
+          description: Beds.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /beds/{bed_id}:
+    get:
+      operationId: getBed
+      tags: [beds]
+      parameters:
+        - name: bed_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One bed.
+          content:
+            application/json:
+              schema:
+                type: string

@@ -2763,7 +2763,7 @@ fn parameter_lowering_measurements_match_fern() {
         .collect();
     cases.sort();
     assert!(
-        cases.len() >= 6,
+        cases.len() >= 16,
         "the measured cases are missing: {cases:?}"
     );
     let failures: Vec<String> = cases
@@ -10778,10 +10778,12 @@ fn path_parameter_enums_hoist_to_tag_types() {
     );
 }
 
+/// A second operation keeps the `X-Mode` header a method argument rather than a
+/// promoted client field.
 #[test]
 fn referenced_parameter_examples_populate_worked_calls() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n        - { name: X-Mode, in: header, required: true, schema: { $ref: '#/components/schemas/Mode' } }\n      responses:\n        '204': { description: Found }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    Mode: { type: string, example: 'safe' }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n        - { name: X-Mode, in: header, required: true, schema: { $ref: '#/components/schemas/Mode' } }\n      responses:\n        '204': { description: Found }\n  /widgets:\n    get:\n      operationId: countWidgets\n      tags: [widgets]\n      responses:\n        '204': { description: Counted }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    Mode: { type: string, example: 'safe' }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("widgets client is generated");

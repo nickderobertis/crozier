@@ -284,6 +284,8 @@ pub struct Context {
     reference_classes: OnceLock<BTreeSet<String>>,
     crozier_classes: OnceLock<BTreeSet<String>>,
     crozier_lifted: OnceLock<BTreeSet<String>>,
+    crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
+    reference_nullable_items: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
 }
 
@@ -293,6 +295,7 @@ impl Context {
         reference: impl IntoIterator<Item = (&'a str, &'a str)>,
         crozier: impl IntoIterator<Item = (&'a str, &'a str)>,
     ) -> Self {
+        let reference: Vec<(&str, &str)> = reference.into_iter().collect();
         let crozier: Vec<(&str, &str)> = crozier.into_iter().collect();
         let project = crozier
             .iter()
@@ -300,9 +303,16 @@ impl Context {
             .and_then(|(_, text)| project_name(text));
         Context {
             roots: None,
-            reference_classes: OnceLock::from(classes(reference)),
+            reference_classes: OnceLock::from(classes(reference.iter().copied())),
             crozier_classes: OnceLock::from(classes(crozier.iter().copied())),
-            crozier_lifted: OnceLock::from(lifted_parameters(crozier)),
+            crozier_lifted: OnceLock::from(lifted_parameters(crozier.iter().copied())),
+            crozier_constant_headers: OnceLock::from(constant_headers(crozier.iter().copied())),
+            reference_nullable_items: OnceLock::from(nullable_item_parameters(
+                reference
+                    .iter()
+                    .filter(|(path, _)| *path == "reference.md")
+                    .map(|(_, text)| *text),
+            )),
             crozier_project: OnceLock::from(project),
         }
     }
@@ -343,6 +353,35 @@ impl Context {
                     .iter()
                     .map(|(rel, text)| (rel.as_str(), text.as_str())),
             )
+        })
+    }
+
+    /// The headers crozier's raw clients send as constants, each as the
+    /// `(wire name, value)` of a `"<wire>": "<value>",` line of a `headers` dict.
+    pub fn crozier_constant_headers(&self) -> &BTreeSet<(String, String)> {
+        self.crozier_constant_headers.get_or_init(|| {
+            let Some((_, root)) = self.roots.as_ref() else {
+                return BTreeSet::new();
+            };
+            let sources = python_sources(root);
+            constant_headers(
+                sources
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            )
+        })
+    }
+
+    /// The query parameters the reference's `reference.md` documents with
+    /// nullable items: `**NAME:** \`typing.Optional[typing.Union[typing.Optional[T],
+    /// typing.Sequence[typing.Optional[T]]]]\``.
+    pub fn reference_nullable_items(&self) -> &BTreeSet<String> {
+        self.reference_nullable_items.get_or_init(|| {
+            let Some((root, _)) = self.roots.as_ref() else {
+                return BTreeSet::new();
+            };
+            let text = std::fs::read_to_string(root.join("reference.md")).unwrap_or_default();
+            nullable_item_parameters([text.as_str()])
         })
     }
 
@@ -409,6 +448,80 @@ fn lifted_parameters<'a>(
                 .collect();
             (!name.is_empty() && rest[name.len()..].starts_with(')')).then_some(name)
         })
+        .collect()
+}
+
+/// The `(wire name, value)` of every `"<wire>": "<value>",` line inside a
+/// `headers={` dict of the raw clients among `sources`.
+fn constant_headers<'a>(
+    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> BTreeSet<(String, String)> {
+    let mut found = BTreeSet::new();
+    for (path, text) in sources {
+        if !path.ends_with("raw_client.py") {
+            continue;
+        }
+        let mut in_headers = false;
+        for line in text.lines() {
+            let trimmed = line.trim();
+            if trimmed == "headers={" {
+                in_headers = true;
+                continue;
+            }
+            if in_headers && trimmed.starts_with('}') {
+                in_headers = false;
+                continue;
+            }
+            if !in_headers {
+                continue;
+            }
+            let pair = trimmed
+                .strip_suffix(',')
+                .and_then(|entry| entry.split_once(": "))
+                .and_then(|(key, value)| {
+                    let key = key.strip_prefix('"')?.strip_suffix('"')?;
+                    let value = value.strip_prefix('"')?.strip_suffix('"')?;
+                    (!key.contains('"') && !value.contains('"'))
+                        .then(|| (key.to_string(), value.to_string()))
+                });
+            found.extend(pair);
+        }
+    }
+    found
+}
+
+/// `(the reference.md type Fern writes, crozier's)` for a one-or-many query
+/// parameter over `item`: Fern keeps the items' nullability that the signature
+/// drops.
+fn nullable_items_types(item: &str) -> (String, String) {
+    (
+        format!(
+            "typing.Optional[typing.Union[typing.Optional[{item}], typing.Sequence[typing.Optional[{item}]]]]"
+        ),
+        format!("typing.Optional[typing.Union[{item}, typing.Sequence[{item}]]]"),
+    )
+}
+
+/// `(NAME, type)` of a `reference.md` parameter line `**NAME:** \`type\` …`.
+fn documented_parameter(line: &str) -> Option<(&str, &str)> {
+    let (name, rest) = line.strip_prefix("**")?.split_once(":** `")?;
+    let (annotation, _) = rest.split_once('`')?;
+    Some((name, annotation))
+}
+
+/// The names `reference.md` texts document with Fern's nullable-items type.
+fn nullable_item_parameters<'a>(texts: impl IntoIterator<Item = &'a str>) -> BTreeSet<String> {
+    texts
+        .into_iter()
+        .flat_map(str::lines)
+        .filter_map(documented_parameter)
+        .filter(|(_, annotation)| {
+            annotation
+                .strip_prefix("typing.Optional[typing.Union[typing.Optional[")
+                .and_then(|rest| rest.split_once("], "))
+                .is_some_and(|(item, _)| nullable_items_types(item).0 == *annotation)
+        })
+        .map(|(name, _)| name.to_string())
         .collect()
 }
 
@@ -482,11 +595,13 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 7] = [
+pub const RULE_IDS: [&str; 9] = [
+    "constant-header-docs-arguments",
     "fern-metadata-generator-config",
     "init-type-checking-import-order",
     "lifted-base-path-docs-examples",
     "lifted-base-path-positional-example",
+    "nullable-items-docs",
     "readme-client-class-casing",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
@@ -497,6 +612,10 @@ pub const RULE_IDS: [&str; 7] = [
 pub fn rule(id: &str) -> Option<Rule> {
     let none = Rule::default();
     Some(match id {
+        "constant-header-docs-arguments" => Rule {
+            region: Some(constant_header_docs_arguments),
+            ..none
+        },
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
             ..none
@@ -511,6 +630,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "lifted-base-path-positional-example" => Rule {
             line: Some(lifted_base_path_positional_example),
+            ..none
+        },
+        "nullable-items-docs" => Rule {
+            region: Some(nullable_items_docs),
             ..none
         },
         "readme-client-class-casing" => Rule {
@@ -908,11 +1031,18 @@ fn opens_constructor_call(opener: &str) -> bool {
 /// a whitespace-only line, `</dd>`, `</dl>` and a blank line — if one starts
 /// there.
 fn lifted_parameter_block(lines: &[&str], at: usize, names: &BTreeSet<String>) -> Option<usize> {
+    parameter_block(lines, at, |line| {
+        line.strip_prefix("**")
+            .and_then(|rest| rest.split_once(":** "))
+            .is_some_and(|(name, _)| names.contains(name))
+    })
+}
+
+/// The length of the `reference.md` parameter block starting at `lines[at]`
+/// whose `**NAME:** …` line `documents` accepts, if one starts there.
+fn parameter_block(lines: &[&str], at: usize, documents: impl Fn(&str) -> bool) -> Option<usize> {
     let block = lines.get(at..at + 8)?;
-    let documented = block[3]
-        .strip_prefix("**")
-        .and_then(|rest| rest.split_once(":** "))
-        .is_some_and(|(name, _)| names.contains(name));
+    let documented = documents(block[3]);
     (block[0] == "<dl>"
         && block[1] == "<dd>"
         && block[2].is_empty()
@@ -1000,6 +1130,131 @@ fn lifted_base_path_docs_examples(pair: &Pair<'_>) -> Result<Option<Region>, Str
             .iter()
             .zip(&crozier)
             .any(|(left, right)| *left != right)
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// The names Fern's Markdown gives the header `wire`: its parameter stem (`X-`
+/// dropped) and its whole name, each snake-cased.
+fn header_doc_names(wire: &str) -> [String; 2] {
+    [
+        crate::naming::field_name(crate::ir::header_param_stem(wire)),
+        crate::naming::field_name(wire)
+            .trim_end_matches('_')
+            .to_string(),
+    ]
+}
+
+/// `constant-header-docs-arguments`: in `README.md` or `reference.md`, Fern's
+/// file is crozier's but for the headers crozier's raw clients send as
+/// constants: every method call line passing one its constant,
+/// `<indent>NAME="<value>",`, and every `reference.md` block documenting one as
+/// `**NAME:** \`typing.Literal\``. Both are set aside, and the rest must equal
+/// crozier's file; the region is the two files' differing window.
+fn constant_header_docs_arguments(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let constants = pair.context.crozier_constant_headers();
+    if constants.is_empty() {
+        return Ok(None);
+    }
+    let passed: BTreeSet<String> = constants
+        .iter()
+        .flat_map(|(wire, value)| header_doc_names(wire).map(|name| format!("{name}=\"{value}\",")))
+        .collect();
+    let documented: BTreeSet<String> = constants
+        .iter()
+        .flat_map(|(wire, _)| header_doc_names(wire))
+        .collect();
+    let lines = pair.fern;
+    let mut kept: Vec<&str> = Vec::with_capacity(lines.len());
+    let mut index = 0;
+    while index < lines.len() {
+        let block = parameter_block(lines, index, |line| {
+            line.strip_prefix("**")
+                .and_then(|rest| rest.split_once(":** `typing.Literal`"))
+                .is_some_and(|(name, after)| {
+                    documented.contains(name) && (after == " " || after.starts_with(" — "))
+                })
+        });
+        if let Some(length) = block {
+            index += length;
+            continue;
+        }
+        let passes_constant = passed.contains(lines[index].trim_start())
+            && lines[index].len() > lines[index].trim_start().len()
+            && call_opener(lines, index).is_some_and(opens_method_call);
+        if !passes_constant {
+            kept.push(lines[index]);
+        }
+        index += 1;
+    }
+    if kept.len() == lines.len() || kept.as_slice() != pair.crozier {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// `nullable-items-docs`: in `README.md` or `reference.md`, Fern's file is
+/// crozier's once each query parameter Fern's `reference.md` documents with
+/// nullable items is written Fern's way — its type with the items' `Optional`
+/// restored, and each element of its worked list `None` — and both sides carry
+/// the construct. The region is the two files' differing window.
+fn nullable_items_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let names = pair.context.reference_nullable_items();
+    if names.is_empty() {
+        return Ok(None);
+    }
+    let mut fern_form: Vec<String> = Vec::with_capacity(pair.crozier.len());
+    let mut list: Option<String> = None;
+    for line in pair.crozier {
+        if let Some(close) = &list {
+            if *line == close {
+                list = None;
+                fern_form.push((*line).to_string());
+            } else {
+                let indent = &line[..line.len() - line.trim_start().len()];
+                fern_form.push(format!("{indent}None"));
+            }
+            continue;
+        }
+        let trimmed = line.trim_start();
+        let indent = &line[..line.len() - trimmed.len()];
+        if let Some(name) = trimmed.strip_suffix("=[") {
+            if names.contains(name) {
+                list = Some(format!("{indent}],"));
+            }
+            fern_form.push((*line).to_string());
+            continue;
+        }
+        let restored = documented_parameter(line).and_then(|(name, annotation)| {
+            if !names.contains(name) {
+                return None;
+            }
+            let item = annotation
+                .strip_prefix("typing.Optional[typing.Union[")?
+                .split_once(", typing.Sequence[")?
+                .0;
+            let (fern, crozier) = nullable_items_types(item);
+            (crozier == annotation).then(|| line.replacen(&crozier, &fern, 1))
+        });
+        fern_form.push(restored.unwrap_or_else(|| (*line).to_string()));
+    }
+    if fern_form.len() != pair.fern.len()
+        || fern_form
+            .iter()
+            .zip(pair.fern)
+            .any(|(left, right)| left != right)
+        || fern_form
+            .iter()
+            .zip(pair.crozier)
+            .all(|(left, right)| left == right)
     {
         return Ok(None);
     }
@@ -1512,6 +1767,188 @@ mod tests {
             "    \"v2\",",
             "    edition=\"v2\","
         ));
+    }
+
+    fn region_of(
+        rule: RegionRule,
+        rel: &str,
+        fern: &str,
+        crozier: &str,
+        context: &Context,
+    ) -> Option<Region> {
+        let fern: Vec<&str> = fern.split('\n').collect();
+        let crozier: Vec<&str> = crozier.split('\n').collect();
+        rule(&Pair {
+            rel,
+            fern: &fern,
+            crozier: &crozier,
+            context,
+        })
+        .unwrap()
+    }
+
+    #[test]
+    fn constant_headers_are_read_from_raw_client_header_dicts() {
+        let context = Context::from_sources(
+            [],
+            [
+                (
+                    "src/acme/beds/raw_client.py",
+                    "json={\n    \"kind\": \"x\",\n},\nheaders={\n    \"X-Mist-Mode\": \"fine\",\n    \"X-Vent\": str(vent) if vent is not None else None,\n},\n",
+                ),
+                ("src/acme/client.py", "headers={\n    \"X-Other\": \"y\",\n},\n"),
+            ],
+        );
+        assert_eq!(
+            context.crozier_constant_headers(),
+            &BTreeSet::from([("X-Mist-Mode".to_string(), "fine".to_string())])
+        );
+        assert!(Context::default().crozier_constant_headers().is_empty());
+        let crozier = tempfile::tempdir().unwrap();
+        std::fs::write(
+            crozier.path().join("raw_client.py"),
+            "headers={\n    \"storage-unit\": \"GB\",\n},\n",
+        )
+        .unwrap();
+        let reference = tempfile::tempdir().unwrap();
+        assert_eq!(
+            Context::from_trees(reference.path(), crozier.path()).crozier_constant_headers(),
+            &BTreeSet::from([("storage-unit".to_string(), "GB".to_string())])
+        );
+    }
+
+    const CONSTANT_FERN: &str = "client.beds.list_beds(\n    section=\"section\",\n    mist_mode=\"fine\",\n)\n\n<dl>\n<dd>\n\n**mist_mode:** `typing.Literal` — How fine.\n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**section:** `str` \n";
+    const CONSTANT_CROZIER: &str = "client.beds.list_beds(\n    section=\"section\",\n)\n\n<dl>\n<dd>\n\n**section:** `str` \n";
+
+    #[test]
+    fn the_constant_header_docs_rule_takes_only_the_constants_arguments_and_blocks() {
+        let context = Context::from_sources(
+            [],
+            [(
+                "raw_client.py",
+                "headers={\n    \"X-Mist-Mode\": \"fine\",\n},\n",
+            )],
+        );
+        let rule: RegionRule = constant_header_docs_arguments;
+        assert!(region_of(
+            rule,
+            "reference.md",
+            CONSTANT_FERN,
+            CONSTANT_CROZIER,
+            &context
+        )
+        .is_some());
+        for (fern, crozier) in [
+            // Another value, another argument, one more difference, an
+            // argument to the constructor, a block typed otherwise.
+            (
+                CONSTANT_FERN.replace("=\"fine\"", "=\"coarse\""),
+                CONSTANT_CROZIER.to_string(),
+            ),
+            (
+                CONSTANT_FERN.replace("    mist_mode", "    fan_speed=3,\n    mist_mode"),
+                CONSTANT_CROZIER.to_string(),
+            ),
+            (format!("{CONSTANT_FERN}x"), format!("{CONSTANT_CROZIER}y")),
+            (
+                CONSTANT_FERN.replace("client.beds.list_beds(", "client = FernApi("),
+                CONSTANT_CROZIER.replace("client.beds.list_beds(", "client = FernApi("),
+            ),
+            (
+                CONSTANT_FERN.replace("`typing.Literal`", "`str`"),
+                CONSTANT_CROZIER.to_string(),
+            ),
+        ] {
+            assert_eq!(
+                region_of(rule, "reference.md", &fern, &crozier, &context),
+                None,
+                "{fern}"
+            );
+        }
+        assert_eq!(
+            region_of(rule, "client.py", CONSTANT_FERN, CONSTANT_CROZIER, &context),
+            None
+        );
+        assert_eq!(
+            region_of(
+                rule,
+                "README.md",
+                CONSTANT_FERN,
+                CONSTANT_CROZIER,
+                &Context::default()
+            ),
+            None
+        );
+        assert_eq!(
+            region_of(rule, "README.md", CONSTANT_FERN, CONSTANT_FERN, &context),
+            None
+        );
+    }
+
+    const NULLABLE_FERN: &str = "client.beds.list_beds(\n    rows=[\n        None\n    ],\n)\n\n**rows:** `typing.Optional[typing.Union[typing.Optional[int], typing.Sequence[typing.Optional[int]]]]` \n";
+    const NULLABLE_CROZIER: &str = "client.beds.list_beds(\n    rows=[\n        1\n    ],\n)\n\n**rows:** `typing.Optional[typing.Union[int, typing.Sequence[int]]]` \n";
+
+    #[test]
+    fn the_nullable_items_rule_takes_only_the_documented_parameters() {
+        let context = Context::from_sources([("reference.md", NULLABLE_FERN)], []);
+        assert_eq!(
+            context.reference_nullable_items(),
+            &BTreeSet::from(["rows".to_string()])
+        );
+        let rule: RegionRule = nullable_items_docs;
+        assert!(region_of(
+            rule,
+            "reference.md",
+            NULLABLE_FERN,
+            NULLABLE_CROZIER,
+            &context
+        )
+        .is_some());
+        // The README carries only the worked call.
+        let call = |text: &str| text.split("\n\n").next().unwrap().to_string();
+        assert!(region_of(
+            rule,
+            "README.md",
+            &call(NULLABLE_FERN),
+            &call(NULLABLE_CROZIER),
+            &context
+        )
+        .is_some());
+        for (fern, crozier) in [
+            // Another parameter, another type, one more difference, the same
+            // file on both sides.
+            (
+                NULLABLE_FERN.replace("rows", "pots"),
+                NULLABLE_CROZIER.replace("rows", "pots"),
+            ),
+            (
+                NULLABLE_FERN.to_string(),
+                NULLABLE_CROZIER.replace(
+                    "typing.Union[int, typing.Sequence[int]]",
+                    "typing.Sequence[int]",
+                ),
+            ),
+            (format!("{NULLABLE_FERN}x"), format!("{NULLABLE_CROZIER}y")),
+            (NULLABLE_FERN.to_string(), NULLABLE_FERN.to_string()),
+        ] {
+            assert_eq!(
+                region_of(rule, "reference.md", &fern, &crozier, &context),
+                None,
+                "{fern}"
+            );
+        }
+        assert_eq!(
+            region_of(rule, "client.py", NULLABLE_FERN, NULLABLE_CROZIER, &context),
+            None
+        );
+        assert!(Context::default().reference_nullable_items().is_empty());
+        let reference = tempfile::tempdir().unwrap();
+        std::fs::write(reference.path().join("reference.md"), NULLABLE_FERN).unwrap();
+        let crozier = tempfile::tempdir().unwrap();
+        assert_eq!(
+            Context::from_trees(reference.path(), crozier.path()).reference_nullable_items(),
+            &BTreeSet::from(["rows".to_string()])
+        );
     }
 
     #[test]

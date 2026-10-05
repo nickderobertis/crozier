@@ -162,11 +162,20 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 3 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 5 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
+
+### `constant-header-docs-arguments`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operation header whose schema defaults to a string (a plain string or an inline string enum, required or not), which the method does not take and the request sends as that constant: `README.md` and `reference.md`.
+- **Fern writes:** Method snippets passing the header as an argument with its default (`mist_mode="fine"`), and a `reference.md` parameter block documenting it under the method as `typing.Literal`.
+- **crozier writes:** Method snippets and parameter lists without it.
+- **Why:** The examples contradict the generated code: the method has no such argument, so the documented call raises `TypeError` for an unexpected keyword argument, and `reference.md` documents an argument the method does not have.
+- **Evidence:** [`docs/departures/evidence/constant-header-docs-arguments.md`](../../docs/departures/evidence/constant-header-docs-arguments.md)
 
 ### `fern-metadata-generator-config`
 
@@ -203,6 +212,15 @@ when the two differ.
 - **crozier writes:** The default passed by keyword, `FernApi(edition="v2",)`.
 - **Why:** The generated constructor is keyword-only, so the example call does not match its signature: it raises `TypeError` (`takes 1 positional argument but 2 were given`).
 - **Evidence:** [`docs/departures/evidence/lifted-base-path-positional-example.md`](../../docs/departures/evidence/lifted-base-path-positional-example.md)
+
+### `nullable-items-docs`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A query parameter whose inline array `items` admit `null` (`nullable: true`, or a 3.1 `type` list naming `null`), typed `Optional[Union[T, Sequence[T]]]` in the signature: `README.md` and `reference.md`.
+- **Fern writes:** `reference.md` documenting the parameter as `Optional[Union[Optional[T], Sequence[Optional[T]]]]`, and a required one's worked call passing `[None]`.
+- **crozier writes:** The signature's own type, and the element Fern's worked call passes for the same items without `nullable` (`[1]`, `["trays"]`).
+- **Why:** The docs contradict the generated code: `reference.md` documents a type the method's signature does not have, and the documented call passes `None` items that the signature's `Sequence[T]` rejects.
+- **Evidence:** [`docs/departures/evidence/nullable-items-docs.md`](../../docs/departures/evidence/nullable-items-docs.md)
 
 ### `readme-client-class-casing`
 
