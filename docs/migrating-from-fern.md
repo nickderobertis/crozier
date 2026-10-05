@@ -101,9 +101,9 @@ Edits a build applies after generation (to `core/http_client.py`,
 team's: `crozier compare` checks the generators' output before any patch, so
 keep the patch step after `crozier generate` as it was after `fern generate`.
 crozier's output equals Fern's under the byte-match rules, which set aside
-comments and a few normalized lines
-([`matching.md`](matching.md#how-the-comparison-works)), so a patch that applied
-to Fern's output applies to crozier's unless its context lines are among those.
+comments and the [intended departures](departures/README.md) `crozier compare`
+lists line by line, so a patch that applied to Fern's output applies to
+crozier's unless its context lines are among those.
 
 ### Find Fern setups that scripts create
 

@@ -175,7 +175,7 @@ mod tests {
         ] {
             assert!(required.contains(&key), "{key} not required: {required:?}");
         }
-        assert_eq!(s["properties"]["schema_version"]["const"], 1);
+        assert_eq!(s["properties"]["schema_version"]["const"], 2);
         assert_eq!(
             s["properties"]["exit_code"]["enum"],
             serde_json::json!([0, 3, 4])

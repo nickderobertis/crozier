@@ -304,6 +304,9 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e fiware_context_generator_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e hasura_metadata_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zoonk_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openfoodfacts_taxonomy_editor_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e qontract_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oal_example_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecosystem_client_class_name_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e yourbrand_ticketing_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e peopledatalabs_matches_fern_output
@@ -448,10 +451,10 @@ fixtures-candidates corpus="":
     just fixtures-gaps "{{corpus}}"
 
 # Mismatch-investigation aid: print the
-# normalized unified diff of every committed fixture file crozier does NOT
-# reproduce byte-for-byte — exactly the bytes the gate compares (`-` = Fern
-# golden, `+` = crozier; comments, SDK headers, and __init__ import order already
-# normalized out), so what you see is what to fix. Optional args narrow scope:
+# unified diff of every committed fixture file crozier does NOT reproduce
+# byte-for-byte — exactly what the gate's comparison engine decides on (`-` = Fern
+# golden, `+` = crozier; comments stripped and every catalog departure already
+# applied), so what you see is what to fix. Optional args narrow scope:
 # `just fixtures-diff <corpus> <file-substring>`. Not part of `check`. Run it to
 # see WHY a file doesn't match; see tests/fixtures/AGENTS.md. Same drift guard as
 # `fixtures-gaps`: assert the report's summary line so a renamed
@@ -475,6 +478,34 @@ fixtures-diff corpus="" file="":
       echo "fixtures-diff: no report from report_fixture_diffs — renamed/removed in tests/e2e.rs, or the corpus filter matched nothing" >&2
       exit 1
     fi
+
+# Regenerate the per-golden departure ledger, tests/fixtures/departures-ledger.tsv:
+# run every golden comparison with CROZIER_RECORD_DEPARTURES set, so each records
+# the departures the engine applies instead of holding them to the ledger, then
+# merge the records into the ledger (`write_departures_ledger`). Run it after a
+# change that adds, moves or removes a departure, and review the diff before
+# committing; see docs/departures/README.md. CROZIER_REQUIRE_CORPUS makes a
+# missing committed source fail rather than skip, so no golden's rows are lost.
+# The ledger gate's own scratch tests expect ledger failures, so they are not run.
+departures-ledger:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    records=$(mktemp -d "${TMPDIR:-/tmp}/crozier-departures.XXXXXX")
+    log=$(mktemp "${TMPDIR:-/tmp}/crozier-departures-log.XXXXXX")
+    trap 'rm -rf "$records" "$log"' EXIT
+    if ! CROZIER_REQUIRE_CORPUS=1 CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked \
+      --no-fail-fast -E 'binary(e2e) and not test(/^departures_ledger_gate::/)' >"$log" 2>&1; then
+      cat "$log" >&2
+      echo "departures-ledger: a comparison failed while recording (above); fix it, then rerun" >&2
+      exit 1
+    fi
+    if ! CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked --run-ignored only \
+      -E 'binary(e2e) and test(=departures_ledger_gate::write_departures_ledger)' >"$log" 2>&1; then
+      cat "$log" >&2
+      echo "departures-ledger: the merged ledger was refused (above); fix the cause, then rerun" >&2
+      exit 1
+    fi
+    echo "departures-ledger: wrote tests/fixtures/departures-ledger.tsv ($(($(wc -l < tests/fixtures/departures-ledger.tsv) - 1)) rows)"
 
 # Measure what the committed Fern GOLDENS reach in src/, apart from what
 # crozier's own tests reach — the number that answers "which fixture next?".

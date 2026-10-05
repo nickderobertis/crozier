@@ -643,7 +643,11 @@ fn example_import_cmp(left: &str, right: &str) -> Ordering {
     if right_prefix.is_some_and(|prefix| left.starts_with(prefix)) {
         return Ordering::Greater;
     }
-    left.cmp(right)
+    // isort orders the names case-insensitively, as Fern's examples do:
+    // `OcmGroupsCluster` comes before `OcmGroupUser`.
+    left.to_ascii_lowercase()
+        .cmp(&right.to_ascii_lowercase())
+        .then_with(|| left.cmp(right))
 }
 
 /// Render a resolved type to a [`Doc`] expression, registering needed imports.
@@ -1894,8 +1898,8 @@ fn types_init_file(
     }
 
     // TYPE_CHECKING imports are emitted alphabetically. Their order is never
-    // executed and the e2e canonicalizes it with isort, so crozier sorts
-    // straightforwardly rather than reproducing Fern's traversal order.
+    // executed, so crozier sorts straightforwardly rather than reproducing Fern's
+    // traversal order: the `init-type-checking-import-order` departure.
     let mut ordered = names.clone();
     ordered.sort();
 
@@ -1932,7 +1936,7 @@ fn types_init_file(
 
 /// The `{tag}/types/__init__.py` lazy loader over a tag's hoisted inline types.
 /// Each type sits in its own module (`.inlined_search_response`); the block is
-/// alphabetical (the e2e canonicalizes order with isort).
+/// alphabetical (the `init-type-checking-import-order` departure).
 fn tag_types_init_file(
     env: &Environment<'static>,
     pkg: &str,
@@ -3168,8 +3172,13 @@ const SDK_VERSION_PLACEHOLDER: &str = "@@CROZIER_SDK_VERSION@@";
 /// The import package name (directory under `src/`) placeholder in `pyproject.toml`.
 const PACKAGE_PLACEHOLDER: &str = "@@CROZIER_PACKAGE@@";
 /// Default SDK version stamped into the runtime (Fern uses `0.0.0` when none is
-/// configured). Not yet exposed as a flag.
-const DEFAULT_SDK_VERSION: &str = "0.0.0";
+/// configured). Not yet exposed as a flag. The `sdk-name-version-headers`
+/// departure recognises exactly this value.
+pub(crate) const DEFAULT_SDK_VERSION: &str = "0.0.0";
+
+/// The one `.fern/metadata.json` crozier writes, whatever it is configured with;
+/// the `fern-metadata-generator-config` departure recognises exactly this record.
+pub(crate) const FERN_METADATA_RECORD: &str = include_str!("../assets/scaffolding/metadata.json");
 
 /// Project scaffolding Fern emits verbatim apart from project/package names and
 /// the SDK version. The Python test/default-client templates carry the same
@@ -3246,7 +3255,7 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
     files.extend([
         GeneratedFile {
             path: PathBuf::from(".fern/metadata.json"),
-            contents: include_str!("../assets/scaffolding/metadata.json").to_string(),
+            contents: FERN_METADATA_RECORD.to_string(),
         },
         GeneratedFile {
             path: PathBuf::from("CONTRIBUTING.md"),
@@ -3641,9 +3650,9 @@ fn client_wrapper_file(
         )
         .map(|name| format!("{name}={name}, "))
         .collect();
-    // crozier brands its own SDK-identity headers rather than impersonating Fern;
-    // the e2e byte-match normalizes the `X-Crozier-` prefix back to `X-Fern-` so
-    // the comparison against Fern's fixtures is otherwise exact (see docs/matching).
+    // crozier brands its own SDK-identity headers rather than impersonating Fern:
+    // the `sdk-identity-header-prefix` departure (docs/departures/README.md),
+    // which the comparison recognises line by line.
     // The SDK-identity pair names the published distribution, so only the
     // packaged form (`sdk_name` present) sends it.
     let sdk_identity = sdk_name.map_or_else(String::new, |name| {
@@ -10563,7 +10572,7 @@ pub fn clean_flat_tree(root: &std::path::Path) -> Result<()> {
 /// The lazy-loader `__init__.py` aggregators *are* formatted: they overflow (long
 /// `_dynamic_imports`/`__all__`/import lines) and `ruff` wraps them like any other
 /// file. Their leading blank lines collapse under `ruff`, but that is a
-/// comment-strip artifact the e2e normalizes on both sides (see `normalize_init`),
+/// comment-strip artifact the comparison drops on both sides (`crate::parity`),
 /// so the byte match is preserved.
 fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
@@ -11221,6 +11230,21 @@ mod tests {
             ),
             Greater
         );
+    }
+
+    #[test]
+    fn example_imports_order_names_case_insensitively() {
+        use std::cmp::Ordering::{Greater, Less};
+
+        assert_eq!(
+            example_import_cmp("RouteGroupsTable", "RouteGroupUser"),
+            Less
+        );
+        assert_eq!(
+            example_import_cmp("RouteGroupUser", "RouteGroupsTable"),
+            Greater
+        );
+        assert_eq!(example_import_cmp("FernApi", "fernApi"), Less);
     }
 
     #[test]

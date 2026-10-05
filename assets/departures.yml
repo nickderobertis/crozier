@@ -1,0 +1,98 @@
+# The catalog of crozier's intended departures from Fern's output: every place
+# crozier writes something other than what Fern writes, on purpose. It is
+# compiled into the binary (src/departures.rs), and every comparison of crozier's
+# output with Fern's — `crozier compare` and every golden comparison in the test
+# suite — applies it through one engine (src/parity.rs). Each entry's rule, which
+# recognises exactly Fern's construct and crozier's replacement in a pair of
+# files, is the function of the same id in src/departures.rs.
+#
+# docs/departures/README.md holds the rendered reference (a drift test keeps it
+# equal to this file), what each key holds, the defect rule, and how a fix adds
+# an entry. Entries are sorted by `id`.
+
+- id: fern-metadata-generator-config
+  kind: provenance
+  trigger: >-
+    `.fern/metadata.json` at the SDK root, when the reference was generated with
+    any generator configuration other than `pydantic_config.enum_type:
+    python_enums` alone (crozier's `client-class-name`, `enum-type: literals`,
+    `extra-fields` or `default-max-retries`, for example).
+  fern: >-
+    A `generatorConfig` object recording the configuration Fern's generator ran
+    with, or no `generatorConfig` key under Fern's defaults.
+  crozier: >-
+    The one fixed metadata record crozier always writes, whose `generatorConfig`
+    is `pydantic_config.enum_type: python_enums` whatever crozier was configured
+    with.
+  reason: >-
+    The block records how a generator was run, not anything the SDK does;
+    crozier ships one fixed provenance record rather than imitating the
+    configuration of a Fern run it did not make.
+  evidence: docs/departures/evidence/fern-metadata-generator-config.md
+
+- id: init-type-checking-import-order
+  kind: ordering
+  trigger: >-
+    A lazy-loading `__init__.py` whose `if typing.TYPE_CHECKING:` block imports
+    from several sources.
+  fern: >-
+    The block's imports in the order Fern's generator collected them.
+  crozier: >-
+    The same import statements, in crozier's sorted order.
+  reason: >-
+    The block exists only for type checkers and is never executed, and the two
+    blocks import exactly the same names: sorted with ruff's isort, they are
+    identical. crozier emits a deterministic sorted order rather than
+    reproducing Fern's collection order.
+  evidence: docs/departures/evidence/init-type-checking-import-order.md
+
+- id: readme-client-class-casing
+  kind: fern-defect
+  trigger: >-
+    No `client-class-name` set, and an organization (crozier's package name)
+    with capitals inside it, such as `LanternHarbor`: `README.md`, and the
+    environment snippet of `reference.md`.
+  fern: >-
+    Snippets naming the root client class, its async twin and its environment
+    class with the inner capitals lowered (`LanternharborApi`,
+    `AsyncLanternharborApi`, `LanternharborApiEnvironment`), which the package
+    does not define.
+  crozier: >-
+    The class names the package defines (`LanternHarborApi`,
+    `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`).
+  reason: >-
+    An example that imports a class the generated package does not define
+    contradicts the generated code: the import fails, so the snippet cannot run.
+  evidence: docs/departures/evidence/readme-client-class-casing.md
+
+- id: sdk-identity-header-prefix
+  kind: branding
+  trigger: >-
+    Every SDK: the default headers in `core/client_wrapper.py`.
+  fern: >-
+    `X-Fern-Language`, `X-Fern-Runtime`, `X-Fern-Platform` and, in the packaged
+    layout, `X-Fern-SDK-Name` and `X-Fern-SDK-Version`.
+  crozier: >-
+    The same headers with the same values, named `X-Crozier-*`.
+  reason: >-
+    crozier identifies itself to the API it calls rather than impersonating
+    Fern's generator.
+  evidence: docs/departures/evidence/sdk-identity-header-prefix.md
+
+- id: sdk-name-version-headers
+  kind: packaging
+  trigger: >-
+    The packaged layout's `core/client_wrapper.py`, against a reference whose
+    publishing metadata differs from crozier's: one generated without it, or
+    published under another name or version.
+  fern: >-
+    No `X-Fern-SDK-Name` / `X-Fern-SDK-Version` header, or one carrying the
+    reference's published distribution name and release version.
+  crozier: >-
+    `X-Crozier-SDK-Name` naming crozier's project name and
+    `X-Crozier-SDK-Version` carrying crozier's fixed packaged version, `0.0.0`.
+  reason: >-
+    crozier always writes the packaged wrapper's identity pair from its own
+    settings; which name and version a reference was published under is
+    release metadata outside the generated code.
+  evidence: docs/departures/evidence/sdk-name-version-headers.md

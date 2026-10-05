@@ -8,6 +8,7 @@
 use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
+use crozier::departures::Context;
 use crozier::parity::{self, Difference};
 use predicates::prelude::*;
 
@@ -42,6 +43,17 @@ mod default_max_retries;
 /// Non-default settings against Fern's overlay goldens (`expected-literals/`, …).
 #[path = "e2e/overlay_goldens.rs"]
 mod overlay_goldens;
+
+/// The per-golden ledger of intended departures every golden comparison holds
+/// its observed departures to.
+#[path = "e2e/departures_ledger.rs"]
+mod departures_ledger;
+
+use departures_ledger::{GoldenLedger, Ledger, Observed};
+
+/// The ledger's contract, driven through the gates' own comparison.
+#[path = "e2e/departures_ledger_gate.rs"]
+mod departures_ledger_gate;
 
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
@@ -844,6 +856,184 @@ fn fixture_dir(api: &str) -> PathBuf {
         .join(api)
 }
 
+/// The repository's departure ledger, loaded once per test process against
+/// every golden this suite compares; a ledger that breaks its contract fails
+/// whichever comparison loads it first, naming each broken row.
+fn departure_ledger() -> &'static Ledger {
+    static LEDGER: std::sync::OnceLock<Ledger> = std::sync::OnceLock::new();
+    LEDGER.get_or_init(|| {
+        load_departure_ledger(Path::new(env!("CARGO_MANIFEST_DIR"))).unwrap_or_else(|failures| {
+            panic!(
+                "{} breaks its contract (docs/departures/README.md):\n{}",
+                departures_ledger::LEDGER,
+                failures.join("\n")
+            )
+        })
+    })
+}
+
+/// Require the committed inventory to record `golden`, the tree a comparison
+/// is about to read, so the ledger is validated against every golden read.
+fn assert_inventoried(golden: &str) {
+    assert!(
+        departure_ledger().compares(golden),
+        "{golden} is not in {}; regenerate it (see compared_goldens_inventory_is_current)",
+        departures_ledger::INVENTORY
+    );
+}
+
+/// `root`'s ledger, validated against `root`'s committed inventory of compared
+/// goldens and the catalog — the one load every comparison goes through.
+fn load_departure_ledger(root: &Path) -> Result<Ledger, Vec<String>> {
+    Ledger::load(root)
+}
+
+/// The inventory of compared goldens, derived from the comparisons' own
+/// registrations under `root`: each registered corpus's `expected/` and each
+/// overlay golden of one, with that corpus's file-level carve-outs; each flat
+/// golden; each probe, authored-probe, hand-written and measured
+/// parameter-lowering tree; and each Fern
+/// reference tree a departure's evidence holds, which `crozier compare` reads in
+/// `departures_ledger_gate`. An overlay
+/// golden holds the files it carries but its manifest; a file it takes from
+/// `expected/` unchanged is accounted for under `expected/`. The committed
+/// [`departures_ledger::INVENTORY`] is held to this by
+/// `compared_goldens_inventory_is_current`.
+fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
+    let mut inventory = departures_ledger::Inventory::default();
+    let mut add = |golden: String, compared: departures_ledger::ComparedGolden| {
+        inventory.goldens.insert(golden, compared);
+    };
+    for corpus in registered_diff_corpora() {
+        let golden = format!("tests/fixtures/{}/expected", corpus.api);
+        if root.join(&golden).is_dir() {
+            add(
+                golden,
+                departures_ledger::ComparedGolden {
+                    excluded: Vec::new(),
+                    carve_outs: recorded_carve_outs(corpus),
+                },
+            );
+        }
+    }
+    for (golden, corpus, excluded) in overlay_goldens::compared() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded,
+                carve_outs: recorded_carve_outs(corpus),
+            },
+        );
+    }
+    for golden in FLAT_GOLDENS {
+        add(
+            format!("tests/fixtures/{}/{FLAT_GOLDEN_DIR}", golden.fixture),
+            departures_ledger::ComparedGolden::default(),
+        );
+    }
+    for (dir, tree) in [
+        (AUTHORED_PROBES_DIR, "fern-expected"),
+        (HANDWRITTEN_DIR, "fern-expected"),
+        (PARAMETER_LOWERING_DIR, "fern-expected"),
+        (
+            crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
+            departures_ledger_gate::REFERENCE_TREE,
+        ),
+    ] {
+        let Ok(entries) = std::fs::read_dir(root.join(dir)) else {
+            continue;
+        };
+        for entry in entries.filter_map(Result::ok) {
+            if entry.path().join(tree).is_dir() {
+                add(
+                    format!("{dir}/{}/{tree}", entry.file_name().to_string_lossy()),
+                    departures_ledger::ComparedGolden::default(),
+                );
+            }
+        }
+    }
+    let manifest = std::fs::read_to_string(root.join(PROBE_EXPECTED_DIR).join("MANIFEST.tsv"))
+        .unwrap_or_default();
+    for proof in parse_probe_manifest(&manifest).0 {
+        match proof.form.as_str() {
+            "absent-tree" => add(proof.artifact, departures_ledger::ComparedGolden::default()),
+            "differential" => {
+                add(proof.artifact, departures_ledger::ComparedGolden::default());
+                add(
+                    format!("{PROBE_EXPECTED_DIR}/{}", proof.control),
+                    departures_ledger::ComparedGolden::default(),
+                );
+            }
+            _ => {}
+        }
+    }
+    inventory
+}
+
+/// Corpus `c`'s file-level carve-outs, each as its slug in
+/// [`departures_ledger::CARVE_OUT_KINDS`] and the files it covers.
+fn corpus_carve_outs(c: &Corpus) -> Vec<(&'static str, Vec<&'static str>)> {
+    vec![
+        ("unmatched", c.unmatched.to_vec()),
+        ("crozier-only", crozier_only_files(c).to_vec()),
+        (
+            "pinned",
+            packaged_expectations(c)
+                .iter()
+                .map(|expectation| expectation.path)
+                .collect(),
+        ),
+        ("scaffolding", repository_scaffolding(c).to_vec()),
+    ]
+}
+
+/// [`corpus_carve_outs`] as the inventory records them: only the kinds that
+/// cover a file, and never repository scaffolding — repository-only files
+/// crozier never emits, so an entry naming one already fails at every
+/// comparison (crozier wrote no such file) and at the corpus gate's own
+/// carve-out check, without the inventory restating their paths.
+fn recorded_carve_outs(c: &Corpus) -> std::collections::BTreeMap<String, Vec<String>> {
+    corpus_carve_outs(c)
+        .into_iter()
+        .filter(|(slug, files)| *slug != "scaffolding" && !files.is_empty())
+        .map(|(slug, files)| {
+            (
+                slug.to_string(),
+                files.into_iter().map(str::to_string).collect(),
+            )
+        })
+        .collect()
+}
+
+/// `path`'s repository-relative, `/`-separated spelling — how a ledger row
+/// names a golden. A tree outside the repository keeps its absolute spelling,
+/// which no row names.
+fn golden_path(path: &Path) -> String {
+    path.strip_prefix(env!("CARGO_MANIFEST_DIR"))
+        .map(|rel| {
+            rel.components()
+                .map(|part| part.as_os_str().to_string_lossy())
+                .collect::<Vec<_>>()
+                .join("/")
+        })
+        .unwrap_or_else(|_| path.display().to_string())
+}
+
+/// The rows `ledger` holds for corpus `c`'s golden `golden`, refused when one
+/// names a file `c` already carves out at file level.
+fn corpus_golden_ledger(
+    ledger: &Ledger,
+    golden: &str,
+    c: &Corpus,
+) -> Result<GoldenLedger, Vec<String>> {
+    let carve_outs = corpus_carve_outs(c);
+    let carve_outs: Vec<(&str, &[&str])> = carve_outs
+        .iter()
+        .map(|(slug, files)| (*slug, files.as_slice()))
+        .collect();
+    ledger.golden(golden, &carve_outs)
+}
+
 const KNOWN_FERN_FAILURE_FILE: &str = "known-fern-failure.json";
 
 #[derive(Debug)]
@@ -1039,15 +1229,27 @@ fn assert_corpus_matches(c: &Corpus) {
         "{} has no Fern golden to compare",
         c.api
     );
+    let golden = golden_path(&expected_root);
+    assert_inventoried(&golden);
     let out = generate_corpus(c);
-    assert_generated_tree_matches(c, &expected_root, out.path());
+    let ledger = corpus_golden_ledger(departure_ledger(), &golden, c)
+        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    assert_generated_tree_matches(c, &ledger, &expected_root, out.path());
 }
 
 /// Require crozier's generated tree `out` for `c` to reproduce the Fern tree
 /// `expected_root`, under the corpus's declared residuals — the comparison
 /// [`assert_corpus_matches`] makes against `expected/`, shared with the overlay
-/// gate, which makes it against a corpus's materialized overlay golden.
-fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
+/// gate, which makes it against a corpus's materialized overlay golden. The
+/// departures the comparison applies are held to `ledger`, the golden's rows.
+fn assert_generated_tree_matches(
+    c: &Corpus,
+    ledger: &GoldenLedger,
+    expected_root: &Path,
+    out: &Path,
+) {
+    let context = Context::from_trees(expected_root, out);
+    let mut observed = Vec::new();
     let repository_scaffolding = repository_scaffolding(c);
     let packaged_expectations = packaged_expectations(c);
     for rel in walk_files(expected_root) {
@@ -1063,14 +1265,14 @@ fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
             .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
         let expected = std::fs::read_to_string(expected_root.join(&rel))
             .unwrap_or_else(|e| panic!("missing fixture {rel}: {e}"));
-        if !generated_matches_fixture(&rel, &generated, &expected) {
+        let compared = compare_with_golden(&context, &rel, &generated, &expected);
+        observed.extend(observed_in(&rel, &compared));
+        if let Some(diff) = compared.diff() {
             // Show the exact gate-relevant diff inline instead of a bare "does not
-            // match" — the normalized bytes the comparison actually decides on, so a
-            // regression is diagnosable straight from the test output (no second
-            // generate-and-diff pass). `just fixtures-diff` prints the same thing on
-            // demand for any divergent file.
-            let (actual, expected) = normalized_pair(&rel, &generated, &expected);
-            let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
+            // match" — what the engine decided on, every catalog departure already
+            // applied, so a regression is diagnosable straight from the test output
+            // (no second generate-and-diff pass). `just fixtures-diff` prints the
+            // same thing on demand for any divergent file.
             panic!(
                 "generated {rel} does not match the Fern fixture \
                  (normalized diff; `-` = Fern golden, `+` = crozier). \
@@ -1081,6 +1283,8 @@ fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
             );
         }
     }
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 
     for rel in repository_scaffolding {
         assert!(
@@ -1103,6 +1307,7 @@ fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
         });
         assert!(
             !generated_matches_fixture(
+                &context,
                 rel,
                 std::str::from_utf8(&generated).expect("generated SDK files are UTF-8"),
                 &expected
@@ -1164,7 +1369,7 @@ fn assert_generated_tree_matches(c: &Corpus, expected_root: &Path, out: &Path) {
             .unwrap_or_else(|e| panic!("unmatched path is not in the Fern fixture: {rel}: {e}"));
         if let Ok(generated) = std::fs::read_to_string(out.join(rel)) {
             assert!(
-                !generated_matches_fixture(rel, &generated, &expected),
+                !generated_matches_fixture(&context, rel, &generated, &expected),
                 "{rel} now matches Fern — remove it from `unmatched`"
             );
         }
@@ -1276,8 +1481,9 @@ class SlotStart(enum.StrEnum):
         .success();
     let rel = "src/fern/types/slot_start.py";
     let generated = std::fs::read_to_string(out.path().join("sdk").join(rel)).expect("enum module");
-    let (generated, expected) = normalized_pair(rel, &generated, FERN);
-    assert_eq!(generated, expected);
+    let compared = compare_with_golden(&Context::default(), rel, &generated, FERN);
+    assert_eq!(compared.diff(), None);
+    assert!(compared.departures.is_empty(), "{compared:?}");
 }
 
 const PROBE_EXPECTED_DIR: &str = "docs/openapi-surface/probe-expected";
@@ -1622,14 +1828,17 @@ fn probe_fern_pins() -> (String, String) {
 /// crozier over one probe document, byte-compared against its committed tree
 /// under the corpus gate's own normalization.
 fn probe_tree_failures(key: &str, probe: &Path, expected_root: &Path) -> Vec<String> {
-    filtered_tree_failures(key, probe, expected_root, &[])
+    filtered_tree_failures(key, &golden_path(expected_root), probe, expected_root, &[])
 }
 
 /// [`probe_tree_failures`] with crozier filtered to `audiences`, each passed as
 /// `--audience` — the list a hand-written fixture's `evidence.toml` gave Fern's
-/// generator group. Empty, it is the unfiltered generation.
+/// generator group. Empty, it is the unfiltered generation. `golden` is how the
+/// ledger names the tree: a case's repository-relative path, whichever copy of
+/// it `expected_root` is.
 fn filtered_tree_failures(
     key: &str,
+    golden: &str,
     probe: &Path,
     expected_root: &Path,
     audiences: &[String],
@@ -1650,28 +1859,68 @@ fn filtered_tree_failures(
             String::from_utf8_lossy(&result.stderr)
         )];
     }
-    let expected_files = walk_files(expected_root);
-    let generated_files = walk_files(out.path());
-    if generated_files != expected_files {
-        return vec![format!(
-            "{key}: crozier's file set over {} differs from {}",
-            probe.display(),
-            expected_root.display()
-        )];
-    }
+    let ledger = match departure_ledger().golden(golden, &[]) {
+        Ok(ledger) => ledger,
+        Err(failures) => return failures,
+    };
+    golden_tree_failures(
+        key,
+        &probe.display().to_string(),
+        &ledger,
+        expected_root,
+        out.path(),
+    )
+}
+
+/// Every way crozier's tree `out` differs from the committed Fern tree
+/// `expected_root` under the comparison engine: a different file set, a file
+/// that still differs once the catalog's departures are applied, or a
+/// departure `ledger`, the golden's rows, does not record (or records but the
+/// engine no longer applies). The comparison behind every probe, authored-probe
+/// and hand-written gate; `source` names what crozier generated `out` from.
+fn golden_tree_failures(
+    key: &str,
+    source: &str,
+    ledger: &GoldenLedger,
+    expected_root: &Path,
+    out: &Path,
+) -> Vec<String> {
     let mut failures = Vec::new();
+    let expected_files = walk_files(expected_root);
+    let generated_files = walk_files(out);
+    if generated_files != expected_files {
+        failures.push(format!(
+            "{key}: crozier's file set over {source} differs from {}",
+            expected_root.display()
+        ));
+        return failures;
+    }
+    let context = Context::from_trees(expected_root, out);
+    let mut observed = Vec::new();
     for rel in expected_files {
-        let generated = std::fs::read_to_string(out.path().join(&rel)).unwrap_or_default();
+        let generated = std::fs::read_to_string(out.join(&rel)).unwrap_or_default();
         let expected = std::fs::read_to_string(expected_root.join(&rel)).unwrap_or_default();
-        if !generated_matches_fixture(&rel, &generated, &expected) {
-            let (actual, expected) = normalized_pair(&rel, &generated, &expected);
-            let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
+        let compared = match parity::compare_file(&context, &rel, &generated, &expected) {
+            Ok(compared) => compared,
+            Err(error) => {
+                failures.push(format!("{key}: {rel}: {error}"));
+                continue;
+            }
+        };
+        observed.extend(observed_in(&rel, &compared));
+        if let Some(diff) = compared.diff() {
             failures.push(format!(
                 "{key}: generated {rel} differs from the committed Fern measurement \
                  (fix the generator, never the measurement)\n{diff}"
             ));
         }
     }
+    failures.extend(
+        ledger
+            .check(&observed, &|_| true)
+            .into_iter()
+            .map(|failure| format!("{key}: {failure}")),
+    );
     failures
 }
 
@@ -1687,10 +1936,11 @@ fn differential_tree_failures(key: &str, tree: &Path, control_tree: &Path) -> Ve
         )];
     }
     let mut failures = Vec::new();
+    let context = Context::from_trees(control_tree, tree);
     for rel in files {
         let left = std::fs::read_to_string(tree.join(&rel)).unwrap_or_default();
         let right = std::fs::read_to_string(control_tree.join(&rel)).unwrap_or_default();
-        if !generated_matches_fixture(&rel, &left, &right) {
+        if !generated_matches_fixture(&context, &rel, &left, &right) {
             failures.push(format!(
                 "{key}: the probe's and control's committed {rel} differ, so the feature is \
                  generation — remove the row and route it to a real specification"
@@ -1869,6 +2119,10 @@ fn sha256_matches_the_fips_180_4_test_vectors() {
 
 const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 
+/// The measured parameter-lowering cases `parameter_lowering_measurements_match_fern`
+/// compares, one directory per case.
+const PARAMETER_LOWERING_DIR: &str = "docs/fern-measurements/parameter-lowering";
+
 /// The naming tickets' (#350, #354, #357) authored probes are the case
 /// directories `376-<ticket>-<shape>`; `authored_probe_measurements_match_fern`
 /// byte-compares each against Fern's tree by default. A document Fern refused
@@ -1898,10 +2152,21 @@ const NAMING_REFUSALS: [(&str, &str, &str); 3] = [
     ),
 ];
 
+/// How the ledger names the authored-probe tree `tree`: by its case directory,
+/// whichever copy of the case `tree` sits in.
+fn authored_golden(tree: &Path) -> String {
+    let case = tree
+        .parent()
+        .and_then(Path::file_name)
+        .map(|case| case.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    format!("{AUTHORED_PROBES_DIR}/{case}/fern-expected")
+}
+
 /// Where pinned Fern generated, crozier byte-matches its tree over `probe` in
 /// both modes.
 fn authored_probe_tree_failures(case: &str, probe: &Path, tree: &Path) -> Vec<String> {
-    let mut failures = filtered_tree_failures(case, probe, tree, &[]);
+    let mut failures = filtered_tree_failures(case, &authored_golden(tree), probe, tree, &[]);
     let strict = tempfile::tempdir().expect("strict output tempdir");
     match probe_command(probe, strict.path())
         .arg("--fern-strict")
@@ -2166,7 +2431,13 @@ fn authored_probe_failures(root: &Path) -> Vec<String> {
             ));
             continue;
         }
-        failures.extend(filtered_tree_failures(&name, &spec, &expected, &[]));
+        failures.extend(filtered_tree_failures(
+            &name,
+            &authored_golden(&expected),
+            &spec,
+            &expected,
+            &[],
+        ));
     }
     failures
 }
@@ -2398,7 +2669,13 @@ fn handwritten_fixture_failures(root: &Path) -> Vec<String> {
                         .collect()
                 })
                 .unwrap_or_default();
-            failures.extend(filtered_tree_failures(&name, &spec, &expected, &audiences));
+            failures.extend(filtered_tree_failures(
+                &name,
+                &format!("{HANDWRITTEN_DIR}/{name}/fern-expected"),
+                &spec,
+                &expected,
+                &audiences,
+            ));
         }
     }
     failures
@@ -2477,8 +2754,7 @@ fn handwritten_documents(
 /// each case pins.
 #[test]
 fn parameter_lowering_measurements_match_fern() {
-    let root =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-measurements/parameter-lowering");
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(PARAMETER_LOWERING_DIR);
     let mut cases: Vec<PathBuf> = std::fs::read_dir(&root)
         .expect("the measurement directory exists")
         .filter_map(Result::ok)
@@ -2494,7 +2770,10 @@ fn parameter_lowering_measurements_match_fern() {
                 .file_name()
                 .map(|name| name.to_string_lossy().into_owned())
                 .unwrap_or_default();
-            filtered_tree_failures(&name, &case.join("openapi.yml"), &case.join("fern-expected"), &[])
+            {
+            let expected = case.join("fern-expected");
+            filtered_tree_failures(&name, &golden_path(&expected), &case.join("openapi.yml"), &expected, &[])
+        }
         })
         .collect();
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
@@ -3873,25 +4152,41 @@ fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
     Ok(out)
 }
 
-/// Whether crozier's `generated` output for `rel` equals the committed fixture
-/// under the gate's normalization — the single definition of "matches", used by
-/// both `assert_corpus_matches` and the gap reporter so they never drift. The
-/// rules (comments, SDK-identity headers, `__init__.py` import order, the
-/// metadata `generatorConfig`) live in `crozier::parity`, shared with
-/// `crozier compare`; see that module's docs and docs/matching.md.
-fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool {
-    let (actual, expected) = normalized_pair(rel, generated, expected);
-    actual == expected
+/// How crozier's `generated` output for `rel` compares with the committed
+/// fixture `expected` under the one comparison engine, `context` describing the
+/// two trees — the single definition of "matches" every comparison here and
+/// `crozier compare` share (`crozier::parity`; see docs/departures/README.md).
+/// Its diff is precisely what the engine decided on, never a raw diff polluted
+/// by comments or by a departure the catalog accounts for. Panics on a pair a
+/// rule cannot run on.
+fn compare_with_golden(
+    context: &Context,
+    rel: &str,
+    generated: &str,
+    expected: &str,
+) -> parity::FileComparison {
+    parity::compare_file(context, rel, generated, expected)
+        .unwrap_or_else(|error| panic!("{rel}: {error}"))
 }
 
-/// The exact `(actual, expected)` strings the gate compares for `rel`, after the
-/// per-file normalization described on [`generated_matches_fixture`] — the
-/// library's [`parity::normalized_pair`], panicking on a pair it cannot normalize.
-/// A printed diff is then precisely what the gate sees, never a raw diff polluted
-/// by comments, SDK-identity headers, or `__init__.py` import order that the gate
-/// already normalizes away.
-fn normalized_pair(rel: &str, generated: &str, expected: &str) -> (String, String) {
-    parity::normalized_pair(rel, generated, expected).unwrap_or_else(|error| panic!("{error}"))
+/// Whether crozier's `generated` output for `rel` matches the committed
+/// fixture once the catalog's departures are applied ([`compare_with_golden`]).
+fn generated_matches_fixture(
+    context: &Context,
+    rel: &str,
+    generated: &str,
+    expected: &str,
+) -> bool {
+    compare_with_golden(context, rel, generated, expected).matches()
+}
+
+/// Each departure `compared` applied in `rel`, as a ledger check reads it.
+fn observed_in(rel: &str, compared: &parity::FileComparison) -> Vec<Observed> {
+    compared
+        .departures
+        .iter()
+        .map(|departure| (rel.to_string(), departure.line, departure.id.to_string()))
+        .collect()
 }
 
 #[test]
@@ -4745,6 +5040,9 @@ const CORPORA: &[&Corpus] = &[
     &FIWARE_CONTEXT_GENERATOR,
     &HASURA_METADATA,
     &ZOONK,
+    &OPENFOODFACTS_TAXONOMY_EDITOR,
+    &QONTRACT_API,
+    &OAL_EXAMPLE,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7395,7 +7693,7 @@ const HUATUO_NODE_TREE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Lootlog's Battle Log API — corpus row 310, the publisher's own description.
+/// Lootlog's Battle Log API — corpus row 313, the publisher's own description.
 /// Its `POST /internal/delete-user-data` takes an optional header spelled
 /// `authorization` beside an `http: bearer` scheme, which Fern keeps as a method
 /// argument because only the exact spelling `Authorization` is the credential's.
@@ -7635,6 +7933,47 @@ const HASURA_METADATA: Corpus = Corpus {
 /// `oneOf` offers a closed empty object
 const ZOONK: Corpus = Corpus {
     api: "zoonk",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openfoodfacts-taxonomy-editor`: corpus row 310, the Open Food Facts
+/// taxonomy editor's API, whose discriminated search-filter members list
+/// `readOnly` properties in `required`
+const OPENFOODFACTS_TAXONOMY_EDITOR: Corpus = Corpus {
+    api: "openfoodfacts-taxonomy-editor",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `qontract-api`: corpus row 311, qontract-reconcile's Qontract API, whose
+/// task results' actions are `$ref` members tagging `action_type` with a
+/// one-value `enum` that `required` leaves out
+const QONTRACT_API: Corpus = Corpus {
+    api: "qontract-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `oal-example`: corpus row 312, the OAL project's example description,
+/// whose `obj3.stuff` property `anyOf` holds an inline `oneOf` member
+const OAL_EXAMPLE: Corpus = Corpus {
+    api: "oal-example",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -8424,6 +8763,35 @@ fn try_generate_flat(golden: &FlatGolden) -> Result<Option<tempfile::TempDir>, S
     Ok(Some(out))
 }
 
+/// [`parity::compare_trees`] of the Fern tree `expected_root` and crozier's
+/// `out` — the comparison the flat gate and the reporters print — with the
+/// departures it applied held to `ledger`, the golden's rows (or why they
+/// cannot be read), in the files `file_filter` keeps. Fails, naming each row,
+/// where the ledger disagrees.
+fn golden_differences(
+    expected_root: &Path,
+    out: &Path,
+    file_filter: Option<&str>,
+    include_text_diffs: bool,
+    ledger: Result<GoldenLedger, Vec<String>>,
+) -> Result<Vec<(String, Difference)>, String> {
+    let ledger = ledger.map_err(|failures| failures.join("\n"))?;
+    let compared = parity::compare_trees(expected_root, out, file_filter, include_text_diffs)?;
+    let observed: Vec<Observed> = compared
+        .departures
+        .into_iter()
+        .map(|departure| (departure.file, departure.line, departure.id))
+        .collect();
+    let failures = ledger.check(&observed, &|rel| {
+        file_filter.is_none_or(|filter| rel.contains(filter))
+    });
+    if failures.is_empty() {
+        Ok(compared.differences)
+    } else {
+        Err(failures.join("\n"))
+    }
+}
+
 /// Require crozier's `--layout flat` output to equal the flat golden file for
 /// file, in both directions, under the packaged goldens' normalization.
 fn assert_flat_golden_matches(fixture: &str) {
@@ -8444,8 +8812,15 @@ fn assert_flat_golden_matches(fixture: &str) {
         );
         return;
     };
-    let differences = parity::tree_differences(&expected_root, out.path(), None, true)
-        .unwrap_or_else(|error| panic!("{fixture}: {error}"));
+    assert_inventoried(&golden_path(&expected_root));
+    let differences = golden_differences(
+        &expected_root,
+        out.path(),
+        None,
+        true,
+        departure_ledger().golden(&golden_path(&expected_root), &[]),
+    )
+    .unwrap_or_else(|error| panic!("{fixture}: {error}"));
     let report: Vec<String> = differences
         .iter()
         .map(|(rel, difference)| match difference {
@@ -8620,6 +8995,7 @@ fn report_fixture_gaps() {
         let expected_root = fixture_dir(corpus.api).join("expected");
         let expected_files = walk_files(&expected_root);
         let out = generate_corpus(corpus);
+        let context = Context::from_trees(&expected_root, out.path());
         let confirmed: std::collections::HashSet<String> = expected_files
             .iter()
             .filter(|rel| {
@@ -8629,7 +9005,7 @@ fn report_fixture_gaps() {
                 ) else {
                     return false;
                 };
-                generated_matches_fixture(rel, &generated, &expected)
+                generated_matches_fixture(&context, rel, &generated, &expected)
             })
             .cloned()
             .collect();
@@ -8691,8 +9067,14 @@ fn report_fixture_gaps() {
         let out = try_generate_flat(golden)
             .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture))
             .expect("only flat goldens with an available spec are selected");
-        let differences = parity::tree_differences(&expected_root, out.path(), None, false)
-            .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
+        let differences = golden_differences(
+            &expected_root,
+            out.path(),
+            None,
+            false,
+            departure_ledger().golden(&golden_path(&expected_root), &[]),
+        )
+        .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
         let expected_files = walk_files(&expected_root).len();
         println!("\n=== {} ({FLAT_GOLDEN_DIR}) ===", golden.fixture);
         println!("  {expected_files} expected file(s).");
@@ -8777,9 +9159,9 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
 /// Mismatch-investigation aid — NOT a gate (ignored by default). Complementing
 /// [`report_fixture_gaps`], it
 /// prints the normalized unified diff of every committed fixture file crozier does
-/// NOT reproduce byte-for-byte — exactly the bytes the gate compares (comments,
-/// SDK-identity headers, and `__init__.py` import order already normalized out via
-/// [`normalized_pair`]), with `-` = Fern golden and `+` = crozier. This is the
+/// NOT reproduce byte-for-byte — exactly what the gate's engine decides on
+/// (comments stripped and every catalog departure applied, via
+/// [`golden_differences`]), with `-` = Fern golden and `+` = crozier. This is the
 /// "why doesn't this file match" loop as one command; run it via `just fixtures-diff`.
 ///
 /// Scope with two env vars (the `just` recipe forwards its positional args):
@@ -8858,11 +9240,12 @@ fn report_fixture_diffs() {
             println!("{}", known_fern_failure_marker(c, &known_failure));
             continue;
         }
-        let differences = match parity::tree_differences(
+        let differences = match golden_differences(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
             include_text_diffs,
+            corpus_golden_ledger(departure_ledger(), &golden_path(&expected_root), c),
         ) {
             Ok(differences) => differences,
             Err(error) => {
@@ -8894,11 +9277,13 @@ fn report_fixture_diffs() {
             }
         };
         println!("\n=== {label} ===");
-        let differences = match parity::tree_differences(
-            &fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR),
+        let expected_root = fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR);
+        let differences = match golden_differences(
+            &expected_root,
             out.path(),
             file_filter.as_deref(),
             include_text_diffs,
+            departure_ledger().golden(&golden_path(&expected_root), &[]),
         ) {
             Ok(differences) => differences,
             Err(error) => {
@@ -13951,26 +14336,32 @@ fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
     assert!(!output.exists());
     std::fs::copy(source, &spec).unwrap();
     command().assert().success();
-    for relative in [
+    let golden = fixture_dir(PAYPAL_CATALOG_PRODUCTS.api).join("expected");
+    let ledger = corpus_golden_ledger(
+        departure_ledger(),
+        &golden_path(&golden),
+        &PAYPAL_CATALOG_PRODUCTS,
+    )
+    .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    let context = Context::from_trees(&golden, &output);
+    let mut observed = Vec::new();
+    let checked = [
         "src/fern/types/four_hundred_details_item.py",
         "src/fern/types/error_default.py",
         "src/fern/types/bad_request_error_body.py",
         "src/fern/products/client.py",
         "src/fern/products/raw_client.py",
         "reference.md",
-    ] {
+    ];
+    for relative in checked {
         let actual = std::fs::read_to_string(output.join(relative)).unwrap();
-        let expected = std::fs::read_to_string(
-            fixture_dir(PAYPAL_CATALOG_PRODUCTS.api)
-                .join("expected")
-                .join(relative),
-        )
-        .unwrap();
-        assert!(
-            generated_matches_fixture(relative, &actual, &expected),
-            "{relative}"
-        );
+        let expected = std::fs::read_to_string(golden.join(relative)).unwrap();
+        let compared = compare_with_golden(&context, relative, &actual, &expected);
+        assert!(compared.matches(), "{relative}: {:?}", compared.diff());
+        observed.extend(observed_in(relative, &compared));
     }
+    let failures = ledger.check(&observed, &|rel| checked.contains(&rel));
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
 #[test]
@@ -14216,6 +14607,21 @@ fn hasura_metadata_matches_fern_output() {
 #[test]
 fn zoonk_matches_fern_output() {
     assert_committed_corpus_matches(&ZOONK);
+}
+
+#[test]
+fn openfoodfacts_taxonomy_editor_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENFOODFACTS_TAXONOMY_EDITOR);
+}
+
+#[test]
+fn qontract_api_matches_fern_output() {
+    assert_committed_corpus_matches(&QONTRACT_API);
+}
+
+#[test]
+fn oal_example_matches_fern_output() {
+    assert_committed_corpus_matches(&OAL_EXAMPLE);
 }
 
 #[test]

@@ -1,0 +1,59 @@
+openapi: 3.0.3
+info:
+  title: Tide Gauges
+  version: 1.0.0
+paths:
+  /readings:
+    post:
+      operationId: submit_reading
+      tags: [readings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadingSubmission"
+      responses:
+        "200":
+          description: The stored reading.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reading"
+components:
+  schemas:
+    StationCode:
+      anyOf:
+        - type: string
+          pattern: "^TS-[0-9]{4}$"
+        - type: string
+          pattern: "^[A-Z]{3}[0-9]{2}$"
+    GaugeChannel:
+      oneOf:
+        - type: integer
+        - type: integer
+          minimum: 1
+        - type: integer
+          maximum: 64
+    ReadingSubmission:
+      type: object
+      required: [station_code, level_cm]
+      properties:
+        station_code:
+          $ref: "#/components/schemas/StationCode"
+        channel:
+          $ref: "#/components/schemas/GaugeChannel"
+        level_cm:
+          type: number
+    Reading:
+      type: object
+      required: [reading_id]
+      properties:
+        reading_id:
+          type: string
+        station_code:
+          $ref: "#/components/schemas/StationCode"
+        channel:
+          $ref: "#/components/schemas/GaugeChannel"
+        level_cm:
+          type: number

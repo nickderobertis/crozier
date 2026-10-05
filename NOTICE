@@ -341,6 +341,34 @@ Additional issue #77 real-world OpenAPI source specs:
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Open Food Facts taxonomy editor API: the publisher's own description at
+    https://raw.githubusercontent.com/openfoodfacts/taxonomy-editor/dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3/backend/openapi/openapi.json.
+    The repository's LICENSE at that same commit grants AGPL-3.0
+    redistribution; corpus row 310 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * Qontract API: the publisher's own description at
+    https://raw.githubusercontent.com/app-sre/qontract-reconcile/4f643a29084cb9b9e8c90e878e03bbe6ac80a5db/qontract_api/openapi.json.
+    The repository's LICENSE at that same commit grants Apache-2.0
+    redistribution; corpus row 311 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * OAL example API: the publisher's own description at
+    https://raw.githubusercontent.com/oxlip-lang/oal/9c76fd5fd74c1f64c62a219aa2156b021a820f4a/examples/openapi.yaml.
+    The repository's LICENSE.txt at that same commit grants Apache-2.0
+    redistribution; corpus row 312 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * Lootlog Battle Log API: the publisher's own description at
+    https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 313 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

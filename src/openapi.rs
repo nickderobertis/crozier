@@ -1812,6 +1812,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_unresolved_schema_pointers(&mut doc);
     normalize_error_class_schema_names(&mut doc);
+    normalize_same_primitive_unions(&mut doc);
     normalize_multi_type_schemas(&mut doc);
     normalize_unlisted_required(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
@@ -2376,6 +2377,37 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
         .map(|name| (name.clone(), format!("{name}Body")))
         .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed))
         .collect();
+    rename_component_schemas(doc, &renames);
+}
+
+/// A component schema whose `oneOf`/`anyOf` alternatives all convert to one
+/// primitive is that primitive under its LAST alternative's name, as Fern
+/// declares it: `ShelfCode: anyOf: [two pattern strings]` is `ShelfCodeOne =
+/// str`, which every use site names and a request body sends unconverted. So
+/// the component is renamed `{name} {Ordinal}` (a space is a word break to
+/// [`crate::naming::class_name`]) and becomes that alternative. Measured at
+/// 5.20.0 on the hand-written `same-primitive-union-components` fixture; a
+/// `null` alternative, or alternatives converting to different types, leave
+/// the component its name.
+fn normalize_same_primitive_unions(doc: &mut OpenApi) {
+    let mut renames = IndexMap::new();
+    for (name, schema) in &doc.components.schemas {
+        let Some(last) = crate::ir::same_primitive_union_last(schema) else {
+            continue;
+        };
+        let renamed = format!("{name} {}", crate::ir::ordinal_word(last));
+        if !doc.components.schemas.contains_key(&renamed) {
+            renames.insert(name.clone(), renamed);
+        }
+    }
+    for name in renames.keys() {
+        if let Some(schema) = doc.components.schemas.get_mut(name) {
+            let alternatives = schema.one_of.take().or_else(|| schema.any_of.take());
+            if let Some(last) = alternatives.and_then(|mut alternatives| alternatives.pop()) {
+                *schema = last;
+            }
+        }
+    }
     rename_component_schemas(doc, &renames);
 }
 
@@ -3368,6 +3400,90 @@ mod tests {
         }));
         assert_eq!(blank.declared_type_name(), Some("Gadget"));
         assert_eq!(schema(serde_json::json!({})).declared_type_name(), None);
+    }
+
+    #[test]
+    fn same_primitive_unions_take_their_last_alternative_and_its_name() {
+        let mut doc = parse(
+            r"
+openapi: 3.0.3
+info: { title: t, version: '1' }
+paths:
+  /bins:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bin: { $ref: '#/components/schemas/BinLabel' }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tally' }
+components:
+  schemas:
+    BinLabel:
+      anyOf:
+        - { type: string, pattern: '^R[0-9]+$' }
+        - { type: string, pattern: '^Q[0-9]+$' }
+    Tally:
+      oneOf:
+        - { type: integer }
+        - { type: integer, maximum: 10 }
+        - { type: integer, minimum: 2 }
+    Mixed:
+      anyOf: [{ type: string }, { type: integer }]
+    Nullable:
+      anyOf: [{ type: string }, { type: string }, { nullable: true, type: string }]
+    Taken:
+      anyOf: [{ type: string }, { type: string }]
+    Taken One:
+      type: string
+",
+        );
+        normalize_same_primitive_unions(&mut doc);
+        // Renamed in place after the last alternative's ordinal, unless that
+        // name is already a component's; a `null` or mixed composition keeps
+        // its name.
+        assert_eq!(
+            schema_keys(&doc),
+            [
+                "BinLabel One",
+                "Tally Two",
+                "Mixed",
+                "Nullable",
+                "Taken",
+                "Taken One"
+            ]
+        );
+        let label = &doc.components.schemas["BinLabel One"];
+        assert!(label.any_of.is_none());
+        assert_eq!(label.pattern.as_deref(), Some("^Q[0-9]+$"));
+        assert_eq!(
+            doc.components.schemas["Tally Two"].minimum,
+            Some(serde_json::json!(2))
+        );
+        let operation = doc.paths["/bins"].post.as_ref().unwrap();
+        let body = operation.request_body.as_ref().unwrap().content["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        assert_eq!(
+            body.properties["bin"].reference.as_deref(),
+            Some("#/components/schemas/BinLabel One")
+        );
+        let response = operation.responses["200"].content["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        assert_eq!(
+            response.reference.as_deref(),
+            Some("#/components/schemas/Tally Two")
+        );
     }
 
     #[test]

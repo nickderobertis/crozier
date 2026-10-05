@@ -817,7 +817,7 @@ fn the_schema_checker_rejects_a_report_that_breaks_the_contract() {
         serde_json::from_str(include_str!("../../assets/compare-report.schema.json")).unwrap();
     let mut errors = Vec::new();
     let broken = serde_json::json!({
-        "schema_version": 2,
+        "schema_version": 3,
         "crozier_version": "x",
         "searched_paths": ["."],
         "exit_code": 1,
@@ -1122,4 +1122,270 @@ fn compare_usage_errors_exit_2() {
         .assert()
         .code(2)
         .stderr(usage());
+}
+
+/// The README client-class casing defect
+/// (`docs/departures/evidence/readme-client-class-casing.md`): the reference is
+/// the certified pair's tree for a crozier-authored document whose organization
+/// has an inner capital, and Fern's README names client classes the package does
+/// not define. `crozier compare` matches it, reporting each corrected line by
+/// catalog id, file and line — exactly the ledger's rows for that tree — and
+/// fails, naming the file, when any other difference remains: on a line where
+/// the departure applies, or elsewhere in the same file.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference() {
+    let case = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/departures/evidence/readme-client-class-casing");
+    let golden = format!(
+        "docs/departures/evidence/readme-client-class-casing/{}",
+        super::departures_ledger_gate::REFERENCE_TREE
+    );
+    let repo = tempfile::tempdir().expect("repo tempdir");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yml",
+        &std::fs::read_to_string(case.join("openapi.yml")).unwrap(),
+    );
+    // `reference.sh [same-line|same-file]`: copy the committed Fern tree, then
+    // make README.md differ on a line the departure corrects, or on another.
+    write_script(
+        root,
+        "scripts/reference.sh",
+        &format!(
+            "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
+             cp -R '{}'/. \"$out\"\n\
+             case \"${{1:-}}\" in\n\
+             \x20 same-line) edit='s/^client = AsyncLanternharborApi()$/client = AsyncLanternharborApi(timeout=1)/' ;;\n\
+             \x20 same-file) edit='s/^# LanternHarbor Python Library$/# LanternHarbor Python SDK/' ;;\n\
+             \x20 *) exit 0 ;;\n\
+             esac\n\
+             sed \"$edit\" \"$out/README.md\" > \"$out/README.tmp\"\n\
+             mv \"$out/README.tmp\" \"$out/README.md\"\n",
+            case.join(super::departures_ledger_gate::REFERENCE_TREE)
+                .display()
+        ),
+    );
+    let config = |generators: &str| {
+        format!(
+            "spec: ./openapi.yml\nlayout: flat\npackage-name: LanternHarbor\n\
+             project-name: LanternHarbor\ngenerators:\n{generators}"
+        )
+    };
+    write(
+        root,
+        "crozier.yml",
+        &config("  python:\n    reference:\n      command: ./scripts/reference.sh\n"),
+    );
+    write(
+        root,
+        "edited.yml",
+        &config(
+            "  same-line:\n    reference:\n      command: ./scripts/reference.sh same-line\n\
+             \x20 same-file:\n    reference:\n      command: ./scripts/reference.sh same-file\n",
+        ),
+    );
+
+    // Only departures differ: matched, exit 0, each departure listed.
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "crozier.yml"])
+        .assert()
+        .code(0);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let python = result(&report, "crozier.yml", "python");
+    assert_eq!(python["status"], "matched", "{python:#}");
+    let departures = python["comparison"]["departures"].as_array().unwrap();
+    let observed: Vec<super::departures_ledger::Observed> = departures
+        .iter()
+        .map(|departure| {
+            (
+                departure["file"].as_str().unwrap().to_string(),
+                usize::try_from(departure["line"].as_u64().unwrap()).unwrap(),
+                departure["id"].as_str().unwrap().to_string(),
+            )
+        })
+        .collect();
+    let casing: Vec<(&str, usize)> = observed
+        .iter()
+        .filter(|(_, _, id)| id == "readme-client-class-casing")
+        .map(|(file, line, _)| (file.as_str(), *line))
+        .collect();
+    assert_eq!(
+        casing,
+        [
+            ("README.md", 52),
+            ("README.md", 53),
+            ("README.md", 55),
+            ("README.md", 56),
+            ("README.md", 67),
+            ("README.md", 69),
+            ("README.md", 104),
+            ("README.md", 106),
+            ("README.md", 148),
+            ("README.md", 150),
+            ("README.md", 165),
+            ("README.md", 167),
+            ("reference.md", 16),
+            ("reference.md", 19),
+        ]
+    );
+    // Exactly the ledger's rows for the evidence tree.
+    let ledger = super::departure_ledger()
+        .golden(&golden, &[])
+        .unwrap_or_else(|failures| panic!("{failures:?}"));
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains("    intended departures applied (")
+            && stderr.contains("      README.md:67 readme-client-class-casing\n")
+            && stderr.contains("Result: every checked generator matched the reference"),
+        "{stderr}"
+    );
+
+    // Any other difference fails, naming the file, departures applied or not.
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "edited.yml"])
+        .assert()
+        .code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    // `client = AsyncLanternharborApi()`, README.md line 69, is the line the
+    // `same-line` reference edits.
+    for (generator, corrected_line_69) in [("same-line", false), ("same-file", true)] {
+        let edited = result(&report, "edited.yml", generator);
+        assert_eq!(edited["status"], "mismatched", "{edited:#}");
+        let comparison = &edited["comparison"];
+        assert_eq!(comparison["differing"], serde_json::json!(["README.md"]));
+        assert_eq!(comparison["only_in_reference"], serde_json::json!([]));
+        assert_eq!(comparison["only_in_crozier"], serde_json::json!([]));
+        let at_69 = comparison["departures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|departure| departure["file"] == "README.md" && departure["line"] == 69);
+        assert_eq!(at_69, corrected_line_69, "{generator}: {comparison:#}");
+    }
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains("  same-line: mismatched")
+            && stderr.contains("    differing (1):\n      README.md\n"),
+        "{stderr}"
+    );
+}
+
+/// The packaged golden's file `rel`, with `from` replaced by `to` — which must
+/// occur in it.
+#[cfg(unix)]
+fn edited_golden(rel: &str, from: &str, to: &str) -> String {
+    let text = std::fs::read_to_string(fixture_root().join("expected").join(rel)).unwrap();
+    assert!(text.contains(from), "{rel} holds no {from:?}");
+    text.replacen(from, to, 1)
+}
+
+/// The catalog's rules take crozier's exact replacement and nothing looser, as
+/// `crozier compare` reports it. A reference released under another version, one
+/// generated without the SDK name and version headers at all, or one whose
+/// `generatorConfig` holds braces and quotes inside its strings, matches with
+/// the departure reported; the same member beside any other change to the
+/// record, or sharing a line with another member, fails, naming the file.
+#[cfg(unix)]
+#[test]
+fn compare_applies_the_packaging_and_metadata_departures_exactly() {
+    let wrapper = "src/fern/core/client_wrapper.py";
+    let metadata = ".fern/metadata.json";
+    let repo = small_repo(
+        "crozier.yml",
+        "  released:\n    reference:\n      command: ./scripts/overlay.sh released\n\
+         \x20 unpackaged:\n    reference:\n      command: ./scripts/overlay.sh unpackaged\n\
+         \x20 braced:\n    reference:\n      command: ./scripts/overlay.sh braced\n\
+         \x20 braced-and-other:\n    reference:\n      command: ./scripts/overlay.sh braced-and-other\n\
+         \x20 shared-line:\n    reference:\n      command: ./scripts/overlay.sh shared-line\n",
+    );
+    let root = repo.path();
+    // `overlay.sh <name>`: copy the packaged golden, then the files under
+    // `refs/<name>/` over it.
+    write_script(
+        root,
+        "scripts/overlay.sh",
+        &format!(
+            "cp -R '{}'/expected/. \"$CROZIER_REFERENCE_OUTPUT\"\n\
+             cp -R \"refs/$1/.\" \"$CROZIER_REFERENCE_OUTPUT\"\n",
+            fixture_root().display()
+        ),
+    );
+    let released = edited_golden(
+        wrapper,
+        "\"X-Fern-SDK-Version\": \"0.0.0\"",
+        "\"X-Fern-SDK-Version\": \"2.3.1\"",
+    );
+    write(root, &format!("refs/released/{wrapper}"), &released);
+    let unpackaged = edited_golden(
+        wrapper,
+        "            \"X-Fern-SDK-Name\": \"default_package_name\",\n            \"X-Fern-SDK-Version\": \"0.0.0\",\n",
+        "",
+    );
+    write(root, &format!("refs/unpackaged/{wrapper}"), &unpackaged);
+    let braced = edited_golden(
+        metadata,
+        "\"client_class_name\": \"AcmeClient\"",
+        "\"client_class_name\": \"Acme}{\\\"Client\"",
+    );
+    write(root, &format!("refs/braced/{metadata}"), &braced);
+    write(
+        root,
+        &format!("refs/braced-and-other/{metadata}"),
+        &braced.replacen("\"github\"", "\"gitlab\"", 1),
+    );
+    write(
+        root,
+        &format!("refs/shared-line/{metadata}"),
+        &edited_golden(
+            metadata,
+            "\"generatorVersion\": \"5.20.0\",\n  \"generatorConfig\"",
+            "\"generatorVersion\": \"5.20.0\", \"generatorConfig\"",
+        ),
+    );
+
+    let assert = compare_cmd(root).args(["--json", "-"]).assert().code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let departure = |generator: &str, file: &str, id: &str| {
+        result(&report, "crozier.yml", generator)["comparison"]["departures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|departure| departure["file"] == file && departure["id"] == id)
+    };
+    for (generator, file, id) in [
+        ("released", wrapper, "sdk-name-version-headers"),
+        ("unpackaged", wrapper, "sdk-name-version-headers"),
+        ("braced", metadata, "fern-metadata-generator-config"),
+    ] {
+        let matched = result(&report, "crozier.yml", generator);
+        assert_eq!(matched["status"], "matched", "{generator}: {matched:#}");
+        assert!(departure(generator, file, id), "{generator}: {matched:#}");
+    }
+    for generator in ["braced-and-other", "shared-line"] {
+        let failed = result(&report, "crozier.yml", generator);
+        assert_eq!(failed["status"], "mismatched", "{generator}: {failed:#}");
+        assert_eq!(
+            failed["comparison"]["differing"],
+            serde_json::json!([metadata]),
+            "{generator}"
+        );
+        assert!(
+            !departure(generator, metadata, "fern-metadata-generator-config"),
+            "{generator}: {failed:#}"
+        );
+    }
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains("  braced-and-other: mismatched")
+            && stderr.contains("    differing (1):\n      .fern/metadata.json\n"),
+        "{stderr}"
+    );
 }

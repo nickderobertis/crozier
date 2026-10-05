@@ -12,7 +12,7 @@ normalization.
 
 This is no corpus fixture and no coverage probe: it is never a `CORPUS.md` row
 and settles no coverage row. The one real specification registered for these
-rules is corpus row 310, `lootlog-battlelog`; why the others have none yet is
+rules is corpus row 313, `lootlog-battlelog`; why the others have none yet is
 [below](#the-real-specification-search).
 
 ## The cases
@@ -107,7 +107,7 @@ of these is an exhaustive search.
 
 | shape | census selector | what was found |
 |---|---|---|
-| lower-case `authorization` beside a bearer scheme | header parameter named `authorization` | `lootlog/monorepo` `apps/battlelog/openapi.yaml` at `e2796c4f48ca4a749f53fdc5a127eece50567b56`, MIT: Fern generates, crozier byte-matches — registered as corpus row 310 |
+| lower-case `authorization` beside a bearer scheme | header parameter named `authorization` | `lootlog/monorepo` `apps/battlelog/openapi.yaml` at `e2796c4f48ca4a749f53fdc5a127eece50567b56`, MIT: Fern generates, crozier byte-matches — registered as corpus row 313 |
 | optional, nullable query composition | `parameter.in=query&!parameter.required&parameter.schema>schema.anyOf>schema.type=null` | four documents; `Stichting-KOMPAZ-1/KOMPAZ-web-frontend` (MIT) generates but differs on method naming; the others grant no licence. Beyond the selector, `langchain-ai/docs`' agent server (MIT), `lenML/Speech-AI-Forge` (AGPL-3.0), `waylayio/waylay-sdk-queries-py` (ISC) and `Q2TM/low-temperature-control` (MIT) declare these placement cells, generate, and differ on model-union variants, descriptions and body headers |
 | array query items union | `parameter.in=query&parameter.schema>schema.items>schema.anyOf` | thirteen documents; `konfig-dev/konfig`'s `rated` (MIT) generates and differs on literal header naming, and a `swagger-api/swagger-parser` test resource (Apache-2.0) generates over references that resolve to nothing; the others are refused by Fern or grant no licence |
 | required scalar-or-array composition | `parameter.in=query&parameter.required&parameter.schema>schema.oneOf>schema.items>schema.type=integer` | three documents, each refused by Fern; `supabase/supabase`'s `api_v1_openapi.json` (Apache-2.0) declares the `anyOf` spelling, generates, and differs on example values and body-field naming |

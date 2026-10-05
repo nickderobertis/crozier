@@ -9,7 +9,7 @@ against **both** the committed Fern fixture SDK and the crozier-generated SDK an
 asserts — per journey — that the recordings are identical. The only allowed
 difference is the deliberate SDK-identity branding (`X-Crozier-*` vs `X-Fern-*`),
 which `_recorder` folds to a common prefix on both sides — the runtime analog of
-the byte-diff's `tests/e2e.rs::normalize_sdk_headers`.
+the byte-diff's `sdk-identity-header-prefix` departure.
 
 The two SDKs are both named `fern` and cannot coexist in one process, so each
 recording is produced in its own subprocess (`_recorder` as `__main__`). The Rust

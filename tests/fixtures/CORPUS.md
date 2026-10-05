@@ -235,7 +235,10 @@ compares it. Row 224 is the one so far.
 | 307 | `apideck.com-ecosystem-client-class-name` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json | `0.0.6` | Apache 2.0 | committed | Row 13's Ecosystem API regenerated with `client_class_name: EcosystemClient`, the class name of its own `Ecosystem` resource's sub-client |
 | 308 | `yourbrand-ticketing` | github-raw | https://raw.githubusercontent.com/marinasundstrom/YourBrand/6ef617804cb34ceba4b847c62ab122042d86abbe/src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml | `6ef617804cb34ceba4b847c62ab122042d86abbe` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | YourBrand's Ticketing service API as its repository publishes it for the Ticketing client: 32 paths and 64 component schemas; two `application/json` bodies are bare `{type: string, format: duration}` strings |
 | 309 | `huatuo-node-tree` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.yaml | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | committed | HuaTuo node API v1 as its repository authors it, the source `openapi.gen.json` (row 178) is bundled from: `components.securitySchemes.BearerAuth` is `$ref: '../components.yaml#/components/securitySchemes/BearerAuth'`, a security scheme declared in another document of the same pinned tree, and thirteen schema references name `../components.yaml#/components/schemas/…`. Fern's generated bearer `token` and `Authorization` header, and its `ErrorResponse`, `Error`, `ErrorCode` and `ObservationScope` types, derive from those references. |
-| 310 | `lootlog-battlelog` | github-raw | https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml | `e2796c4f48ca4a749f53fdc5a127eece50567b56` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Lootlog's Battle Log API as its repository publishes it: OpenAPI 3.0.0, one `http: bearer` scheme, and `POST /internal/delete-user-data` declares an optional header parameter spelled `authorization` in lower case |
+| 310 | `openfoodfacts-taxonomy-editor` | github-raw | https://raw.githubusercontent.com/openfoodfacts/taxonomy-editor/dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3/backend/openapi/openapi.json | `dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3` | AGPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Open Food Facts taxonomy editor's API as its FastAPI backend publishes it: 25 paths and 16 component schemas; `EntryNodeSearchResult.filters` items are a `filterType`-discriminated `oneOf` of seven `$ref` members whose `readOnly` properties `required` also lists |
+| 311 | `qontract-api` | github-raw | https://raw.githubusercontent.com/app-sre/qontract-reconcile/4f643a29084cb9b9e8c90e878e03bbe6ac80a5db/qontract_api/openapi.json | `4f643a29084cb9b9e8c90e878e03bbe6ac80a5db` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Qontract API as qontract-reconcile's FastAPI service publishes it: 34 paths and 145 component schemas; the Quay-repository and Slack-usergroup task results' `actions` items are `$ref`-only unions whose members tag `action_type` with a one-value `enum` that `required` leaves out |
+| 312 | `oal-example` | github-raw | https://raw.githubusercontent.com/oxlip-lang/oal/9c76fd5fd74c1f64c62a219aa2156b021a820f4a/examples/openapi.yaml | `9c76fd5fd74c1f64c62a219aa2156b021a820f4a` | Apache-2.0 (`info.license`, and the publisher repository's pinned `LICENSE.txt`) | committed | The example description the OAL project compiles from its own API language and publishes: 4 paths and 6 component schemas; `obj3.stuff` is an `anyOf` whose first member is an inline `oneOf` beside an inline object |
+| 313 | `lootlog-battlelog` | github-raw | https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml | `e2796c4f48ca4a749f53fdc5a127eece50567b56` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Lootlog's Battle Log API as its repository publishes it: OpenAPI 3.0.0, one `http: bearer` scheme, and `POST /internal/delete-user-data` declares an optional header parameter spelled `authorization` in lower case |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1396,7 +1399,56 @@ document, following a reference inside it, and a sibling file's
 `#/components/schemas/<Name>` is imported as the component it names with the
 components of that file it references, rather than inlined.
 
-## Row 310 — a lower-case `authorization` header beside a bearer scheme
+## Row 310 — a required `readOnly` property on a discriminated-union member
+
+A property both `required` and `readOnly` is server-populated, so Fern types it
+`Optional` in a model; it does the same inside the variant class a member of a
+discriminated union becomes. The taxonomy editor's search-filter members
+declare `negated`, `language`, `inherited` and the property pair that way:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 310 | `openfoodfacts-taxonomy-editor` | `read-only` on a discriminated-union member | ✅ byte-matched after one repair |
+
+The repair: a variant class's field is optional when its property is
+`readOnly`, as a plain model's is.
+
+## Row 311 — `$ref` members tagged by an unrequired one-value enum
+
+A `oneOf` or `anyOf` of `$ref` members with no `discriminator`, each tagging
+one property with a one-value string `enum` that `required` leaves out (what
+FastAPI writes for a Pydantic `Literal["x"] = "x"` field), is a discriminated
+union to Fern whatever the property is named: it generates the
+`{Union}_{Variant}` classes and strips the tag from the member models. The
+Qontract API tags its task results' actions on `action_type`:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 311 | `qontract-api` | `anyof-discriminated-union` over unrequired `action_type` tags | ✅ byte-matched after two repairs |
+
+The repairs: such members discriminate under any property name, where crozier
+read an unrequired tag only under the names it had met (`message_type`,
+`mcp_server_type`, `name`, a `const` `type`); and a docstring example's
+`from … import` names are ordered case-insensitively, as isort orders them
+(`OcmGroupsCluster` before `OcmGroupUser`).
+
+## Row 312 — a property `anyOf` holding an inline composition
+
+A model property's `anyOf` whose member is itself an inline `oneOf` or `anyOf`
+beside another non-`null` member is a union with a named member to Fern: the
+member is the union `{Model}{Prop}{Ordinal}`, discriminated or not, as it is in
+a component union. The OAL example's `obj3.stuff` offers an inline `oneOf`
+first:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 312 | `oal-example` | `anyof-oneof-variant` at a model property | ✅ byte-matched after one repair |
+
+The repair: a property union's member composing two or more alternatives of
+its own is hoisted to `{Owner}{Prop}{Ordinal}` rather than inlined as a nested
+`typing.Union`.
+
+## Row 313 — a lower-case `authorization` header beside a bearer scheme
 
 Fern drops an operation's header parameter only when its name is exactly the
 header a declared security scheme writes: `Authorization` for a bearer, basic or
@@ -1407,7 +1459,7 @@ exactly so, so a case-insensitive comparison matched it too:
 
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
-| 310 | `lootlog-battlelog` | a header parameter spelled `authorization` beside an `http: bearer` scheme | ✅ byte-matched after two repairs |
+| 313 | `lootlog-battlelog` | a header parameter spelled `authorization` beside an `http: bearer` scheme | ✅ byte-matched after two repairs |
 
 The repairs: the credential-header check compares the spelling exactly, and a
 component property's nested names are re-cased across the owner/property join,

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "openfoodfacts-taxonomy-editor",
+  "corpus_spec_ref": "dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3",
+  "corpus_spec_url": "https://raw.githubusercontent.com/openfoodfacts/taxonomy-editor/dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3/backend/openapi/openapi.json"
+}

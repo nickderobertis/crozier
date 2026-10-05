@@ -2387,7 +2387,7 @@ class GrammarContractTests(unittest.TestCase):
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
-            "Sixty-seven": 67,
+            "Sixty-seven": 67, "Sixty-eight": 68,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
             "seventeen": 17,
         }
@@ -4317,7 +4317,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - POINTER_WALK_SELECTORS - NEGATION_SELECTORS - NESTED_COMPOSITION_SELECTORS \
         - {name for name in census.PREDICATES
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
-        - {"components.schemas:nonidentifier-name", "securityScheme:$ref"} \
+        - {"components.schemas:nonidentifier-name", "components.schemas:same-primitive-union",
+           "securityScheme:$ref"} \
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
 
     @classmethod
@@ -12034,6 +12035,39 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-derive operation.operationId:digit-leading-method from src/ir.rs's {name}",
                 )
 
+    def test_the_union_ports_track_their_rust_functions(self) -> None:
+        """The unrequired-tag clause and `components.schemas:same-primitive-union`.
+
+        Each function of `src/ir.rs` the two ports read is pinned by the same
+        normalized-body digest, so an edit there fails here until the port is
+        read again.
+        """
+        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
+        for name, pinned in census.UNION_PORT_DIGESTS.items():
+            start = next(
+                (index for index, line in enumerate(lines)
+                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+            )
+            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            depth, started = 0, False
+            for end in range(start, len(lines)):
+                for char in lines[end]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                if started and depth == 0:
+                    break
+            kept = [
+                " ".join(line.split()) for line in lines[start:end + 1]
+                if line.strip() and not line.strip().startswith("//")
+            ]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-read the census's union port of src/ir.rs's {name}",
+                )
+
     def test_the_port_reproduces_croziers_own_class_name_expectations(self) -> None:
         """The class-name side of the same mirror.
 
@@ -12381,6 +12415,78 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                 write_fixture(root, fixture, json.dumps({
                     "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
                     "paths": {}, "components": {"schemas": {name: {"type": "string"}}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_same_primitive_union_counts_a_component_and_not_its_near_misses(self) -> None:
+        """A component composition of one primitive, and nothing beside it.
+
+        The positive writes two pattern strings and three plain integers; the
+        decoys write a `null` alternative, mixed primitives, `integer` beside
+        `format: int64`, a lone alternative, a composition beside a `type`, and
+        the positive's composition inline as a property, where it is no class.
+        """
+        selector = "components.schemas:same-primitive-union"
+        strings = {"anyOf": [{"type": "string", "pattern": "^a"}, {"type": "string", "pattern": "^b"}]}
+        documents = {
+            "positive": {
+                "Code": strings,
+                "Port": {"oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1},
+                                   {"type": "integer", "maximum": 9}]},
+            },
+            "decoys": {
+                "Nullable": {"anyOf": [{"type": "string"}, {"type": "string"}, {"type": "null"}]},
+                "Mixed": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
+                "Wide": {"anyOf": [{"type": "integer"}, {"type": "integer", "format": "int64"}]},
+                "Lone": {"anyOf": [{"type": "string"}]},
+                "Typed": {"type": "string", **strings},
+                "Holder": {"type": "object", "properties": {"code": strings}},
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, schemas in documents.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {}, "components": {"schemas": schemas},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 2}, rows(completed))
+
+    def test_an_unrequired_tag_discriminates_only_reference_members(self) -> None:
+        """`inferred_discriminant_property_with`'s `unrequired_tag` clause.
+
+        `$ref` members each tagging `kind` with a one-value string that `required`
+        leaves out are a discriminated union whatever the property is named; an
+        inline member beside them, or a member with no tag, is not.
+        """
+        selector = "schema.anyOf:discriminated-union"
+
+        def member(tag: str) -> dict:
+            return {"type": "object", "required": ["size"], "properties": {
+                "kind": {"type": "string", "enum": [tag], "default": tag},
+                "size": {"type": "number"}}}
+
+        refs = [{"$ref": "#/components/schemas/Circle"}, {"$ref": "#/components/schemas/Square"}]
+        documents = {
+            "positive": {"Shape": {"anyOf": refs}},
+            "mixed": {"Shape": {"anyOf": [refs[0], member("dot")]}},
+            "untagged": {"Shape": {"anyOf": [refs[0], {"$ref": "#/components/schemas/Blank"}]}},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, extra in documents.items():
+                schemas = {"Circle": member("circle"), "Square": member("square"),
+                           "Blank": {"type": "object", "properties": {"size": {"type": "number"}}},
+                           **extra}
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.0.3", "info": {"title": fixture, "version": "1"},
+                    "paths": {}, "components": {"schemas": schemas},
                 }))
             completed = run("--vendored-only", "--fixtures-root", str(root),
                             "--selector", selector)

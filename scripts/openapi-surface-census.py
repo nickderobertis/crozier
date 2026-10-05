@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 190 of the 223 registered sources live in `corpus-sources/` (a split
+  and 193 of the 226 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1049,6 +1049,12 @@ PREDICATES = {
     "mediaType.examples:named-only": "one per request body's selected JSON media type writing a named example that resolves to a value and no non-null example, so reference.md documents the first named one",
     "operation.responses:wildcard-binary": "one per Operation Object whose success response, chosen as has_wildcard_binary_response chooses it, serves */* with an inline string schema of format binary: the endpoint mode build_example_inner reads before it renders any parameter example",
     "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
+    "components.schemas:same-primitive-union": (
+        "one per component schema whose `oneOf` (else `anyOf`) holds two or more "
+        "inline scalar alternatives that all convert to one primitive and nothing "
+        "else is declared beside them, which `normalize_same_primitive_unions` of "
+        "`src/openapi.rs` renames after its last alternative's ordinal"
+    ),
     "securityScheme:$ref": (
         "one per `components.securitySchemes` entry that is a Reference Object rather "
         "than a Security Scheme Object, which `normalize_security_scheme_refs` of "
@@ -2451,7 +2457,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "5dc1afabadc22e3e",
+    "endpoint_method_name": "e2b9c7694f19b140",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -2992,6 +2998,18 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # resemblance is the whole point: a `discriminator` written beside a `oneOf` is
 # neither necessary nor sufficient for any of the three arms these predicates
 # name.
+#
+# Two union rules are ported with a normalized-body digest of the Rust each
+# reads, recomputed by the offline tier as `METHOD_NAME_PORT_DIGESTS` is, so an
+# edit to either function fails until the port is read again: the unrequired-tag
+# clause of `_candidate_tag_values` reads `inferred_discriminant_property_with`,
+# and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
+# scalar arms of `base_type_ref`.
+UNION_PORT_DIGESTS = {
+    "inferred_discriminant_property_with": "e89b0d632c061c3f",
+    "same_primitive_union_last": "46bacd9b81edeea4",
+    "base_type_ref": "f433a87f0ba17562",
+}
 
 
 def required_names(node: dict[Any, Any]) -> list[str]:
@@ -3317,13 +3335,18 @@ def _inferred_discriminant_property(
     readable tag for it and the tags are all distinct. What "readable" means
     depends on whether the union references components at all: where it does, a
     member either tags itself with a required one-member `enum` or the property is
-    one of the four `src/ir.rs` supports by name; where it does not, a one-member
-    `enum` is required of every member.
+    one of the four `src/ir.rs` supports by name, or every member is a `$ref`
+    whose tag `required` leaves out; where it does not, a one-member `enum` is
+    required of every member.
     """
     members = union_members(node)
     if members is None:
         return None
     references_components = any(
+        isinstance(member, dict) and isinstance(member.get("$ref"), str)
+        for member in members
+    )
+    only_references = all(
         isinstance(member, dict) and isinstance(member.get("$ref"), str)
         for member in members
     )
@@ -3337,7 +3360,12 @@ def _inferred_discriminant_property(
         if not isinstance(candidate, str):
             continue
         values = _candidate_tag_values(
-            candidate, resolved, references_components, enum_tag, _any_of_head(node)
+            candidate,
+            resolved,
+            references_components,
+            enum_tag,
+            _any_of_head(node),
+            only_references,
         )
         if values is not None and len(set(values)) == len(values):
             return candidate
@@ -3350,6 +3378,7 @@ def _candidate_tag_values(
     references_components: bool,
     enum_tag: bool,
     any_of_head: bool = False,
+    only_references: bool = False,
 ) -> list[str] | None:
     """The tag every resolved member writes for one candidate property, or `None`.
 
@@ -3377,7 +3406,11 @@ def _candidate_tag_values(
             and len(enum_written) == 1
         )
         if references_components and not (enum_tag and tagged_by_enum):
-            if candidate == "type":
+            # Members that are all `$ref`s tagging the property with one string
+            # `required` leaves out: the `unrequired_tag` clause, whatever the name.
+            if only_references and singleton_enum and candidate not in required_names(variant):
+                supported = True
+            elif candidate == "type":
                 supported = (
                     candidate in required_names(variant)
                     and isinstance(schema_example(field), str)
@@ -3936,6 +3969,7 @@ class Census:
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))
+            found += self.same_primitive_unions(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
         found += self.position_predicates(node, kind_name)
         if kind_name == "schema" and not is_reference_node(node, kind_name):
@@ -4338,6 +4372,54 @@ class Census:
             "components.schemas:normalized-collision"
             for key in keys
             if collisions[class_name(key)] > 1
+        ]
+
+    @staticmethod
+    def same_primitive_unions(node: Any) -> list[str]:
+        """`components.schemas:same-primitive-union`: `same_primitive_union_last`.
+
+        Read at the Components Object because the shape shows only where the
+        composition is a component: there Fern names it after its last
+        alternative's ordinal (`ShelfCode` is `ShelfCodeOne = str`), while the same
+        composition inline is just the primitive. Each alternative converts as
+        `base_type_ref` of `src/ir.rs` converts a scalar, `format: binary` read as
+        the `str` it is in a union.
+        """
+        if not isinstance(node, dict):
+            return []
+
+        def converted(member: Any) -> str | None:
+            if not isinstance(member, dict) or any(
+                field in member for field in ("$ref", "enum", "const", "oneOf", "anyOf", "allOf")
+            ) or member.get("nullable") is True:
+                return None
+            kind, form = member.get("type"), member.get("format")
+            if kind == "string":
+                return {"date-time": "datetime", "date": "date"}.get(form, "str")
+            if kind == "integer":
+                return "long" if form == "int64" else "int"
+            if kind == "number":
+                if form in ("int32", "int64"):
+                    return "long" if form == "int64" else "int"
+                return "float"
+            return "bool" if kind == "boolean" else None
+
+        def same_primitive(schema: Any) -> bool:
+            if not isinstance(schema, dict) or any(
+                field in schema
+                for field in ("$ref", "type", "allOf", "discriminator", "additionalProperties")
+            ) or schema.get("properties") or schema.get("nullable") is True:
+                return False
+            members = schema.get("oneOf") if "oneOf" in schema else schema.get("anyOf")
+            if not isinstance(members, list) or len(members) < 2:
+                return False
+            kinds = [converted(member) for member in members]
+            return None not in kinds and len(set(kinds)) == 1
+
+        return [
+            "components.schemas:same-primitive-union"
+            for key, schema in node.items()
+            if isinstance(key, str) and not key.startswith("x-") and same_primitive(schema)
         ]
 
     @staticmethod

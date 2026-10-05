@@ -23,10 +23,10 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 577 features. By category, 492 are `golden`, 52
-`limitations`, 11 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 578 features. By category, 492 are `golden`, 52
+`limitations`, 12 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 577
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 578
 split four ways:
 
 - **490 carry byte-match evidence against a registered real-world
@@ -38,16 +38,21 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
-- **11 rest on a hand-written fixture, a weaker proof than a real
+- **12 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. Six read `search-incomplete`
+  decided and none is registrable. Seven read `search-incomplete`. Of those,
+  six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
   [renewed search](openapi-surface/witness-search-renewed/README.md) found each
-  of those six `none-registrable`, and seven of the 12 are still refused.
+  of those six `none-registrable`, and seven of the 12 are still refused. The
+  seventh, `component-same-primitive-union`, has not been searched at any
+  declared source; its
+  [renewed search](openapi-surface/witness-search-union-shapes/README.md) read
+  693 documents a bounded code search returned and found it `none-registrable`.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
   490 and never count as a real-specification match.
@@ -67,7 +72,7 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-490 + 66 + 11 + 10 = 577.
+490 + 66 + 12 + 10 = 578.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 492 `golden` rows declare 920 handling sites in
@@ -164,12 +169,12 @@ real-specification match.
   an open gap: no real specification is known to witness it
   ([record](openapi-surface/withdrawn-witnesses/nexmo-conversation.md#the-reach-row-223-alone-carried)).
   No census selector names these four yet.
-- **Authored-probe gaps (26):** every case committed under
+- **Authored-probe gaps (28):** every case committed under
   [`authored-probes/`](openapi-surface/authored-probes/README.md) is a document
   written to isolate one shape, with the tree pinned Fern generated from it, that
   crozier byte-matches. No real-specification search backs any of them, so each
   is an open gap of undecided evidence tier, neither a real-specification nor a
-  hand-written match: [`353-method-optional-array`](openapi-surface/authored-probes/353-method-optional-array/), [`353-method-required-array`](openapi-surface/authored-probes/353-method-required-array/), [`353-promoted-required-array`](openapi-surface/authored-probes/353-promoted-required-array/), [`353-solo-required-array`](openapi-surface/authored-probes/353-solo-required-array/), [`353-string-default-control`](openapi-surface/authored-probes/353-string-default-control/), [`353-string-default-probe`](openapi-surface/authored-probes/353-string-default-probe/), [`353-string-default-scalar`](openapi-surface/authored-probes/353-string-default-scalar/), [`356-defs-pointer`](openapi-surface/authored-probes/356-defs-pointer/), [`356-defs-property`](openapi-surface/authored-probes/356-defs-property/), [`356-defs-required-property`](openapi-surface/authored-probes/356-defs-required-property/), [`358-absent-allof-member`](openapi-surface/authored-probes/358-absent-allof-member/), [`358-absent-array-item`](openapi-surface/authored-probes/358-absent-array-item/), [`358-absent-items-segment`](openapi-surface/authored-probes/358-absent-items-segment/), [`358-absent-map-value`](openapi-surface/authored-probes/358-absent-map-value/), [`358-absent-property`](openapi-surface/authored-probes/358-absent-property/), [`358-absent-request-body`](openapi-surface/authored-probes/358-absent-request-body/), [`358-absent-required-property`](openapi-surface/authored-probes/358-absent-required-property/), [`358-absent-response-body`](openapi-surface/authored-probes/358-absent-response-body/), [`358-undeclared-head-properties-required`](openapi-surface/authored-probes/358-undeclared-head-properties-required/), [`376-350-declared-type-name`](openapi-surface/authored-probes/376-350-declared-type-name/), [`376-350-declared-type-name-blank`](openapi-surface/authored-probes/376-350-declared-type-name-blank/), [`376-350-declared-type-name-shared`](openapi-surface/authored-probes/376-350-declared-type-name-shared/), [`376-350-declared-type-name-slash`](openapi-surface/authored-probes/376-350-declared-type-name-slash/), [`376-350-declared-type-name-tilde`](openapi-surface/authored-probes/376-350-declared-type-name-tilde/), [`376-354-model-property-construct`](openapi-surface/authored-probes/376-354-model-property-construct/), [`376-357-tag-only-operation-id`](openapi-surface/authored-probes/376-357-tag-only-operation-id/).
+  hand-written match: [`353-method-optional-array`](openapi-surface/authored-probes/353-method-optional-array/), [`353-method-required-array`](openapi-surface/authored-probes/353-method-required-array/), [`353-promoted-required-array`](openapi-surface/authored-probes/353-promoted-required-array/), [`353-solo-required-array`](openapi-surface/authored-probes/353-solo-required-array/), [`353-string-default-control`](openapi-surface/authored-probes/353-string-default-control/), [`353-string-default-probe`](openapi-surface/authored-probes/353-string-default-probe/), [`353-string-default-scalar`](openapi-surface/authored-probes/353-string-default-scalar/), [`356-defs-pointer`](openapi-surface/authored-probes/356-defs-pointer/), [`356-defs-property`](openapi-surface/authored-probes/356-defs-property/), [`356-defs-required-property`](openapi-surface/authored-probes/356-defs-required-property/), [`358-absent-allof-member`](openapi-surface/authored-probes/358-absent-allof-member/), [`358-absent-array-item`](openapi-surface/authored-probes/358-absent-array-item/), [`358-absent-items-segment`](openapi-surface/authored-probes/358-absent-items-segment/), [`358-absent-map-value`](openapi-surface/authored-probes/358-absent-map-value/), [`358-absent-property`](openapi-surface/authored-probes/358-absent-property/), [`358-absent-request-body`](openapi-surface/authored-probes/358-absent-request-body/), [`358-absent-required-property`](openapi-surface/authored-probes/358-absent-required-property/), [`358-absent-response-body`](openapi-surface/authored-probes/358-absent-response-body/), [`358-undeclared-head-properties-required`](openapi-surface/authored-probes/358-undeclared-head-properties-required/), [`376-350-declared-type-name`](openapi-surface/authored-probes/376-350-declared-type-name/), [`376-350-declared-type-name-blank`](openapi-surface/authored-probes/376-350-declared-type-name-blank/), [`376-350-declared-type-name-shared`](openapi-surface/authored-probes/376-350-declared-type-name-shared/), [`376-350-declared-type-name-slash`](openapi-surface/authored-probes/376-350-declared-type-name-slash/), [`376-350-declared-type-name-tilde`](openapi-surface/authored-probes/376-350-declared-type-name-tilde/), [`376-354-model-property-construct`](openapi-surface/authored-probes/376-354-model-property-construct/), [`376-357-tag-only-operation-id`](openapi-surface/authored-probes/376-357-tag-only-operation-id/), [`parity-property-anyof-composed-members`](openapi-surface/authored-probes/parity-property-anyof-composed-members/), [`parity-unrequired-tag-variant-classes`](openapi-surface/authored-probes/parity-unrequired-tag-variant-classes/). The last two vary the shapes registered corpus rows 311 and 312 witness once each: an inner `oneOf` and `anyOf` beside a sibling, each with and without a discriminator, and unrequired tags with no `default` under `oneOf` and `anyOf`.
 
 Where crozier deliberately differs from Fern is decided per refusal class in
 [`fern-refusals/`](fern-refusals/README.md). Each of its 36 classes is decided
@@ -178,7 +183,7 @@ class is yet one where crozier generates and Fern does not. A `generate`
 decision, which would write an SDK by default and refuse only under
 `fern-strict`, is the registry's to make, with a wire test proving the SDK.
 
-**What the census still cannot enumerate.** The 577 are what a selector over a
+**What the census still cannot enumerate.** The 578 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
 the census cannot measure the population beyond its own reach.
 
@@ -259,7 +264,9 @@ registrations added, and the four the closed and open empty-object disjunct of
 `golden` and one `gap`) when corpus rows 168 and 169 needed it, the walk counted
 542, and `fergus` made one of the nested-composition arm's two `gap` rows,
 `anyof-anyof-variant`, `golden`. The naming and example branches of #361 add
-35 — 27 `golden` and 8 `gap` — bringing it to **577**. Counting only the
+35 — 27 `golden` and 8 `gap` — bringing it to 577, and the component
+composition of one primitive (`component-same-primitive-union`), a `handwritten`
+row, to **578**. Counting only the
 registered rows whose Fern golden crozier byte-matches as golden sources (#352)
 moved no row's category: every `golden` row's declarers include one.
 
@@ -397,7 +404,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-84, declared in `scripts/openapi-surface-census.py` and restated here, with a
+85, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -434,6 +441,14 @@ drift gate over the pair:
   `OB_Rate1_0` collide while `OBRate1` and `OBRate1_0` do not.
 - `components.schemas:nonidentifier-name` — one per component schema name whose
   Pascal casing contains a character `sanitize_identifier` replaces with `_`.
+- `components.schemas:same-primitive-union` — one per component schema whose
+  `oneOf` (else `anyOf`) holds two or more inline scalar alternatives that all
+  convert to one primitive, with nothing declared beside them — the shape
+  `same_primitive_union_last` of `src/ir.rs` reads and
+  `normalize_same_primitive_unions` of `src/openapi.rs` renames after its last
+  alternative's ordinal. Read at the Components Object, the one position where
+  the name shows; `integer` and `format: int64` convert to different primitives,
+  as Fern keeps them apart.
 - `securityScheme:$ref` — one per `components.securitySchemes` entry that is a
   Reference Object rather than a Security Scheme Object, the entry
   `normalize_security_scheme_refs` of `src/openapi.rs` resolves. The walk counts
@@ -715,7 +730,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Sixty-seven of the 84 are node-local**, which is what makes them one family:
+**Sixty-eight of the 85 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -1438,10 +1453,10 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation),
   which `just check` now runs. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 240 sources (corpus rows through 310, after the withdrawals of rows
+  acquires 243 sources (corpus rows through 313, after the withdrawals of rows
   224 and 223, with the `crozier-property-name` feature target), and the walk
-  reads the **223** registered sources, of which
-  **223** carry a committed golden; the 17 others carry none and are acquisition
+  reads the **226** registered sources, of which
+  **226** carry a committed golden; the 17 others carry none and are acquisition
   evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -1480,15 +1495,15 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 71 | 52 | 19 | 0 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 282 | 248 | 14 | 11 | 9 | 7 | 0 | 2 |
+| [`schemas`](openapi-surface/schemas.md) | 283 | 248 | 14 | 12 | 9 | 7 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 50 | 45 | 5 | 0 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 72 | 68 | 3 | 0 | 1 | 1 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 38 | 2 | 0 | 12 | 0 | 0 | 12 |
-| **total** | **577** | **492** | **52** | **11** | **22** | **8** | **0** | **14** |
+| **total** | **578** | **492** | **52** | **12** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **577** features and landed each in exactly one category:
-**492** `golden`, **52** `limitations`, **11** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **578** features and landed each in exactly one category:
+**492** `golden`, **52** `limitations`, **12** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -1639,7 +1654,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 577 rows carry 577 distinct
+**Each feature is classified exactly once.** The 578 rows carry 578 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Fifteen spec
@@ -1811,7 +1826,7 @@ is what makes the gap a *supply* problem rather than a closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 577](#what-the-walk-enumerated) is a
+[the walk's 578](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
 [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107
@@ -2978,6 +2993,17 @@ was measured by a committed probe that Fern generates from: each has a
 byte-compared against. That comparison is not parity evidence, because the
 corpus admits real specifications only.
 
+A twelfth joined later, `handwritten` from the start and never a `FIXTURE` row:
+`component-same-primitive-union`, a component composition whose alternatives
+all convert to one primitive, which Fern names after its last alternative. No
+`MANIFEST.tsv` probe measures it; its
+[hand-written fixture](openapi-surface/handwritten/same-primitive-union-components/)
+is the measurement. Its line reads `search-incomplete` because no declared
+source has been walked or queried for it, and its
+[renewed search](openapi-surface/witness-search-union-shapes/README.md) found
+the 35 documents declaring it among 693 a bounded code search returned, every
+one failing a screen.
+
 **Five read `exhausted`, six read `search-incomplete` under the scope
 exception.** Each key's reconciled record is its
 line under
@@ -3049,6 +3075,7 @@ and name every candidate the census confirmed.
 | `annotated-ref-target-string-const` | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued` | none | none | nothing a search can add: every candidate is decided |
 | `array-item-inheritance-union` | `schema.items>schema.discriminator:inheritance-union` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `AndreVelde/cars-trip` `openapi.yaml`: passes all three screens and is declined as a synthetic kata fixture, as the row's own evidence cell records. `atacan/MistralAPI` `openapi.yaml`: `fern check` exit 1, 12 errors. `opastorello/unifi-api-docs`, eight `network/v9.*/openapi.json` versions at two revisions each: no licence evidence (no `info.license`, no repository licence) and `fern check` exit 1. `airlift/airlift` `api/src/test/resources/openapi/complex-recursive.json`: passes all three screens and is declined as a unit-test resource | a publisher-owned declarer Fern accepts; GitHub or a mirror serving the refused blob again |
 | `array-item-pointer-walk-oneof` | `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `Gi60s/kaos-api` `docs/openapi.json`: no licence evidence, and Fern did not parse it. `api-evangelist` copies of Beyond Identity (three files) and Cvent (two): no licence evidence and `fern check` exit 1. Jentic's Cvent `ea` and Sellsy `2.128.0` trees, ten files: eight fail the licence screen (the aggregator's CC0 grant is admitted, the publisher's grant is unproven), and Cvent's two `*-entry.json` pass it but Fern generates an empty SDK. `api-evangelist/beyond-identity` `openapi/beyond-identity-credential-binding-jobs-api-openapi.yml`, read by the full YAML parser: no licence evidence (no `info.license`, repository licence 404), and the repository describes itself as an independent third-party profile, not Beyond Identity's publication; `fern check` at CLI 5.67.1 exits 0 over its OpenAPI 3.2.0 | a Cvent or Sellsy redistribution grant; GitHub or a mirror serving the refused blob again |
+| `component-same-primitive-union` | `components.schemas:same-primitive-union` | not asked: no declared source has been walked or queried for this key | none in a declared source. The [renewed search][union-shapes-search] found 35 among 693 documents: the 32 OpenAPI Generator petstore samples, `jstz-dev/jstz` `crates/jstz_node/openapi.json` and `quay/clair` `httptransport/api/v1/openapi.yaml` fail `fern check`, and `weather-gov/api` `assets/openapi.yaml` grants no licence | a walk or query of each declared source |
 | `oneof-array-variant-annotated-ref-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component` | none | none | nothing a search can add: every candidate is decided |
 | `oneof-array-variant-anyof-discriminated-union-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union` | none | `api-evangelist/unleash` `unleash-projects-api-openapi.yml`: no licence evidence and `fern check` exit 1. `api-evangelist/unleash` `openapi/unleash-unstable-api-openapi.yml`, read by the full YAML parser: no licence evidence and a self-described third-party profile, as the other Unleash copy; `fern check` at CLI 5.67.1 exits 0 over its OpenAPI 3.2.0 | Unleash's own publication of the document with a grant; nothing a search can add: every candidate is decided |
 | `oneof-array-variant-anyof-nullable-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` | none | `fern-api/fern` `seed/openapi/circular-references/openapi.yml` at three revisions: passes all three screens and is declined as Fern's own seed test input, which serves no API | nothing a search can add: every candidate is decided |
@@ -3058,7 +3085,11 @@ and name every candidate the census confirmed.
 | `property-sole-oneof-composed-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `api-evangelist` copies of Cvent (two files) and Infoworks (four): no licence evidence and `fern check` exit 1. `OpenRailAssociation/osrd` `editoast/openapi.yaml`: `fern check` passes and the generator exits 1. `macro-inc/macro` `service-storage/openapi.json`: `fern check` exit 1, 2 errors. Jentic's Cvent `ea` tree, five files: three fail the licence screen, and the two `*-entry.json` pass it but Fern generates an empty SDK | a Cvent redistribution grant, or a Fern that generates OSRD; GitHub or a mirror serving the refused blob again |
 | `property-sole-oneof-empty-object-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `Dynamsoft/Dynamic-Web-TWAIN` `dwt-openapi.yaml`: repository licence `NOASSERTION`, and `fern check` exit 1. `nhsengland/innovation-service-backend-api` `apps/innovations/.apim/swagger.yaml`: Fern accepts it, and its repository licence reads `NOASSERTION` | NHS England's licence evidenced for the file; GitHub or a mirror serving the refused blob again |
 
-**What would move the rest.** Nothing a search can still do closes the six
+[union-shapes-search]: openapi-surface/witness-search-union-shapes/README.md
+
+**What would move the rest.** The seventh `search-incomplete` key,
+`component-same-primitive-union`, is the other way about: every declared source
+still owes it a walk or a query. Nothing a search can still do closes the six
 `search-incomplete` keys: their only open items are the 12 blobs GitHub and
 Sourcegraph's mirror both refuse. Each would be decided the moment either
 served one again, and `scripts/witness-search-recensus.py reacquire-head --again`

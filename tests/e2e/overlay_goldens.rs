@@ -15,8 +15,9 @@
 use std::path::Path;
 
 use super::{
-    assert_generated_tree_matches, corpus_has_comparable_golden, fixture_dir, generate_corpus_with,
-    registered_diff_corpora, walk_files, Corpus,
+    assert_generated_tree_matches, corpus_golden_ledger, corpus_has_comparable_golden,
+    departure_ledger, fixture_dir, generate_corpus_with, registered_diff_corpora, walk_files,
+    Corpus,
 };
 
 /// The test that byte-compares every overlay golden, listed in
@@ -168,6 +169,44 @@ fn materialize(kind: &Kind, api: &str, overlay: &Overlay) -> tempfile::TempDir {
     tree
 }
 
+/// Every overlay golden the gate compares: its repository-relative path, the
+/// corpus whose residuals it is compared under, and the files in it no
+/// comparison reads (its manifest).
+pub(super) fn compared() -> Vec<(String, &'static Corpus, Vec<String>)> {
+    overlay_corpora()
+        .into_iter()
+        .map(|(kind, corpus, _)| {
+            (
+                format!("tests/fixtures/{}/{}", corpus.api, kind.dir),
+                corpus,
+                vec![MANIFEST.to_string()],
+            )
+        })
+        .collect()
+}
+
+/// The ledger rows the `kind` golden of `corpus` is held to: those naming the
+/// overlay for a file it carries, and those naming `expected/` for every file
+/// it takes from there unchanged — never one `overlay` removes.
+fn overlay_golden_ledger(
+    kind: &Kind,
+    corpus: &Corpus,
+    overlay: &Overlay,
+) -> Result<super::GoldenLedger, Vec<String>> {
+    let base = format!("tests/fixtures/{}/expected", corpus.api);
+    let own = walk_files(&fixture_dir(corpus.api).join(kind.dir))
+        .into_iter()
+        .collect();
+    let golden = format!("tests/fixtures/{}/{}", corpus.api, kind.dir);
+    Ok(
+        corpus_golden_ledger(departure_ledger(), &golden, corpus)?.inherit(
+            corpus_golden_ledger(departure_ledger(), &base, corpus)?,
+            own,
+            &overlay.removed,
+        ),
+    )
+}
+
 /// Every `(kind, corpus, overlay)` the gate compares, validated: each listed
 /// corpus is registered with a comparable `expected/` and carries a valid overlay.
 fn overlay_corpora() -> Vec<(&'static Kind, &'static Corpus, Overlay)> {
@@ -307,7 +346,7 @@ fn the_default_max_retries_golden_changes_only_the_clients() {
 }
 
 /// crozier's output under each setting reproduces Fern's overlay golden
-/// byte-for-byte (under the shared parity rules) for every listed corpus.
+/// byte-for-byte (under the shared comparison engine) for every listed corpus.
 /// Corpora run concurrently, and every failure is reported, not only the first.
 #[test]
 fn overlay_goldens_match_fern_output() {
@@ -325,8 +364,10 @@ fn overlay_goldens_match_fern_output() {
                 };
                 let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                     let golden = materialize(kind, corpus.api, overlay);
+                    let ledger = overlay_golden_ledger(kind, corpus, overlay)
+                        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
                     let out = generate_corpus_with(corpus, kind.flags);
-                    assert_generated_tree_matches(corpus, golden.path(), out.path());
+                    assert_generated_tree_matches(corpus, &ledger, golden.path(), out.path());
                 }));
                 if let Err(panic) = outcome {
                     let message = panic

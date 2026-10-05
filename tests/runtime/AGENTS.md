@@ -33,7 +33,7 @@ test-sdk-env` (CI's `sdk-env` job, required by `gate`), never the offline `check
   Fern 5.20's Runtime/Platform identity pair because the runnable `exhaustive`
   fixture is a legacy Fern snapshot; current managed byte fixtures gate those
   lines exactly. This is the runtime analog of the byte-diff's
-  `tests/e2e.rs::normalize_sdk_headers`. Do not add other normalizations to hide a
+  `sdk-identity-header-prefix` departure. Do not add other normalizations to hide a
   real divergence — fix the generator instead.
 - **Adding a journey.** Add a function `(sdk) -> observation dict` to
   `_recorder.JOURNEYS`; it must raise on a broken structural contract (e.g. a

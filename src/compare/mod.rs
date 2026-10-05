@@ -396,13 +396,13 @@ impl Checker<'_> {
             &format!("{label}: crozier generation finished in {crozier_seconds:.2}s"),
         );
 
-        let differences = match parity::tree_differences(
+        let compared = match parity::compare_trees(
             &reference_root,
             &crozier_root,
             None,
             self.diff_dir.is_some(),
         ) {
-            Ok(differences) => differences,
+            Ok(compared) => compared,
             Err(error) => {
                 let mut result = result_with_reason(
                     Status::CouldNotCheck,
@@ -423,8 +423,18 @@ impl Checker<'_> {
             differing: Vec::new(),
             only_in_reference: Vec::new(),
             only_in_crozier: Vec::new(),
+            departures: compared
+                .departures
+                .into_iter()
+                .map(|departure| report::Departure {
+                    id: departure.id,
+                    file: departure.file,
+                    line: departure.line,
+                })
+                .collect(),
             diff_file: None,
         };
+        let differences = compared.differences;
         for (rel, difference) in &differences {
             match difference {
                 Difference::OnlyInReference => comparison.only_in_reference.push(rel.clone()),

@@ -18,6 +18,7 @@
 pub mod cli;
 pub mod compare;
 pub mod config;
+pub mod departures;
 pub mod document_refusals;
 pub mod emit;
 pub mod error;
