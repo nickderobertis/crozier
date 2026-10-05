@@ -3257,6 +3257,59 @@ mod tests {
     use super::*;
 
     #[test]
+    fn a_base_path_reads_its_placeholders_and_their_map_form_defaults() {
+        let object: BasePath = serde_json::from_value(serde_json::json!({
+            "path": "/{edition}/{realm}/{edition}/",
+            "paths-include-base-path": true,
+            "parameters": {"edition": {"type": "string", "default": "v2"}, "realm": {"type": "string"}}
+        }))
+        .expect("the object form deserializes");
+        assert_eq!(object.route_prefix(), "");
+        assert_eq!(
+            object.parameters(),
+            [
+                BasePathParameter {
+                    name: "edition".into(),
+                    default: Some("v2".into())
+                },
+                BasePathParameter {
+                    name: "realm".into(),
+                    default: None
+                },
+            ]
+        );
+        // A list of Parameter Objects names no default, measured at Fern 5.20.0.
+        let list: BasePath = serde_json::from_value(serde_json::json!({
+            "path": "/{edition}",
+            "parameters": [{"name": "edition", "in": "path", "schema": {"default": "v2"}}]
+        }))
+        .expect("the list form deserializes");
+        assert_eq!(list.route_prefix(), "/{edition}");
+        assert_eq!(list.parameters()[0].default, None);
+        // The string form prefixes every route; an unclosed brace names nothing.
+        let string: BasePath =
+            serde_json::from_value(serde_json::json!("/v1/{open")).expect("string form");
+        assert_eq!(string.route_prefix(), "/v1/{open");
+        assert!(string.parameters().is_empty());
+    }
+
+    #[test]
+    fn x_crozier_base_path_wins_over_x_fern_base_path() {
+        let both: OpenApi = serde_yaml_ng::from_str(
+            "openapi: 3.0.3\nx-fern-base-path: /fern\nx-crozier-base-path: /crozier\npaths: {}\n",
+        )
+        .expect("document deserializes");
+        assert_eq!(
+            both.base_path().map(BasePath::route_prefix),
+            Some("/crozier")
+        );
+        let fern: OpenApi =
+            serde_yaml_ng::from_str("openapi: 3.0.3\nx-fern-base-path: /fern\npaths: {}\n")
+                .expect("document deserializes");
+        assert_eq!(fern.base_path().map(BasePath::route_prefix), Some("/fern"));
+    }
+
+    #[test]
     fn null_schema_nodes_degrade_to_malformed_unknowns() {
         let parsed: MaybeSchema = serde_json::from_str("null").expect("null degrades");
         assert!(parsed.0.malformed);

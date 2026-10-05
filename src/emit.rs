@@ -13854,3 +13854,468 @@ mod tests {
         assert!(source.ends_with("        plain\n\n"));
     }
 }
+
+#[cfg(test)]
+mod parameter_lowering_tests {
+    //! Each parameter-lowering rule driven through the whole generator, one
+    //! document per rule, asserting on the files a user receives.
+    use serde_json::{json, Value};
+
+    /// Every file the generator writes for `document`, keyed by path.
+    fn files(document: Value) -> std::collections::BTreeMap<String, String> {
+        let doc: crate::openapi::OpenApi =
+            serde_json::from_value(document).expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .expect("the config is well formed");
+        super::generate(&crate::ir::build(&doc, &config))
+            .expect("the document generates")
+            .into_iter()
+            .map(|file| {
+                (
+                    file.path.to_string_lossy().replace('\\', "/"),
+                    file.contents,
+                )
+            })
+            .collect()
+    }
+
+    /// A document of `GET` operations tagged `sky`, one per `(path, parameters)`.
+    fn document(version: &str, operations: &[(&str, Value)]) -> Value {
+        let mut paths = serde_json::Map::new();
+        for (name, parameters) in operations {
+            paths.insert(
+                format!("/sky/{name}"),
+                json!({"get": {
+                    "operationId": name,
+                    "tags": ["sky"],
+                    "parameters": parameters,
+                    "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"type": "string"}}}}}
+                }}),
+            );
+        }
+        json!({"openapi": version, "info": {"title": "Api", "version": "1"}, "paths": paths})
+    }
+
+    fn query(required: bool, schema: Value) -> Value {
+        json!([{"name": "band", "in": "query", "required": required, "schema": schema}])
+    }
+
+    fn has(files: &std::collections::BTreeMap<String, String>, path: &str) -> bool {
+        files.contains_key(path)
+    }
+
+    #[test]
+    fn a_query_union_sits_in_the_tag_exactly_when_required_iff_not_nullable() {
+        let mix = json!([{"type": "string"}, {"type": "integer"}]);
+        let mix_null = json!([{"type": "string"}, {"type": "integer"}, {"type": "null"}]);
+        let consts = json!([{"const": "near"}, {"const": "far"}]);
+        let files = files(document(
+            "3.1.0",
+            &[
+                ("reqMix", query(true, json!({"anyOf": mix}))),
+                (
+                    "optMix",
+                    query(false, json!({"anyOf": mix, "title": "Band"})),
+                ),
+                ("optNullMix", query(false, json!({"anyOf": mix_null}))),
+                ("reqNullMix", query(true, json!({"oneOf": mix_null}))),
+                ("optConsts", query(false, json!({"anyOf": consts}))),
+                (
+                    "optNullable",
+                    query(false, json!({"anyOf": mix, "nullable": true})),
+                ),
+                (
+                    "headerMix",
+                    json!([{"name": "X-Band", "in": "header", "required": false, "schema": {"anyOf": mix}}]),
+                ),
+                (
+                    "soleEnum",
+                    query(
+                        true,
+                        json!({"anyOf": [{"type": "string", "enum": ["a", "b"]}, {"type": "null"}]}),
+                    ),
+                ),
+            ],
+        ));
+        for tag_local in [
+            "src/api/sky/types/req_mix_request_band.py",
+            "src/api/sky/types/opt_null_mix_request_band.py",
+            "src/api/sky/types/opt_nullable_request_band.py",
+            "src/api/sky/types/header_mix_request_x_band.py",
+            "src/api/sky/types/sole_enum_request_band.py",
+        ] {
+            assert!(has(&files, tag_local), "{tag_local} missing");
+        }
+        for root in [
+            "src/api/types/opt_mix_request_band.py",
+            "src/api/types/req_null_mix_request_band.py",
+            "src/api/types/opt_consts_request_band.py",
+        ] {
+            assert!(has(&files, root), "{root} missing");
+        }
+        // A 3.0 `nullable: true` beside the composition makes the argument optional.
+        let raw = &files["src/api/sky/raw_client.py"];
+        assert!(
+            raw.contains("band: typing.Optional[OptNullableRequestBand] = None"),
+            "{raw}"
+        );
+    }
+
+    #[test]
+    fn an_array_query_parameter_names_its_union_element() {
+        let files = files(document(
+            "3.1.0",
+            &[
+                (
+                    "focus",
+                    query(
+                        false,
+                        json!({"type": "array", "items": {"anyOf": [
+                            {"type": "string", "enum": ["wide", "tele"]}, {"type": "integer"}
+                        ]}}),
+                    ),
+                ),
+                (
+                    "nullItems",
+                    query(
+                        true,
+                        json!({"type": "array", "items": {"anyOf": [
+                            {"type": "string"}, {"type": "integer"}, {"type": "null"}
+                        ]}}),
+                    ),
+                ),
+            ],
+        ));
+        assert_eq!(
+            files["src/api/sky/types/focus_request_band_item.py"]
+                .lines()
+                .last()
+                .unwrap_or_default(),
+            "FocusRequestBandItem = typing.Union[FocusRequestBandItemZero, int]"
+        );
+        assert!(has(
+            &files,
+            "src/api/sky/types/focus_request_band_item_zero.py"
+        ));
+        let raw = &files["src/api/sky/raw_client.py"];
+        assert!(
+            raw.contains(
+                "typing.Union[FocusRequestBandItem, typing.Sequence[FocusRequestBandItem]]"
+            ),
+            "{raw}"
+        );
+        // A `null` member leaves the alias, and the signature names it bare.
+        assert!(
+            raw.contains("typing.Sequence[NullItemsRequestBandItem]"),
+            "{raw}"
+        );
+        // The scalar element reaches the URL as text.
+        assert!(raw.contains("\"band\": band,"), "{raw}");
+        // A required one is exampled by its element's first member.
+        let client = &files["src/api/sky/client.py"];
+        assert!(client.contains("band=[\"band\"]"), "{client}");
+    }
+
+    #[test]
+    fn a_scalar_or_array_query_parameter_is_one_or_many_only_where_required_iff_nullable() {
+        let one_or_many = |null: bool| {
+            let mut members = vec![
+                json!({"type": "integer"}),
+                json!({"type": "array", "items": {"type": "integer"}}),
+            ];
+            if null {
+                members.push(json!({"type": "null"}));
+            }
+            json!({"oneOf": members})
+        };
+        let files = files(document(
+            "3.1.0",
+            &[
+                ("required", query(true, one_or_many(false))),
+                ("requiredNull", query(true, one_or_many(true))),
+                ("optional", query(false, one_or_many(false))),
+                (
+                    "enumOrMany",
+                    query(
+                        false,
+                        json!({"anyOf": [
+                            {"type": "string", "enum": ["x", "y"]},
+                            {"type": "array", "items": {"type": "string", "enum": ["x", "y"]}}
+                        ]}),
+                    ),
+                ),
+            ],
+        ));
+        let raw = &files["src/api/sky/raw_client.py"];
+        // Required and not nullable: a named, required, converted union.
+        assert!(has(&files, "src/api/sky/types/required_request_band.py"));
+        assert!(raw.contains("band: RequiredRequestBand,"), "{raw}");
+        assert!(
+            raw.contains("object_=band, annotation=RequiredRequestBand, direction=\"write\""),
+            "{raw}"
+        );
+        // The other diagonal keeps the optional one-or-many shorthand.
+        assert!(
+            raw.contains("band: typing.Optional[typing.Union[int, typing.Sequence[int]]] = None"),
+            "{raw}"
+        );
+        assert!(!has(&files, "src/api/types/optional_request_band.py"));
+        // An enum spelling is a union whose array member names its element.
+        assert!(has(
+            &files,
+            "src/api/types/enum_or_many_request_band_one_item.py"
+        ));
+        // A required, nullable one is exampled by its scalar in the docstring and
+        // as a list in the reference.
+        let client = &files["src/api/sky/client.py"];
+        assert!(
+            client.contains("client.sky.required_null(\n            band=1,\n        )"),
+            "{client}"
+        );
+        assert!(
+            client.contains("client.sky.required(\n            band=1,\n        )"),
+            "{client}"
+        );
+        let reference = &files["reference.md"];
+        assert!(
+            reference.contains("client.sky.required_null(\n    band=[\n        1\n    ],\n)"),
+            "{reference}"
+        );
+    }
+
+    #[test]
+    fn a_query_union_over_a_component_string_enum_is_written_raw() {
+        let mut document = document(
+            "3.1.0",
+            &[(
+                "weave",
+                query(
+                    true,
+                    json!({"anyOf": [{"type": "string"}, {"$ref": "#/components/schemas/Weave"}]}),
+                ),
+            )],
+        );
+        document["components"] =
+            json!({"schemas": {"Weave": {"type": "string", "enum": ["plain", "twill"]}}});
+        let files = files(document);
+        let raw = &files["src/api/sky/raw_client.py"];
+        assert!(raw.contains("\"band\": band,"), "{raw}");
+        assert!(
+            !raw.contains("convert_and_respect_annotation_metadata"),
+            "{raw}"
+        );
+        // The `str` member ahead of the enum holds its value as plain text.
+        let client = &files["src/api/sky/client.py"];
+        assert!(client.contains("band=\"plain\","), "{client}");
+    }
+
+    fn header_document(schemes: Value, names: &[&str]) -> Value {
+        let operations: Vec<(String, Value)> = names
+            .iter()
+            .enumerate()
+            .map(|(index, name)| {
+                (
+                    format!("fly{index}"),
+                    json!([{"name": name, "in": "header", "required": false, "schema": {"type": "string"}}]),
+                )
+            })
+            .collect();
+        let borrowed: Vec<(&str, Value)> = operations
+            .iter()
+            .map(|(name, value)| (name.as_str(), value.clone()))
+            .collect();
+        let mut document = document("3.0.3", &borrowed);
+        document["components"] = json!({"securitySchemes": schemes});
+        document["security"] = json!([{"tok": []}]);
+        document
+    }
+
+    #[test]
+    fn only_the_exact_spelling_of_a_credential_header_is_dropped() {
+        let bearer = files(header_document(
+            json!({"tok": {"type": "http", "scheme": "bearer"}}),
+            &["authorization", "AUTHORIZATION", "Authorization"],
+        ));
+        let raw = &bearer["src/api/sky/raw_client.py"];
+        assert!(
+            raw.contains("\"authorization\": str(authorization)"),
+            "{raw}"
+        );
+        assert!(
+            raw.contains("\"AUTHORIZATION\": str(authorization)"),
+            "{raw}"
+        );
+        assert!(!raw.contains("\"Authorization\""), "{raw}");
+        let key = files(header_document(
+            json!({"tok": {"type": "apiKey", "in": "header", "name": "X-Kite-Key"}}),
+            &["X-Kite-Key", "x-kite-key"],
+        ));
+        let raw = &key["src/api/sky/raw_client.py"];
+        assert!(raw.contains("\"x-kite-key\""), "{raw}");
+        assert!(!raw.contains("\"X-Kite-Key\": str("), "{raw}");
+        // A header argument is no argument to the README's abbreviated calls.
+        assert!(
+            key["README.md"].contains("client.sky.fly0()"),
+            "{}",
+            key["README.md"]
+        );
+    }
+
+    #[test]
+    fn a_subset_promoted_string_header_with_a_default_is_a_literal() {
+        let mut operations = Vec::new();
+        for index in 0..4 {
+            let mut parameters = vec![
+                json!({"name": "X-Count", "in": "header", "required": false, "schema": {"type": "integer", "default": 3}}),
+            ];
+            if index < 3 {
+                parameters.push(json!({"name": "Dry-Run", "in": "header", "required": false, "schema": {"type": "string", "default": "off"}}));
+            } else {
+                parameters.clear();
+            }
+            operations.push((format!("op{index}"), Value::Array(parameters)));
+        }
+        let borrowed: Vec<(&str, Value)> = operations
+            .iter()
+            .map(|(name, value)| (name.as_str(), value.clone()))
+            .collect();
+        let files = files(document("3.0.3", &borrowed));
+        let client = &files["src/api/client.py"];
+        assert!(
+            client.contains("dry_run: typing.Optional[typing.Literal[\"off\"]] = None,"),
+            "{client}"
+        );
+        // A non-string default keeps the plain scalar.
+        assert!(
+            client.contains("count: typing.Optional[int] = None,"),
+            "{client}"
+        );
+        let wrapper = &files["src/api/core/client_wrapper.py"];
+        assert!(
+            wrapper.contains("headers[\"Dry-Run\"] = self._dry_run\n"),
+            "{wrapper}"
+        );
+    }
+
+    fn base_path_document(extension: (&str, Value), include: bool) -> Value {
+        let prefix = if include { "/{edition}" } else { "" };
+        let mut document = json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "servers": [{"url": "https://maps.example.org"}],
+            "paths": {
+                format!("{prefix}/regions"): {"post": {
+                    "operationId": "createRegion",
+                    "tags": ["regions"],
+                    "parameters": if include {
+                        json!([{"name": "edition", "in": "path", "required": true, "schema": {"type": "string"}}])
+                    } else {
+                        json!([])
+                    },
+                    "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Region"}}}},
+                    "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Region"}}}}}
+                }}
+            },
+            "components": {"schemas": {"Region": {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]}}}
+        });
+        document[extension.0] = extension.1;
+        document
+    }
+
+    #[test]
+    fn a_base_path_lifts_its_placeholders_to_the_client() {
+        let defaulted = files(base_path_document(
+            (
+                "x-fern-base-path",
+                json!({"path": "/{edition}", "paths-include-base-path": true, "parameters": {"edition": {"type": "string", "default": "v2"}}}),
+            ),
+            true,
+        ));
+        let client = &defaulted["src/api/client.py"];
+        assert!(
+            client.contains("edition: typing.Optional[str] = \"v2\","),
+            "{client}"
+        );
+        assert!(client.contains("        edition=\"v2\",\n"), "{client}");
+        let wrapper = &defaulted["src/api/core/client_wrapper.py"];
+        assert!(
+            wrapper.contains("edition: typing.Optional[str] = None,"),
+            "{wrapper}"
+        );
+        assert!(!wrapper.contains("headers[\"edition\"]"), "{wrapper}");
+        let raw = &defaulted["src/api/regions/raw_client.py"];
+        assert!(
+            raw.contains("f\"{encode_path_param(self._client_wrapper._edition)}/regions\""),
+            "{raw}"
+        );
+        assert!(
+            raw.contains("def create_region(\n        self, *, name: str"),
+            "{raw}"
+        );
+        assert!(!raw.contains("content-type"), "{raw}");
+        assert!(
+            !defaulted["README.md"].contains("edition="),
+            "{}",
+            defaulted["README.md"]
+        );
+
+        // Without a default the argument is required, and the Markdown constructs
+        // the client with it.
+        let required = files(base_path_document(
+            ("x-crozier-base-path", json!({"path": "/{edition}"})),
+            false,
+        ));
+        assert!(required["src/api/client.py"].contains("        edition: str,\n"));
+        assert!(
+            required["README.md"].contains("client = ApiApi(\n    edition=\"YOUR_EDITION\",\n)"),
+            "{}",
+            required["README.md"]
+        );
+        assert!(required["src/api/regions/raw_client.py"]
+            .contains("self._client_wrapper._edition)}/regions"));
+
+        // `x-crozier-base-path` wins over `x-fern-base-path`.
+        let mut both = base_path_document(("x-fern-base-path", json!("/v1")), false);
+        both["x-crozier-base-path"] = json!("/v2/");
+        let both = files(both);
+        assert!(
+            both["src/api/regions/raw_client.py"].contains("\"v2/regions\""),
+            "{}",
+            both["src/api/regions/raw_client.py"]
+        );
+    }
+
+    #[test]
+    fn a_map_value_under_a_one_letter_owner_is_named_across_the_join() {
+        let files = files(json!({
+            "openapi": "3.0.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {"Dto": {"type": "object", "properties": {
+                "f": {"type": "object", "properties": {
+                    "w": {"type": "object", "additionalProperties": {
+                        "type": "object", "properties": {"id": {"type": "number"}}
+                    }}
+                }}
+            }}}}
+        }));
+        assert!(
+            files
+                .keys()
+                .any(|path| path.ends_with("types/dto_fw_value.py")),
+            "{:?}",
+            files.keys()
+        );
+        assert!(files
+            .values()
+            .any(|text| text.contains("class DtoFwValue(")));
+    }
+}

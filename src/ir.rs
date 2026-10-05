@@ -6567,6 +6567,32 @@ impl InlineHoister<'_> {
                 variants.push(TypeRef::Named(variant_name));
                 continue;
             }
+            // An array member whose element is an inline string enum names that
+            // enum `{Variant}Item`: LangGraph's `stream_modes` is `anyOf: [enum,
+            // array of that enum]`, and Fern's list element is a
+            // `…StreamModesOneItem` beside the `…StreamModesZero` member.
+            let enum_item = member
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary)
+                .filter(|ty| *ty == "array")
+                .and(member.items.as_deref())
+                .filter(|items| items.reference.is_none())
+                .and_then(|items| Some((items, string_enum_values(items)?)));
+            if let Some((items, values)) = enum_item {
+                let item_name = format!(
+                    "{}Item",
+                    variant_class_name(&name, index, member, &siblings)
+                );
+                self.out.push(TypeDecl::Enum(build_enum(
+                    items,
+                    &item_name,
+                    values,
+                    clean_doc(items.description.as_deref()),
+                )));
+                variants.push(sequence_of(member, TypeRef::Named(item_name)));
+                continue;
+            }
             // An array member whose element is an annotated `$ref` copies
             // that target under the member's own name: braintrust's
             // `score_type` query parameter is `anyOf: [$ref
@@ -7207,6 +7233,13 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
         _ => return None,
     };
     let item = array.items.as_deref()?;
+    // An inline enum is no plain scalar: LangGraph's optional `stream_modes` is
+    // `anyOf: [enum, array of that enum]`, and Fern names it a union
+    // (`…StreamModesZero` beside `…StreamModesOneItem`) rather than the
+    // one-or-many shorthand.
+    if string_enum_values(scalar).is_some() || string_enum_values(item).is_some() {
+        return None;
+    }
     (base_type_ref(item) == base_type_ref(scalar)).then_some(*array)
 }
 
@@ -10452,7 +10485,10 @@ impl Builder<'_> {
             }
             return legacy_nullable_map_type_ref(prop_schema);
         }
-        let owner_prop = format!("{owner}{}", naming::class_name(prop));
+        // Re-cased across the join, as every other hoisted name is: a one-letter
+        // property after a one-letter owner segment reads `Fw`, not `FW`
+        // (lootlog's `CreateBattleDtoEventsItemFwValue`).
+        let owner_prop = naming::child_class_name(owner, prop);
         if let Some(type_ref) = self.annotated_ref_type(&owner_prop, prop_schema) {
             return type_ref;
         }
