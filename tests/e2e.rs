@@ -2762,7 +2762,10 @@ fn parameter_lowering_measurements_match_fern() {
         .filter(|path| path.join("fern-expected").is_dir())
         .collect();
     cases.sort();
-    assert!(cases.len() >= 6, "the measured cases are missing: {cases:?}");
+    assert!(
+        cases.len() >= 6,
+        "the measured cases are missing: {cases:?}"
+    );
     let failures: Vec<String> = cases
         .iter()
         .flat_map(|case| {
@@ -2771,9 +2774,15 @@ fn parameter_lowering_measurements_match_fern() {
                 .map(|name| name.to_string_lossy().into_owned())
                 .unwrap_or_default();
             {
-            let expected = case.join("fern-expected");
-            filtered_tree_failures(&name, &golden_path(&expected), &case.join("openapi.yml"), &expected, &[])
-        }
+                let expected = case.join("fern-expected");
+                filtered_tree_failures(
+                    &name,
+                    &golden_path(&expected),
+                    &case.join("openapi.yml"),
+                    &expected,
+                    &[],
+                )
+            }
         })
         .collect();
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
