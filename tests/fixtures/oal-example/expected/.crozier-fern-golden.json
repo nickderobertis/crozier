@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "oal-example",
+  "corpus_spec_ref": "9c76fd5fd74c1f64c62a219aa2156b021a820f4a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/oxlip-lang/oal/9c76fd5fd74c1f64c62a219aa2156b021a820f4a/examples/openapi.yaml"
+}

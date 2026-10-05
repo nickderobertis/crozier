@@ -5002,6 +5002,9 @@ const CORPORA: &[&Corpus] = &[
     &FIWARE_CONTEXT_GENERATOR,
     &HASURA_METADATA,
     &ZOONK,
+    &OPENFOODFACTS_TAXONOMY_EDITOR,
+    &QONTRACT_API,
+    &OAL_EXAMPLE,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7876,6 +7879,47 @@ const HASURA_METADATA: Corpus = Corpus {
 /// `oneOf` offers a closed empty object
 const ZOONK: Corpus = Corpus {
     api: "zoonk",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openfoodfacts-taxonomy-editor`: corpus row 310, the Open Food Facts
+/// taxonomy editor's API, whose discriminated search-filter members list
+/// `readOnly` properties in `required`
+const OPENFOODFACTS_TAXONOMY_EDITOR: Corpus = Corpus {
+    api: "openfoodfacts-taxonomy-editor",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `qontract-api`: corpus row 311, qontract-reconcile's Qontract API, whose
+/// task results' actions are `$ref` members tagging `action_type` with a
+/// one-value `enum` that `required` leaves out
+const QONTRACT_API: Corpus = Corpus {
+    api: "qontract-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `oal-example`: corpus row 312, the OAL project's example description,
+/// whose `obj3.stuff` property `anyOf` holds an inline `oneOf` member
+const OAL_EXAMPLE: Corpus = Corpus {
+    api: "oal-example",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14504,6 +14548,21 @@ fn hasura_metadata_matches_fern_output() {
 #[test]
 fn zoonk_matches_fern_output() {
     assert_committed_corpus_matches(&ZOONK);
+}
+
+#[test]
+fn openfoodfacts_taxonomy_editor_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENFOODFACTS_TAXONOMY_EDITOR);
+}
+
+#[test]
+fn qontract_api_matches_fern_output() {
+    assert_committed_corpus_matches(&QONTRACT_API);
+}
+
+#[test]
+fn oal_example_matches_fern_output() {
+    assert_committed_corpus_matches(&OAL_EXAMPLE);
 }
 
 #[test]

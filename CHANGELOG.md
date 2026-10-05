@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.100](https://github.com/nickderobertis/crozier/compare/v0.0.99...v0.0.100) - 2026-10-05
+
+### Fixed
+
+- *(ir)* match Fern on same-primitive aliases and inferred union variants ([#410](https://github.com/nickderobertis/crozier/pull/410))
+
 ## [0.0.99](https://github.com/nickderobertis/crozier/compare/v0.0.98...v0.0.99) - 2026-10-05
 
 ### Added

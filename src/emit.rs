@@ -643,7 +643,11 @@ fn example_import_cmp(left: &str, right: &str) -> Ordering {
     if right_prefix.is_some_and(|prefix| left.starts_with(prefix)) {
         return Ordering::Greater;
     }
-    left.cmp(right)
+    // isort orders the names case-insensitively, as Fern's examples do:
+    // `OcmGroupsCluster` comes before `OcmGroupUser`.
+    left.to_ascii_lowercase()
+        .cmp(&right.to_ascii_lowercase())
+        .then_with(|| left.cmp(right))
 }
 
 /// Render a resolved type to a [`Doc`] expression, registering needed imports.
@@ -11074,6 +11078,21 @@ mod tests {
             ),
             Greater
         );
+    }
+
+    #[test]
+    fn example_imports_order_names_case_insensitively() {
+        use std::cmp::Ordering::{Greater, Less};
+
+        assert_eq!(
+            example_import_cmp("RouteGroupsTable", "RouteGroupUser"),
+            Less
+        );
+        assert_eq!(
+            example_import_cmp("RouteGroupUser", "RouteGroupsTable"),
+            Greater
+        );
+        assert_eq!(example_import_cmp("FernApi", "fernApi"), Less);
     }
 
     #[test]

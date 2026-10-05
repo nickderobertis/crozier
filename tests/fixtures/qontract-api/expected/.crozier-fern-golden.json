@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "qontract-api",
+  "corpus_spec_ref": "4f643a29084cb9b9e8c90e878e03bbe6ac80a5db",
+  "corpus_spec_url": "https://raw.githubusercontent.com/app-sre/qontract-reconcile/4f643a29084cb9b9e8c90e878e03bbe6ac80a5db/qontract_api/openapi.json"
+}
