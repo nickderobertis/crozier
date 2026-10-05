@@ -123,8 +123,8 @@ const QUERY_PARAMETERS_PACKAGED_EXPECTATIONS: &[PackagedExpectation] = &[
     },
     PackagedExpectation {
         path: "README.md",
-        len: 5_697,
-        fnv1a64: 0x92e578526100bf2a,
+        len: 5_785,
+        fnv1a64: 0xfb7f72943e9f6a02,
     },
     PackagedExpectation {
         path: "pyproject.toml",
@@ -133,13 +133,13 @@ const QUERY_PARAMETERS_PACKAGED_EXPECTATIONS: &[PackagedExpectation] = &[
     },
     PackagedExpectation {
         path: "reference.md",
-        len: 2_309,
-        fnv1a64: 0x1dbb55afea9456ef,
+        len: 2_347,
+        fnv1a64: 0xffb6dc8345d1e06e,
     },
     PackagedExpectation {
         path: "src/seed/client.py",
-        len: 16_711,
-        fnv1a64: 0x811b4c43d5d8a428,
+        len: 16_779,
+        fnv1a64: 0xeb272459016f560a,
     },
     PackagedExpectation {
         path: "src/seed/core/client_wrapper.py",
@@ -6956,7 +6956,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/products/client.py",
         "src/fern/products/raw_client.py",
         "src/fern/products/types/create_products_request_product.py",
-        "src/fern/scripts/client.py",
         "src/fern/scripts/raw_client.py",
         "src/fern/sites/__init__.py",
         "src/fern/sites/activity_logs/raw_client.py",
