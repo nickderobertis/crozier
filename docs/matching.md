@@ -44,28 +44,25 @@ and compares crozier's output tree with `tests/fixtures/<api>/expected/**`. The
 flat goldens (`expected-flat/`, see [The flat layout](#the-flat-layout)) are
 compared the same way against `crozier generate --layout flat`.
 
-The byte-match rules are defined once, in [`src/parity.rs`](../src/parity.rs)
+The comparison is defined once, in [`src/parity.rs`](../src/parity.rs)
 (`crozier::parity`), and shared by the corpus gate, its `just fixtures-gaps` /
-`just fixtures-diff` reporters and `crozier compare`. Each rule is
-applied to both sides; everything else must match exactly:
+`just fixtures-diff` reporters and `crozier compare`. Everything must match
+exactly, except:
 
-- **Python comments** are stripped from every `.py` file with the **same**
-  stripper that produced the committed fixtures (`crozier::strip_python_comments`,
-  exposed as `crozier internal-strip`). A committed golden is already stripped and
-  stripping it again changes nothing (a test pins that over every committed
-  golden), so a live, unstripped reference is compared under the same rule.
-- **SDK-identity headers**: the `X-Fern-SDK-Name` / `X-Fern-SDK-Version` lines
-  (and crozier's `X-Crozier-` spellings of them) are dropped from every file, and
-  the remaining `X-Crozier-` prefix is read as `X-Fern-`
-  ([why](#crozier-vs-fern-sdk-identity-headers)).
-- **`__init__.py` import order**: after the comment strip, leading blank lines
-  are dropped and the imports sorted with `ruff check --select I --fix`, so the
-  never-executed `TYPE_CHECKING` block's order does not gate the match.
-- **`.fern/metadata.json`**: the `generatorConfig` block Fern records (the
-  `python_enums` setting every `expected/` golden is generated with) is dropped.
-  The rule applies to that exact SDK-relative path only: any other file whose
-  name ends in `metadata.json` (`types/user_metadata.json`, a nested
-  `foo/metadata.json`) is SDK content and is compared as written.
+- **Python comments**, which are stripped from every `.py` file on both sides
+  with the **same** stripper that produced the committed fixtures
+  (`crozier::strip_python_comments`, exposed as `crozier internal-strip`). A
+  committed golden is already stripped and stripping it again changes nothing (a
+  test pins that over every committed golden), so a live, unstripped reference
+  is compared under the same rule. An `__init__.py`'s leading blank lines — where
+  its header comments stood — are dropped too.
+- **Intended departures**: every place crozier writes something other than Fern
+  on purpose — the `X-Crozier-*` SDK-identity headers, the `generatorConfig` block
+  of `.fern/metadata.json`, an `__init__.py`'s `TYPE_CHECKING` import order, a Fern
+  defect crozier corrects — is an entry of the
+  [departure catalog](departures/README.md), applied line by line through its
+  rule and reported by id, file and line. A difference no rule explains still
+  fails, even beside a departure.
 - **The trees**: the comparison is bidirectional — a file on only one side is a
   difference — a symbolic link on either side is refused rather than followed,
   and a golden's `.crozier-fern-golden.json` provenance record is not part of
@@ -190,91 +187,21 @@ comparison.
 
 ## Fern defects crozier does not reproduce
 
-Matching Fern does not mean copying its bugs. A **Fern defect** is output that is
-wrong on its own terms: an example or README snippet that would not import or
-run, an example value invalid for its own schema, or output contradicting the
-code Fern generated beside it. Where crozier writes the correct output instead,
-the committed golden still holds Fern's bytes, so the comparison needs an exact
-account of the difference. That account is
-[`tests/fixtures/fern-defects.toml`](../tests/fixtures/fern-defects.toml); its
-loader and substitution are `tests/e2e/fern_defects.rs`, and every comparison
-uses that one definition.
+Matching Fern does not mean copying its bugs. Where Fern's output is wrong on
+its own terms — under the defect rule in
+[`departures/README.md`](departures/README.md#the-defect-rule) — crozier writes
+the correct output, and the difference is a `fern-defect` entry of the departure
+catalog. Each golden's departures are recorded line by line in
+[`tests/fixtures/departures-ledger.tsv`](../tests/fixtures/departures-ledger.tsv),
+which every golden comparison holds itself to exactly.
 
-**Shape.** An array of `[[defect]]` tables, sorted by `id`, each with exactly
-these string keys and no other:
-
-| Key | Holds |
-| --- | --- |
-| `id` | a unique lower-kebab slug naming the shape in crozier's own terms |
-| `gap` | the gap the entry belongs to, as the coverage report's proof index names it |
-| `golden` | the repository-relative path of the committed Fern golden tree |
-| `file` | the path of one file inside that tree |
-| `fern` | one or more whole lines exactly as the golden holds them, occurring once in that file |
-| `crozier` | the whole lines crozier writes in their place (empty only where it writes none) |
-| `reason` | one line saying why Fern's lines are wrong on their own terms |
-| `evidence` | a committed note under `docs/fern-defects/` recording the command that shows the defect and its result |
-
-**The substitution.** Every comparison of crozier's output with a committed Fern
-golden — each corpus's `expected/` with `fern-strict` off and on, the overlay
-and flat goldens, the probe, authored-probe and hand-written trees, the gap and
-diff reporters, and the in-process fixture comparison of `tests/generation.rs` —
-first replaces, in each file an entry names, the entry's `fern` lines with its
-`crozier` lines, then requires crozier's file to equal the result under the
-gate's usual normalization. Each entry's lines are located in the original Fern
-file, trying every line start so overlapping occurrences count, and every entry
-for a file is applied at once, so no substitution can create or remove another
-entry's occurrence. An overlay golden takes the entries naming `expected/` for
-the files it inherits unchanged (never one its manifest removes), and its own
-entries for the files it carries. With no entry, every comparison is exactly the
-one it was; the generation comparison still leaves a mismatching module no
-entry names uncounted, and fails one an entry names.
-
-**Validated once, against the compared goldens.** Both test binaries load the
-registry through the same loader, which validates every entry against
-[`tests/fixtures/compared-goldens.json`](../tests/fixtures/compared-goldens.json):
-each golden a comparison reads, the files in it no comparison reads (an
-overlay's manifest; the provenance record is never walked), and the corpus's
-file-level carve-outs other than repository scaffolding, which crozier never
-emits, so an entry on it fails every comparison anyway. `tests/e2e.rs` derives that inventory from the
-comparisons' own registrations, and `compared_goldens_inventory_is_current`
-fails, printing the command that regenerates it, when the committed copy
-differs — after registering a corpus, an overlay or a flat golden, for
-instance. Every registry error is fatal wherever it is found.
-
-**What each failure means.** The comparison fails, naming the entry, when:
-
-- the `fern` lines do not start exactly one line of the original file, or two
-  entries' lines overlap — the entry no longer locates one construct of its own,
-  so it cannot be trusted to replace only it;
-- the entry names a golden the inventory does not record, a `file` that is not
-  a plain relative path inside it (absolute, or with an empty, `.` or `..`
-  part, or a backslash), or a file no comparison of it reads — it accounts for
-  nothing a gate checks;
-- crozier wrote no file the entry names — it cannot apply;
-- `fern` equals `crozier` — it accounts for no difference;
-- crozier's file already equals the unsubstituted Fern file — the entry is
-  stale, and must be removed rather than left to excuse a future regression;
-- `reason` is empty (or more than one line), or `evidence` is not a committed
-  file under `docs/fern-defects/` — the claim that Fern is wrong is unsupported;
-- the same file is also carved out at file level — an `unmatched` entry, a
-  crozier-only file, a file pinned to crozier's own bytes, or repository
-  scaffolding crozier does not emit — so it would be accounted for twice;
-- ids are duplicated or out of order, or a table carries a key that is missing,
-  unknown or not a string.
-
-**Why line-level, and stricter than the residual manifest.** The residual
-manifest above is file-level: an `unmatched` path stops the comparison of a whole
-file, and a coarse residual of that kind once hid a real gap in this corpus. A
-defect entry instead excuses only the exact lines it quotes, once, in one file;
-every other byte of that file is still compared, and the entry fails the moment
-crozier stops needing it. Unlike an `unmatched` path it records a decision —
-Fern is wrong here — rather than an open gap, so it carries its reason and its
-evidence with it.
-
-The `crozier compare` journeys that use a golden as a stand-in for a user's own
-reference SDK apply no entry: the command compares a user's reference, which the
-registry knows nothing about. An entry on such a golden makes those journeys
-report the difference rather than hide it.
+A departure entry is stricter than the residual manifest above. An `unmatched`
+path stops the comparison of a whole file, and a coarse residual of that kind
+once hid a real gap in this corpus; a departure excuses only the lines its rule
+recognises, every other byte of the file is still compared, and its ledger row
+fails the moment crozier stops departing there. Unlike an `unmatched` path it
+records a decision rather than an open gap, so its entry carries its reason and
+its evidence.
 
 ## Verifying the tool as a user runs it
 
@@ -311,7 +238,8 @@ fixtures:
   pydantic deserialization, and typed error raising, for the sync **and** async
   clients. The **only** allowed difference is the deliberate SDK-identity branding
   (`X-Crozier-*` vs `X-Fern-*`), which the recorder folds to a common prefix on
-  both sides — the runtime analog of the byte-diff's `normalize_sdk_headers` — so
+  both sides — the runtime analog of the byte-diff's `sdk-identity-header-prefix`
+  departure — so
   any other divergence fails the test. This is the in-process analog of Fern's own
   wire tests (Fern runs a
   WireMock server in Docker and verifies the request via its admin API), but that
@@ -388,13 +316,15 @@ comment-strip comparison.
 
 **Aggregator imports.** The lazy-loader `__init__.py` files (`types/`, `errors/`,
 the package root) are formatted like any other file, but two artifacts are
-normalized on both sides of the e2e comparison (see `try_normalize_init` in
-`tests/e2e.rs`) rather than reproduced: their leading blank lines (a comment-strip
-artifact of Fern's multi-line header that a one-line header plus `ruff`, which
-caps module-top blanks at two, cannot reproduce), and the order of the
-`if typing.TYPE_CHECKING:` import block. That block is never executed, so its
-order is meaningless — Fern emits it in traversal order; crozier sorts it
-straightforwardly and the e2e canonicalizes both sides with `ruff` isort. The
+not reproduced: their leading blank lines (a comment-strip artifact of Fern's
+multi-line header that a one-line header plus `ruff`, which caps module-top
+blanks at two, cannot reproduce), which the comparison drops on both sides as
+comment residue, and the order of the `if typing.TYPE_CHECKING:` import block.
+That block is never executed, so its order is meaningless — Fern emits it in
+traversal order; crozier sorts it straightforwardly, and the comparison accepts
+the reordering as the `init-type-checking-import-order` departure
+([catalog](departures/README.md)) wherever both blocks sort to the same text
+under `ruff` isort. The
 `_dynamic_imports` map and `__all__` (which *are* executed) stay alphabetical.
 
 **Which parameter examples reach a worked call.** Fern keeps a *parameter-level*
@@ -960,9 +890,10 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
 3. **Fern's `TYPE_CHECKING` order** in `types/__init__.py` is *not* reproduced,
    and no golden pins it. crozier sorts the block alphabetically
    ([`emit::types_init_file`]) while Fern emits it in endpoint-traversal order;
-   the e2e canonicalizes every `__init__.py` on **both** sides with `ruff` isort
-   before comparing (`tests/e2e.rs::try_normalize_init`), as [How the comparison
-   works](#how-the-comparison-works) describes. The block is never executed, so
+   the comparison accepts the reordering as the `init-type-checking-import-order`
+   departure, only where both blocks sort to the same text under `ruff` isort,
+   as [How the comparison works](#how-the-comparison-works) describes. The block
+   is never executed, so
    its order is unobservable and no traversal derivation is owed — a spec with a
    different type-namespace layout cannot regress here.
 4. **Request/response inline-schema hoisting (implemented).** A component schema
@@ -1214,11 +1145,11 @@ crozier does not impersonate Fern in the generated SDK: it emits `X-Crozier-Lang
 reproduces Fern's *packaged* client wrapper, so it always emits the
 `SDK-Name`/`SDK-Version` headers that Fern's publishing metadata supplies — which the
 credential-free local golden trees (below) omit. Both are deliberate,
-non-behavioral differences in tool branding/packaging, so
-`tests/e2e.rs::normalize_sdk_headers` drops the `SDK-Name`/`SDK-Version` lines and
-canonicalizes the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fern-`
-on both sides before comparison. Every other line of `client_wrapper.py` matches
-exactly, so the wrapper is gated (never on an `unmatched` list) in every corpus.
+non-behavioral differences in tool branding/packaging: the
+`sdk-identity-header-prefix` and `sdk-name-version-headers` departures of the
+[catalog](departures/README.md), which recognise exactly those header lines.
+Every other line of `client_wrapper.py` matches exactly, so the wrapper is gated
+(never on an `unmatched` list) in every corpus.
 
 ### Real-world corpora that pin these rules
 
@@ -1326,9 +1257,9 @@ byte-match target like the rest of the corpus.
   target byte-match the class
   form, and worked examples use member access (`TypesWeatherReport.SUNNY`). The one
   Fern-only artifact this introduces — the `generatorConfig` block Fern writes into
-  `.fern/metadata.json` — is normalized out of the comparison
-  (`tests/e2e.rs::normalize_metadata`), the same posture as the SDK-identity headers,
-  since crozier carries no such config. (Note this default deliberately diverges
+  `.fern/metadata.json` — differs only where a golden ran another configuration,
+  and is then the `fern-metadata-generator-config` departure, the same posture as
+  the SDK-identity headers. (Note this default deliberately diverges
   from Fern's *out-of-the-box* default, which is the open `Union[Literal[..], Any]`;
   per issue #41 real enums are the more useful shape and the config unlocks
   byte-parity with them. The open union is `enum-type: literals`, below.)
@@ -1597,8 +1528,9 @@ package-derived default is unchanged, so every other corpus is unaffected.
 API generated with `client_class_name: AcmeClient` byte-matches Fern's whole
 tree (`AcmeClient`/`AsyncAcmeClient`). Its Fern generator config carries
 `client_class_name: AcmeClient`; the value is recorded
-in `.fern/metadata.json`'s `generatorConfig`, which the e2e already normalizes out
-(`normalize_metadata`), so the provenance difference does not gate.
+in `.fern/metadata.json`'s `generatorConfig`, which the comparison accepts as the
+`fern-metadata-generator-config` departure, so the provenance difference does not
+gate.
 
 A configured name can equal a sub-client's own class name — hellopatient's
 `TinyUrlClient` over a `TinyURL` resource, or `EcosystemClient` over Apideck's
@@ -1633,7 +1565,8 @@ member (`extra = pydantic.Extra.<name>`). `pydantic-extra-fields` — the two-en
 tree, so `Widget`'s model reproduces that asymmetry exactly. Its Fern
 generator config carries `extra_fields: ignore`; like the enum/client-class-name
 config, Fern records it in `.fern/metadata.json`'s
-`generatorConfig`, which the e2e normalizes out (`normalize_metadata`).
+`generatorConfig`, which the comparison accepts as the
+`fern-metadata-generator-config` departure.
 
 `forbid` is pinned the same way, by `eos.local-extra-fields-forbid` — CORPUS.md
 row 82, which is row 43's real-world `eos.local` spec generated a second time

@@ -148,11 +148,10 @@ error, printing the exact problem and a suggested fix, and `2` on a usage error
 To check crozier against the SDK you generate today, before switching, run
 `crozier compare`: for every generator your `crozier.yml` files declare, it runs a
 reference command you configure, generates crozier's SDK, compares the two trees
-after crozier's documented normalizations (comments, SDK-identity headers,
-`__init__.py` import order, the `generatorConfig` in Fern's own
-`.fern/metadata.json`; see
-[`docs/matching.md`](docs/matching.md#how-the-comparison-works)), and reports the
-time each side took. See
+with comments set aside and crozier's
+[intended departures](docs/departures/README.md) — its own identity headers, a
+corrected Fern defect, and the rest — reported line by line rather than failed,
+and reports the time each side took. See
 [`docs/compare.md`](docs/compare.md). Moving from Fern, the
 [Fern reference recipe](docs/fern-reference.md) produces that reference.
 

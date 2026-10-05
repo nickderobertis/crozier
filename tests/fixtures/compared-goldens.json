@@ -1,5 +1,6 @@
 {
   "goldens": {
+    "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
     "docs/openapi-surface/authored-probes/353-method-optional-array/fern-expected": {},
     "docs/openapi-surface/authored-probes/353-method-required-array/fern-expected": {},
     "docs/openapi-surface/authored-probes/353-promoted-required-array/fern-expected": {},

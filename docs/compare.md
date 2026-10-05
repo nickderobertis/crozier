@@ -10,12 +10,13 @@ For each generator it:
 1. runs your reference command, which writes the reference SDK into a temporary
    directory;
 2. generates crozier's SDK into another temporary directory;
-3. compares the two whole trees under the byte-match rules in
-   [`src/parity.rs`](../src/parity.rs): Python comments, the SDK-identity
-   headers and `__init__.py` import order are normalized, and so is the
-   `generatorConfig` block of Fern's own `.fern/metadata.json` — that exact
-   path only, so any other file whose name ends in `metadata.json` is compared
-   as written;
+3. compares the two whole trees with crozier's one comparison engine
+   ([`src/parity.rs`](../src/parity.rs)), the same one crozier's own golden
+   suite runs: Python comments are not compared, and every **intended
+   departure** in crozier's [departure catalog](departures/README.md) — the
+   `X-Crozier-*` identity headers, a corrected Fern defect, and the rest — is
+   recognised line by line and reported (see
+   [Intended departures](#intended-departures)). Any other difference fails;
 4. records the wall time of each side.
 
 ```sh
@@ -138,20 +139,37 @@ outside `$CROZIER_REFERENCE_OUTPUT` stays written.
 
 | Status | Meaning |
 | --- | --- |
-| `matched` | crozier's whole output tree equals the whole reference tree under the byte-match rules. |
+| `matched` | crozier's whole output tree equals the whole reference tree once the catalog's intended departures are applied. |
 | `mismatched` | At least one file differs, or is only in the reference, or only in crozier's output; or the reference produced output and crozier's own generation failed, when `reason` carries crozier's error and `comparison` is null. |
 | `could_not_check` | The reference could not produce output to compare: the config could not be read or resolved (a spec crozier cannot read included, found before the command runs), no reference command is configured, the command failed or left no usable reference, or a tree holds a symbolic link. The `reason` says which. |
 
 Every generator is checked before the command exits; one failure never skips the
 rest.
 
+## Intended departures
+
+crozier writes some lines differently from Fern on purpose: it names itself in
+the identity headers, corrects Fern defects such as a README importing a class
+the package does not define, and so on. Each is an entry of the
+[departure catalog](departures/README.md), compiled into crozier, whose rule
+recognises exactly Fern's construct and crozier's replacement. The comparison
+applies every rule and lists each departure it applied by catalog id, file and
+crozier's 1-based line — in the human report (`intended departures applied`)
+and in the JSON report's `comparison.departures`. A generator whose only
+differences are departures is `matched`, exit 0.
+
+A rule never excuses a file: a difference no rule explains still makes the
+generator `mismatched`, naming the file, even on the same line as a departure or
+in the same file. The `--diff-dir` diff shows only what still differs, with the
+departures already applied.
+
 ## Output
 
 Progress goes to stderr as it happens: each config found, and each generator's
 reference command and crozier run starting and finishing. Then one collated
 report lists every generator's status and reference command, the differing,
-reference-only and crozier-only paths of each mismatch, each `could_not_check`
-reason, and the timings. When no config is found it says so.
+reference-only and crozier-only paths of each mismatch, the intended departures
+applied, each `could_not_check` reason, and the timings. When no config is found it says so.
 
 | Flag | Effect |
 | --- | --- |
@@ -182,7 +200,7 @@ test fails when the two part. Every field is always present, `null` when it has
 no value:
 
 ```text
-schema_version: 1
+schema_version: 2
 crozier_version: string
 searched_paths: [string]
 exit_code: 0 | 3 | 4
@@ -192,7 +210,7 @@ results: [{
   status: "matched" | "mismatched" | "could_not_check",
   config_file: string, generator: string|null, spec: string|null,
   reference: {command: string, exit_code: integer|null, diagnostic: string|null}|null,
-  comparison: {layout: "packaged" | "flat", files_compared: integer, differing: [string], only_in_reference: [string], only_in_crozier: [string], diff_file: string|null}|null,
+  comparison: {layout: "packaged" | "flat", files_compared: integer, differing: [string], only_in_reference: [string], only_in_crozier: [string], departures: [{id: string, file: string, line: integer}], diff_file: string|null}|null,
   timing: {reference_seconds: number|null, crozier_seconds: number|null, speedup: number|null, saved_seconds: number|null}|null,
   reason: string|null
 }]
@@ -200,6 +218,9 @@ results: [{
 
 A config that cannot be read is one result with `generator: null`.
 `files_compared` counts the distinct paths the two trees hold between them.
+`departures` lists every intended departure applied, each by catalog `id`,
+`file` and crozier's 1-based `line`, in a matched tree or a mismatched one.
+Version 2 of the report added it; nothing else changed from version 1.
 
 ### Exit statuses
 

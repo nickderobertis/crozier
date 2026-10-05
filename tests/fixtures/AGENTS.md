@@ -34,8 +34,9 @@ which `scripts/generate-fern-fixture.sh` writes into `generators.yml`
 unconditionally for *all* fixtures rather than per row. It is not a column of the
 config table below and no fixture opts out; Fern records it in each golden's
 `.fern/metadata.json` (`generatorConfig`), and because crozier renders that enum
-shape unconditionally the e2e normalizes the block off both sides
-(`tests/e2e.rs::normalize_metadata`). Regenerate through that script, never a
+shape unconditionally, a golden recording any other block differs from crozier
+there by the `fern-metadata-generator-config` departure
+(`docs/departures/README.md`). Regenerate through that script, never a
 hand-rolled `fern generate`, or the golden silently comes back in Fern's
 out-of-the-box open-`Literal`-union enum shape. That shape has its own goldens,
 `expected-literals/` overlays for crozier's `enum-type: literals`, from
