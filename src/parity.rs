@@ -758,6 +758,94 @@ mod tests {
         }
     }
 
+    /// crozier's own side of the packaging and metadata departures, changed.
+    /// `crozier compare` always compares crozier's untouched output, so this
+    /// generates the `client-class-name` fixture in process and edits the tree
+    /// on disk: a version other than crozier's fixed one, or a `generatorConfig`
+    /// other than its fixed record's, is no departure, and the comparison names
+    /// the file.
+    #[test]
+    fn crozier_s_own_sdk_version_or_metadata_record_changed_is_no_departure() {
+        let (wrapper, metadata) = ("src/fern/core/client_wrapper.py", FERN_METADATA);
+        let fixture =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/client-class-name");
+        let out = tempfile::tempdir().unwrap();
+        crate::generate(crate::GenerateArgs {
+            spec: fixture.join("openapi.yml"),
+            output: out.path().to_path_buf(),
+            package_name: Some("fern".into()),
+            project_name: Some("default_package_name".into()),
+            client_class_name: Some("AcmeClient".into()),
+            audiences: Vec::new(),
+            audience_strict: false,
+            fern_strict: false,
+            extra_fields: crate::settings::ExtraFields::Allow,
+            enum_type: crate::settings::EnumType::PythonEnums,
+            default_max_retries: crate::settings::DEFAULT_MAX_RETRIES,
+            layout: crate::settings::Layout::Packaged,
+        })
+        .unwrap();
+        let reference = tempfile::tempdir().unwrap();
+        for rel in walk_files(&fixture.join("expected")).unwrap() {
+            let text = std::fs::read(fixture.join("expected").join(&rel)).unwrap();
+            write(reference.path(), &rel, &text);
+        }
+        // A reference released as 2.3.1: crozier's 0.0.0 is the departure.
+        let edit = |root: &Path, rel: &str, from: &str, to: &str| {
+            let text = std::fs::read_to_string(root.join(rel)).unwrap();
+            assert!(text.contains(from), "{rel} holds no {from:?}");
+            std::fs::write(root.join(rel), text.replacen(from, to, 1)).unwrap();
+        };
+        edit(
+            reference.path(),
+            wrapper,
+            "\"X-Fern-SDK-Version\": \"0.0.0\"",
+            "\"X-Fern-SDK-Version\": \"2.3.1\"",
+        );
+        let compare = || compare_trees(reference.path(), out.path(), None, true).unwrap();
+        let differing = |compared: &TreeComparison| -> Vec<String> {
+            compared
+                .differences
+                .iter()
+                .map(|(rel, _)| rel.clone())
+                .collect()
+        };
+        let applied = |compared: &TreeComparison, id: &str, file: &str| {
+            compared
+                .departures
+                .iter()
+                .any(|departure| departure.id == id && departure.file == file)
+        };
+        let compared = compare();
+        assert!(compared.differences.is_empty(), "{compared:?}");
+        assert!(applied(&compared, "sdk-name-version-headers", wrapper));
+        assert!(applied(
+            &compared,
+            "fern-metadata-generator-config",
+            metadata
+        ));
+
+        edit(
+            out.path(),
+            wrapper,
+            "\"X-Crozier-SDK-Version\": \"0.0.0\"",
+            "\"X-Crozier-SDK-Version\": \"9.9.9\"",
+        );
+        let compared = compare();
+        assert_eq!(differing(&compared), [wrapper]);
+        assert!(!applied(&compared, "sdk-name-version-headers", wrapper));
+
+        edit(out.path(), wrapper, "\"9.9.9\"", "\"0.0.0\"");
+        edit(out.path(), metadata, "\"python_enums\"", "\"literals\"");
+        let compared = compare();
+        assert_eq!(differing(&compared), [metadata]);
+        assert!(!applied(
+            &compared,
+            "fern-metadata-generator-config",
+            metadata
+        ));
+    }
+
     #[test]
     fn readme_casing_needs_the_trees_classes() {
         let crozier = "# Acme\n\nfrom LanternHarbor import AsyncLanternHarborApi\n";
