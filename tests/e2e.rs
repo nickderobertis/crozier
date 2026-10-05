@@ -4716,6 +4716,7 @@ const CORPORA: &[&Corpus] = &[
     &HASURA_METADATA,
     &ZOONK,
     &OPENFOODFACTS_TAXONOMY_EDITOR,
+    &QONTRACT_API,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7604,6 +7605,20 @@ const ZOONK: Corpus = Corpus {
 /// `readOnly` properties in `required`
 const OPENFOODFACTS_TAXONOMY_EDITOR: Corpus = Corpus {
     api: "openfoodfacts-taxonomy-editor",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `qontract-api`: corpus row 311, qontract-reconcile's Qontract API, whose
+/// task results' actions are `$ref` members tagging `action_type` with a
+/// one-value `enum` that `required` leaves out
+const QONTRACT_API: Corpus = Corpus {
+    api: "qontract-api",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14185,6 +14200,11 @@ fn zoonk_matches_fern_output() {
 #[test]
 fn openfoodfacts_taxonomy_editor_matches_fern_output() {
     assert_committed_corpus_matches(&OPENFOODFACTS_TAXONOMY_EDITOR);
+}
+
+#[test]
+fn qontract_api_matches_fern_output() {
+    assert_committed_corpus_matches(&QONTRACT_API);
 }
 
 #[test]
