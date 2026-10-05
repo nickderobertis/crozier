@@ -127,7 +127,7 @@ fn compare(root: &Path, out: &Path) -> Vec<String> {
     )
 }
 
-/// The load's failures for `registry`, which must refuse it.
+/// The failures loading the scratch repository `root`'s registry, which the load must refuse.
 fn load_failures(root: &Path) -> Vec<String> {
     load_fern_defects(root).expect_err("the registry must be refused")
 }
