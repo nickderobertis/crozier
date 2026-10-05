@@ -8139,9 +8139,9 @@ fn inferred_discriminant_property_with(
                 if references_components && !(enum_tag && tagged_by_enum) {
                     // Members that are all `$ref`s, each tagging the property with
                     // one string (a one-member `enum` or a `const`) that `required`
-                    // leaves out, discriminate whatever the property's name — FastAPI's `Literal["circle"] = "circle"`.
-                    // Measured at 5.20.0 on the hand-written
-                    // `unrequired-tag-variants` fixture's `kind` and `variety`.
+                    // leaves out, discriminate whatever the property's name: that
+                    // is FastAPI's `Literal["x"] = "x"`, and the Qontract API's
+                    // task-result actions tag `action_type` so (corpus row 311).
                     let unrequired_tag =
                         only_references && singleton_enum && !variant.required.contains(property);
                     let supported = unrequired_tag
@@ -11326,50 +11326,9 @@ impl Builder<'_> {
         // `JsonValue` offers `{additionalProperties: {oneOf: [$ref JsonValue,
         // null]}}` and Fern types it `Dict[str, Optional["JsonValue"]]`.
         if is_map(variant) {
-            if let Some(AdditionalProperties::Schema(value)) = &variant.additional_properties {
-                if value.reference.is_none() && simple_nullable_member(value).is_none() {
-                    let value_name = format!(
-                        "{}Value",
-                        variant_class_name(parent, index, variant, siblings)
-                    );
-                    let value_module = naming::module_name(&value_name);
-                    let docstring = clean_doc(value.description.as_deref());
-                    let map_of = |named: String| {
-                        TypeRef::Dict(
-                            Box::new(TypeRef::Primitive(Prim::Str)),
-                            Box::new(TypeRef::Named(named)),
-                        )
-                    };
-                    if let Some(members) = value.one_of.as_ref().or(value.any_of.as_ref()) {
-                        if let Some(decl) = self.discriminated_union(
-                            &value_name,
-                            &value_module,
-                            value,
-                            docstring.clone(),
-                        ) {
-                            self.types.push(TypeDecl::DiscriminatedUnion(decl));
-                        } else {
-                            let nested = members
-                                .iter()
-                                .enumerate()
-                                .map(|(nested_index, member)| {
-                                    self.variant_ref(&value_name, nested_index, member, members)
-                                })
-                                .collect();
-                            self.push_alias(
-                                &value_name,
-                                value_module,
-                                TypeRef::Union(dedupe_union_members(nested)),
-                                docstring,
-                            );
-                        }
-                        return map_of(value_name);
-                    }
-                    if is_inline_struct(value) {
-                        self.add_object(&value_name, value_module, value, docstring);
-                        return map_of(value_name);
-                    }
-                }
+            let name = variant_class_name(parent, index, variant, siblings);
+            if let Some(type_ref) = self.map_member_type(&name, variant) {
+                return type_ref;
             }
         }
         // A variant composing alternatives of its own is that union even where it
@@ -11440,6 +11399,71 @@ impl Builder<'_> {
             TypeRef::Primitive(Prim::Bytes) => TypeRef::Primitive(Prim::Str),
             other => other,
         }
+    }
+
+    /// The type of a union member that is a map whose value is an inline union
+    /// or object, the value named `{name}Value`; `None` for any other map. A
+    /// `null` alternative of the value union leaves it and makes the value
+    /// optional, and a value that is a map beside `null` is that map, optional,
+    /// its own value named one step further out: waylay's query `aggregation`
+    /// offers `{additionalProperties: {anyOf: [a string, an array, null]}}` and a
+    /// map of such maps beside `null`, and Fern types them
+    /// `Dict[str, Optional[QueryInputAggregationTwoValue]]` and
+    /// `Dict[str, Optional[Dict[str, Optional[QueryInputAggregationThreeValueValue]]]]`.
+    fn map_member_type(&mut self, name: &str, map: &Schema) -> Option<TypeRef> {
+        let Some(AdditionalProperties::Schema(value)) = &map.additional_properties else {
+            return None;
+        };
+        if value.reference.is_some() {
+            return None;
+        }
+        let value_name = format!("{name}Value");
+        let map_of = |value: TypeRef| {
+            TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(value))
+        };
+        if let Some(member) = simple_nullable_member(value) {
+            if member.reference.is_none() && is_map(member) {
+                let inner = self.map_member_type(&value_name, member)?;
+                return Some(map_of(optional_type_ref(inner)));
+            }
+            return None;
+        }
+        let value_module = naming::module_name(&value_name);
+        let docstring = clean_doc(value.description.as_deref());
+        if let Some(members) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+            let nullable = members.iter().any(is_null_variant);
+            if let Some(decl) =
+                self.discriminated_union(&value_name, &value_module, value, docstring.clone())
+            {
+                self.types.push(TypeDecl::DiscriminatedUnion(decl));
+            } else {
+                let nested = members
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, member)| !is_null_variant(member))
+                    .map(|(nested_index, member)| {
+                        self.variant_ref(&value_name, nested_index, member, members)
+                    })
+                    .collect();
+                self.push_alias(
+                    &value_name,
+                    value_module,
+                    TypeRef::Union(dedupe_union_members(nested)),
+                    docstring,
+                );
+            }
+            let named = TypeRef::Named(value_name);
+            return Some(map_of(if nullable {
+                optional_type_ref(named)
+            } else {
+                named
+            }));
+        }
+        if is_inline_struct(value) {
+            self.add_object(&value_name, value_module, value, docstring);
+            return Some(map_of(TypeRef::Named(value_name)));
+        }
+        None
     }
 
     /// A variant that composes its own alternatives, as the named union
@@ -15518,6 +15542,64 @@ mod tests {
                 "{member}"
             );
         }
+    }
+
+    #[test]
+    fn a_map_member_drops_its_value_unions_null_into_an_optional_value() {
+        let schemas = indexmap::IndexMap::new();
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
+        };
+        let value = serde_json::json!({ "anyOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } },
+            { "type": "null" }
+        ] });
+        let members = [
+            schema(serde_json::json!({ "type": "string" })),
+            schema(serde_json::json!({ "type": "object", "additionalProperties": value })),
+            schema(
+                serde_json::json!({ "type": "object", "additionalProperties": { "anyOf": [
+                { "type": "object", "additionalProperties": value },
+                { "type": "null" }
+            ] } }),
+            ),
+        ];
+        let map_of = |value: TypeRef| {
+            TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(value))
+        };
+        let optional = |value: TypeRef| TypeRef::Optional(Box::new(value));
+        assert_eq!(
+            builder.variant_ref("Gauge", 1, &members[1], &members),
+            map_of(optional(TypeRef::Named("GaugeOneValue".to_string())))
+        );
+        assert_eq!(
+            builder.variant_ref("Gauge", 2, &members[2], &members),
+            map_of(optional(map_of(optional(TypeRef::Named(
+                "GaugeTwoValueValue".to_string()
+            )))))
+        );
+        for name in ["GaugeOneValue", "GaugeTwoValueValue"] {
+            assert!(builder.types.iter().any(|declaration| matches!(
+                declaration,
+                TypeDecl::Alias(alias) if alias.name == name
+                    && alias.target == TypeRef::Union(vec![
+                        TypeRef::Primitive(Prim::Str),
+                        TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                    ])
+            )));
+        }
+        // A map of a `$ref`, or of a nullable scalar, is no named value.
+        let plain = schema(
+            serde_json::json!({ "type": "object", "additionalProperties": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }]
+        } }),
+        );
+        assert_eq!(builder.map_member_type("Gauge", &plain), None);
     }
 
     #[test]
