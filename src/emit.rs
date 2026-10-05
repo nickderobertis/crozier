@@ -2145,6 +2145,16 @@ fn root_init_file(
     })
 }
 
+/// A promoted header's constructor annotation, before any `Optional[...]`: its
+/// scalar or list type, or the one-value `typing.Literal` a subset-promoted
+/// string header with a `default` takes.
+fn global_header_annotation(header: &crate::ir::GlobalHeader) -> String {
+    match header.literal() {
+        Some(value) => format!("typing.Literal[\"{}\"]", escape_py_str(value)),
+        None => header.py_type().python().to_string(),
+    }
+}
+
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
 /// when the body is not complex, else a literal `...` placeholder. Fern 5.20 does
 /// not wrap these advanced README calls,
@@ -2399,19 +2409,16 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_name = format!("Async{}", ir.client_name);
 
     // The abbreviated calls in the error-handling and advanced sections show `...`
-    // whenever the endpoint has a path, query, or header argument or a request body;
-    // an argument-free endpoint (and the `_` placeholder) shows empty parens. The
+    // whenever the endpoint has a path or query argument or a request body; an
+    // argument-free endpoint (and the `_` placeholder) shows empty parens. The
     // error/raw-response calls are ruff-wrapped at the snippet width 88. A golden
     // refresh that reintroduces body-shape-sensitive placeholders is a Fern behavior
     // change, not a regression here.
-    // An array header is no argument here: Fern writes `client.probe()` for an
-    // endpoint whose only parameter is one, required or not.
+    // A header is no argument here: measured at 5.20.0, Fern writes
+    // `client.probe()` for an endpoint whose only parameter is a header, scalar or
+    // array, required or not.
     let has_arguments = !first.path_params.is_empty()
         || !first.query_params.is_empty()
-        || first
-            .header_params
-            .iter()
-            .any(|header| !matches!(header.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
         || first.request_body.is_some();
     let complex = first.method_name != "_" && has_arguments;
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
@@ -3527,12 +3534,12 @@ fn client_wrapper_file(
         .into_iter()
         .map(|h| {
             if h.required() {
-                format!("        {}: {},\n", h.py_name, h.py_type().python())
+                format!("        {}: {},\n", h.py_name, global_header_annotation(h))
             } else {
                 format!(
                     "        {}: typing.Optional[{}] = None,\n",
                     h.py_name,
-                    h.py_type().python()
+                    global_header_annotation(h)
                 )
             }
         })
@@ -3541,8 +3548,10 @@ fn client_wrapper_file(
         .iter()
         .map(|h| format!("        self._{0} = {0}\n", h.py_name))
         .collect();
+    // A lifted base-path parameter is read by the routes, never sent as a header.
     let gh_header: String = global_headers
         .iter()
+        .filter(|h| !h.is_base_path_parameter())
         .map(|h| {
             // A non-string header is written as its `str()`, as Fern's is.
             let value = if h.py_type() == HeaderType::Str {
@@ -4333,6 +4342,14 @@ fn url_arg(ep: &Endpoint, imports: &mut Imports) -> String {
     let stripped = ep.path.strip_prefix('/').unwrap_or(&ep.path);
     if stripped.contains('{') {
         let mut rendered = stripped.to_string();
+        // A placeholder the document's base path lifts to the client reads the
+        // value the client was constructed with.
+        for (wire_name, py_name) in &ep.client_path_params {
+            rendered = rendered.replace(
+                &format!("{{{wire_name}}}"),
+                &format!("{{encode_path_param(self._client_wrapper._{py_name})}}"),
+            );
+        }
         for pp in &ep.path_params {
             let value = if pp.convert {
                 imports.add_core("serialization", "convert_and_respect_annotation_metadata");
@@ -4909,7 +4926,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
     let api_error = imports.add_core_local("api_error", "ApiError");
-    if !ep.path_params.is_empty() {
+    if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
     imports.add_core("parse_error", "ParsingError");
@@ -5551,7 +5568,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_core("parse_error", "ParsingError");
     imports.add_core("pydantic_utilities", "parse_sse_obj");
     imports.add_from("pydantic", "ValidationError");
-    if !ep.path_params.is_empty() {
+    if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
 
@@ -5716,7 +5733,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     }
     imports.add_core("parse_error", "ParsingError");
     imports.add_from("pydantic", "ValidationError");
-    if !ep.path_params.is_empty() {
+    if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
 
@@ -6197,9 +6214,9 @@ fn root_client_class(
         .iter()
         .map(|h| {
             let ty = if h.required() {
-                h.py_type().python().to_string()
+                global_header_annotation(h)
             } else {
-                format!("typing.Optional[{}]", h.py_type().python())
+                format!("typing.Optional[{}]", global_header_annotation(h))
             };
             format!("    {} : {ty}\n", h.py_name)
         })
@@ -6208,24 +6225,35 @@ fn root_client_class(
         .into_iter()
         .map(|h| {
             if h.required() {
-                format!("        {}: {},\n", h.py_name, h.py_type().python())
+                format!("        {}: {},\n", h.py_name, global_header_annotation(h))
             } else {
+                // A lifted base-path parameter defaults to its own value on the
+                // client, and to `None` in the wrapper beneath it.
+                let default = h.client_default().map_or_else(
+                    || "None".to_string(),
+                    |value| format!("\"{}\"", escape_py_str(value)),
+                );
                 format!(
-                    "        {}: typing.Optional[{}] = None,\n",
+                    "        {}: typing.Optional[{}] = {default},\n",
                     h.py_name,
-                    h.py_type().python()
+                    global_header_annotation(h)
                 )
             }
         })
         .collect();
+    // Fern writes a defaulted base-path parameter's example positionally,
+    // `FernApi("v2")`, which a keyword-only constructor rejects with a
+    // `TypeError`; crozier names it by keyword instead (a registered Fern
+    // defect, see docs/fern-defects/).
     let gh_example: String = global_headers
         .iter()
-        .map(|h| {
-            format!(
+        .map(|h| match h.client_default() {
+            Some(value) => format!("        {}=\"{}\",\n", h.py_name, escape_py_str(value)),
+            None => format!(
                 "        {}=\"YOUR_{}\",\n",
                 h.py_name,
                 h.py_name.to_uppercase()
-            )
+            ),
         })
         .collect();
     let gh_wrapper: String = distinct_global_header_params(global_headers)
@@ -7460,6 +7488,12 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether `t` names an alias of a union.
+    fn is_union_alias(&self, t: &TypeRef) -> bool {
+        matches!(t, TypeRef::Named(name)
+            if matches!(self.find(name), Some(TypeDecl::Alias(alias)) if matches!(alias.target, TypeRef::Union(_))))
+    }
+
     fn example_is_composite(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(_, _) => true,
@@ -8387,15 +8421,27 @@ impl<'a> ExampleCtx<'a> {
         // A later enum alternative is exampled by its first member (marimo's
         // `totalRows`, `Union[float, MarimoTableDataTotalRowsOne]`, is
         // `MarimoTableDataTotalRowsOne.TOO_MANY`), except in a path, where the
-        // value below is its plain string.
+        // value below is its plain string. So it is where a `str` alternative
+        // before the enum already holds that value: a query parameter's
+        // `anyOf: [string, $ref Weave]` is exampled `"plain"`, not `Weave.PLAIN`.
         if !matches!(slot, Slot::Path(_)) {
-            if let Some(name) = variants.iter().skip(1).find_map(|variant| match variant {
-                TypeRef::Named(name) if matches!(self.find(name), Some(TypeDecl::Enum(_))) => {
-                    Some(name.clone())
+            if let Some((index, name)) =
+                variants
+                    .iter()
+                    .enumerate()
+                    .skip(1)
+                    .find_map(|(index, variant)| match variant {
+                        TypeRef::Named(name)
+                            if matches!(self.find(name), Some(TypeDecl::Enum(_))) =>
+                        {
+                            Some((index, name.clone()))
+                        }
+                        _ => None,
+                    })
+            {
+                if !variants[..index].contains(&TypeRef::Primitive(Prim::Str)) {
+                    return self.named_value(&name, slot);
                 }
-                _ => None,
-            }) {
-                return self.named_value(&name, slot);
             }
         }
         if let Some(value) = variants
@@ -9151,11 +9197,13 @@ fn build_example_inner(
         .filter(|qp| !suppressed && !header_first_request && qp.required)
     {
         // Fern omits required collections of referenced shapes from worked
-        // examples; their query encoding has no inline scalar placeholder.
+        // examples; their query encoding has no inline scalar placeholder. An
+        // element union it hoisted from the array's own inline `items` is
+        // exampled by its first member, as a scalar element is.
         if matches!(
             &qp.type_ref,
             TypeRef::List(inner) | TypeRef::Set(inner)
-                if matches!(inner.as_ref(), TypeRef::Named(_))
+                if matches!(inner.as_ref(), TypeRef::Named(_)) && !ctx.is_union_alias(inner)
                     || ctx.example_is_object(inner)
         ) {
             continue;
@@ -9171,7 +9219,11 @@ fn build_example_inner(
             ctx.value_from_example(&qp.type_ref, ex)
                 .unwrap_or_else(|| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)))
         } else if let TypeRef::List(inner) = &qp.type_ref {
-            Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+            if qp.one_or_many && !reference {
+                ctx.value(inner, Slot::Named(&qp.wire_name))
+            } else {
+                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+            }
         } else if let TypeRef::Dict(_, value) = &qp.type_ref {
             let pairs = vec![(
                 qp.wire_name.clone(),
@@ -9851,11 +9903,12 @@ fn build_example_inner(
         }
     } else {
         for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
-            client_args.push(format!(
-                "    {}=\"YOUR_{}\",",
-                h.py_name,
-                h.py_name.to_uppercase()
-            ));
+            // A defaulted base-path parameter is named by keyword with its default
+            // (Fern passes it positionally, which the constructor rejects).
+            client_args.push(match h.client_default() {
+                Some(value) => format!("    {}=\"{}\",", h.py_name, escape_py_str(value)),
+                None => format!("    {}=\"YOUR_{}\",", h.py_name, h.py_name.to_uppercase()),
+            });
         }
         for arg in auth_example_args(ctx.auth) {
             client_args.push(format!("    {arg},"));
@@ -9943,13 +9996,31 @@ fn build_example_inner(
 /// The client-constructor arguments Fern's Markdown snippets pass: auth first,
 /// then every *required* global header (optional ones are left out).
 fn documentation_client_example_args(auth: &Auth, global_headers: &[GlobalHeader]) -> Vec<String> {
-    documentation_auth_example_args(auth)
-        .into_iter()
+    // Fern's Markdown leaves a required base-path parameter out of the
+    // constructor, which then raises a `TypeError` for the missing argument;
+    // crozier passes it first, with the placeholder the method docstrings use
+    // (a registered Fern defect, see docs/fern-defects/).
+    let base_path = global_headers
+        .iter()
+        .filter(|parameter| parameter.is_base_path_parameter() && parameter.required())
+        .map(|parameter| {
+            format!(
+                "{}=\"YOUR_{}\"",
+                parameter.py_name,
+                parameter.py_name.to_uppercase()
+            )
+        });
+    base_path
+        .chain(documentation_auth_example_args(auth))
         .chain(
             global_headers
                 .iter()
                 // Nor does it pass an array header, required or not.
-                .filter(|header| header.required() && !header.py_type().is_list())
+                .filter(|header| {
+                    !header.is_base_path_parameter()
+                        && header.required()
+                        && !header.py_type().is_list()
+                })
                 .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
         )
         .collect()
@@ -11306,6 +11377,7 @@ mod tests {
             http_method: "GET",
             path: path.to_string(),
             path_params: params,
+            client_path_params: Vec::new(),
             query_params: Vec::new(),
             header_params: Vec::new(),
             constant_headers: Vec::new(),
@@ -12090,6 +12162,7 @@ mod tests {
             convert: false,
             comma_separated: true,
             allow_multiple: true,
+            one_or_many: false,
             example: None,
             example_is_scalar: false,
             aliased_datetime: None,
@@ -12134,6 +12207,7 @@ mod tests {
             convert: false,
             comma_separated: false,
             allow_multiple: false,
+            one_or_many: false,
             example: None,
             example_is_scalar: false,
             aliased_datetime: None,
@@ -13113,6 +13187,7 @@ mod tests {
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: None,
                 example_is_scalar: false,
                 aliased_datetime: None,
@@ -13126,6 +13201,7 @@ mod tests {
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: Some("3".to_string()),
                 example_is_scalar: true,
                 aliased_datetime: None,
@@ -13473,6 +13549,7 @@ mod tests {
             convert: false,
             comma_separated: false,
             allow_multiple: false,
+            one_or_many: false,
             example: Some("\"active\"".to_string()),
             example_is_scalar: true,
             aliased_datetime: None,
@@ -13520,6 +13597,7 @@ mod tests {
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: Some("\"active\"".to_string()),
                 example_is_scalar: true,
                 aliased_datetime: None,
@@ -13533,6 +13611,7 @@ mod tests {
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: Some("\"name\"".to_string()),
                 example_is_scalar: true,
                 aliased_datetime: None,
@@ -13546,6 +13625,7 @@ mod tests {
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: Some("1".to_string()),
                 example_is_scalar: true,
                 aliased_datetime: None,
@@ -13593,6 +13673,7 @@ mod tests {
             convert: false,
             comma_separated: false,
             allow_multiple: false,
+            one_or_many: false,
             example: None,
             example_is_scalar: true,
             aliased_datetime: None,

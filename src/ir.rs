@@ -402,13 +402,45 @@ pub enum HeaderPresence {
     /// field is unset. The `353-string-default-*` authored probes pin it end
     /// to end (`authored_probe_measurements_match_fern`).
     Defaulted(String),
+    /// An optional header promoted from a subset of the operations (at least
+    /// three quarters, not all) whose first declaration is a string with this
+    /// string `default`. Fern types its constructor field
+    /// `Optional[typing.Literal["<default>"]] = None`, in the ordinary position,
+    /// set only when provided; without the default, or with a non-string one,
+    /// the same header is plain `Optional[<type>]`.
+    Literal(String),
+    /// Not a header: a `{placeholder}` of the document's base path
+    /// (`x-crozier-base-path` / `x-fern-base-path`), lifted out of every method
+    /// into a client constructor argument that the routes read back from the
+    /// client wrapper. It is a required `str`, or, given a string `default`, an
+    /// `Optional[str]` defaulting to it on the client (the wrapper's own
+    /// argument defaults to `None`). It never reaches the request headers.
+    BasePath(Option<String>),
 }
 
 impl GlobalHeader {
     /// Whether the constructor field is mandatory.
     #[must_use]
     pub fn required(&self) -> bool {
-        matches!(self.presence, HeaderPresence::Required(_))
+        matches!(
+            self.presence,
+            HeaderPresence::Required(_) | HeaderPresence::BasePath(None)
+        )
+    }
+
+    /// Whether this is a lifted base-path parameter rather than a header.
+    #[must_use]
+    pub fn is_base_path_parameter(&self) -> bool {
+        matches!(self.presence, HeaderPresence::BasePath(_))
+    }
+
+    /// The value a lifted base-path parameter defaults to on the client.
+    #[must_use]
+    pub fn client_default(&self) -> Option<&str> {
+        match &self.presence {
+            HeaderPresence::BasePath(default) => default.as_deref(),
+            _ => None,
+        }
     }
 
     /// The constructor field's Python type (`str` for a defaulted header).
@@ -416,7 +448,18 @@ impl GlobalHeader {
     pub fn py_type(&self) -> HeaderType {
         match self.presence {
             HeaderPresence::Required(ty) | HeaderPresence::Optional(ty) => ty,
-            HeaderPresence::Defaulted(_) => HeaderType::Str,
+            HeaderPresence::Defaulted(_)
+            | HeaderPresence::Literal(_)
+            | HeaderPresence::BasePath(_) => HeaderType::Str,
+        }
+    }
+
+    /// The single value a `Literal`-typed header admits.
+    #[must_use]
+    pub fn literal(&self) -> Option<&str> {
+        match &self.presence {
+            HeaderPresence::Literal(value) => Some(value),
+            _ => None,
         }
     }
 
@@ -550,8 +593,11 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             // whatever the operations that do declare it say.
             let presence = match default {
                 _ if required && count == total => HeaderPresence::Required(py_type),
-                Some(default) => HeaderPresence::Defaulted(default),
-                None => HeaderPresence::Optional(py_type),
+                Some(default) if count < total && py_type == HeaderType::Str => {
+                    HeaderPresence::Literal(default)
+                }
+                Some(default) if count == total => HeaderPresence::Defaulted(default),
+                _ => HeaderPresence::Optional(py_type),
             };
             GlobalHeader {
                 py_name: naming::field_name(header_param_stem(&wire_name)),
@@ -569,6 +615,25 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // then security headers).
     headers.extend(api_key_headers);
     headers
+}
+
+/// The client constructor arguments the document's base path lifts out of its
+/// methods: one per `{placeholder}` (see [`crate::openapi::BasePath::parameters`]).
+/// Measured at Fern 5.20.0 on the object form `{path: /{edition},
+/// paths-include-base-path: true, parameters: {edition: {type: string,
+/// default: v2}}}`: the client takes `edition: Optional[str] = "v2"`, every
+/// route reads `self._client_wrapper._edition`, and no method takes it.
+fn base_path_client_parameters(doc: &OpenApi) -> Vec<GlobalHeader> {
+    doc.base_path()
+        .map(crate::openapi::BasePath::parameters)
+        .unwrap_or_default()
+        .into_iter()
+        .map(|parameter| GlobalHeader {
+            py_name: naming::field_name(&parameter.name),
+            wire_name: parameter.name,
+            presence: HeaderPresence::BasePath(parameter.default),
+        })
+        .collect()
 }
 
 /// The Python type a promoted header's schema declares: its scalar, or a list of
@@ -657,27 +722,25 @@ fn is_promotion_reserved_header(wire_name: &str) -> bool {
     wire_name.eq_ignore_ascii_case("authorization")
 }
 
-/// Whether the SDK's auth credential already owns this header. OAuth and HTTP
-/// auth schemes write `Authorization` through the client wrapper, so an explicit
+/// Whether the SDK's auth credential already owns this header, so an explicit
 /// operation parameter with that wire name must not become a second constructor
-/// or method argument. A declared `apiKey` scheme named `Authorization` remains a
-/// distinct global header (Square uses it alongside OAuth), matching Fern.
+/// or method argument. OAuth and HTTP auth schemes write `Authorization` through
+/// the client wrapper, and a declared `apiKey` header scheme writes its own
+/// `name`. Fern compares the spelling exactly: measured at 5.20.0, a bearer
+/// document drops an `Authorization` header parameter but keeps `authorization`
+/// and `AUTHORIZATION` as ordinary optional arguments, and an `X-Kite-Key` key
+/// scheme drops `X-Kite-Key` but keeps `x-kite-key`.
 fn is_auth_managed_header(doc: &OpenApi, wire_name: &str) -> bool {
     use crate::openapi::SecuritySchemeType;
 
-    if !wire_name.eq_ignore_ascii_case("authorization") {
-        return false;
-    }
-    let schemes = doc.components.security_schemes.values();
-    let declared_api_key = schemes.clone().any(|scheme| {
+    let api_key_header = doc.components.security_schemes.values().any(|scheme| {
         scheme.ty == SecuritySchemeType::ApiKey
             && scheme.location == Some(ParameterLocation::Header)
-            && scheme
-                .name
-                .as_deref()
-                .is_some_and(|name| name.eq_ignore_ascii_case(wire_name))
+            && scheme.name.as_deref() == Some(wire_name)
     });
-    !declared_api_key && matches!(auth_model(doc), Auth::Bearer { .. } | Auth::Basic { .. })
+    api_key_header
+        || wire_name == "Authorization"
+            && matches!(auth_model(doc), Auth::Bearer { .. } | Auth::Basic { .. })
 }
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and
@@ -1161,6 +1224,9 @@ pub struct Endpoint {
     pub path: String,
     /// Path parameters, in declaration order.
     pub path_params: Vec<PathParam>,
+    /// The `(wire, Python)` names of the path's placeholders the document's base
+    /// path lifts to the client: the route reads each from the client wrapper.
+    pub client_path_params: Vec<(String, String)>,
     /// Query parameters, in declaration order.
     pub query_params: Vec<QueryParam>,
     /// Header parameters, in declaration order.
@@ -1394,6 +1460,10 @@ pub struct QueryParam {
     /// Direct array schemas do; a nullable array does not, in either spelling —
     /// a 3.1 union with a `null` member, or a 3.0 `nullable: true`.
     pub allow_multiple: bool,
+    /// Whether the schema is a one-or-many composition read as its array member
+    /// (see `one_or_many_query_schema`). A required one is exampled as a list in
+    /// `reference.md` but by its scalar member in the method docstring.
+    pub one_or_many: bool,
     /// The parameter's `example` as a Python literal; when set, the parameter is
     /// shown in a worked snippet even if optional (`example_literal`).
     pub example: Option<String>,
@@ -2015,7 +2085,10 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // body's fields and to decide which of them serialize through the convert
     // wrapper, so it runs after the type layer is built. It also hoists inline
     // request/response bodies into their tags' own `types/` packages.
-    let global = global_headers(doc);
+    // A lifted base-path parameter is a constructor argument ahead of every
+    // promoted header and the auth credential, in the order the path names it.
+    let mut global = base_path_client_parameters(doc);
+    global.extend(global_headers(doc));
     let (mut endpoints, mut tag_types) = endpoints(doc, &builder.types, &global);
     let empty_endpoint_namespace = doc.paths.values().any(|item| {
         item.operations().into_iter().any(|(_, operation)| {
@@ -2453,8 +2526,11 @@ fn endpoints(
     types: &[TypeDecl],
     global: &[GlobalHeader],
 ) -> (Vec<Endpoint>, Vec<TagTypeDecl>) {
-    let global_names: std::collections::HashSet<&str> =
-        global.iter().map(|h| h.wire_name.as_str()).collect();
+    let global_names: std::collections::HashSet<&str> = global
+        .iter()
+        .filter(|h| !h.is_base_path_parameter())
+        .map(|h| h.wire_name.as_str())
+        .collect();
     let mut out = Vec::new();
     let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
@@ -2654,10 +2730,29 @@ fn build_endpoint(
     // inline enums on request parameters.
     let pascal_ctx = endpoint_pascal_context(op, http_method, path);
     let request_ctx = request_context(op, http_method, path);
+    // The document's base path prefixes the route, and its placeholders are the
+    // client's, not this method's.
+    let base_path = doc.base_path();
+    let route = format!(
+        "{}{path}",
+        base_path.map_or("", crate::openapi::BasePath::route_prefix)
+    );
+    let client_path_params: Vec<(String, String)> = base_path
+        .map(crate::openapi::BasePath::parameters)
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|parameter| route.contains(&format!("{{{}}}", parameter.name)))
+        .map(|parameter| (naming::field_name(&parameter.name), parameter.name))
+        .map(|(py_name, wire_name)| (wire_name, py_name))
+        .collect();
+    let lifted = |p: &crate::openapi::Parameter| {
+        p.location == Some(ParameterLocation::Path)
+            && client_path_params.iter().any(|(wire, _)| *wire == p.name)
+    };
     let mut path_params: Vec<PathParam> = op
         .parameters
         .iter()
-        .filter(|p| p.location == Some(ParameterLocation::Path))
+        .filter(|p| p.location == Some(ParameterLocation::Path) && !lifted(p))
         .map(|p| {
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
                 // Fern ignores a path parameter's content schema and exposes
@@ -2711,6 +2806,7 @@ fn build_endpoint(
         if path_params
             .iter()
             .any(|declared| declared.wire_name == name)
+            || client_path_params.iter().any(|(wire, _)| wire == name)
         {
             continue;
         }
@@ -2749,10 +2845,14 @@ fn build_endpoint(
             // A one-or-many composition is the array it offers; see
             // [`one_or_many_query_schema`]. Every reading below takes this schema
             // so both spellings of that shape generate the same bytes.
-            let schema = p
+            let schema = p.schema.as_ref().map(|schema| {
+                one_or_many_query_schema(schema, p.required == Some(true)).unwrap_or(schema)
+            });
+            let one_or_many = p
                 .schema
                 .as_ref()
-                .map(|schema| one_or_many_query_schema(schema).unwrap_or(schema));
+                .and_then(|schema| one_or_many_query_schema(schema, p.required == Some(true)))
+                .is_some();
             // An inline string enum hoists to a named `{ctx}Request{Prop}` alias in
             // the tag's `types/` package (Fern's `ListWidgetsRequestLevel`); a
             // `$ref`/scalar passes through `base_type_ref`.
@@ -2890,6 +2990,7 @@ fn build_endpoint(
                 convert,
                 comma_separated,
                 allow_multiple,
+                one_or_many,
                 example,
                 example_is_scalar,
                 aliased_datetime,
@@ -3168,7 +3269,7 @@ fn build_endpoint(
                 rb,
                 &mut hoister,
                 &request_ctx,
-                !op.parameters.is_empty()
+                op.parameters.iter().any(|p| !lifted(p))
                     || !path_params.is_empty()
                     || !query_params.is_empty()
                     || !header_params.is_empty(),
@@ -3199,31 +3300,7 @@ fn build_endpoint(
                     && !schema.properties.is_empty())
                 .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)));
             };
-            let non_null: Vec<&Schema> = members
-                .iter()
-                .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
-                .collect();
-            // A composition Fern declares in the package root rather than in the
-            // tag's own `types/`. Two shapes stay tag-local: a sole non-null
-            // string enum, and a *titled* composition with no `null`
-            // alternative — a `title` beside a null member belongs to the
-            // nullable wrapper Fern lifts the composition into, not to the
-            // composition, so oSPARC's titled `amount` and `product_name` are
-            // `projects/types/` and `products/types/` while its titled but
-            // nullable `file_size` and letta's untitled `offset` are the root's.
-            let titled_and_total = parameter
-                .schema
-                .as_ref()
-                .is_some_and(|schema| schema.title.is_some())
-                && non_null.len() == members.len();
-            // A composition of nothing but string enums is an enum to Fern
-            // (`everySubTypeIsLiteral`), and stays tag-local like one: Fergus's
-            // `sortOrder` is `anyOf: [{enum: [asc]}, {enum: [desc]}]` and its
-            // `GetCustomersRequestSortOrder` is in `customers/types/`.
-            let every_member_enum = non_null
-                .iter()
-                .all(|member| string_enum_values(member).is_some());
-            (!every_member_enum && !titled_and_total)
+            parameter_union_is_global(parameter, schema, members)
                 .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
         })
         .collect();
@@ -3335,8 +3412,9 @@ fn build_endpoint(
         module,
         method_name: method,
         http_method,
-        path: path.to_string(),
+        path: route,
         path_params,
+        client_path_params,
         stream_condition: None,
         reference_method_name: None,
         pagination: endpoint_pagination(doc, op, &query_params),
@@ -6403,6 +6481,138 @@ impl InlineHoister<'_> {
         None
     }
 
+    /// A `oneOf`/`anyOf` parameter schema, or an array parameter's union
+    /// element, declared as `name`: its `type: null` alternative makes it
+    /// optional, its inline enum members hoist as ordinal-suffixed variants, and
+    /// the rest become the members of a `name` alias.
+    fn hoist_param_composition(
+        &mut self,
+        request_ctx: &str,
+        param: &str,
+        name: String,
+        schema: &Schema,
+        members: &[Schema],
+    ) -> TypeRef {
+        let non_null: Vec<&Schema> = members
+            .iter()
+            .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
+            .collect();
+        // The `type: null` alternative is Fern's nullability rather than a
+        // member: it leaves the union and makes the parameter optional.
+        // oSPARC's `file_size` is `anyOf: [string, integer, null]` and its
+        // golden types it `Optional[UploadFileRequestFileSize]` over a
+        // two-member alias, while its `folder_id` path parameter is
+        // `anyOf: [integer, null]` and is typed `Optional[int]`. A 3.0
+        // composition says the same with a `nullable: true` beside it.
+        let nullable = non_null.len() < members.len() || schema.nullable == Some(true);
+        let wrap = |type_ref| {
+            if nullable {
+                optional_type_ref(type_ref)
+            } else {
+                type_ref
+            }
+        };
+        if non_null.len() == 1 {
+            if let Some(values) = string_enum_values(non_null[0]) {
+                self.out
+                    .push(TypeDecl::Enum(build_enum(non_null[0], &name, values, None)));
+                return wrap(TypeRef::Named(name));
+            }
+            if let Some(reference) = non_null[0].reference.as_deref() {
+                return wrap(TypeRef::Named(ref_to_class(reference)));
+            }
+            // A sole member that is itself a composition is that composition,
+            // nullable where it says so: YourBrand's `sortDirection` is
+            // `oneOf: [{nullable: true, oneOf: [$ref SortDirection]}]`, and its
+            // golden types it `Optional[SortDirection]`.
+            if non_null[0].one_of.is_some() || non_null[0].any_of.is_some() {
+                let inner = self.hoist_param_enum(request_ctx, param, non_null[0]);
+                return wrap(if is_optional(non_null[0]) {
+                    optional_type_ref(inner)
+                } else {
+                    inner
+                });
+            }
+            if is_unknown(non_null[0]) {
+                return TypeRef::Primitive(Prim::Any);
+            }
+            if is_map(non_null[0]) {
+                return wrap(nullable_map_value_type_ref(non_null[0]));
+            }
+            return wrap(self.schemas.map_or_else(
+                || base_type_ref(non_null[0]),
+                |schemas| full_type_ref_resolved(non_null[0], schemas),
+            ));
+        }
+        // An inline enum alternative becomes a named enum of its own,
+        // ordinal-suffixed the way any other hoisted variant is: oSPARC's
+        // `product_name` is `Union[str, GetProductRequestProductNameOne]`
+        // over a bare `string` beside a `const: current` member.
+        let siblings: Vec<Schema> = non_null.iter().map(|member| (*member).clone()).collect();
+        let mut variants: Vec<TypeRef> = Vec::with_capacity(non_null.len());
+        for (index, member) in non_null.iter().enumerate() {
+            let hoisted = member
+                .reference
+                .is_none()
+                .then(|| string_enum_values(member))
+                .flatten();
+            if let Some(values) = hoisted {
+                let variant_name = variant_class_name(&name, index, member, &siblings);
+                self.out.push(TypeDecl::Enum(build_enum(
+                    member,
+                    &variant_name,
+                    values,
+                    clean_doc(member.description.as_deref()),
+                )));
+                variants.push(TypeRef::Named(variant_name));
+                continue;
+            }
+            // An array member whose element is an annotated `$ref` copies
+            // that target under the member's own name: braintrust's
+            // `score_type` query parameter is `anyOf: [$ref
+            // ProjectScoreType, {items: allOf[$ref ProjectScoreType,
+            // {title}]}]` and Fern's list element is a
+            // `GetProjectScoreRequestScoreTypeOneItem` of its own.
+            let annotated_item = member
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary)
+                .filter(|ty| *ty == "array")
+                .and(member.items.as_deref())
+                .zip(self.schemas)
+                .and_then(|(items, schemas)| {
+                    let (reference, _) = described_all_of_ref(items)?;
+                    resolve_ref_from_schemas(schemas, reference).cloned()
+                });
+            if let Some(target) = annotated_item {
+                let variant_name = variant_class_name(&name, index, member, &siblings);
+                let item_name = format!("{variant_name}Item");
+                if let Some(element) = self.hoist_named_copy(&item_name, &target) {
+                    variants.push(TypeRef::List(Box::new(element)));
+                    continue;
+                }
+            }
+            variants.push(base_type_ref(member));
+        }
+        let mut variants = dedupe_union_members(variants);
+        // A composition whose members all lower to the same type is no
+        // union at all, and Fern hoists nothing for it: Flowdapt's
+        // `identifier` path parameter is
+        // `anyOf: [{type: string}, {type: string, format: uuid}]` and
+        // its golden types the argument `str`.
+        if variants.len() == 1 {
+            return wrap(variants.pop().expect("length checked above"));
+        }
+        self.out.push(TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
+            name: name.clone(),
+            module: naming::module_name(&name),
+            target: TypeRef::Union(variants),
+            docstring: clean_doc(schema.description.as_deref()),
+        }));
+        wrap(TypeRef::Named(name))
+    }
+
     /// Hoist an inline string enum on a request parameter's schema into a named
     /// extensible-enum alias `{request_ctx}{Prop}` in the tag's `types/` package,
     /// matching Fern (a `level` query param on `listWidgets` →
@@ -6428,131 +6638,31 @@ impl InlineHoister<'_> {
             }
             if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
                 let name = request_parameter_type_name(request_ctx, param);
-                let non_null: Vec<&Schema> = members
-                    .iter()
-                    .filter(|member| {
-                        member.ty.as_ref().and_then(TypeField::primary) != Some("null")
-                    })
-                    .collect();
-                // The `type: null` alternative is Fern's nullability rather than a
-                // member: it leaves the union and makes the parameter optional.
-                // oSPARC's `file_size` is `anyOf: [string, integer, null]` and its
-                // golden types it `Optional[UploadFileRequestFileSize]` over a
-                // two-member alias, while its `folder_id` path parameter is
-                // `anyOf: [integer, null]` and is typed `Optional[int]`.
-                let nullable = non_null.len() < members.len();
-                let wrap = |type_ref| {
-                    if nullable {
-                        optional_type_ref(type_ref)
-                    } else {
-                        type_ref
-                    }
-                };
-                if non_null.len() == 1 {
-                    if let Some(values) = string_enum_values(non_null[0]) {
-                        self.out
-                            .push(TypeDecl::Enum(build_enum(non_null[0], &name, values, None)));
-                        return wrap(TypeRef::Named(name));
-                    }
-                    if let Some(reference) = non_null[0].reference.as_deref() {
-                        return wrap(TypeRef::Named(ref_to_class(reference)));
-                    }
-                    // A sole member that is itself a composition is that composition,
-                    // nullable where it says so: YourBrand's `sortDirection` is
-                    // `oneOf: [{nullable: true, oneOf: [$ref SortDirection]}]`, and its
-                    // golden types it `Optional[SortDirection]`.
-                    if non_null[0].one_of.is_some() || non_null[0].any_of.is_some() {
-                        let inner = self.hoist_param_enum(request_ctx, param, non_null[0]);
-                        return wrap(if is_optional(non_null[0]) {
-                            optional_type_ref(inner)
-                        } else {
-                            inner
-                        });
-                    }
-                    if is_unknown(non_null[0]) {
-                        return TypeRef::Primitive(Prim::Any);
-                    }
-                    if is_map(non_null[0]) {
-                        return wrap(nullable_map_value_type_ref(non_null[0]));
-                    }
-                    return wrap(self.schemas.map_or_else(
-                        || base_type_ref(non_null[0]),
-                        |schemas| full_type_ref_resolved(non_null[0], schemas),
-                    ));
-                }
-                // An inline enum alternative becomes a named enum of its own,
-                // ordinal-suffixed the way any other hoisted variant is: oSPARC's
-                // `product_name` is `Union[str, GetProductRequestProductNameOne]`
-                // over a bare `string` beside a `const: current` member.
-                let siblings: Vec<Schema> =
-                    non_null.iter().map(|member| (*member).clone()).collect();
-                let mut variants: Vec<TypeRef> = Vec::with_capacity(non_null.len());
-                for (index, member) in non_null.iter().enumerate() {
-                    let hoisted = member
-                        .reference
-                        .is_none()
-                        .then(|| string_enum_values(member))
-                        .flatten();
-                    if let Some(values) = hoisted {
-                        let variant_name = variant_class_name(&name, index, member, &siblings);
-                        self.out.push(TypeDecl::Enum(build_enum(
-                            member,
-                            &variant_name,
-                            values,
-                            clean_doc(member.description.as_deref()),
-                        )));
-                        variants.push(TypeRef::Named(variant_name));
-                        continue;
-                    }
-                    // An array member whose element is an annotated `$ref` copies
-                    // that target under the member's own name: braintrust's
-                    // `score_type` query parameter is `anyOf: [$ref
-                    // ProjectScoreType, {items: allOf[$ref ProjectScoreType,
-                    // {title}]}]` and Fern's list element is a
-                    // `GetProjectScoreRequestScoreTypeOneItem` of its own.
-                    let annotated_item = member
-                        .ty
-                        .as_ref()
-                        .and_then(TypeField::primary)
-                        .filter(|ty| *ty == "array")
-                        .and(member.items.as_deref())
-                        .zip(self.schemas)
-                        .and_then(|(items, schemas)| {
-                            let (reference, _) = described_all_of_ref(items)?;
-                            resolve_ref_from_schemas(schemas, reference).cloned()
-                        });
-                    if let Some(target) = annotated_item {
-                        let variant_name = variant_class_name(&name, index, member, &siblings);
-                        let item_name = format!("{variant_name}Item");
-                        if let Some(element) = self.hoist_named_copy(&item_name, &target) {
-                            variants.push(TypeRef::List(Box::new(element)));
-                            continue;
-                        }
-                    }
-                    variants.push(base_type_ref(member));
-                }
-                let mut variants = dedupe_union_members(variants);
-                // A composition whose members all lower to the same type is no
-                // union at all, and Fern hoists nothing for it: Flowdapt's
-                // `identifier` path parameter is
-                // `anyOf: [{type: string}, {type: string, format: uuid}]` and
-                // its golden types the argument `str`.
-                if variants.len() == 1 {
-                    return wrap(variants.pop().expect("length checked above"));
-                }
-                self.out.push(TypeDecl::Alias(AliasType {
-                    reach_refs: Vec::new(),
-                    name: name.clone(),
-                    module: naming::module_name(&name),
-                    target: TypeRef::Union(variants),
-                    docstring: clean_doc(schema.description.as_deref()),
-                }));
-                return wrap(TypeRef::Named(name));
+                return self.hoist_param_composition(request_ctx, param, name, schema, members);
             }
             if let Some(array) =
                 self.hoist_array_item_enum(&request_parameter_type_name(request_ctx, param), schema)
             {
                 return array;
+            }
+            // An array whose element is an inline union of two or more members
+            // names that element `{Param}Item`, as the same array does as a body
+            // property, rather than spelling the union inline. A `type: null`
+            // member leaves the alias, and Fern's signature types the element by
+            // the alias alone.
+            if let Some((item, members)) = schema
+                .items
+                .as_deref()
+                .filter(|item| inline_multi_member_union(item))
+                .and_then(|item| Some((item, item.one_of.as_ref().or(item.any_of.as_ref())?)))
+            {
+                let name = format!("{}Item", request_parameter_type_name(request_ctx, param));
+                let element =
+                    match self.hoist_param_composition(request_ctx, param, name, item, members) {
+                        TypeRef::Optional(element) => *element,
+                        element => element,
+                    };
+                return sequence_of(schema, element);
             }
             if is_object_type(schema) && is_inline_struct(schema) {
                 let name = request_parameter_type_name(request_ctx, param);
@@ -6601,9 +6711,16 @@ impl InlineHoister<'_> {
         type_needs_convert(t, self.root_types) || type_needs_convert(t, &self.out)
     }
 
+    /// Whether a parameter value reaches the URL as nothing but scalars, resolving
+    /// a name among the package-root types and the inline types just hoisted
+    /// together, since a hoisted alias may name a root enum. An array reaches it
+    /// element by element, so it is its element that decides.
     fn is_scalar(&self, t: &TypeRef) -> bool {
-        type_is_scalar(t, self.root_types, &mut Vec::new())
-            || type_is_scalar(t, &self.out, &mut Vec::new())
+        let element = match t {
+            TypeRef::List(item) | TypeRef::Set(item) => item,
+            other => other,
+        };
+        type_is_scalar(element, &[self.root_types, &self.out], &mut Vec::new())
     }
 }
 
@@ -6941,7 +7058,7 @@ fn type_needs_convert_through(t: &TypeRef, types: &[TypeDecl], seen: &mut Vec<St
 /// (helios' `Union[Uint, BlockTag, Hash32]` is unwrapped, while its sibling
 /// `Union[Address, Addresses]` is wrapped for the list it can hold). `seen`
 /// guards a self-referential alias chain.
-fn type_is_scalar<'a>(t: &'a TypeRef, types: &'a [TypeDecl], seen: &mut Vec<&'a str>) -> bool {
+fn type_is_scalar<'a>(t: &'a TypeRef, types: &[&'a [TypeDecl]], seen: &mut Vec<&'a str>) -> bool {
     match t {
         TypeRef::Primitive(primitive) => *primitive != Prim::Any,
         TypeRef::Literal(_) => true,
@@ -6957,11 +7074,14 @@ fn type_is_scalar<'a>(t: &'a TypeRef, types: &'a [TypeDecl], seen: &mut Vec<&'a 
                 return true;
             }
             seen.push(name.as_str());
-            let scalar = types.iter().any(|decl| match decl {
-                TypeDecl::Enum(e) => e.name == *name,
-                TypeDecl::Alias(a) => a.name == *name && type_is_scalar(&a.target, types, seen),
-                _ => false,
-            });
+            let scalar = types
+                .iter()
+                .flat_map(|types| types.iter())
+                .any(|decl| match decl {
+                    TypeDecl::Enum(e) => e.name == *name,
+                    TypeDecl::Alias(a) => a.name == *name && type_is_scalar(&a.target, types, seen),
+                    _ => false,
+                });
             seen.pop();
             scalar
         }
@@ -6999,6 +7119,56 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
     Some((type_ref, false))
 }
 
+/// An inline (`$ref`-free) `oneOf`/`anyOf` with at least two members besides a
+/// `type: null` one: a union Fern names rather than an optional element.
+fn inline_multi_member_union(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema
+            .one_of
+            .as_ref()
+            .or(schema.any_of.as_ref())
+            .is_some_and(|members| {
+                members
+                    .iter()
+                    .filter(|member| {
+                        member.ty.as_ref().and_then(TypeField::primary) != Some("null")
+                    })
+                    .count()
+                    >= 2
+            })
+}
+
+/// Whether Fern declares the type it hoists for a `oneOf`/`anyOf` parameter in
+/// the package root's `types/` rather than in the tag's own. A header or path
+/// composition, a sole non-null string enum and a composition with a sibling
+/// string `enum` (Fergus's `sortOrder`, which Fern reads as that enum) all stay
+/// tag-local. A query composition goes to the root exactly when it is required
+/// and nullable, or optional and not: oSPARC's required `amount` is
+/// `projects/types/`, its required but nullable `file_size` and letta's
+/// optional `offset` the root's. `title` and the members' kinds (scalars,
+/// `const`s, one-value enums) do not move it. Nullable means a `type: null`
+/// member or a schema-level `nullable: true`; a member's own nullability does
+/// not count.
+fn parameter_union_is_global(
+    parameter: &crate::openapi::Parameter,
+    schema: &Schema,
+    members: &[Schema],
+) -> bool {
+    if parameter.location != Some(ParameterLocation::Query) || string_enum_values(schema).is_some()
+    {
+        return false;
+    }
+    let is_null = |member: &Schema| member.ty.as_ref().and_then(TypeField::primary) == Some("null");
+    let non_null: Vec<&Schema> = members.iter().filter(|member| !is_null(member)).collect();
+    if let [sole] = non_null.as_slice() {
+        if string_enum_values(sole).is_some() {
+            return false;
+        }
+    }
+    let nullable = non_null.len() < members.len() || schema.nullable == Some(true);
+    parameter.required.unwrap_or(false) == nullable
+}
+
 /// The array member of a query parameter whose schema is a `oneOf`/`anyOf` of a
 /// scalar and an array of that same scalar. Fern reads that composition as its
 /// ordinary "one or many" query array rather than as a union: Strapi's `sort` is
@@ -7006,25 +7176,38 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
 /// types the argument `Optional[Union[str, Sequence[str]]]` and passes it through
 /// unconverted, exactly as the plain `fields` array beside it. Every downstream
 /// reading of the parameter takes the array member this returns, so the two
-/// spellings of one-or-many generate the same bytes.
-fn one_or_many_query_schema(schema: &Schema) -> Option<&Schema> {
+/// spellings of one-or-many generate the same bytes. Fern reads it so only where
+/// the parameter is required exactly when it is nullable (a `type: null` member
+/// or `nullable: true`), the cells [`parameter_union_is_global`] sends to the
+/// root: a required, non-null one, or an optional nullable one, is a named
+/// union like any other composition, required where declared so, converted on
+/// the way out and exampled by its scalar member.
+fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> {
     if schema.reference.is_some() {
         return None;
     }
-    let members = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
-    let [first, second] = members.as_slice() else {
-        return None;
-    };
     fn kind(member: &Schema) -> Option<&str> {
         member.ty.as_ref().and_then(TypeField::primary)
     }
+    let members = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+    let non_null: Vec<&Schema> = members
+        .iter()
+        .filter(|member| kind(member) != Some("null"))
+        .collect();
+    let nullable = non_null.len() < members.len() || schema.nullable == Some(true);
+    if required != nullable {
+        return None;
+    }
+    let [first, second] = non_null.as_slice() else {
+        return None;
+    };
     let (array, scalar) = match (kind(first), kind(second)) {
         (Some("array"), Some(other)) if other != "array" => (first, second),
         (Some(other), Some("array")) if other != "array" => (second, first),
         _ => return None,
     };
     let item = array.items.as_deref()?;
-    (base_type_ref(item) == base_type_ref(scalar)).then_some(array)
+    (base_type_ref(item) == base_type_ref(scalar)).then_some(*array)
 }
 
 /// The primitive for a `type: number` schema. Fern's importer keys the numeric

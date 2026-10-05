@@ -71,6 +71,121 @@ pub struct OpenApi {
     /// in generated docs rather than title-casing an operation-only tag.
     #[serde(default)]
     pub tags: Vec<ApiTag>,
+    /// `x-crozier-base-path`: the base path every operation's route sits under
+    /// (canonical spelling; see [`OpenApi::base_path`]).
+    #[serde(rename = "x-crozier-base-path", default)]
+    pub base_path_crozier: Option<BasePath>,
+    /// `x-fern-base-path`: the Fern spelling of the base path, superseded by
+    /// `x-crozier-base-path` when both appear.
+    #[serde(rename = "x-fern-base-path", default)]
+    pub base_path_fern: Option<BasePath>,
+}
+
+/// A document-level base path (`x-crozier-base-path` / `x-fern-base-path`): a
+/// path prefixed to every operation's route, whose `{placeholders}` are lifted
+/// out of every method into client constructor arguments.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum BasePath {
+    /// `x-fern-base-path: /v1`.
+    Path(String),
+    /// The object form.
+    Object {
+        /// The base path itself, e.g. `/{api_version}`.
+        #[serde(default)]
+        path: String,
+        /// Whether the document's routes already begin with `path`, so it is
+        /// not prefixed again.
+        #[serde(rename = "paths-include-base-path", default)]
+        paths_include_base_path: bool,
+        /// The lifted parameters' schemas. Only the map form (`name: schema`)
+        /// gives one a default; Fern reads a list of Parameter Objects as naming
+        /// no defaults.
+        #[serde(default)]
+        parameters: Option<serde_json::Value>,
+    },
+}
+
+/// A placeholder of the base path, lifted to a client constructor argument.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BasePathParameter {
+    /// The placeholder's name, e.g. `api_version`.
+    pub name: String,
+    /// The string `default` its map-form schema declares, which makes the
+    /// argument optional with that default.
+    pub default: Option<String>,
+}
+
+impl BasePath {
+    /// The path, and whether the routes already include it.
+    #[must_use]
+    pub fn path(&self) -> (&str, bool) {
+        match self {
+            Self::Path(path) => (path, false),
+            Self::Object {
+                path,
+                paths_include_base_path,
+                ..
+            } => (path, *paths_include_base_path),
+        }
+    }
+
+    /// The prefix to put before every route: the path without a trailing `/`,
+    /// or nothing when the routes already include it.
+    #[must_use]
+    pub fn route_prefix(&self) -> &str {
+        match self.path() {
+            (_, true) => "",
+            (path, false) => path.trim_end_matches('/'),
+        }
+    }
+
+    /// Every `{placeholder}` of the path, in order, with its default. Fern
+    /// refuses the string form when it names one (`File has missing
+    /// path-parameter`); crozier lifts it as a required argument, as it does
+    /// for an object form that declares no schema for it.
+    #[must_use]
+    pub fn parameters(&self) -> Vec<BasePathParameter> {
+        let declared = match self {
+            Self::Object {
+                parameters: Some(serde_json::Value::Object(map)),
+                ..
+            } => Some(map),
+            _ => None,
+        };
+        let mut rest = self.path().0;
+        let mut out = Vec::new();
+        while let Some(open) = rest.find('{') {
+            let Some(close) = rest[open..].find('}') else {
+                break;
+            };
+            let name = &rest[open + 1..open + close];
+            let default = declared
+                .and_then(|map| map.get(name))
+                .and_then(|schema| schema.get("default"))
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_owned);
+            if !name.is_empty() && out.iter().all(|p: &BasePathParameter| p.name != name) {
+                out.push(BasePathParameter {
+                    name: name.to_owned(),
+                    default,
+                });
+            }
+            rest = &rest[open + close + 1..];
+        }
+        out
+    }
+}
+
+impl OpenApi {
+    /// The document's base path: `x-crozier-base-path` when present, else
+    /// `x-fern-base-path` (the [dual-header policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn base_path(&self) -> Option<&BasePath> {
+        self.base_path_crozier
+            .as_ref()
+            .or(self.base_path_fern.as_ref())
+    }
 }
 
 /// One entry from the document's top-level `tags` list.

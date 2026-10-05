@@ -97,6 +97,8 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
         security: None,
         servers: Vec::new(),
         tags: Vec::new(),
+        base_path_crozier: None,
+        base_path_fern: None,
     };
     for (route, item) in source["paths"].as_mapping().into_iter().flatten() {
         let Some(route) = route.as_str() else {
