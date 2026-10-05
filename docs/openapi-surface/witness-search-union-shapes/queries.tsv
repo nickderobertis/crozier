@@ -1,0 +1,9 @@
+query	result_count	first_page_fetched
+"const" "default" "anyOf" "$ref" "title" filename:openapi.json	3736	100
+"enum" "default" "oneOf" "$ref" "title" filename:openapi.json	5936	100
+"readOnly" "discriminator" "required" filename:openapi.json	812	100
+"readOnly: true" "discriminator:" "propertyName:" filename:openapi.yaml	1480	100
+"anyOf" "pattern" "components" filename:openapi.json	5024	100
+"anyOf:" "pattern:" "components:" filename:openapi.yaml	2508	100
+"anyOf" "oneOf" "discriminator" "properties" filename:openapi.json	1008	100
+"anyOf:" "- oneOf:" "properties:" filename:openapi.yaml	144	100

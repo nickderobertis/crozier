@@ -2387,7 +2387,7 @@ class GrammarContractTests(unittest.TestCase):
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
-            "Sixty-seven": 67,
+            "Sixty-seven": 67, "Sixty-eight": 68,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
             "seventeen": 17,
         }
@@ -4317,7 +4317,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - POINTER_WALK_SELECTORS - NEGATION_SELECTORS - NESTED_COMPOSITION_SELECTORS \
         - {name for name in census.PREDICATES
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
-        - {"components.schemas:nonidentifier-name", "securityScheme:$ref"} \
+        - {"components.schemas:nonidentifier-name", "components.schemas:same-primitive-union",
+           "securityScheme:$ref"} \
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
 
     @classmethod
@@ -12381,6 +12382,78 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                 write_fixture(root, fixture, json.dumps({
                     "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
                     "paths": {}, "components": {"schemas": {name: {"type": "string"}}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_same_primitive_union_counts_a_component_and_not_its_near_misses(self) -> None:
+        """A component composition of one primitive, and nothing beside it.
+
+        The positive writes two pattern strings and three plain integers; the
+        decoys write a `null` alternative, mixed primitives, `integer` beside
+        `format: int64`, a lone alternative, a composition beside a `type`, and
+        the positive's composition inline as a property, where it is no class.
+        """
+        selector = "components.schemas:same-primitive-union"
+        strings = {"anyOf": [{"type": "string", "pattern": "^a"}, {"type": "string", "pattern": "^b"}]}
+        documents = {
+            "positive": {
+                "Code": strings,
+                "Port": {"oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1},
+                                   {"type": "integer", "maximum": 9}]},
+            },
+            "decoys": {
+                "Nullable": {"anyOf": [{"type": "string"}, {"type": "string"}, {"type": "null"}]},
+                "Mixed": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
+                "Wide": {"anyOf": [{"type": "integer"}, {"type": "integer", "format": "int64"}]},
+                "Lone": {"anyOf": [{"type": "string"}]},
+                "Typed": {"type": "string", **strings},
+                "Holder": {"type": "object", "properties": {"code": strings}},
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, schemas in documents.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {}, "components": {"schemas": schemas},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 2}, rows(completed))
+
+    def test_an_unrequired_tag_discriminates_only_reference_members(self) -> None:
+        """`inferred_discriminant_property_with`'s `unrequired_tag` clause.
+
+        `$ref` members each tagging `kind` with a one-value string that `required`
+        leaves out are a discriminated union whatever the property is named; an
+        inline member beside them, or a member with no tag, is not.
+        """
+        selector = "schema.anyOf:discriminated-union"
+
+        def member(tag: str) -> dict:
+            return {"type": "object", "required": ["size"], "properties": {
+                "kind": {"type": "string", "enum": [tag], "default": tag},
+                "size": {"type": "number"}}}
+
+        refs = [{"$ref": "#/components/schemas/Circle"}, {"$ref": "#/components/schemas/Square"}]
+        documents = {
+            "positive": {"Shape": {"anyOf": refs}},
+            "mixed": {"Shape": {"anyOf": [refs[0], member("dot")]}},
+            "untagged": {"Shape": {"anyOf": [refs[0], {"$ref": "#/components/schemas/Blank"}]}},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, extra in documents.items():
+                schemas = {"Circle": member("circle"), "Square": member("square"),
+                           "Blank": {"type": "object", "properties": {"size": {"type": "number"}}},
+                           **extra}
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.0.3", "info": {"title": fixture, "version": "1"},
+                    "paths": {}, "components": {"schemas": schemas},
                 }))
             completed = run("--vendored-only", "--fixtures-root", str(root),
                             "--selector", selector)
