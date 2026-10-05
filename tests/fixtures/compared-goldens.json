@@ -940,7 +940,6 @@
           "src/fern/products/client.py",
           "src/fern/products/raw_client.py",
           "src/fern/products/types/create_products_request_product.py",
-          "src/fern/scripts/client.py",
           "src/fern/scripts/raw_client.py",
           "src/fern/sites/__init__.py",
           "src/fern/sites/activity_logs/raw_client.py",

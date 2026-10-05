@@ -231,23 +231,17 @@ const FERN_DEFAULT_DATETIME: &str = "2024-01-15T09:30:00+00:00";
 /// value after appending `Z` unless it already ends in `Z` or holds a `+`, so
 /// Fergus's `2025-12-02T00:00:00+13:00` passes `2025-12-01 11:00:00+00:00`, a
 /// value with no zone (`2023-03-04 05:06:07`, `2023-03-04`) is read as UTC and a
-/// day past the month's end rolls into the next month; a value that reading
-/// rejects is replaced by [`FERN_DEFAULT_DATETIME`].
-///
-/// That rewrite also rejects valid RFC 3339 values: a negative offset
-/// (`-05:00`, `-00:00`) or a lower-case `t`/`z`. Fern's replacement there is an
-/// example that no longer shows the document's value, so crozier keeps the
-/// instant the value names instead. Every value returned parses with
-/// `datetime.datetime.fromisoformat`.
+/// day past the month's end rolls into the next month. A value that reading
+/// rejects is replaced by [`FERN_DEFAULT_DATETIME`]: a zone name (`… CDT`), but
+/// equally a negative offset or a lower-case `z`, which the appended `Z`
+/// breaks. Every value returned parses with `datetime.datetime.fromisoformat`.
 fn datetime_example(value: &str) -> String {
     let rewritten = if value.ends_with('Z') || value.contains('+') {
         value.to_string()
     } else {
         format!("{value}Z")
     };
-    let Some(seconds) = read_datetime(&rewritten, DatetimeReading::Fern)
-        .or_else(|| read_datetime(value, DatetimeReading::Rfc3339))
-    else {
+    let Some(seconds) = read_datetime(&rewritten) else {
         return FERN_DEFAULT_DATETIME.to_string();
     };
     let (days, second_of_day) = (
@@ -276,42 +270,24 @@ fn datetime_example(value: &str) -> String {
     )
 }
 
-/// Which grammar [`read_datetime`] applies.
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum DatetimeReading {
-    /// Fern's reading of its rewritten value: a date alone or a date and a time
-    /// (`T` or a space between, seconds and a fraction optional), then `Z` or a
-    /// `±HH:MM`/`±HHMM` offset; any day up to 31, rolling past the month's end.
-    Fern,
-    /// RFC 3339's `date-time`: seconds required, `T`, `t` or a space between,
-    /// `Z`, `z` or `±HH:MM`, and a day that exists in its month.
-    Rfc3339,
-}
-
-/// The instant `value` names under `reading`, in whole seconds since the Unix
-/// epoch (a fraction is read and dropped), or `None` where the grammar rejects it.
-fn read_datetime(value: &str, reading: DatetimeReading) -> Option<i64> {
-    let rfc = reading == DatetimeReading::Rfc3339;
+/// The instant Fern reads from its rewritten `date-time` value, in whole seconds
+/// since the Unix epoch, or `None` where it reads none. The grammar is the one
+/// measured: a date alone or a date and a time (`T` or a space between, seconds
+/// and a fraction optional, the fraction dropped), then `Z` or a `±HH:MM` or
+/// `±HHMM` offset; any day up to 31, rolling past the month's end.
+fn read_datetime(value: &str) -> Option<i64> {
     let bytes = value.as_bytes();
     let number = |range: std::ops::Range<usize>| value.get(range).and_then(number_of);
     let (year, month, day) = (number(0..4)?, number(5..7)?, number(8..10)?);
     if bytes.get(4) != Some(&b'-') || bytes.get(7) != Some(&b'-') {
         return None;
     }
-    let days_in_month = match month {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
-        4 | 6 | 9 | 11 => 30,
-        2 if year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) => 29,
-        2 => 28,
-        _ => return None,
-    };
-    if day < 1 || day > if rfc { days_in_month } else { 31 } {
+    if !(1..=12).contains(&month) || !(1..=31).contains(&day) {
         return None;
     }
     let mut at = 10;
     let (mut hour, mut minute, mut second) = (0, 0, 0);
-    let separators: &[u8] = if rfc { b"Tt " } else { b"T " };
-    if bytes.get(at).is_some_and(|byte| separators.contains(byte)) {
+    if matches!(bytes.get(at), Some(b'T' | b' ')) {
         hour = number(at + 1..at + 3)?;
         minute = number(at + 4..at + 6)?;
         if bytes.get(at + 3) != Some(&b':') {
@@ -331,36 +307,30 @@ fn read_datetime(value: &str, reading: DatetimeReading) -> Option<i64> {
                 }
                 at += 1 + digits;
             }
-        } else if rfc {
-            return None;
         }
-    } else if rfc {
-        return None;
     }
     if hour > 23 || minute > 59 || second > 59 {
         return None;
     }
     let zone = &value[at..];
-    let offset_minutes = match zone {
-        "Z" => 0,
-        "z" if rfc => 0,
-        _ => {
-            let sign = match zone.as_bytes().first()? {
-                b'+' => 1,
-                b'-' => -1,
-                _ => return None,
-            };
-            let (hours, minutes) = match zone.len() {
-                6 if zone.as_bytes()[3] == b':' => (&zone[1..3], &zone[4..6]),
-                5 if !rfc => (&zone[1..3], &zone[3..5]),
-                _ => return None,
-            };
-            let (hours, minutes) = (number_of(hours)?, number_of(minutes)?);
-            if hours > 23 || minutes > 59 {
-                return None;
-            }
-            sign * (hours * 60 + minutes)
+    let offset_minutes = if zone == "Z" {
+        0
+    } else {
+        let sign = match zone.as_bytes().first()? {
+            b'+' => 1,
+            b'-' => -1,
+            _ => return None,
+        };
+        let (hours, minutes) = match zone.len() {
+            6 if zone.as_bytes()[3] == b':' => (&zone[1..3], &zone[4..6]),
+            5 => (&zone[1..3], &zone[3..5]),
+            _ => return None,
+        };
+        let (hours, minutes) = (number_of(hours)?, number_of(minutes)?);
+        if hours > 23 || minutes > 59 {
+            return None;
         }
+        sign * (hours * 60 + minutes)
     };
     // `days_from_civil` (Howard Hinnant); a day past the month's end simply
     // counts on into the next month.
@@ -9318,17 +9288,27 @@ fn build_example_inner(
         .as_ref()
         .is_some_and(|body| body.is_wildcard_media() || matches!(body, RequestBody::Form(_)));
     let parameters_start = args.len();
+    let omits_required_query_arrays = ep.text_response
+        || ep.query_params.iter().any(|qp| {
+            qp.required
+                && (matches!(qp.type_ref, TypeRef::Dict(..)) || ctx.example_is_object(&qp.type_ref))
+        });
     for qp in ep
         .query_params
         .iter()
         .filter(|qp| !suppressed && !header_first_request && qp.required)
     {
-        // Every required array is shown with one sampled item, whatever its item
-        // type (`colors=[Color.RED]`, `spots=[Spot()]`). Fern omits each one from
-        // an operation whose success body is `text/*`, or that takes a required
-        // object or map query parameter; that call is missing a required
-        // argument, so crozier does not reproduce the omission (the
-        // `required-query-array-example-argument` departure).
+        // A required array is shown with one sampled item, whatever its item
+        // type (`colors=[Color.RED]`, `spots=[Spot()]`), except that Fern leaves
+        // every one out of an operation whose success body is `text/*`, or that
+        // takes a required object or map query parameter. Measured on variants
+        // of one operation: `application/xml`, `+json`, `204` and error-only
+        // responses all show it, as does an optional map beside it. The
+        // signature makes every query array optional, so either call runs.
+        if omits_required_query_arrays && matches!(qp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
+        {
+            continue;
+        }
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             // A literal the type cannot hold is not an example Fern renders: an
             // enum parameter whose example names no member takes the enum's own
@@ -12529,34 +12509,23 @@ mod tests {
             written("2024-12-31T23:30:00+00:00"),
             "2024-12-31T23:30:00+00:00"
         );
-        // Valid RFC 3339 values Fern's rewrite rejects keep their own instant.
-        assert_eq!(
-            written("2023-03-04T05:06:07-05:00"),
-            "2023-03-04T10:06:07+00:00"
-        );
-        assert_eq!(
-            written("2024-02-28T23:30:00.5-01:00"),
-            "2024-02-29T00:30:00+00:00"
-        );
-        assert_eq!(
-            written("2023-03-04T05:06:07-00:00"),
-            "2023-03-04T05:06:07+00:00"
-        );
-        assert_eq!(written("2023-03-04t05:06:07z"), "2023-03-04T05:06:07+00:00");
-        assert_eq!(
-            written("2023-12-31 22:00:00-03:00"),
-            "2024-01-01T01:00:00+00:00"
-        );
-        // Values neither reading accepts take Fern's replacement: a zone name, a
+        // Values Fern's reading rejects take its replacement: a zone name, a
         // missing separator, an hour, month, day or second out of range, a
-        // basic-format value, leading space, a negative offset without seconds.
+        // basic-format value, leading space, and every negative offset or
+        // lower-case `z`, which the appended `Z` breaks.
         for invalid in [
+            "2023-03-04T05:06:07-05:00",
+            "2024-02-28T23:30:00.5-01:00",
+            "2023-03-04T05:06:07-00:00",
+            "2023-03-04t05:06:07z",
+            "2023-12-31 22:00:00-03:00",
             "2022-08-11 14:00:00 CDT",
             "20230304T050607Z",
             "2023-03-04X05:06:07Z",
             "2023-03-04T25:06:07Z",
             "2023-13-04T05:06:07Z",
             "2023-03-32T05:06:07Z",
+            "2023-03-04t05:06:07Z",
             "2023-03-04T05:06:60Z",
             "  2023-03-04T05:06:07Z",
             "2023-03-04T05:06-05:00",

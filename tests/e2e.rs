@@ -123,8 +123,8 @@ const QUERY_PARAMETERS_PACKAGED_EXPECTATIONS: &[PackagedExpectation] = &[
     },
     PackagedExpectation {
         path: "README.md",
-        len: 5_785,
-        fnv1a64: 0xfb7f72943e9f6a02,
+        len: 5_619,
+        fnv1a64: 0x4bbcc6a0d1e02f8c,
     },
     PackagedExpectation {
         path: "pyproject.toml",
@@ -133,13 +133,13 @@ const QUERY_PARAMETERS_PACKAGED_EXPECTATIONS: &[PackagedExpectation] = &[
     },
     PackagedExpectation {
         path: "reference.md",
-        len: 2_347,
-        fnv1a64: 0xffb6dc8345d1e06e,
+        len: 2_276,
+        fnv1a64: 0xb8a326b121319e24,
     },
     PackagedExpectation {
         path: "src/seed/client.py",
-        len: 16_779,
-        fnv1a64: 0xeb272459016f560a,
+        len: 16_653,
+        fnv1a64: 0x8163a174ff7d9f68,
     },
     PackagedExpectation {
         path: "src/seed/core/client_wrapper.py",
