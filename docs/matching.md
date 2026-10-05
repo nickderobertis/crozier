@@ -193,9 +193,7 @@ its own terms — under the defect rule in
 the correct output, and the difference is a `fern-defect` entry of the departure
 catalog. Each golden's departures are recorded line by line in
 [`tests/fixtures/departures-ledger.tsv`](../tests/fixtures/departures-ledger.tsv),
-which every golden comparison holds itself to exactly; the catalog, the ledger's
-contract, and how a fix adds a departure are in
-[`departures/README.md`](departures/README.md).
+which every golden comparison holds itself to exactly.
 
 A departure entry is stricter than the residual manifest above. An `unmatched`
 path stops the comparison of a whole file, and a coarse residual of that kind

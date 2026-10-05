@@ -91,7 +91,7 @@ part of either tree.
 applied`, as `file:line id`, and in the JSON report's `comparison.departures` as
 `{id, file, line}` (report version 2). A generator whose only differences are
 departures is `matched`; any other difference makes it `mismatched`, naming the
-file. See [`../compare.md`](../compare.md#intended-departures).
+file.
 
 ## The per-golden ledger
 
@@ -166,7 +166,7 @@ when the two differ.
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
-| `ordering` | 1 | crozier orders statements whose order has no effect in a deterministic order. |
+| `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
 
 ### `fern-metadata-generator-config`
 

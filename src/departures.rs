@@ -78,7 +78,7 @@ impl Kind {
             }
             Kind::Provenance => "crozier writes a fixed record of how the SDK was generated.",
             Kind::Ordering => {
-                "crozier orders statements whose order has no effect in a deterministic order."
+                "crozier writes statements whose order has no effect in its own deterministic order."
             }
         }
     }
@@ -272,10 +272,6 @@ pub fn render_reference(entries: &[Departure]) -> String {
     out.push_str(&format!("\n{}\n", REFERENCE_MARKERS.1));
     out
 }
-
-// ---------------------------------------------------------------------------
-// Rules
-// ---------------------------------------------------------------------------
 
 /// What a rule may consult about the two trees a file pair belongs to: the
 /// top-level class names each tree's Python modules define, read on first use.

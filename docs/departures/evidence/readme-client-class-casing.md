@@ -59,8 +59,8 @@ AsyncLanternHarborApi
 ```
 
 The README's examples name classes the package does not define, so they
-contradict the generated code: that is a defect under the rule in
-[`../README.md`](../README.md#the-defect-rule).
+contradict the generated code: docs or examples that contradict the generated
+code are a defect under the defect rule.
 
 ## crozier's output
 
