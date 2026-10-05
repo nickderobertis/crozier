@@ -1267,6 +1267,9 @@ fn assert_generated_tree_matches(
             // demand for any divergent file.
             let (actual, expected) = normalized_pair(&rel, &generated, &expected);
             let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
+            if defects.files().contains(rel.as_str()) {
+                panic!("{}", defects.still_differs(&rel, &diff));
+            }
             panic!(
                 "generated {rel} does not match the Fern fixture \
                  (normalized diff; `-` = Fern golden, `+` = crozier). \
@@ -1899,6 +1902,10 @@ fn golden_tree_failures(
         if !generated_matches_fixture(&rel, &generated, &expected) {
             let (actual, expected) = normalized_pair(&rel, &generated, &expected);
             let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
+            if defects.files().contains(rel.as_str()) {
+                failures.push(format!("{key}: {}", defects.still_differs(&rel, &diff)));
+                continue;
+            }
             failures.push(format!(
                 "{key}: generated {rel} differs from the committed Fern measurement \
                  (fix the generator, never the measurement)\n{diff}"

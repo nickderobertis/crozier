@@ -171,7 +171,10 @@ fn a_valid_entry_makes_the_substituted_golden_match() {
     let drifted = output(&CROZIER_README.replace("# Demo", "# Demo SDK"));
     let failures = compare(root.path(), drifted.path());
     assert!(
-        failures.len() == 1 && failures[0].contains("+ # Demo SDK"),
+        failures.len() == 1
+            && failures[0].contains("`readme-imports-undefined-client`")
+            && failures[0].contains("still differs")
+            && failures[0].contains("+ # Demo SDK"),
         "{failures:#?}"
     );
 }
@@ -481,6 +484,18 @@ fn the_corpus_gate_applies_an_entry_to_its_golden() {
     std::fs::remove_file(out.path().join("src/demo/client.py")).unwrap();
     let defects = corpus_tree_defects(&registry, &golden, &EXHAUSTIVE).expect("no carve-out");
     assert_generated_tree_matches(&EXHAUSTIVE, &defects, &expected, out.path());
+    // A line the entry does not account for still fails it, naming the entry.
+    let drifted = output(&CROZIER_README.replace("# Demo", "# Demo SDK"));
+    std::fs::remove_file(drifted.path().join("src/demo/client.py")).unwrap();
+    let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        assert_generated_tree_matches(&EXHAUSTIVE, &defects, &expected, drifted.path());
+    }))
+    .expect_err("an unaccounted line fails the corpus gate");
+    let message = panic.downcast_ref::<String>().cloned().unwrap_or_default();
+    assert!(
+        message.contains("`carved-out-file`") && message.contains("still differs"),
+        "{message}"
+    );
     // Without the entry the corpus gate reports the README.
     let bare = corpus_tree_defects(&registry, "tests/fixtures/other/expected", &EXHAUSTIVE)
         .expect("no entry");
