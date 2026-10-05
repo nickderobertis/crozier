@@ -1,210 +1,303 @@
-//! The byte-match rules: how crozier's output tree is compared with a
+//! The comparison engine: how crozier's output tree is compared with a
 //! **reference** tree that has the shape of Fern's Python SDK output.
 //!
-//! crozier's contract is that its output equals the reference once both sides
-//! are normalized here, and nowhere else. The corpus gate (`tests/e2e.rs`), its
-//! `just fixtures-gaps` / `just fixtures-diff` reporters, and `crozier compare`
-//! all decide a match with these functions, so "matches" has one definition.
+//! crozier's contract is that its output equals the reference once the
+//! comparison's mechanics have run and the departures in
+//! [`crate::departures`]' catalog are applied — here, and nowhere else.
+//! `crozier compare` and every golden comparison in crozier's own test suite
+//! call this engine with that one catalog, so "matches" has one definition.
 //!
-//! The per-file rules ([`normalized_pair`]), applied to both sides alike:
+//! A file present on both sides ([`compare_file`]) is compared in four steps:
 //!
-//! - every file: the SDK-identity headers are normalized
-//!   ([`normalize_sdk_headers`]);
-//! - `.py`: Python comments are stripped ([`crate::strip_python_comments`]);
-//! - `__init__.py`: additionally, leading blank lines are dropped and the imports
-//!   are sorted with `ruff check --select I --fix` ([`normalize_init`]);
-//! - exactly `.fern/metadata.json` (Fern's own provenance record, at the SDK
-//!   root — [`FERN_METADATA`]): the `generatorConfig` block is dropped
-//!   ([`normalize_metadata`]). Any other file whose name ends in
-//!   `metadata.json` (say `types/user_metadata.json`) is SDK content, so it
-//!   gets no such rule;
-//! - anything else is compared as-is.
+//! 1. **Mechanics** that keep every line where it is: a `.py` file's Python
+//!    comments are stripped ([`crate::strip_python_comments`]), leaving a
+//!    comment-only line blank. Comments are outside the compared output — the
+//!    committed goldens hold none — so this records no departure.
+//! 2. **A region rule**: a catalog rule that recognises a whole construct (the
+//!    `generatorConfig` block of `.fern/metadata.json`, an `__init__.py`'s
+//!    `TYPE_CHECKING` imports in another order) replaces crozier's region with
+//!    Fern's. The region rules read disjoint paths, so at most one applies.
+//! 3. **Line rules**: the two sides' lines are aligned (a longest common
+//!    subsequence), and inside each run of differing lines a catalog rule may
+//!    pair one Fern line with the crozier line aligned to it, or account for a
+//!    line only crozier writes. Each line it accounts for is replaced with
+//!    Fern's.
+//! 4. **The verdict**: crozier's text with every applied departure replaced is
+//!    compared with the reference's, an `__init__.py` without its leading blank
+//!    lines on both sides (the lines its differing header comments leave). Any
+//!    difference no rule explained remains, so the file fails — even on a line
+//!    or in a file where a departure applied.
 //!
-//! The tree rules ([`tree_differences`]): the comparison is bidirectional (a file
+//! Every departure applied is reported by catalog id, file and crozier's
+//! 1-based line: the first line of crozier's replacement, or, where crozier
+//! writes no line, the line before which Fern's stand.
+//!
+//! The tree rules ([`compare_trees`]): the comparison is bidirectional (a file
 //! on only one side is a difference), a symbolic link on either side is refused
 //! rather than followed, and the `.crozier-fern-golden.json` provenance record a
-//! committed golden carries is not part of either tree.
+//! committed golden carries is not part of either tree. A rule that reads the
+//! trees (which classes each defines) sees them whole.
 //!
 //! A committed golden is already comment-stripped; a live reference is not. The
 //! comment strip is idempotent over every committed golden (pinned by this
 //! module's tests), so stripping both sides serves both inputs with one rule.
 
 use std::collections::BTreeSet;
-use std::io::Write;
 use std::path::Path;
-use std::process::{Command, Stdio};
 
+use crate::departures::{self, Context, Pair};
 use crate::strip_python_comments;
+
+pub use crate::departures::FERN_METADATA;
 
 /// The provenance record a committed golden tree carries beside the reference
 /// output. It is not reference output, so neither side's walk includes it.
 pub const PROVENANCE_FILE: &str = ".crozier-fern-golden.json";
 
-/// The SDK-relative path of Fern's own metadata record — the one file
-/// [`normalize_metadata`] applies to. `rel` is always `/`-separated (see
-/// [`walk_files`]), so this exact match holds on Windows too.
-pub const FERN_METADATA: &str = ".fern/metadata.json";
-
-/// Normalize the SDK-identity headers out of the comparison. crozier brands its
-/// own `X-Crozier-*` headers rather than impersonating the reference, and —
-/// because it reproduces the reference's *packaged* wrapper — always emits the
-/// `SDK-Name`/`SDK-Version` headers that publishing metadata supplies, which a
-/// credential-free local reference omits. Both are deliberate, non-behavioral
-/// differences in tool branding/packaging, so drop the `SDK-Name`/`SDK-Version`
-/// lines and canonicalize the remaining `X-Crozier-` prefix (the `Language`
-/// header) to `X-Fern-`. Applied to both sides; a no-op on lines a tree doesn't
-/// contain.
-#[must_use]
-pub fn normalize_sdk_headers(content: &str) -> String {
-    let is_sdk_identity_line = |line: &str| {
-        let t = line.trim_start();
-        [
-            "X-Fern-SDK-Name",
-            "X-Crozier-SDK-Name",
-            "X-Fern-SDK-Version",
-            "X-Crozier-SDK-Version",
-        ]
-        .iter()
-        .any(|h| t.starts_with(&format!("\"{h}\"")))
-    };
-    content
-        .split_inclusive('\n')
-        .filter(|line| !is_sdk_identity_line(line))
-        .collect::<String>()
-        .replace("X-Crozier-", "X-Fern-")
+/// One departure the engine applied in a file: crozier's 1-based line and the
+/// catalog id.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FileDeparture {
+    /// crozier's line where the departure starts.
+    pub line: usize,
+    /// The catalog entry's id.
+    pub id: &'static str,
 }
 
-/// Normalize a lazy-loader `__init__.py` for comparison: drop leading blank lines
-/// (a comment-strip artifact) and canonicalize the import order with `ruff` isort,
-/// so the semantically-irrelevant `TYPE_CHECKING` ordering does not gate the match.
-///
-/// # Errors
-///
-/// When `ruff` cannot be run or rejects the input.
-pub fn normalize_init(content: &str) -> Result<String, String> {
-    let trimmed: String = content
-        .split_inclusive('\n')
-        .skip_while(|line| line.trim().is_empty())
-        .collect();
-    ruff_isort(&trimmed)
+/// How one file pair compared.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FileComparison {
+    /// Every departure applied, in line order.
+    pub departures: Vec<FileDeparture>,
+    /// `None` when the pair matches; otherwise the `(reference, crozier)` texts
+    /// the verdict compared, with every departure applied.
+    pub residual: Option<(String, String)>,
 }
 
-/// Drop the `generatorConfig` block from `.fern/metadata.json`. A reference
-/// generated with `pydantic_config.enum_type: python_enums` (so enums render as
-/// real classes — see docs/matching.md) records that config in its provenance
-/// file. crozier's output carries no generator config whichever `enum-type` it
-/// was generated with, so — like the SDK-identity headers — this reference-only provenance is
-/// normalized out of both sides rather than faked by crozier. A no-op on content
-/// without the block. The block is the object's last key, so removing it plus the
-/// preceding comma restores the shorter form.
-#[must_use]
-pub fn normalize_metadata(content: &str) -> String {
-    let Some(start) = content.find("\"generatorConfig\"") else {
-        return content.to_string();
-    };
-    let before = content[..start].trim_end();
-    let before = before.strip_suffix(',').unwrap_or(before);
-    // Skip past the balanced `{ ... }` value that follows `"generatorConfig":`.
-    let rest = &content[start..];
-    let (mut depth, mut started, mut end) = (0i32, false, rest.len());
-    for (i, ch) in rest.char_indices() {
-        match ch {
-            '{' => {
-                depth += 1;
-                started = true;
-            }
-            '}' if started => {
-                depth -= 1;
-                if depth == 0 {
-                    end = i + 1;
-                    break;
-                }
-            }
-            _ => {}
+impl FileComparison {
+    /// Whether the pair matches once its departures are applied.
+    #[must_use]
+    pub fn matches(&self) -> bool {
+        self.residual.is_none()
+    }
+
+    /// The unified diff of what still differs (`-` reference, `+` crozier), or
+    /// `None` when the pair matches.
+    #[must_use]
+    pub fn diff(&self) -> Option<String> {
+        self.residual
+            .as_ref()
+            .and_then(|(reference, crozier)| unified_diff(reference, crozier))
+    }
+}
+
+/// `text` after the line-preserving mechanics for `rel`: a `.py` file's
+/// comments stripped.
+fn mechanics(rel: &str, text: &str) -> String {
+    if rel.ends_with(".py") {
+        strip_python_comments(text)
+    } else {
+        text.to_string()
+    }
+}
+
+/// `text` as the verdict compares it: an `__init__.py` without its leading
+/// blank lines, which are where its header comments stood.
+fn verdict_text<'t>(rel: &str, text: &'t str) -> &'t str {
+    if rel != "__init__.py" && !rel.ends_with("/__init__.py") {
+        return text;
+    }
+    let mut rest = text;
+    while let Some((line, after)) = rest.split_once('\n') {
+        if !line.trim().is_empty() {
+            break;
         }
+        rest = after;
     }
-    format!("{before}{}", &rest[end..])
+    rest
 }
 
-/// Run `ruff check --select I --fix` over a source string, returning the
-/// import-sorted result. Uses the same `ruff` the generator depends on.
-fn ruff_isort(source: &str) -> Result<String, String> {
-    let mut child = Command::new("ruff")
-        .args([
-            "check",
-            "--select",
-            "I",
-            "--fix",
-            "--stdin-filename",
-            "x.py",
-            "-",
-        ])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|error| format!("could not run ruff (see docs/matching.md): {error}"))?;
-    child
-        .stdin
-        .take()
-        .ok_or_else(|| "ruff stdin was not piped".to_string())?
-        .write_all(source.as_bytes())
-        .map_err(|error| format!("could not write to ruff: {error}"))?;
-    let out = child
-        .wait_with_output()
-        .map_err(|error| format!("could not wait for ruff: {error}"))?;
-    // Trust ruff's stdout only when it exited cleanly — a non-zero exit (e.g. a
-    // syntax error in the input) must surface, not silently yield wrong text.
-    if !out.status.success() {
-        return Err(format!(
-            "ruff isort failed ({}): {}",
-            out.status,
-            String::from_utf8_lossy(&out.stderr).trim()
-        ));
-    }
-    String::from_utf8(out.stdout).map_err(|error| format!("ruff output is not UTF-8: {error}"))
-}
-
-/// The exact `(crozier, reference)` strings the comparison decides on for the
-/// file at relative path `rel`, after the per-file rules in the module docs.
-/// Shared by the match check and the diff writers, so a printed diff is precisely
-/// what the comparison sees.
+/// Compare crozier's file `rel` with the reference's under the steps in the
+/// module docs, with `context` describing the trees they belong to.
 ///
 /// # Errors
 ///
-/// When an `__init__.py` cannot be normalized (see [`normalize_init`]).
-pub fn normalized_pair(
+/// When a rule cannot be applied: `ruff` cannot be run, or rejects the input.
+pub fn compare_file(
+    context: &Context,
     rel: &str,
     crozier: &str,
     reference: &str,
-) -> Result<(String, String), String> {
-    let crozier = normalize_sdk_headers(crozier);
-    let reference = normalize_sdk_headers(reference);
-    if rel.ends_with("__init__.py") {
-        Ok((
-            normalize_init(&strip_python_comments(&crozier))?,
-            normalize_init(&strip_python_comments(&reference))?,
-        ))
-    } else if rel.ends_with(".py") {
-        Ok((
-            strip_python_comments(&crozier),
-            strip_python_comments(&reference),
-        ))
-    } else if rel == FERN_METADATA {
-        Ok((normalize_metadata(&crozier), normalize_metadata(&reference)))
-    } else {
-        Ok((crozier, reference))
+) -> Result<FileComparison, String> {
+    let (crozier, reference) = (mechanics(rel, crozier), mechanics(rel, reference));
+    if verdict_text(rel, &crozier) == verdict_text(rel, &reference) {
+        return Ok(FileComparison {
+            departures: Vec::new(),
+            residual: None,
+        });
     }
+    let fern: Vec<&str> = reference.split('\n').collect();
+    let original: Vec<&str> = crozier.split('\n').collect();
+    let pair = Pair {
+        rel,
+        fern: &fern,
+        crozier: &original,
+        context,
+    };
+    let mut departures = Vec::new();
+
+    // crozier's lines, with the region a region rule accounts for replaced by
+    // Fern's; every other line keeps its original index.
+    let mut lines: Vec<(&str, Option<usize>)> = original
+        .iter()
+        .enumerate()
+        .map(|(j, line)| (*line, Some(j)))
+        .collect();
+    for (id, rule) in rules_of(|rule| rule.region) {
+        if let Some(region) = rule(&pair)? {
+            lines.splice(
+                region.crozier.clone(),
+                region.fern.clone().map(|i| (fern[i], None)),
+            );
+            departures.push(FileDeparture {
+                line: region.crozier.start + 1,
+                id,
+            });
+            break;
+        }
+    }
+
+    // Line rules, inside each run of lines the alignment leaves unpaired.
+    let line_rules = rules_of(|rule| rule.line);
+    let added_rules = rules_of(|rule| rule.added);
+    let current: Vec<&str> = lines.iter().map(|(line, _)| *line).collect();
+    let line_rule = |i: usize, j: usize| -> Option<(&'static str, usize)> {
+        let origin = lines[j].1?;
+        line_rules
+            .iter()
+            .find(|(_, holds)| holds(&pair, fern[i], current[j]))
+            .map(|(id, _)| (*id, origin))
+    };
+    let added_rule = |j: usize| -> Option<(&'static str, usize)> {
+        let origin = lines[j].1?;
+        added_rules
+            .iter()
+            .find(|(_, holds)| holds(&pair, current[j]))
+            .map(|(id, _)| (*id, origin))
+    };
+    let mut result: Vec<&str> = Vec::with_capacity(current.len());
+    let ops = align(fern.len(), current.len(), |i, j| fern[i] == current[j]);
+    let mut index = 0;
+    while index < ops.len() {
+        if let Op::Equal(_, j) = ops[index] {
+            result.push(current[j]);
+            index += 1;
+            continue;
+        }
+        let (mut removed, mut added) = (Vec::new(), Vec::new());
+        while let Some(op) = ops.get(index) {
+            match *op {
+                Op::Delete(i) => removed.push(i),
+                Op::Insert(j) => added.push(j),
+                Op::Equal(..) => break,
+            }
+            index += 1;
+        }
+        let inner = align(removed.len(), added.len(), |a, b| {
+            line_rule(removed[a], added[b]).is_some()
+        });
+        for op in inner {
+            let (claimed, kept) = match op {
+                Op::Equal(a, b) => (line_rule(removed[a], added[b]), Some(fern[removed[a]])),
+                Op::Delete(_) => (None, None),
+                Op::Insert(b) => match added_rule(added[b]) {
+                    Some(claimed) => (Some(claimed), None),
+                    None => (None, Some(current[added[b]])),
+                },
+            };
+            if let Some((id, origin)) = claimed {
+                departures.push(FileDeparture {
+                    line: origin + 1,
+                    id,
+                });
+            }
+            result.extend(kept);
+        }
+    }
+    departures.sort();
+    let applied = result.join("\n");
+    let (reference, applied) = (verdict_text(rel, &reference), verdict_text(rel, &applied));
+    Ok(FileComparison {
+        departures,
+        residual: (reference != applied).then(|| (reference.to_string(), applied.to_string())),
+    })
 }
 
-/// Whether crozier's `rel` matches the reference's under [`normalized_pair`].
-///
-/// # Errors
-///
-/// When the pair cannot be normalized.
-pub fn files_match(rel: &str, crozier: &str, reference: &str) -> Result<bool, String> {
-    let (crozier, reference) = normalized_pair(rel, crozier, reference)?;
-    Ok(crozier == reference)
+/// The catalog's rules of one shape, each with its id, in catalog order.
+fn rules_of<F>(shape: impl Fn(departures::Rule) -> Option<F>) -> Vec<(&'static str, F)> {
+    departures::RULE_IDS
+        .iter()
+        .filter(|id| departures::find(id).is_some())
+        .filter_map(|id| shape(departures::rule(id)?).map(|found| (*id, found)))
+        .collect()
+}
+
+/// One step of an alignment of two sequences.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Op {
+    /// The left item `.0` pairs with the right item `.1`.
+    Equal(usize, usize),
+    /// The left item is unpaired.
+    Delete(usize),
+    /// The right item is unpaired.
+    Insert(usize),
+}
+
+/// A longest-common-subsequence alignment of a left sequence of `n` items with
+/// a right one of `m`, where `pairs(i, j)` says whether left `i` may pair with
+/// right `j`. Common leading and trailing runs are paired first, so only the
+/// middle pays the quadratic table.
+fn align(n: usize, m: usize, pairs: impl Fn(usize, usize) -> bool) -> Vec<Op> {
+    let mut prefix = 0;
+    while prefix < n && prefix < m && pairs(prefix, prefix) {
+        prefix += 1;
+    }
+    let mut suffix = 0;
+    while suffix < n - prefix && suffix < m - prefix && pairs(n - 1 - suffix, m - 1 - suffix) {
+        suffix += 1;
+    }
+    let (rows, cols) = (n - prefix - suffix, m - prefix - suffix);
+    let mut ops: Vec<Op> = (0..prefix).map(|k| Op::Equal(k, k)).collect();
+
+    // Longest-common-subsequence lengths, filled from the bottom-right.
+    let mut lcs = vec![vec![0u32; cols + 1]; rows + 1];
+    for i in (0..rows).rev() {
+        for j in (0..cols).rev() {
+            lcs[i][j] = if pairs(prefix + i, prefix + j) {
+                lcs[i + 1][j + 1] + 1
+            } else {
+                lcs[i + 1][j].max(lcs[i][j + 1])
+            };
+        }
+    }
+    let (mut i, mut j) = (0usize, 0usize);
+    while i < rows && j < cols {
+        if lcs[i][j] == lcs[i + 1][j + 1] + 1 && pairs(prefix + i, prefix + j) {
+            ops.push(Op::Equal(prefix + i, prefix + j));
+            i += 1;
+            j += 1;
+        } else if lcs[i + 1][j] >= lcs[i][j + 1] {
+            ops.push(Op::Delete(prefix + i));
+            i += 1;
+        } else {
+            ops.push(Op::Insert(prefix + j));
+            j += 1;
+        }
+    }
+    ops.extend((i..rows).map(|i| Op::Delete(prefix + i)));
+    ops.extend((j..cols).map(|j| Op::Insert(prefix + j)));
+    ops.extend((0..suffix).map(|k| Op::Equal(n - suffix + k, m - suffix + k)));
+    ops
 }
 
 /// A minimal unified-style line diff of two already-normalized texts,
@@ -221,44 +314,14 @@ pub fn unified_diff(reference: &str, crozier: &str) -> Option<String> {
     const CONTEXT: usize = 3;
     let a: Vec<&str> = reference.lines().collect();
     let b: Vec<&str> = crozier.lines().collect();
-    let (n, m) = (a.len(), b.len());
-
-    // Longest-common-subsequence lengths, filled from the bottom-right.
-    let mut lcs = vec![vec![0u32; m + 1]; n + 1];
-    for i in (0..n).rev() {
-        for j in (0..m).rev() {
-            lcs[i][j] = if a[i] == b[j] {
-                lcs[i + 1][j + 1] + 1
-            } else {
-                lcs[i + 1][j].max(lcs[i][j + 1])
-            };
-        }
-    }
-
-    // Backtrack into an edit script of (sign, line) ops.
-    let mut ops: Vec<(char, &str)> = Vec::new();
-    let (mut i, mut j) = (0usize, 0usize);
-    while i < n && j < m {
-        if a[i] == b[j] {
-            ops.push((' ', a[i]));
-            i += 1;
-            j += 1;
-        } else if lcs[i + 1][j] >= lcs[i][j + 1] {
-            ops.push(('-', a[i]));
-            i += 1;
-        } else {
-            ops.push(('+', b[j]));
-            j += 1;
-        }
-    }
-    while i < n {
-        ops.push(('-', a[i]));
-        i += 1;
-    }
-    while j < m {
-        ops.push(('+', b[j]));
-        j += 1;
-    }
+    let ops: Vec<(char, &str)> = align(a.len(), b.len(), |i, j| a[i] == b[j])
+        .into_iter()
+        .map(|op| match op {
+            Op::Equal(i, _) => (' ', a[i]),
+            Op::Delete(i) => ('-', a[i]),
+            Op::Insert(j) => ('+', b[j]),
+        })
+        .collect();
 
     // Keep every change, plus CONTEXT unchanged lines on each side; collapse the rest.
     let keep: Vec<bool> = (0..ops.len())
@@ -361,8 +424,8 @@ pub enum Difference {
     OnlyInReference,
     /// crozier emitted the file; the reference has none.
     OnlyInCrozier,
-    /// Both are text and differ after normalization; the unified diff
-    /// (`-` reference, `+` crozier) when it was asked for.
+    /// Both are text and differ once the departures are applied; the unified
+    /// diff (`-` reference, `+` crozier) when it was asked for.
     Text(Option<String>),
     /// At least one side is not UTF-8 and the raw bytes differ.
     Binary {
@@ -371,26 +434,47 @@ pub enum Difference {
         /// crozier's file's length in bytes.
         crozier: usize,
     },
-    /// The pair could not be read or normalized.
+    /// The pair could not be read or compared.
     Processing(String),
 }
 
+/// One departure applied in a tree comparison.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct AppliedDeparture {
+    /// The file's `/`-separated path relative to the tree root.
+    pub file: String,
+    /// crozier's 1-based line where it starts.
+    pub line: usize,
+    /// The catalog entry's id.
+    pub id: String,
+}
+
+/// The comparison of two whole trees.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TreeComparison {
+    /// Every differing path (sorted) with how it differs. Empty is a match.
+    pub differences: Vec<(String, Difference)>,
+    /// Every departure applied, sorted by file, line and id — in files that
+    /// still differ too.
+    pub departures: Vec<AppliedDeparture>,
+}
+
 /// Compare the whole `reference_root` tree with the whole `crozier_root` tree
-/// under the per-file rules, returning every differing path (sorted) with how it
-/// differs. An empty result is a match. `file_filter` keeps only paths containing
-/// it; `include_text_diffs` attaches each text difference's unified diff.
+/// under the engine, returning every differing path with how it differs and
+/// every departure applied. `file_filter` keeps only paths containing it;
+/// `include_text_diffs` attaches each text difference's unified diff.
 ///
 /// # Errors
 ///
 /// When either walk fails (a symbolic link, an unreadable directory), or when
 /// the reference holds no files and no filter was given — an empty reference
 /// never counts as a match.
-pub fn tree_differences(
+pub fn compare_trees(
     reference_root: &Path,
     crozier_root: &Path,
     file_filter: Option<&str>,
     include_text_diffs: bool,
-) -> Result<Vec<(String, Difference)>, String> {
+) -> Result<TreeComparison, String> {
     let reference_files: BTreeSet<String> = walk_files(reference_root)?.into_iter().collect();
     if reference_files.is_empty() && file_filter.is_none() {
         return Err(format!(
@@ -399,8 +483,9 @@ pub fn tree_differences(
         ));
     }
     let crozier_files: BTreeSet<String> = walk_files(crozier_root)?.into_iter().collect();
+    let context = Context::from_trees(reference_root, crozier_root);
     let paths: BTreeSet<&String> = reference_files.union(&crozier_files).collect();
-    let mut differences = Vec::new();
+    let mut comparison = TreeComparison::default();
 
     for rel in paths {
         if file_filter.is_some_and(|filter| !rel.contains(filter)) {
@@ -409,63 +494,72 @@ pub fn tree_differences(
         let difference = match (reference_files.contains(rel), crozier_files.contains(rel)) {
             (true, false) => Some(Difference::OnlyInReference),
             (false, true) => Some(Difference::OnlyInCrozier),
-            _ => file_difference(
-                rel,
-                &reference_root.join(rel),
-                &crozier_root.join(rel),
-                include_text_diffs,
-            ),
+            _ => {
+                let (difference, departures) = file_difference(
+                    &context,
+                    rel,
+                    &reference_root.join(rel),
+                    &crozier_root.join(rel),
+                    include_text_diffs,
+                );
+                comparison
+                    .departures
+                    .extend(departures.into_iter().map(|departure| AppliedDeparture {
+                        file: rel.clone(),
+                        line: departure.line,
+                        id: departure.id.to_string(),
+                    }));
+                difference
+            }
         };
         if let Some(difference) = difference {
-            differences.push((rel.clone(), difference));
+            comparison.differences.push((rel.clone(), difference));
         }
     }
-    Ok(differences)
+    Ok(comparison)
 }
 
-/// How the file present on both sides at `rel` differs, if at all.
+/// How the file present on both sides at `rel` differs, if at all, and the
+/// departures applied in it.
 fn file_difference(
+    context: &Context,
     rel: &str,
     reference_path: &Path,
     crozier_path: &Path,
     include_text_diffs: bool,
-) -> Option<Difference> {
+) -> (Option<Difference>, Vec<FileDeparture>) {
+    let processing = |message: String| (Some(Difference::Processing(message)), Vec::new());
     let reference = match std::fs::read(reference_path) {
         Ok(content) => content,
-        Err(error) => {
-            return Some(Difference::Processing(format!(
-                "could not read the reference file: {error}"
-            )))
-        }
+        Err(error) => return processing(format!("could not read the reference file: {error}")),
     };
     let crozier = match std::fs::read(crozier_path) {
         Ok(content) => content,
-        Err(error) => {
-            return Some(Difference::Processing(format!(
-                "could not read crozier's file: {error}"
-            )))
-        }
+        Err(error) => return processing(format!("could not read crozier's file: {error}")),
     };
     if reference == crozier {
-        return None;
+        return (None, Vec::new());
     }
     let (Ok(reference_text), Ok(crozier_text)) = (
         std::str::from_utf8(&reference),
         std::str::from_utf8(&crozier),
     ) else {
-        return Some(Difference::Binary {
-            reference: reference.len(),
-            crozier: crozier.len(),
-        });
+        return (
+            Some(Difference::Binary {
+                reference: reference.len(),
+                crozier: crozier.len(),
+            }),
+            Vec::new(),
+        );
     };
-    match normalized_pair(rel, crozier_text, reference_text) {
-        Ok((crozier, reference)) if crozier == reference => None,
-        Ok((crozier, reference)) => {
-            Some(Difference::Text(include_text_diffs.then(|| {
-                unified_diff(&reference, &crozier).unwrap_or_default()
-            })))
+    match compare_file(context, rel, crozier_text, reference_text) {
+        Ok(compared) => {
+            let difference = (!compared.matches()).then(|| {
+                Difference::Text(include_text_diffs.then(|| compared.diff().unwrap_or_default()))
+            });
+            (difference, compared.departures)
         }
-        Err(error) => Some(Difference::Processing(error)),
+        Err(error) => processing(error),
     }
 }
 
@@ -479,105 +573,212 @@ mod tests {
         std::fs::write(path, content).unwrap();
     }
 
+    fn compare(rel: &str, crozier: &str, reference: &str) -> FileComparison {
+        compare_file(&Context::default(), rel, crozier, reference).unwrap()
+    }
+
+    fn ids(compared: &FileComparison) -> Vec<(usize, &'static str)> {
+        compared
+            .departures
+            .iter()
+            .map(|departure| (departure.line, departure.id))
+            .collect()
+    }
+
+    const WRAPPER: &str = "src/acme/core/client_wrapper.py";
+
     #[test]
-    fn sdk_identity_headers_are_dropped_and_the_prefix_canonicalized() {
-        let crozier = "h = {\n    \"X-Crozier-Language\": \"Python\",\n    \"X-Crozier-SDK-Name\": \"x\",\n    \"X-Crozier-SDK-Version\": \"1\",\n}\n";
-        let reference = "h = {\n    \"X-Fern-Language\": \"Python\",\n}\n";
-        assert_eq!(normalize_sdk_headers(crozier), reference);
-        assert_eq!(normalize_sdk_headers(reference), reference);
-        // The reference's own identity lines go too.
+    fn identity_headers_are_departures_line_by_line() {
+        let crozier = "# crozier\nh = {\n    \"X-Crozier-Language\": \"Python\",\n    \
+                       \"X-Crozier-SDK-Name\": \"x\",\n    \"X-Crozier-SDK-Version\": \"0.0.0\",\n}\n";
+        let reference = "\nh = {\n    \"X-Fern-Language\": \"Python\",\n    \
+                         \"X-Fern-SDK-Name\": \"x\",\n    \"X-Fern-SDK-Version\": \"0.0.0\",\n}\n";
+        let compared = compare(WRAPPER, crozier, reference);
+        assert!(compared.matches(), "{:?}", compared.diff());
         assert_eq!(
-            normalize_sdk_headers(
-                "\"X-Fern-SDK-Name\": \"a\",\n\"X-Fern-SDK-Version\": \"b\",\nkeep\n"
-            ),
-            "keep\n"
+            ids(&compared),
+            [
+                (3, "sdk-identity-header-prefix"),
+                (4, "sdk-identity-header-prefix"),
+                (5, "sdk-identity-header-prefix"),
+            ]
+        );
+        // A reference with no SDK pair, or another published version: the pair
+        // is crozier's packaging.
+        let unpackaged = "\nh = {\n    \"X-Fern-Language\": \"Python\",\n}\n";
+        let compared = compare(WRAPPER, crozier, unpackaged);
+        assert!(compared.matches(), "{:?}", compared.diff());
+        assert_eq!(
+            ids(&compared),
+            [
+                (3, "sdk-identity-header-prefix"),
+                (4, "sdk-name-version-headers"),
+                (5, "sdk-name-version-headers"),
+            ]
+        );
+        let released = reference.replace("\"0.0.0\"", "\"2.3.1\"");
+        let compared = compare(WRAPPER, crozier, &released);
+        assert!(compared.matches(), "{:?}", compared.diff());
+        assert_eq!(
+            ids(&compared),
+            [
+                (3, "sdk-identity-header-prefix"),
+                (4, "sdk-identity-header-prefix"),
+                (5, "sdk-name-version-headers"),
+            ]
         );
     }
 
     #[test]
-    fn metadata_drops_only_the_generator_config_block() {
-        let with = "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    \"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    }\n  }\n}";
-        assert_eq!(
-            normalize_metadata(with),
-            "{\n  \"cliVersion\": \"5.67.1\"\n}"
+    fn a_difference_no_rule_explains_still_fails_beside_a_departure() {
+        let crozier = "h = {\n    \"X-Crozier-Language\": \"Python\",\n}\nx = 1\n";
+        // On the same line as the departure.
+        let same_line = "h = {\n    \"X-Fern-Language\": \"Pythn\",\n}\nx = 1\n";
+        let compared = compare(WRAPPER, crozier, same_line);
+        assert!(!compared.matches());
+        assert!(compared.departures.is_empty());
+        let diff = compared.diff().unwrap();
+        assert!(
+            diff.contains("-     \"X-Fern-Language\": \"Pythn\","),
+            "{diff}"
         );
-        let without = "{\n  \"cliVersion\": \"5.67.1\"\n}";
-        assert_eq!(normalize_metadata(without), without);
+        // Elsewhere in the same file: the departure applies, the rest fails.
+        let elsewhere = "h = {\n    \"X-Fern-Language\": \"Python\",\n}\nx = 2\n";
+        let compared = compare(WRAPPER, crozier, elsewhere);
+        assert!(!compared.matches());
+        assert_eq!(ids(&compared), [(2, "sdk-identity-header-prefix")]);
+        let diff = compared.diff().unwrap();
+        assert!(
+            diff.contains("- x = 2") && diff.contains("+ x = 1"),
+            "{diff}"
+        );
+        assert!(!diff.contains("X-Crozier"), "{diff}");
+        // The header rule holds only in the client wrapper.
+        let compared = compare(
+            "src/acme/client.py",
+            crozier,
+            &crozier.replace("X-Crozier-", "X-Fern-"),
+        );
+        assert!(!compared.matches() && compared.departures.is_empty());
     }
 
     #[test]
-    fn init_drops_leading_blank_lines_and_sorts_imports() {
-        let out = normalize_init("\n\nimport typing\nimport enum\n").unwrap();
-        assert_eq!(out, "import enum\nimport typing\n");
-        // ruff refusing the input surfaces as an error, never as wrong text.
-        let error = normalize_init("def (:\n").unwrap_err();
+    fn comments_and_init_leading_blank_lines_are_mechanics_not_departures() {
+        let compared = compare("a/b.py", "x = 1  # crozier\n", "x = 1  # reference\n");
+        assert!(compared.matches() && compared.departures.is_empty());
+        let compared = compare(
+            "pkg/__init__.py",
+            "# header\nimport a\n",
+            "# other header\n\n# isort: skip_file\n\nimport a\n",
+        );
+        assert!(compared.matches() && compared.departures.is_empty());
+        // Only `__init__.py` drops them, and only leading ones.
+        assert!(!compare("pkg/client.py", "# h\nimport a\n", "\n\nimport a\n").matches());
+        assert!(!compare("__init__.py", "import a\n\nx\n", "import a\nx\n").matches());
+        assert!(compare("__init__.py", "\n", "").matches());
+        // Other files are compared as written, comments included.
+        assert!(!compare("README.md", "# Title\n", "# Other\n").matches());
+    }
+
+    #[test]
+    fn init_import_order_is_one_departure_at_crozier_s_first_moved_line() {
+        let crozier =
+            "# crozier\nimport typing\n\nif typing.TYPE_CHECKING:\n    from .a import A\n    \
+                       from .b import B\n    from .c import C\n_dynamic_imports = {}\n";
+        let reference =
+            "\n\n\nimport typing\n\nif typing.TYPE_CHECKING:\n    from .b import B\n    \
+                         from .a import A\n    from .c import C\n_dynamic_imports = {}\n";
+        let compared = compare("src/acme/__init__.py", crozier, reference);
+        assert!(compared.matches(), "{:?}", compared.diff());
+        assert_eq!(ids(&compared), [(5, "init-type-checking-import-order")]);
+        // Another difference outside the block still fails.
+        let other = reference.replace("_dynamic_imports = {}", "_dynamic_imports = {1: 2}");
+        let compared = compare("src/acme/__init__.py", crozier, &other);
+        assert!(!compared.matches());
+        // A block importing something else is no reordering.
+        let other = reference.replace("from .c import C", "from .c import D");
+        let compared = compare("src/acme/__init__.py", crozier, &other);
+        assert!(!compared.matches() && compared.departures.is_empty());
+    }
+
+    #[test]
+    fn metadata_generator_config_is_one_departure_on_that_path_only() {
+        let crozier = "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    \
+                       \"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    }\n  },\n  \
+                       \"invokedBy\": \"ci\"\n}";
+        let reference = crozier.replace("python_enums", "literals");
+        let compared = compare(FERN_METADATA, crozier, &reference);
+        assert!(compared.matches(), "{:?}", compared.diff());
+        assert_eq!(ids(&compared), [(5, "fern-metadata-generator-config")]);
+        let absent = "{\n  \"cliVersion\": \"5.67.1\",\n  \"invokedBy\": \"ci\"\n}";
+        let compared = compare(FERN_METADATA, crozier, absent);
+        assert!(compared.matches(), "{:?}", compared.diff());
+        assert_eq!(ids(&compared), [(3, "fern-metadata-generator-config")]);
+        // Any other `…metadata.json` is SDK content, compared as written.
+        for rel in [
+            "types/user_metadata.json",
+            "foo/metadata.json",
+            "metadata.json",
+            "foo/.fern/metadata.json",
+        ] {
+            let compared = compare(rel, crozier, &reference);
+            assert!(
+                !compared.matches() && compared.departures.is_empty(),
+                "{rel}"
+            );
+        }
+    }
+
+    #[test]
+    fn readme_casing_needs_the_trees_classes() {
+        let crozier = "# Acme\n\nfrom LanternHarbor import AsyncLanternHarborApi\n";
+        let reference = "# Acme\n\nfrom LanternHarbor import AsyncLanternharborApi\n";
+        // Compared alone, nothing says which class the code defines.
+        assert!(!compare("README.md", crozier, reference).matches());
+        let context = Context::from_sources(
+            [("client.py", "class AsyncLanternHarborApi:\n")],
+            [("client.py", "class AsyncLanternHarborApi:\n")],
+        );
+        let compared = compare_file(&context, "README.md", crozier, reference).unwrap();
+        assert!(compared.matches(), "{:?}", compared.diff());
+        assert_eq!(ids(&compared), [(3, "readme-client-class-casing")]);
+    }
+
+    #[test]
+    fn a_rule_that_cannot_run_is_an_error() {
+        let error = compare_file(
+            &Context::default(),
+            "__init__.py",
+            "if typing.TYPE_CHECKING:\n    def (:\n    import b\nx\n",
+            "if typing.TYPE_CHECKING:\n    import b\n    def (:\nx\n",
+        )
+        .unwrap_err();
         assert!(error.contains("ruff isort failed"), "{error}");
     }
 
     #[test]
-    fn normalized_pair_applies_each_per_path_rule_to_both_sides() {
-        // `.py`: comments stripped on both sides.
-        let (c, r) =
-            normalized_pair("a/b.py", "x = 1  # crozier\n", "x = 1  # reference\n").unwrap();
-        assert_eq!((c.as_str(), r.as_str()), ("x = 1\n", "x = 1\n"));
-        // `__init__.py`: strip, then leading blanks and import order.
-        let (c, r) = normalized_pair(
-            "pkg/__init__.py",
-            "# header\nimport b\nimport a\n",
-            "# other header\n\nimport a\nimport b\n",
-        )
-        .unwrap();
-        assert_eq!(c, r);
-        // metadata: `generatorConfig` dropped.
-        let (c, r) = normalized_pair(
-            ".fern/metadata.json",
-            "{\n  \"a\": 1\n}",
-            "{\n  \"a\": 1,\n  \"generatorConfig\": {}\n}",
-        )
-        .unwrap();
-        assert_eq!(c, r);
-        // Anything else: headers only, comments kept.
-        let (c, r) = normalized_pair("README.md", "# Title\n", "# Other\n").unwrap();
-        assert_ne!(c, r);
-        assert!(files_match("README.md", "same\n", "same\n").unwrap());
-        assert!(!files_match("a.py", "x = 1\n", "x = 2\n").unwrap());
-    }
-
-    /// Whether `rel` matches when the two sides differ only in their
-    /// `generatorConfig` block.
-    fn matches_despite_generator_config(rel: &str) -> bool {
-        let reference = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 1}\n}";
-        let crozier = "{\n  \"a\": 1,\n  \"generatorConfig\": {\"x\": 2}\n}";
-        files_match(rel, crozier, reference).unwrap()
-    }
-
-    #[test]
-    fn fern_metadata_generator_config_is_normalized() {
-        assert!(matches_despite_generator_config(".fern/metadata.json"));
-    }
-
-    // Any other `…metadata.json` is SDK content: its `generatorConfig` is
-    // compared as written, whatever its name or depth.
-    #[test]
-    fn user_metadata_json_generator_config_is_compared() {
-        assert!(!matches_despite_generator_config(
-            "types/user_metadata.json"
-        ));
-    }
-
-    #[test]
-    fn nested_metadata_json_generator_config_is_compared() {
-        assert!(!matches_despite_generator_config("foo/metadata.json"));
-    }
-
-    #[test]
-    fn root_metadata_json_generator_config_is_compared() {
-        assert!(!matches_despite_generator_config("metadata.json"));
-    }
-
-    #[test]
-    fn nested_fern_metadata_generator_config_is_compared() {
-        assert!(!matches_despite_generator_config("foo/.fern/metadata.json"));
+    fn alignment_pairs_the_longest_common_run() {
+        let a = ["a", "b", "c", "d"];
+        let b = ["a", "x", "c", "d", "e"];
+        let ops = align(a.len(), b.len(), |i, j| a[i] == b[j]);
+        assert_eq!(
+            ops,
+            [
+                Op::Equal(0, 0),
+                Op::Delete(1),
+                Op::Insert(1),
+                Op::Equal(2, 2),
+                Op::Equal(3, 3),
+                Op::Insert(4),
+            ]
+        );
+        assert_eq!(align(0, 1, |_, _| true), [Op::Insert(0)]);
+        assert_eq!(align(1, 0, |_, _| true), [Op::Delete(0)]);
+        let (a, b) = (["x", "a", "y"], ["a", "x"]);
+        assert_eq!(
+            align(a.len(), b.len(), |i, j| a[i] == b[j]),
+            [Op::Delete(0), Op::Equal(1, 0), Op::Delete(2), Op::Insert(1)]
+        );
     }
 
     #[test]
@@ -606,7 +807,7 @@ mod tests {
     }
 
     #[test]
-    fn tree_differences_is_bidirectional_and_skips_provenance() {
+    fn compare_trees_is_bidirectional_skips_provenance_and_reports_departures() {
         let reference = tempfile::tempdir().unwrap();
         let crozier = tempfile::tempdir().unwrap();
         let (r, c) = (reference.path(), crozier.path());
@@ -621,9 +822,19 @@ mod tests {
         write(r, "identical.bin", &[0xff]);
         write(c, "identical.bin", &[0xff]);
         write(r, PROVENANCE_FILE, b"{}");
+        write(
+            r,
+            "core/client_wrapper.py",
+            b"h = {\n    \"X-Fern-Language\": \"Python\",\n}\n",
+        );
+        write(
+            c,
+            "core/client_wrapper.py",
+            b"h = {\n    \"X-Crozier-Language\": \"Python\",\n}\n",
+        );
 
-        let found = tree_differences(r, c, None, true).unwrap();
-        let paths: Vec<&str> = found.iter().map(|(p, _)| p.as_str()).collect();
+        let found = compare_trees(r, c, None, true).unwrap();
+        let paths: Vec<&str> = found.differences.iter().map(|(p, _)| p.as_str()).collect();
         assert_eq!(
             paths,
             [
@@ -634,35 +845,82 @@ mod tests {
             ]
         );
         assert_eq!(
-            found[0].1,
+            found.differences[0].1,
             Difference::Binary {
                 reference: 2,
                 crozier: 1
             }
         );
-        let Difference::Text(Some(diff)) = &found[1].1 else {
+        let Difference::Text(Some(diff)) = &found.differences[1].1 else {
             panic!("{found:?}");
         };
         assert!(diff.contains("- reference") && diff.contains("+ crozier"));
-        assert_eq!(found[2].1, Difference::OnlyInReference);
-        assert_eq!(found[3].1, Difference::OnlyInCrozier);
-
-        let summary = tree_differences(r, c, Some("changed"), false).unwrap();
+        assert_eq!(found.differences[2].1, Difference::OnlyInReference);
+        assert_eq!(found.differences[3].1, Difference::OnlyInCrozier);
         assert_eq!(
-            summary,
+            found.departures,
+            [AppliedDeparture {
+                file: "core/client_wrapper.py".into(),
+                line: 2,
+                id: "sdk-identity-header-prefix".into(),
+            }]
+        );
+
+        let summary = compare_trees(r, c, Some("changed"), false).unwrap();
+        assert_eq!(
+            summary.differences,
             [("changed.txt".to_string(), Difference::Text(None))]
+        );
+        assert!(summary.departures.is_empty());
+    }
+
+    #[test]
+    fn compare_trees_reads_each_tree_s_classes_for_the_casing_rule() {
+        let reference = tempfile::tempdir().unwrap();
+        let crozier = tempfile::tempdir().unwrap();
+        let (r, c) = (reference.path(), crozier.path());
+        for root in [r, c] {
+            write(root, "client.py", b"class LanternHarborApi:\n    pass\n");
+        }
+        write(
+            r,
+            "README.md",
+            b"from LanternHarbor import LanternharborApi\n",
+        );
+        write(
+            c,
+            "README.md",
+            b"from LanternHarbor import LanternHarborApi\n",
+        );
+        let found = compare_trees(r, c, None, true).unwrap();
+        assert!(found.differences.is_empty(), "{found:?}");
+        assert_eq!(
+            found.departures,
+            [AppliedDeparture {
+                file: "README.md".into(),
+                line: 1,
+                id: "readme-client-class-casing".into(),
+            }]
         );
     }
 
     #[test]
-    fn tree_differences_reports_an_unnormalizable_pair() {
+    fn compare_trees_reports_a_pair_a_rule_cannot_run_on() {
         let reference = tempfile::tempdir().unwrap();
         let crozier = tempfile::tempdir().unwrap();
-        write(reference.path(), "__init__.py", b"def (:\n");
-        write(crozier.path(), "__init__.py", b"x = 1\n");
-        let found = tree_differences(reference.path(), crozier.path(), None, true).unwrap();
+        write(
+            reference.path(),
+            "__init__.py",
+            b"if typing.TYPE_CHECKING:\n    import b\n    def (:\nx\n",
+        );
+        write(
+            crozier.path(),
+            "__init__.py",
+            b"if typing.TYPE_CHECKING:\n    def (:\n    import b\nx\n",
+        );
+        let found = compare_trees(reference.path(), crozier.path(), None, true).unwrap();
         assert!(
-            matches!(&found[0].1, Difference::Processing(e) if e.contains("ruff")),
+            matches!(&found.differences[0].1, Difference::Processing(e) if e.contains("ruff")),
             "{found:?}"
         );
     }
@@ -671,7 +929,7 @@ mod tests {
     fn an_empty_reference_is_never_a_match() {
         let reference = tempfile::tempdir().unwrap();
         let crozier = tempfile::tempdir().unwrap();
-        let error = tree_differences(reference.path(), crozier.path(), None, true).unwrap_err();
+        let error = compare_trees(reference.path(), crozier.path(), None, true).unwrap_err();
         assert!(error.contains("no reference files"), "{error}");
         // A missing root walks as empty.
         assert!(walk_files(&reference.path().join("absent"))
@@ -687,7 +945,7 @@ mod tests {
         let crozier = tempfile::tempdir().unwrap();
         let outside = tempfile::NamedTempFile::new().unwrap();
         symlink(outside.path(), reference.path().join("link")).unwrap();
-        let error = tree_differences(reference.path(), crozier.path(), None, true).unwrap_err();
+        let error = compare_trees(reference.path(), crozier.path(), None, true).unwrap_err();
         assert!(
             error.contains("refusing to follow symbolic link"),
             "{error}"
@@ -712,10 +970,10 @@ mod tests {
         write(crozier.path(), "a.txt", b"a\n");
         let locked = crozier.path().join("a.txt");
         std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000)).unwrap();
-        let found = tree_differences(reference.path(), crozier.path(), None, true).unwrap();
+        let found = compare_trees(reference.path(), crozier.path(), None, true).unwrap();
         std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o644)).unwrap();
         // Root can read anything; only assert when the permission bit held.
-        if let Some((_, difference)) = found.first() {
+        if let Some((_, difference)) = found.differences.first() {
             assert!(
                 matches!(difference, Difference::Processing(e) if e.contains("crozier's file")),
                 "{found:?}"
@@ -726,8 +984,8 @@ mod tests {
             std::fs::Permissions::from_mode(0o000),
         )
         .unwrap();
-        let found = tree_differences(reference.path(), crozier.path(), None, true).unwrap();
-        if let Some((_, difference)) = found.first() {
+        let found = compare_trees(reference.path(), crozier.path(), None, true).unwrap();
+        if let Some((_, difference)) = found.differences.first() {
             assert!(
                 matches!(difference, Difference::Processing(e) if e.contains("reference file")),
                 "{found:?}"
@@ -736,9 +994,9 @@ mod tests {
     }
 
     /// A committed golden is already comment-stripped and a live reference is
-    /// not; [`normalized_pair`] strips both. That is safe for the corpus only
-    /// because stripping a stripped golden changes nothing, which this pins over
-    /// every committed golden and probe-measurement tree.
+    /// not; the engine strips both. That is safe for the corpus only because
+    /// stripping a stripped golden changes nothing, which this pins over every
+    /// committed golden and probe-measurement tree.
     #[test]
     fn stripping_a_committed_golden_again_is_a_no_op() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"));

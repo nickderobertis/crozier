@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: Lantern Harbor
+  version: 1.0.0
+servers:
+  - url: https://api.lantern-harbor.example
+paths:
+  /lamps:
+    post:
+      operationId: createLamp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lamp'
+      responses:
+        '200':
+          description: The lamp.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lamp'
+components:
+  schemas:
+    Lamp:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string

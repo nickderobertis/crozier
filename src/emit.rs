@@ -1889,8 +1889,8 @@ fn types_init_file(
     }
 
     // TYPE_CHECKING imports are emitted alphabetically. Their order is never
-    // executed and the e2e canonicalizes it with isort, so crozier sorts
-    // straightforwardly rather than reproducing Fern's traversal order.
+    // executed, so crozier sorts straightforwardly rather than reproducing Fern's
+    // traversal order: the `init-type-checking-import-order` departure.
     let mut ordered = names.clone();
     ordered.sort();
 
@@ -1927,7 +1927,7 @@ fn types_init_file(
 
 /// The `{tag}/types/__init__.py` lazy loader over a tag's hoisted inline types.
 /// Each type sits in its own module (`.inlined_search_response`); the block is
-/// alphabetical (the e2e canonicalizes order with isort).
+/// alphabetical (the `init-type-checking-import-order` departure).
 fn tag_types_init_file(
     env: &Environment<'static>,
     pkg: &str,
@@ -3574,9 +3574,9 @@ fn client_wrapper_file(
         .into_iter()
         .map(|h| format!("{0}={0}, ", h.py_name))
         .collect();
-    // crozier brands its own SDK-identity headers rather than impersonating Fern;
-    // the e2e byte-match normalizes the `X-Crozier-` prefix back to `X-Fern-` so
-    // the comparison against Fern's fixtures is otherwise exact (see docs/matching).
+    // crozier brands its own SDK-identity headers rather than impersonating Fern:
+    // the `sdk-identity-header-prefix` departure (docs/departures/README.md),
+    // which the comparison recognises line by line.
     // The SDK-identity pair names the published distribution, so only the
     // packaged form (`sdk_name` present) sends it.
     let sdk_identity = sdk_name.map_or_else(String::new, |name| {
@@ -10411,7 +10411,7 @@ pub fn clean_flat_tree(root: &std::path::Path) -> Result<()> {
 /// The lazy-loader `__init__.py` aggregators *are* formatted: they overflow (long
 /// `_dynamic_imports`/`__all__`/import lines) and `ruff` wraps them like any other
 /// file. Their leading blank lines collapse under `ruff`, but that is a
-/// comment-strip artifact the e2e normalizes on both sides (see `normalize_init`),
+/// comment-strip artifact the comparison drops on both sides (`crate::parity`),
 /// so the byte match is preserved.
 fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));

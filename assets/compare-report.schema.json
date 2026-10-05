@@ -9,7 +9,7 @@
       "type": "integer",
       "format": "uint32",
       "minimum": 0,
-      "const": 1
+      "const": 2
     },
     "crozier_version": {
       "description": "The version of the `crozier` binary that ran.",
@@ -232,6 +232,13 @@
                 "type": "string"
               }
             },
+            "departures": {
+              "description": "Every intended departure the comparison applied — an entry of crozier's\ndeparture catalog — in file and line order. A tree whose only\ndifferences are departures matches.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Departure"
+              }
+            },
             "diff_file": {
               "description": "The `--diff-dir` file holding this mismatch's normalized diff; null\notherwise.",
               "type": [
@@ -247,6 +254,7 @@
             "differing",
             "only_in_reference",
             "only_in_crozier",
+            "departures",
             "diff_file"
           ]
         },
@@ -351,6 +359,32 @@
           "type": "string",
           "const": "flat"
         }
+      ]
+    },
+    "Departure": {
+      "description": "One intended departure the comparison applied: an entry of crozier's\ndeparture catalog (docs/departures/README.md) and where it applied.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The catalog entry's id.",
+          "type": "string"
+        },
+        "file": {
+          "description": "The file, relative to the SDK root.",
+          "type": "string"
+        },
+        "line": {
+          "description": "crozier's 1-based line where the departure starts.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "file",
+        "line"
       ]
     }
   },

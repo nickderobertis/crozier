@@ -39,7 +39,7 @@ fn nullable(schema: &mut schemars::Schema) {
 
 /// The report format's version. Bump it, and regenerate the committed schema, on
 /// any change a consumer could notice.
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 
 /// A run's exit status, serialized as its number. Exit 1 (the command failed)
 /// and 2 (usage) write no report, so they are not among its values.
@@ -98,7 +98,7 @@ impl JsonSchema for ExitStatus {
 #[serde(deny_unknown_fields)]
 pub struct Report {
     /// The report format's version.
-    #[schemars(extend("const" = 1))]
+    #[schemars(extend("const" = 2))]
     pub schema_version: u32,
     /// The version of the `crozier` binary that ran.
     pub crozier_version: String,
@@ -261,10 +261,27 @@ pub struct Comparison {
     pub only_in_reference: Vec<String>,
     /// Paths only crozier emitted.
     pub only_in_crozier: Vec<String>,
+    /// Every intended departure the comparison applied — an entry of crozier's
+    /// departure catalog — in file and line order. A tree whose only
+    /// differences are departures matches.
+    pub departures: Vec<Departure>,
     /// The `--diff-dir` file holding this mismatch's normalized diff; null
     /// otherwise.
     #[schemars(required, transform = nullable)]
     pub diff_file: Option<String>,
+}
+
+/// One intended departure the comparison applied: an entry of crozier's
+/// departure catalog (docs/departures/README.md) and where it applied.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct Departure {
+    /// The catalog entry's id.
+    pub id: String,
+    /// The file, relative to the SDK root.
+    pub file: String,
+    /// crozier's 1-based line where the departure starts.
+    pub line: usize,
 }
 
 /// One generator's two wall-time measurements and the figures derived from them.
@@ -458,6 +475,18 @@ fn render_result(out: &mut String, result: &GeneratorResult, painter: Painter) {
                 out.push_str(&format!("      {path}\n"));
             }
         }
+        if !comparison.departures.is_empty() {
+            out.push_str(&format!(
+                "    intended departures applied ({}):\n",
+                comparison.departures.len()
+            ));
+            for departure in &comparison.departures {
+                out.push_str(&format!(
+                    "      {}:{} {}\n",
+                    departure.file, departure.line, departure.id
+                ));
+            }
+        }
         if let Some(diff) = &comparison.diff_file {
             out.push_str(&format!("    diff: {diff}\n"));
         }
@@ -601,6 +630,11 @@ mod tests {
             differing: vec!["a.py".into()],
             only_in_reference: vec!["b.py".into()],
             only_in_crozier: vec!["c.py".into()],
+            departures: vec![Departure {
+                id: "sdk-identity-header-prefix".into(),
+                file: "core/client_wrapper.py".into(),
+                line: 34,
+            }],
             diff_file: Some("diffs/001.diff".into()),
         });
         let mut failed = result(
@@ -622,6 +656,7 @@ mod tests {
             "    differing (1):\n      a.py",
             "    only in reference (1):\n      b.py",
             "    only in crozier (1):\n      c.py",
+            "    intended departures applied (1):\n      core/client_wrapper.py:34 sdk-identity-header-prefix",
             "    diff: diffs/001.diff",
             "reference 2.00s, crozier 0.50s, speed-up 4.00x, saved 1.50s",
             "reference 1.00s; crozier produced no SDK, so no speed-up",

@@ -51,7 +51,7 @@ status=0
 # Exit 1 before any reference ran (a path that does not exist, an unwritable
 # --json target) leaves no report, and then no counts or figures either.
 report_path=""
-if jq -e '.schema_version == 1' "$report" >/dev/null 2>&1; then
+if jq -e '.schema_version == 1 or .schema_version == 2' "$report" >/dev/null 2>&1; then
   report_path="$report"
 fi
 

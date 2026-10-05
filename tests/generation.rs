@@ -8,14 +8,14 @@ use std::path::{Path, PathBuf};
 
 use crozier::{generate, render_files, GenerateArgs};
 
-/// The Fern defect registry, for the in-process fixture comparison below.
+/// The departure ledger, for the in-process fixture comparison below.
 #[allow(
     dead_code,
-    reason = "this binary loads, validates and applies the registry; the overlay, tree-walk \
-              and inventory-rendering helpers belong to the e2e gate, which uses the rest"
+    reason = "this binary loads, validates and checks the ledger; the overlay, recording, \
+              merging and inventory-rendering helpers belong to the e2e gate, which uses the rest"
 )]
-#[path = "e2e/fern_defects.rs"]
-mod fern_defects;
+#[path = "e2e/departures_ledger.rs"]
+mod departures_ledger;
 
 /// Write `spec` to a temp `.yml` and render it in-process, returning
 /// path-string -> contents for every generated file.
@@ -94,6 +94,11 @@ fn render_json(spec: &str) -> HashMap<String, String> {
 }
 
 fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
+    render_project(spec, package, package)
+}
+
+/// [`render_package`] with the distribution named `project`.
+fn render_project(spec: &str, package: &str, project: &str) -> HashMap<String, String> {
     let dir = tempfile::tempdir().expect("tempdir");
     let path = dir.path().join("api.yml");
     std::fs::write(&path, spec).unwrap();
@@ -101,7 +106,7 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
         spec: path,
         output: PathBuf::from("unused"),
         package_name: Some(package.to_string()),
-        project_name: Some(package.to_string()),
+        project_name: Some(project.to_string()),
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
@@ -3993,7 +3998,8 @@ components:
 /// Drive every committed feature fixture through the library boundary. The
 /// binary fixture tests pin these files too, but subprocess execution does not
 /// contribute coverage; this test compares every non-aggregator Python module
-/// in-process so the same production branches are measured by llvm-cov.
+/// in-process, through the same comparison engine and departure ledger as the
+/// binary gates, so the same production branches are measured by llvm-cov.
 #[test]
 fn committed_feature_fixture_python_matches_in_process() {
     let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -4007,12 +4013,12 @@ fn committed_feature_fixture_python_matches_in_process() {
     }
     fixtures.sort();
     assert!(fixtures.len() >= 25, "fixture corpus unexpectedly shrank");
-    let registry = fern_defects::Registry::load(repo)
+    let ledger = departures_ledger::Ledger::load(repo)
         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
 
     for fixture in fixtures {
         let name = fixture.file_name().unwrap().to_string_lossy();
-        let compared = fixture_match_count(&fixture, &registry)
+        let compared = fixture_match_count(&fixture, &ledger)
             .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
         assert!(
             compared >= 5,
@@ -4022,26 +4028,27 @@ fn committed_feature_fixture_python_matches_in_process() {
 }
 
 /// How many concrete Python modules crozier renders in-process for the
-/// committed fixture `fixture` match its Fern golden, once `registry`'s entries
-/// for that golden are substituted. A module that differs is simply not
-/// counted unless an entry names it; every registry error is a failure naming
-/// its entries — a golden the inventory does not record, an entry that cannot
-/// apply, one naming a module crozier does not render, or a module an entry
-/// names that still differs once substituted.
+/// committed fixture `fixture` match its Fern golden under the comparison
+/// engine. A module that differs is simply not counted unless a `ledger` row
+/// names it; every ledger failure is fatal — a golden the inventory does not
+/// record, a departure a counted module applies that no row records (or a row
+/// on a counted module the engine no longer applies), and a module a row names
+/// that crozier does not render or that still differs.
 fn fixture_match_count(
     fixture: &Path,
-    registry: &fern_defects::Registry,
+    ledger: &departures_ledger::Ledger,
 ) -> Result<usize, Vec<String>> {
     let name = fixture.file_name().unwrap().to_string_lossy();
     let golden = format!("tests/fixtures/{name}/expected");
-    if !registry.compares(&golden) {
+    if !ledger.compares(&golden) {
         return Err(vec![format!(
             "golden `{golden}` is not a tree any comparison reads: {} does not record it",
-            fern_defects::INVENTORY
+            departures_ledger::INVENTORY
         )]);
     }
-    let tree = registry.tree(&golden, &[])?;
-    let entry_files = tree.files();
+    let rows = ledger.golden(&golden, &[])?;
+    // The files the corpus gate accounts for at file level, which no row names.
+    let carved = ledger.carved_out(&golden);
     let spec = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
     let expected_src_root = fixture.join("expected/src");
     let expected_src = std::fs::read_dir(&expected_src_root)
@@ -4051,64 +4058,84 @@ fn fixture_match_count(
         .find(|path| path.is_dir())
         .unwrap();
     let package = expected_src.file_name().unwrap().to_str().unwrap();
-    let files = render_package(&spec, package);
-    let matches = |_: &str, actual: &str, expected: &str| {
-        crozier::strip_python_comments(actual) == crozier::strip_python_comments(expected)
-    };
-    // Whether an entry is stale is the gate's own normalization to decide.
-    let gate_matches = |rel: &str, actual: &str, expected: &str| {
-        crozier::parity::normalized_pair(rel, actual, expected)
-            .is_ok_and(|(actual, expected)| actual == expected)
-    };
-    let mut compared = 0;
-    let mut failures = Vec::new();
+    // The distribution the golden was generated under, which the client
+    // wrapper's identity header names.
+    let pyproject = std::fs::read_to_string(fixture.join("expected/pyproject.toml")).unwrap();
+    let project = pyproject
+        .lines()
+        .find_map(|line| line.strip_prefix("name = \""))
+        .and_then(|rest| rest.strip_suffix('"'))
+        .unwrap_or(package);
+    let files = render_project(&spec, package, project);
     let mut expected_files = Vec::new();
     python_files_below(&expected_src, &mut expected_files);
-    for path in expected_files {
-        if path.file_name().and_then(std::ffi::OsStr::to_str) == Some("__init__.py") {
+    let expected: Vec<(String, String)> = expected_files
+        .iter()
+        .map(|path| {
+            let rel = path
+                .strip_prefix(fixture.join("expected"))
+                .unwrap()
+                .to_string_lossy()
+                .replace('\\', "/");
+            (rel, std::fs::read_to_string(path).unwrap())
+        })
+        .collect();
+    let context = crozier::departures::Context::from_sources(
+        expected
+            .iter()
+            .map(|(rel, text)| (rel.as_str(), text.as_str())),
+        files
+            .iter()
+            .map(|(rel, text)| (rel.as_str(), text.as_str())),
+    );
+    let mut counted = std::collections::BTreeSet::new();
+    let mut observed = Vec::new();
+    let mut failures = Vec::new();
+    for (rel, fern) in &expected {
+        if rel.ends_with("/__init__.py") || carved.contains(rel) {
             continue;
         }
-        let rel = path
-            .strip_prefix(fixture.join("expected"))
-            .unwrap()
-            .to_string_lossy()
-            .replace('\\', "/");
-        let Some(actual) = files.get(&rel) else {
-            if entry_files.contains(rel.as_str()) {
-                failures.push(tree.cannot_apply(&rel, "crozier wrote no"));
+        let Some(actual) = files.get(rel) else {
+            if rows.names(rel) {
+                failures.push(format!(
+                    "{}: a row names {rel}, which crozier does not render in-process",
+                    departures_ledger::LEDGER
+                ));
             }
             continue;
         };
-        let expected = std::fs::read_to_string(&path).unwrap();
-        match tree.expected(&rel, actual, &expected, gate_matches) {
-            // A module an entry names must match once substituted, under the
-            // gate's normalization; any other module that differs is uncounted.
-            Ok(expected) if entry_files.contains(rel.as_str()) => {
-                if gate_matches(&rel, actual, &expected) {
-                    compared += 1;
-                } else {
-                    let diff = crozier::parity::normalized_pair(&rel, actual, &expected)
-                        .map(|(actual, expected)| {
-                            crozier::parity::unified_diff(&expected, &actual).unwrap_or_default()
-                        })
-                        .unwrap_or_else(|error| error);
-                    failures.push(tree.still_differs(&rel, &diff));
-                }
+        match crozier::parity::compare_file(&context, rel, actual, fern) {
+            Ok(compared) if compared.matches() => {
+                counted.insert(rel.clone());
+                observed.extend(
+                    compared
+                        .departures
+                        .iter()
+                        .map(|departure| (rel.clone(), departure.line, departure.id.to_string())),
+                );
             }
-            Ok(expected) if matches(&rel, actual, &expected) => compared += 1,
+            // A module a row names must match under the engine; any other
+            // module that differs is uncounted.
+            Ok(compared) if rows.names(rel) => failures.push(format!(
+                "{}: a row names {rel}, but crozier's module still differs from Fern's once \
+                 every departure is applied — fix the generator\n{}",
+                departures_ledger::LEDGER,
+                compared.diff().unwrap_or_default()
+            )),
             Ok(_) => {}
-            Err(failure) => failures.push(failure),
+            Err(error) => failures.push(format!("{rel}: {error}")),
         }
     }
+    failures.extend(rows.check(&observed, &|rel| counted.contains(rel)));
     if failures.is_empty() {
-        Ok(compared)
+        Ok(counted.len())
     } else {
         Err(failures)
     }
 }
 
-/// The spec of the scratch fixture the registry tests below author.
-const DEFECT_FIXTURE_SPEC: &str = "openapi: 3.0.3
+/// The spec of the scratch fixture the ledger tests below author.
+const LEDGER_FIXTURE_SPEC: &str = "openapi: 3.0.3
 info: { title: Demo, version: 1.0.0 }
 paths: {}
 components:
@@ -4119,211 +4146,173 @@ components:
         name: { type: string }
 ";
 
-/// The module of the scratch fixture its registry entries name.
+/// The scratch fixture's golden.
+const LEDGER_GOLDEN: &str = "tests/fixtures/demo/expected";
+
+/// The scratch fixture's client wrapper, where crozier's headers depart.
+const WRAPPER: &str = "src/demo/core/client_wrapper.py";
+
+/// Another module of the scratch fixture.
 const WIDGET: &str = "src/demo/types/widget.py";
 
+/// crozier's in-process rendering of the scratch fixture.
+fn rendered() -> HashMap<String, String> {
+    render_package(LEDGER_FIXTURE_SPEC, "demo")
+}
+
+/// Fern's client wrapper: crozier's with Fern's header names.
+fn fern_wrapper(text: &str) -> String {
+    assert!(text.contains("\"X-Crozier-Language\""), "{text}");
+    text.replace("\"X-Crozier-", "\"X-Fern-")
+}
+
+/// The ledger rows recording every header departure of crozier's wrapper.
+fn wrapper_rows() -> String {
+    rendered()[WRAPPER]
+        .lines()
+        .enumerate()
+        .filter(|(_, line)| line.trim_start().starts_with("\"X-Crozier-"))
+        .map(|(index, _)| {
+            format!(
+                "{LEDGER_GOLDEN}\t{WRAPPER}\t{}\tsdk-identity-header-prefix\n",
+                index + 1
+            )
+        })
+        .collect()
+}
+
 /// A scratch repository holding one fixture, `tests/fixtures/demo`, whose
-/// golden is crozier's own in-process output with `edit` applied to
-/// [`WIDGET`], plus `registry`, the evidence note and an inventory recording
-/// that golden with `carve_outs` (a JSON object).
-fn defect_fixture(
-    registry: &str,
-    edit: impl Fn(&str) -> String,
-    carve_outs: &str,
-) -> tempfile::TempDir {
+/// golden is crozier's own in-process output with `edit` applied to each file,
+/// the ledger holding `rows`, and an inventory recording that golden.
+fn ledger_fixture(rows: &str, edit: impl Fn(&str, &str) -> String) -> tempfile::TempDir {
     let root = tempfile::tempdir().expect("scratch repository");
     let put = |rel: &str, text: &str| {
         let path = root.path().join(rel);
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::fs::write(path, text).unwrap();
     };
-    put("tests/fixtures/demo/openapi.yml", DEFECT_FIXTURE_SPEC);
-    for (rel, text) in render_package(DEFECT_FIXTURE_SPEC, "demo") {
-        let text = if rel == WIDGET { edit(&text) } else { text };
-        put(&format!("tests/fixtures/demo/expected/{rel}"), &text);
-    }
-    put("tests/fixtures/fern-defects.toml", registry);
-    put("docs/fern-defects/demo.md", "the command and its result\n");
+    put("tests/fixtures/demo/openapi.yml", LEDGER_FIXTURE_SPEC);
     put(
-        "tests/fixtures/compared-goldens.json",
-        &format!("{{\"goldens\": {{\"tests/fixtures/demo/expected\": {carve_outs}}}}}\n"),
+        &format!("{LEDGER_GOLDEN}/pyproject.toml"),
+        "name = \"demo\"\n",
+    );
+    for (rel, text) in rendered() {
+        put(&format!("{LEDGER_GOLDEN}/{rel}"), &edit(&rel, &text));
+    }
+    put(
+        departures_ledger::LEDGER,
+        &format!("{}\n{rows}", departures_ledger::HEADER),
+    );
+    put(
+        departures_ledger::INVENTORY,
+        &format!("{{\"goldens\": {{\"{LEDGER_GOLDEN}\": {{}}}}}}\n"),
     );
     root
 }
 
-/// One `[[defect]]` table over `file` in the scratch fixture's golden.
-fn defect_entry(id: &str, file: &str, fern: &str, crozier: &str) -> String {
-    format!(
-        "[[defect]]\nid = {id:?}\ngap = \"demo-gap\"\ngolden = \"tests/fixtures/demo/expected\"\n\
-         file = {file:?}\nfern = {fern:?}\ncrozier = {crozier:?}\n\
-         reason = \"the module is wrong on its own terms\"\n\
-         evidence = \"docs/fern-defects/demo.md\"\n\n"
-    )
-}
-
-/// The Fern side of the scratch fixture's defect: `Widget` renamed `Gadget`.
-fn fern_widget(text: &str) -> String {
-    assert!(text.contains("class Widget("), "{text}");
-    text.replace("class Widget(", "class Gadget(")
-}
-
-/// The line of crozier's [`WIDGET`] the scratch defect replaces.
-fn widget_line(gadget: bool) -> String {
-    let rendered = render_package(DEFECT_FIXTURE_SPEC, "demo");
-    let line = rendered[WIDGET]
-        .lines()
-        .find(|line| line.starts_with("class Widget("))
-        .expect("the class line")
-        .to_string();
-    if gadget {
-        format!("{}\n", line.replace("Widget", "Gadget"))
+/// Fern's side of the scratch fixture: crozier's output with Fern's headers.
+fn as_fern(rel: &str, text: &str) -> String {
+    if rel == WRAPPER {
+        fern_wrapper(text)
     } else {
-        format!("{line}\n")
+        text.to_string()
     }
 }
 
 /// The match count over the scratch fixture of `root`.
-fn defect_fixture_count(root: &tempfile::TempDir) -> Result<usize, Vec<String>> {
-    let registry = fern_defects::Registry::load(root.path())?;
-    fixture_match_count(&root.path().join("tests/fixtures/demo"), &registry)
+fn ledger_fixture_count(root: &tempfile::TempDir) -> Result<usize, Vec<String>> {
+    let ledger = departures_ledger::Ledger::load(root.path())?;
+    fixture_match_count(&root.path().join("tests/fixtures/demo"), &ledger)
 }
 
-#[test]
-fn a_registry_entry_restores_the_in_process_match_and_a_mismatch_stays_uncounted() {
-    let baseline = defect_fixture_count(&defect_fixture("# no entry\n", str::to_string, "{}"))
-        .expect("an empty registry");
-    assert!(baseline >= 1, "{baseline}");
-    let entry = defect_entry(
-        "widget-named-gadget",
-        WIDGET,
-        &widget_line(true),
-        &widget_line(false),
-    );
-    let restored = defect_fixture(&entry, fern_widget, "{}");
-    assert_eq!(defect_fixture_count(&restored), Ok(baseline));
-    // Without the entry the Fern module is an ordinary mismatch: uncounted.
-    let unaccounted = defect_fixture("# no entry\n", fern_widget, "{}");
-    assert_eq!(defect_fixture_count(&unaccounted), Ok(baseline - 1));
-}
-
-/// The in-process comparison's failures for the scratch repository `root`,
-/// which must name `id` and say `says`.
-fn assert_in_process_refuses(root: &tempfile::TempDir, id: &str, says: &str) {
-    let failures = defect_fixture_count(root).expect_err("the registry error is fatal");
+/// Assert the in-process comparison of `root` fails, one failure saying `says`.
+fn assert_in_process_refuses(root: &tempfile::TempDir, says: &str) {
+    let failures = ledger_fixture_count(root).expect_err("the ledger failure is fatal");
     assert!(
-        failures
-            .iter()
-            .any(|failure| failure.contains(&format!("`{id}`")) && failure.contains(says)),
-        "expected a failure naming `{id}` and saying {says:?}: {failures:#?}"
+        failures.iter().any(|failure| failure.contains(says)),
+        "expected a failure saying {says:?}: {failures:#?}"
     );
 }
 
 #[test]
-fn every_registry_error_is_fatal_in_process() {
-    let entry = defect_entry(
-        "widget-named-gadget",
-        WIDGET,
-        &widget_line(true),
-        &widget_line(false),
+fn recorded_departures_count_and_an_unnamed_mismatch_stays_uncounted() {
+    let rows = wrapper_rows();
+    assert!(rows.lines().count() >= 3, "{rows}");
+    let baseline =
+        ledger_fixture_count(&ledger_fixture(&rows, as_fern)).expect("every departure is recorded");
+    // Five other modules match, so the count floor alone would pass a drop.
+    assert!(baseline >= 6, "{baseline}");
+    // A module no row names that differs is an ordinary mismatch: uncounted.
+    let gadget = |rel: &str, text: &str| {
+        if rel == WIDGET {
+            text.replace("class Widget(", "class Gadget(")
+        } else {
+            as_fern(rel, text)
+        }
+    };
+    assert_eq!(
+        ledger_fixture_count(&ledger_fixture(&rows, gadget)),
+        Ok(baseline - 1)
     );
-    // A stale entry: the golden already holds crozier's lines.
+}
+
+#[test]
+fn every_ledger_failure_is_fatal_in_process() {
+    let rows = wrapper_rows();
+    // The departures applied, but no row records them.
+    assert_in_process_refuses(&ledger_fixture("", as_fern), "is unrecorded");
+    // The rows, but the golden already holds crozier's headers: stale.
     assert_in_process_refuses(
-        &defect_fixture(&entry, str::to_string, "{}"),
-        "widget-named-gadget",
-        "stale",
+        &ledger_fixture(&rows, |_, text| text.to_string()),
+        "is stale",
     );
-    // Lines the golden does not hold.
-    let absent = defect_entry(
-        "absent-lines",
-        WIDGET,
-        "class Missing:\n",
-        &widget_line(false),
-    );
-    assert_in_process_refuses(
-        &defect_fixture(&absent, fern_widget, "{}"),
-        "absent-lines",
-        "occur 0 times",
-    );
-    // An invalid registry: ids out of order.
-    let unsorted = format!(
-        "{entry}{}",
-        defect_entry("absent-lines", WIDGET, "class Missing:\n", "class Other:\n")
-    );
-    assert_in_process_refuses(
-        &defect_fixture(&unsorted, fern_widget, "{}"),
-        "absent-lines",
-        "sorted by id",
-    );
-    // A file the inventory carves out at file level.
-    assert_in_process_refuses(
-        &defect_fixture(
-            &entry,
-            fern_widget,
-            &format!("{{\"carve_outs\": {{\"pinned\": [{WIDGET:?}]}}}}"),
-        ),
-        "widget-named-gadget",
-        "also a file pinned to crozier's own bytes",
-    );
-    // A file crozier does not render.
-    let unrendered = defect_entry(
-        "unrendered-module",
-        "src/demo/types/extra.py",
-        "class Extra:\n",
-        "class Other:\n",
-    );
-    let root = defect_fixture(&unrendered, str::to_string, "{}");
+    // A module the ledger names that still differs once departures apply.
+    let drifted = |rel: &str, text: &str| {
+        if rel == WRAPPER {
+            format!("{}ALPHA = 1\n", fern_wrapper(text))
+        } else {
+            text.to_string()
+        }
+    };
+    assert_in_process_refuses(&ledger_fixture(&rows, drifted), "still differs");
+    // A module a row names that crozier does not render.
+    let root = ledger_fixture(&rows, as_fern);
+    let extra = "src/demo/types/extra.py";
     std::fs::write(
-        root.path()
-            .join("tests/fixtures/demo/expected/src/demo/types/extra.py"),
+        root.path().join(LEDGER_GOLDEN).join(extra),
         "class Extra:\n    pass\n",
     )
     .unwrap();
-    assert_in_process_refuses(
-        &root,
-        "unrendered-module",
-        "crozier wrote no src/demo/types/extra.py",
-    );
-}
-
-#[test]
-fn a_mismatch_left_after_a_substitution_is_fatal_in_process() {
-    let baseline = defect_fixture_count(&defect_fixture("# no entry\n", str::to_string, "{}"))
-        .expect("an empty registry");
-    // Five other modules match, so the count floor alone would let this pass.
-    assert!(baseline >= 6, "{baseline}");
-    // Fern's module differs on three lines; two entries account for two, and
-    // `BETA = 2` is left unaccounted.
-    let fern = |text: &str| format!("{}ALPHA = 1\nBETA = 2\n", fern_widget(text));
-    let registry = format!(
-        "{}{}",
-        defect_entry("alpha-constant", WIDGET, "ALPHA = 1\n", ""),
-        defect_entry(
-            "widget-named-gadget",
-            WIDGET,
-            &widget_line(true),
-            &widget_line(false)
+    std::fs::write(
+        root.path().join(departures_ledger::LEDGER),
+        format!(
+            "{}\n{rows}{LEDGER_GOLDEN}\t{extra}\t1\tsdk-identity-header-prefix\n",
+            departures_ledger::HEADER
         ),
-    );
-    let failures = defect_fixture_count(&defect_fixture(&registry, fern, "{}"))
-        .expect_err("a mismatch an entry names is fatal");
+    )
+    .unwrap();
+    assert_in_process_refuses(&root, "which crozier does not render in-process");
+    // An invalid ledger: rows out of order.
+    let reversed: String = rows.lines().rev().map(|row| format!("{row}\n")).collect();
+    let failures = departures_ledger::Ledger::load(ledger_fixture(&reversed, as_fern).path())
+        .expect_err("an unsorted ledger");
     assert!(
-        failures.len() == 1
-            && failures[0].contains("`alpha-constant`, `widget-named-gadget`")
-            && failures[0].contains("still differs")
-            && failures[0].contains("BETA = 2"),
+        failures
+            .iter()
+            .any(|failure| failure.contains("rows are sorted")),
         "{failures:#?}"
     );
 }
 
 #[test]
 fn a_fixture_golden_the_inventory_lacks_is_fatal_in_process() {
-    let root = defect_fixture("# no entry\n", str::to_string, "{}");
+    let root = ledger_fixture("", |_, text| text.to_string());
     std::fs::write(
-        root.path().join("tests/fixtures/compared-goldens.json"),
+        root.path().join(departures_ledger::INVENTORY),
         "{\"goldens\": {}}\n",
     )
     .unwrap();
-    let failures = defect_fixture_count(&root).expect_err("an unregistered golden is fatal");
+    let failures = ledger_fixture_count(&root).expect_err("an unregistered golden is fatal");
     assert!(
         failures
             .iter()

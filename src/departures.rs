@@ -1,0 +1,1243 @@
+//! The catalog of crozier's **intended departures** from Fern's output, and the
+//! rule each one applies.
+//!
+//! The catalog is one machine-readable file, `assets/departures.yml`, compiled
+//! into the binary. Each entry names one place crozier writes something other
+//! than Fern on purpose: a Fern defect crozier corrects, or a deliberate
+//! non-defect choice (branding, packaging, provenance, ordering). Each entry's
+//! rule — the function of the same id in [`rule`] — recognises exactly Fern's
+//! construct and crozier's replacement in a pair of files; the comparison
+//! engine in [`crate::parity`] applies the rules and reports every departure it
+//! applied by id, file and line. `docs/departures/README.md` holds the rendered
+//! reference ([`render_reference`]), the defect rule, and how a fix adds an
+//! entry.
+
+use std::collections::BTreeSet;
+use std::io::Write;
+use std::process::{Command, Stdio};
+use std::sync::OnceLock;
+
+use serde::Deserialize;
+
+/// The catalog's source, as compiled into the binary.
+pub const CATALOG_SOURCE: &str = include_str!("../assets/departures.yml");
+
+/// Where every entry's evidence note lives, relative to the repository root.
+pub const EVIDENCE_DIR: &str = "docs/departures/evidence/";
+
+/// What sort of departure an entry is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Kind {
+    /// Fern's output is wrong under the defect rule, and crozier writes the
+    /// correct output instead.
+    FernDefect,
+    /// crozier names itself where Fern names itself.
+    Branding,
+    /// crozier writes the packaged SDK's publishing details from its own
+    /// settings.
+    Packaging,
+    /// crozier writes a fixed record of how it was generated.
+    Provenance,
+    /// crozier orders statements whose order has no effect deterministically.
+    Ordering,
+}
+
+impl Kind {
+    /// Every kind, in the order the reference lists them.
+    pub const ALL: [Kind; 5] = [
+        Kind::FernDefect,
+        Kind::Branding,
+        Kind::Packaging,
+        Kind::Provenance,
+        Kind::Ordering,
+    ];
+
+    /// The kind as the catalog spells it.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Kind::FernDefect => "fern-defect",
+            Kind::Branding => "branding",
+            Kind::Packaging => "packaging",
+            Kind::Provenance => "provenance",
+            Kind::Ordering => "ordering",
+        }
+    }
+
+    /// What the kind covers, as the reference describes it.
+    #[must_use]
+    pub fn meaning(self) -> &'static str {
+        match self {
+            Kind::FernDefect => {
+                "Fern's output is wrong under the defect rule; crozier writes the correct output."
+            }
+            Kind::Branding => "crozier names itself where Fern names itself.",
+            Kind::Packaging => {
+                "crozier writes the packaged SDK's publishing details from its own settings."
+            }
+            Kind::Provenance => "crozier writes a fixed record of how the SDK was generated.",
+            Kind::Ordering => {
+                "crozier orders statements whose order has no effect in a deterministic order."
+            }
+        }
+    }
+}
+
+/// One catalog entry: exactly these keys.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Departure {
+    /// A unique lower-kebab slug naming the shape in crozier's own terms.
+    pub id: String,
+    /// What sort of departure it is.
+    pub kind: Kind,
+    /// The input and file that produce it.
+    pub trigger: String,
+    /// What Fern writes there.
+    pub fern: String,
+    /// What crozier writes instead.
+    pub crozier: String,
+    /// Why it is intended; for a `fern-defect`, why Fern's output is wrong.
+    pub reason: String,
+    /// The repository-relative path of the committed evidence note.
+    pub evidence: String,
+}
+
+/// The keys an entry holds, in the order the catalog writes them.
+pub const KEYS: [&str; 7] = [
+    "id", "kind", "trigger", "fern", "crozier", "reason", "evidence",
+];
+
+/// Parse a catalog's text, then validate it: every failure, each naming its
+/// entry, rather than the first.
+///
+/// # Errors
+///
+/// When the text is not a list of entries with exactly [`KEYS`], or when
+/// [`validation_failures`] finds anything.
+pub fn parse(text: &str) -> Result<Vec<Departure>, Vec<String>> {
+    let entries: Vec<Departure> = serde_yaml_ng::from_str(text).map_err(|error| {
+        vec![format!(
+            "the departure catalog is a list of entries holding exactly the keys {}: {error}",
+            KEYS.join(", ")
+        )]
+    })?;
+    let failures = validation_failures(&entries);
+    if failures.is_empty() {
+        Ok(entries)
+    } else {
+        Err(failures)
+    }
+}
+
+/// The compiled catalog. Its validity is pinned by this module's tests, so a
+/// build that ships an invalid one cannot pass the gate.
+///
+/// # Panics
+///
+/// When the compiled catalog is invalid.
+#[must_use]
+pub fn catalog() -> &'static [Departure] {
+    static CATALOG: OnceLock<Vec<Departure>> = OnceLock::new();
+    CATALOG.get_or_init(|| {
+        parse(CATALOG_SOURCE).unwrap_or_else(|failures| {
+            panic!(
+                "the compiled departure catalog is invalid:\n{}",
+                failures.join("\n")
+            )
+        })
+    })
+}
+
+/// The compiled entry `id`, if the catalog holds one.
+#[must_use]
+pub fn find(id: &str) -> Option<&'static Departure> {
+    catalog().iter().find(|departure| departure.id == id)
+}
+
+/// Whether `id` is a lower-kebab slug.
+fn is_slug(id: &str) -> bool {
+    !id.is_empty()
+        && !id.starts_with('-')
+        && !id.ends_with('-')
+        && !id.contains("--")
+        && id
+            .bytes()
+            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+}
+
+/// Every way `entries` break the catalog's contract, each naming its entry:
+/// ids that are not unique lower-kebab slugs in sorted order, an empty field,
+/// evidence outside [`EVIDENCE_DIR`], and an entry with no rule (or a rule with
+/// no entry). Whether each evidence note is committed is the repository's to
+/// check; the binary has no repository.
+#[must_use]
+pub fn validation_failures(entries: &[Departure]) -> Vec<String> {
+    let mut failures = Vec::new();
+    for pair in entries.windows(2) {
+        let (previous, entry) = (&pair[0], &pair[1]);
+        if previous.id == entry.id {
+            failures.push(format!(
+                "departure `{}`: the id appears twice; ids are unique",
+                entry.id
+            ));
+        } else if previous.id > entry.id {
+            failures.push(format!(
+                "departure `{}`: follows `{}`; entries are sorted by id",
+                entry.id, previous.id
+            ));
+        }
+    }
+    for entry in entries {
+        let id = &entry.id;
+        if !is_slug(id) {
+            failures.push(format!(
+                "departure `{id}`: the id is not a lower-kebab slug"
+            ));
+        }
+        for (key, value) in [
+            ("trigger", &entry.trigger),
+            ("fern", &entry.fern),
+            ("crozier", &entry.crozier),
+            ("reason", &entry.reason),
+        ] {
+            if value.trim().is_empty() {
+                failures.push(format!("departure `{id}`: `{key}` is empty"));
+            }
+        }
+        let evidence = &entry.evidence;
+        let plain = !evidence.contains('\\')
+            && evidence
+                .split('/')
+                .all(|part| !part.is_empty() && part != "." && part != "..");
+        if !plain || !evidence.starts_with(EVIDENCE_DIR) || !evidence.ends_with(".md") {
+            failures.push(format!(
+                "departure `{id}`: `evidence` `{evidence}` is not a note under {EVIDENCE_DIR}"
+            ));
+        }
+        if rule(id).is_none() {
+            failures.push(format!(
+                "departure `{id}`: no rule of that id in src/departures.rs; every entry is \
+                 applied through its rule"
+            ));
+        }
+    }
+    let ids: BTreeSet<&str> = entries.iter().map(|entry| entry.id.as_str()).collect();
+    for id in RULE_IDS {
+        if !ids.contains(id) {
+            failures.push(format!(
+                "departure rule `{id}` has no catalog entry; a rule is applied only as an entry's"
+            ));
+        }
+    }
+    failures
+}
+
+/// The opening and closing markers of the generated catalog in the reference.
+pub const REFERENCE_MARKERS: (&str, &str) = (
+    "<!-- BEGIN GENERATED CATALOG: edit assets/departures.yml, then regenerate -->",
+    "<!-- END GENERATED CATALOG -->",
+);
+
+/// The catalog as the reference renders it, between [`REFERENCE_MARKERS`]: the
+/// kinds, then one section per entry.
+#[must_use]
+pub fn render_reference(entries: &[Departure]) -> String {
+    let one_line = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let mut out = format!("{}\n\n", REFERENCE_MARKERS.0);
+    out.push_str("| Kind | Entries | Meaning |\n| --- | --- | --- |\n");
+    for kind in Kind::ALL {
+        let count = entries.iter().filter(|entry| entry.kind == kind).count();
+        out.push_str(&format!(
+            "| `{}` | {count} | {} |\n",
+            kind.as_str(),
+            kind.meaning()
+        ));
+    }
+    for entry in entries {
+        out.push_str(&format!(
+            "\n### `{}`\n\n- **Kind:** `{}`\n- **Trigger:** {}\n- **Fern writes:** {}\n\
+             - **crozier writes:** {}\n- **Why:** {}\n- **Evidence:** [`{}`](../../{})\n",
+            entry.id,
+            entry.kind.as_str(),
+            one_line(&entry.trigger),
+            one_line(&entry.fern),
+            one_line(&entry.crozier),
+            one_line(&entry.reason),
+            entry.evidence,
+            entry.evidence,
+        ));
+    }
+    out.push_str(&format!("\n{}\n", REFERENCE_MARKERS.1));
+    out
+}
+
+// ---------------------------------------------------------------------------
+// Rules
+// ---------------------------------------------------------------------------
+
+/// What a rule may consult about the two trees a file pair belongs to: the
+/// top-level class names each tree's Python modules define, read on first use.
+/// A file compared on its own has an empty context, so no rule that needs one
+/// applies to it.
+#[derive(Debug, Default)]
+pub struct Context {
+    roots: Option<(std::path::PathBuf, std::path::PathBuf)>,
+    reference_classes: OnceLock<BTreeSet<String>>,
+    crozier_classes: OnceLock<BTreeSet<String>>,
+}
+
+impl Context {
+    /// The context of two trees given as `(path, text)` pairs.
+    pub fn from_sources<'a>(
+        reference: impl IntoIterator<Item = (&'a str, &'a str)>,
+        crozier: impl IntoIterator<Item = (&'a str, &'a str)>,
+    ) -> Self {
+        Context {
+            roots: None,
+            reference_classes: OnceLock::from(classes(reference)),
+            crozier_classes: OnceLock::from(classes(crozier)),
+        }
+    }
+
+    /// The context of the trees at `reference` and `crozier`, read only if a
+    /// rule asks for it. A module that cannot be read defines nothing.
+    #[must_use]
+    pub fn from_trees(reference: &std::path::Path, crozier: &std::path::Path) -> Self {
+        Context {
+            roots: Some((reference.to_path_buf(), crozier.to_path_buf())),
+            ..Context::default()
+        }
+    }
+
+    /// Classes the reference's modules define.
+    pub fn reference_classes(&self) -> &BTreeSet<String> {
+        self.reference_classes
+            .get_or_init(|| self.tree_classes(|(reference, _)| reference))
+    }
+
+    /// Classes crozier's modules define.
+    pub fn crozier_classes(&self) -> &BTreeSet<String> {
+        self.crozier_classes
+            .get_or_init(|| self.tree_classes(|(_, crozier)| crozier))
+    }
+
+    /// The classes of the tree `side` picks, or none without trees.
+    fn tree_classes(
+        &self,
+        side: impl Fn(&(std::path::PathBuf, std::path::PathBuf)) -> &std::path::PathBuf,
+    ) -> BTreeSet<String> {
+        let Some(root) = self.roots.as_ref().map(side) else {
+            return BTreeSet::new();
+        };
+        let sources: Vec<(String, String)> = crate::parity::walk_files(root)
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|rel| rel.ends_with(".py"))
+            .filter_map(|rel| {
+                let text = std::fs::read_to_string(root.join(&rel)).ok()?;
+                Some((rel, text))
+            })
+            .collect();
+        classes(
+            sources
+                .iter()
+                .map(|(rel, text)| (rel.as_str(), text.as_str())),
+        )
+    }
+}
+
+/// The top-level class names the `.py` files among `sources` define.
+fn classes<'a>(sources: impl IntoIterator<Item = (&'a str, &'a str)>) -> BTreeSet<String> {
+    sources
+        .into_iter()
+        .filter(|(path, _)| path.ends_with(".py"))
+        .flat_map(|(_, text)| text.lines())
+        .filter_map(|line| line.strip_prefix("class "))
+        .map(|rest| {
+            rest.chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect::<String>()
+        })
+        .filter(|name| !name.is_empty())
+        .collect()
+}
+
+/// One file pair as the rules see it: its `/`-separated path relative to the
+/// SDK root, both sides' lines once the comparison's mechanics have run (Python
+/// comments stripped, line numbers unchanged), and the trees' [`Context`].
+pub struct Pair<'a> {
+    /// The file's path relative to the SDK root.
+    pub rel: &'a str,
+    /// The reference's lines.
+    pub fern: &'a [&'a str],
+    /// crozier's lines.
+    pub crozier: &'a [&'a str],
+    /// What the rules may know about the two trees.
+    pub context: &'a Context,
+}
+
+/// A region one rule accounts for: Fern's lines `fern` correspond to crozier's
+/// lines `crozier` (half-open, 0-based), and the two differ.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Region {
+    /// Fern's lines.
+    pub fern: std::ops::Range<usize>,
+    /// crozier's lines.
+    pub crozier: std::ops::Range<usize>,
+}
+
+/// A rule's recogniser for one region of a pair, found from the files'
+/// structure.
+pub type RegionRule = fn(&Pair<'_>) -> Result<Option<Region>, String>;
+
+/// A rule's recogniser for one Fern line and the crozier line aligned with it.
+pub type LineRule = fn(&Pair<'_>, &str, &str) -> bool;
+
+/// A rule's recogniser for one line crozier writes with no Fern counterpart.
+pub type AddedRule = fn(&Pair<'_>, &str) -> bool;
+
+/// How one entry's rule recognises its departure: by any of the three shapes.
+#[derive(Clone, Copy, Default)]
+pub struct Rule {
+    /// A region of the pair.
+    pub region: Option<RegionRule>,
+    /// An aligned pair of lines.
+    pub line: Option<LineRule>,
+    /// A line only crozier writes.
+    pub added: Option<AddedRule>,
+}
+
+/// Every rule's id, in catalog order — the order the engine tries them in.
+pub const RULE_IDS: [&str; 5] = [
+    "fern-metadata-generator-config",
+    "init-type-checking-import-order",
+    "readme-client-class-casing",
+    "sdk-identity-header-prefix",
+    "sdk-name-version-headers",
+];
+
+/// The rule of the catalog entry `id`, if crozier has one.
+#[must_use]
+pub fn rule(id: &str) -> Option<Rule> {
+    let none = Rule::default();
+    Some(match id {
+        "fern-metadata-generator-config" => Rule {
+            region: Some(metadata_generator_config),
+            ..none
+        },
+        "init-type-checking-import-order" => Rule {
+            region: Some(init_type_checking_import_order),
+            ..none
+        },
+        "readme-client-class-casing" => Rule {
+            line: Some(readme_client_class_casing),
+            ..none
+        },
+        "sdk-identity-header-prefix" => Rule {
+            line: Some(sdk_identity_header_prefix),
+            ..none
+        },
+        "sdk-name-version-headers" => Rule {
+            line: Some(sdk_name_version_header),
+            added: Some(sdk_name_version_header_added),
+            region: None,
+        },
+        _ => return None,
+    })
+}
+
+/// The SDK-relative path of Fern's own metadata record.
+pub const FERN_METADATA: &str = ".fern/metadata.json";
+
+/// `fern-metadata-generator-config`: in `.fern/metadata.json`, the lines that
+/// differ lie within the `generatorConfig` object of each side (or on the line
+/// before it, whose trailing comma depends on whether a key follows), and
+/// removing the object from both sides leaves them equal.
+fn metadata_generator_config(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != FERN_METADATA {
+        return Ok(None);
+    }
+    let (fern, crozier) = (pair.fern.join("\n"), pair.crozier.join("\n"));
+    if without_generator_config(&fern) != without_generator_config(&crozier) {
+        return Ok(None);
+    }
+    let Some(region) = differing_window(pair.fern, pair.crozier) else {
+        return Ok(None);
+    };
+    // Each side's differing lines are its block, or the line before it, whose
+    // comma depends on whether a key follows the block; a side with no block
+    // differs on that one line at most.
+    let within = |lines: &[&str], range: &std::ops::Range<usize>| {
+        range.is_empty()
+            || match generator_config_lines(lines) {
+                Some(block) => range.start + 1 >= block.start && range.end <= block.end,
+                None => range.len() == 1,
+            }
+    };
+    Ok(
+        (within(pair.fern, &region.fern) && within(pair.crozier, &region.crozier))
+            .then_some(region),
+    )
+}
+
+/// The lines of `lines`' `"generatorConfig": {…}` object, from its key line to
+/// its closing brace, if it has one.
+fn generator_config_lines(lines: &[&str]) -> Option<std::ops::Range<usize>> {
+    let start = lines
+        .iter()
+        .position(|line| line.trim_start().starts_with("\"generatorConfig\""))?;
+    let mut depth = 0i32;
+    for (index, line) in lines.iter().enumerate().skip(start) {
+        for ch in line.chars() {
+            match ch {
+                '{' => depth += 1,
+                '}' => depth -= 1,
+                _ => {}
+            }
+        }
+        if depth <= 0 {
+            return Some(start..index + 1);
+        }
+    }
+    None
+}
+
+/// `content` without its `"generatorConfig"` object and the comma that joins it
+/// to the key before it.
+fn without_generator_config(content: &str) -> String {
+    let Some(start) = content.find("\"generatorConfig\"") else {
+        return content.to_string();
+    };
+    let before = content[..start].trim_end();
+    let before = before.strip_suffix(',').unwrap_or(before);
+    let rest = &content[start..];
+    let (mut depth, mut started, mut end) = (0i32, false, rest.len());
+    for (i, ch) in rest.char_indices() {
+        match ch {
+            '{' => {
+                depth += 1;
+                started = true;
+            }
+            '}' if started => {
+                depth -= 1;
+                if depth == 0 {
+                    end = i + 1;
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+    format!("{before}{}", &rest[end..])
+}
+
+/// The smallest window of lines outside which `fern` and `crozier` are equal:
+/// their common leading and trailing lines removed. `None` when they are equal.
+#[must_use]
+pub fn differing_window(fern: &[&str], crozier: &[&str]) -> Option<Region> {
+    if fern == crozier {
+        return None;
+    }
+    let prefix = fern
+        .iter()
+        .zip(crozier)
+        .take_while(|(left, right)| left == right)
+        .count();
+    let suffix = fern[prefix..]
+        .iter()
+        .rev()
+        .zip(crozier[prefix..].iter().rev())
+        .take_while(|(left, right)| left == right)
+        .count();
+    Some(Region {
+        fern: prefix..fern.len() - suffix,
+        crozier: prefix..crozier.len() - suffix,
+    })
+}
+
+/// `init-type-checking-import-order`: in an `__init__.py`, both sides'
+/// `if typing.TYPE_CHECKING:` blocks differ, yet sort to the same text under
+/// ruff's isort. The region is the blocks' differing window.
+fn init_type_checking_import_order(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != "__init__.py" && !pair.rel.ends_with("/__init__.py") {
+        return Ok(None);
+    }
+    let (Some(fern_block), Some(crozier_block)) = (
+        type_checking_block(pair.fern),
+        type_checking_block(pair.crozier),
+    ) else {
+        return Ok(None);
+    };
+    let fern = &pair.fern[fern_block.clone()];
+    let crozier = &pair.crozier[crozier_block.clone()];
+    let Some(window) = differing_window(fern, crozier) else {
+        return Ok(None);
+    };
+    let (Some(fern_body), Some(crozier_body)) = (dedent(fern), dedent(crozier)) else {
+        return Ok(None);
+    };
+    if ruff_isort(&fern_body)? != ruff_isort(&crozier_body)? {
+        return Ok(None);
+    }
+    Ok(Some(Region {
+        fern: fern_block.start + window.fern.start..fern_block.start + window.fern.end,
+        crozier: crozier_block.start + window.crozier.start
+            ..crozier_block.start + window.crozier.end,
+    }))
+}
+
+/// The lines inside `lines`' `if typing.TYPE_CHECKING:` block: from the line
+/// after it to the next line that is neither blank nor indented.
+fn type_checking_block(lines: &[&str]) -> Option<std::ops::Range<usize>> {
+    let start = lines
+        .iter()
+        .position(|line| *line == "if typing.TYPE_CHECKING:")?
+        + 1;
+    let end = lines[start..]
+        .iter()
+        .position(|line| !line.is_empty() && !line.starts_with(' '))
+        .map_or(lines.len(), |offset| start + offset);
+    Some(start..end)
+}
+
+/// `lines` with one level (four spaces) of indentation removed, as one text;
+/// `None` when a non-blank line is not indented that far.
+fn dedent(lines: &[&str]) -> Option<String> {
+    let mut out = String::new();
+    for line in lines {
+        if !line.is_empty() {
+            out.push_str(line.strip_prefix("    ")?);
+        }
+        out.push('\n');
+    }
+    Some(out)
+}
+
+/// Run `ruff check --select I --fix` over a source string, returning the
+/// import-sorted result. Uses the same `ruff` the generator depends on.
+///
+/// # Errors
+///
+/// When `ruff` cannot be run, or rejects the input.
+pub fn ruff_isort(source: &str) -> Result<String, String> {
+    let mut child = Command::new("ruff")
+        .args([
+            "check",
+            "--select",
+            "I",
+            "--fix",
+            "--stdin-filename",
+            "x.py",
+            "-",
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|error| format!("could not run ruff (see docs/matching.md): {error}"))?;
+    child
+        .stdin
+        .take()
+        .ok_or_else(|| "ruff stdin was not piped".to_string())?
+        .write_all(source.as_bytes())
+        .map_err(|error| format!("could not write to ruff: {error}"))?;
+    let out = child
+        .wait_with_output()
+        .map_err(|error| format!("could not wait for ruff: {error}"))?;
+    // Trust ruff's stdout only when it exited cleanly — a non-zero exit (e.g. a
+    // syntax error in the input) must surface, not silently yield wrong text.
+    if !out.status.success() {
+        return Err(format!(
+            "ruff isort failed ({}): {}",
+            out.status,
+            String::from_utf8_lossy(&out.stderr).trim()
+        ));
+    }
+    String::from_utf8(out.stdout).map_err(|error| format!("ruff output is not UTF-8: {error}"))
+}
+
+/// The files `readme-client-class-casing` reads: the SDK's README and its
+/// endpoint reference.
+const DOCS_FILES: [&str; 2] = ["README.md", "reference.md"];
+
+/// `line` split into identifier runs and the single characters between them,
+/// so two lines compare token by token.
+fn tokens(line: &str) -> Vec<&str> {
+    let mut out = Vec::new();
+    let mut start = None;
+    for (index, ch) in line.char_indices() {
+        let word = ch.is_alphanumeric() || ch == '_';
+        match (word, start) {
+            (true, None) => start = Some(index),
+            (false, Some(begun)) => {
+                out.push(&line[begun..index]);
+                out.push(&line[index..index + ch.len_utf8()]);
+                start = None;
+            }
+            (false, None) => out.push(&line[index..index + ch.len_utf8()]),
+            (true, Some(_)) => {}
+        }
+    }
+    if let Some(begun) = start {
+        out.push(&line[begun..]);
+    }
+    out
+}
+
+/// `readme-client-class-casing`: in `README.md` or `reference.md`, the two lines
+/// are equal but for identifiers that differ only in letter case, and at each
+/// one crozier names a class its modules define where Fern names one that
+/// neither tree defines.
+fn readme_client_class_casing(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return false;
+    }
+    let (fern, crozier) = (tokens(fern), tokens(crozier));
+    if fern.len() != crozier.len() {
+        return false;
+    }
+    let mut renamed = 0;
+    for (fern, crozier) in fern.iter().zip(&crozier) {
+        if fern == crozier {
+            continue;
+        }
+        if !fern.eq_ignore_ascii_case(crozier)
+            || !pair.context.crozier_classes().contains(*crozier)
+            || pair.context.reference_classes().contains(*fern)
+            || pair.context.crozier_classes().contains(*fern)
+        {
+            return false;
+        }
+        renamed += 1;
+    }
+    renamed > 0
+}
+
+/// Whether `rel` is an SDK's client wrapper, where the identity headers are set.
+fn is_client_wrapper(rel: &str) -> bool {
+    rel == "core/client_wrapper.py" || rel.ends_with("/core/client_wrapper.py")
+}
+
+/// `sdk-identity-header-prefix`: in the client wrapper, crozier's line is Fern's
+/// `"X-Fern-…"` header line with the prefix `X-Crozier-` and nothing else
+/// changed.
+fn sdk_identity_header_prefix(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    is_client_wrapper(pair.rel)
+        && fern.trim_start().starts_with("\"X-Fern-")
+        && fern.replacen("\"X-Fern-", "\"X-Crozier-", 1) == crozier
+}
+
+/// `(indentation, header, value)` of a client-wrapper header line
+/// `<indent>"<prefix>SDK-<Name|Version>": <value>,` whose prefix is `prefix`.
+fn identity_pair_line<'l>(line: &'l str, prefix: &str) -> Option<(&'l str, &'l str, &'l str)> {
+    let indent = &line[..line.len() - line.trim_start().len()];
+    let rest = line.trim_start().strip_prefix('"')?.strip_prefix(prefix)?;
+    let (header, value) = ["SDK-Name\": ", "SDK-Version\": "]
+        .iter()
+        .find_map(|header| rest.strip_prefix(header).map(|value| (*header, value)))?;
+    let value = value.strip_suffix(',')?;
+    (value.len() >= 2 && value.starts_with('"') && value.ends_with('"'))
+        .then_some((indent, header, value))
+}
+
+/// `sdk-name-version-headers`, aligned half: in the client wrapper, Fern's
+/// `X-Fern-SDK-Name`/`-Version` line and crozier's `X-Crozier-` one name the
+/// same header at the same indentation with different string values.
+fn sdk_name_version_header(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !is_client_wrapper(pair.rel) {
+        return false;
+    }
+    match (
+        identity_pair_line(fern, "X-Fern-"),
+        identity_pair_line(crozier, "X-Crozier-"),
+    ) {
+        (Some(fern), Some(crozier)) => {
+            fern.0 == crozier.0 && fern.1 == crozier.1 && fern.2 != crozier.2
+        }
+        _ => false,
+    }
+}
+
+/// `sdk-name-version-headers`, added half: in the client wrapper, crozier
+/// writes an `X-Crozier-SDK-Name`/`-Version` line where the reference has none.
+fn sdk_name_version_header_added(pair: &Pair<'_>, crozier: &str) -> bool {
+    is_client_wrapper(pair.rel)
+        && identity_pair_line(crozier, "X-Crozier-").is_some()
+        && !pair
+            .fern
+            .iter()
+            .any(|line| identity_pair_line(line, "X-Fern-").is_some())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn pair<'a>(rel: &'a str, fern: &'a [&'a str], crozier: &'a [&'a str]) -> Pair<'a> {
+        static EMPTY: OnceLock<Context> = OnceLock::new();
+        Pair {
+            rel,
+            fern,
+            crozier,
+            context: EMPTY.get_or_init(Context::default),
+        }
+    }
+
+    #[test]
+    fn the_compiled_catalog_is_valid_and_every_entry_has_a_rule() {
+        let entries = parse(CATALOG_SOURCE).unwrap_or_else(|failures| panic!("{failures:#?}"));
+        assert_eq!(
+            entries
+                .iter()
+                .map(|entry| entry.id.as_str())
+                .collect::<Vec<_>>(),
+            RULE_IDS
+        );
+        assert_eq!(catalog(), entries.as_slice());
+        assert!(find("readme-client-class-casing").is_some());
+        assert!(find("no-such-departure").is_none());
+        assert!(entries.iter().any(|entry| entry.kind == Kind::FernDefect));
+    }
+
+    /// The evidence notes are committed beside the catalog.
+    #[test]
+    fn every_evidence_note_is_committed() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        for entry in catalog() {
+            assert!(
+                root.join(&entry.evidence).is_file(),
+                "departure `{}`: evidence {} is not committed",
+                entry.id,
+                entry.evidence
+            );
+        }
+    }
+
+    fn entry_text(id: &str, kind: &str, evidence: &str) -> String {
+        format!(
+            "- id: {id}\n  kind: {kind}\n  trigger: t\n  fern: f\n  crozier: c\n  reason: r\n  \
+             evidence: {evidence}\n"
+        )
+    }
+
+    fn failures_of(text: &str) -> Vec<String> {
+        parse(text).expect_err("the catalog is refused")
+    }
+
+    fn assert_refused(text: &str, says: &str) {
+        let failures = failures_of(text);
+        assert!(
+            failures.iter().any(|failure| failure.contains(says)),
+            "expected a failure saying {says:?}: {failures:#?}"
+        );
+    }
+
+    #[test]
+    fn a_broken_catalog_is_refused_naming_the_entry() {
+        let evidence = "docs/departures/evidence/x.md";
+        let good = |id: &str| entry_text(id, "branding", evidence);
+        // Out of order, duplicated.
+        assert_refused(
+            &format!(
+                "{}{}",
+                good("sdk-name-version-headers"),
+                good("sdk-identity-header-prefix")
+            ),
+            "departure `sdk-identity-header-prefix`: follows `sdk-name-version-headers`",
+        );
+        assert_refused(
+            &format!(
+                "{}{}",
+                good("sdk-identity-header-prefix"),
+                good("sdk-identity-header-prefix")
+            ),
+            "the id appears twice",
+        );
+        // Not a slug, no rule, a rule with no entry.
+        assert_refused(&good("Not_A_Slug"), "departure `Not_A_Slug`: the id is not");
+        assert_refused(&good("unruled-departure"), "no rule of that id");
+        assert_refused(
+            &good("sdk-identity-header-prefix"),
+            "departure rule `readme-client-class-casing` has no catalog entry",
+        );
+        // An empty field, evidence elsewhere.
+        assert_refused(
+            &good("sdk-identity-header-prefix").replace("reason: r", "reason: ''"),
+            "`reason` is empty",
+        );
+        for evidence in ["docs/elsewhere/x.md", "docs/departures/evidence/../x.md"] {
+            assert_refused(
+                &entry_text("sdk-identity-header-prefix", "branding", evidence),
+                "is not a note under docs/departures/evidence/",
+            );
+        }
+        // An unknown kind or key, a missing key.
+        assert_refused(
+            &entry_text("sdk-identity-header-prefix", "cosmetic", evidence),
+            "holding exactly the keys id, kind, trigger, fern, crozier, reason, evidence",
+        );
+        assert_refused(
+            &format!("{}  extra: x\n", good("sdk-identity-header-prefix")),
+            "unknown field `extra`",
+        );
+        assert_refused(
+            &good("sdk-identity-header-prefix").replace("  fern: f\n", ""),
+            "missing field `fern`",
+        );
+    }
+
+    #[test]
+    fn the_reference_renders_every_kind_and_entry() {
+        let rendered = render_reference(catalog());
+        assert!(rendered.starts_with(REFERENCE_MARKERS.0), "{rendered}");
+        assert!(
+            rendered.trim_end().ends_with(REFERENCE_MARKERS.1),
+            "{rendered}"
+        );
+        for kind in Kind::ALL {
+            assert!(rendered.contains(&format!("| `{}` |", kind.as_str())));
+        }
+        for entry in catalog() {
+            assert!(rendered.contains(&format!("### `{}`", entry.id)));
+            assert!(rendered.contains(&format!("(../../{})", entry.evidence)));
+        }
+    }
+
+    /// `docs/departures/README.md` holds the rendered catalog. When the catalog
+    /// changes, regenerate it with
+    /// `CROZIER_UPDATE_DEPARTURES=1 cargo test --lib departures`.
+    #[test]
+    fn the_rendered_reference_is_current() {
+        let path =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/departures/README.md");
+        let page = std::fs::read_to_string(&path).expect("docs/departures/README.md");
+        let (begin, end) = REFERENCE_MARKERS;
+        let (Some(start), Some(stop)) = (page.find(begin), page.find(end)) else {
+            panic!("docs/departures/README.md holds no generated catalog markers");
+        };
+        let committed = &page[start..stop + end.len() + 1];
+        let rendered = render_reference(catalog());
+        if std::env::var_os("CROZIER_UPDATE_DEPARTURES").is_some() {
+            std::fs::write(&path, page.replacen(committed, &rendered, 1)).unwrap();
+            return;
+        }
+        assert!(
+            committed == rendered,
+            "docs/departures/README.md's catalog differs from assets/departures.yml; \
+             regenerate it with `CROZIER_UPDATE_DEPARTURES=1 cargo test --lib departures`"
+        );
+    }
+
+    #[test]
+    fn classes_are_read_from_top_level_python_class_lines_only() {
+        let context = Context::from_sources(
+            [
+                (
+                    "client.py",
+                    "class Acme:\n    class Inner:\nclass Async_2(x):\n",
+                ),
+                ("README.md", "class Ignored:\n"),
+            ],
+            [("a.py", "class  Spaced:\nclass :\n")],
+        );
+        assert_eq!(
+            context.reference_classes(),
+            &BTreeSet::from(["Acme".to_string(), "Async_2".to_string()])
+        );
+        assert!(context.crozier_classes().is_empty());
+        // Two trees on disk are read on first use; without trees, nothing.
+        let reference = tempfile::tempdir().unwrap();
+        let crozier = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(reference.path().join("pkg")).unwrap();
+        std::fs::write(reference.path().join("pkg/client.py"), "class Acme:\n").unwrap();
+        std::fs::write(reference.path().join("README.md"), "class Not:\n").unwrap();
+        let trees = Context::from_trees(reference.path(), crozier.path());
+        assert_eq!(
+            trees.reference_classes(),
+            &BTreeSet::from(["Acme".to_string()])
+        );
+        assert!(trees.crozier_classes().is_empty());
+        assert!(Context::default().reference_classes().is_empty());
+    }
+
+    #[test]
+    fn the_casing_rule_holds_only_where_crozier_names_the_defined_class() {
+        let context = Context::from_sources(
+            [("client.py", "class LanternHarborApi:\n")],
+            [("client.py", "class LanternHarborApi:\n")],
+        );
+        let lines: [&str; 0] = [];
+        let pair = Pair {
+            rel: "README.md",
+            fern: &lines,
+            crozier: &lines,
+            context: &context,
+        };
+        let holds = |fern: &str, crozier: &str| readme_client_class_casing(&pair, fern, crozier);
+        assert!(holds(
+            "from LanternHarbor import LanternharborApi",
+            "from LanternHarbor import LanternHarborApi"
+        ));
+        // Anything else on the line differing, a different word, the same
+        // line, or Fern's name being defined: not this departure.
+        assert!(!holds(
+            "from LanternHarbor import LanternharborApi",
+            "from LanternHarbor import LanternHarborApi, X"
+        ));
+        assert!(!holds(
+            "client = LanternharborApi()",
+            "client = LanternHarborApi( )"
+        ));
+        assert!(!holds("x = Lanternharbor", "x = LanternHarbor"));
+        assert!(!holds("x = LanternHarborApi", "x = LanternHarborApi"));
+        assert!(!holds("x = LanternHarborApi", "x = lanternharborapi"));
+        let defined = Context::from_sources(
+            [(
+                "client.py",
+                "class LanternharborApi:\nclass LanternHarborApi:\n",
+            )],
+            [("client.py", "class LanternHarborApi:\n")],
+        );
+        let pair = Pair {
+            context: &defined,
+            ..pair
+        };
+        assert!(!readme_client_class_casing(
+            &pair,
+            "x = LanternharborApi",
+            "x = LanternHarborApi"
+        ));
+        // Only the README and the endpoint reference.
+        let other = Pair {
+            rel: "docs/README.md",
+            context: &context,
+            ..pair
+        };
+        assert!(!readme_client_class_casing(
+            &other,
+            "x = LanternharborApi",
+            "x = LanternHarborApi"
+        ));
+    }
+
+    #[test]
+    fn the_header_rules_recognise_only_identity_header_lines() {
+        let lines: [&str; 0] = [];
+        let wrapper = pair("src/acme/core/client_wrapper.py", &lines, &lines);
+        assert!(sdk_identity_header_prefix(
+            &wrapper,
+            "    \"X-Fern-Language\": \"Python\",",
+            "    \"X-Crozier-Language\": \"Python\","
+        ));
+        assert!(!sdk_identity_header_prefix(
+            &wrapper,
+            "    \"X-Fern-Language\": \"Python\",",
+            "    \"X-Crozier-Language\": \"Pythn\","
+        ));
+        assert!(!sdk_identity_header_prefix(
+            &pair("client.py", &lines, &lines),
+            "\"X-Fern-Language\": \"Python\",",
+            "\"X-Crozier-Language\": \"Python\","
+        ));
+        assert!(!sdk_identity_header_prefix(&wrapper, "x = 1", "x = 1"));
+
+        assert!(sdk_name_version_header(
+            &wrapper,
+            "    \"X-Fern-SDK-Version\": \"1.4.2\",",
+            "    \"X-Crozier-SDK-Version\": \"0.0.0\","
+        ));
+        // The same value is the prefix rule's; another header, indentation or
+        // shape is no departure.
+        for (fern, crozier) in [
+            (
+                "\"X-Fern-SDK-Name\": \"a\",",
+                "\"X-Crozier-SDK-Name\": \"a\",",
+            ),
+            (
+                "\"X-Fern-SDK-Name\": \"a\",",
+                "\"X-Crozier-SDK-Version\": \"b\",",
+            ),
+            (
+                "  \"X-Fern-SDK-Name\": \"a\",",
+                "\"X-Crozier-SDK-Name\": \"b\",",
+            ),
+            ("\"X-Fern-SDK-Name\": a,", "\"X-Crozier-SDK-Name\": \"b\","),
+            (
+                "\"X-Fern-SDK-Name\": \"a\"",
+                "\"X-Crozier-SDK-Name\": \"b\"",
+            ),
+            (
+                "\"X-Fern-Language\": \"a\",",
+                "\"X-Crozier-Language\": \"b\",",
+            ),
+        ] {
+            assert!(!sdk_name_version_header(&wrapper, fern, crozier), "{fern}");
+        }
+
+        let without = ["headers = {", "}"];
+        let added = pair("core/client_wrapper.py", &without, &lines);
+        assert!(sdk_name_version_header_added(
+            &added,
+            "    \"X-Crozier-SDK-Name\": \"acme\","
+        ));
+        assert!(!sdk_name_version_header_added(
+            &added,
+            "    \"X-Crozier-Language\": \"Python\","
+        ));
+        // Where the reference has the pair, an added line is no departure.
+        let with = ["    \"X-Fern-SDK-Name\": \"acme\","];
+        assert!(!sdk_name_version_header_added(
+            &pair("core/client_wrapper.py", &with, &lines),
+            "    \"X-Crozier-SDK-Version\": \"0.0.0\","
+        ));
+        assert!(!sdk_name_version_header_added(
+            &pair("client.py", &without, &lines),
+            "    \"X-Crozier-SDK-Name\": \"acme\","
+        ));
+    }
+
+    fn lines(text: &str) -> Vec<&str> {
+        text.split('\n').collect()
+    }
+
+    #[test]
+    fn the_metadata_rule_takes_only_generator_config_differences() {
+        let crozier_text = "{\n  \"cliVersion\": \"5.67.1\",\n  \"generatorConfig\": {\n    \
+                            \"pydantic_config\": {\n      \"enum_type\": \"python_enums\"\n    \
+                            }\n  },\n  \"invokedBy\": \"ci\"\n}";
+        let crozier = lines(crozier_text);
+        let region = |fern: &str, rel: &str| {
+            let fern = lines(fern);
+            metadata_generator_config(&pair(rel, &fern, &crozier)).unwrap()
+        };
+        // A different value inside the block.
+        let literals = crozier_text.replace("python_enums", "literals");
+        assert_eq!(
+            region(&literals, FERN_METADATA),
+            Some(Region {
+                fern: 4..5,
+                crozier: 4..5
+            })
+        );
+        // No block on Fern's side at all.
+        let absent = "{\n  \"cliVersion\": \"5.67.1\",\n  \"invokedBy\": \"ci\"\n}";
+        assert_eq!(
+            region(absent, FERN_METADATA),
+            Some(Region {
+                fern: 2..2,
+                crozier: 2..7
+            })
+        );
+        // Anything else differing too, another path, or no difference at all.
+        assert_eq!(
+            region(&literals.replace("ci", "manual"), FERN_METADATA),
+            None
+        );
+        assert_eq!(region(&literals, "types/user_metadata.json"), None);
+        assert_eq!(region(crozier_text, FERN_METADATA), None);
+    }
+
+    #[test]
+    fn the_metadata_rule_takes_a_final_block_and_its_comma() {
+        let crozier = lines(
+            "{\n  \"generatorVersion\": \"5.20.0\",\n  \"generatorConfig\": {\n    \"x\": 1\n  }\n}",
+        );
+        let fern = lines("{\n  \"generatorVersion\": \"5.20.0\"\n}");
+        assert_eq!(
+            metadata_generator_config(&pair(FERN_METADATA, &fern, &crozier)).unwrap(),
+            Some(Region {
+                fern: 1..2,
+                crozier: 1..5
+            })
+        );
+        // A comma change elsewhere is not the block's.
+        let fern = lines("{\n  \"generatorVersion\": \"5.20.0\"\n,}");
+        assert_eq!(
+            metadata_generator_config(&pair(FERN_METADATA, &fern, &crozier)).unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn the_import_order_rule_takes_only_a_reordered_type_checking_block() {
+        let crozier = lines(
+            "import typing\n\nif typing.TYPE_CHECKING:\n    from .a import A\n    from .b import B\n\
+             _dynamic_imports = {}\n",
+        );
+        let region = |fern: &str, rel: &str| {
+            let fern = lines(fern);
+            init_type_checking_import_order(&pair(rel, &fern, &crozier)).unwrap()
+        };
+        let reordered = "import typing\n\nif typing.TYPE_CHECKING:\n    from .b import B\n    \
+                         from .a import A\n_dynamic_imports = {}\n";
+        assert_eq!(
+            region(reordered, "src/acme/__init__.py"),
+            Some(Region {
+                fern: 3..5,
+                crozier: 3..5
+            })
+        );
+        assert!(region(reordered, "__init__.py").is_some());
+        // Another import, another module, no block, or the same order.
+        let other = reordered.replace("from .b import B", "from .c import C");
+        assert_eq!(region(&other, "__init__.py"), None);
+        assert_eq!(region(reordered, "client.py"), None);
+        assert_eq!(region("import typing\n", "__init__.py"), None);
+        assert_eq!(region(&crozier.join("\n"), "__init__.py"), None);
+        // A block line that is not indented one level cannot be sorted alone.
+        let shallow = "if typing.TYPE_CHECKING:\n  from .b import B\n    from .a import A\nx\n";
+        assert_eq!(region(shallow, "__init__.py"), None);
+    }
+
+    #[test]
+    fn ruff_refusing_the_input_surfaces_as_an_error() {
+        let error = ruff_isort("def (:\n").unwrap_err();
+        assert!(error.contains("ruff isort failed"), "{error}");
+        assert_eq!(
+            ruff_isort("import typing\nimport enum\n").unwrap(),
+            "import enum\nimport typing\n"
+        );
+    }
+
+    #[test]
+    fn tokens_split_identifiers_from_everything_between_them() {
+        assert_eq!(
+            tokens("from a.b import C, déjà_2"),
+            ["from", " ", "a", ".", "b", " ", "import", " ", "C", ",", " ", "déjà_2"]
+        );
+        assert_eq!(tokens("(x)"), ["(", "x", ")"]);
+        assert!(tokens("").is_empty());
+    }
+
+    #[test]
+    fn the_differing_window_drops_common_leading_and_trailing_lines() {
+        assert_eq!(differing_window(&["a", "b"], &["a", "b"]), None);
+        assert_eq!(
+            differing_window(&["a", "x", "c"], &["a", "y", "z", "c"]),
+            Some(Region {
+                fern: 1..2,
+                crozier: 1..3
+            })
+        );
+        assert_eq!(
+            differing_window(&["a"], &["a", "a"]),
+            Some(Region {
+                fern: 1..1,
+                crozier: 1..2
+            })
+        );
+    }
+
+    #[test]
+    fn every_kind_has_a_spelling_and_a_meaning() {
+        let spellings: BTreeSet<&str> = Kind::ALL.iter().map(|kind| kind.as_str()).collect();
+        assert_eq!(spellings.len(), Kind::ALL.len());
+        for kind in Kind::ALL {
+            assert!(!kind.meaning().is_empty());
+            let parsed: Kind = serde_yaml_ng::from_str(kind.as_str()).unwrap();
+            assert_eq!(parsed, kind);
+        }
+    }
+}

@@ -17,7 +17,7 @@ exit_code="${EXIT_CODE:-}"
 [[ "$exit_code" =~ ^[0-9]+$ ]] || die "EXIT_CODE '$exit_code' is not an exit status" \
   "pass the status crozier compare exited with"
 
-if [ -z "${REPORT:-}" ] || ! jq -e '.schema_version == 1' "$REPORT" >/dev/null 2>&1; then
+if [ -z "${REPORT:-}" ] || ! jq -e '.schema_version == 1 or .schema_version == 2' "$REPORT" >/dev/null 2>&1; then
   # Exit 1 before any reference ran (a path that does not exist, an unwritable
   # --json target) leaves no report; anything else without one is a broken run.
   printf '## crozier compare\n\n'
