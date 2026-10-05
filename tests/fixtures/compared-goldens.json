@@ -427,25 +427,6 @@
           "reference.md",
           "src/seed/client.py",
           "src/seed/core/client_wrapper.py"
-        ],
-        "scaffolding": [
-          ".github/workflows/ci.yml",
-          ".gitignore",
-          "poetry.lock",
-          "snippet.json",
-          "tests/custom/test_client.py",
-          "tests/utils/__init__.py",
-          "tests/utils/assets/models/__init__.py",
-          "tests/utils/assets/models/circle.py",
-          "tests/utils/assets/models/color.py",
-          "tests/utils/assets/models/object_with_defaults.py",
-          "tests/utils/assets/models/object_with_optional_field.py",
-          "tests/utils/assets/models/shape.py",
-          "tests/utils/assets/models/square.py",
-          "tests/utils/assets/models/undiscriminated_shape.py",
-          "tests/utils/test_http_client.py",
-          "tests/utils/test_query_encoding.py",
-          "tests/utils/test_serialization.py"
         ]
       }
     },

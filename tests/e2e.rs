@@ -979,11 +979,14 @@ fn corpus_carve_outs(c: &Corpus) -> Vec<(&'static str, Vec<&'static str>)> {
 }
 
 /// [`corpus_carve_outs`] as the inventory records them: only the kinds that
-/// cover a file.
+/// cover a file, and never repository scaffolding — repository-only files
+/// crozier never emits, so an entry naming one already fails at every
+/// comparison (crozier wrote no such file) and at the corpus gate's own
+/// carve-out check, without the inventory restating their paths.
 fn recorded_carve_outs(c: &Corpus) -> std::collections::BTreeMap<String, Vec<String>> {
     corpus_carve_outs(c)
         .into_iter()
-        .filter(|(_, files)| !files.is_empty())
+        .filter(|(slug, files)| *slug != "scaffolding" && !files.is_empty())
         .map(|(slug, files)| {
             (
                 slug.to_string(),

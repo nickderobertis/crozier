@@ -234,7 +234,8 @@ registry through the same loader, which validates every entry against
 [`tests/fixtures/compared-goldens.json`](../tests/fixtures/compared-goldens.json):
 each golden a comparison reads, the files in it no comparison reads (an
 overlay's manifest; the provenance record is never walked), and the corpus's
-file-level carve-outs. `tests/e2e.rs` derives that inventory from the
+file-level carve-outs other than repository scaffolding, which crozier never
+emits, so an entry on it fails every comparison anyway. `tests/e2e.rs` derives that inventory from the
 comparisons' own registrations, and `compared_goldens_inventory_is_current`
 fails, printing the command that regenerates it, when the committed copy
 differs — after registering a corpus, an overlay or a flat golden, for
