@@ -1,9 +1,15 @@
 import asyncio
 import json
+import pathlib
 import sys
 
 import httpx
 
+USAGE = "usage: body-query-parameter-value.py <generated SDK src directory> query-value|body-value"
+if len(sys.argv) != 3 or sys.argv[2] not in ("query-value", "body-value"):
+    sys.exit(USAGE)
+if not (pathlib.Path(sys.argv[1]) / "fern" / "__init__.py").is_file():
+    sys.exit(f"{sys.argv[1]}: no generated `fern` package here; pass the SDK's src directory\n{USAGE}")
 sys.path.insert(0, sys.argv[1])
 from fern import AsyncFernApi, FernApi
 from fern.core.api_error import ApiError
