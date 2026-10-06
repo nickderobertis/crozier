@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.103](https://github.com/nickderobertis/crozier/compare/v0.0.102...v0.0.103) - 2026-10-06
+
+### Fixed
+
+- *(emit)* match Fern on README casing, example imports and example values ([#415](https://github.com/nickderobertis/crozier/pull/415))
+
 ## [0.0.102](https://github.com/nickderobertis/crozier/compare/v0.0.101...v0.0.102) - 2026-10-06
 
 ### Fixed
