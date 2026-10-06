@@ -4223,17 +4223,27 @@ fn uses_codegen_request_body_name(op: &Operation) -> bool {
 
 fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
     op.responses.iter().any(|(code, resp)| {
+        // A binary *media type* loses to an `application/json` declared beside it
+        // — oSPARC's `create_captcha` is `image/png: {}` next to an
+        // `application/json` and its golden returns `typing.Any`, while
+        // flowdapt's `get_plugin_file` is a schemaless `application/octet-stream`
+        // alone and streams — and to a text media type declared before it:
+        // measured at Fern 5.20.0, `{text/plain: {}, application/octet-stream: {}}`
+        // returns `str` and the same two the other way round stream, so the first
+        // of the two kinds in the content map decides.
+        let download_first = resp
+            .content
+            .keys()
+            .find(|media_type| {
+                is_download_media_type(media_type) || is_text_response_media(media_type)
+            })
+            .is_some_and(|media_type| is_download_media_type(media_type));
         code.starts_with('2')
-            && resp.content.iter().any(|(media_type, media)| {
-                // A binary *media type* loses to an `application/json` declared
-                // beside it — oSPARC's `create_captcha` is `image/png: {}` next
-                // to an `application/json` and its golden returns `typing.Any`,
-                // while flowdapt's `get_plugin_file` is a schemaless
-                // `application/octet-stream` alone and streams. A binary
-                // *schema* wins either way: apicurio's `application/zip` names
-                // one beside an `application/json` and streams.
-                is_download_media_type(media_type) && !resp.content.contains_key("application/json")
-                    || media.schema.as_ref().is_some_and(|schema| {
+            && (download_first && !resp.content.contains_key("application/json")
+                // A binary *schema* wins either way: apicurio's `application/zip`
+                // names one beside an `application/json` and streams.
+                || resp.content.values().any(|media| {
+                    media.schema.as_ref().is_some_and(|schema| {
                         let schema = schema
                             .reference
                             .as_deref()
@@ -4242,7 +4252,7 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
                         schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
                             && schema.format.as_deref() == Some("binary")
                     })
-            })
+                }))
     })
 }
 
@@ -18289,6 +18299,25 @@ mod tests {
                 false,
             ),
             (serde_json::json!({ "application/zip": {} }), false),
+            // The first of a text and a download media type decides.
+            (
+                serde_json::json!({ "text/plain": {}, "Content-type of file": {},
+                    "application/octet-stream": {} }),
+                false,
+            ),
+            (
+                serde_json::json!({ "application/octet-stream": {}, "text/plain": {} }),
+                true,
+            ),
+            (
+                serde_json::json!({ "audio/mpeg": {}, "text/csv": {} }),
+                true,
+            ),
+            (
+                serde_json::json!({ "text/plain": { "schema": { "type": "string" } },
+                    "application/octet-stream": {} }),
+                false,
+            ),
         ] {
             assert_eq!(
                 super::is_binary_response(&doc, &op(content.clone())),
