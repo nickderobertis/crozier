@@ -23,10 +23,10 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 578 features. By category, 492 are `golden`, 52
-`limitations`, 12 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 580 features. By category, 492 are `golden`, 52
+`limitations`, 14 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 578
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 580
 split four ways:
 
 - **490 carry byte-match evidence against a registered real-world
@@ -38,12 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
-- **12 rest on a hand-written fixture, a weaker proof than a real
+- **14 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. Seven read `search-incomplete`. Of those,
+  decided and none is registrable. Nine read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -53,6 +53,12 @@ split four ways:
   declared source; its
   [renewed search](openapi-surface/witness-search-union-shapes/README.md) read
   693 documents a bounded code search returned and found it `none-registrable`.
+  The last two, `request-body-described-inline-scalar` and
+  `response-status-space-suffixed`, have not been searched at any declared
+  source either; their
+  [renewed search](openapi-surface/witness-search-bodies-responses/README.md)
+  read 1,469 documents a bounded code search returned, and none declares
+  either.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
   490 and never count as a real-specification match.
@@ -72,16 +78,16 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-490 + 66 + 12 + 10 = 578.
+490 + 66 + 14 + 10 = 580.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 492 `golden` rows declare 920 handling sites in
+same way. The 492 `golden` rows declare 906 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv), and
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv), measured at commit
 `1b82d7c5d` over all 222 golden tests, with the records it links splits them
 three ways:
 
-- **858 are reached by a registered real specification.** A golden-only
+- **844 are reached by a registered real specification.** A golden-only
   witness executes the arm and its golden byte-matches.
 - **54 are reached only by a hand-written fixture.** An arm-level cover in
   [the hand-written fixtures](openapi-surface/handwritten/AGENTS.md) executes
@@ -110,7 +116,10 @@ three ways:
   that did, is reached on this measurement by corpus row 308,
   `yourbrand-ticketing`.
 
-858 + 54 + 5 + 3 = 920. No arm rests on a witness whose redistribution grant is
+844 + 54 + 5 + 3 = 906. Fourteen sites left the table with the two functions
+that served only the `Body_*` exemption and the HTTP Basic header drop,
+`form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
+committed measurement without them. No arm rests on a witness whose redistribution grant is
 disputed. `ref-pointer-composition-index`'s `ref_to_class` composition-index
 walk was reached only through corpus row 224 until that row was withdrawn for
 its disputed grant. It now rests on the hand-written fixture
@@ -183,7 +192,7 @@ class is yet one where crozier generates and Fern does not. A `generate`
 decision, which would write an SDK by default and refuse only under
 `fern-strict`, is the registry's to make, with a wire test proving the SDK.
 
-**What the census still cannot enumerate.** The 578 are what a selector over a
+**What the census still cannot enumerate.** The 580 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
 the census cannot measure the population beyond its own reach.
 
@@ -266,7 +275,10 @@ registrations added, and the four the closed and open empty-object disjunct of
 `anyof-anyof-variant`, `golden`. The naming and example branches of #361 add
 35 — 27 `golden` and 8 `gap` — bringing it to 577, and the component
 composition of one primitive (`component-same-primitive-union`), a `handwritten`
-row, to **578**. Counting only the
+row, to 578, and the described inline scalar request body
+(`request-body-described-inline-scalar`) and the status key spelled with a space
+and a suffix (`response-status-space-suffixed`), two `handwritten` rows, to
+**580**. Counting only the
 registered rows whose Fern golden crozier byte-matches as golden sources (#352)
 moved no row's category: every `golden` row's declarers include one.
 
@@ -404,7 +416,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-85, declared in `scripts/openapi-surface-census.py` and restated here, with a
+96, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -579,6 +591,56 @@ drift gate over the pair:
   response, chosen as `has_wildcard_binary_response` chooses it, serves `*/*`
   with an inline string schema of format `binary`: the endpoint mode
   `build_example_inner` reads before it renders any parameter example.
+- `operation.requestBody:body-prefixed-single-use` — one per Operation Object
+  other than a GET or HEAD whose request body's `application/json` schema is a
+  `$ref` to a `components.schemas` entry named `Body_…` that no other `$ref` of
+  the document names: FastAPI's embedded-body model, which
+  `inline_body_source_names` of `src/ir.rs` drops like any single-use body.
+- `operation.requestBody:titled-inline-container-oas-three-zero` — one per Operation
+  Object of an OpenAPI 3.0 document, declaring no parameter itself or on its
+  Path Item, whose request body's `application/json` schema is an inline array
+  or map (`additionalProperties` true or a schema, no `properties`) declaring a
+  `title`: the body `inline_container_carries_content_type` of `src/ir.rs` sends
+  the JSON content-type header for.
+- `operation.responses:empty-schema-success-oas-three-zero` — one per Operation Object of
+  an OpenAPI 3.0 document whose success response, declared inline rather than by
+  a Response `$ref`, holds an `application/json` media type whose `schema` is the
+  empty schema `{}` and no other media type: the unknown body
+  `response_may_be_empty` of `src/ir.rs` guards.
+- `operation.responses:schemaless-text-success` — one per Operation Object whose
+  success response holds a `text/*` media type other than `text/event-stream`
+  declaring no `schema`, and no `application/json` beside it: the body
+  `success_response` of `src/ir.rs` types `str`.
+- `operation.responses:schemaless-download-success` — one per Operation Object
+  whose success response holds an `audio/*`, `video/*` or `application/pdf`
+  media type declaring no `schema`, and no `application/json` beside it: the
+  download `is_download_media_type` of `src/ir.rs` streams.
+- `operation.requestBody:blank-description-optional-object` — one per Operation
+  Object declaring no parameter itself or on its Path Item whose request body's
+  `description` is the empty string and whose `application/json` schema, inline
+  or behind one local `$ref`, declares properties not all of which `required`
+  lists: the body crozier once sent without the JSON content-type header.
+- `operation.requestBody:described-inline-scalar` — one per Operation Object
+  declaring no parameter itself or on its Path Item whose request body's
+  `application/json` schema is an inline string, integer, number or boolean
+  declaring no `enum` and a `description`: the body `resolve_request_body` of
+  `src/ir.rs` sends with the JSON content-type header, where a `title` alone
+  does not.
+- `operation.requestBody:schemaless-json` — one per Operation Object whose
+  request body's content holds only JSON media types and none of them declares a
+  `schema`: the body `request_body_ignored` of `src/ir.rs` sends nothing for.
+- `operation.responses:schemaless-wav-success` — one per Operation Object whose
+  success response holds an `audio/wav` media type declaring no `schema`, and no
+  `application/json` beside it: the download `is_download_media_type` of
+  `src/ir.rs` streams.
+- `operation.responses:space-suffixed-status-key` — one per Responses Object key,
+  of an operation the Paths Object holds, that is a three-digit status code, a
+  space and further text (`429 (live)`): the spelling `response_key_status` of
+  `src/ir.rs` reads by its leading integer.
+- `operation.responses:suffixed-status-key` — one per Responses Object key, of
+  an operation the Paths Object holds, that begins with a digit and is neither a
+  three-digit status code nor an upper-case range (`4XX`): the spelling
+  `response_key_status` of `src/ir.rs` reads by its leading integer.
 - `openapi.paths:leading-literal-segment` — one per Paths Object key whose
   first non-empty `/`-separated segment is not wholly a `{expression}`
   template expression, which is the segment `src/ir.rs`'s `path_group`
@@ -730,7 +792,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Sixty-eight of the 85 are node-local**, which is what makes them one family:
+**Sixty-eight of the 96 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -738,7 +800,7 @@ in exactly that sense — a `$ref` *value* is one of the node's own declared
 fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further. The other
-seventeen — `operation.operationId:duplicate`,
+twenty-eight — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
@@ -748,11 +810,22 @@ seventeen — `operation.operationId:duplicate`,
 `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`,
 `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`,
 `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
-`schema.example:on-ref-to-union` and `schema.example:on-ref-to-alias` — read
-the document beyond the node, and say so in their own sentence. The first eight
-compare one document's own values against each other; the last nine read where
-the node stands (an operation's route, a request body's selected media type) or
-resolve one local `#/components/...` reference. Those two
+`schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`,
+`operation.requestBody:body-prefixed-single-use`,
+`operation.requestBody:titled-inline-container-oas-three-zero`,
+`operation.responses:empty-schema-success-oas-three-zero`,
+`operation.responses:schemaless-text-success`,
+`operation.responses:schemaless-download-success`,
+`operation.responses:suffixed-status-key`,
+`operation.requestBody:schemaless-json`,
+`operation.responses:schemaless-wav-success`,
+`operation.responses:space-suffixed-status-key`,
+`operation.requestBody:blank-description-optional-object` and
+`operation.requestBody:described-inline-scalar` — read the document beyond the
+node, and say so in their own sentence. The first eight compare one document's
+own values against each other; the last twenty read where the node stands (an
+operation's route, a request body's selected media type, the document's
+version) or resolve one local `#/components/...` reference. Those two
 numbers partition the closed list, and a check reconciles the split with it. Every
 document-reading predicate reads **the document context**: the census carries the
 document's own `components` maps, its route and request-body positions, and the
@@ -1453,10 +1526,10 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation),
   which `just check` now runs. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 242 sources (corpus rows through 312, after the withdrawals of rows
-  224 and 223, with the `crozier-property-name` feature target), and the walk
-  reads the **225** registered sources, of which
-  **225** carry a committed golden; the 17 others carry none and are acquisition
+  acquires 252 sources (corpus rows through 312 and 330 to 339, after the
+  withdrawals of rows 224 and 223, with the `crozier-property-name` feature
+  target), and the walk reads the **235** registered sources, of which
+  **235** carry a committed golden; the 17 others carry none and are acquisition
   evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -1496,14 +1569,14 @@ for either; each bullet below says where its number comes from.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 71 | 52 | 19 | 0 | 0 | 0 | 0 | 0 |
 | [`schemas`](openapi-surface/schemas.md) | 283 | 248 | 14 | 12 | 9 | 7 | 0 | 2 |
-| [`bodies-media`](openapi-surface/bodies-media.md) | 50 | 45 | 5 | 0 | 0 | 0 | 0 | 0 |
+| [`bodies-media`](openapi-surface/bodies-media.md) | 52 | 45 | 5 | 2 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 72 | 68 | 3 | 0 | 1 | 1 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 38 | 2 | 0 | 12 | 0 | 0 | 12 |
-| **total** | **578** | **492** | **52** | **12** | **22** | **8** | **0** | **14** |
+| **total** | **580** | **492** | **52** | **14** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **578** features and landed each in exactly one category:
-**492** `golden`, **52** `limitations`, **12** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **580** features and landed each in exactly one category:
+**492** `golden`, **52** `limitations`, **14** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -1654,7 +1727,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 578 rows carry 578 distinct
+**Each feature is classified exactly once.** The 580 rows carry 580 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Fifteen spec
@@ -1826,7 +1899,7 @@ is what makes the gap a *supply* problem rather than a closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 578](#what-the-walk-enumerated) is a
+[the walk's 580](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
 [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107

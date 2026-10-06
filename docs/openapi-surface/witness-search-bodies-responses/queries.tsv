@@ -1,0 +1,21 @@
+selector	query	result_count	first_page_fetched
+operation.requestBody:body-prefixed-single-use	"Body_" "requestBody" "application/json" filename:openapi.json	3512	100
+operation.requestBody:body-prefixed-single-use	"Body_" "requestBody:" "application/json:" filename:openapi.yaml	1272	100
+operation.responses:empty-schema-success-oas-three-zero	"3.0.2" "Successful Response" "schema" filename:openapi.json	688	100
+operation.responses:empty-schema-success-oas-three-zero	"openapi: 3.0.2" "Successful Response" filename:openapi.yaml	562	100
+operation.requestBody:titled-inline-container-oas-three-zero	"3.0.2" "requestBody" "array" "Successful Response" filename:openapi.json	418	100
+operation.requestBody:titled-inline-container-oas-three-zero	"openapi: 3.0.2" "requestBody:" "type: array" filename:openapi.yaml	1486	100
+operation.responses:schemaless-text-success	"text/csv" "Successful Response" filename:openapi.json	172	100
+operation.responses:schemaless-text-success	"text/plain: {}" filename:openapi.yaml	186	100
+operation.responses:schemaless-download-success	"audio/mpeg" "Successful Response" filename:openapi.json	70	70
+operation.responses:schemaless-download-success	"application/pdf" "Successful Response" filename:openapi.json	256	100
+operation.responses:suffixed-status-key	"429 (" "responses" filename:openapi.json	27	27
+operation.responses:suffixed-status-key	"'429 (" "responses:" filename:openapi.yaml	0	0
+operation.requestBody:schemaless-json	"requestBody:" "application/json: {}" filename:openapi.yaml	670	100
+operation.requestBody:schemaless-json	"requestBody" "application/json" "content" "required" "Successful Response" filename:openapi.json	15520	100
+operation.responses:schemaless-wav-success	"audio/wav" "Successful Response" filename:openapi.json	88	88
+operation.responses:schemaless-wav-success	"audio/wav: {}" filename:openapi.yaml	3	3
+operation.requestBody:blank-description-optional-object	"requestBody:" "description: ''" filename:openapi.yaml	3632	100
+operation.requestBody:blank-description-optional-object	"requestBody" "\"description\": \"\"" "properties" filename:openapi.json	4056	100
+operation.requestBody:described-inline-scalar	"requestBody:" "application/json:" "schema:" "type: string" "description:" filename:openapi.yaml	77824	100
+operation.requestBody:described-inline-scalar	"requestBody" "application/json" "\"type\": \"string\"" "\"description\"" filename:openapi.json	48384	100

@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: Thermostat
+  version: 1.2.0
+paths:
+  /thermostat/label:
+    put:
+      operationId: set_label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: The name shown on the thermostat's display
+              type: string
+      responses:
+        '204':
+          description: Label stored
+  /thermostat/nickname:
+    put:
+      operationId: set_nickname
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              title: Nickname
+              type: string
+      responses:
+        '204':
+          description: Nickname stored
+  /thermostat/setpoint:
+    put:
+      operationId: set_setpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: The target temperature in degrees Celsius
+              type: number
+      responses:
+        '204':
+          description: Setpoint stored
+  /thermostat/offset:
+    put:
+      operationId: set_offset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              title: Offset
+              type: integer
+      responses:
+        '204':
+          description: Offset stored
+  /thermostat/eco:
+    put:
+      operationId: set_eco
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: boolean
+      responses:
+        '204':
+          description: Eco mode stored

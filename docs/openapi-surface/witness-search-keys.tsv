@@ -12,6 +12,8 @@ property-sole-anyof-composed-member	schema.properties>schema.anyOf:sole-member&s
 property-sole-anyof-empty-object-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
 property-sole-oneof-composed-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported
 property-sole-oneof-empty-object-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
+request-body-described-inline-scalar	operation.requestBody:described-inline-scalar	bodies-media.md	supported
+response-status-space-suffixed	operation.responses:space-suffixed-status-key	bodies-media.md	supported
 schema-example-array-null-element	schema.example:array-null-element	schemas.md	supported
 schema-example-fractional-on-integer	schema.example:fractional-on-integer	schemas.md	supported
 schema-example-on-ref-to-enum	schema.example:on-ref-to-enum	schemas.md	supported
