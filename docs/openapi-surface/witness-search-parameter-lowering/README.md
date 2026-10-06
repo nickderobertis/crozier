@@ -35,7 +35,7 @@ not exhaustive and each line reads `search-incomplete`.
 
 ## Renewed search
 
-Every declarer was screened with `scripts/witness_screen.py screen` — licence
+Every declarer was screened with `just witness-screen screen` — licence
 under [`../../corpus-licensing.md`](../../corpus-licensing.md), the bytes read at
 the pinned commit, and `fern check` and the generation at Fern CLI 5.67.1 with
 `fernapi/fern-python-sdk` 5.20.0 — except where the refusal registry already

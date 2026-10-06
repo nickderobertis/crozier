@@ -34,6 +34,10 @@ files:
     # tree each case's openapi.yml is byte-gated against, not crozier's code.
     # Each case's openapi.yml and fern.log stay linted.
     - "docs/openapi-surface/authored-probes/*/fern-expected/**"
+    # The measured parameter-lowering cases' Fern trees — the certified pair's
+    # vendored output, the tree each case's openapi.yml is byte-gated against,
+    # not crozier's code. Each case's openapi.yml and the README stay linted.
+    - "docs/fern-measurements/*/*/fern-expected/**"
     # screencomp visual-docs artifacts — generated captures, not hand-written
     # code: the committed SVG screenshots (each ~370KB of base64-embedded font),
     # the animated GIF, the digest baseline, and the vendored binary font. They

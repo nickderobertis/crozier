@@ -3728,6 +3728,20 @@ def operation_routes(document: Any) -> dict[int, tuple[str, str]]:
 # `Authorization` (`is_promotion_reserved_header`).
 UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie", "authorization"})
 
+# `parameter.schema:subset-header-string-default` ports the promotion rule of
+# `global_headers` — the three-quarters threshold, the string default, the
+# headers it never takes and the apiKey scheme names `is_auth_managed_header`
+# reads — so each function it reads is pinned by the normalized-body digest the
+# offline tier recomputes, as `UNION_PORT_DIGESTS` are: an edit there fails until
+# the port is read again.
+PARAMETER_PORT_DIGESTS = {
+    "global_headers": "7ff243e98bd3c60e",
+    "is_transport_managed_header": "c0b5057117ba1977",
+    "is_transport_managed_parameter": "a3891f0bee5ebb90",
+    "is_promotion_reserved_header": "b353ea53022d5e0f",
+    "is_auth_managed_header": "eb1879f6314209d6",
+}
+
 
 def header_operation_counts(document: Any) -> tuple[dict[str, int], int]:
     """header name -> the operations declaring it, and the number of operations.
