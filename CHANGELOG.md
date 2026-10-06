@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.102](https://github.com/nickderobertis/crozier/compare/v0.0.101...v0.0.102) - 2026-10-06
+
+### Fixed
+
+- *(ir)* match Fern on empty closed objects, type float and cycle imports ([#414](https://github.com/nickderobertis/crozier/pull/414))
+
 ## [0.0.101](https://github.com/nickderobertis/crozier/compare/v0.0.100...v0.0.101) - 2026-10-05
 
 ### Added
