@@ -1747,6 +1747,7 @@ tests/fixtures/groupe-psa/expected	src/fern/core/client_wrapper.py	39	sdk-identi
 tests/fixtures/groupe-psa/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/groupe-psa/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/groupe-psa/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+tests/fixtures/groupe-psa/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/hasura-metadata/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/hasura-metadata/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/hasura-metadata/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

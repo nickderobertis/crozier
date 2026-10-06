@@ -354,6 +354,11 @@
     "tests/fixtures/googleapis-monitoring-v1/expected": {},
     "tests/fixtures/googleapis-servicebroker/expected": {},
     "tests/fixtures/groupe-psa/expected": {},
+    "tests/fixtures/groupe-psa/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/hasura-metadata/expected": {},
     "tests/fixtures/helios-verifiable-api/expected": {},
     "tests/fixtures/helixdb-http-api/expected": {},

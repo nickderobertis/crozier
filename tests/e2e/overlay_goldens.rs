@@ -50,6 +50,7 @@ const KINDS: &[Kind] = &[
     //   an enum request body and response, and the dropped `core/enum.py`;
     // - `enum-name-sanitization`: values that need sanitizing into member names
     //   (`"0: Active"`) and an inline query-parameter enum of numeric strings;
+    // - `groupe-psa`: inline enum variants in composed properties;
     // - `enum-query-param`: an inline query-parameter enum on a nested resource;
     // - `enum-receiver-collision`: members whose names collide with `visit`'s
     //   receiver;
@@ -63,6 +64,7 @@ const KINDS: &[Kind] = &[
         fixtures: &[
             "exhaustive",
             "enum-name-sanitization",
+            "groupe-psa",
             "enum-query-param",
             "enum-receiver-collision",
             "openfigi.com",
