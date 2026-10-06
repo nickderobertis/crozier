@@ -1513,6 +1513,99 @@ fn empty_title_falls_back_to_client_package() {
     assert!(files.iter().any(|f| f.path.starts_with("src/client")));
 }
 
+fn render_registered_request_source(api: &str) -> HashMap<String, String> {
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/corpus-sources")
+        .join(api)
+        .join("openapi.json");
+    render(&std::fs::read_to_string(source).expect("read registered publisher source"))
+}
+
+fn generated_python_method<'a>(raw: &'a str, operation: &str) -> &'a str {
+    raw.split_once(&format!("\n    def {operation}("))
+        .expect("registered operation is generated")
+        .1
+        .split("\n    def ")
+        .next()
+        .expect("method body")
+}
+
+#[test]
+fn renders_appwrite_functions_create_inline_fields() {
+    let files = render_registered_request_source("appwrite.io-server");
+    let create = generated_python_method(&files["src/acme/functions/raw_client.py"], "create");
+    assert!(create.contains("json={"));
+    assert!(create.contains("timeout: typing.Optional[int] = OMIT"));
+    assert!(create.contains("execute: typing.Sequence[str]"));
+    assert!(create.contains("events: typing.Optional[typing.Sequence[str]] = OMIT"));
+}
+
+#[test]
+fn renders_milvus_vector_insert_with_per_field_conversion() {
+    let files = render_registered_request_source("milvus-restful-v2-3");
+    let insert = generated_python_method(
+        &files["src/acme/vector_operations_v2/raw_client.py"],
+        "insert",
+    );
+    assert!(insert.contains("\"data\": convert_and_respect_annotation_metadata("));
+    assert!(insert.contains("object_=data, annotation=PostV2VectordbEntitiesInsertRequestData"));
+}
+
+#[test]
+fn renders_komga_book_metadata_batch_with_object_map_conversion() {
+    let files = render_registered_request_source("komga");
+    let raw = &files["src/acme/books/raw_client.py"];
+    let update = generated_python_method(raw, "update_book_metadata_by_batch");
+    assert!(update.contains("request: typing.Dict[str, BookMetadataUpdateDto]"));
+    assert!(update.contains("json=convert_and_respect_annotation_metadata("));
+    assert!(update.contains("annotation=typing.Dict[str, BookMetadataUpdateDto]"));
+}
+
+#[test]
+fn renders_komga_get_all_books_with_array_query_typing() {
+    let files = render_registered_request_source("komga");
+    let get = generated_python_method(
+        &files["src/acme/books/raw_client.py"],
+        "get_all_books_deprecated",
+    );
+    assert!(get.contains("library_id: typing.Optional[typing.Union[str, typing.Sequence[str]]]"));
+    assert!(get.contains("\"library_id\": library_id"));
+}
+
+#[test]
+fn renders_qakka_send_message_binary_with_its_queue_path() {
+    let files = render_registered_request_source("apache.org-qakka");
+    let send = generated_python_method(
+        &files["src/acme/queues/raw_client.py"],
+        "send_message_binary",
+    );
+    assert!(send.contains("queue_name: str"));
+    assert!(send.contains("encode_path_param(queue_name)"));
+    assert!(send.contains("content=request,"));
+    assert!(send.contains("\"content-type\": \"application/octet-stream\","));
+}
+
+#[test]
+fn renders_nextgen_care_team_post_with_a_required_unknown_body_and_typed_error() {
+    let files = render_registered_request_source("nextgen");
+    let post = generated_python_method(
+        &files["src/acme/care_team_members/raw_client.py"],
+        "post_base_url_persons_person_id_chart_care_team_members",
+    );
+    assert!(post.contains("request: typing.Any,"));
+    assert!(!post.contains("request: typing.Optional[typing.Any] = None"));
+    assert!(post.contains("json=request,"));
+    assert!(post.contains("if _response.status_code == 400:"));
+    assert!(post.contains("raise BadRequestError("));
+    assert!(files.contains_key("src/acme/errors/bad_request_error.py"));
+    let errors = &files["src/acme/errors/__init__.py"];
+    assert!(errors.contains("_dynamic_imports"));
+    assert!(errors.contains("\"BadRequestError\""));
+    assert!(files["pyproject.toml"].contains("name = \"acme\""));
+    assert!(files.contains_key("requirements.txt"));
+    assert!(files.contains_key(".fern/metadata.json"));
+}
+
 /// Render the real exhaustive spec in-process so the endpoint/error/scaffolding
 /// branches (exercised only by the binary e2e, which coverage skips) are measured
 /// here too. Byte-exactness is the e2e's job; this asserts the shapes are present.

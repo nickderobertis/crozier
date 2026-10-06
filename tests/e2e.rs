@@ -8524,9 +8524,10 @@ fn eos_extra_fields_forbid_matches_fern_output() {
 fn med_anvisa_price_matches_fern_output() {
     assert_committed_corpus_matches(&MED_ANVISA_PRICE);
     let spec = corpus_spec(MED_ANVISA_PRICE.api).expect("registered medication-price source");
-    let document: serde_yaml_ng::Value =
-        serde_yaml_ng::from_str(&std::fs::read_to_string(spec).expect("read medication-price source"))
-            .expect("parse medication-price source");
+    let document: serde_yaml_ng::Value = serde_yaml_ng::from_str(
+        &std::fs::read_to_string(spec).expect("read medication-price source"),
+    )
+    .expect("parse medication-price source");
     let parameter = &document["paths"]["/medication"]["get"]["parameters"][1];
     assert_eq!(parameter["name"].as_str(), Some("value"));
     assert!(parameter.get("schema").is_none());
