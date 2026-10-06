@@ -6,8 +6,8 @@
       "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/base.llmlint.yml",
       "pin": "1",
       "file": "llmlint-plugins/base.llmlint.yml",
-      "version": "1.12.0",
-      "sha256": "53addeeb6e35958d5a248b240f2eef586b2c56fae701aec3d71fe1d652d2e646",
+      "version": "1.13.0",
+      "sha256": "9085d304632883bf3ca59441db3354c5e561ffa672d3811ee58dcbcd7b42f20e",
       "rules": [
         "agents_md_durable_and_terse",
         "boundary_inputs_validated",
@@ -71,8 +71,8 @@
       "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/ci.llmlint.yml",
       "pin": "1",
       "file": "llmlint-plugins/ci.llmlint.yml",
-      "version": "1.4",
-      "sha256": "afb89143986d5f8737ea6143e77bef49f720ec54170bd9bca302ae38054fad2f",
+      "version": "1.5",
+      "sha256": "d087a854539f9003cfc77a352f5096d5d43b9ec413676c76c27d4fb3c62fd160",
       "rules": [
         "ci_invokes_gate_recipe_not_inline_stages",
         "external_service_suite_stays_out_of_the_affected_tier",
@@ -82,11 +82,22 @@
       ]
     },
     {
+      "name": "releasing",
+      "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/releasing.llmlint.yml",
+      "pin": "1",
+      "file": "llmlint-plugins/releasing.llmlint.yml",
+      "version": "1.1",
+      "sha256": "81529255644e9ad3c402028ef6aa2a3cc59c01623fbc3f0f3fa673d672b3c394",
+      "rules": [
+        "release_does_not_regate_an_already_swept_commit"
+      ]
+    },
+    {
       "name": "config-lint",
       "url": "https://raw.githubusercontent.com/nickderobertis/llmlint/main/assets/config_lint.yml",
       "pin": "1",
       "bundled": true,
-      "captured_with_llmlint": "0.4.1",
+      "captured_with_llmlint": "0.4.4",
       "rules": [
         "description_and_relevance_are_concise",
         "description_omits_already_excluded_situations",
