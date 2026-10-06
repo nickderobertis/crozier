@@ -5463,10 +5463,13 @@ paths:
 /// The `title` on `Message` is load bearing, for the reason
 /// `anonymous_request_metadata_and_schema_examples_drive_fern_shapes` records: a
 /// flattened body over an untitled surviving schema loses its explicit
-/// `content-type` before either carve-out this test pins can reach it, which
-/// SFTPGo, Audiobookshelf and LORIS each measure against Fern 5.20.0.
+/// `content-type`, which SFTPGo, Audiobookshelf and LORIS each measure against
+/// Fern 5.20.0. A titled one keeps it whatever else holds: measured at Fern CLI
+/// 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 on this document, the
+/// unauthenticated echo whose request and response share `Message`, the
+/// Bearer-secured one, and both Basic-auth bodies, described or not, all send it.
 #[test]
-fn same_request_response_ref_omits_content_type_only_when_unauthenticated() {
+fn titled_bodies_keep_the_content_type_whatever_their_auth_or_response() {
     let files = render(
         r##"openapi: 3.0.3
 info: { title: Echo, version: 1.0.0 }
@@ -5537,8 +5540,8 @@ components:
     let public = &files["src/acme/public/raw_client.py"];
     assert!(public.contains("json={"), "{public}");
     assert!(
-        !public.contains("\"content-type\": \"application/json\""),
-        "same-ref public echo omits the redundant header: {public}"
+        public.contains("\"content-type\": \"application/json\""),
+        "a titled same-ref public echo keeps the header: {public}"
     );
     let private = &files["src/acme/private/raw_client.py"];
     assert!(private.contains("json={"), "{private}");
@@ -5550,8 +5553,8 @@ components:
         .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]]"));
     let basic = &files["src/acme/basic/raw_client.py"];
     assert!(
-        !basic.contains("\"content-type\": \"application/json\""),
-        "Basic-auth JSON bodies without transport parameters leave the header to httpx: {basic}"
+        basic.contains("\"content-type\": \"application/json\""),
+        "an undescribed Basic-auth body over a titled schema keeps the header: {basic}"
     );
     let basic_described = &files["src/acme/basic_described/raw_client.py"];
     assert!(

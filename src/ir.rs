@@ -1173,9 +1173,6 @@ pub struct Endpoint {
     pub request_body_schema_doc: Option<String>,
     /// Whether the operation carried the legacy OpenAPI Generator body-name hint.
     pub body_codegen_named: bool,
-    /// Whether `requestBody.description` is explicitly present but empty. Fern
-    /// treats that importer sentinel as suppressing an explicit JSON content type.
-    pub body_description_empty: bool,
     /// Whether the request body omits a description entirely.
     pub body_description_missing: bool,
     /// Whether the Request Body Object declares `required: true` of itself. Fern
@@ -1214,11 +1211,6 @@ pub struct Endpoint {
     /// the selected media type verbatim, and Outreach's inlined `$ref` bodies,
     /// posted only under `application/vnd.api+json`, carry it.
     pub body_json_media_type: Option<String>,
-    /// Whether the operation uses HTTP Basic authentication. Fern leaves the
-    /// ordinary JSON content type to httpx for an undocumented Basic-auth body
-    /// without a path/header parameter, unless that body's schema is written
-    /// inline and flattened field by field (see [`crate::emit`]).
-    pub basic_auth: bool,
     /// What the selected request media schema is: a component `$ref`, an inline
     /// union Fern treats as plain, or anything else (see [`BodySchemaShape`]).
     pub body_schema_shape: BodySchemaShape,
@@ -3393,11 +3385,6 @@ fn build_endpoint(
             .filter(|schema| schema.reference.is_none())
             .and_then(|schema| declared_doc(schema.description.as_deref())),
         body_codegen_named: uses_codegen_request_body_name(op),
-        body_description_empty: op.request_body.as_ref().is_some_and(|body| {
-            body.description
-                .as_deref()
-                .is_some_and(|description| description.trim().is_empty())
-        }),
         body_description_missing: op
             .request_body
             .as_ref()
@@ -3430,7 +3417,6 @@ fn build_endpoint(
             .map(|(media_type, _)| media_type)
             .filter(|media_type| *media_type != "application/json" && *media_type != "*/*")
             .map(str::to_string),
-        basic_auth: operation_uses_basic_auth(doc, op),
         body_schema_shape: BodySchemaShape::of(op.request_body.as_ref().and_then(|body| {
             body.content
                 .values()
@@ -4159,8 +4145,8 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
         .and_then(|reference| resolve_ref(doc, reference))
         // An `allOf` of nothing but inline objects is one object to Fern's
         // importer, not a composition: Fergus's `CreateContactPayload` merges two
-        // inline members and its `POST /contacts` keeps the content-type header
-        // that an `allOf` over a `$ref` base drops.
+        // inline members, so its worked example keeps the merged object's field
+        // order rather than the composed body's required-first order.
         .is_some_and(|schema| {
             schema
                 .all_of
@@ -4218,25 +4204,6 @@ fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
         return false;
     }
     request_and_response_refs_match(op)
-}
-
-fn operation_uses_basic_auth(doc: &OpenApi, op: &Operation) -> bool {
-    op.security
-        .as_ref()
-        .or(doc.security.as_ref())
-        .is_some_and(|requirements| {
-            requirements.iter().any(|requirement| {
-                requirement.keys().any(|name| {
-                    doc.components
-                        .security_schemes
-                        .get(name)
-                        .is_some_and(|scheme| {
-                            scheme.ty == crate::openapi::SecuritySchemeType::Http
-                                && scheme.scheme == Some(crate::openapi::HttpAuthScheme::Basic)
-                        })
-                })
-            })
-        })
 }
 
 fn request_and_response_refs_match(op: &Operation) -> bool {
