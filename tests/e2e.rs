@@ -5015,6 +5015,9 @@ const CORPORA: &[&Corpus] = &[
     &CPHOS_AI_QUESTION,
     &FLASK_EXAMPLE_HEROKU,
     &OIP_WEB_API,
+    &BREIZHSPORT_CATALOGUE,
+    &PROTOFORM_CONFORMANCE,
+    &ERE_PS_APP,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7916,6 +7919,45 @@ const QONTRACT_API: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `breizhsport-catalogue`: corpus row 313, whose `Article.rating` is declared
+/// `type: float` beside two `type: int` properties.
+const BREIZHSPORT_CATALOGUE: Corpus = Corpus {
+    api: "breizhsport-catalogue",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `protoform-conformance`: corpus row 314, whose `DeleteBook` answers with an
+/// inline object closed with `additionalProperties: false` and no `properties`.
+const PROTOFORM_CONFORMANCE: Corpus = Corpus {
+    api: "protoform-conformance",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `ere-ps-app`: corpus row 315, 48 of whose models reach two or more reference
+/// cycles in an order no sort of their members reproduces.
+const ERE_PS_APP: Corpus = Corpus {
+    api: "ere-ps-app",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `oal-example`: corpus row 312, the OAL project's example description,
 /// whose `obj3.stuff` property `anyOf` holds an inline `oneOf` member
 const OAL_EXAMPLE: Corpus = Corpus {
@@ -7929,7 +7971,7 @@ const OAL_EXAMPLE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `millenium-falcon-challenge`: corpus row 330, the Millennium Falcon challenge's odds API,
+/// `millenium-falcon-challenge`: corpus row 316, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
     api: "millenium-falcon-challenge",
@@ -7942,7 +7984,7 @@ const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `maximo-wxo-integration`: corpus row 331, IBM's Maximo integration API, whose OpenAPI 3.0.0
+/// `maximo-wxo-integration`: corpus row 317, IBM's Maximo integration API, whose OpenAPI 3.0.0
 /// success responses are inline `application/json` bodies declaring `{}`
 const MAXIMO_WXO_INTEGRATION: Corpus = Corpus {
     api: "maximo-wxo-integration",
@@ -7955,7 +7997,7 @@ const MAXIMO_WXO_INTEGRATION: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `mi-music`: corpus row 332, mi_music's API, with schemaless `text/plain`, `audio/mpeg` and
+/// `mi-music`: corpus row 318, mi_music's API, with schemaless `text/plain`, `audio/mpeg` and
 /// `video/mp4` successes and titled bodies under HTTP Basic security
 const MI_MUSIC: Corpus = Corpus {
     api: "mi-music",
@@ -7968,7 +8010,7 @@ const MI_MUSIC: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `g4brym-download-manager`: corpus row 333, download-manager's API, whose parameterless
+/// `g4brym-download-manager`: corpus row 319, download-manager's API, whose parameterless
 /// 3.0 operations post inline arrays titled `Files`
 const G4BRYM_DOWNLOAD_MANAGER: Corpus = Corpus {
     api: "g4brym-download-manager",
@@ -7981,7 +8023,7 @@ const G4BRYM_DOWNLOAD_MANAGER: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `opentosca-license-engine`: corpus row 334, the OpenTOSCA license engine's API, with a
+/// `opentosca-license-engine`: corpus row 320, the OpenTOSCA license engine's API, with a
 /// titled inline string-array body and inline `{}` successes in a 3.0 document
 const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
     api: "opentosca-license-engine",
@@ -7994,7 +8036,7 @@ const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `chat-rest-api`: corpus row 335, chat-rest-api's API, whose error keys `404-message`
+/// `chat-rest-api`: corpus row 321, chat-rest-api's API, whose error keys `404-message`
 /// and `404-file` both name 404 and whose success lists `text/plain` before
 /// `application/octet-stream`
 const CHAT_REST_API: Corpus = Corpus {
@@ -8008,7 +8050,7 @@ const CHAT_REST_API: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `esp32-streamline-bridge`: corpus row 336, the StreamLine bridge API, whose recordings
+/// `esp32-streamline-bridge`: corpus row 322, the StreamLine bridge API, whose recordings
 /// answer a schemaless `audio/wav`
 const ESP32_STREAMLINE_BRIDGE: Corpus = Corpus {
     api: "esp32-streamline-bridge",
@@ -8021,7 +8063,7 @@ const ESP32_STREAMLINE_BRIDGE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `cphos-ai-question`: corpus row 337, CPhOS's question-generation API, whose artifact
+/// `cphos-ai-question`: corpus row 323, CPhOS's question-generation API, whose artifact
 /// download lists a schemaless `application/pdf` before `text/markdown`
 const CPHOS_AI_QUESTION: Corpus = Corpus {
     api: "cphos-ai-question",
@@ -8034,7 +8076,7 @@ const CPHOS_AI_QUESTION: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `flask-example-heroku`: corpus row 338, a package-name extractor whose one operation
+/// `flask-example-heroku`: corpus row 324, a package-name extractor whose one operation
 /// declares a JSON request body with no schema
 const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
     api: "flask-example-heroku",
@@ -8047,7 +8089,7 @@ const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `oip-web-api`: corpus row 339, the Oip service web API, whose parameterless
+/// `oip-web-api`: corpus row 325, the Oip service web API, whose parameterless
 /// module registration declares an empty `requestBody.description`
 const OIP_WEB_API: Corpus = Corpus {
     api: "oip-web-api",
@@ -14748,6 +14790,21 @@ fn flask_example_heroku_matches_fern_output() {
 #[test]
 fn oip_web_api_matches_fern_output() {
     assert_committed_corpus_matches(&OIP_WEB_API);
+}
+
+#[test]
+fn breizhsport_catalogue_matches_fern_output() {
+    assert_committed_corpus_matches(&BREIZHSPORT_CATALOGUE);
+}
+
+#[test]
+fn protoform_conformance_matches_fern_output() {
+    assert_committed_corpus_matches(&PROTOFORM_CONFORMANCE);
+}
+
+#[test]
+fn ere_ps_app_matches_fern_output() {
+    assert_committed_corpus_matches(&ERE_PS_APP);
 }
 
 #[test]

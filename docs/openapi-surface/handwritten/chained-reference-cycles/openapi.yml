@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Ferry Network
+  version: 1.0.0
+paths:
+  /rosters/{rosterId}:
+    get:
+      operationId: readRoster
+      tags: [rosters]
+      parameters:
+        - name: rosterId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One crew roster.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roster'
+components:
+  schemas:
+    Roster:
+      type: object
+      properties:
+        season:
+          type: string
+        captain:
+          $ref: '#/components/schemas/Captain'
+    Captain:
+      type: object
+      properties:
+        name:
+          type: string
+        vessels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vessel'
+    Vessel:
+      type: object
+      properties:
+        hull:
+          type: string
+        skipper:
+          $ref: '#/components/schemas/Captain'
+        homeport:
+          $ref: '#/components/schemas/Harbor'
+    Harbor:
+      type: object
+      properties:
+        label:
+          type: string
+        district:
+          $ref: '#/components/schemas/Harbor'

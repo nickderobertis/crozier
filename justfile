@@ -317,6 +317,9 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cphos_ai_question_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e flask_example_heroku_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oip_web_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e breizhsport_catalogue_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e protoform_conformance_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ere_ps_app_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecosystem_client_class_name_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e yourbrand_ticketing_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e peopledatalabs_matches_fern_output

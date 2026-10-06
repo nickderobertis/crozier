@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "breizhsport-catalogue",
+  "corpus_spec_ref": "460aed0c7e313e2289330e76bb6607f4eef9c4f3",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ImNotAOwl/e-commerce_microservices_CATALOGUE_API/460aed0c7e313e2289330e76bb6607f4eef9c4f3/openapi.yaml"
+}

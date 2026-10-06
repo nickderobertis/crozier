@@ -1,0 +1,9 @@
+query	result_count	first_page_fetched
+"type": "float" "components" "schemas" filename:openapi.json	3432	100
+"type: float" "components:" "schemas:" filename:openapi.yaml	122	100
+"additionalProperties": false "requestBody" "responses" filename:openapi.json	21248	100
+"additionalProperties: false" "requestBody:" "responses:" filename:openapi.yaml	9408	100
+"$ref" "children" "parent" "components" filename:openapi.json	1204	100
+"$ref:" "children:" "parent:" "components:" filename:openapi.yaml	314	100
+"$ref" "replies" "author" "components" filename:openapi.json	587	100
+"$ref:" "subcategories:" "parent:" "components:" filename:openapi.yaml	16	16

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "866767d47f4ebf6ab26a70f5dd5944f442a4060fb2d5319bfa95b98f894b6067"
+
+[[covers]]
+key = "cycle-into-cycle"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-type-and-cycle-shapes/README.md"
