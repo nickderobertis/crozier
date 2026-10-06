@@ -2225,6 +2225,25 @@ class RecipeWiringTests(unittest.TestCase):
         self.assertIn("test-surface-census", check.split())
 
 
+# The document-reading predicates `BodyAndResponseSelectorControls` discriminates:
+# each reads where its operation stands (its method, its route's parameters, the
+# document's version, a local Response `$ref`), so none is node-local.
+BODY_AND_RESPONSE_PREDICATES = frozenset({
+    "operation.requestBody:body-prefixed-single-use",
+    "operation.requestBody:titled-inline-container-oas-three-zero",
+    "operation.responses:empty-schema-success-oas-three-zero",
+    "operation.responses:schemaless-text-success",
+    "operation.responses:schemaless-download-success",
+    "operation.responses:suffixed-status-key",
+    "operation.requestBody:schemaless-json",
+    "operation.responses:schemaless-wav-success",
+    "operation.responses:contentless-two-hundred-with-created",
+    "operation.responses:space-suffixed-status-key",
+    "operation.requestBody:blank-description-optional-object",
+    "operation.requestBody:described-inline-scalar",
+})
+
+
 class GrammarContractTests(unittest.TestCase):
     """The doc states the selector grammar; the script implements it. Pin them together.
 
@@ -2370,6 +2389,9 @@ class GrammarContractTests(unittest.TestCase):
         "schema.example:on-ref-to-enum",
         "schema.example:on-ref-to-union",
         "schema.example:on-ref-to-alias",
+        # Read an operation's method, route parameters or document version, or
+        # resolve its success response's local `$ref`.
+        *BODY_AND_RESPONSE_PREDICATES,
         # Read a request body's selected media type and resolve the component
         # schemas its schema and example reach.
         "mediaType.schema:allof-parent-body",
@@ -2403,6 +2425,8 @@ class GrammarContractTests(unittest.TestCase):
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
             "seventeen": 17, "eighteen": 18, "twenty": 20, "twenty-one": 21,
             "twenty-three": 23, "twenty-four": 24,
+            "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
+            "thirty-five": 35, "thirty-six": 36,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -4338,6 +4362,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
            "schema.type:misspelled-scalar",
            "securityScheme:$ref", "parameter.schema:query-items-union",
            "parameter.schema:subset-header-string-default"} \
+        - BODY_AND_RESPONSE_PREDICATES \
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
 
     @classmethod
@@ -12120,6 +12145,39 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-read the census's union port of src/ir.rs's {name}",
                 )
 
+    def test_the_schema_and_response_ports_track_their_rust_functions(self) -> None:
+        """Closed object and success selection ports.
+
+        Each function of `src/ir.rs` the schema and response ports read is pinned by the same
+        normalized-body digest, so an edit there fails here until the port is
+        read again.
+        """
+        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
+        for name, pinned in census.SCHEMA_RESPONSE_PORT_DIGESTS.items():
+            start = next(
+                (index for index, line in enumerate(lines)
+                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+            )
+            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            depth, started = 0, False
+            for end in range(start, len(lines)):
+                for char in lines[end]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                if started and depth == 0:
+                    break
+            kept = [
+                " ".join(line.split()) for line in lines[start:end + 1]
+                if line.strip() and not line.strip().startswith("//")
+            ]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-read the census's schema or response port of src/ir.rs's {name}",
+                )
+
     def test_the_parameter_ports_track_their_rust_functions(self) -> None:
         """The parameter predicates' ports of the items-union hoist and promotion.
 
@@ -12639,7 +12697,8 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
         documents = {
             "positive": {"paths": {"/a": operation(
                 {"type": "object", "properties": {
-                    "profile": closed, "notes": closed, "kiln": {"type": "string"},
+                    "profile": closed, "notes": closed, "inferred": {"additionalProperties": False},
+                    "kiln": {"type": "string"},
                 }},
                 {"200": {"type": "string"}},
             )}},
@@ -12656,7 +12715,7 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
             },
         }
         selector = "mediaType.schema:closed-empty-object-property"
-        self.assertEqual({(selector, "positive"): 2}, self.census_one(selector, documents))
+        self.assertEqual({(selector, "positive"): 3}, self.census_one(selector, documents))
 
     def test_misspelled_scalar_counts_five_type_names_and_not_their_neighbours(self) -> None:
         """`schema.type:misspelled-scalar`: `double`, `int32`, `long`, `bool`, `decimal`.
@@ -12911,6 +12970,287 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                     self.assertEqual(int(count), reported.get((selector, fixture), 0))
         self.assertGreater(checked, 0)
 
+
+
+class BodyAndResponseSelectorControls(unittest.TestCase):
+    """Each body, success-response and status-key predicate, positive and decoys.
+
+    Every case writes one `positive` document and one `decoys` document, censuses
+    both through the real script, and expects the positive's count and nothing
+    from the decoys: the near misses each predicate must refuse are the shapes
+    `src/ir.rs` treats the other way.
+    """
+
+    @staticmethod
+    def operation(responses: dict | None = None, body: dict | None = None, **extra) -> dict:
+        operation = {"responses": responses or {"204": {"description": "done"}}, **extra}
+        if body is not None:
+            operation["requestBody"] = body
+        return operation
+
+    @staticmethod
+    def json_body(schema: dict) -> dict:
+        return {"required": True, "content": {"application/json": {"schema": schema}}}
+
+    @staticmethod
+    def success(content: dict) -> dict:
+        return {"200": {"description": "ok", "content": content}}
+
+    def census(self, selector: str, documents: dict[str, dict]) -> dict[tuple[str, str], int]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, document in documents.items():
+                write_fixture(root, fixture, json.dumps(
+                    {"info": {"title": fixture, "version": "1"}, **document}
+                ))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return rows(completed)
+
+    def test_success_selection_prefers_200_and_skips_unusable_media(self) -> None:
+        selector = "operation.responses:schemaless-text-success"
+        text = {"description": "text", "content": {"text/plain": {}}}
+        json_response = {"description": "json", "content": {
+            "application/json": {"schema": {"type": "string"}}}}
+        documents = {
+            "positive": {"paths": {
+                "/preferred": {"get": self.operation(responses={"201": json_response, "200": text})},
+                "/fallback": {"get": self.operation(responses={
+                    "200": {"description": "unusable", "content": {"/*": {}}}, "201": text})},
+                "/default": {"get": self.operation(responses={"default": text})},
+                "/empty": {"get": self.operation(responses={"200": {"description": "empty"}, "201": text})},
+            }},
+            "decoys": {"paths": {
+                "/preferred": {"get": self.operation(responses={"201": text, "200": json_response})},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 4}, self.census(selector, documents))
+
+    def test_contentless_200_with_201_counts_inline_and_referenced_responses(self) -> None:
+        selector = "operation.responses:contentless-two-hundred-with-created"
+        empty = {"description": "empty"}
+        created = {"description": "created", "content": {"application/json": {"schema": {"type": "string"}}}}
+        documents = {
+            "positive": {"paths": {
+                "/inline": {"post": self.operation(responses={"200": empty, "201": created})},
+                "/shared": {"post": self.operation(responses={
+                    "200": {"$ref": "#/components/responses/Empty"},
+                    "201": {"$ref": "#/components/responses/Created"}})},
+            }, "components": {"responses": {"Empty": empty, "Created": created}}},
+            "decoys": {"paths": {
+                "/typed": {"post": self.operation(responses={"200": created, "201": created})},
+                "/only": {"post": self.operation(responses={"200": empty})},
+                "/both-empty": {"post": self.operation(responses={"200": empty, "201": empty})},
+                "/unresolved": {"post": self.operation(responses={
+                    "200": {"$ref": "#/components/responses/Missing"}, "201": created})},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+    def test_a_body_prefixed_body_counts_only_posted_once(self) -> None:
+        selector = "operation.requestBody:body-prefixed-single-use"
+        ref = lambda name: {"$ref": f"#/components/schemas/{name}"}
+        model = {"type": "object", "properties": {"seed": {"type": "string"}}}
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {
+                "/sow": {"post": self.operation(body=self.json_body(ref("Body_sow")))},
+            }, "components": {"schemas": {"Body_sow": model}}},
+            "decoys": {"openapi": "3.0.3", "paths": {
+                "/export": {"get": self.operation(body=self.json_body(ref("Body_export")))},
+                "/echo": {"post": self.operation(
+                    body=self.json_body(ref("Body_echo")),
+                    responses=self.success({"application/json": {"schema": ref("Body_echo")}}),
+                )},
+                "/plain": {"post": self.operation(body=self.json_body(ref("Sowing")))},
+                "/upload": {"post": self.operation(body={"content": {
+                    "multipart/form-data": {"schema": ref("Body_upload")}}})},
+            }, "components": {"schemas": {
+                "Body_export": model, "Body_echo": model, "Sowing": model, "Body_upload": model,
+            }}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+    def test_a_titled_inline_container_counts_only_in_a_parameterless_3_0_operation(self) -> None:
+        selector = "operation.requestBody:titled-inline-container-oas-three-zero"
+        titled = {"title": "Order", "type": "array", "items": {"type": "string"}}
+        query = [{"name": "dry", "in": "query", "schema": {"type": "boolean"}}]
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {
+                "/order": {"put": self.operation(body=self.json_body(titled))},
+                "/tags": {"put": self.operation(body=self.json_body(
+                    {"title": "Tags", "type": "object", "additionalProperties": {"type": "string"}}))},
+            }},
+            "decoys": {"openapi": "3.0.3", "paths": {
+                "/untitled": {"put": self.operation(body=self.json_body(
+                    {"type": "array", "items": {"type": "string"}}))},
+                "/queried": {"put": self.operation(body=self.json_body(titled), parameters=query)},
+                "/{shelf}": {"parameters": [{"name": "shelf", "in": "path", "required": True,
+                                              "schema": {"type": "string"}}],
+                             "put": self.operation(body=self.json_body(titled))},
+                "/object": {"put": self.operation(body=self.json_body(
+                    {"title": "Filter", "type": "object", "properties": {"q": {"type": "string"}}}))},
+            }},
+            "later": {"openapi": "3.1.0", "paths": {
+                "/order": {"put": self.operation(body=self.json_body(titled))},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+    def test_an_empty_schema_success_counts_only_inline_in_3_0(self) -> None:
+        selector = "operation.responses:empty-schema-success-oas-three-zero"
+        empty = self.success({"application/json": {"schema": {}}})
+        documents = {
+            "positive": {"openapi": "3.0.2", "paths": {"/a": {"delete": self.operation(empty)}}},
+            "decoys": {"openapi": "3.0.2", "paths": {
+                "/ref": {"get": self.operation({"200": {"$ref": "#/components/responses/Ok"}})},
+                "/typed": {"get": self.operation(self.success(
+                    {"application/json": {"schema": {"type": "object"}}}))},
+                "/both": {"get": self.operation(self.success(
+                    {"application/json": {"schema": {}}, "text/plain": {}}))},
+            }, "components": {"responses": {"Ok": {
+                "description": "ok", "content": {"application/json": {"schema": {}}}}}}},
+            "later": {"openapi": "3.1.0", "paths": {"/a": {"delete": self.operation(empty)}}},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+    def test_a_schemaless_text_success_counts_without_json_beside_it(self) -> None:
+        selector = "operation.responses:schemaless-text-success"
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {
+                "/csv": {"get": self.operation(self.success({"text/csv": {}}))},
+                "/log": {"get": self.operation(self.success({"text/plain; charset=utf-8": {}}))},
+            }},
+            "decoys": {"openapi": "3.0.3", "paths": {
+                "/typed": {"get": self.operation(self.success(
+                    {"text/csv": {"schema": {"type": "string"}}}))},
+                "/events": {"get": self.operation(self.success({"text/event-stream": {}}))},
+                "/either": {"get": self.operation(self.success(
+                    {"application/json": {"schema": {"type": "object"}}, "text/csv": {}}))},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+    def test_a_schemaless_download_counts_audio_video_and_pdf_only(self) -> None:
+        selector = "operation.responses:schemaless-download-success"
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {
+                "/mp3": {"get": self.operation(self.success({"audio/mpeg": {}}))},
+                "/mp4": {"get": self.operation(self.success({"video/mp4": {}}))},
+                "/pdf": {"get": self.operation(self.success({"application/pdf": {}}))},
+            }},
+            "decoys": {"openapi": "3.0.3", "paths": {
+                "/png": {"get": self.operation(self.success({"image/png": {}}))},
+                "/zip": {"get": self.operation(self.success({"application/zip": {}}))},
+                "/typed": {"get": self.operation(self.success(
+                    {"audio/mpeg": {"schema": {"type": "string", "format": "binary"}}}))},
+                "/either": {"get": self.operation(self.success(
+                    {"application/json": {"schema": {"type": "object"}}, "audio/mpeg": {}}))},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 3}, self.census(selector, documents))
+
+    def test_a_suffixed_status_key_counts_every_spelling_but_a_status_or_a_range(self) -> None:
+        selector = "operation.responses:suffixed-status-key"
+        described = {"description": "refused"}
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {"/a": {"post": self.operation({
+                "200": {"description": "ok"}, "429 (live)": described, "404abc": described,
+                "4xx": described,
+            })}}},
+            "decoys": {"openapi": "3.0.3", "paths": {"/a": {"post": self.operation({
+                "200": {"description": "ok"}, "429": described, "4XX": described,
+                "default": described, "x-200:err message": described,
+            })}}},
+        }
+        self.assertEqual({(selector, "positive"): 3}, self.census(selector, documents))
+
+    def test_a_space_suffixed_status_key_counts_only_a_status_a_space_and_text(self) -> None:
+        selector = "operation.responses:space-suffixed-status-key"
+        described = {"description": "refused"}
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {"/a": {"post": self.operation({
+                "200": {"description": "ok"}, "429 (live)": described, "503 maintenance": described,
+            })}}},
+            "decoys": {"openapi": "3.0.3", "paths": {"/a": {"post": self.operation({
+                "200": {"description": "ok"}, "404abc": described, "409 ": described,
+                "404-file": described, "4xx": described, "4291 (x)": described,
+            })}}},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+    def test_a_schemaless_wav_success_counts_audio_wav_alone(self) -> None:
+        selector = "operation.responses:schemaless-wav-success"
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {
+                "/wav": {"get": self.operation(self.success({"audio/wav": {}}))},
+            }},
+            "decoys": {"openapi": "3.0.3", "paths": {
+                "/mp3": {"get": self.operation(self.success({"audio/mpeg": {}}))},
+                "/typed": {"get": self.operation(self.success(
+                    {"audio/wav": {"schema": {"type": "string", "format": "binary"}}}))},
+                "/either": {"get": self.operation(self.success(
+                    {"application/json": {"schema": {"type": "object"}}, "audio/wav": {}}))},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+    def test_a_schemaless_json_request_body_counts_only_when_no_media_declares_a_schema(self) -> None:
+        selector = "operation.requestBody:schemaless-json"
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {
+                "/import": {"post": self.operation(body={"content": {"application/json": {}}})},
+                "/merge": {"post": self.operation(body={"content": {"application/merge-patch+json": {}}})},
+            }},
+            "decoys": {"openapi": "3.0.3", "paths": {
+                "/any": {"post": self.operation(body={"content": {"application/json": {"schema": {}}}})},
+                "/form": {"post": self.operation(body={"content": {
+                    "application/json": {}, "multipart/form-data": {}}})},
+                "/text": {"post": self.operation(body={"content": {"text/plain": {}}})},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+    def test_a_blank_description_counts_only_over_a_partly_optional_parameterless_body(self) -> None:
+        selector = "operation.requestBody:blank-description-optional-object"
+        optional = {"type": "object", "properties": {"q": {"type": "string"}}}
+        required = {"type": "object", "required": ["q"], "properties": {"q": {"type": "string"}}}
+        blank = lambda schema: {"description": "", "content": {"application/json": {"schema": schema}}}
+        query = [{"name": "dry", "in": "query", "schema": {"type": "boolean"}}]
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {
+                "/inline": {"post": self.operation(body=blank(optional))},
+                "/ref": {"post": self.operation(body=blank({"$ref": "#/components/schemas/Filter"}))},
+            }, "components": {"schemas": {"Filter": optional}}},
+            "decoys": {"openapi": "3.0.3", "paths": {
+                "/required": {"post": self.operation(body=blank(required))},
+                "/described": {"post": self.operation(body={
+                    "description": "terms", "content": {"application/json": {"schema": optional}}})},
+                "/queried": {"post": self.operation(body=blank(optional), parameters=query)},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+    def test_a_described_inline_scalar_counts_only_without_an_enum_or_a_parameter(self) -> None:
+        selector = "operation.requestBody:described-inline-scalar"
+        query = [{"name": "dry", "in": "query", "schema": {"type": "boolean"}}]
+        documents = {
+            "positive": {"openapi": "3.0.3", "paths": {
+                "/label": {"put": self.operation(body=self.json_body(
+                    {"type": "string", "description": "a label"}))},
+                "/level": {"put": self.operation(body=self.json_body(
+                    {"type": "number", "description": "a level"}))},
+            }},
+            "decoys": {"openapi": "3.0.3", "paths": {
+                "/titled": {"put": self.operation(body=self.json_body({"type": "string", "title": "Label"}))},
+                "/mode": {"put": self.operation(body=self.json_body(
+                    {"type": "string", "enum": ["a"], "description": "a mode"}))},
+                "/queried": {"put": self.operation(body=self.json_body(
+                    {"type": "string", "description": "a label"}), parameters=query)},
+                "/object": {"put": self.operation(body=self.json_body(
+                    {"type": "object", "description": "a bag"}))},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])

@@ -5462,7 +5462,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 {
                     continue;
                 }
-                let value_name = body_field_value_name(f);
+                let value_name = body_field_value_name(f, &ep.query_params);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                     let annotation_type = if f.nullable {
@@ -5660,12 +5660,13 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // (`CREATE_SessionServer`) keeps it. A `components.requestBodies` body drops
         // it only while its schema survives in the public type layer; one whose
         // schema exists solely to be flattened here (exa-gate's `KeyBatch`) keeps it.
-        // The Basic-auth drop is narrower than the scheme: it applies to a body whose
-        // schema is a component `$ref` (otoroshi's `Group`) or that rides as a single
-        // argument (its inline `oneOf`, hoisted to `CreateGlobalAuthModuleRequest`),
-        // not to one whose inline schema is flattened field by field
-        // (blackadi-oauth2's `backchannel_logout/issue`), which keeps the header.
-        // A documented, response-heavy body with one required member — a resource
+        // The security scheme does not enter into it: measured at Fern 5.20.0, a
+        // Basic-auth operation's titled `$ref` body keeps the header (mi_music's
+        // `DidVolume` and fourteen more), and otoroshi's untitled, surviving
+        // `Group` loses it to the surviving-schema drop below, not to its scheme.
+        // Nor does an `allOf` or an empty `requestBody.description`: a single-use
+        // `allOf` body is a dropped schema like any other, and an empty description
+        // is a description. A documented, response-heavy body with one required member — a resource
         // envelope — keeps the header through both of those drops; see
         // `resource_envelope` above.
         Some(body)
@@ -5702,8 +5703,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // partly required, and each rides a `SubTenantName` — and
                         // so does a body with no required member at all, which is
                         // what leaves the echo `Message` of the same-`$ref` case
-                        // (one optional field) its header under Basic auth's
-                        // documented body. Every other way to be shared keeps it:
+                        // (one optional field) its header. Every other way to be
+                        // shared keeps it:
                         // exhaustive's bodies carry `required: true` or are sent
                         // whole, and Adyen's `GrantInfo` is posted by one operation.
                         && !(ep.body_schema_shared
@@ -5715,9 +5716,6 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                     && ep.query_params.is_empty()
                                     && matches!(body, RequestBody::Inline(fields)
                                         if fields.iter().any(|field| field.spec_required))))
-                        && (!ep.basic_auth
-                            || !ep.body_description_missing
-                            || ep.body_schema_shape != BodySchemaShape::Ref && matches!(body, RequestBody::Inline(_)))
                         && !ep.body_codegen_named
                         // An inline union body that neither names itself nor
                         // declares a discriminator drops the header, however it is
@@ -5766,7 +5764,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // with the condition property itself (`"stream": True`),
                         // so it is no longer just the referenced schema.
                         // A documented resource envelope escapes this drop too,
-                        // exactly as it escapes the `allOf`/same-`$ref` one below:
+                        // exactly as it escapes the same-`$ref` one below:
                         // corpus row 113's `Container` is untitled, and while its
                         // own `createContainer` also rides an `id` query parameter,
                         // the shape that measurement pinned is the envelope.
@@ -5784,15 +5782,17 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // A query parameter beside the body keeps the header
                         // through both drops below, the same exception the shared
                         // and surviving-schema drops above already record: SFTPGo's
-                        // `add_event_rule` posts an `allOf` body beside a
-                        // `sanitize` query parameter and `loaddata_from_request_body`
-                        // posts an open, unnamed one beside two, and Fern keeps
-                        // both content types where the same bodies without a query
-                        // parameter (`update_event_rule` on a path parameter) are
-                        // unaffected.
+                        // `loaddata_from_request_body` posts an open, unnamed body
+                        // beside two, and Fern keeps its content type. A titled
+                        // schema escapes the same-`$ref` drop as it escapes the
+                        // surviving-schema one above: measured at Fern 5.20.0, a
+                        // titled `Message` echoed back by an unauthenticated
+                        // operation keeps the header that Airflow's untitled
+                        // `Pool` loses.
                         && !(ep.query_params.is_empty()
                             && matches!(body, RequestBody::Inline(_))
-                            && (ep.body_composition.is_all_of() || ep.body_response_same_ref)
+                            && ep.body_response_same_ref
+                            && !ep.body_schema_titled
                             && !resource_envelope)
                         && !(ep.query_params.is_empty()
                             && matches!(body, RequestBody::Inline(fields)
@@ -5806,8 +5806,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         && ep.body_description_missing
                                         && !ep.body_schema_documented
                                         && fields.iter().filter(|field| field.spec_required).count() == 1)))
-                        && (!(ep.body_description_empty
-                            || ep.body_schema_has_example
+                        && (!(ep.body_schema_has_example
                                 && ep.body_schema_documented
                                 && !ep.body_schema_example_wrapped
                             || ep.body_schema_example_wrapped
@@ -5879,12 +5878,22 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     }
 }
 
-fn body_field_value_name(field: &BodyField) -> &str {
-    field
+fn body_field_value_name<'a>(field: &'a BodyField, query: &[QueryParam]) -> &'a str {
+    let original = field
         .collision_prefix
         .as_ref()
         .and_then(|prefix| field.py_name.strip_prefix(&format!("{prefix}_")))
-        .unwrap_or(&field.py_name)
+        .unwrap_or(&field.py_name);
+    // Keep the renamed signature, but serialize its body argument when a query
+    // parameter shares the body's wire key (body-query-parameter-value).
+    if query
+        .iter()
+        .any(|parameter| parameter.py_name == original && parameter.wire_name == field.wire_name)
+    {
+        &field.py_name
+    } else {
+        original
+    }
 }
 
 /// The chunk type Fern yields from an OpenAPI-sourced SSE stream: the
@@ -11911,7 +11920,6 @@ mod tests {
             request_body_doc: None,
             request_body_schema_doc: None,
             body_codegen_named: false,
-            body_description_empty: false,
             body_description_missing: false,
             body_declared_required: false,
             body_component_ref: false,
@@ -11919,7 +11927,6 @@ mod tests {
             body_collapses_to_type_reference: false,
             body_content_type_override: None,
             body_json_media_type: None,
-            basic_auth: false,
             body_schema_shape: BodySchemaShape::Other,
             body_schema_dropped: false,
             body_schema_shared: false,
@@ -14608,6 +14615,40 @@ mod tests {
         super::preserve_fenced_docstring_blank_indent(&mut source);
         assert!(source.contains("        ```python\n        \n        pass"));
         assert!(source.ends_with("        plain\n\n"));
+    }
+    #[test]
+    fn colliding_query_and_body_arguments_use_their_own_values() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Lantern Circuits", "version": "1"},
+            "paths": {"/circuits": {"post": {
+                "operationId": "setVoltage",
+                "parameters": [{"name": "voltage", "in": "query", "schema": {"type": "integer"}}],
+                "requestBody": {"content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/PowerProfile"}
+                }}},
+                "responses": {"200": {"description": "Recorded", "content": {
+                    "application/json": {"schema": {"$ref": "#/components/schemas/PowerProfile"}}
+                }}}
+            }}},
+            "components": {"schemas": {"PowerProfile": {"type": "object", "properties": {
+                "voltage": {"type": "integer"}, "channel": {"type": "string"}
+            }}}}
+        }));
+        let raw = files
+            .iter()
+            .find(|(path, _)| path.ends_with("/raw_client.py"))
+            .unwrap()
+            .1
+            .as_str();
+        assert!(raw.contains("power_profile_voltage:"), "{raw}");
+        assert!(
+            raw.contains("json={\n                \"voltage\": power_profile_voltage,"),
+            "{raw}"
+        );
+        assert!(
+            raw.contains("params={\n                \"voltage\": voltage,"),
+            "{raw}"
+        );
     }
 }
 

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "esp32-streamline-bridge",
+  "corpus_spec_ref": "f50f678a3569d5c10e250cdd03e16cf1d17df16a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/lutyjj/esp32-streamline/f50f678a3569d5c10e250cdd03e16cf1d17df16a/docs/bridge-openapi.json"
+}

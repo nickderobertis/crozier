@@ -244,6 +244,17 @@ compares it. Row 224 is the one so far.
 | 316 | `typescript-service-template` | github-raw | https://raw.githubusercontent.com/adiwajshing/typescript-service-template/bec0143414f9ec292e4a33dd3ee1c576984559d6/openapi.yaml | `bec0143414f9ec292e4a33dd3ee1c576984559d6` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The description a TypeScript service template publishes for its users API: one path, three operations and five component schemas; `usersPatch` takes a required query array of `$ref UserID` items and answers `application/json` |
 | 317 | `lootlog-battlelog` | github-raw | https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml | `e2796c4f48ca4a749f53fdc5a127eece50567b56` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Lootlog's Battle Log API as its repository publishes it: OpenAPI 3.0.0, one `http: bearer` scheme, and `POST /internal/delete-user-data` declares an optional header parameter spelled `authorization` in lower case |
 | 318 | `ego-microservices` | github-raw | https://raw.githubusercontent.com/dreek1337/Ego/e0ebe7a5219488545820408b46f67f4f9fa9c83c/openapi.yaml | `e0ebe7a5219488545820408b46f67f4f9fa9c83c` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Ego's microservices API as its repository publishes it: OpenAPI 3.1.0, 20 paths and 60 component schemas; the paginated listings' query `offset` and `limit` are `anyOf: [integer, $ref Empty]`, where `Empty` is a component string enum |
+| 319 | `millenium-falcon-challenge` | github-raw | https://raw.githubusercontent.com/jondavies00/millenium-falcon-challenge/508e939a0ae568f13c10f872580d7c9605e29a97/openapi.json | `508e939a0ae568f13c10f872580d7c9605e29a97` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Millennium Falcon challenge's odds API as its FastAPI app publishes it: 1 path and 6 component schemas; `POST /odds` posts a `Body_odds_odds_post` JSON body nothing else references |
+| 320 | `maximo-wxo-integration` | github-raw | https://raw.githubusercontent.com/IBM/maximo-wxo-integration/54a2c3879173a44c8ed6d321d09066c9975de488/openapi.json | `54a2c3879173a44c8ed6d321d09066c9975de488` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | IBM's Maximo integration API as its FastAPI wrapper publishes it, at OpenAPI 3.0.0: 9 paths and no component schemas; five success responses are an inline `application/json` declaring the empty schema `{}` |
+| 321 | `mi-music` | github-raw | https://raw.githubusercontent.com/jokezc/mi_music/2a114dff3bb9528a3e772ef7de0f850fe488ff27/docs/openapi.json | `2a114dff3bb9528a3e772ef7de0f850fe488ff27` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | mi_music's API as its FastAPI service publishes it: 42 paths and 30 component schemas; `GET /downloadlog` answers a schemaless `text/plain`, `GET /music/{file_path}` and `GET /proxy` a schemaless `audio/mpeg` (the latter beside `video/mp4`), and 37 operations ride HTTP Basic security with titled `$ref` bodies |
+| 322 | `g4brym-download-manager` | github-raw | https://raw.githubusercontent.com/G4brym/download-manager/459a6d8ef8dbee4289b7b5b629e1377e623c2b4e/swagger/openapi.json | `459a6d8ef8dbee4289b7b5b629e1377e623c2b4e` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | download-manager's API as its FastAPI service publishes it, at OpenAPI 3.0.2: 6 paths and 7 component schemas; two parameterless operations post an inline array titled `Files`, one of `$ref` items and one of strings |
+| 323 | `opentosca-license-engine` | github-raw | https://raw.githubusercontent.com/OpenTOSCA/license-engine/ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65/src/main/resources/openapi/openapi.json | `ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The OpenTOSCA license engine's API as its repository publishes it, at OpenAPI 3.0.2: 14 paths and 10 component schemas; `POST /licenses/check/` posts an inline string array titled `Usedlicenses` with no parameter, and twelve success responses are an inline `application/json` declaring `{}` |
+| 324 | `chat-rest-api` | github-raw | https://raw.githubusercontent.com/Ke11nyk/chat-rest-api/e761a7bf0d32147aff6571b9f9d325abd010e545/docs/openapi.yaml | `e761a7bf0d32147aff6571b9f9d325abd010e545` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | chat-rest-api's API as its repository publishes it, at OpenAPI 3.0.0: 5 paths and 1 component schema; `GET /message/content/{id}` declares the error keys `404-message` and `404-file`, and its success lists a schemaless `text/plain` before a schemaless `application/octet-stream` |
+| 325 | `esp32-streamline-bridge` | github-raw | https://raw.githubusercontent.com/lutyjj/esp32-streamline/f50f678a3569d5c10e250cdd03e16cf1d17df16a/docs/bridge-openapi.json | `f50f678a3569d5c10e250cdd03e16cf1d17df16a` | GPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The StreamLine bridge API as esp32-streamline publishes it: 13 paths and 25 component schemas; `GET /api/recordings/{recording_id}/file` and `GET /streamline.wav` answer a schemaless `audio/wav` |
+| 326 | `cphos-ai-question` | github-raw | https://raw.githubusercontent.com/CPHOS/AI_Question/951028cbbcfb1ab15ee26dc02824029cb50fd1ab/docs/api/openapi.json | `951028cbbcfb1ab15ee26dc02824029cb50fd1ab` | AGPL-3.0 (`info.license` `AGPL-3.0-or-later`, and the publisher repository's pinned `LICENSE`) | committed | CPhOS's physics-question generation API as its FastAPI service publishes it: 31 paths and 45 component schemas; `GET /api/tasks/{task_id}/artifacts/{name}` answers a schemaless `application/pdf` listed before `text/markdown`, beside JSON error responses |
+| 327 | `flask-example-heroku` | github-raw | https://raw.githubusercontent.com/rctatman/flask_example_heroku/2703c6ee5627d8543703a4cd9436c260fc4723c8/openapi.yaml | `2703c6ee5627d8543703a4cd9436c260fc4723c8` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | A Python package-name extractor's API as its repository publishes it, at OpenAPI 3.0.0: 1 path and no component schemas; `POST /extractpackages` declares a required request body whose `application/json` media type has no schema |
+| 328 | `oip-web-api` | github-raw | https://raw.githubusercontent.com/g10101k/Oip/e3a6ecd60b1204c64907d543b37652f4230fee89/src/OipOpenApi.json | `e3a6ecd60b1204c64907d543b37652f4230fee89` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Oip service web API as its repository's Swashbuckle build publishes it, at OpenAPI 3.0.1: 2 paths and 2 component schemas; the parameterless `POST /api/module-federation/register-module` declares `requestBody.description: ""` over a single-use `$ref` body with optional properties |
+| 329 | `waylay-queries` | github-raw | https://raw.githubusercontent.com/waylayio/waylay-sdk-queries-py/8ab6c18e10f96c3665dbb849ebe2193c16a1659c/openapi/queries.openapi.yaml | `8ab6c18e10f96c3665dbb849ebe2193c16a1659c` | ISC (the publisher repository's pinned `LICENSE.txt`; the document declares no `info.license`) | committed | Waylay's published time-series query API: `execute_query` accepts query overrides and distinct renamed JSON body arguments for the same keys; the `body-query-parameter-value` departure preserves those body values where Fern sends the query values |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1549,3 +1560,58 @@ paginated listings declare `offset` and `limit` that way, beside the enum
 The repair that made it match predates the registration: the scalar check proves
 the hoisted alias scalar by resolving its members across the root and hoisted
 types alike.
+
+## Rows 319–328 — request bodies and schemaless responses
+
+A request body's model, its JSON content-type header, a success response that
+declares no schema, and a status key spelled with a suffix are each decided by
+a rule Fern applies whatever else a document says; each row below declares one
+of those shapes in a combination no earlier row did, and each byte-matches its
+Fern 5.20.0 golden with `unmatched: &[]`:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 319 | `millenium-falcon-challenge` | a FastAPI `Body_*` JSON body posted once, whose model Fern drops | ✅ byte-matched after one repair |
+| 320 | `maximo-wxo-integration` | an inline `{}` success in an OpenAPI 3.0 document, guarded against an empty body | ✅ byte-matched after one repair |
+| 321 | `mi-music` | schemaless `text/plain`, `audio/mpeg` and `video/mp4` successes; titled bodies under HTTP Basic | ✅ byte-matched after three repairs |
+| 322 | `g4brym-download-manager` | a titled inline array body in a parameterless 3.0 operation | ✅ byte-matched after one repair |
+| 323 | `opentosca-license-engine` | a titled inline array body and inline `{}` successes in a 3.0 document | ✅ byte-matched after two repairs |
+| 324 | `chat-rest-api` | error keys spelled `404-message` and `404-file`; a text media type listed before a download | ✅ byte-matched after three repairs |
+| 325 | `esp32-streamline-bridge` | schemaless `audio/wav` successes | ✅ byte-matched after one repair |
+| 326 | `cphos-ai-question` | a schemaless `application/pdf` success listed before `text/markdown` | ✅ byte-matched after two repairs |
+| 327 | `flask-example-heroku` | a JSON request body declaring no schema | ✅ byte-matched after one repair |
+| 328 | `oip-web-api` | an empty `requestBody.description` over a body with optional fields | ✅ byte-matched after one repair |
+
+The repairs: a single-use JSON body's model is dropped whatever its name, where
+crozier kept every `Body_*` model (row 319); an unknown success body is guarded
+in 3.0 as in 3.1 (rows 320, 323); a schemaless `text/*` success returns `str`
+(rows 321, 324), and a schemaless `audio/*` or `video/*` one streams bytes (row 321); a titled
+schema keeps the JSON content-type header under HTTP Basic security (row 321); an
+inline container body's header follows its own `title` or `description`, not
+the document version or its items (rows 322, 323); a response key is read by its
+leading integer, so `404-message` and `404-file` both raise `NotFoundError`
+(row 324); the first of a text and a download media type in a success's
+content decides between `str` and a byte stream (row 324), and a Markdown media
+type listed after a download leaves the download's worked example its path
+arguments (row 326); a schemaless `audio/wav` or `application/pdf` success
+streams bytes (rows 325, 326); and a JSON request body declaring no schema
+sends nothing, where crozier dropped the whole method (row 327); and an empty
+`requestBody.description` is a description, so the body keeps its JSON
+content-type header (row 328).
+
+## Row 329 — a JSON body property sharing its name with a query parameter
+
+Where an inline JSON body property and a query parameter share a name, Fern
+keeps both in the signature, renaming the body argument, and then sends the
+query parameter's value under the body's key. The Waylay query API's
+`execute_query` declares that collision on several properties:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 329 | `waylay-queries` | inline JSON body properties sharing their names with query parameters | ✅ byte-matched after one repair, with the `body-query-parameter-value` departure |
+
+The repair: crozier keeps Fern's signature and query mapping, and sends the
+renamed body argument under the body key. That one substitution is the
+catalogued `body-query-parameter-value` departure, a Fern defect
+([evidence](../../docs/departures/evidence/body-query-parameter-value.md)),
+pinned line by line in `departures-ledger.tsv`.

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "chat-rest-api",
+  "corpus_spec_ref": "e761a7bf0d32147aff6571b9f9d325abd010e545",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Ke11nyk/chat-rest-api/e761a7bf0d32147aff6571b9f9d325abd010e545/docs/openapi.yaml"
+}

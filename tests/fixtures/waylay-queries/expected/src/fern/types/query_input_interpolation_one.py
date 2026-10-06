@@ -1,0 +1,35 @@
+
+
+import typing
+
+from .query_input_interpolation_one_eight import QueryInputInterpolationOneEight
+from .query_input_interpolation_one_eleven import QueryInputInterpolationOneEleven
+from .query_input_interpolation_one_five import QueryInputInterpolationOneFive
+from .query_input_interpolation_one_four import QueryInputInterpolationOneFour
+from .query_input_interpolation_one_nine import QueryInputInterpolationOneNine
+from .query_input_interpolation_one_one import QueryInputInterpolationOneOne
+from .query_input_interpolation_one_seven import QueryInputInterpolationOneSeven
+from .query_input_interpolation_one_six import QueryInputInterpolationOneSix
+from .query_input_interpolation_one_ten import QueryInputInterpolationOneTen
+from .query_input_interpolation_one_thirteen import QueryInputInterpolationOneThirteen
+from .query_input_interpolation_one_three import QueryInputInterpolationOneThree
+from .query_input_interpolation_one_twelve import QueryInputInterpolationOneTwelve
+from .query_input_interpolation_one_two import QueryInputInterpolationOneTwo
+from .query_input_interpolation_one_zero import QueryInputInterpolationOneZero
+
+QueryInputInterpolationOne = typing.Union[
+    QueryInputInterpolationOneZero,
+    QueryInputInterpolationOneOne,
+    QueryInputInterpolationOneTwo,
+    QueryInputInterpolationOneThree,
+    QueryInputInterpolationOneFour,
+    QueryInputInterpolationOneFive,
+    QueryInputInterpolationOneSix,
+    QueryInputInterpolationOneSeven,
+    QueryInputInterpolationOneEight,
+    QueryInputInterpolationOneNine,
+    QueryInputInterpolationOneTen,
+    QueryInputInterpolationOneEleven,
+    QueryInputInterpolationOneTwelve,
+    QueryInputInterpolationOneThirteen,
+]

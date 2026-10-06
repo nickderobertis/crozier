@@ -10,6 +10,22 @@
 # equal to this file), what each key holds, the defect rule, and how a fix adds
 # an entry. Entries are sorted by `id`.
 
+- id: body-query-parameter-value
+  kind: fern-defect
+  trigger: >-
+    An inline JSON body property sharing its wire key with a query parameter,
+    where the method signature renames the body argument to avoid the collision.
+  fern: >-
+    The query parameter's variable as the JSON property's value, including
+    inside convert_and_respect_annotation_metadata.
+  crozier: >-
+    The renamed body argument as the JSON property's value, retaining the
+    signature, query mapping, converter annotation and every other statement.
+  reason: >-
+    The method accepts a distinct body argument but sends the query argument
+    instead, so the caller's body value never reaches its documented body key.
+  evidence: docs/departures/evidence/body-query-parameter-value.md
+
 - id: closed-empty-object-example
   kind: fern-defect
   trigger: >-

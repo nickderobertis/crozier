@@ -5189,6 +5189,17 @@ const CORPORA: &[&Corpus] = &[
     &OPENFOODFACTS_TAXONOMY_EDITOR,
     &QONTRACT_API,
     &OAL_EXAMPLE,
+    &MILLENIUM_FALCON_CHALLENGE,
+    &MAXIMO_WXO_INTEGRATION,
+    &MI_MUSIC,
+    &G4BRYM_DOWNLOAD_MANAGER,
+    &OPENTOSCA_LICENSE_ENGINE,
+    &CHAT_REST_API,
+    &ESP32_STREAMLINE_BRIDGE,
+    &CPHOS_AI_QUESTION,
+    &FLASK_EXAMPLE_HEROKU,
+    &OIP_WEB_API,
+    &WAYLAY_QUERIES,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -6786,30 +6797,21 @@ const KOMGA: Corpus = Corpus {
     extra_fields: None,
     unmatched: &[
         "reference.md",
-        "src/fern/api_keys/raw_client.py",
         "src/fern/book_pages/client.py",
         "src/fern/book_pages/raw_client.py",
         "src/fern/book_poster/client.py",
         "src/fern/book_poster/raw_client.py",
-        "src/fern/books/raw_client.py",
         "src/fern/client_settings/client.py",
         "src/fern/collection_poster/client.py",
         "src/fern/collection_poster/raw_client.py",
-        "src/fern/collections/raw_client.py",
         "src/fern/duplicate_pages/client.py",
         "src/fern/duplicate_pages/raw_client.py",
-        "src/fern/file_system/raw_client.py",
-        "src/fern/import_/raw_client.py",
-        "src/fern/libraries/raw_client.py",
         "src/fern/readlist_poster/client.py",
         "src/fern/readlist_poster/raw_client.py",
-        "src/fern/readlists/raw_client.py",
         "src/fern/series_poster/client.py",
         "src/fern/series_poster/raw_client.py",
-        "src/fern/server_settings/raw_client.py",
         "src/fern/types/search_operator_boolean.py",
         "src/fern/types/search_operator_date.py",
-        "src/fern/users/raw_client.py",
     ],
 };
 
@@ -6830,7 +6832,6 @@ const SHORT_IO: Corpus = Corpus {
         "src/fern/__init__.py",
         "src/fern/link_management/__init__.py",
         "src/fern/link_management/client.py",
-        "src/fern/link_management/raw_client.py",
         "src/fern/link_management/types/__init__.py",
         "src/fern/link_management/types/post_links_bulk_request_links_item_created_at.py",
         "src/fern/link_management/types/post_links_bulk_request_links_item_expires_at.py",
@@ -8201,6 +8202,151 @@ const OAL_EXAMPLE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Waylay's query API, corpus row 329: both URL and JSON body keys named
+/// `resource` have distinct signature arguments. The body/query departure keeps
+/// the body value the caller passed while the query keeps its own value.
+const WAYLAY_QUERIES: Corpus = Corpus {
+    api: "waylay-queries",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `millenium-falcon-challenge`: corpus row 319, the Millennium Falcon challenge's odds API,
+/// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
+const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
+    api: "millenium-falcon-challenge",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `maximo-wxo-integration`: corpus row 320, IBM's Maximo integration API, whose OpenAPI 3.0.0
+/// success responses are inline `application/json` bodies declaring `{}`
+const MAXIMO_WXO_INTEGRATION: Corpus = Corpus {
+    api: "maximo-wxo-integration",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `mi-music`: corpus row 321, mi_music's API, with schemaless `text/plain`, `audio/mpeg` and
+/// `video/mp4` successes and titled bodies under HTTP Basic security
+const MI_MUSIC: Corpus = Corpus {
+    api: "mi-music",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `g4brym-download-manager`: corpus row 322, download-manager's API, whose parameterless
+/// 3.0 operations post inline arrays titled `Files`
+const G4BRYM_DOWNLOAD_MANAGER: Corpus = Corpus {
+    api: "g4brym-download-manager",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `opentosca-license-engine`: corpus row 323, the OpenTOSCA license engine's API, with a
+/// titled inline string-array body and inline `{}` successes in a 3.0 document
+const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
+    api: "opentosca-license-engine",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `chat-rest-api`: corpus row 324, chat-rest-api's API, whose error keys `404-message`
+/// and `404-file` both name 404 and whose success lists `text/plain` before
+/// `application/octet-stream`
+const CHAT_REST_API: Corpus = Corpus {
+    api: "chat-rest-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `esp32-streamline-bridge`: corpus row 325, the StreamLine bridge API, whose recordings
+/// answer a schemaless `audio/wav`
+const ESP32_STREAMLINE_BRIDGE: Corpus = Corpus {
+    api: "esp32-streamline-bridge",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `cphos-ai-question`: corpus row 326, CPhOS's question-generation API, whose artifact
+/// download lists a schemaless `application/pdf` before `text/markdown`
+const CPHOS_AI_QUESTION: Corpus = Corpus {
+    api: "cphos-ai-question",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `flask-example-heroku`: corpus row 327, a package-name extractor whose one operation
+/// declares a JSON request body with no schema
+const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
+    api: "flask-example-heroku",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `oip-web-api`: corpus row 328, the Oip service web API, whose parameterless
+/// module registration declares an empty `requestBody.description`
+const OIP_WEB_API: Corpus = Corpus {
+    api: "oip-web-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `apideck.com-ecosystem-client-class-name`: corpus row 307, row 13's Ecosystem
 /// API under `client_class_name: EcosystemClient` — the class name of its own
 /// `ecosystem` resource's sub-client. The root `client.py` imports that
@@ -8764,6 +8910,11 @@ fn free5gc_pdu_session_matches_fern_output() {
 #[test]
 fn sigstore_rekor_matches_fern_output() {
     assert_committed_corpus_matches(&SIGSTORE_REKOR);
+}
+
+#[test]
+fn waylay_queries_matches_fern_output() {
+    assert_committed_corpus_matches(&WAYLAY_QUERIES);
 }
 
 #[test]
@@ -11583,7 +11734,7 @@ fn inline_json_bodies_matching_response_schema_omit_content_type() {
 }
 
 #[test]
-fn colliding_query_and_body_fields_serialize_from_query_name() {
+fn colliding_query_and_body_fields_serialize_from_body_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    \
          put:\n      operationId: updateWidget\n      tags: [widgets]\n      parameters:\n        - name: id\n          \
@@ -11602,11 +11753,11 @@ fn colliding_query_and_body_fields_serialize_from_query_name() {
     );
     assert!(
         raw.contains("\"active\": active,"),
-        "Fern serializes a colliding body field from the original query parameter name: {raw}"
+        "query parameters keep their own original argument: {raw}"
     );
     assert!(
-        !raw.contains("\"active\": widget_record_active,"),
-        "the prefixed signature name should not be used in the JSON dict for this collision: {raw}"
+        raw.contains("\"active\": widget_record_active,"),
+        "the JSON body must use its renamed caller argument: {raw}"
     );
 }
 
@@ -11677,16 +11828,20 @@ fn all_of_request_bodies_flatten_inherited_fields() {
     );
 }
 
+/// A single-use `allOf` body Fern drops from the type layer is flattened into the
+/// method like any dropped `$ref` body, and keeps the JSON content-type header
+/// that a surviving schema's body leaves to httpx: measured at Fern 5.20.0 on this
+/// document, with the `$ref` member first, last, or under a `type: object`.
 #[test]
-fn pathless_all_of_bodies_omit_explicit_content_type() {
+fn pathless_single_use_all_of_bodies_send_the_content_type() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/test:\n    post:\n      operationId: testWidget\n      tags: [widgets]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/Widget' }\n      responses:\n        '200': { description: OK }\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string }\n    Widget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            active: { type: boolean }\n",
     );
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
     assert!(
-        !raw.contains("\"content-type\": \"application/json\""),
-        "pathless allOf request bodies should leave content type to the transport: {raw}"
+        raw.contains("\"content-type\": \"application/json\""),
+        "a single-use allOf request body sends the JSON content type: {raw}"
     );
 }
 
@@ -14872,6 +15027,56 @@ fn qontract_api_matches_fern_output() {
 #[test]
 fn oal_example_matches_fern_output() {
     assert_committed_corpus_matches(&OAL_EXAMPLE);
+}
+
+#[test]
+fn millenium_falcon_challenge_matches_fern_output() {
+    assert_committed_corpus_matches(&MILLENIUM_FALCON_CHALLENGE);
+}
+
+#[test]
+fn maximo_wxo_integration_matches_fern_output() {
+    assert_committed_corpus_matches(&MAXIMO_WXO_INTEGRATION);
+}
+
+#[test]
+fn mi_music_matches_fern_output() {
+    assert_committed_corpus_matches(&MI_MUSIC);
+}
+
+#[test]
+fn g4brym_download_manager_matches_fern_output() {
+    assert_committed_corpus_matches(&G4BRYM_DOWNLOAD_MANAGER);
+}
+
+#[test]
+fn opentosca_license_engine_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENTOSCA_LICENSE_ENGINE);
+}
+
+#[test]
+fn chat_rest_api_matches_fern_output() {
+    assert_committed_corpus_matches(&CHAT_REST_API);
+}
+
+#[test]
+fn esp32_streamline_bridge_matches_fern_output() {
+    assert_committed_corpus_matches(&ESP32_STREAMLINE_BRIDGE);
+}
+
+#[test]
+fn cphos_ai_question_matches_fern_output() {
+    assert_committed_corpus_matches(&CPHOS_AI_QUESTION);
+}
+
+#[test]
+fn flask_example_heroku_matches_fern_output() {
+    assert_committed_corpus_matches(&FLASK_EXAMPLE_HEROKU);
+}
+
+#[test]
+fn oip_web_api_matches_fern_output() {
+    assert_committed_corpus_matches(&OIP_WEB_API);
 }
 
 #[test]
@@ -20272,5 +20477,55 @@ fn namespaced_enum_collisions_follow_the_parameter_location() {
         "namespaced-header-enum-diff-tag",
     ] {
         assert_generates_in_both_modes(&evidence.join(format!("{case}.yml")), case);
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_body_query_collision_keeps_both_callers_values() {
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/corpus-sources/waylay-queries/openapi.yaml");
+    let script = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/departures/evidence/body-query-parameter-value.py");
+    let directory = tempfile::tempdir().expect("collision SDKs");
+    for version in ["3.0.3", "3.1.0"] {
+        let spec = directory.path().join(format!("{version}.yaml"));
+        let sdk = directory.path().join(version);
+        std::fs::write(
+            &spec,
+            std::fs::read_to_string(&source).unwrap().replacen(
+                "openapi: 3.1.0",
+                &format!("openapi: {version}"),
+                1,
+            ),
+        )
+        .unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&sdk)
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+            ])
+            .assert()
+            .success();
+        let python = runtime_python_env().expect("SDK runtime environment");
+        let run = std::process::Command::new(python)
+            .arg(&script)
+            .arg(sdk.join("src"))
+            .arg("body-value")
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .unwrap();
+        assert!(
+            run.status.success(),
+            "{version}: {}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
     }
 }

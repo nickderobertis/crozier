@@ -309,6 +309,17 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e qontract_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e typescript_service_template_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oal_example_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e millenium_falcon_challenge_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e maximo_wxo_integration_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mi_music_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e g4brym_download_manager_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e opentosca_license_engine_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e chat_rest_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e esp32_streamline_bridge_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cphos_ai_question_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e flask_example_heroku_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oip_web_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e waylay_queries_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e breizhsport_catalogue_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e protoform_conformance_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ere_ps_app_matches_fern_output

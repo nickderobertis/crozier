@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "3dfb28c49e18c91ac32efb6a31d5562d5c4a0c116fa6b34ff5e7b8b4c82785e0"
+
+[[covers]]
+key = "response-status-space-suffixed"
+search = "docs/openapi-surface/bodies-media.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-bodies-responses/README.md"

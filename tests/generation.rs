@@ -5484,10 +5484,13 @@ paths:
 /// The `title` on `Message` is load bearing, for the reason
 /// `anonymous_request_metadata_and_schema_examples_drive_fern_shapes` records: a
 /// flattened body over an untitled surviving schema loses its explicit
-/// `content-type` before either carve-out this test pins can reach it, which
-/// SFTPGo, Audiobookshelf and LORIS each measure against Fern 5.20.0.
+/// `content-type`, which SFTPGo, Audiobookshelf and LORIS each measure against
+/// Fern 5.20.0. A titled one keeps it whatever else holds: measured at Fern CLI
+/// 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 on this document, the
+/// unauthenticated echo whose request and response share `Message`, the
+/// Bearer-secured one, and both Basic-auth bodies, described or not, all send it.
 #[test]
-fn same_request_response_ref_omits_content_type_only_when_unauthenticated() {
+fn titled_bodies_keep_the_content_type_whatever_their_auth_or_response() {
     let files = render(
         r##"openapi: 3.0.3
 info: { title: Echo, version: 1.0.0 }
@@ -5558,8 +5561,8 @@ components:
     let public = &files["src/acme/public/raw_client.py"];
     assert!(public.contains("json={"), "{public}");
     assert!(
-        !public.contains("\"content-type\": \"application/json\""),
-        "same-ref public echo omits the redundant header: {public}"
+        public.contains("\"content-type\": \"application/json\""),
+        "a titled same-ref public echo keeps the header: {public}"
     );
     let private = &files["src/acme/private/raw_client.py"];
     assert!(private.contains("json={"), "{private}");
@@ -5571,8 +5574,8 @@ components:
         .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]]"));
     let basic = &files["src/acme/basic/raw_client.py"];
     assert!(
-        !basic.contains("\"content-type\": \"application/json\""),
-        "Basic-auth JSON bodies without transport parameters leave the header to httpx: {basic}"
+        basic.contains("\"content-type\": \"application/json\""),
+        "an undescribed Basic-auth body over a titled schema keeps the header: {basic}"
     );
     let basic_described = &files["src/acme/basic_described/raw_client.py"];
     assert!(
@@ -10734,8 +10737,8 @@ components:
 
 /// Skool's `GET …/comments/` answers `$ref: SuccessResponse`, a component the
 /// document never declares. Fern types the body `typing.Any` and guards an empty
-/// response, where a written `{}` success schema in a 3.0 document is typed the
-/// same but left unguarded.
+/// response, and a written `{}` success schema in a 3.0 document is typed and
+/// guarded the same: measured at Fern 5.20.0, the version does not gate the guard.
 #[test]
 fn an_undeclared_success_component_guards_the_empty_body_like_skool() {
     let files = render(
@@ -10780,7 +10783,11 @@ components:
     assert!(comments.contains("typing.Any"), "{raw}");
     let likes = &raw[raw.find("def list_likes").expect(raw)..];
     let likes = &likes[..likes.find("class AsyncRawPostsClient").expect(raw)];
-    assert!(!likes.contains("_response.text.strip()"), "{raw}");
+    assert!(
+        likes.contains("if _response is None or not _response.text.strip():"),
+        "{raw}"
+    );
+    assert!(likes.contains("typing.Any"), "{raw}");
 }
 
 /// Spendesk's `request_access_token` posts a bare `type: object` and answers a
@@ -12502,10 +12509,9 @@ components:
 /// line of its Fern 5.20.0 golden or of the 3.0 probe measured beside it:
 /// - a query parameter whose sole `oneOf` member is a nullable `oneOf` of one
 ///   `$ref` is that `$ref`, optional once;
-/// - a `$ref` body field colliding with a query parameter is sent from its
-///   prefixed argument when the body is posted by that operation alone, and
-///   from the parameter's when the schema is also a response (Airflow's
-///   `DAG.tags`, Anchore's `PolicyBundleRecord.active`).
+/// - a `$ref` body field colliding with a query parameter keeps Fern's prefixed
+///   signature and sends that body argument, including when the schema is also
+///   a response (the body-query-parameter-value defect).
 #[test]
 fn yourbrand_sole_nested_one_of_parameter_and_prefixed_collision_shapes() {
     let files = render(
@@ -12588,16 +12594,14 @@ components:
         "{projects}"
     );
     assert!(
-        projects.contains("            json={\n                \"name\": name,\n                \"tags\": tags,\n"),
+        projects.contains("            json={\n                \"name\": name,\n                \"tags\": tagged_tags,\n"),
         "{projects}"
     );
 }
 
-/// The probe `docs/fern-measurements/yourbrand-repairs/` measured on pinned Fern,
-/// rendered by crozier: every line that tells its two behaviours apart in Fern's
-/// committed `raw_client.py` — which colliding body field is sent from its
-/// renamed argument, and how the nested sole-member parameter is typed — is a
-/// line of crozier's too.
+/// The measured request-body collision probe retains its signature and nested
+/// parameter types. Its query-value serialization defect is compared through
+/// the same intended-departures engine as registered goldens.
 #[test]
 fn measured_yourbrand_repair_probe_matches_its_fern_output() {
     let dir =
@@ -12605,27 +12609,19 @@ fn measured_yourbrand_repair_probe_matches_its_fern_output() {
     let probe = std::fs::read_to_string(dir.join("probe.yaml")).expect("the committed probe");
     let fern = std::fs::read_to_string(dir.join("fern-raw_client.py.txt"))
         .expect("Fern's committed output");
-    let files = render(&probe);
-    let crozier = &files["src/acme/raw_client.py"];
-    let telling: Vec<&str> = fern
-        .lines()
-        .filter(|line| line.contains("\"owner\": ") || line.contains("sort_direction: "))
-        .collect();
-    assert!(
-        telling.iter().any(|line| line.contains("a_owner")),
-        "{fern}"
+    let files = render_project(&probe, "fern", "default_package_name");
+    let rel = "src/fern/raw_client.py";
+    let crozier = &files[rel];
+    let context = crozier::departures::Context::from_sources(
+        [(rel, fern.as_str())],
+        [(rel, crozier.as_str())],
     );
-    assert!(
-        telling
-            .iter()
-            .any(|line| line.trim() == "\"owner\": owner,"),
-        "{fern}"
-    );
-    let crozier_lines: Vec<&str> = crozier
-        .lines()
-        .filter(|line| line.contains("\"owner\": ") || line.contains("sort_direction: "))
-        .collect();
-    assert_eq!(telling, crozier_lines, "{crozier}");
+    let compared = crozier::parity::compare_file(&context, rel, crozier, &fern).unwrap();
+    assert!(compared.matches(), "{:?}", compared.diff());
+    assert!(compared
+        .departures
+        .iter()
+        .any(|departure| departure.id == "body-query-parameter-value"));
 }
 
 /// Fragments of MockServer (corpus row 232), each assertion a line of its Fern

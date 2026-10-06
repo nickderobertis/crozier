@@ -2434,7 +2434,7 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
         .flat_map(PathItem::operations)
         .flat_map(|(_, operation)| operation.responses.keys())
         .filter(|code| !code.starts_with('2'))
-        .filter_map(|code| code.parse::<u16>().ok())
+        .filter_map(|code| crate::ir::response_key_status(code))
         .filter_map(crate::ir::error_class_name)
         .collect();
     let renames: IndexMap<String, String> = doc

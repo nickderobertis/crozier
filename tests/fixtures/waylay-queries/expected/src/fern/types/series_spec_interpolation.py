@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .series_spec_interpolation_method import SeriesSpecInterpolationMethod
+from .series_spec_interpolation_one import SeriesSpecInterpolationOne
+
+SeriesSpecInterpolation = typing.Union[SeriesSpecInterpolationMethod, SeriesSpecInterpolationOne]

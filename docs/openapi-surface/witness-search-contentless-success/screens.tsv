@@ -1,0 +1,3 @@
+repository	path	verdict	reason
+Technical-writing-mentorship-program/PostmanToOpenAPIConverter	EXAMPLE/OpenAPI.yaml	not-publisher-specification	Converter demonstration of generic user CRUD, rather than a deployed API publisher’s specification; no service was contacted.
+Alfian57/gin-kit	internal/cli/templates/api/openapi.yaml.tmpl	uninstantiated-template	The title contains literal {{.Project}} template syntax; the shared OpenAPI loader rejects it before a declaration walk.

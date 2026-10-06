@@ -1,5 +1,5 @@
 key	selectors	sites	note
-request-body-description	requestBody.description	src/ir.rs::build_endpoint[body_description_empty: op]	
+request-body-description	requestBody.description	src/ir.rs::build_endpoint[=body_description_missing: op]	
 request-body-content	requestBody.content	src/ir.rs::selected_json_request_media,src/ir.rs::request_body_ignored,src/openapi.rs::request_body_schemas	
 request-body-required	requestBody.required	src/ir.rs::resolve_request_body[if let Some\(member\) = simple_nullable_member\(schema\)],src/ir.rs::resolve_request_body[if is_unknown\(schema\) \{]	
 components-request-bodies	components.requestBodies	src/openapi.rs::resolve_request_body,src/openapi.rs::normalize_request_bodies	
@@ -13,8 +13,8 @@ media-type-suffix-json	fixture=anchore.io,fixture=apicurio.local-registry,fixtur
 media-type-suffix-xml	fixture=color.pizza,fixture=traccar.org	none	
 media-type-wildcard	fixture=6-dot-authentiqio.appspot.com,fixture=apache.org-qakka,fixture=apicurio.local-registry,fixture=apideck.com-file-storage,fixture=apideck.com-proxy,fixture=bintable.com,fixture=bungie.net,fixture=openfigi.com	src/ir.rs::RequestBody::is_wildcard_media,src/ir.rs::has_wildcard_binary_response,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema,src/ir.rs::resolve_request_body[let binary_media = \x7c]	
 media-type-range	fixture=sftpgo,fixture=torrentarr,fixture=audiobookshelf,fixture=api-openverse-org,fixture=komga	src/ir.rs::resolve_request_body[\.find\(\x7c\(media_type\x2c media\)\x7c \{],src/ir.rs::is_binary_response,src/ir.rs::has_binary_schema_response	
-media-type-multipart	fixture=form-bodies,fixture=anchore.io,fixture=appwrite.io-client,fixture=appwrite.io-server,fixture=discourse.local,fixture=microcks.local,fixture=free5gc-pdu-session,fixture=letta,fixture=free5gc-namf-communication,fixture=livepeer-ai-runner	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(\"multipart/related\"\)],src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::form_body_source_names	
-media-type-form-urlencoded	fixture=bracketed-property-names,fixture=form-bodies,fixture=anchore.io,fixture=traccar.org,fixture=twilio.com-twilio_voice_v1,fixture=twilio.com-twilio_messaging_v1	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::urlencoded_body_source_names,src/ir.rs::form_body_source_names	
+media-type-multipart	fixture=form-bodies,fixture=anchore.io,fixture=appwrite.io-client,fixture=appwrite.io-server,fixture=discourse.local,fixture=microcks.local,fixture=free5gc-pdu-session,fixture=letta,fixture=free5gc-namf-communication,fixture=livepeer-ai-runner	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(\"multipart/related\"\)],src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)]	
+media-type-form-urlencoded	fixture=bracketed-property-names,fixture=form-bodies,fixture=anchore.io,fixture=traccar.org,fixture=twilio.com-twilio_voice_v1,fixture=twilio.com-twilio_messaging_v1	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::urlencoded_body_source_names	
 media-type-octet-stream	fixture=exhaustive,fixture=apache.org-qakka	src/ir.rs::resolve_request_body[if rb\.content\.contains_key\(\"application/octet-stream\"\)],src/ir.rs::is_binary_response	
 media-type-event-stream	fixture=sse-streaming,fixture=maif.local-otoroshi,fixture=electric-sql,fixture=letta,fixture=exa-gate	src/ir.rs::is_streaming,src/ir.rs::stream_chunk_type	
 media-type-malformed-key	fixture=eozilla,fixture=free5gc-pdu-session,fixture=anchore.io	src/ir.rs::has_dispatchable_media	
@@ -39,7 +39,7 @@ document-info	openapi.info	none	`src/config.rs::default_package_name` names the 
 document-servers	openapi.servers	src/ir.rs::environment_model,src/ir.rs::resolve_server_url,src/emit.rs::environment_file,src/emit.rs::EnvClientParts::new	
 document-paths	openapi.paths	src/openapi.rs::deserialize_paths,src/ir.rs::endpoints[for \(path, item\) in &doc.paths \{],src/ir.rs::endpoint_modules	
 document-components	openapi.components	src/ir.rs::build[for \(key, schema\) in &doc.components.schemas \{],src/ir.rs::resolve_ref	
-document-security	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+document-security	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
 document-tags	openapi.tags	src/ir.rs::title_from_tag	
 document-external-docs	openapi.externalDocs	none	
 info-title	info.title	none	`src/config.rs::default_package_name` names the package only when no `--package-name` is set, a generator setting rather than a document shape, and every corpus row sets one
@@ -79,7 +79,7 @@ operation-request-body	operation.requestBody	src/openapi.rs::normalize_request_b
 operation-responses	operation.responses	src/openapi.rs::normalize_responses,src/openapi.rs::resolve_response,src/ir.rs::success_response_entry,src/ir.rs::resolve_errors	
 operation-callbacks	operation.callbacks	none	
 operation-deprecated	operation.deprecated	none	
-operation-security	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+operation-security	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
 operation-servers	operation.servers	none	
 tag-name	tag.name	src/ir.rs::title_from_tag	
 tag-description	tag.description	none	
@@ -401,7 +401,7 @@ schema-example-null	schema.example=null	src/ir.rs::schema_example,src/ir.rs::exa
 schema-example-number	schema.example=number	src/ir.rs::schema_example,src/ir.rs::example_literal,src/openapi.rs::de_schema_examples	
 schema-example-string	schema.example=string	src/ir.rs::schema_example,src/ir.rs::example_literal,src/openapi.rs::de_schema_examples	
 securityscheme-type-apikey	securityScheme.type=apiKey	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
-securityscheme-type-http	securityScheme.type=http	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{],src/ir.rs::auth_model[HttpAuthScheme::Basic\) => \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::operation_uses_basic_auth,src/ir.rs::is_auth_managed_header,src/emit.rs::client_wrapper_file[if basic_auth \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
+securityscheme-type-http	securityScheme.type=http	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{],src/ir.rs::auth_model[HttpAuthScheme::Basic\) => \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::is_auth_managed_header,src/emit.rs::client_wrapper_file[if basic_auth \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
 securityscheme-type-oauth2	securityScheme.type=oauth2	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[SecuritySchemeType::OAuth2 => Auth::Bearer \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::oauth_scope_enum,src/ir.rs::build[if let Some\(oauth_scope\) = oauth_scope_enum\(doc\) \{],src/ir.rs::body_response_same_ref,src/ir.rs::is_auth_managed_header	
 securityscheme-type-openidconnect	securityScheme.type=openIdConnect	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[if s.ty == SecuritySchemeType::OpenIdConnect => Auth::Bearer \{]	
 mutualTLS	securityScheme.type=mutualTLS	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[=_ => Auth::None,]	
@@ -409,7 +409,7 @@ securityscheme-description	securityScheme.description	none
 securityscheme-name	securityScheme.name	src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{]	
 apikey-header	securityScheme.in=header	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header	
 apiKey-cookie	securityScheme.in=cookie	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::additional_api_key_global_headers	
-http-basic	securityScheme.scheme=basic	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Basic\) => \{],src/ir.rs::operation_uses_basic_auth,src/emit.rs::client_wrapper_file[if basic_auth \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
+http-basic	securityScheme.scheme=basic	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Basic\) => \{],src/emit.rs::client_wrapper_file[if basic_auth \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
 http-bearer	securityScheme.scheme=bearer	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::is_auth_managed_header,src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
 http-negotiate	securityScheme.scheme=negotiate	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[=_ => Auth::None,]	
 http-dpop	securityScheme.scheme=dpop,securityScheme.scheme=DPoP	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[=_ => Auth::None,]	
@@ -427,18 +427,18 @@ oauthflow-authorizationurl	securityScheme.flows.authorizationCode.authorizationU
 oauthflow-tokenurl	securityScheme.flows.authorizationCode.tokenUrl,securityScheme.flows.clientCredentials.tokenUrl	none	
 oauthflow-refreshurl	securityScheme.flows.clientCredentials.refreshUrl	none	
 oauthflow-scopes	securityScheme.flows.authorizationCode.scopes,securityScheme.flows.clientCredentials.scopes	src/ir.rs::oauth_scope_enum,src/ir.rs::build[if let Some\(oauth_scope\) = oauth_scope_enum\(doc\) \{]	
-security-requirement-scopes-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
-security-requirement-scopes-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
-security-requirement-noscopes-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
-security-requirement-noscopes-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+security-requirement-scopes-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref	
+security-requirement-scopes-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
+security-requirement-noscopes-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref	
+security-requirement-noscopes-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
 security-optional-requirement-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref	
 security-optional-requirement-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
 security-empty-list-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref	
 security-empty-list-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
-security-alternatives-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
-operation-security-alternatives	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
-security-conjunction-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
-security-conjunction-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+security-alternatives-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref	
+operation-security-alternatives	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
+security-conjunction-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref	
+security-conjunction-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
 components-securityschemes	components.securitySchemes	src/openapi.rs::normalize_security_scheme_refs,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{],src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::additional_api_key_global_headers,src/ir.rs::oauth_scope_enum	`src/ir.rs::auth_model`'s empty-`securitySchemes` arm is the absence arm
 schema-name-nonidentifier-name	components.schemas:nonidentifier-name	src/naming.rs::class_name	
 link-description	link.description	none	

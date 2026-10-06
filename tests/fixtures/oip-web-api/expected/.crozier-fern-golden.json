@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "oip-web-api",
+  "corpus_spec_ref": "e3a6ecd60b1204c64907d543b37652f4230fee89",
+  "corpus_spec_url": "https://raw.githubusercontent.com/g10101k/Oip/e3a6ecd60b1204c64907d543b37652f4230fee89/src/OipOpenApi.json"
+}

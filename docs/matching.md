@@ -2256,6 +2256,69 @@ dropping the header for. Their echo schemas carry a `title` — the shape those
 carve-outs still govern — and each test says why in its own doc comment. No
 committed golden's expectation moved.
 
+## Request bodies and schemaless responses, as measured
+
+Measured at Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 on documents
+written to vary one attribute at a time, then proven on the goldens named below.
+Each rule replaced a feature that happened to accompany it in the corpus, which
+is how crozier came to encode the feature instead of the rule.
+
+**The JSON `content-type` header.** For an `application/json` request body:
+
+1. A path, query or header parameter beside the body keeps the header.
+2. A body whose media type declares no `schema` sends nothing: the method takes
+   no `request`, passes no `json=` and sends no header.
+3. An inline object body (declared `properties`) keeps it, whatever its
+   `requestBody.description` says — `""` included — or omits.
+4. An inline array, map or bare-object body sends it exactly when its schema
+   declares a `title` or a `description` (`""` included). Neither
+   `requestBody.required`, the OpenAPI version nor a `$ref` item moves it.
+5. An inline scalar body sends it when its schema declares a `description`; a
+   `title` alone does not (the `uuid`/`byte`-style formats keep their own rule).
+6. A `$ref` body Fern flattens into the method keeps it when the component is
+   used once and so leaves the type layer, an `allOf` composition included; one
+   whose component survives drops it unless the component declares a `title`,
+   and the operation's security scheme does not enter into it. The other
+   corpus-measured clauses of `append_request_call_args` in `src/emit.rs` — shared
+   undocumented bodies, codegen-named bodies, plain inline unions — are unchanged.
+
+Each attribute the rule depends on, and a committed golden on each side of it:
+
+| attribute | sends the header | does not |
+|---|---|---|
+| a parameter beside an untitled array | `agco-ats` `PUT /api/v2/AftermarketServices/Engines/{serialNumber}/IQACodes` | `agco-ats` `POST /api/v2/StringDefinitions/Batch` |
+| an inline container's `title` | `g4brym-download-manager` `POST /api/v1/files/` and `/files/status/` (arrays titled `Files`) | `agco-ats` `POST /api/v2/StringDefinitions/Batch` (an untitled array) |
+| an inline container's `description` | `komga` `PATCH /api/v1/books/metadata` (described map) | `komga` `PATCH /api/v1/client-settings/global` (undescribed map) |
+| an inline scalar's `description` | `described-scalar-bodies` `set_label`, `set_setpoint` (hand-written) | the same fixture's titled `set_nickname`, `set_offset` |
+| a single-use `$ref` body | `redocly.com-museum` `buy_museum_tickets` (`allOf`); `oip-web-api` `registry_module` (`requestBody.description: ""`) | SFTPGo's surviving, untitled `Admin` (see [above](#what-the-widened-licence-rules-witnesses-cost-issue-188)) |
+| a schema on the body | any row above | `flask-example-heroku` `POST /extractpackages` (`application/json: {}`) |
+
+The version is not among them: `opentosca-license-engine` and
+`g4brym-download-manager` (3.0) send the header for a titled inline array as
+letta and deepsearch-ds-v2 (3.1) do, and `mi-music` sends it for titled `$ref`
+bodies under HTTP Basic security.
+
+**A status key is read by its leading integer.** `"429 (live)"` declares 429,
+`"404abc"` 404 and `"404-message"` 404, so each raises the error class its number
+names; `4xx`, `5xx` and `x-200:err message` declare no error status. Two keys
+naming one status declare it once, and the spelled-out key's body wins over the
+plain key's whichever comes first. `chat-rest-api` and the hand-written
+`suffixed-status-keys` pin it.
+
+**An unknown success body is guarded in 3.0 as in 3.1.** An inline
+`application/json: {schema: {}}` success, or one naming a `{}` component, returns
+early on an empty body whatever the document version (`maximo-wxo-integration`,
+`opentosca-license-engine`).
+
+**A schemaless success is typed by its media type.** Any `text/*` but
+`text/event-stream` returns `str` (`mi-music`, `chat-rest-api`); `audio/*`,
+`video/*`, `image/*`, `application/pdf` and `application/octet-stream` stream
+bytes (`mi-music`, `esp32-streamline-bridge`, `cphos-ai-question`); `*/*` returns
+`typing.Any`; `application/zip`, `application/gzip`, `font/*` and `model/*` return
+nothing. Where a success lists both a text and a download media type, the first
+one listed decides, and a `text/markdown` listed after a download does not make
+the method a Markdown one.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which

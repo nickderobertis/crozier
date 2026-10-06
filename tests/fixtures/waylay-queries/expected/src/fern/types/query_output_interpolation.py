@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .query_output_interpolation_method import QueryOutputInterpolationMethod
+from .query_output_interpolation_one import QueryOutputInterpolationOne
+
+QueryOutputInterpolation = typing.Union[QueryOutputInterpolationMethod, QueryOutputInterpolationOne]

@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 198 of the 231 registered sources live in `corpus-sources/` (a split
+  and 209 of the 242 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -54,7 +54,7 @@ import json
 import re
 import unicodedata
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator
@@ -1082,6 +1082,78 @@ PREDICATES = {
         "examples leave out unless it is required"
     ),
     "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
+    "operation.requestBody:body-prefixed-single-use": (
+        "one per Operation Object other than a GET or HEAD whose request body's "
+        "`application/json` schema is a `$ref` to a `components.schemas` entry named "
+        "`Body_…` that no other `$ref` of the document names: FastAPI's embedded-body "
+        "model, which `inline_body_source_names` of `src/ir.rs` drops like any "
+        "single-use body"
+    ),
+    "operation.requestBody:titled-inline-container-oas-three-zero": (
+        "one per Operation Object of an OpenAPI 3.0 document, declaring no parameter "
+        "itself or on its Path Item, whose request body's `application/json` schema "
+        "is an inline array or map (`additionalProperties` true or a schema, no "
+        "`properties`) declaring a `title`: the body "
+        "`inline_container_carries_content_type` of `src/ir.rs` sends the JSON "
+        "content-type header for"
+    ),
+    "operation.responses:contentless-two-hundred-with-created": (
+        "one per Operation Object whose 200 response declares no content while "
+        "its 201 declares content, resolving local Response Object references: "
+        "`success_response_with_content` of `src/ir.rs` selects the latter body"
+    ),
+    "operation.responses:empty-schema-success-oas-three-zero": (
+        "one per Operation Object of an OpenAPI 3.0 document whose success response, "
+        "declared inline rather than by a Response `$ref`, holds an `application/json` "
+        "media type whose `schema` is the empty schema `{}` and no other media type: "
+        "the unknown body `response_may_be_empty` of `src/ir.rs` guards"
+    ),
+    "operation.responses:schemaless-text-success": (
+        "one per Operation Object whose success response holds a `text/*` media type "
+        "other than `text/event-stream` declaring no `schema`, and no "
+        "`application/json` beside it: the body `success_response` of `src/ir.rs` "
+        "types `str`"
+    ),
+    "operation.responses:schemaless-download-success": (
+        "one per Operation Object whose success response holds an `audio/*`, "
+        "`video/*` or `application/pdf` media type declaring no `schema`, and no "
+        "`application/json` beside it: the download `is_download_media_type` of "
+        "`src/ir.rs` streams"
+    ),
+    "operation.requestBody:blank-description-optional-object": (
+        "one per Operation Object declaring no parameter itself or on its Path Item "
+        "whose request body's `description` is the empty string and whose "
+        "`application/json` schema, inline or behind one local `$ref`, declares "
+        "properties not all of which `required` lists: the body crozier once sent "
+        "without the JSON content-type header"
+    ),
+    "operation.requestBody:described-inline-scalar": (
+        "one per Operation Object declaring no parameter itself or on its Path Item "
+        "whose request body's `application/json` schema is an inline string, "
+        "integer, number or boolean declaring no `enum` and a `description`: the "
+        "body `resolve_request_body` of `src/ir.rs` sends with the JSON "
+        "content-type header, where a `title` alone does not"
+    ),
+    "operation.requestBody:schemaless-json": (
+        "one per Operation Object whose request body's content holds only JSON "
+        "media types and none of them declares a `schema`: the body "
+        "`request_body_ignored` of `src/ir.rs` sends nothing for"
+    ),
+    "operation.responses:schemaless-wav-success": (
+        "one per Operation Object whose success response holds an `audio/wav` "
+        "media type declaring no `schema`, and no `application/json` beside it: "
+        "the download `is_download_media_type` of `src/ir.rs` streams"
+    ),
+    "operation.responses:space-suffixed-status-key": (
+        "one per Responses Object key that is a three-digit status code, a space and "
+        "further text (`429 (live)`): the spelling `response_key_status` of "
+        "`src/ir.rs` reads by its leading integer"
+    ),
+    "operation.responses:suffixed-status-key": (
+        "one per Responses Object key that begins with a digit and is neither a "
+        "three-digit status code nor an upper-case range (`4XX`): the spelling "
+        "`response_key_status` of `src/ir.rs` reads by its leading integer"
+    ),
     "components.schemas:cycle-into-cycle": (
         "one per component schema composing no `oneOf` or `anyOf` that names, "
         "anywhere in its own body, a member of a reference cycle that has an "
@@ -2518,7 +2590,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "1e5ede5b075617d0",
+    "endpoint_method_name": "0c8fb4b28591803a",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3070,6 +3142,17 @@ UNION_PORT_DIGESTS = {
     "inferred_discriminant_property_with": "e89b0d632c061c3f",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "aed18925c5369dea",
+}
+
+
+# Schema and response ports share the Rust-body drift gate used by the union ports.
+SCHEMA_RESPONSE_PORT_DIGESTS = {
+    "is_closed_empty_object": "eb83d5799078bfd2",
+    "is_object_type": "94e34f083d5e67d8",
+    "success_response_entry": "668fb1266cbe71a1",
+    "success_response_key": "f373029108feb261",
+    "success_response_with_content": "10b3b17e00498b25",
+    "has_dispatchable_media": "0d3fe2386094f82f",
 }
 
 
@@ -3760,6 +3843,22 @@ def selector_error(text: str) -> str | None:
 _HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
 
 
+def reference_counts(document: Any) -> Counter[str]:
+    """How many times each `$ref` string is written anywhere in the document."""
+    counts: Counter[str] = Counter()
+    stack = [document]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, dict):
+            reference = node.get("$ref")
+            if isinstance(reference, str):
+                counts[reference] += 1
+            stack.extend(node.values())
+        elif isinstance(node, list):
+            stack.extend(node)
+    return counts
+
+
 def operation_routes(document: Any) -> dict[int, tuple[str, str]]:
     """`id()` of each Paths-Object operation -> its (HTTP method, Paths key)."""
     routes: dict[int, tuple[str, str]] = {}
@@ -3943,7 +4042,7 @@ def is_closed_empty_object(schema: Any) -> bool:
     return (
         isinstance(schema, dict)
         and "$ref" not in schema
-        and primary_type(schema.get("type")) == "object"
+        and (primary_type(schema.get("type")) == "object" or schema.get("type") is None)
         and "properties" not in schema
         and "allOf" not in schema
         and schema.get("additionalProperties") is False
@@ -4135,6 +4234,12 @@ class Census:
             document.get("components") if isinstance(document, dict)
             and isinstance(document.get("components"), dict) else {}
         )
+        # The body, response and status-key predicates read the document's
+        # version and how often each `$ref` string is written, once.
+        version = document.get("openapi") if isinstance(document, dict) else None
+        self.openapi_30: bool = isinstance(version, str) and version.startswith("3.0")
+        self.ref_counts: Counter[str] = reference_counts(document)
+        self.paths: Any = document.get("paths") if isinstance(document, dict) else None
         # `parameter.schema:subset-header-string-default` leaves out a header an
         # apiKey scheme already writes, which promotion never takes.
         schemes = self.components.get("securitySchemes")
@@ -4215,6 +4320,7 @@ class Census:
                 found.append("operation.operationId:digit-leading-method")
             if self.wildcard_binary_response(node):
                 found.append("operation.responses:wildcard-binary")
+            found += self.body_and_response_predicates(node, method, url)
         if kind_name == "mediaType":
             schema = node.get("schema")
             if id(node) in self.request_media and isinstance(schema, dict) and "$ref" not in schema:
@@ -4369,29 +4475,141 @@ class Census:
     def declares_parameter_example(self, parameter: dict[Any, Any]) -> bool:
         return parameter.get("example") is not None or self.resolvable_named_example(parameter.get("examples"))
 
-    def wildcard_binary_response(self, operation: dict[Any, Any]) -> bool:
-        """`has_wildcard_binary_response` of `src/ir.rs`, over `success_response_entry`."""
+    def success_entry(self, operation: dict[Any, Any]) -> tuple[Any, Any]:
+        """The success response as `success_response_entry` picks it: (written, resolved)."""
         responses = operation.get("responses")
         if not isinstance(responses, dict):
-            return False
-        resolved = {str(code): self.local_component("responses", value) for code, value in responses.items()}
+            return None, None
+        resolved = {str(code): self.local_component("responses", value)
+                    for code, value in responses.items()}
 
         def dispatchable(response: Any) -> bool:
             content = response.get("content") if isinstance(response, dict) else None
-            if not isinstance(content, dict) or not content:
-                return True
-            return any(
+            return not isinstance(content, dict) or not content or any(
                 isinstance(media, str) and "/" in media and all(media.split("/", 1))
                 for media in content
             )
 
-        success = resolved.get("200") if dispatchable(resolved.get("200")) and "200" in resolved else None
-        if success is None:
-            success = next(
-                (response for code, response in resolved.items()
-                 if code.isdigit() and 200 <= int(code) < 300 and dispatchable(response)),
-                resolved.get("default"),
+        content = lambda value: isinstance(value, dict) and bool(value.get("content"))
+        key = "200" if "200" in resolved and content(resolved["200"]) and dispatchable(resolved["200"]) else next(
+            (code for code, value in resolved.items()
+             if code.isdigit() and 200 <= int(code) < 300 and content(value) and dispatchable(value)),
+            None,
+        )
+        if key is None:
+            key = "200" if "200" in resolved and dispatchable(resolved["200"]) else next(
+                (code for code, value in resolved.items()
+                 if code.isdigit() and 200 <= int(code) < 300 and dispatchable(value)),
+                "default" if "default" in resolved else None,
             )
+        if key is None:
+            return None, None
+        written = next(value for code, value in responses.items() if str(code) == key)
+        return written, resolved[key]
+
+    def has_parameters(self, operation: dict[Any, Any], url: str) -> bool:
+        """Whether the operation or its Path Item declares any parameter."""
+        path_item = self.paths.get(url) if isinstance(self.paths, dict) else None
+        return bool(operation.get("parameters")) or (
+            isinstance(path_item, dict) and bool(path_item.get("parameters"))
+        )
+
+    def body_and_response_predicates(
+        self, operation: dict[Any, Any], method: str, url: str
+    ) -> list[str]:
+        """The request-body, success-response and status-key predicates of one operation."""
+        found: list[str] = []
+        body = self.local_component("requestBodies", operation.get("requestBody"))
+        content = body.get("content") if isinstance(body, dict) else None
+        media = content.get("application/json") if isinstance(content, dict) else None
+        schema = media.get("schema") if isinstance(media, dict) else None
+        if isinstance(schema, dict):
+            reference = schema.get("$ref")
+            name = reference[len(_COMPONENT_SCHEMAS_PREFIX):] if (
+                isinstance(reference, str) and reference.startswith(_COMPONENT_SCHEMAS_PREFIX)
+            ) else None
+            if (
+                method not in ("get", "head") and name is not None and name.startswith("Body_")
+                and name in self.component_schemas and self.ref_counts[reference] == 1
+            ):
+                found.append("operation.requestBody:body-prefixed-single-use")
+            parameters = self.has_parameters(operation, url)
+            additional = schema.get("additionalProperties")
+            container = primary_type(schema.get("type")) == "array" or (
+                not schema.get("properties") and (additional is True or isinstance(additional, dict))
+            )
+            if (
+                self.openapi_30 and not parameters and reference is None and container
+                and "title" in schema
+            ):
+                found.append("operation.requestBody:titled-inline-container-oas-three-zero")
+        if isinstance(body, dict) and body.get("description") == "" and not self.has_parameters(operation, url):
+            target = schema
+            if isinstance(target, dict) and isinstance(target.get("$ref"), str):
+                target = self.component_target(target["$ref"])
+            properties = target.get("properties") if isinstance(target, dict) else None
+            required = target.get("required") if isinstance(target, dict) else None
+            required = set(required) if isinstance(required, list) else set()
+            if isinstance(properties, dict) and any(name not in required for name in properties):
+                found.append("operation.requestBody:blank-description-optional-object")
+        if (
+            isinstance(schema, dict) and "$ref" not in schema and "enum" not in schema
+            and "description" in schema and not self.has_parameters(operation, url)
+            and primary_type(schema.get("type")) in ("string", "integer", "number", "boolean")
+        ):
+            found.append("operation.requestBody:described-inline-scalar")
+        if isinstance(content, dict) and content and all(
+            isinstance(key, str) and is_json_like_media_type(key)
+            and isinstance(value, dict) and "schema" not in value
+            for key, value in content.items()
+        ):
+            found.append("operation.requestBody:schemaless-json")
+        responses = operation.get("responses")
+        if isinstance(responses, dict):
+            entries = {str(code): value for code, value in responses.items()}
+            empty = self.local_component("responses", entries.get("200"))
+            created = self.local_component("responses", entries.get("201"))
+            if (isinstance(empty, dict) and "$ref" not in empty and not empty.get("content")
+                and isinstance(created, dict) and "$ref" not in created and created.get("content")):
+                found.append("operation.responses:contentless-two-hundred-with-created")
+        written, success = self.success_entry(operation)
+        success_content = success.get("content") if isinstance(success, dict) else None
+        if isinstance(success_content, dict):
+            json_media = success_content.get("application/json")
+            if (
+                self.openapi_30 and not (isinstance(written, dict) and "$ref" in written)
+                and list(success_content) == ["application/json"]
+                and isinstance(json_media, dict) and json_media.get("schema") == {}
+            ):
+                found.append("operation.responses:empty-schema-success-oas-three-zero")
+            if json_media is None:
+                def schemaless(test: Callable[[str], bool]) -> bool:
+                    return any(
+                        isinstance(key, str) and test(key.split(";", 1)[0].strip().lower())
+                        and isinstance(value, dict) and "schema" not in value
+                        for key, value in success_content.items()
+                    )
+                if schemaless(lambda base: base.startswith("text/") and base != "text/event-stream"):
+                    found.append("operation.responses:schemaless-text-success")
+                if schemaless(lambda base: base == "application/pdf" or base.startswith(("audio/", "video/"))):
+                    found.append("operation.responses:schemaless-download-success")
+                if schemaless(lambda base: base == "audio/wav"):
+                    found.append("operation.responses:schemaless-wav-success")
+        responses = operation.get("responses")
+        for code in responses if isinstance(responses, dict) else []:
+            text = str(code)
+            if (
+                text[:1].isdigit() and not (len(text) == 3 and text.isdigit())
+                and not (len(text) == 3 and text[0].isdigit() and text[1:] == "XX")
+            ):
+                found.append("operation.responses:suffixed-status-key")
+            if re.fullmatch(r"\d{3} +\S.*", text, re.S):
+                found.append("operation.responses:space-suffixed-status-key")
+        return found
+
+    def wildcard_binary_response(self, operation: dict[Any, Any]) -> bool:
+        """`has_wildcard_binary_response` of `src/ir.rs`, over `success_response_entry`."""
+        _, success = self.success_entry(operation)
         content = success.get("content") if isinstance(success, dict) else None
         media = content.get("*/*") if isinstance(content, dict) else None
         schema = media.get("schema") if isinstance(media, dict) else None

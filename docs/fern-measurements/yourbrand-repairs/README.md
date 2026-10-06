@@ -24,7 +24,9 @@ send `"owner": owner` — a colliding field is sent from its renamed argument on
 where Fern drops the body schema from the type layer — and `ListSorted` types
 `sort_direction: typing.Optional[SortDirection]`. `tests/generation.rs`
 (`measured_yourbrand_repair_probe_matches_its_fern_output`) renders this probe
-with crozier and holds those lines to this file.
+with crozier and compares this file through the shared departures engine.
+The query-value serialization is a [Fern defect](../../departures/evidence/body-query-parameter-value.md);
+crozier keeps the signature but sends the caller’s renamed body argument.
 
 This is no corpus fixture and no coverage probe: it is never a `CORPUS.md` row
 and settles no coverage row. The real-specification evidence for both shapes is

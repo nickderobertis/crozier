@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "opentosca-license-engine",
+  "corpus_spec_ref": "ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65",
+  "corpus_spec_url": "https://raw.githubusercontent.com/OpenTOSCA/license-engine/ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65/src/main/resources/openapi/openapi.json"
+}
