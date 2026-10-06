@@ -150,10 +150,18 @@ def _load(name: str, path: Path) -> ModuleType:
 REACH = _load("golden_reach", REPO / "scripts" / "golden-reach.py")
 CENSUS = _load("openapi_surface_census", REPO / "scripts" / "openapi-surface-census.py")
 SCREEN = _load("witness_screen", REPO / "scripts" / "witness_screen.py")
+INDEX = _load("witness_search_index_for_reach", REPO / "scripts" / "witness-search-github-index.py")
 
 
 def fail(message: str) -> None:
     raise SystemExit(f"golden-reach-search: {message}")
+
+
+def opaque_candidate(value: str) -> str | None:
+    try:
+        return INDEX.opaque_identity(value)
+    except ValueError as error:
+        fail(f"{error}; restore valid v1 evidence from git and rerun the command")
 
 
 def read_tsv(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[str, str]]:
@@ -180,6 +188,10 @@ def read_jsonl(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[
             fail(f"{path}:{number} is not JSON ({error.msg}); {remedy}")
         if not isinstance(row, dict) or any(field not in row for field in required):
             fail(f"{path}:{number} lacks one of {list(required)}; {remedy}")
+        try:
+            INDEX.validate_opaque_values(row)
+        except ValueError as error:
+            fail(f"{path}:{number}: {error}; {remedy}")
         rows.append(row)
     return rows
 
@@ -343,7 +355,10 @@ def read_records(source: str) -> list[dict[str, str]]:
         if tuple(reader.fieldnames or ()) != RECORD_FIELDS:
             fail(f"{path} has header {reader.fieldnames}, not {list(RECORD_FIELDS)}; restore it from git "
                  f"(`git checkout -- {path}`) or re-file the source's stages")
-        return list(reader)
+        rows = list(reader)
+        for row in rows:
+            opaque_candidate(row["subject"].split(" ", 1)[0])
+        return rows
 
 
 def write_records(source: str, keys: set[str], rows: list[dict[str, str]]) -> None:
@@ -702,11 +717,14 @@ def fetch_pins(args: argparse.Namespace) -> int:
     target = args.root / "fetched"
     target.mkdir(parents=True, exist_ok=True)
     shared = SURFACE / f"witness-search-{source}" / "documents.jsonl"
-    resolved, fetched, missing = [], 0, 0
+    resolved, fetched, missing, screened = [], 0, 0, 0
     seen: set[tuple[str, str, str]] = set()
     pins = read_jsonl(shared, ("repository", "path", "commit", "blob"),
                       "restore it from git; it is the publisher trees' committed pin list")
     for pin in pins:
+        if INDEX.opaque_identity(pin["repository"]):
+            screened += 1
+            continue
         # The shared pin lists a few documents twice over, word for word; a walk
         # reads each document once.
         identity = (pin["repository"], pin["path"], pin["commit"])
@@ -736,7 +754,8 @@ def fetch_pins(args: argparse.Namespace) -> int:
         writer.writeheader()
         writer.writerows(resolved)
     record_guard_logs(source)
-    print(f"golden-reach-search: {source}: {len(resolved)} pins, {fetched} fetched, {missing} unresolved")
+    suffix = f"; {screened} opaque v1 record(s) screened by repository rule" if screened else ""
+    print(f"golden-reach-search: {source}: {len(resolved)} pins, {fetched} fetched, {missing} unresolved{suffix}")
     return 0
 
 
@@ -840,7 +859,9 @@ def query(args: argparse.Namespace) -> int:
             new.append({"key": key, "kind": "query", "subject": phrasing, "result": str(total),
                         "file": "queries.jsonl"})
             for document in fetched:
-                candidate = f"{document.get('repository')}:{document.get('path')}@{document.get('commit')}"
+                candidate = INDEX.opaque_identity(document.get("repository")) or (
+                    f"{document.get('repository')}:{document.get('path')}@{document.get('commit')}"
+                )
                 if document.get("document"):
                     index[candidate] = document["document"]
                 readable = ("declares", "does-not-declare", "excluded-non-openapi-3")
@@ -862,6 +883,8 @@ def query(args: argparse.Namespace) -> int:
                             result = unreadable_reason(error, candidate)
                     if count is not None:
                         result = f"census {count}"
+                elif document.get("disposition") == INDEX.RAW_EXCLUDED:
+                    result = INDEX.EXCLUDED_CENSUS
                 else:
                     result = f"acquisition-failure: {document.get('disposition')}"
                 new.append({"key": key, "kind": "document", "subject": candidate, "result": result,
@@ -921,6 +944,8 @@ def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]
         }
     for row in read_records(source):
         if row["key"] != key or row["kind"] != "document":
+            continue
+        if opaque_candidate(row["subject"]):
             continue
         if not row["result"].startswith("census ") or row["result"] == "census 0":
             continue
@@ -1307,6 +1332,9 @@ def screen(args: argparse.Namespace) -> int:
     the caller: `--measured` files a record that stage measured earlier, and is
     refused unless it is whole.
     """
+    if opaque_candidate(args.candidate):
+        print(f"golden-reach-search: {args.source}: {args.candidate} screened by repository rule")
+        return 0
     stated = [flag for flag, value in (("--licence", args.licence), ("--ref", args.ref), ("--fern", args.fern))
               if value is not None]
     if stated:
@@ -1414,7 +1442,8 @@ def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
         return [(document_subject(row, repeated), row["status"], row["sha256"])
                 for row in rows if row["status"] != "readable"]
     return [(r["subject"], r["result"], "") for r in read_records(source)
-            if r["key"] == key and r["kind"] == "document" and not r["result"].startswith("census ")]
+            if r["key"] == key and r["kind"] == "document"
+            and r["result"] != INDEX.EXCLUDED_CENSUS and not r["result"].startswith("census ")]
 
 
 def read_refused(source: str) -> dict[str, dict[str, str]]:

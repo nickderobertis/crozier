@@ -1796,6 +1796,7 @@ class _Loopback(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self) -> None:
+        self.server.requests = getattr(self.server, "requests", []) + [self.path]
         base = f"http://127.0.0.1:{self.server.server_port}"
         declaring = textwrap.dedent(_StageScratch.DECLARING).encode()
         if self.path == "/rate_limit":
@@ -1805,7 +1806,7 @@ class _Loopback(BaseHTTPRequestHandler):
             if "refused" in urllib.parse.unquote_plus(self.path):
                 self.reply(422, {"message": "Validation Failed"})
             else:
-                self.reply(200, {"total_count": 2, "items": [{
+                self.reply(200, {"total_count": 2, "items": getattr(self.server, "extra_items", []) + [{
                     "repository": {"full_name": "example/api"}, "path": "openapi.yaml",
                     "sha": golden_reach_search.git_blob(declaring),
                     "url": f"{base}/repos/example/api/contents/openapi.yaml?ref={self.COMMIT}",
@@ -1843,6 +1844,7 @@ class ArmSearchNetworkStageTests(_StageScratch):
     def setUp(self) -> None:
         super().setUp()
         server = ThreadingHTTPServer(("127.0.0.1", 0), _Loopback)
+        self.loopback = server
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
@@ -1854,6 +1856,72 @@ class ArmSearchNetworkStageTests(_StageScratch):
                    "code_search_spacing_s": 0.01, "code_search_refusal_cooldown_s": 0.01}
         self.addCleanup(setattr, golden_reach_search, "ACQUIRER_OPTIONS", golden_reach_search.ACQUIRER_OPTIONS)
         golden_reach_search.ACQUIRER_OPTIONS = options
+
+    def test_query_and_screen_skip_opaque_inputs_and_reject_unknown_versions(self) -> None:
+        base = f"http://127.0.0.1:{self.loopback.server_port}"
+        self.loopback.extra_items = [{
+            "repository": {"full_name": "fern-api/fern"}, "path": "harbor-metering/api.yaml",
+            "sha": "c" * 40,
+            "url": f"{base}/repos/fern-api/fern/contents/harbor-metering/api.yaml?ref={_Loopback.COMMIT}",
+        }]
+        queries = self.scratch / "queries.tsv"
+        queries.write_text(f"key\tsource\tphrasing\n{self.KEY}\tgithub-code-search\tanyOf oneOf\n"
+                           f"{self.KEY}\tgithub-code-search\toneOf anyOf\n", encoding="utf-8")
+        self.addCleanup(setattr, golden_reach_search, "QUERIES", golden_reach_search.QUERIES)
+        golden_reach_search.QUERIES = queries
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["query", "--source", "github-code-search", "--key", self.KEY]))
+        rows = golden_reach_search.read_records("github-code-search")
+        excluded = [row for row in rows if row["kind"] == "document" and
+                    row["subject"].startswith("screened-nonpublic-input:")]
+        self.assertEqual(1, len(excluded))
+        token = excluded[0]["subject"]
+        self.assertRegex(token, r"^screened-nonpublic-input:v1:[0-9a-f]{32}:[1-9][0-9]*$")
+        self.assertEqual("not-run: screened by repository rule", excluded[0]["result"])
+        self.assertFalse(any("fern-api/fern/contents" in path for path in self.loopback.requests))
+        self.assertNotIn(token, golden_reach_search.candidate_index("github-code-search"))
+        unreadable = {"key": self.KEY, "kind": "document",
+                      "subject": f"example/delayed:metering.yaml@{_Loopback.COMMIT}",
+                      "result": "unreadable: parser refused the document", "file": "candidates.jsonl"}
+        golden_reach_search.replace_records("github-code-search", rows + [unreadable])
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+            self.assertEqual(0, golden_reach_search.main(["outstanding"]))
+        outstanding = (golden_reach_search.EVIDENCE / "outstanding.tsv").read_text()
+        self.assertNotIn(token, outstanding)
+        rendered = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text()
+        summary = next(line for line in rendered.splitlines()
+                       if line.startswith("| `github-code-search` |"))
+        self.assertEqual(["1", "1", "0"], [cell.strip() for cell in summary.split("|")[2:5]])
+        self.assertIn(unreadable["subject"], outstanding)
+        self.assertIn(unreadable["result"], outstanding)
+        # A historical census result remains historical rather than becoming a new probe.
+        excluded[0]["result"] = "census 1"
+        golden_reach_search.replace_records("github-code-search", rows)
+        self.assertNotIn(token, [name for name, _ in golden_reach_search.declarers("github-code-search", self.KEY, None)])
+        directory = golden_reach_search.EVIDENCE / "github-code-search"
+        original = (directory / "records.tsv").read_bytes()
+        requests = list(self.loopback.requests)
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["screen", "--source", "github-code-search",
+                                                       "--key", self.KEY, "--candidate", token]))
+        self.assertIn("screened by repository rule", printed.getvalue())
+        self.assertEqual(original, (directory / "records.tsv").read_bytes())
+        self.assertFalse((directory / "screens.jsonl").exists())
+        self.assertEqual(requests, self.loopback.requests)
+        (directory / "records.tsv").write_bytes(original.replace(b":v1:", b":v2:"))
+        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v2"):
+            golden_reach_search.main(["screen", "--source", "github-code-search", "--key", self.KEY,
+                                      "--candidate", f"example/api:openapi.yaml@{_Loopback.COMMIT}"])
+        (directory / "records.tsv").write_bytes(original)
+        self.assertEqual(requests, self.loopback.requests)
+        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v2"):
+            golden_reach_search.main(["screen", "--source", "github-code-search", "--key", self.KEY,
+                                      "--candidate", token.replace(":v1:", ":v2:")])
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["screen", "--source", "github-code-search",
+                                                       "--key", self.KEY, "--candidate", token]))
+        self.assertEqual(requests, self.loopback.requests)
 
     def test_a_query_records_each_phrasing_s_answer_and_censuses_what_it_fetched(self) -> None:
         queries = self.scratch / "queries.tsv"
@@ -1910,6 +1978,28 @@ class ArmSearchNetworkStageTests(_StageScratch):
         rows = {(r["kind"], r["subject"]): r["result"] for r in golden_reach_search.read_records("github-code-search")}
         self.assertEqual("passed", rows[("screen", f"{candidate} fern")])
         self.assertIn(("wait", "github-code-search guard log raw-github-calls.jsonl"), rows)
+
+    def test_fetch_pins_skips_opaque_history_and_refuses_invalid_versions(self) -> None:
+        token = "screened-nonpublic-input:v1:" + "d" * 32 + ":31"
+        shared = golden_reach_search.SURFACE / "witness-search-github-publisher-trees"
+        shared.mkdir(parents=True)
+        ledger = shared / "documents.jsonl"
+        original = json.dumps({"repository": token, "path": token, "commit": token, "blob": token}) + "\n"
+        ledger.write_text(original)
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["fetch-pins", "--root", str(self.root)]))
+        self.assertIn("1 opaque v1 record(s) screened by repository rule", printed.getvalue())
+        self.assertEqual(original, ledger.read_text())
+        self.assertEqual([], getattr(self.loopback, "requests", []))
+        self.assertEqual([], golden_reach_search.pinned_listing("github-publisher-trees"))
+        ledger.write_text(original.replace(":v1:", ":v2:"))
+        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v2"):
+            golden_reach_search.main(["fetch-pins", "--root", str(self.root)])
+        self.assertEqual([], getattr(self.loopback, "requests", []))
+        ledger.write_text(original)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["fetch-pins", "--root", str(self.root)]))
+        self.assertEqual([], getattr(self.loopback, "requests", []))
 
     def test_fetch_pins_resolves_a_local_copy_fetches_a_missing_one_and_leaves_a_wrong_blob_unresolved(self) -> None:
         fetched = textwrap.dedent(self.DECLARING).encode() + b"# no local copy holds these bytes\n"

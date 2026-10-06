@@ -29,6 +29,7 @@ RAW_ZERO = frozenset({"does-not-declare", "excluded-non-openapi-3"})
 # Every parser available refused the document: decided, with the refusal as its reason.
 RAW_REFUSED = "census-refused"
 RAW_EXCLUDED = "excluded-repository"
+EXCLUDED_CENSUS = "not-run: screened by repository rule"
 RAW_STATUSES = RAW_DECLARING | RAW_OUTSTANDING | RAW_ZERO | {RAW_REFUSED, RAW_EXCLUDED}
 FIELDS = (
     "source",
@@ -389,7 +390,7 @@ def classify(
             )
             disposition = "not-owed" if closed else "outstanding"
     elif status == RAW_EXCLUDED:
-        census = "not-run: screened by repository rule"
+        census = EXCLUDED_CENSUS
         licence = ref = fern = "not-run: repository excluded"
         disposition = "rejected"
     elif status in RAW_OUTSTANDING:
