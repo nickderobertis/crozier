@@ -7759,7 +7759,7 @@ const HUATUO_NODE_TREE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Lootlog's Battle Log API — corpus row 313, the publisher's own description.
+/// Lootlog's Battle Log API — corpus row 316, the publisher's own description.
 /// Its `POST /internal/delete-user-data` takes an optional header spelled
 /// `authorization` beside an `http: bearer` scheme, which Fern keeps as a method
 /// argument because only the exact spelling `Authorization` is the credential's.
@@ -7774,7 +7774,7 @@ const LOOTLOG_BATTLELOG: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Ego's microservices API — corpus row 316, the publisher's own description.
+/// Ego's microservices API — corpus row 317, the publisher's own description.
 /// Its paginated listings' query `offset` and `limit` are `anyOf: [integer, $ref
 /// Empty]`, a union naming a component string enum with no array member, which
 /// Fern sends raw.

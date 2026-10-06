@@ -1472,7 +1472,7 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation),
   which `just check` now runs. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 244 sources (corpus rows through 313 and row 316, after the withdrawals of rows
+  acquires 244 sources (corpus rows through 312 and rows 316 and 317, after the withdrawals of rows
   224 and 223, with the `crozier-property-name` feature target), and the walk
   reads the **227** registered sources, of which
   **227** carry a committed golden; the 17 others carry none and are acquisition

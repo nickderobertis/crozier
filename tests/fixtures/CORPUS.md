@@ -238,8 +238,8 @@ compares it. Row 224 is the one so far.
 | 310 | `openfoodfacts-taxonomy-editor` | github-raw | https://raw.githubusercontent.com/openfoodfacts/taxonomy-editor/dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3/backend/openapi/openapi.json | `dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3` | AGPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Open Food Facts taxonomy editor's API as its FastAPI backend publishes it: 25 paths and 16 component schemas; `EntryNodeSearchResult.filters` items are a `filterType`-discriminated `oneOf` of seven `$ref` members whose `readOnly` properties `required` also lists |
 | 311 | `qontract-api` | github-raw | https://raw.githubusercontent.com/app-sre/qontract-reconcile/4f643a29084cb9b9e8c90e878e03bbe6ac80a5db/qontract_api/openapi.json | `4f643a29084cb9b9e8c90e878e03bbe6ac80a5db` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Qontract API as qontract-reconcile's FastAPI service publishes it: 34 paths and 145 component schemas; the Quay-repository and Slack-usergroup task results' `actions` items are `$ref`-only unions whose members tag `action_type` with a one-value `enum` that `required` leaves out |
 | 312 | `oal-example` | github-raw | https://raw.githubusercontent.com/oxlip-lang/oal/9c76fd5fd74c1f64c62a219aa2156b021a820f4a/examples/openapi.yaml | `9c76fd5fd74c1f64c62a219aa2156b021a820f4a` | Apache-2.0 (`info.license`, and the publisher repository's pinned `LICENSE.txt`) | committed | The example description the OAL project compiles from its own API language and publishes: 4 paths and 6 component schemas; `obj3.stuff` is an `anyOf` whose first member is an inline `oneOf` beside an inline object |
-| 313 | `lootlog-battlelog` | github-raw | https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml | `e2796c4f48ca4a749f53fdc5a127eece50567b56` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Lootlog's Battle Log API as its repository publishes it: OpenAPI 3.0.0, one `http: bearer` scheme, and `POST /internal/delete-user-data` declares an optional header parameter spelled `authorization` in lower case |
-| 316 | `ego-microservices` | github-raw | https://raw.githubusercontent.com/dreek1337/Ego/e0ebe7a5219488545820408b46f67f4f9fa9c83c/openapi.yaml | `e0ebe7a5219488545820408b46f67f4f9fa9c83c` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Ego's microservices API as its repository publishes it: OpenAPI 3.1.0, 20 paths and 60 component schemas; the paginated listings' query `offset` and `limit` are `anyOf: [integer, $ref Empty]`, where `Empty` is a component string enum |
+| 316 | `lootlog-battlelog` | github-raw | https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml | `e2796c4f48ca4a749f53fdc5a127eece50567b56` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Lootlog's Battle Log API as its repository publishes it: OpenAPI 3.0.0, one `http: bearer` scheme, and `POST /internal/delete-user-data` declares an optional header parameter spelled `authorization` in lower case |
+| 317 | `ego-microservices` | github-raw | https://raw.githubusercontent.com/dreek1337/Ego/e0ebe7a5219488545820408b46f67f4f9fa9c83c/openapi.yaml | `e0ebe7a5219488545820408b46f67f4f9fa9c83c` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Ego's microservices API as its repository publishes it: OpenAPI 3.1.0, 20 paths and 60 component schemas; the paginated listings' query `offset` and `limit` are `anyOf: [integer, $ref Empty]`, where `Empty` is a component string enum |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1449,7 +1449,7 @@ The repair: a property union's member composing two or more alternatives of
 its own is hoisted to `{Owner}{Prop}{Ordinal}` rather than inlined as a nested
 `typing.Union`.
 
-## Row 313 — a lower-case `authorization` header beside a bearer scheme
+## Row 316 — a lower-case `authorization` header beside a bearer scheme
 
 Fern drops an operation's header parameter only when its name is exactly the
 header a declared security scheme writes: `Authorization` for a bearer, basic or
@@ -1460,14 +1460,14 @@ exactly so, so a case-insensitive comparison matched it too:
 
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
-| 313 | `lootlog-battlelog` | a header parameter spelled `authorization` beside an `http: bearer` scheme | ✅ byte-matched after two repairs |
+| 316 | `lootlog-battlelog` | a header parameter spelled `authorization` beside an `http: bearer` scheme | ✅ byte-matched after two repairs |
 
 The repairs: the credential-header check compares the spelling exactly, and a
 component property's nested names are re-cased across the owner/property join,
 so the map value under the one-letter `f.w` properties is
 `CreateBattleDtoEventsItemFwValue`.
 
-## Row 316 — a query union naming a component string enum
+## Row 317 — a query union naming a component string enum
 
 A query parameter composing two or more members, none an array and one a `$ref`
 to a component string enum, reaches nothing but scalars, so Fern sends its value
@@ -1477,7 +1477,7 @@ paginated listings declare `offset` and `limit` that way, beside the enum
 
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
-| 316 | `ego-microservices` | a query union with a `$ref` member naming a component string enum and no array member | ✅ byte-matched |
+| 317 | `ego-microservices` | a query union with a `$ref` member naming a component string enum and no array member | ✅ byte-matched |
 
 The repair that made it match predates the registration: the scalar check proves
 the hoisted alias scalar by resolving its members across the root and hoisted
