@@ -1278,13 +1278,9 @@ pub struct Endpoint {
     pub body_schema_is_open: bool,
     /// Whether an inline request object was inferred from properties with no type.
     pub body_schema_implicit_object: bool,
-    /// Whether a referenced request schema is composed with `allOf`.
-    pub body_all_of: bool,
-    /// Whether that composed request schema is itself a `$ref` member of another
-    /// component schema's `allOf`. Fern's Markdown writers then list the body's
-    /// own fields before the ones it inherits; see
-    /// [`BodyField::declaration_order`].
-    pub body_all_of_parent: bool,
+    /// Whether a referenced request schema is composed with `allOf`, and whether
+    /// it is itself an `allOf` parent.
+    pub body_composition: BodyComposition,
     /// Whether the JSON request body and success response point at the same schema.
     pub body_response_same_ref: bool,
     /// Whether request and success response reference the same schema regardless
@@ -1607,7 +1603,7 @@ pub struct BodyField {
     /// The field's place in the order Fern's Markdown writers give a composed
     /// body's example: each base's own fields, then that base's bases, and the
     /// body's own fields last, `required` playing no part. A body that is itself
-    /// an `allOf` parent ([`Endpoint::body_all_of_parent`]) is listed with its
+    /// an `allOf` parent ([`BodyComposition::AllOfParent`]) is listed with its
     /// own fields first instead, in the order the fields are declared.
     pub markdown_order: usize,
 }
@@ -1730,6 +1726,28 @@ pub struct UnionMember {
     /// field written *ahead* of the discriminant and drops the `extra` member from
     /// the wrapper's pydantic config.
     pub wrapped: bool,
+}
+
+/// How an endpoint's referenced JSON request schema is composed.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum BodyComposition {
+    /// Not composed with an `allOf` over a `$ref` base.
+    #[default]
+    Plain,
+    /// Composed with `allOf` over a `$ref` base.
+    AllOf,
+    /// Composed so, and itself a `$ref` member of another component schema's
+    /// `allOf`: Fern's Markdown writers then list the body's own fields before
+    /// the ones it inherits (see [`BodyField::markdown_order`]).
+    AllOfParent,
+}
+
+impl BodyComposition {
+    /// Whether the schema is composed with `allOf` at all.
+    #[must_use]
+    pub fn is_all_of(self) -> bool {
+        self != BodyComposition::Plain
+    }
 }
 
 /// A pydantic model type.
@@ -3643,8 +3661,7 @@ fn build_endpoint(
                     .find_map(|media| media.schema.as_ref())
             })
             .is_some_and(|schema| schema.ty.is_none() && !schema.properties.is_empty()),
-        body_all_of: request_body_has_all_of(doc, op),
-        body_all_of_parent: request_body_is_all_of_parent(doc, op),
+        body_composition: request_body_composition(doc, op),
         body_response_same_ref: body_response_same_ref(doc, op),
         body_schema_is_success_response: request_and_response_refs_match(op),
         response,
@@ -4211,26 +4228,28 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
         })
 }
 
-/// Whether the operation's composed JSON request schema is named by a `$ref`
-/// member of another component schema's `allOf`.
-fn request_body_is_all_of_parent(doc: &OpenApi, op: &Operation) -> bool {
-    let Some(reference) = op
+/// How the operation's JSON request schema is composed: see [`BodyComposition`].
+fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
+    if !request_body_has_all_of(doc, op) {
+        return BodyComposition::Plain;
+    }
+    let reference = op
         .request_body
         .as_ref()
         .and_then(|body| body.content.get("application/json"))
         .and_then(|media| media.schema.as_ref())
-        .and_then(|schema| schema.reference.as_deref())
-    else {
-        return false;
-    };
-    request_body_has_all_of(doc, op)
-        && doc.components.schemas.values().any(|schema| {
-            schema
-                .all_of
-                .iter()
-                .flatten()
-                .any(|member| member.reference.as_deref() == Some(reference))
-        })
+        .and_then(|schema| schema.reference.as_deref());
+    let parent =
+        doc.components.schemas.values().any(|schema| {
+            schema.all_of.iter().flatten().any(|member| {
+                member.reference.is_some() && member.reference.as_deref() == reference
+            })
+        });
+    if parent {
+        BodyComposition::AllOfParent
+    } else {
+        BodyComposition::AllOf
+    }
 }
 
 /// Whether the operation's selected success response is a Server-Sent-Events
@@ -12857,9 +12876,6 @@ fn sole_non_null_member(schema: &Schema) -> Option<&Schema> {
     (non_null.next().is_none() && members.len() > 1).then_some(member)
 }
 
-/// Is a schema optional? Fern 5.20 reserves `Optional` for explicit nullability;
-/// an unknown (untyped) schema is bare `Any` and a containing field separately
-/// models whether the property may be absent.
 /// Whether a property's own schema is marked `deprecated: true`. A mark Fern's
 /// examples do not see is not counted: one on the schema a `$ref` names, and one
 /// beside an `allOf` wrapping it, both leave the property in the example.
@@ -12867,6 +12883,9 @@ fn own_deprecated(schema: &Schema) -> bool {
     schema.deprecated && schema.reference.is_none() && schema.all_of.is_none()
 }
 
+/// Is a schema optional? Fern 5.20 reserves `Optional` for explicit nullability;
+/// an unknown (untyped) schema is bare `Any` and a containing field separately
+/// models whether the property may be absent.
 fn is_optional(schema: &Schema) -> bool {
     is_explicitly_nullable(schema)
         || is_null_variant(schema)

@@ -312,7 +312,7 @@ fn read_datetime(value: &str) -> Option<i64> {
     if hour > 23 || minute > 59 || second > 59 {
         return None;
     }
-    let zone = &value[at..];
+    let zone = value.get(at..)?;
     let offset_minutes = if zone == "Z" {
         0
     } else {
@@ -322,8 +322,8 @@ fn read_datetime(value: &str) -> Option<i64> {
             _ => return None,
         };
         let (hours, minutes) = match zone.len() {
-            6 if zone.as_bytes()[3] == b':' => (&zone[1..3], &zone[4..6]),
-            5 => (&zone[1..3], &zone[3..5]),
+            6 if zone.as_bytes()[3] == b':' => (zone.get(1..3)?, zone.get(4..6)?),
+            5 => (zone.get(1..3)?, zone.get(3..5)?),
             _ => return None,
         };
         let (hours, minutes) = (number_of(hours)?, number_of(minutes)?);
@@ -5531,7 +5531,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // unaffected.
                         && !(ep.query_params.is_empty()
                             && matches!(body, RequestBody::Inline(_))
-                            && (ep.body_all_of || ep.body_response_same_ref)
+                            && (ep.body_composition.is_all_of() || ep.body_response_same_ref)
                             && !resource_envelope)
                         && !(ep.query_params.is_empty()
                             && matches!(body, RequestBody::Inline(fields)
@@ -7766,8 +7766,8 @@ impl<'a> ExampleCtx<'a> {
                     // example names it.
                     .filter(|field| {
                         let value = values.get(&field.wire_name);
-                        field.required
-                            || field.required_nullable
+                        field.requirement == Requirement::Required
+                            || field.requirement == Requirement::RequiredNullable
                                 && documentation
                                 && value.is_some_and(serde_json::Value::is_null)
                             || !field.deprecated
@@ -7781,12 +7781,13 @@ impl<'a> ExampleCtx<'a> {
                              py_name,
                              wire_name,
                              type_ref,
-                             required_nullable,
+                             requirement,
                              ..
                          }| {
                             let rendered = match values.get(&wire_name) {
                                 Some(serde_json::Value::Null)
-                                    if self.documentation && required_nullable =>
+                                    if self.documentation
+                                        && requirement == Requirement::RequiredNullable =>
                                 {
                                     Example::Atom("None".to_string())
                                 }
@@ -8139,10 +8140,11 @@ impl<'a> ExampleCtx<'a> {
                 for ExampleField {
                     wire_name,
                     type_ref,
-                    required,
+                    requirement,
                     ..
                 } in fields
                 {
+                    let required = requirement == Requirement::Required;
                     match values.get(&wire_name).filter(|field| !field.is_null()) {
                         Some(field) => {
                             let field =
@@ -8195,7 +8197,7 @@ impl<'a> ExampleCtx<'a> {
                     let fields = self.object_fields(object);
                     fields
                         .iter()
-                        .filter(|field| field.required)
+                        .filter(|field| field.requirement == Requirement::Required)
                         .all(|field| values.contains_key(&field.wire_name))
                         && values
                             .keys()
@@ -8586,7 +8588,10 @@ impl<'a> ExampleCtx<'a> {
                 let fields = self.object_fields(obj);
                 let args = fields
                     .into_iter()
-                    .filter(|field| field.required || field.parent_example && !field.deprecated)
+                    .filter(|field| {
+                        field.requirement == Requirement::Required
+                            || field.parent_example && !field.deprecated
+                    })
                     .map(|field| {
                         if is_any_type(&field.type_ref) {
                             self.untyped_arguments.insert(field.py_name.clone());
@@ -8833,8 +8838,11 @@ impl<'a> ExampleCtx<'a> {
                 py_name,
                 wire_name: f.wire_name.clone(),
                 type_ref: f.type_ref.clone(),
-                required: f.spec_required && !f.optional,
-                required_nullable: f.spec_required && f.optional,
+                requirement: match (f.spec_required, f.optional) {
+                    (true, false) => Requirement::Required,
+                    (true, true) => Requirement::RequiredNullable,
+                    (false, _) => Requirement::Optional,
+                },
                 example: f.example.clone(),
                 parent_example: obj.example_fields.contains(&f.wire_name),
                 deprecated: f.deprecated,
@@ -8842,6 +8850,21 @@ impl<'a> ExampleCtx<'a> {
         }
         out
     }
+}
+
+/// Whether a model field's property is required, as example synthesis reads it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Requirement {
+    /// Not in the schema's `required` set.
+    Optional,
+    /// In `required`, and not `Optional` in Python.
+    Required,
+    /// In `required` but `Optional` in Python. Fern's importer reads such a
+    /// property as optional, so its example omits it — ramu-shogi's
+    /// `evalCp: {type: [integer, null]}` and its `$ref`s to `type: [object,
+    /// null]` components are required and absent — except that the Markdown
+    /// writers write an example's `null` for it as `None`.
+    RequiredNullable,
 }
 
 /// One field of a model, as example synthesis reads it: the field and its marks.
@@ -8852,14 +8875,8 @@ struct ExampleField {
     wire_name: String,
     /// The field's type.
     type_ref: TypeRef,
-    /// A `required` property that is not also `Optional` in Python. Fern's
-    /// importer reads a required nullable property as optional, so its example
-    /// omits it: ramu-shogi's `evalCp: {type: [integer, null]}` and its `$ref`s
-    /// to `type: [object, null]` components are required and absent.
-    required: bool,
-    /// A `required` property that Python types `Optional`: the Markdown writers
-    /// write an example's `null` for it as `None`.
-    required_nullable: bool,
+    /// Whether the property is required, and how Python types it.
+    requirement: Requirement,
     /// The field's own example literal.
     example: Option<String>,
     /// Whether the model's schema-level example names the field.
@@ -9625,7 +9642,7 @@ fn build_example_inner(
                         && (named_value(f).is_some()
                             || reference_fields.is_none() && f.media_example)
             };
-            let composed_request_media_example = ep.body_all_of
+            let composed_request_media_example = ep.body_composition.is_all_of()
                 && fields
                     .iter()
                     .any(|field| field.media_example && !field.schema_body_example);
@@ -9666,8 +9683,8 @@ fn build_example_inner(
             // body's own first when it is itself an `allOf` parent. Measured on
             // variants of one `allOf: [inline, $ref Base]` body, `required` and
             // the members' order in `allOf` change none of these.
-            if ep.body_all_of {
-                if documentation && ep.body_all_of_parent {
+            if ep.body_composition.is_all_of() {
+                if documentation && ep.body_composition == crate::ir::BodyComposition::AllOfParent {
                     example_fields.sort_by_key(|field| {
                         fields
                             .iter()
@@ -11550,8 +11567,7 @@ mod tests {
             body_schema_is_response_heavy: false,
             body_schema_is_open: false,
             body_schema_implicit_object: false,
-            body_all_of: false,
-            body_all_of_parent: false,
+            body_composition: crate::ir::BodyComposition::Plain,
             body_response_same_ref: false,
             body_schema_is_success_response: false,
             response,
@@ -12532,6 +12548,8 @@ mod tests {
             "2023-02-30T05:06:07-05:00",
             "2023-03-04T05:06:07.-05:00",
             "2023-03-04T05:06:07+25:00",
+            "2023-03-04T05:06+a\u{e9}1",
+            "2023-03-04T05:06:07+0\u{e9}",
             "not a date",
             "",
         ] {
