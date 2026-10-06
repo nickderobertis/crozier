@@ -390,6 +390,20 @@ Additional issue #77 real-world OpenAPI source specs:
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Lootlog Battle Log API: the publisher's own description at
+    https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 317 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * Ego microservices API: the publisher's own description at
+    https://raw.githubusercontent.com/dreek1337/Ego/e0ebe7a5219488545820408b46f67f4f9fa9c83c/openapi.yaml.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 318 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

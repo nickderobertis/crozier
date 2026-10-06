@@ -1545,6 +1545,256 @@ fn compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_diff
     );
 }
 
+/// `crozier compare` over a measured parameter-lowering case and the certified
+/// pair's committed tree for it: the comparison matches, reporting exactly the
+/// departures `expected` lists among those whose id starts `lifted-`,
+/// `constant-` or `nullable-` — each by catalog id, file and line, and exactly
+/// the ledger's rows for that golden — and it fails, naming the file, once the
+/// reference is edited by any of `edits` (`name`, file, line, replacement: the
+/// file's first line equal to `line` becomes `replacement`) so one more line
+/// differs. The edits are made here rather than by `sed` in the reference
+/// script, whose line-range addresses and replacement newlines BSD and GNU
+/// sed spell differently.
+#[cfg(unix)]
+fn parameter_docs_departure_journey(
+    case: &str,
+    expected: &[(&str, usize, &str)],
+    edits: &[(&str, &str, &str, &str)],
+) {
+    let golden = format!("docs/fern-measurements/parameter-lowering/{case}/fern-expected");
+    let case = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(&golden)
+        .join("..");
+    let repo = tempfile::tempdir().expect("repo tempdir");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yml",
+        &std::fs::read_to_string(case.join("openapi.yml")).unwrap(),
+    );
+    // `reference.sh [edit]`: copy the committed Fern tree, then overlay the one
+    // file `edit` names, edited here.
+    let fern = case.join("fern-expected");
+    for (name, file, line, replacement) in edits {
+        let text = std::fs::read_to_string(fern.join(file)).unwrap();
+        let edited = replace_first_line(&text, line, replacement)
+            .unwrap_or_else(|| panic!("{name}: {file} holds no line {line:?}"));
+        assert_ne!(edited, text, "{name}: the edit changes nothing");
+        write(root, &format!("edits/{name}/{file}"), &edited);
+    }
+    write_script(
+        root,
+        "scripts/reference.sh",
+        &format!(
+            "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
+             cp -R '{}'/. \"$out\"\n\
+             if [ -n \"${{1:-}}\" ]; then cp -R '{}'/\"$1\"/. \"$out\"; fi\n",
+            fern.display(),
+            root.join("edits").display()
+        ),
+    );
+    let config = |generators: &str| {
+        format!(
+            "spec: ./openapi.yml\npackage-name: fern\nproject-name: default_package_name\n\
+             generators:\n{generators}"
+        )
+    };
+    write(
+        root,
+        "crozier.yml",
+        &config("  python:\n    reference:\n      command: ./scripts/reference.sh\n"),
+    );
+    write(
+        root,
+        "edited.yml",
+        &config(
+            &edits
+                .iter()
+                .map(|(edit, _, _, _)| {
+                    format!(
+                        "  {edit}:\n    reference:\n      command: ./scripts/reference.sh {edit}\n"
+                    )
+                })
+                .collect::<String>(),
+        ),
+    );
+
+    // Only departures differ: matched, exit 0, each departure listed.
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "crozier.yml"])
+        .assert()
+        .code(0);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let python = result(&report, "crozier.yml", "python");
+    assert_eq!(python["status"], "matched", "{python:#}");
+    let observed: Vec<super::departures_ledger::Observed> = python["comparison"]["departures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|departure| {
+            (
+                departure["file"].as_str().unwrap().to_string(),
+                usize::try_from(departure["line"].as_u64().unwrap()).unwrap(),
+                departure["id"].as_str().unwrap().to_string(),
+            )
+        })
+        .collect();
+    let reported: Vec<(&str, usize, &str)> = observed
+        .iter()
+        .filter(|(_, _, id)| {
+            ["lifted-", "constant-", "nullable-"]
+                .iter()
+                .any(|p| id.starts_with(p))
+        })
+        .map(|(file, line, id)| (file.as_str(), *line, id.as_str()))
+        .collect();
+    assert_eq!(reported, expected);
+    // Exactly the ledger's rows for the golden.
+    let ledger = super::departure_ledger()
+        .golden(&golden, &[])
+        .unwrap_or_else(|failures| panic!("{failures:?}"));
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    let (file, line, id) = expected[0];
+    assert!(
+        stderr.contains(&format!("      {file}:{line} {id}\n"))
+            && stderr.contains("Result: every checked generator matched the reference"),
+        "{stderr}"
+    );
+
+    // One more differing line fails, naming its file.
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "edited.yml"])
+        .assert()
+        .code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    for (edit, file, _, _) in edits {
+        let edited = result(&report, "edited.yml", edit);
+        assert_eq!(edited["status"], "mismatched", "{edit}: {edited:#}");
+        let comparison = &edited["comparison"];
+        assert_eq!(comparison["differing"], serde_json::json!([file]), "{edit}");
+        assert_eq!(comparison["only_in_reference"], serde_json::json!([]));
+        assert_eq!(comparison["only_in_crozier"], serde_json::json!([]));
+    }
+}
+
+/// `text` with its first line equal to `line` replaced by `replacement`, or
+/// `None` when no line equals it.
+#[cfg(unix)]
+fn replace_first_line(text: &str, line: &str, replacement: &str) -> Option<String> {
+    let mut lines: Vec<&str> = text.split('\n').collect();
+    let at = lines.iter().position(|candidate| *candidate == line)?;
+    lines[at] = replacement;
+    Some(lines.join("\n"))
+}
+
+/// The lifted base-path defects
+/// (`docs/departures/evidence/lifted-base-path-docs-examples.md` and
+/// `lifted-base-path-positional-example.md`): Fern's README and endpoint
+/// reference pass a defaulted `{edition}` lifted to the client to methods that do
+/// not take it, document it under them and leave it out of the constructor, and
+/// its docstrings pass the default positionally to a keyword-only constructor.
+/// One more line of the README, the endpoint reference or a docstring — inside a
+/// method call the departure corrects, or elsewhere — fails the comparison.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_difference() {
+    let (docs, positional) = (
+        "lifted-base-path-docs-examples",
+        "lifted-base-path-positional-example",
+    );
+    parameter_docs_departure_journey(
+        "base-path-lifted-default",
+        &[
+            ("README.md", 40, docs),
+            ("reference.md", 20, docs),
+            ("src/fern/client.py", 64, positional),
+            ("src/fern/client.py", 177, positional),
+            ("src/fern/layers/client.py", 56, positional),
+            ("src/fern/layers/client.py", 84, positional),
+            ("src/fern/layers/client.py", 138, positional),
+            ("src/fern/layers/client.py", 174, positional),
+        ],
+        &[
+            (
+                "readme-call",
+                "README.md",
+                r#"    title="title","#,
+                "    title=\"title\",\n    opacity=1,",
+            ),
+            (
+                "readme-other",
+                "README.md",
+                "## Environments",
+                "## Environment",
+            ),
+            ("reference-other", "reference.md", "## Layers", "## Layer"),
+            (
+                "docstring",
+                "src/fern/client.py",
+                r#"        "v2","#,
+                r#"        "v3","#,
+            ),
+        ],
+    );
+}
+
+/// The constant-header and nullable-items documentation defects
+/// (`docs/departures/evidence/constant-header-docs-arguments.md` and
+/// `nullable-items-docs.md`): Fern's README and endpoint reference pass headers
+/// the request sends as constants, and document them, and they document nullable
+/// array items the signature drops and pass `[None]` for them. One more line of
+/// either file — inside a call the departure corrects, or elsewhere — fails the
+/// comparison.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_parameter_docs_departures_and_fails_on_any_other_difference() {
+    let constant = "constant-header-docs-arguments";
+    parameter_docs_departure_journey(
+        "header-default-constants",
+        &[("README.md", 47, constant), ("reference.md", 28, constant)],
+        &[
+            (
+                "readme-call",
+                "README.md",
+                r#"    hatch_mode="down","#,
+                "    hatch_mode=\"down\",\n    fan_speed=3,",
+            ),
+            (
+                "readme-other",
+                "README.md",
+                "## Environments",
+                "## Environment",
+            ),
+            ("reference-other", "reference.md", "## Beds", "## Bed"),
+        ],
+    );
+    let nullable = "nullable-items-docs";
+    parameter_docs_departure_journey(
+        "query-nullable-30",
+        &[("README.md", 45, nullable), ("reference.md", 26, nullable)],
+        &[
+            (
+                "readme-call",
+                "README.md",
+                "        None",
+                "        None,\n        None",
+            ),
+            (
+                "readme-other",
+                "README.md",
+                "## Environments",
+                "## Environment",
+            ),
+            ("reference-other", "reference.md", "## Beds", "## Bed"),
+        ],
+    );
+}
+
 /// The packaged golden's file `rel`, with `from` replaced by `to` — which must
 /// occur in it.
 #[cfg(unix)]

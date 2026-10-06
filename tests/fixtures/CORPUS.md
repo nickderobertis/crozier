@@ -242,6 +242,8 @@ compares it. Row 224 is the one so far.
 | 314 | `protoform-conformance` | github-raw | https://raw.githubusercontent.com/malinskibeniamin/protoform/a179fc14356cc98dce69402ae62c406107b0bf5b/openapi.yaml | `a179fc14356cc98dce69402ae62c406107b0bf5b` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Protoform bookstore Connect API its own repository publishes: five unary Book RPCs; `DeleteBook`'s success response is an inline object closed with `additionalProperties: false` that declares no `properties` |
 | 315 | `ere-ps-app` | github-raw | https://raw.githubusercontent.com/ere-health/ere-ps-app/9d8958380a7bdf3fc2e94bd6747cf59bb6d96de5/openapi/openapi.json | `9d8958380a7bdf3fc2e94bd6747cf59bb6d96de5` | GPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The `ere-ps-app` API its own repository publishes: 25 paths and 121 component schemas, 48 of whose models reach two or more reference cycles in an order no sort of their members reproduces |
 | 316 | `typescript-service-template` | github-raw | https://raw.githubusercontent.com/adiwajshing/typescript-service-template/bec0143414f9ec292e4a33dd3ee1c576984559d6/openapi.yaml | `bec0143414f9ec292e4a33dd3ee1c576984559d6` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The description a TypeScript service template publishes for its users API: one path, three operations and five component schemas; `usersPatch` takes a required query array of `$ref UserID` items and answers `application/json` |
+| 317 | `lootlog-battlelog` | github-raw | https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml | `e2796c4f48ca4a749f53fdc5a127eece50567b56` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Lootlog's Battle Log API as its repository publishes it: OpenAPI 3.0.0, one `http: bearer` scheme, and `POST /internal/delete-user-data` declares an optional header parameter spelled `authorization` in lower case |
+| 318 | `ego-microservices` | github-raw | https://raw.githubusercontent.com/dreek1337/Ego/e0ebe7a5219488545820408b46f67f4f9fa9c83c/openapi.yaml | `e0ebe7a5219488545820408b46f67f4f9fa9c83c` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Ego's microservices API as its repository publishes it: OpenAPI 3.1.0, 20 paths and 60 component schemas; the paginated listings' query `offset` and `limit` are `anyOf: [integer, $ref Empty]`, where `Empty` is a component string enum |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1513,3 +1515,37 @@ answers `application/json`:
 The repair: the omission is keyed on the response media type and a required
 object or map query parameter beside the array, as measured, rather than on the
 item type (see `docs/matching.md`, *What a worked example shows*).
+
+## Row 317 — a lower-case `authorization` header beside a bearer scheme
+
+Fern drops an operation's header parameter only when its name is exactly the
+header a declared security scheme writes: `Authorization` for a bearer, basic or
+OAuth2 scheme, an apiKey scheme's own `name` otherwise. Any other spelling stays
+an ordinary optional method argument, sent under the name it declares. Every
+`Authorization` header parameter the corpus held before this row was spelled
+exactly so, so a case-insensitive comparison matched it too:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 317 | `lootlog-battlelog` | a header parameter spelled `authorization` beside an `http: bearer` scheme | ✅ byte-matched after two repairs |
+
+The repairs: the credential-header check compares the spelling exactly, and a
+component property's nested names are re-cased across the owner/property join,
+so the map value under the one-letter `f.w` properties is
+`CreateBattleDtoEventsItemFwValue`.
+
+## Row 318 — a query union naming a component string enum
+
+A query parameter composing two or more members, none an array and one a `$ref`
+to a component string enum, reaches nothing but scalars, so Fern sends its value
+raw; only an array member makes it convert the value on the way out. Ego's
+paginated listings declare `offset` and `limit` that way, beside the enum
+`Empty` its FastAPI app writes for an unset value:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 318 | `ego-microservices` | a query union with a `$ref` member naming a component string enum and no array member | ✅ byte-matched |
+
+The repair that made it match predates the registration: the scalar check proves
+the hoisted alias scalar by resolving its members across the root and hoisted
+types alike.

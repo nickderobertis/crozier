@@ -1,0 +1,61 @@
+openapi: 3.1.0
+info:
+  title: Loom Registry
+  version: 1.0.0
+paths:
+  /bolts:
+    get:
+      operationId: listBolts
+      tags: [bolts]
+      parameters:
+        - name: weave
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: string
+              - $ref: "#/components/schemas/Weave"
+        - name: finish
+          in: query
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/Finish"
+              - type: integer
+      responses:
+        "200":
+          description: Bolts of cloth.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /bolts/{weave}:
+    get:
+      operationId: getBoltsByWeave
+      tags: [bolts]
+      parameters:
+        - name: weave
+          in: path
+          required: true
+          schema:
+            anyOf:
+              - type: string
+              - $ref: "#/components/schemas/Weave"
+      responses:
+        "200":
+          description: Bolts woven one way.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Weave:
+      type: string
+      enum: [plain, twill, satin]
+    Finish:
+      type: string
+      enum: [raw, brushed, calendered]

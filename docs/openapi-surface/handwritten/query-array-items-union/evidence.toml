@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "d4970e8f7f22f1847be40c2eb8bf52ee76741e35babe312f01ad4a497b57f546"
+
+[[covers]]
+key = "query-array-items-union"
+search = "docs/openapi-surface/parameters.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameter-lowering/README.md"

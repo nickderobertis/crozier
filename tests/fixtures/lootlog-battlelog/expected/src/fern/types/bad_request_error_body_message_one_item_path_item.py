@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .bad_request_error_body_message_one_item_path_item_one import BadRequestErrorBodyMessageOneItemPathItemOne
+
+BadRequestErrorBodyMessageOneItemPathItem = typing.Union[str, BadRequestErrorBodyMessageOneItemPathItemOne]

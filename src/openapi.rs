@@ -71,6 +71,141 @@ pub struct OpenApi {
     /// in generated docs rather than title-casing an operation-only tag.
     #[serde(default)]
     pub tags: Vec<ApiTag>,
+    /// `x-crozier-base-path`: the base path every operation's route sits under
+    /// (canonical spelling; see [`OpenApi::base_path`]).
+    #[serde(rename = "x-crozier-base-path", default)]
+    pub base_path_crozier: Option<BasePath>,
+    /// `x-fern-base-path`: the Fern spelling of the base path, superseded by
+    /// `x-crozier-base-path` when both appear.
+    #[serde(rename = "x-fern-base-path", default)]
+    pub base_path_fern: Option<BasePath>,
+}
+
+/// A document-level base path (`x-crozier-base-path` / `x-fern-base-path`): a
+/// path prefixed to every operation's route, whose `{placeholders}` are lifted
+/// out of every method into client constructor arguments.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum BasePath {
+    /// `x-fern-base-path: /v1`.
+    Path(String),
+    /// The object form.
+    Object {
+        /// The base path itself, e.g. `/{api_version}`.
+        #[serde(default)]
+        path: String,
+        /// Whether the document's routes already begin with `path`, so it is
+        /// not prefixed again.
+        #[serde(rename = "paths-include-base-path", default)]
+        paths_include_base_path: bool,
+        /// The lifted parameters' schemas.
+        #[serde(default)]
+        parameters: Option<BasePathParameters>,
+    },
+}
+
+/// The object form's `parameters`. Only the map form gives a parameter a
+/// default; Fern reads a list of Parameter Objects as naming no defaults.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum BasePathParameters {
+    /// `name: schema`, each schema read for its `default`.
+    Map(IndexMap<String, BasePathParameterSchema>),
+    /// A list of Parameter Objects.
+    List(Vec<serde_json::Value>),
+    /// Anything else, which names no defaults rather than failing the document.
+    Other(serde_json::Value),
+}
+
+/// The part of a map-form parameter schema a lifted parameter reads.
+#[derive(Debug, Clone, Deserialize)]
+pub struct BasePathParameterSchema {
+    /// The schema's `default`, which makes the argument optional when it is a
+    /// string.
+    #[serde(default)]
+    pub default: Option<serde_json::Value>,
+}
+
+/// A placeholder of the base path, lifted to a client constructor argument.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BasePathParameter {
+    /// The placeholder's name, e.g. `api_version`.
+    pub name: String,
+    /// The string `default` its map-form schema declares, which makes the
+    /// argument optional with that default.
+    pub default: Option<String>,
+}
+
+impl BasePath {
+    /// The path, and whether the routes already include it.
+    #[must_use]
+    pub fn path(&self) -> (&str, bool) {
+        match self {
+            Self::Path(path) => (path, false),
+            Self::Object {
+                path,
+                paths_include_base_path,
+                ..
+            } => (path, *paths_include_base_path),
+        }
+    }
+
+    /// The prefix to put before every route: the path without a trailing `/`,
+    /// or nothing when the routes already include it.
+    #[must_use]
+    pub fn route_prefix(&self) -> &str {
+        match self.path() {
+            (_, true) => "",
+            (path, false) => path.trim_end_matches('/'),
+        }
+    }
+
+    /// Every `{placeholder}` of the path, in order, with its default. Fern
+    /// refuses the string form when it names one (`File has missing
+    /// path-parameter`); crozier lifts it as a required argument, as it does
+    /// for an object form that declares no schema for it.
+    #[must_use]
+    pub fn parameters(&self) -> Vec<BasePathParameter> {
+        let declared = match self {
+            Self::Object {
+                parameters: Some(BasePathParameters::Map(map)),
+                ..
+            } => Some(map),
+            _ => None,
+        };
+        let mut rest = self.path().0;
+        let mut out = Vec::new();
+        while let Some(open) = rest.find('{') {
+            let Some(close) = rest[open..].find('}') else {
+                break;
+            };
+            let name = &rest[open + 1..open + close];
+            let default = declared
+                .and_then(|map| map.get(name))
+                .and_then(|schema| schema.default.as_ref())
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_owned);
+            if !name.is_empty() && out.iter().all(|p: &BasePathParameter| p.name != name) {
+                out.push(BasePathParameter {
+                    name: name.to_owned(),
+                    default,
+                });
+            }
+            rest = &rest[open + close + 1..];
+        }
+        out
+    }
+}
+
+impl OpenApi {
+    /// The document's base path: `x-crozier-base-path` when present, else
+    /// `x-fern-base-path` (the [dual-header policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn base_path(&self) -> Option<&BasePath> {
+        self.base_path_crozier
+            .as_ref()
+            .or(self.base_path_fern.as_ref())
+    }
 }
 
 /// One entry from the document's top-level `tags` list.
@@ -3220,6 +3355,79 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_base_path_reads_its_placeholders_and_their_map_form_defaults() {
+        let object: BasePath = serde_json::from_value(serde_json::json!({
+            "path": "/{edition}/{realm}/{edition}/",
+            "paths-include-base-path": true,
+            "parameters": {"edition": {"type": "string", "default": "v2"}, "realm": {"type": "string"}}
+        }))
+        .expect("the object form deserializes");
+        assert_eq!(object.route_prefix(), "");
+        assert_eq!(
+            object.parameters(),
+            [
+                BasePathParameter {
+                    name: "edition".into(),
+                    default: Some("v2".into())
+                },
+                BasePathParameter {
+                    name: "realm".into(),
+                    default: None
+                },
+            ]
+        );
+        // A list of Parameter Objects names no default, measured at Fern 5.20.0.
+        let list: BasePath = serde_json::from_value(serde_json::json!({
+            "path": "/{edition}",
+            "parameters": [{"name": "edition", "in": "path", "schema": {"default": "v2"}}]
+        }))
+        .expect("the list form deserializes");
+        assert_eq!(list.route_prefix(), "/{edition}");
+        assert_eq!(list.parameters()[0].default, None);
+        assert!(matches!(
+            list,
+            BasePath::Object {
+                parameters: Some(BasePathParameters::List(_)),
+                ..
+            }
+        ));
+        // Any other spelling names no default rather than failing the document.
+        let other: BasePath = serde_json::from_value(serde_json::json!({
+            "path": "/{edition}",
+            "parameters": "edition"
+        }))
+        .expect("another spelling deserializes");
+        assert_eq!(
+            other.parameters(),
+            [BasePathParameter {
+                name: "edition".into(),
+                default: None
+            }]
+        );
+        // The string form prefixes every route; an unclosed brace names nothing.
+        let string: BasePath =
+            serde_json::from_value(serde_json::json!("/v1/{open")).expect("string form");
+        assert_eq!(string.route_prefix(), "/v1/{open");
+        assert!(string.parameters().is_empty());
+    }
+
+    #[test]
+    fn x_crozier_base_path_wins_over_x_fern_base_path() {
+        let both: OpenApi = serde_yaml_ng::from_str(
+            "openapi: 3.0.3\nx-fern-base-path: /fern\nx-crozier-base-path: /crozier\npaths: {}\n",
+        )
+        .expect("document deserializes");
+        assert_eq!(
+            both.base_path().map(BasePath::route_prefix),
+            Some("/crozier")
+        );
+        let fern: OpenApi =
+            serde_yaml_ng::from_str("openapi: 3.0.3\nx-fern-base-path: /fern\npaths: {}\n")
+                .expect("document deserializes");
+        assert_eq!(fern.base_path().map(BasePath::route_prefix), Some("/fern"));
+    }
 
     #[test]
     fn null_schema_nodes_degrade_to_malformed_unknowns() {

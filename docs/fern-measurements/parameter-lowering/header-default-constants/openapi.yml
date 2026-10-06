@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse
+  version: 1.0.0
+servers:
+  - url: https://greenhouse.example.org
+paths:
+  /beds:
+    get:
+      operationId: listBeds
+      tags: [beds]
+      parameters:
+        - name: section
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: X-Lamp-Hue
+          in: header
+          required: true
+          schema:
+            type: string
+            default: amber
+        - name: X-Lamp-Watts
+          in: header
+          required: true
+          schema:
+            type: integer
+            default: 40
+        - name: X-Fan-Speed
+          in: header
+          required: false
+          schema:
+            type: integer
+            default: 3
+        - name: X-Vent-Mode
+          in: header
+          required: true
+          schema:
+            type: string
+            enum: [open, shut]
+        - name: X-Valve-Mode
+          in: header
+          required: true
+          schema:
+            type: string
+            enum: [drip, spray]
+            default: drip
+        - name: X-Mist-Mode
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [fine, coarse]
+            default: fine
+        - name: X-Hatch-Mode
+          in: header
+          required: false
+          description: Which way the roof hatch rests.
+          schema:
+            type: string
+            enum: [up, down]
+            default: down
+            nullable: true
+      responses:
+        "200":
+          description: Beds.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /beds/{bed_id}:
+    get:
+      operationId: getBed
+      tags: [beds]
+      parameters:
+        - name: bed_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Lamp-Hue
+          in: header
+          required: false
+          schema:
+            type: string
+            default: amber
+      responses:
+        "200":
+          description: One bed.
+          content:
+            application/json:
+              schema:
+                type: string

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "lootlog-battlelog",
+  "corpus_spec_ref": "e2796c4f48ca4a749f53fdc5a127eece50567b56",
+  "corpus_spec_url": "https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml"
+}

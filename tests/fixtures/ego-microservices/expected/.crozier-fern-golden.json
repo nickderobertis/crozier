@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "ego-microservices",
+  "corpus_spec_ref": "e0ebe7a5219488545820408b46f67f4f9fa9c83c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/dreek1337/Ego/e0ebe7a5219488545820408b46f67f4f9fa9c83c/openapi.yaml"
+}
