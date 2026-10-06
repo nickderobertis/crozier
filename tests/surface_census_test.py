@@ -12071,7 +12071,7 @@ class NamingMirrorTests(unittest.TestCase):
                 )
 
     def test_the_parameter_ports_track_their_rust_functions(self) -> None:
-        """`parameter.schema:subset-header-string-default`'s port of promotion.
+        """The parameter predicates' ports of the items-union hoist and promotion.
 
         Each function of `src/ir.rs` the predicate reads is pinned by the same
         normalized-body digest, so an edit there fails here until the port is

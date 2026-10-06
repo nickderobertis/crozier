@@ -3728,13 +3728,16 @@ def operation_routes(document: Any) -> dict[int, tuple[str, str]]:
 # `Authorization` (`is_promotion_reserved_header`).
 UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie", "authorization"})
 
-# `parameter.schema:subset-header-string-default` ports the promotion rule of
-# `global_headers` — the three-quarters threshold, the string default, the
-# headers it never takes and the apiKey scheme names `is_auth_managed_header`
-# reads — so each function it reads is pinned by the normalized-body digest the
-# offline tier recomputes, as `UNION_PORT_DIGESTS` are: an edit there fails until
-# the port is read again.
+# The two parameter predicates port `src/ir.rs` rules:
+# `parameter.schema:query-items-union` the items-union hoist of
+# `hoist_param_enum`, and `parameter.schema:subset-header-string-default` the
+# promotion rule of `global_headers` — the three-quarters threshold, the string
+# default, the headers it never takes and the apiKey scheme names
+# `is_auth_managed_header` reads. Each function they read is pinned by the
+# normalized-body digest the offline tier recomputes, as `UNION_PORT_DIGESTS`
+# are: an edit there fails until the port is read again.
 PARAMETER_PORT_DIGESTS = {
+    "hoist_param_enum": "c0c3d57f9ea6b36a",
     "global_headers": "7ff243e98bd3c60e",
     "is_transport_managed_header": "c0b5057117ba1977",
     "is_transport_managed_parameter": "a3891f0bee5ebb90",
