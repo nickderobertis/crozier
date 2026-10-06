@@ -1232,8 +1232,10 @@ def file_probes_many(source: str, probed: dict[str, list[dict[str, Any]]]) -> No
     path = source_dir(source) / "probe.jsonl"
     CACHE.mkdir(parents=True, exist_ok=True)
     with exclusive_lock(CACHE / f"{source}.probe.lock"):
-        kept = [row for row in read_probes(source) if row["key"] not in probed]
-        rows = kept + [row for key in probed for row in probed[key]]
+        kept = [row for row in read_probes(source)
+                if row["key"] not in probed or opaque_candidate(row["candidate"])]
+        rows = kept + [row for key in probed for row in probed[key]
+                       if not opaque_candidate(row["candidate"])]
         path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
 
 
@@ -1245,14 +1247,7 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     candidates are exactly the ones carrying their three screens, and an
     arm-reaching declarer nobody screened stays visible here as outstanding.
     """
-    path = source_dir(source) / "probe.jsonl"
-    # Probes of other keys of this source may be filing at the same time; the
-    # read-modify-write is theirs to wait for, not to interleave with.
-    CACHE.mkdir(parents=True, exist_ok=True)
-    with exclusive_lock(CACHE / f"{source}.probe.lock"):
-        kept = [row for row in read_probes(source) if row["key"] != key]
-        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in kept + probed), encoding="utf-8")
-
+    file_probes_many(source, {key: probed})
 
 
 

@@ -917,6 +917,40 @@ class _StageScratch(unittest.TestCase):
 class ArmSearchStageTests(_StageScratch):
     """The `walk`, `screen`, `render` and `probe` stages driven through `main`."""
 
+    def test_probe_publication_preserves_opaque_history_while_replacing_current_rows(self) -> None:
+        token = golden_reach_search.INDEX.make_opaque_identity("f" * 32, 81)
+        history = {"key": self.KEY, "candidate": f"{token}@{token}", "status": "ok",
+                   "reached": ["historical-arm"], "build": self.head[:12]}
+        current = {"key": self.KEY, "candidate": f"example/metering:flow.yaml@{self.REVISION}",
+                   "status": "ok", "reached": ["current-arm"], "build": self.head[:12]}
+        directory = golden_reach_search.EVIDENCE / "github-code-search"
+        directory.mkdir(parents=True)
+        path = directory / "probe.jsonl"
+        original = (json.dumps(history, sort_keys=True) + "\n").encode()
+        for stage in ("single", "many"):
+            with self.subTest(stage=stage):
+                def publish(rows: list[dict[str, object]]) -> None:
+                    if stage == "single":
+                        golden_reach_search.file_probes("github-code-search", self.KEY, rows)
+                    else:
+                        golden_reach_search.file_probes_many("github-code-search", {self.KEY: rows})
+                path.write_bytes(original)
+                publish([current])
+                self.assertEqual([history, current], golden_reach_search.read_probes("github-code-search"))
+                publish([history, current])
+                self.assertEqual([history, current], golden_reach_search.read_probes("github-code-search"))
+                publish([])
+                self.assertEqual([history], golden_reach_search.read_probes("github-code-search"))
+                self.assertEqual(original, path.read_bytes())
+                invalid = original.replace(b":v2:", b":v3:")
+                path.write_bytes(invalid)
+                with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v3"):
+                    publish([current])
+                self.assertEqual(invalid, path.read_bytes())
+                path.write_bytes(original)
+                publish([])
+                self.assertEqual(original, path.read_bytes())
+
     def walk(self) -> None:
         with contextlib.redirect_stdout(io.StringIO()) as printed:
             code = golden_reach_search.main(
