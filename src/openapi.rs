@@ -2192,20 +2192,6 @@ fn normalize_unlisted_required(doc: &mut OpenApi) {
     });
 }
 
-/// Rewrite a `type` list with more than one non-`null` member into the `anyOf`
-/// Fern reads it as.
-///
-/// A single non-`null` member is nullability and nothing else (`type: [string,
-/// null]` is an optional string), which is why [`TypeField::primary`] answers
-/// every other caller. Two or more are a union of those types, and Fern imports
-/// them as exactly that: EN 18222's `value: {type: [string, number, boolean]}`
-/// generates the hoisted alias `SingleValuedDataElementValue = typing.Union[str,
-/// float, bool]` in its own module — the same treatment an inline `anyOf` gets,
-/// down to the name. Normalizing here rather than at the use site means the
-/// union hoisting, naming, and forward-reference passes need no second spelling
-/// of the same shape. A `null` member stays optionality: it leaves the union and
-/// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
-/// emits for a five-member list ending in `null`.
 /// Read the non-standard `type: float` as Fern does: a `number` whose `format`
 /// no longer narrows it. Fern types `{type: float}` as `float` wherever it
 /// appears, and keeps `float` (and a float example) under `format: int32` or
@@ -2235,6 +2221,20 @@ fn normalize_float_type(doc: &mut OpenApi) {
     });
 }
 
+/// Rewrite a `type` list with more than one non-`null` member into the `anyOf`
+/// Fern reads it as.
+///
+/// A single non-`null` member is nullability and nothing else (`type: [string,
+/// null]` is an optional string), which is why [`TypeField::primary`] answers
+/// every other caller. Two or more are a union of those types, and Fern imports
+/// them as exactly that: EN 18222's `value: {type: [string, number, boolean]}`
+/// generates the hoisted alias `SingleValuedDataElementValue = typing.Union[str,
+/// float, bool]` in its own module — the same treatment an inline `anyOf` gets,
+/// down to the name. Normalizing here rather than at the use site means the
+/// union hoisting, naming, and forward-reference passes need no second spelling
+/// of the same shape. A `null` member stays optionality: it leaves the union and
+/// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
+/// emits for a five-member list ending in `null`.
 fn normalize_multi_type_schemas(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {

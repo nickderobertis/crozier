@@ -8830,11 +8830,6 @@ impl<'a> ExampleCtx<'a> {
         Some(Example::Call(name, args))
     }
 
-    /// One field's example value: its declared `example` where that literal is
-    /// what Fern shows for the field's type, and the synthesized placeholder
-    /// otherwise. A union wrapper's fields are exampled the same way an object's
-    /// are — NDW's `AreaRequest_Municipality` opens with the `GM0344` its
-    /// `MunicipalityAreaRequest.id` declares.
     /// The example of a value whose schema admits only the empty object: `{}`,
     /// where Fern writes its `{"key": "value"}` placeholder, which the schema
     /// rejects (the `closed-empty-object-example` departure).
@@ -8846,6 +8841,11 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// One field's example value: its declared `example` where that literal is
+    /// what Fern shows for the field's type, and the synthesized placeholder
+    /// otherwise. A union wrapper's fields are exampled the same way an object's
+    /// are — NDW's `AreaRequest_Municipality` opens with the `GM0344` its
+    /// `MunicipalityAreaRequest.id` declares.
     fn field_example(&mut self, ty: &TypeRef, wire: &str, example: Option<&str>) -> Example {
         // A field typed by a map to unknown (`Dict[str, Any]`) takes Fern's fixed
         // `{"key": "value"}` placeholder whatever the schema declares: HelixDB's

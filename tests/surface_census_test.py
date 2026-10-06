@@ -12451,28 +12451,33 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
         self-recursive `Harbor`. The decoys reach two cycles in sorted order, name
         the downstream cycle themselves, or compose a union beside `properties`.
         """
-        ref = lambda name: {"$ref": f"#/components/schemas/{name}"}  # noqa: E731
-        selfish = lambda field, name: {"type": "object", "properties": {field: ref(name)}}  # noqa: E731
+        def ref(name: str) -> dict:
+            return {"$ref": f"#/components/schemas/{name}"}
+
+        def linked(field: str, name: str) -> dict:
+            """An object whose one property references the component `name`."""
+            return {"type": "object", "properties": {field: ref(name)}}
+
         positive = {"components": {"schemas": {
             "Timetable": {"type": "object", "properties": {"wharf": ref("Wharf"), "buoy": ref("Buoy")}},
-            "Wharf": selfish("annex", "Wharf"),
+            "Wharf": linked("annex", "Wharf"),
             "Buoy": {"type": "object", "properties": {"tethered": {"type": "array", "items": ref("Buoy")}}},
             "Roster": {"type": "object", "properties": {"captain": ref("Captain")}},
-            "Captain": selfish("vessel", "Vessel"),
+            "Captain": linked("vessel", "Vessel"),
             "Vessel": {"type": "object", "properties": {"skipper": ref("Captain"), "port": ref("Harbor")}},
-            "Harbor": selfish("district", "Harbor"),
+            "Harbor": linked("district", "Harbor"),
         }}}
         decoys = {"components": {"schemas": {
             "Sorted": {"type": "object", "properties": {"buoy": ref("Buoy"), "wharf": ref("Wharf")}},
             "Union": {"type": "object", "oneOf": [ref("Buoy")],
                       "properties": {"wharf": ref("Wharf"), "buoy": ref("Buoy")}},
-            "Wharf": selfish("annex", "Wharf"),
-            "Buoy": selfish("tethered", "Buoy"),
+            "Wharf": linked("annex", "Wharf"),
+            "Buoy": linked("tethered", "Buoy"),
             "Fleet": {"type": "object", "properties": {"captain": ref("Captain"), "port": ref("Yard")}},
-            "Captain": selfish("vessel", "Vessel"),
+            "Captain": linked("vessel", "Vessel"),
             "Vessel": {"type": "object", "properties": {"skipper": ref("Captain"), "port": ref("Yard")}},
-            "Yard": selfish("district", "Yard"),
-            "x-Ignored": selfish("annex", "Wharf"),
+            "Yard": linked("district", "Yard"),
+            "x-Ignored": linked("annex", "Wharf"),
         }}}
         unsorted = "components.schemas:fields-reach-cycles-unsorted"
         self.assertEqual({(unsorted, "positive"): 1},
