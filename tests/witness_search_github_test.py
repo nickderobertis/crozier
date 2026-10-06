@@ -157,6 +157,76 @@ class LedgerShardTests(unittest.TestCase):
         read = SEARCH.jsonl(evidence / "candidates.jsonl")
         self.assertEqual([row["repository"] for row in rows], [row["repository"] for row in read])
 
+    def test_index_preserves_versioned_opaque_candidate_measurements(self) -> None:
+        root = self.root / "opaque-index"
+        for source in SEARCH.INDEX.SOURCES:
+            directory = root / f"witness-search-{source}"
+            directory.mkdir(parents=True)
+            (directory / "keys.json").write_text(json.dumps({"keys": {
+                "shape": {"selector": "schema.additionalProperties=false"}
+            }}), encoding="utf-8")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
+            json.dumps({"publishers": []}), encoding="utf-8"
+        )
+        token = "screened-nonpublic-input:v1:" + "a" * 32 + ":731"
+        ordinary = {"source": "sourcegraph", "key": "shape",
+                    "repository": "example/api", "path": "openapi.yaml",
+                    "commit": "c" * 40, "sha256": "d" * 64,
+                    "disposition": "does-not-declare", "selector_count": 0}
+        historical = {**ordinary, "repository": token, "path": token,
+                      "sha256": token, "selector_count": 0}
+        ledger = root / "witness-search-sourcegraph/candidates.jsonl"
+
+        def write(row: dict[str, object]) -> None:
+            ledger.write_text(json.dumps(ordinary) + "\n" + json.dumps(row) + "\n",
+                              encoding="utf-8")
+
+        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
+                   "--evidence-root", str(root)]
+        write(historical)
+        generated = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(0, generated.returncode, generated.stderr)
+        with (root / "witness-search-sourcegraph/records.tsv").open(encoding="utf-8") as stream:
+            rows = {row["candidate"]: row for row in csv.DictReader(stream, delimiter="\t")}
+        self.assertEqual({token, "example/api:openapi.yaml"}, set(rows))
+        self.assertEqual(token, rows[token]["digest"])
+        for field in ("revision", "census", "licence_screen", "revision_screen",
+                      "fern_screen", "disposition"):
+            self.assertEqual(rows["example/api:openapi.yaml"][field], rows[token][field])
+        subprocess.run([*command, "--check"], check=True, capture_output=True, text=True)
+        other_token = token.replace("a" * 32, "b" * 32)
+        fresh = {"source": "sourcegraph", "key": "shape", "repository": other_token,
+                 "path": other_token, "disposition": "excluded-repository"}
+        ledger.write_text(ledger.read_text(encoding="utf-8") + json.dumps(fresh) + "\n",
+                          encoding="utf-8")
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        with (root / "witness-search-sourcegraph/records.tsv").open(encoding="utf-8") as stream:
+            distinct = {row["candidate"]: row for row in csv.DictReader(stream, delimiter="\t")}
+        self.assertEqual({token, other_token, "example/api:openapi.yaml"}, set(distinct))
+        self.assertEqual("not-run: screened by repository rule", distinct[other_token]["census"])
+        self.assertEqual("rejected", distinct[other_token]["disposition"])
+
+        for invalid, message in (
+            ({**historical, "repository": token.replace(":v1:", ":v2:")},
+             "unsupported opaque identity version v2"),
+            ({**historical, "path": "openapi.yaml"},
+             "opaque repository and path must carry the same identity"),
+            ({**historical, "sha256": "screened-nonpublic-input:v1:" + "a" * 32 + ":0"},
+             "invalid opaque identity"),
+            ({**ordinary, "disposition": "excluded-repository"},
+             "excluded-repository requires an opaque identity"),
+            ({**fresh, "selector_count": 0},
+             "excluded-repository cannot carry measured selector counts"),
+        ):
+            with self.subTest(message=message):
+                write(invalid)
+                rejected = subprocess.run(command, capture_output=True, text=True)
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn(message, rejected.stderr)
+        write(historical)
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        subprocess.run([*command, "--check"], check=True, capture_output=True, text=True)
+
     def test_index_writes_parts_and_checks_them_as_one_ledger(self) -> None:
         root = self.root / "index"
         for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):

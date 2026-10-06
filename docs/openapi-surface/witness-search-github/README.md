@@ -12,6 +12,23 @@ candidate identity, digest when fetched, classification, screens, and dispositio
 `candidates.tsv` is their consolidated index; regenerate and check both with
 `python3 scripts/witness-search-github-index.py` and its `--check` option.
 
+Excluded inputs use `screened-nonpublic-input:v1:I:N`, where `I` is a random 32-character lowercase
+hexadecimal invocation ID and `N` is a positive assigned integer. Neither is
+derived from the public name, path or content hash. The migration uses one
+invocation ID; a fresh search uses a new one. Within that invocation the same
+candidate carries the same token throughout its records. Tokens from different
+invocations never join records as the same input. Repository
+and path fields both hold that token; a retained locator or digest field also
+holds it, while optional locators may be omitted. No reverse mapping is
+committed. Readers must accept version `v1` and reject other versions explicitly.
+These historical rows preserve their measured selectors, counts, screens and
+verdicts. Acquisition and census continuations must skip them as screened by the
+repository exclusion rule; fresh candidates from `fern-api/fern` must be excluded
+and recorded opaquely before fetching. A fresh exclusion uses raw status `excluded-repository` with no measured
+selector counts; it makes no claim that the document lacks a shape. Migrated
+rows keep their original dispositions and counts. Other candidates retain their
+publisher identities and integrity digests.
+
 GitHub refuses a pushed file over 100 MB, so a ledger larger than 45 MB is
 stored in parts split at line boundaries. The first part keeps the ledger's
 own name (`candidates.tsv`), and the rest follow in order as

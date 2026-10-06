@@ -28,7 +28,8 @@ RAW_OUTSTANDING = frozenset({
 RAW_ZERO = frozenset({"does-not-declare", "excluded-non-openapi-3"})
 # Every parser available refused the document: decided, with the refusal as its reason.
 RAW_REFUSED = "census-refused"
-RAW_STATUSES = RAW_DECLARING | RAW_OUTSTANDING | RAW_ZERO | {RAW_REFUSED}
+RAW_EXCLUDED = "excluded-repository"
+RAW_STATUSES = RAW_DECLARING | RAW_OUTSTANDING | RAW_ZERO | {RAW_REFUSED, RAW_EXCLUDED}
 FIELDS = (
     "source",
     "key",
@@ -211,6 +212,10 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
             not isinstance(row["duration_s"], (int, float)) or isinstance(row["duration_s"], bool)
         ):
             raise ValueError(f"{path}:{number}: duration_s is not a number")
+        try:
+            validate_opaque_values(row)
+        except ValueError as error:
+            raise ValueError(f"{path}:{number}: {error}") from error
         rows.append((number, row))
     return rows
 
@@ -237,11 +242,49 @@ SCREEN_FIELDS = {"licence": "license", "ref": "ref", "fern": "fern"}
 HISTORICAL_SCREEN = "historical screen: filed before scripts/witness_screen.py, with no measured record"
 
 
+def opaque_identity(value: Any) -> str | None:
+    """Recognize the versioned identity contract in the search records' README."""
+    if not isinstance(value, str) or not value.startswith("screened-nonpublic-input:"):
+        return None
+    parts = value.split(":")
+    version = parts[1] if len(parts) > 1 else ""
+    if version != "v1":
+        raise ValueError(f"unsupported opaque identity version {version}")
+    if not re.fullmatch(r"screened-nonpublic-input:v1:[0-9a-f]{32}:[1-9][0-9]*", value):
+        raise ValueError("invalid opaque identity: expected an invocation ID and a positive assigned integer")
+    return value
+
+
+def validate_opaque_values(value: Any) -> None:
+    """Validate nested query results as well as top-level candidate fields."""
+    if isinstance(value, dict):
+        if (value.get("disposition") or value.get("status")) == RAW_EXCLUDED:
+            if not opaque_identity(value.get("repository")):
+                raise ValueError("excluded-repository requires an opaque identity")
+            if "selector_count" in value or "selector_counts" in value:
+                raise ValueError("excluded-repository cannot carry measured selector counts")
+        if "repository" in value and "path" in value:
+            candidate_name(value)
+        for item in value.values():
+            validate_opaque_values(item)
+    elif isinstance(value, list):
+        for item in value:
+            validate_opaque_values(item)
+    else:
+        opaque_identity(value)
+
+
 def normalize_repo(value: str) -> str:
     return value.removeprefix("github.com/")
 
 
 def candidate_name(row: dict[str, Any]) -> str:
+    repository = opaque_identity(row["repository"])
+    path = opaque_identity(row["path"])
+    if repository or path:
+        if repository != path:
+            raise ValueError("opaque repository and path must carry the same identity")
+        return repository
     return f"{normalize_repo(row['repository'])}:{row['path']}"
 
 
@@ -315,6 +358,10 @@ def classify(
                 else "not-run: declaration screen outstanding"
             )
             disposition = "not-owed" if closed else "outstanding"
+    elif status == RAW_EXCLUDED:
+        census = "not-run: screened by repository rule"
+        licence = ref = fern = "not-run: repository excluded"
+        disposition = "rejected"
     elif status in RAW_OUTSTANDING:
         # The ledger row keeps the parser's whole diagnostic; the record cites it.
         diagnostic = str(row.get("diagnostic") or "document not yet fetched")

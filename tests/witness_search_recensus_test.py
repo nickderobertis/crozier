@@ -108,6 +108,57 @@ def run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedPr
                           env={**os.environ, **(env or {})}, timeout=300)
 
 
+class OpaqueContinuationTest(unittest.TestCase):
+    def test_each_continuation_skips_opaque_history_and_refuses_unknown_versions(self) -> None:
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server.paths = []
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_port}"
+        env = {"CROZIER_GITHUB_API_URL": url, "CROZIER_SOURCEGRAPH_URL": url,
+               "CROZIER_RAW_GITHUB_URL": url, "GITHUB_TOKEN": "offline-test-token"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            token = "screened-nonpublic-input:v1:" + "a" * 32 + ":731"
+            for stage, source, status in (
+                ("full-yaml", "sourcegraph", "parse-failure"),
+                ("reacquire-head", "github-code-search", "acquisition-failure"),
+                ("reacquire-namesake", "github-code-search", "acquisition-failure"),
+            ):
+                with self.subTest(stage=stage):
+                    evidence = root / f"witness-search-{source}"
+                    keys_file(evidence)
+                    ledger = evidence / "candidates.jsonl"
+                    historical = {"source": source, "key": KEY, "selector": SELECTOR,
+                                  "repository": token, "path": token, "sha256": token,
+                                  "blob": token, "commit": "c" * 40,
+                                  "disposition": status, "status": 404,
+                                  "reacquired_at_head": stage == "reacquire-namesake",
+                                  "diagnostic": "HTTP 404"}
+                    original = json.dumps(historical) + "\n"
+                    ledger.write_text(original, encoding="utf-8")
+                    cache = Path(tmp) / stage
+                    options = ("--source", source, "--cache", str(cache)) if stage == "full-yaml" else (
+                        "--cache-dir", str(cache), "--again")
+                    completed = run("--evidence-root", str(root), stage, *options, env=env)
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    self.assertIn("1 opaque v1 record(s) screened by repository rule", completed.stdout)
+                    self.assertEqual(1, len(completed.stdout.splitlines()))
+                    self.assertEqual(original, ledger.read_text(encoding="utf-8"))
+                    self.assertFalse((cache / "documents").exists())
+                    self.assertFalse((evidence / "raw-github-calls.jsonl").exists())
+                    self.assertEqual([], server.paths)
+                    ledger.write_text(original.replace(":v1:", ":v2:"), encoding="utf-8")
+                    rejected = run("--evidence-root", str(root), stage, *options, env=env)
+                    self.assertEqual(1, rejected.returncode)
+                    self.assertIn("unsupported opaque identity version v2", rejected.stderr)
+                    ledger.write_text(original, encoding="utf-8")
+                    recovered = run("--evidence-root", str(root), stage, *options, env=env)
+                    self.assertEqual(0, recovered.returncode, recovered.stderr)
+                    self.assertEqual(original, ledger.read_text(encoding="utf-8"))
+
+
 class FullYamlTest(unittest.TestCase):
     def test_each_parse_failure_is_read_again_and_recorded_with_its_reading(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -312,7 +363,8 @@ class FullYamlTest(unittest.TestCase):
             self.assertTrue(refused["bomb"]["diagnostic"].startswith(
                 "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading exceeded 2 s; sha256 "))
             self.assertTrue(refused["chain"]["diagnostic"].startswith(
-                "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading: RecursionError: "))
+                "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading: RecursionError: "),
+                refused["chain"]["diagnostic"])
             self.assertIn(f"sha256 {rows[1]['sha256']}", refused["chain"]["diagnostic"])
 
     def test_an_absent_copy_and_a_bad_bound_name_their_repair(self) -> None:
