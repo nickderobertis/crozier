@@ -5363,7 +5363,9 @@ fn resolve_request_body(
         // A described scalar carries the header as a described container does,
         // where a `title` alone does not move it: measured at Fern 5.20.0, an
         // inline `{type: string, description: …}` body sends it and a titled
-        // `{type: integer}` or `{type: string}` one does not.
+        // `{type: integer}` or `{type: string}` one does not. The hand-written
+        // fixture `described-scalar-bodies` holds both sides, byte-compared by
+        // `handwritten_fixtures_match_fern_goldens` in `tests/e2e.rs`.
         let described = schema.reference.is_none() && schema.description.is_some();
         let mut body = single_with_override(
             type_ref,
