@@ -12,7 +12,7 @@ normalization.
 
 This is no corpus fixture and no coverage probe: it is never a `CORPUS.md` row
 and settles no coverage row. The one real specification registered for these
-rules is corpus row 316, `lootlog-battlelog`; why the others have none yet is
+rules is corpus row 317, `lootlog-battlelog`; why the others have none yet is
 [below](#the-real-specification-search).
 
 ## The cases
@@ -137,8 +137,8 @@ recorded in
 
 | shape | what was found |
 |---|---|
-| lower-case `authorization` beside a bearer scheme | `lootlog/monorepo` `apps/battlelog/openapi.yaml` at `e2796c4f48ca4a749f53fdc5a127eece50567b56`, MIT: Fern generates, crozier byte-matches — corpus row 316 |
-| a query union naming a component string enum, no array member | `dreek1337/Ego` `openapi.yaml` at `e0ebe7a5219488545820408b46f67f4f9fa9c83c`, MIT: Fern generates, crozier byte-matches — corpus row 317 |
+| lower-case `authorization` beside a bearer scheme | `lootlog/monorepo` `apps/battlelog/openapi.yaml` at `e2796c4f48ca4a749f53fdc5a127eece50567b56`, MIT: Fern generates, crozier byte-matches — corpus row 317 |
+| a query union naming a component string enum, no array member | `dreek1337/Ego` `openapi.yaml` at `e0ebe7a5219488545820408b46f67f4f9fa9c83c`, MIT: Fern generates, crozier byte-matches — corpus row 318 |
 | array query items union, subset-promoted defaulted header, `x-fern-base-path` | no registrable declarer; see the record above |
 | inline query composition placement | `Stichting-KOMPAZ-1/KOMPAZ-web-frontend` `openapi.json` at `a847053e46b98324c57183af2b2c09abe01f8ecf` (MIT), `langchain-ai/docs` `src/langsmith/agent-server-openapi.json` at `264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e` (MIT), `lenML/Speech-AI-Forge` `docs/openapi.json` at `a41b70abba866ecded6e1e90beea6cc68e3fd0ae` (AGPL-3.0), `waylayio/waylay-sdk-queries-py` `openapi/queries.openapi.yaml` at `8ab6c18e10f96c3665dbb849ebe2193c16a1659c` (ISC) and `Q2TM/low-temperature-control` `apps/rice-shower/docs/openapi.yaml` at `b100b3633a68a41ba63181379455e98b4814da19` (MIT) declare these cells and Fern generates each; each still differs from crozier outside parameter lowering — method names a tag's own prefix shortens (KOMPAZ), nested model-union aliases and descriptions (langchain, rice-shower), multipart file parts, a JSON-encoded form field and untagged sub-clients (Speech-AI-Forge), and body fields that repeat query parameters (waylay) |
 | required scalar-or-array composition | `supabase/supabase` `apps/docs/spec/api_v1_openapi.json` at `36371de15127206280d2d40786e8578dfe1b681a` (Apache-2.0) declares the `anyOf` spelling and Fern generates; it still differs on path-parameter example values, body fields renamed after a query collision, and where a body enum is declared |

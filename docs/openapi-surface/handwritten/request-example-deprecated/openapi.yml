@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: Apiary Splits
+  version: "1.0"
+servers:
+  - url: https://splits.apiary.example
+paths:
+  /splits:
+    post:
+      operationId: planSplit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitPlan'
+            example:
+              strength: 4
+              legacyFrame: 7
+              oldCode: K9
+      responses:
+        "204":
+          description: Planned.
+components:
+  schemas:
+    SplitPlan:
+      type: object
+      required: [strength, oldCode]
+      properties:
+        strength:
+          type: integer
+        legacyFrame:
+          type: integer
+          deprecated: true
+        oldCode:
+          type: string
+          deprecated: true

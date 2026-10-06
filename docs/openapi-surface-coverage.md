@@ -23,10 +23,10 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 584 features. By category, 492 are `golden`, 52
-`limitations`, 18 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 588 features. By category, 492 are `golden`, 52
+`limitations`, 22 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 584
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 588
 split four ways:
 
 - **490 carry byte-match evidence against a registered real-world
@@ -38,12 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
-- **18 rest on a hand-written fixture, a weaker proof than a real
+- **22 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. Thirteen read `search-incomplete`. Of those,
+  decided and none is registrable. Seventeen read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -53,6 +53,12 @@ split four ways:
   declared source; its
   [renewed search](openapi-surface/witness-search-union-shapes/README.md) read
   693 documents a bounded code search returned and found it `none-registrable`.
+  The next four — `unread-date-time-example`, `allof-parent-request-body`,
+  `request-example-nested-null` and `request-example-deprecated-property` —
+  have not been searched at any declared source either; their
+  [renewed search](openapi-surface/witness-search-example-shapes/README.md)
+  read 941 documents a bounded code search returned and found each
+  `none-registrable`.
   The parameter-lowering shapes `query-array-items-union`,
   `header-subset-string-default` and `base-path-extension` have not been
   searched at any declared source either: their
@@ -84,7 +90,7 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-490 + 66 + 18 + 10 = 584.
+490 + 66 + 22 + 10 = 588.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 492 `golden` rows declare 920 handling sites in
@@ -181,12 +187,12 @@ real-specification match.
   an open gap: no real specification is known to witness it
   ([record](openapi-surface/withdrawn-witnesses/nexmo-conversation.md#the-reach-row-223-alone-carried)).
   No census selector names these four yet.
-- **Authored-probe gaps (28):** every case committed under
+- **Authored-probe gaps (29):** every case committed under
   [`authored-probes/`](openapi-surface/authored-probes/README.md) is a document
   written to isolate one shape, with the tree pinned Fern generated from it, that
   crozier byte-matches. No real-specification search backs any of them, so each
   is an open gap of undecided evidence tier, neither a real-specification nor a
-  hand-written match: [`353-method-optional-array`](openapi-surface/authored-probes/353-method-optional-array/), [`353-method-required-array`](openapi-surface/authored-probes/353-method-required-array/), [`353-promoted-required-array`](openapi-surface/authored-probes/353-promoted-required-array/), [`353-solo-required-array`](openapi-surface/authored-probes/353-solo-required-array/), [`353-string-default-control`](openapi-surface/authored-probes/353-string-default-control/), [`353-string-default-probe`](openapi-surface/authored-probes/353-string-default-probe/), [`353-string-default-scalar`](openapi-surface/authored-probes/353-string-default-scalar/), [`356-defs-pointer`](openapi-surface/authored-probes/356-defs-pointer/), [`356-defs-property`](openapi-surface/authored-probes/356-defs-property/), [`356-defs-required-property`](openapi-surface/authored-probes/356-defs-required-property/), [`358-absent-allof-member`](openapi-surface/authored-probes/358-absent-allof-member/), [`358-absent-array-item`](openapi-surface/authored-probes/358-absent-array-item/), [`358-absent-items-segment`](openapi-surface/authored-probes/358-absent-items-segment/), [`358-absent-map-value`](openapi-surface/authored-probes/358-absent-map-value/), [`358-absent-property`](openapi-surface/authored-probes/358-absent-property/), [`358-absent-request-body`](openapi-surface/authored-probes/358-absent-request-body/), [`358-absent-required-property`](openapi-surface/authored-probes/358-absent-required-property/), [`358-absent-response-body`](openapi-surface/authored-probes/358-absent-response-body/), [`358-undeclared-head-properties-required`](openapi-surface/authored-probes/358-undeclared-head-properties-required/), [`376-350-declared-type-name`](openapi-surface/authored-probes/376-350-declared-type-name/), [`376-350-declared-type-name-blank`](openapi-surface/authored-probes/376-350-declared-type-name-blank/), [`376-350-declared-type-name-shared`](openapi-surface/authored-probes/376-350-declared-type-name-shared/), [`376-350-declared-type-name-slash`](openapi-surface/authored-probes/376-350-declared-type-name-slash/), [`376-350-declared-type-name-tilde`](openapi-surface/authored-probes/376-350-declared-type-name-tilde/), [`376-354-model-property-construct`](openapi-surface/authored-probes/376-354-model-property-construct/), [`376-357-tag-only-operation-id`](openapi-surface/authored-probes/376-357-tag-only-operation-id/), [`parity-property-anyof-composed-members`](openapi-surface/authored-probes/parity-property-anyof-composed-members/), [`parity-unrequired-tag-variant-classes`](openapi-surface/authored-probes/parity-unrequired-tag-variant-classes/). The last two vary the shapes registered corpus rows 311 and 312 witness once each: an inner `oneOf` and `anyOf` beside a sibling, each with and without a discriminator, and unrequired tags with no `default` under `oneOf` and `anyOf`.
+  hand-written match: [`353-method-optional-array`](openapi-surface/authored-probes/353-method-optional-array/), [`353-method-required-array`](openapi-surface/authored-probes/353-method-required-array/), [`353-promoted-required-array`](openapi-surface/authored-probes/353-promoted-required-array/), [`353-solo-required-array`](openapi-surface/authored-probes/353-solo-required-array/), [`353-string-default-control`](openapi-surface/authored-probes/353-string-default-control/), [`353-string-default-probe`](openapi-surface/authored-probes/353-string-default-probe/), [`353-string-default-scalar`](openapi-surface/authored-probes/353-string-default-scalar/), [`356-defs-pointer`](openapi-surface/authored-probes/356-defs-pointer/), [`356-defs-property`](openapi-surface/authored-probes/356-defs-property/), [`356-defs-required-property`](openapi-surface/authored-probes/356-defs-required-property/), [`358-absent-allof-member`](openapi-surface/authored-probes/358-absent-allof-member/), [`358-absent-array-item`](openapi-surface/authored-probes/358-absent-array-item/), [`358-absent-items-segment`](openapi-surface/authored-probes/358-absent-items-segment/), [`358-absent-map-value`](openapi-surface/authored-probes/358-absent-map-value/), [`358-absent-property`](openapi-surface/authored-probes/358-absent-property/), [`358-absent-request-body`](openapi-surface/authored-probes/358-absent-request-body/), [`358-absent-required-property`](openapi-surface/authored-probes/358-absent-required-property/), [`358-absent-response-body`](openapi-surface/authored-probes/358-absent-response-body/), [`358-undeclared-head-properties-required`](openapi-surface/authored-probes/358-undeclared-head-properties-required/), [`376-350-declared-type-name`](openapi-surface/authored-probes/376-350-declared-type-name/), [`376-350-declared-type-name-blank`](openapi-surface/authored-probes/376-350-declared-type-name-blank/), [`376-350-declared-type-name-shared`](openapi-surface/authored-probes/376-350-declared-type-name-shared/), [`376-350-declared-type-name-slash`](openapi-surface/authored-probes/376-350-declared-type-name-slash/), [`376-350-declared-type-name-tilde`](openapi-surface/authored-probes/376-350-declared-type-name-tilde/), [`376-354-model-property-construct`](openapi-surface/authored-probes/376-354-model-property-construct/), [`376-357-tag-only-operation-id`](openapi-surface/authored-probes/376-357-tag-only-operation-id/), [`parity-property-anyof-composed-members`](openapi-surface/authored-probes/parity-property-anyof-composed-members/), [`parity-required-query-array-examples`](openapi-surface/authored-probes/parity-required-query-array-examples/), [`parity-unrequired-tag-variant-classes`](openapi-surface/authored-probes/parity-unrequired-tag-variant-classes/). The `parity-property-` and `parity-unrequired-` cases vary the shapes registered corpus rows 311 and 312 witness once each: an inner `oneOf` and `anyOf` beside a sibling, each with and without a discriminator, and unrequired tags with no `default` under `oneOf` and `anyOf`. `parity-required-query-array-examples` varies the required query array that registered goldens declare on each side of the measured rule — corpus row 316 for a JSON response, `amazonaws.com-cloudformation` for `text/xml` and `query-parameters-openapi` for a required object parameter beside it — in three operations that differ in the decisive attribute alone.
 
 Where crozier deliberately differs from Fern is decided per refusal class in
 [`fern-refusals/`](fern-refusals/README.md). Each of its 36 classes is decided
@@ -195,7 +201,7 @@ class is yet one where crozier generates and Fern does not. A `generate`
 decision, which would write an SDK by default and refuse only under
 `fern-strict`, is the registry's to make, with a wire test proving the SDK.
 
-**What the census still cannot enumerate.** The 584 are what a selector over a
+**What the census still cannot enumerate.** The 588 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
 the census cannot measure the population beyond its own reach.
 
@@ -278,12 +284,14 @@ registrations added, and the four the closed and open empty-object disjunct of
 `anyof-anyof-variant`, `golden`. The naming and example branches of #361 add
 35 — 27 `golden` and 8 `gap` — bringing it to 577, and the component
 composition of one primitive (`component-same-primitive-union`), a `handwritten`
-row, to 578, the three `handwritten` rows the float, closed-object and
-reference-cycle repairs added (`cycle-into-cycle`,
-`request-body-property-closed-empty-object`, `type-misspelled-scalar`) to 581,
+row, to 578, the four worked-example shapes the example repairs measured
+(`unread-date-time-example` and three `bodies-media` request-example shapes),
+`handwritten` rows, to 582, the three `handwritten` rows the float,
+closed-object and reference-cycle repairs added (`cycle-into-cycle`,
+`request-body-property-closed-empty-object`, `type-misspelled-scalar`) to 585,
 and the three parameter-lowering shapes this run's hand-written fixtures cover
 (`query-array-items-union`, `header-subset-string-default` and
-`base-path-extension`), each a `handwritten` row, to **584**. Counting only the
+`base-path-extension`), each a `handwritten` row, to **588**. Counting only the
 registered rows whose Fern golden crozier byte-matches as golden sources (#352)
 moved no row's category: every `golden` row's declarers include one.
 
@@ -421,7 +429,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-91, declared in `scripts/openapi-surface-census.py` and restated here, with a
+95, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -466,6 +474,22 @@ drift gate over the pair:
   alternative's ordinal. Read at the Components Object, the one position where
   the name shows; `integer` and `format: int64` convert to different primitives,
   as Fern keeps them apart.
+- `schema.example:unread-date-time` — one per `format: date-time` Schema Object
+  whose selected example is a string Fern's reading rejects once it has appended
+  `Z` to a value that neither ends in `Z` nor holds a `+`; `datetime_example` of
+  `src/emit.rs` writes Fern's default for it.
+- `mediaType.schema:allof-parent-body` — one per request body's selected JSON
+  media type whose schema `$ref`s a component composed `allOf` of one inline
+  object and one `$ref` base, which another component's `allOf` names in turn,
+  and whose example names a required field of each side: the body whose
+  Markdown examples list their own fields first.
+- `mediaType.example:nested-null-member` — one per request body's selected JSON
+  media type whose example (its `example`, else its first named one) gives
+  `null` to a property a nested object's schema declares and does not require.
+- `mediaType.example:deprecated-property` — one per request body's selected JSON
+  media type whose example names, at any depth, a property whose own schema is
+  marked `deprecated: true` — not one it reaches through a `$ref` or an `allOf`,
+  as `own_deprecated` of `src/ir.rs` reads it.
 - `components.schemas:fields-reach-cycles-unsorted` — one per component schema
   composing no `oneOf` or `anyOf` whose `properties`, read in order, name
   members of two or more reference cycles (strongly connected components of the
@@ -778,15 +802,16 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Seventy of the 91 are node-local**, which is what makes them one family:
+**Seventy-one of the 95 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
 in exactly that sense — a `$ref` *value* is one of the node's own declared
 fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
-further. The other
-twenty-one — `operation.operationId:duplicate`,
+further, and `schema.example:unread-date-time`, which reads one node's `format`
+and selected example. The other
+twenty-four — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
@@ -798,22 +823,28 @@ twenty-one — `operation.operationId:duplicate`,
 `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`,
 `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
 `schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`,
+`mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`,
+`mediaType.example:deprecated-property`,
 `components.schemas:fields-reach-cycles-unsorted`,
 `components.schemas:cycle-into-cycle` and
-`mediaType.schema:closed-empty-object-property` — read the document beyond the node, and
-say so in their own sentence. The first nine and the two cycle readings compare
-one document's own values against each other; the other ten read where the node
-stands (an operation's route, a request body's selected media type) or
-resolve one local `#/components/...` reference. Those two
+`mediaType.schema:closed-empty-object-property` — read the document beyond the
+node, and say so in their own sentence. The first nine and the two cycle
+readings compare one document's own values against each other; the next ten
+read where the node stands (an operation's route, a request body's selected
+media type) or resolve one local `#/components/...` reference; the last three
+read a request body's selected media type and resolve the
+`#/components/schemas/...` references its schema and example's properties
+reach. Those two
 numbers partition the closed list, and a check reconciles the split with it. Every
 document-reading predicate reads **the document context**: the census carries the
 document's own `components` maps, its route and request-body positions, and the
 set of its schema keys, reachable from every node it walks, and it is the
 document being censused and nothing else — no fetch, no cross-document
 resolution, no second document. A property that would need the *shape* of the
-schema a `$ref` points at is a predicate in one case only: the four
-`on-ref-to` example readings, because the arms they are read off are
-`src/emit.rs`'s, which no `src/ir.rs` case can carry a `~>` conjunction for.
+schema a `$ref` points at is a predicate in two cases only: the four
+`on-ref-to` example readings and the last three request-example readings,
+because the arms they are read off are `src/emit.rs`'s, which no `src/ir.rs`
+case can carry a `~>` conjunction for.
 Everywhere else it is declared nowhere: that is what the `~>` operator below
 descends for.
 
@@ -1505,10 +1536,10 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation),
   which `just check` now runs. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 247 sources (corpus rows through 317, after the withdrawals of rows
+  acquires 248 sources (corpus rows through 318, after the withdrawals of rows
   224 and 223, with the `crozier-property-name` feature target), and the walk
-  reads the **230** registered sources, of which
-  **230** carry a committed golden; the 17 others carry none and are acquisition
+  reads the **231** registered sources, of which
+  **231** carry a committed golden; the 17 others carry none and are acquisition
   evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -1547,15 +1578,15 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 73 | 52 | 19 | 2 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 286 | 248 | 14 | 15 | 9 | 7 | 0 | 2 |
-| [`bodies-media`](openapi-surface/bodies-media.md) | 50 | 45 | 5 | 0 | 0 | 0 | 0 | 0 |
+| [`schemas`](openapi-surface/schemas.md) | 287 | 248 | 14 | 16 | 9 | 7 | 0 | 2 |
+| [`bodies-media`](openapi-surface/bodies-media.md) | 53 | 45 | 5 | 3 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 72 | 68 | 3 | 0 | 1 | 1 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 53 | 38 | 2 | 1 | 12 | 0 | 0 | 12 |
-| **total** | **584** | **492** | **52** | **18** | **22** | **8** | **0** | **14** |
+| **total** | **588** | **492** | **52** | **22** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **584** features and landed each in exactly one category:
-**492** `golden`, **52** `limitations`, **18** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **588** features and landed each in exactly one category:
+**492** `golden`, **52** `limitations`, **22** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -1706,7 +1737,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 584 rows carry 584 distinct
+**Each feature is classified exactly once.** The 588 rows carry 588 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Fifteen spec
@@ -1878,7 +1909,7 @@ is what makes the gap a *supply* problem rather than a closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 584](#what-the-walk-enumerated) is a
+[the walk's 588](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
 [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107
@@ -3066,6 +3097,20 @@ live query, so each reads `search-incomplete`;
 [the record](openapi-surface/witness-search-parameter-lowering/README.md) names
 every declarer that search found and why none is registrable.
 
+Four more joined with the worked-example repairs, `handwritten` from the start
+in the same way: `unread-date-time-example` here, and three `bodies-media` rows
+(`allof-parent-request-body`, `request-example-nested-null`,
+`request-example-deprecated-property`). Their
+[hand-written fixtures](openapi-surface/handwritten/AGENTS.md) are the
+measurement, each line reads `search-incomplete` because no declared source has
+been walked or queried for it, and their
+[renewed search](openapi-surface/witness-search-example-shapes/README.md) read
+941 documents a bounded code search returned and found none registrable. The
+table below names `unread-date-time-example`'s candidates; the three
+`bodies-media` keys' lines, and the candidates each search found, are under
+[`bodies-media.md`'s Witness search (exhaustive)](openapi-surface/bodies-media.md#witness-search-exhaustive)
+and in that record.
+
 **Five read `exhausted`, six read `search-incomplete` under the scope
 exception.** Each key's reconciled record is its
 line under
@@ -3149,8 +3194,10 @@ and name every candidate the census confirmed.
 | `property-sole-oneof-empty-object-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `Dynamsoft/Dynamic-Web-TWAIN` `dwt-openapi.yaml`: repository licence `NOASSERTION`, and `fern check` exit 1. `nhsengland/innovation-service-backend-api` `apps/innovations/.apim/swagger.yaml`: Fern accepts it, and its repository licence reads `NOASSERTION` | NHS England's licence evidenced for the file; GitHub or a mirror serving the refused blob again |
 | `request-body-property-closed-empty-object` | `mediaType.schema:closed-empty-object-property` | not asked: no declared source has been walked or queried for this key | none in a declared source. The [renewed search][type-and-cycle-search] found 1 among 703 documents: `dcp-ai-protocol/dcp-ai` `api/openapi.yaml` passes all three screens but diverges apart from the shape (a worked example's union variant) | a walk or query of each declared source |
 | `type-misspelled-scalar` | `schema.type:misspelled-scalar` | not asked: no declared source has been walked or queried for this key | none in a declared source. The [renewed search][type-and-cycle-search] found 4 among 703 documents: `5GZORRO/slice-manager`, `easysoft/zendata` and `oqlos/oqlos` fail `fern check`, and `jentic/jentic-public-apis`'s BulkSMS description declares the names only on query parameters, where crozier diverges | a walk or query of each declared source |
+| `unread-date-time-example` | `schema.example:unread-date-time` | not asked: no declared source has been walked or queried for this key | none in a declared source. The [renewed search][example-shapes-search] found 51 among 941 documents: 24 grant no admissible licence and 12 fail `fern check`; of the 15 Fern generates from, `netgsm/netgsm-sms-js` `openapi.json` differs from crozier only by the content-type-header gap, five byte-match but declare the example only on response models no worked example reads, and nine differ in files apart from the shape | a walk or query of each declared source; the content-type-header repair, which would let `netgsm-sms-js` register |
 
 [union-shapes-search]: openapi-surface/witness-search-union-shapes/README.md
+[example-shapes-search]: openapi-surface/witness-search-example-shapes/README.md
 [type-and-cycle-search]: openapi-surface/witness-search-type-and-cycle-shapes/README.md
 
 **What would move the rest.** The seventh `search-incomplete` key,

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "7e2cbe7025786dc8d1cb6daaf171eb8b9837241c08cc19ae9ec6227913675021"
+
+[[covers]]
+key = "unread-date-time-example"
+search = "docs/openapi-surface/witness-search-example-shapes/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-example-shapes/README.md"

@@ -1,0 +1,59 @@
+document	ref	licence	fern	crozier
+256foundation/asic-rs:meta/braiins/26.04/openapi.json	commit fa453688d163	passed: Apache-2.0 (LICENSE.txt)	passed	differs: 47 file(s) apart from the shape
+DMontgomery40/BirdStatsGPT:birdweather_openapi.json	commit f3b2f72c5cd1	passed: MIT (LICENSE)	passed	differs: 1 file(s) apart from the shape
+Estebangmz666/grownupsvet-backend:docs/openapi/openapi.json	commit 777cd35b0a1b	failed: none (HTTP 404)	not screened	not screened
+FranciscoArias10/innotechpruebas:openapi/openapi.yaml	commit 4c05fce4561f	failed: none (HTTP 404)	not screened	not screened
+GustavoSiancas/restaurant-no-there:docs/openapi.yaml	commit 2e92a7b30b28	failed: none (HTTP 404)	not screened	not screened
+JaewookByun/epcis:epcis-server/src/main/resources/schema/openapi.json	commit 9ce020374e51	passed: Apache-2.0 (LICENSE)	failed: Expected example to be a map. Example is: "GS1-Extensions"	not compared
+LibraryOfCongress/api.congress.gov:Documentation/openapi.yaml	commit ae421f78bba4	failed: none (HTTP 404)	not screened	not screened
+NextCenturyCorporation/kairos-pub:integration-framework/moirai-ui/swagger/openapi.yaml	commit f3f488e9809a	passed: MIT (LICENSE)	passed	differs: 8 file(s) apart from the shape
+NextCenturyCorporation/kairos-pub:integration-framework/moirai-zeus/src/main/resources/static/swagger/apis/openapi.yaml	commit f3f488e9809a	passed: MIT (LICENSE)	passed	differs: 8 file(s) apart from the shape
+Pepijn0/docs:api-reference/openapi.json	commit 1ad9ec3b613d	failed: none (HTTP 404)	not screened	not screened
+RedHatInsights/scheduler:internal/shell/http/openapi.json	commit f8c40b2b8d4c	passed: Apache-2.0 (LICENSE)	passed	differs: 3 file(s) apart from the shape
+SeungjaeLim/Efficient-Road-Repairs-System:epcis-application-2.0/src/epcisV2_openapi.json	commit 0bb122254674	failed: none (HTTP 404)	not screened	not screened
+SuleymanEmirGergin/TriAIge:openapi.yaml	commit a5bcac657953	failed: none (HTTP 404)	not screened	not screened
+YumikoooD/gmailVoiceAI:calendar-tools-openapi.yaml	commit ba825d54e05b	passed: MIT (LICENSE)	failed: Service requires auth, but no auth is defined.	not compared
+alpacahq/alpaca-java:specs/trading/openapi.yaml	commit caa01efc573f	passed: Apache-2.0 (LICENSE)	failed: Endpoint description for POST /v2/wallets/transfers contains "---" which will be interpreted as a YAML frontmatter delim	not compared
+api-evangelist/99-minutos:openapi/_original/99minutos-api-v3-openapi.json	commit 8a1c8d35cee3	failed: none (HTTP 404)	not screened	not screened
+api-evangelist/coyote:openapi/_original/openapi.json	commit 9800f3c1060f	failed: none (HTTP 404)	not screened	not screened
+api-evangelist/gs1:openapi/_original/gs1-epcis-2-0-1-openapi.json	commit 025e5bb5fd17	failed: none (HTTP 404)	not screened	not screened
+api-evangelist/xpansiv:openapi/_original/optimal-v1_optimal.transferposition.v1.openapi.yaml	commit be7bee372071	failed: none (HTTP 404)	not screened	not screened
+boddev/mcp-spec-forge:examples/sec-edgar/sec-edgar.openapi.json	commit bda0313b17a9	failed: none (HTTP 404)	not screened	not screened
+codelinglabs/notdoc:openapi.json	commit 9078c19881a2	failed: none (HTTP 404)	not screened	not screened
+confluentinc/ccloud-sdk-go-v2:cmk/v2/api/openapi.yaml	commit 8bbb22a67562	passed: Apache-2.0 (LICENSE)	failed: Object has multiple properties named "spec":	not compared
+confluentinc/ccloud-sdk-go-v2:flink-artifact/v1/api/openapi.yaml	commit 8bbb22a67562	passed: Apache-2.0 (LICENSE)	passed	differs: 9 file(s) apart from the shape
+confluentinc/cmf-sdk-go:v1/api/openapi.yaml	commit ee12ec3bffd5	passed: Apache-2.0 (LICENSE)	passed	differs: 12 file(s) apart from the shape
+diegocastillo12/fixtrack-mobile:docs/api/openapi.yaml	commit 73ee50271c8f	failed: none (HTTP 404)	not screened	not screened
+dystcz/dystore-api:openapi.yaml	commit ffd4d907e690	passed: MIT (LICENSE.md)	passed	differs: 1 file(s) apart from the shape
+gs1/EPCIS:REST Bindings/openapi.json	commit 6f7146823183	failed: NOASSERTION (LICENSE)	not screened	not screened
+hatchet-dev/hatchet:frontend/docs/lib/management.openapi.yaml	commit be1964f25c0b	passed: MIT (LICENSE)	passed	matched: crozier byte-matches the packaged tree
+jentic/jentic-public-apis:apis/openapi/appconnectv3/main/3/openapi.json	commit d6f6f530f416	passed: CC0-1.0 (LICENSE.md)	passed	matched: crozier byte-matches the packaged tree
+jentic/jentic-public-apis:apis/openapi/hospitable.com/main/2.0/openapi.json	commit d6f6f530f416	passed: CC0-1.0 (LICENSE.md)	passed	differs: 2 file(s) apart from the shape
+jentic/jentic-public-apis:apis/openapi/l1.api.cc.email/main/3/openapi.json	commit d6f6f530f416	passed: CC0-1.0 (LICENSE.md)	passed	matched: crozier byte-matches the packaged tree
+jentic/jentic-public-apis:apis/openapi/sec.gov/main/1.11.0/openapi.json	commit d6f6f530f416	passed: CC0-1.0 (LICENSE.md)	failed: Unexpected property "message"	not compared
+jtoulier/ai-agent-poc:mcp-server/openapi.json	commit e8968b3b3a7b	failed: none (HTTP 404)	not screened	not screened
+konfig-dev/konfig:sdks/db/intermediate-fixed-specs/fountain/openapi.yaml	commit bec3d36b9a34	passed: MIT (LICENSE)	passed	differs: 13 file(s) apart from the shape
+konfig-sdks/openapi-examples:finley/openapi.yaml	commit 161ab49c45e4	failed: none (HTTP 404)	not screened	not screened
+konfig-sdks/openapi-examples:fountain/openapi.yaml	commit 161ab49c45e4	failed: none (HTTP 404)	not screened	not screened
+louisburroughs/durion-positivity-backend:pos-customer/openapi.yaml	commit db6a3071e707	passed: Apache-2.0 (LICENSE)	passed	differs: 5 file(s) apart from the shape
+louisburroughs/durion-positivity-backend:pos-people/openapi.yaml	commit db6a3071e707	passed: Apache-2.0 (LICENSE)	passed	differs: 1 file(s) apart from the shape
+louisburroughs/durion-positivity-backend:pos-shop-manager/openapi.yaml	commit db6a3071e707	passed: Apache-2.0 (LICENSE)	failed: Multiple request properties have the name appointmentId. This is not suitable for code generation. Use the "name" proper	not compared
+messagemedia/ST-documentation:spec/openapi.yaml	commit 53269c3a055d	passed: MIT (LICENSE)	failed: Expected example to be a list. Example is: "SMS"	not compared
+moov-io/achgateway:openapi.yaml	commit 546495e57ba9	passed: Apache-2.0 (LICENSE)	passed	differs: 7 file(s) apart from the shape
+netgsm/netgsm-sms-js:openapi.json	commit 33ca38622067	passed: MIT (LICENSE)	passed	differs: 2 file(s) apart from the shape
+nonsleepr/mcp-cve-search:openapi.yaml	commit 332c514a4b19	failed: none (HTTP 404)	not screened	not screened
+reeli/swagger-faker:source/openapi.json	commit 7a255e3060a3	failed: none (HTTP 404)	not screened	not screened
+rojasjuniore/placetopay-integration:openapi.yaml	commit 0ee55a34b054	failed: none (HTTP 404)	not screened	not screened
+sailpoint-oss/golang-sdk:entitlement_connections/api/openapi.yaml	commit 7f4f1dab969c	passed: MIT (LICENSE)	failed: Endpoint requires auth, but no auth is defined.	not compared
+sailpoint-oss/golang-sdk:non_employee_lifecycle_management/api/openapi.yaml	commit 7f4f1dab969c	passed: MIT (LICENSE)	failed: Endpoint requires auth, but no auth is defined.	not compared
+sailpoint-oss/golang-sdk:sod_violations/api/openapi.yaml	commit 7f4f1dab969c	passed: MIT (LICENSE)	failed: Endpoint requires auth, but no auth is defined.	not compared
+serhafen-tech/tech-docs:specs/lastmile-api.openapi.yaml	commit 98323f77745e	failed: none (HTTP 404)	not screened	not screened
+serhafen-tech/tech-docs:specs/tracking-api.openapi.yaml	commit 98323f77745e	failed: none (HTTP 404)	not screened	not screened
+spoint-pov/golang-sdk:entitlement_connections/api/openapi.yaml	commit 4b2bb23c5d73	passed: MIT (LICENSE)	failed: Endpoint requires auth, but no auth is defined.	not compared
+spoint-pov/golang-sdk:sod_violations/api/openapi.yaml	commit 4b2bb23c5d73	passed: MIT (LICENSE)	failed: Endpoint requires auth, but no auth is defined.	not compared
+tesote/sdk:spec/v1.openapi.yaml	commit d1ba931522be	passed: MIT (LICENSE)	passed	matched: crozier byte-matches the packaged tree
+tesote/sdk:spec/v2.openapi.yaml	commit d1ba931522be	passed: MIT (LICENSE)	passed	matched: crozier byte-matches the packaged tree
+tyntec/api-collection:conversations/v2/openapi.yaml	commit c87af219eea6	failed: none (HTTP 404)	not screened	not screened
+weathersource/openapi_history:openapi.yaml	commit c70ef68badf3	failed: none (HTTP 404)	not screened	not screened
+yalewkidane/epcis-application-2.0:application/src/epcisV2_openapi.json	commit 6db693329f42	failed: none (HTTP 404)	not screened	not screened
+yalewkidane/epcisOpenAPI:openApiJson/epcisV2_openapi.json	commit fe07465d2af4	failed: none (HTTP 404)	not screened	not screened

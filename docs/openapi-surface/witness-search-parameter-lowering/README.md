@@ -77,5 +77,5 @@ Each becomes a candidate witness once the shape it differs on matches.
 The same bounded search, run with a selector for a query union whose members
 include a `$ref` to a component string enum and no array, found Ego's
 microservices description (`dreek1337/Ego`, MIT), which passes every screen
-and which crozier byte-matches whole. It is corpus row 317,
+and which crozier byte-matches whole. It is corpus row 318,
 `ego-microservices`, so that shape carries no hand-written fixture.

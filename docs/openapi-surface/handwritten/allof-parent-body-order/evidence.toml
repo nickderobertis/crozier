@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "4f71ab6c8810fc3d78fff1b1b30b7a4db6b7294b918b7ca322a597fb8521acae"
+
+[[covers]]
+key = "allof-parent-request-body"
+search = "docs/openapi-surface/witness-search-example-shapes/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-example-shapes/README.md"

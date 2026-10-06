@@ -1493,18 +1493,31 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         fixtures = root / "tests" / "fixtures"
         fake_bin = root / "fake bin"
         target = root / "target" / "release"
-        for directory in (scripts, fixtures / "beta", fixtures / "gamma", fixtures / "delta", fake_bin, target):
+        for directory in (
+            scripts,
+            fixtures / "beta",
+            fixtures / "gamma",
+            fixtures / "delta",
+            fixtures / "epsilon",
+            fixtures / "corpus-sources" / "zeta",
+            fake_bin,
+            target,
+        ):
             directory.mkdir(parents=True, exist_ok=True)
+        (fixtures / "corpus-sources" / "zeta" / "openapi.yaml").write_text(
+            "openapi: 3.0.3 # zeta\n", encoding="utf-8"
+        )
         shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
         shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
         for fixture in ("beta", "delta"):
             (fixtures / fixture / "openapi.yml").write_text(f"openapi: 3.0.3 # {fixture}\n", encoding="utf-8")
         (fixtures / "fern-generator-config.txt").write_text(
-            "beta||false|||acme\ngamma||false|AcmeClient||\n", encoding="utf-8"
+            "beta||false|||acme\ngamma||false|AcmeClient||\nepsilon||false|||PetStore\n", encoding="utf-8"
         )
-        # `gamma` has no spec of its own and borrows `beta`'s; `delta` is undeclared.
+        # `gamma` has no spec of its own and borrows `beta`'s; `epsilon` borrows
+        # the committed corpus source of the row `zeta`; `delta` is undeclared.
         (fixtures / "flat-goldens.txt").write_text(
-            "# fixture|spec\nbeta|\ngamma|beta\n", encoding="utf-8"
+            "# fixture|spec\nbeta|\ngamma|beta\nepsilon|zeta\n", encoding="utf-8"
         )
         record = root / "fern-invocation.json"
         self.write_executable(
@@ -1598,6 +1611,18 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(provenance["vendored_spec_path"], "tests/fixtures/beta/openapi.yml")
         self.assertEqual(provenance["client_class_name"], "AcmeClient")
 
+        # A mixed-case organization over a committed corpus source.
+        result = run("--layout", "flat", "epsilon", "5.20.0")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        invocation = json.loads(record.read_text(encoding="utf-8"))
+        self.assertEqual(invocation["spec"], "openapi: 3.0.3 # zeta\n")
+        self.assertEqual(invocation["config"]["organization"], "PetStore")
+        provenance = json.loads((fixtures / "epsilon" / "expected-flat" / STATE).read_text(encoding="utf-8"))
+        self.assertEqual(
+            provenance["vendored_spec_path"], "tests/fixtures/corpus-sources/zeta/openapi.yaml"
+        )
+        self.assertEqual(provenance["organization"], "PetStore")
+
         # The default mode is still the packaged run, and its record has no layout.
         result = run("beta", "5.20.0")
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -1618,6 +1643,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 "final path segment must be expected-flat",
             ),
             (("--layout", "flat", "beta", "5.20.0"), {"ORGANIZATION": "Acme Corp"}, "invalid organization"),
+            (("--layout", "flat", "beta", "5.20.0"), {"ORGANIZATION": "9Lives"}, "invalid organization"),
             (("--layout", "flat", "beta", "5.20.0"), {"FLAT_WRITES_SRC": "1"}, "no flat module tree"),
         ):
             refused = run(*arguments, **extra)

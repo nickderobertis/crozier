@@ -504,6 +504,18 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(7, len(security_queries["github-code-search"]))
         self.assertEqual(2, len(security_queries["sourcegraph"]))
         self.assertTrue(all("$ref" in q for q in security_queries["sourcegraph"]))
+        # A request-body Media Type shape names the request body and its own field.
+        for key, fields, phrase in (
+            ("allof-parent-request-body", ("requestBody", "schema", "allOf"), None),
+            ("request-example-deprecated-property", ("requestBody", "example", "deprecated"), None),
+            ("request-example-nested-null", ("requestBody", "example"), "null"),
+        ):
+            with self.subTest(key=key):
+                plan = SEARCH.query_plan(keys[key]["selector"])
+                for query in plan["github-code-search"]:
+                    for field in fields:
+                        self.assertTrue(f'"{field}:"' in query or f'\\"{field}\\"' in query, query)
+                    self.assertEqual(phrase is not None, "null" in query, query)
 
     def test_registered_publishers_are_prioritized_without_dropping_results(
         self,

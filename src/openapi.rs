@@ -1083,6 +1083,11 @@ pub struct Schema {
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
+    /// `deprecated: true`. Fern's worked examples leave out an optional property
+    /// whose own schema is marked deprecated. Read leniently: any value but the
+    /// boolean `true` is no mark, so a document spelling it otherwise still loads.
+    #[serde(default, deserialize_with = "de_deprecated")]
+    pub deprecated: bool,
     /// `readOnly`: a server-populated property. Fern renders it as an optional
     /// field even when listed in `required`.
     #[serde(rename = "readOnly", default)]
@@ -1388,6 +1393,14 @@ where
     D: serde::Deserializer<'de>,
 {
     Ok(Option::<IndexMap<String, String>>::deserialize(deserializer)?.unwrap_or_default())
+}
+
+/// Deserialize a schema's `deprecated` mark: `true` only for the boolean `true`.
+fn de_deprecated<'de, D>(deserializer: D) -> std::result::Result<bool, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(serde_json::Value::deserialize(deserializer)? == serde_json::Value::Bool(true))
 }
 
 /// Deserialize the document's `servers`, tolerating an explicit `null`.

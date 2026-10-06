@@ -14193,3 +14193,264 @@ fn render_files_refuses_names_and_recovers_with_nameable_enum_values() {
         assert!(!output.exists());
     }
 }
+
+/// Render `spec` in-process under one package, project and layout.
+fn render_spec_layout(
+    spec: &Path,
+    package: &str,
+    project: &str,
+    layout: crozier::settings::Layout,
+) -> HashMap<String, String> {
+    render_files(GenerateArgs {
+        spec: spec.to_path_buf(),
+        output: PathBuf::from("unused"),
+        package_name: Some(package.to_string()),
+        project_name: Some(project.to_string()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        fern_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        enum_type: crozier::settings::EnumType::PythonEnums,
+        default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+        layout,
+    })
+    .expect("render succeeds")
+    .into_iter()
+    .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+    .collect()
+}
+
+/// The worked-example goldens, compared whole and in-process: every file of
+/// each Fern tree — the README, `reference.md` and every module — against what
+/// crozier renders through the library, under the comparison engine, so the
+/// Markdown and docstring example writers' branches they reach are measured by
+/// llvm-cov. The trees hold a request example's `null` members, an optional and
+/// a required deprecated property, `date-time` examples Fern reads and rejects,
+/// an `allOf` request body that is itself an `allOf` parent, required query
+/// arrays on each side of the rule that drops them, and a docstring importing a
+/// tag package's type from a flat package not named `fern`.
+#[test]
+fn worked_example_goldens_match_in_process() {
+    use crozier::settings::Layout;
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let cases = [
+        (
+            "docs/openapi-surface/handwritten/request-example-nulls",
+            "openapi.yml",
+            "fern-expected",
+            "fern",
+            "default_package_name",
+            Layout::Packaged,
+        ),
+        (
+            "docs/openapi-surface/handwritten/request-example-deprecated",
+            "openapi.yml",
+            "fern-expected",
+            "fern",
+            "default_package_name",
+            Layout::Packaged,
+        ),
+        (
+            "docs/openapi-surface/handwritten/unread-date-time-examples",
+            "openapi.yml",
+            "fern-expected",
+            "fern",
+            "default_package_name",
+            Layout::Packaged,
+        ),
+        (
+            "docs/openapi-surface/handwritten/allof-parent-body-order",
+            "openapi.yml",
+            "fern-expected",
+            "fern",
+            "default_package_name",
+            Layout::Packaged,
+        ),
+        (
+            "docs/openapi-surface/authored-probes/parity-required-query-array-examples",
+            "openapi.yml",
+            "fern-expected",
+            "fern",
+            "default_package_name",
+            Layout::Packaged,
+        ),
+        (
+            "tests/fixtures",
+            "corpus-sources/swagger-petstore/openapi.yaml",
+            "swagger-petstore-organization/expected-flat",
+            "PetStore",
+            "PetStore",
+            Layout::Flat,
+        ),
+    ];
+    for (dir, spec, golden, package, project, layout) in cases {
+        let golden_root = repo.join(dir).join(golden);
+        let files = render_spec_layout(&repo.join(dir).join(spec), package, project, layout);
+        let reference: Vec<(String, String)> = crozier::parity::walk_files(&golden_root)
+            .unwrap()
+            .into_iter()
+            .filter(|rel| rel != crozier::parity::PROVENANCE_FILE)
+            .map(|rel| {
+                let text = std::fs::read_to_string(golden_root.join(&rel)).unwrap();
+                (rel, text)
+            })
+            .collect();
+        let context = crozier::departures::Context::from_sources(
+            reference
+                .iter()
+                .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            files
+                .iter()
+                .map(|(rel, text)| (rel.as_str(), text.as_str())),
+        );
+        assert_eq!(
+            reference.len(),
+            files.len(),
+            "{dir}/{golden}: crozier renders {} files where Fern wrote {}",
+            files.len(),
+            reference.len()
+        );
+        for (rel, fern) in &reference {
+            let actual = files
+                .get(rel)
+                .unwrap_or_else(|| panic!("{dir}/{golden}: crozier renders no {rel}"));
+            let compared = crozier::parity::compare_file(&context, rel, actual, fern)
+                .unwrap_or_else(|error| panic!("{dir}/{golden}/{rel}: {error}"));
+            assert!(
+                compared.matches(),
+                "{dir}/{golden}/{rel} differs from Fern:\n{}",
+                compared.diff().unwrap_or_default()
+            );
+        }
+    }
+}
+
+/// A request example's `null`, as Fern's example writers read it (measured on
+/// Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0): a required nullable
+/// member's `null` is `None` in `reference.md` and the README, at the top level
+/// and nested, and absent from the docstring; a required member that is not
+/// nullable takes its synthesized value, as if the example had not named it,
+/// at either depth.
+#[test]
+fn request_example_nulls_follow_fern_per_writer() {
+    let files = render(
+        r#"
+openapi: 3.0.3
+info: {title: Swarms, version: "1"}
+paths:
+  /swarms:
+    post:
+      operationId: reportSwarm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/Swarm'}
+            example: {size: null, caught: null, spot: {row: 2, note: null, depth: null}}
+      responses:
+        "204": {description: none}
+components:
+  schemas:
+    Swarm:
+      type: object
+      required: [size, caught]
+      properties:
+        size: {type: integer}
+        caught: {type: string, nullable: true}
+        spot: {$ref: '#/components/schemas/Spot'}
+    Spot:
+      type: object
+      required: [note, depth]
+      properties:
+        row: {type: integer}
+        note: {type: string, nullable: true}
+        depth: {type: integer}
+"#,
+    );
+    let reference = &files["reference.md"];
+    let call = reference.split("client.report_swarm(").nth(1).unwrap();
+    let call = &call[..call.find("\n)").unwrap()];
+    assert_eq!(
+        call,
+        "\n    size=1,\n    caught=None,\n    spot=Spot(\n        row=2,\n        note=None,\n        depth=1,\n    ),",
+        "{reference}"
+    );
+    let client = &files["src/acme/client.py"];
+    let docstring = client.split("client.report_swarm(").nth(1).unwrap();
+    let docstring = &docstring[..docstring.find("\n        )").unwrap()];
+    assert!(
+        docstring.contains("size=1,")
+            && docstring.contains("row=2,")
+            && docstring.contains("depth=1,"),
+        "{docstring}"
+    );
+    assert!(
+        !docstring.contains("caught=") && !docstring.contains("note="),
+        "{docstring}"
+    );
+    assert!(!client.contains("=null") && !reference.contains("=null"));
+}
+
+/// A composed body two `allOf` levels deep, ordered as Fern orders it (TAMS'
+/// `WebhookPut`, measured): the docstring lists every base's fields first all
+/// the way down; `reference.md` lists each base's own fields before that base's
+/// bases, the body's own last.
+#[test]
+fn nested_composed_body_examples_follow_fern_per_writer() {
+    let files = render(
+        r#"
+openapi: 3.0.3
+info: {title: Hooks, version: "1"}
+paths:
+  /hooks:
+    put:
+      operationId: putHook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/HookPut'}
+      responses:
+        "204": {description: none}
+components:
+  schemas:
+    Hook:
+      type: object
+      required: [url]
+      properties: {url: {type: string}}
+    HookWithId:
+      allOf:
+        - $ref: '#/components/schemas/Hook'
+        - type: object
+          required: [id]
+          properties: {id: {type: string}}
+    HookPut:
+      allOf:
+        - $ref: '#/components/schemas/HookWithId'
+        - type: object
+          required: [state]
+          properties: {state: {type: string}}
+"#,
+    );
+    let order = |text: &str, call: &str, indent: &str| -> Vec<String> {
+        let body = text.split(call).nth(1).unwrap();
+        body.lines()
+            .skip(1)
+            .take_while(|line| line.starts_with(indent))
+            .map(|line| line.trim().split('=').next().unwrap().to_string())
+            .collect()
+    };
+    let client = &files["src/acme/client.py"];
+    assert_eq!(
+        order(client, "client.put_hook(", "            "),
+        ["url", "id", "state"],
+        "{client}"
+    );
+    let reference = &files["reference.md"];
+    assert_eq!(
+        order(reference, "client.put_hook(", "    "),
+        ["id", "url", "state"],
+        "{reference}"
+    );
+}
