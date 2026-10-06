@@ -34,6 +34,7 @@
     "docs/openapi-surface/handwritten/chained-reference-cycles/fern-expected": {},
     "docs/openapi-surface/handwritten/closed-empty-inline-objects/fern-expected": {},
     "docs/openapi-surface/handwritten/composition-index-pointer/fern-expected": {},
+    "docs/openapi-surface/handwritten/contentless-created-success/fern-expected": {},
     "docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected": {},
     "docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected": {},
     "docs/openapi-surface/handwritten/float-typed-properties/fern-expected": {},
@@ -553,6 +554,7 @@
     "tests/fixtures/viskit-studio/expected": {},
     "tests/fixtures/volview-backend-contract/expected": {},
     "tests/fixtures/vtex-pricing/expected": {},
+    "tests/fixtures/waylay-queries/expected": {},
     "tests/fixtures/webflow-v2/expected": {
       "carve_outs": {
         "crozier-only": [

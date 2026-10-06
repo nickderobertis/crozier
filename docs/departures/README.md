@@ -162,11 +162,20 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 2 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 3 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
+
+### `body-query-parameter-value`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An inline JSON body property sharing its wire key with a query parameter, where the method signature renames the body argument to avoid the collision.
+- **Fern writes:** The query parameter's variable as the JSON property's value, including inside convert_and_respect_annotation_metadata.
+- **crozier writes:** The renamed body argument as the JSON property's value, retaining the signature, query mapping, converter annotation and every other statement.
+- **Why:** The method accepts a distinct body argument but sends the query argument instead, so the caller's body value never reaches its documented body key.
+- **Evidence:** [`docs/departures/evidence/body-query-parameter-value.md`](../../docs/departures/evidence/body-query-parameter-value.md)
 
 ### `closed-empty-object-example`
 

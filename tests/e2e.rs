@@ -5015,6 +5015,7 @@ const CORPORA: &[&Corpus] = &[
     &CPHOS_AI_QUESTION,
     &FLASK_EXAMPLE_HEROKU,
     &OIP_WEB_API,
+    &WAYLAY_QUERIES,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -7971,6 +7972,20 @@ const OAL_EXAMPLE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Waylay's query API, corpus row 326: both URL and JSON body keys named
+/// `resource` have distinct signature arguments. The body/query departure keeps
+/// the body value the caller passed while the query keeps its own value.
+const WAYLAY_QUERIES: Corpus = Corpus {
+    api: "waylay-queries",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `millenium-falcon-challenge`: corpus row 316, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
@@ -8665,6 +8680,11 @@ fn free5gc_pdu_session_matches_fern_output() {
 #[test]
 fn sigstore_rekor_matches_fern_output() {
     assert_committed_corpus_matches(&SIGSTORE_REKOR);
+}
+
+#[test]
+fn waylay_queries_matches_fern_output() {
+    assert_committed_corpus_matches(&WAYLAY_QUERIES);
 }
 
 #[test]
@@ -11457,7 +11477,7 @@ fn inline_json_bodies_matching_response_schema_omit_content_type() {
 }
 
 #[test]
-fn colliding_query_and_body_fields_serialize_from_query_name() {
+fn colliding_query_and_body_fields_serialize_from_body_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    \
          put:\n      operationId: updateWidget\n      tags: [widgets]\n      parameters:\n        - name: id\n          \
@@ -11476,11 +11496,11 @@ fn colliding_query_and_body_fields_serialize_from_query_name() {
     );
     assert!(
         raw.contains("\"active\": active,"),
-        "Fern serializes a colliding body field from the original query parameter name: {raw}"
+        "query parameters keep their own original argument: {raw}"
     );
     assert!(
-        !raw.contains("\"active\": widget_record_active,"),
-        "the prefixed signature name should not be used in the JSON dict for this collision: {raw}"
+        raw.contains("\"active\": widget_record_active,"),
+        "the JSON body must use its renamed caller argument: {raw}"
     );
 }
 
@@ -20185,5 +20205,55 @@ fn namespaced_enum_collisions_follow_the_parameter_location() {
         "namespaced-header-enum-diff-tag",
     ] {
         assert_generates_in_both_modes(&evidence.join(format!("{case}.yml")), case);
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_body_query_collision_keeps_both_callers_values() {
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/corpus-sources/waylay-queries/openapi.yaml");
+    let script = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/departures/evidence/body-query-parameter-value.py");
+    let directory = tempfile::tempdir().expect("collision SDKs");
+    for version in ["3.0.3", "3.1.0"] {
+        let spec = directory.path().join(format!("{version}.yaml"));
+        let sdk = directory.path().join(version);
+        std::fs::write(
+            &spec,
+            std::fs::read_to_string(&source).unwrap().replacen(
+                "openapi: 3.1.0",
+                &format!("openapi: {version}"),
+                1,
+            ),
+        )
+        .unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&sdk)
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+            ])
+            .assert()
+            .success();
+        let python = runtime_python_env().expect("SDK runtime environment");
+        let run = std::process::Command::new(python)
+            .arg(&script)
+            .arg(sdk.join("src"))
+            .arg("body-value")
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .unwrap();
+        assert!(
+            run.status.success(),
+            "{version}: {}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
     }
 }

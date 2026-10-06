@@ -1,0 +1,35 @@
+
+
+import typing
+
+from .series_spec_interpolation_one_eight import SeriesSpecInterpolationOneEight
+from .series_spec_interpolation_one_eleven import SeriesSpecInterpolationOneEleven
+from .series_spec_interpolation_one_five import SeriesSpecInterpolationOneFive
+from .series_spec_interpolation_one_four import SeriesSpecInterpolationOneFour
+from .series_spec_interpolation_one_nine import SeriesSpecInterpolationOneNine
+from .series_spec_interpolation_one_one import SeriesSpecInterpolationOneOne
+from .series_spec_interpolation_one_seven import SeriesSpecInterpolationOneSeven
+from .series_spec_interpolation_one_six import SeriesSpecInterpolationOneSix
+from .series_spec_interpolation_one_ten import SeriesSpecInterpolationOneTen
+from .series_spec_interpolation_one_thirteen import SeriesSpecInterpolationOneThirteen
+from .series_spec_interpolation_one_three import SeriesSpecInterpolationOneThree
+from .series_spec_interpolation_one_twelve import SeriesSpecInterpolationOneTwelve
+from .series_spec_interpolation_one_two import SeriesSpecInterpolationOneTwo
+from .series_spec_interpolation_one_zero import SeriesSpecInterpolationOneZero
+
+SeriesSpecInterpolationOne = typing.Union[
+    SeriesSpecInterpolationOneZero,
+    SeriesSpecInterpolationOneOne,
+    SeriesSpecInterpolationOneTwo,
+    SeriesSpecInterpolationOneThree,
+    SeriesSpecInterpolationOneFour,
+    SeriesSpecInterpolationOneFive,
+    SeriesSpecInterpolationOneSix,
+    SeriesSpecInterpolationOneSeven,
+    SeriesSpecInterpolationOneEight,
+    SeriesSpecInterpolationOneNine,
+    SeriesSpecInterpolationOneTen,
+    SeriesSpecInterpolationOneEleven,
+    SeriesSpecInterpolationOneTwelve,
+    SeriesSpecInterpolationOneThirteen,
+]

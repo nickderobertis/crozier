@@ -1,0 +1,7 @@
+query	outcome	reported	retrieved
+"201" "200" "responses" filename:openapi.json	partitioned	28032	0
+"201" "200" "responses:" filename:openapi.yaml	partitioned	52736	0
+"201" "200" "responses" filename:openapi.json size:<4096	partitioned	1128	0
+"201" "200" "responses:" filename:openapi.yaml size:<4096	partitioned	6544	0
+"201" "200" "responses" filename:openapi.json size:<4096	answered	1128	20
+"201" "200" "responses:" filename:openapi.yaml size:<4096	answered	6544	20

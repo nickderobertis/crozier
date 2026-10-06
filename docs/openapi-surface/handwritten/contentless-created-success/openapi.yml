@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: Silt Samples
+  version: 1.0.0
+paths:
+  /sediment/measurements:
+    post:
+      operationId: measureSediment
+      responses:
+        '200':
+          description: No measurement returned
+        '201':
+          description: Measurement recorded
+          content:
+            application/json:
+              schema:
+                type: string

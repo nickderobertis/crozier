@@ -5306,7 +5306,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 {
                     continue;
                 }
-                let value_name = body_field_value_name(f);
+                let value_name = body_field_value_name(f, &ep.query_params);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                     let annotation_type = if f.nullable {
@@ -5702,12 +5702,22 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     }
 }
 
-fn body_field_value_name(field: &BodyField) -> &str {
-    field
+fn body_field_value_name<'a>(field: &'a BodyField, query: &[QueryParam]) -> &'a str {
+    let original = field
         .collision_prefix
         .as_ref()
         .and_then(|prefix| field.py_name.strip_prefix(&format!("{prefix}_")))
-        .unwrap_or(&field.py_name)
+        .unwrap_or(&field.py_name);
+    // Keep the renamed signature, but serialize its body argument when a query
+    // parameter shares the body's wire key (body-query-parameter-value).
+    if query
+        .iter()
+        .any(|parameter| parameter.py_name == original && parameter.wire_name == field.wire_name)
+    {
+        &field.py_name
+    } else {
+        original
+    }
 }
 
 /// The chunk type Fern yields from an OpenAPI-sourced SSE stream: the
@@ -14116,5 +14126,39 @@ mod tests {
         super::preserve_fenced_docstring_blank_indent(&mut source);
         assert!(source.contains("        ```python\n        \n        pass"));
         assert!(source.ends_with("        plain\n\n"));
+    }
+    #[test]
+    fn colliding_query_and_body_arguments_use_their_own_values() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Lantern Circuits", "version": "1"},
+            "paths": {"/circuits": {"post": {
+                "operationId": "setVoltage",
+                "parameters": [{"name": "voltage", "in": "query", "schema": {"type": "integer"}}],
+                "requestBody": {"content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/PowerProfile"}
+                }}},
+                "responses": {"200": {"description": "Recorded", "content": {
+                    "application/json": {"schema": {"$ref": "#/components/schemas/PowerProfile"}}
+                }}}
+            }}},
+            "components": {"schemas": {"PowerProfile": {"type": "object", "properties": {
+                "voltage": {"type": "integer"}, "channel": {"type": "string"}
+            }}}}
+        }));
+        let raw = files
+            .iter()
+            .find(|(path, _)| path.ends_with("/raw_client.py"))
+            .unwrap()
+            .1
+            .as_str();
+        assert!(raw.contains("power_profile_voltage:"), "{raw}");
+        assert!(
+            raw.contains("json={\n                \"voltage\": power_profile_voltage,"),
+            "{raw}"
+        );
+        assert!(
+            raw.contains("params={\n                \"voltage\": voltage,"),
+            "{raw}"
+        );
     }
 }

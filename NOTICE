@@ -477,3 +477,12 @@ not copy Fern's generator, it reproduces Fern's generated *output* format, which
 is the explicit goal of this project. The one exception is the runtime library
 under assets/core/ above, which is Fern's own code redistributed under Apache-2.0
 with attribution (it is SDK runtime, not part of crozier's generator).
+
+Additional request-body collision specification:
+
+  * Waylay query API: the publisher's own description at
+    https://raw.githubusercontent.com/waylayio/waylay-sdk-queries-py/8ab6c18e10f96c3665dbb849ebe2193c16a1659c/openapi/queries.openapi.yaml.
+    The repository's LICENSE.txt at that same commit grants ISC
+    redistribution; corpus row 326 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.

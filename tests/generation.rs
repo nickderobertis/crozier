@@ -12474,10 +12474,9 @@ components:
 /// line of its Fern 5.20.0 golden or of the 3.0 probe measured beside it:
 /// - a query parameter whose sole `oneOf` member is a nullable `oneOf` of one
 ///   `$ref` is that `$ref`, optional once;
-/// - a `$ref` body field colliding with a query parameter is sent from its
-///   prefixed argument when the body is posted by that operation alone, and
-///   from the parameter's when the schema is also a response (Airflow's
-///   `DAG.tags`, Anchore's `PolicyBundleRecord.active`).
+/// - a `$ref` body field colliding with a query parameter keeps Fern's prefixed
+///   signature and sends that body argument, including when the schema is also
+///   a response (the body-query-parameter-value defect).
 #[test]
 fn yourbrand_sole_nested_one_of_parameter_and_prefixed_collision_shapes() {
     let files = render(
@@ -12560,16 +12559,14 @@ components:
         "{projects}"
     );
     assert!(
-        projects.contains("            json={\n                \"name\": name,\n                \"tags\": tags,\n"),
+        projects.contains("            json={\n                \"name\": name,\n                \"tags\": tagged_tags,\n"),
         "{projects}"
     );
 }
 
-/// The probe `docs/fern-measurements/yourbrand-repairs/` measured on pinned Fern,
-/// rendered by crozier: every line that tells its two behaviours apart in Fern's
-/// committed `raw_client.py` — which colliding body field is sent from its
-/// renamed argument, and how the nested sole-member parameter is typed — is a
-/// line of crozier's too.
+/// The measured request-body collision probe retains its signature and nested
+/// parameter types. Its query-value serialization defect is compared through
+/// the same intended-departures engine as registered goldens.
 #[test]
 fn measured_yourbrand_repair_probe_matches_its_fern_output() {
     let dir =
@@ -12577,27 +12574,19 @@ fn measured_yourbrand_repair_probe_matches_its_fern_output() {
     let probe = std::fs::read_to_string(dir.join("probe.yaml")).expect("the committed probe");
     let fern = std::fs::read_to_string(dir.join("fern-raw_client.py.txt"))
         .expect("Fern's committed output");
-    let files = render(&probe);
-    let crozier = &files["src/acme/raw_client.py"];
-    let telling: Vec<&str> = fern
-        .lines()
-        .filter(|line| line.contains("\"owner\": ") || line.contains("sort_direction: "))
-        .collect();
-    assert!(
-        telling.iter().any(|line| line.contains("a_owner")),
-        "{fern}"
+    let files = render_project(&probe, "fern", "default_package_name");
+    let rel = "src/fern/raw_client.py";
+    let crozier = &files[rel];
+    let context = crozier::departures::Context::from_sources(
+        [(rel, fern.as_str())],
+        [(rel, crozier.as_str())],
     );
-    assert!(
-        telling
-            .iter()
-            .any(|line| line.trim() == "\"owner\": owner,"),
-        "{fern}"
-    );
-    let crozier_lines: Vec<&str> = crozier
-        .lines()
-        .filter(|line| line.contains("\"owner\": ") || line.contains("sort_direction: "))
-        .collect();
-    assert_eq!(telling, crozier_lines, "{crozier}");
+    let compared = crozier::parity::compare_file(&context, rel, crozier, &fern).unwrap();
+    assert!(compared.matches(), "{:?}", compared.diff());
+    assert!(compared
+        .departures
+        .iter()
+        .any(|departure| departure.id == "body-query-parameter-value"));
 }
 
 /// Fragments of MockServer (corpus row 232), each assertion a line of its Fern

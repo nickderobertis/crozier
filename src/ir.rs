@@ -7285,13 +7285,16 @@ fn has_bodyless_success(op: &Operation) -> bool {
                     .any(|media| media.schema.is_some()))
     });
     let codes: Vec<&str> = bodyless.map(|(code, _)| code.as_str()).collect();
-    // A bodyless `201`/`202` beside a success body is not an empty-body case: it
+    // A bodyless `200`/`201`/`202` beside a success body is not an empty-body case: it
     // reports that the write was accepted, and Fern still types the method by the
-    // body the primary response declares. EN 18222's `updateDPPById` returns
+    // body the primary response declares. A contentless `200` beside a typed
+    // `201` stays non-optional too. EN 18222's `updateDPPById` returns
     // `HttpResponse[DigitalProductPassport]` with a bodyless `202` in the document.
     !(codes.is_empty()
         || success_response_schema(op).is_some()
-            && codes.iter().all(|code| matches!(*code, "201" | "202")))
+            && codes
+                .iter()
+                .all(|code| matches!(*code, "200" | "201" | "202")))
 }
 
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
@@ -7332,25 +7335,45 @@ fn has_dispatchable_media(response: &Response) -> bool {
         })
 }
 
-fn success_response_entry(op: &Operation) -> Option<&Response> {
+/// Prefer a declared success body to a contentless success. Fern selects the
+/// 201's body beside a contentless 200; a 200 with content still wins.
+fn success_response_with_content(op: &Operation) -> Option<(&String, &Response)> {
     op.responses
-        .get("200")
-        .filter(|response| has_dispatchable_media(response))
+        .get_key_value("200")
+        .filter(|(_, response)| !response.content.is_empty() && has_dispatchable_media(response))
         .or_else(|| {
-            op.responses
-                .iter()
-                .find(|(code, response)| {
-                    code.parse::<u16>()
-                        .is_ok_and(|status| (200..300).contains(&status))
-                        && has_dispatchable_media(response)
-                })
-                .map(|(_, response)| response)
+            op.responses.iter().find(|(code, response)| {
+                code.parse::<u16>()
+                    .is_ok_and(|status| (200..300).contains(&status))
+                    && !response.content.is_empty()
+                    && has_dispatchable_media(response)
+            })
         })
+}
+
+fn success_response_entry(op: &Operation) -> Option<&Response> {
+    success_response_with_content(op)
+        .map(|(_, response)| response)
         .or_else(|| {
             op.responses
-                .iter()
-                .find(|(code, _)| code.as_str() == "default")
-                .map(|(_, response)| response)
+                .get("200")
+                .filter(|response| has_dispatchable_media(response))
+                .or_else(|| {
+                    op.responses
+                        .iter()
+                        .find(|(code, response)| {
+                            code.parse::<u16>()
+                                .is_ok_and(|status| (200..300).contains(&status))
+                                && has_dispatchable_media(response)
+                        })
+                        .map(|(_, response)| response)
+                })
+                .or_else(|| {
+                    op.responses
+                        .iter()
+                        .find(|(code, _)| code.as_str() == "default")
+                        .map(|(_, response)| response)
+                })
         })
 }
 
@@ -7363,6 +7386,10 @@ fn success_response_entry_mut(op: &mut Operation) -> Option<&mut Response> {
 
 /// The response key [`success_response_entry`] selects.
 fn success_response_key(op: &Operation) -> Option<String> {
+    if let Some((code, _)) = success_response_with_content(op) {
+        return Some(code.clone());
+    }
+
     if op.responses.get("200").is_some_and(has_dispatchable_media) {
         return Some("200".to_string());
     }
@@ -19772,5 +19799,34 @@ mod tests {
             .map(|(function, cases)| ((*function).to_string(), cases.to_vec()))
             .collect();
         assert_eq!(declared, documented);
+    }
+    #[test]
+    fn a_contentless_200_does_not_hide_a_created_response_body() {
+        let operation_json = serde_json::json!({
+            "responses": {
+                "200": {"description": "No reading"},
+                "201": {"description": "Recorded", "content": {
+                    "application/json": {"schema": {"type": "string"}}
+                }}
+            }
+        });
+        let operation: Operation = serde_json::from_value(operation_json.clone()).unwrap();
+        assert_eq!(
+            super::success_response(&operation),
+            Some(TypeRef::Primitive(Prim::Str))
+        );
+        assert_eq!(
+            super::success_response_key(&operation).as_deref(),
+            Some("201")
+        );
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Silt Samples", "version": "1"},
+            "paths": {"/measurements": {"post": operation_json}}
+        }));
+        assert_eq!(
+            ir.endpoints[0].response,
+            Some(TypeRef::Primitive(Prim::Str))
+        );
+        assert!(!ir.endpoints[0].response_may_be_empty);
     }
 }

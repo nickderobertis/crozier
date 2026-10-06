@@ -433,7 +433,8 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 6] = [
+pub const RULE_IDS: [&str; 7] = [
+    "body-query-parameter-value",
     "closed-empty-object-example",
     "fern-metadata-generator-config",
     "init-type-checking-import-order",
@@ -447,6 +448,10 @@ pub const RULE_IDS: [&str; 6] = [
 pub fn rule(id: &str) -> Option<Rule> {
     let none = Rule::default();
     Some(match id {
+        "body-query-parameter-value" => Rule {
+            region: Some(body_query_parameter_value),
+            ..none
+        },
         "closed-empty-object-example" => Rule {
             region: Some(closed_empty_object_example_region),
             line: Some(closed_empty_object_example_line),
@@ -475,6 +480,161 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         _ => return None,
     })
+}
+
+/// The entries of each inline JSON body, including the converter's continuation
+/// lines. Delimiters use the raw client's fixed indentation, so nested Python
+/// values cannot close the request argument itself.
+fn inline_json_entries(lines: &[&str]) -> Vec<std::ops::Range<usize>> {
+    let mut entries = Vec::new();
+    let mut in_body = false;
+    let mut start = None;
+    for (index, line) in lines.iter().enumerate() {
+        if *line == "            json={" {
+            in_body = true;
+        } else if in_body && *line == "            }," {
+            if let Some(begin) = start.take() {
+                entries.push(begin..index);
+            }
+            in_body = false;
+        } else if in_body && line.starts_with("                \"") {
+            if let Some(begin) = start.replace(index) {
+                entries.push(begin..index);
+            }
+        }
+    }
+    entries
+}
+
+/// Whitespace outside Python string literals is formatting. Keep string contents
+/// and escapes byte-exact while comparing the same converter on two layouts.
+fn compact_python(lines: &[&str]) -> String {
+    let mut out = String::new();
+    let mut quote = None;
+    let mut escaped = false;
+    for character in lines.iter().flat_map(|line| line.chars()) {
+        if let Some(delimiter) = quote {
+            out.push(character);
+            if escaped {
+                escaped = false;
+            } else if character == '\\' {
+                escaped = true;
+            } else if character == delimiter {
+                quote = None;
+            }
+        } else if matches!(character, '\'' | '"') {
+            quote = Some(character);
+            out.push(character);
+        } else if !character.is_whitespace() {
+            out.push(character);
+        }
+    }
+    out
+}
+
+fn body_entry_value(expression: &str) -> Option<(&str, &str, bool)> {
+    let expression = expression.strip_prefix('"')?;
+    let (wire, value) = expression.split_once("\":")?;
+    let (value, converted) = value
+        .strip_prefix("convert_and_respect_annotation_metadata(object_=")
+        .map_or((value, false), |value| (value, true));
+    let end =
+        value.find(|character: char| !character.is_ascii_alphanumeric() && character != '_')?;
+    let name = &value[..end];
+    (!name.is_empty() && (converted || &value[end..] == ",")).then_some((wire, name, converted))
+}
+
+/// A renamed body argument shares a wire key with a query parameter. Fern uses
+/// the query variable in `json`; crozier uses the signature's body argument.
+/// Accept only that variable substitution (and its formatter's line wrapping),
+/// after proving both arguments and the query mapping in the enclosing method.
+fn body_query_parameter_value(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != "raw_client.py" && !pair.rel.ends_with("/raw_client.py") {
+        return Ok(None);
+    }
+    let fern_entries = inline_json_entries(pair.fern);
+    let crozier_entries = inline_json_entries(pair.crozier);
+    if fern_entries.len() != crozier_entries.len() {
+        return Ok(None);
+    }
+    let mut corrected = Vec::new();
+    for (fern, crozier) in fern_entries.iter().zip(&crozier_entries) {
+        let reference = &pair.fern[fern.clone()];
+        let generated = &pair.crozier[crozier.clone()];
+        if reference == generated {
+            continue;
+        }
+        let a = compact_python(reference);
+        let b = compact_python(generated);
+        let Some((wire, query, converted)) = body_entry_value(&a) else {
+            return Ok(None);
+        };
+        let Some((body_wire, body, body_converted)) = body_entry_value(&b) else {
+            return Ok(None);
+        };
+        if wire != body_wire
+            || converted != body_converted
+            || body == query
+            || !body.ends_with(&format!("_{query}"))
+        {
+            return Ok(None);
+        }
+        let method = pair.crozier[..crozier.start]
+            .iter()
+            .rposition(|line| line.starts_with("    def ") || line.starts_with("    async def "))
+            .unwrap_or(0);
+        let before = &pair.crozier[method..crozier.start];
+        let signature: Vec<_> = before
+            .iter()
+            .take_while(|line| line.trim_start() != "\"\"\"")
+            .collect();
+        let declared = |name: &str| {
+            signature.iter().any(|line| {
+                line.starts_with(&format!("        {name}:"))
+                    || ((line.starts_with("    def ") || line.starts_with("    async def "))
+                        && line.contains(&format!(", {name}:")))
+            })
+        };
+        let query_mapping = format!("                \"{wire}\": {query},");
+        if !declared(query) || !declared(body) || !before.contains(&query_mapping.as_str()) {
+            return Ok(None);
+        }
+        let replaced = if converted {
+            b.replacen(&format!("object_={body},"), &format!("object_={query},"), 1)
+        } else {
+            format!("\"{wire}\":{query},")
+        };
+        // Ruff adds a trailing call comma when the longer body argument wraps.
+        let normalize_call_comma = |value: &str| {
+            value
+                .strip_suffix(",),")
+                .map_or_else(|| value.to_owned(), |prefix| format!("{prefix}),"))
+        };
+        if normalize_call_comma(&replaced) != normalize_call_comma(&a) {
+            return Ok(None);
+        }
+        corrected.push((fern.clone(), crozier.clone()));
+    }
+    let Some((first_fern, first_crozier)) = corrected.first() else {
+        return Ok(None);
+    };
+    let (last_fern, last_crozier) = corrected.last().expect("nonempty corrections");
+    let fern_span = first_fern.start..last_fern.end;
+    let crozier_span = first_crozier.start..last_crozier.end;
+    let mut normalized = Vec::new();
+    let mut position = crozier_span.start;
+    for (fern, crozier) in &corrected {
+        normalized.extend_from_slice(&pair.crozier[position..crozier.start]);
+        normalized.extend_from_slice(&pair.fern[fern.clone()]);
+        position = crozier.end;
+    }
+    normalized.extend_from_slice(&pair.crozier[position..crozier_span.end]);
+    Ok(
+        (normalized == pair.fern[fern_span.clone()]).then_some(Region {
+            fern: fern_span,
+            crozier: crozier_span,
+        }),
+    )
 }
 
 /// Fern's free-form example placeholder, the value of `name={…}` in a snippet.
@@ -1642,5 +1802,104 @@ mod tests {
             let parsed: Kind = serde_yaml_ng::from_str(kind.as_str()).unwrap();
             assert_eq!(parsed, kind);
         }
+    }
+    #[test]
+    fn body_query_departure_accepts_only_the_body_variable_substitution() {
+        let fern = [
+            "    def record(self, *, level: int, reading_level: int):",
+            "            params={",
+            "                \"level\": level,",
+            "            },",
+            "            json={",
+            "                \"level\": level,",
+            "            },",
+        ];
+        let mut crozier = fern;
+        crozier[5] = "                \"level\": reading_level,";
+        assert_eq!(
+            super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &crozier)),
+            Ok(Some(super::Region {
+                fern: 5..6,
+                crozier: 5..6
+            }))
+        );
+        assert_eq!(
+            super::body_query_parameter_value(&pair("src/api/client.py", &fern, &crozier)),
+            Ok(None)
+        );
+        assert_eq!(
+            super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &fern)),
+            Ok(None)
+        );
+        for changed in [
+            "                \"level\": other_level,",
+            "                \"threshold\": reading_level,",
+            "                \"level\": 3,",
+            "                \"level\": \"a b\",",
+        ] {
+            crozier[5] = changed;
+            assert_eq!(
+                super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &crozier)),
+                Ok(None)
+            );
+        }
+        crozier[5] = "                \"level\": reading_level,";
+        crozier[0] = "    def record(self, *, level: int):";
+        assert_eq!(
+            super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &crozier)),
+            Ok(None)
+        );
+        crozier[0] = fern[0];
+        crozier[2] = "                \"threshold\": level,";
+        assert_eq!(
+            super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &crozier)),
+            Ok(None)
+        );
+    }
+
+    #[test]
+    fn body_query_departure_keeps_converter_annotation_and_string_contents() {
+        let fern = [
+            "    def record(self, *, level: int, reading_level: int):",
+            "            params={",
+            "                \"level\": level,",
+            "            },",
+            "            json={",
+            "                \"level\": convert_and_respect_annotation_metadata(object_=level, annotation=int, direction=\"write\"),",
+            "            },",
+        ];
+        let crozier = [
+            fern[0],
+            fern[1],
+            fern[2],
+            fern[3],
+            fern[4],
+            "                \"level\": convert_and_respect_annotation_metadata(",
+            "                    object_=reading_level, annotation=int, direction=\"write\",",
+            "                ),",
+            fern[6],
+        ];
+        assert_eq!(
+            super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &crozier)),
+            Ok(Some(super::Region {
+                fern: 5..6,
+                crozier: 5..8
+            }))
+        );
+        assert!(matches!(
+            super::body_query_parameter_value(&pair("raw_client.py", &fern, &crozier)),
+            Ok(Some(_))
+        ));
+        let mut changed = crozier;
+        changed[6] =
+            "                    object_=reading_level, annotation=str, direction=\"write\"";
+        assert_eq!(
+            super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &changed)),
+            Ok(None)
+        );
+        assert_eq!(
+            super::compact_python(&[" \"a b\" : '\\'c d' "]),
+            "\"a b\":'\\'c d'"
+        );
     }
 }

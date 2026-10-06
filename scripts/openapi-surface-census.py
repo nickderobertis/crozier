@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 205 of the 238 registered sources live in `corpus-sources/` (a split
+  and 206 of the 239 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1063,6 +1063,11 @@ PREDICATES = {
         "`properties`) declaring a `title`: the body "
         "`inline_container_carries_content_type` of `src/ir.rs` sends the JSON "
         "content-type header for"
+    ),
+    "operation.responses:contentless-two-hundred-with-created": (
+        "one per Operation Object whose 200 response declares no content while "
+        "its 201 declares content, resolving local Response Object references: "
+        "`success_response_with_content` of `src/ir.rs` selects the latter body"
     ),
     "operation.responses:empty-schema-success-oas-three-zero": (
         "one per Operation Object of an OpenAPI 3.0 document whose success response, "
@@ -2552,7 +2557,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "b155417c7ef7c2cf",
+    "endpoint_method_name": "618d12c023937c24",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3111,7 +3116,9 @@ UNION_PORT_DIGESTS = {
 SCHEMA_RESPONSE_PORT_DIGESTS = {
     "is_closed_empty_object": "eb83d5799078bfd2",
     "is_object_type": "94e34f083d5e67d8",
-    "success_response_entry": "69180ab47794ff99",
+    "success_response_entry": "668fb1266cbe71a1",
+    "success_response_key": "f373029108feb261",
+    "success_response_with_content": "10b3b17e00498b25",
     "has_dispatchable_media": "0d3fe2386094f82f",
 }
 
@@ -4204,11 +4211,18 @@ class Census:
                 for media in content
             )
 
-        key = "200" if "200" in resolved and dispatchable(resolved["200"]) else next(
+        content = lambda value: isinstance(value, dict) and bool(value.get("content"))
+        key = "200" if "200" in resolved and content(resolved["200"]) and dispatchable(resolved["200"]) else next(
             (code for code, value in resolved.items()
-             if code.isdigit() and 200 <= int(code) < 300 and dispatchable(value)),
-            "default" if "default" in resolved else None,
+             if code.isdigit() and 200 <= int(code) < 300 and content(value) and dispatchable(value)),
+            None,
         )
+        if key is None:
+            key = "200" if "200" in resolved and dispatchable(resolved["200"]) else next(
+                (code for code, value in resolved.items()
+                 if code.isdigit() and 200 <= int(code) < 300 and dispatchable(value)),
+                "default" if "default" in resolved else None,
+            )
         if key is None:
             return None, None
         written = next(value for code, value in responses.items() if str(code) == key)
@@ -4271,6 +4285,14 @@ class Census:
             for key, value in content.items()
         ):
             found.append("operation.requestBody:schemaless-json")
+        responses = operation.get("responses")
+        if isinstance(responses, dict):
+            entries = {str(code): value for code, value in responses.items()}
+            empty = self.local_component("responses", entries.get("200"))
+            created = self.local_component("responses", entries.get("201"))
+            if (isinstance(empty, dict) and "$ref" not in empty and not empty.get("content")
+                and isinstance(created, dict) and "$ref" not in created and created.get("content")):
+                found.append("operation.responses:contentless-two-hundred-with-created")
         written, success = self.success_entry(operation)
         success_content = success.get("content") if isinstance(success, dict) else None
         if isinstance(success_content, dict):

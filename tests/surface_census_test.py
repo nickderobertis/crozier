@@ -2237,6 +2237,7 @@ BODY_AND_RESPONSE_PREDICATES = frozenset({
     "operation.responses:suffixed-status-key",
     "operation.requestBody:schemaless-json",
     "operation.responses:schemaless-wav-success",
+    "operation.responses:contentless-two-hundred-with-created",
     "operation.responses:space-suffixed-status-key",
     "operation.requestBody:blank-description-optional-object",
     "operation.requestBody:described-inline-scalar",
@@ -2415,7 +2416,7 @@ class GrammarContractTests(unittest.TestCase):
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
             "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
-            "seventeen": 17, "twenty": 20, "thirty-one": 31,
+            "seventeen": 17, "twenty": 20, "thirty-one": 31, "thirty-two": 32,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -12808,7 +12809,28 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
                 "/empty": {"get": self.operation(responses={"200": {"description": "empty"}, "201": text})},
             }},
         }
-        self.assertEqual({(selector, "positive"): 3}, self.census(selector, documents))
+        self.assertEqual({(selector, "positive"): 3, (selector, "decoys"): 1}, self.census(selector, documents))
+
+    def test_contentless_200_with_201_counts_inline_and_referenced_responses(self) -> None:
+        selector = "operation.responses:contentless-two-hundred-with-created"
+        empty = {"description": "empty"}
+        created = {"description": "created", "content": {"application/json": {"schema": {"type": "string"}}}}
+        documents = {
+            "positive": {"paths": {
+                "/inline": {"post": self.operation(responses={"200": empty, "201": created})},
+                "/shared": {"post": self.operation(responses={
+                    "200": {"$ref": "#/components/responses/Empty"},
+                    "201": {"$ref": "#/components/responses/Created"}})},
+            }, "components": {"responses": {"Empty": empty, "Created": created}}},
+            "decoys": {"paths": {
+                "/typed": {"post": self.operation(responses={"200": created, "201": created})},
+                "/only": {"post": self.operation(responses={"200": empty})},
+                "/both-empty": {"post": self.operation(responses={"200": empty, "201": empty})},
+                "/unresolved": {"post": self.operation(responses={
+                    "200": {"$ref": "#/components/responses/Missing"}, "201": created})},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
     def test_a_body_prefixed_body_counts_only_posted_once(self) -> None:
         selector = "operation.requestBody:body-prefixed-single-use"

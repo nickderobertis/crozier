@@ -1534,3 +1534,94 @@ fn compare_applies_the_packaging_and_metadata_departures_exactly() {
         "{stderr}"
     );
 }
+
+/// The certified Waylay pair differs only where Fern sends query arguments in
+/// place of the renamed JSON body arguments. Another change in that same raw
+/// client remains a mismatch, including one inside a converter the rule reads.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_body_query_departure_and_rejects_another_changed_line() {
+    let project = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let golden = "tests/fixtures/waylay-queries/expected";
+    let repo = tempfile::tempdir().expect("comparison repo");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yaml",
+        &std::fs::read_to_string(
+            project.join("tests/fixtures/corpus-sources/waylay-queries/openapi.yaml"),
+        )
+        .unwrap(),
+    );
+    write_script(root, "reference.sh", &format!(
+        "cp -R '{}'/. \"$CROZIER_REFERENCE_OUTPUT\"\n\
+         if [ \"${{1:-}}\" = edited ]; then\n\
+         \x20 f=\"$CROZIER_REFERENCE_OUTPUT/src/fern/execute/raw_client.py\"\n\
+         \x20 awk '!done && /annotation=QueryInputInterpolation/ {{ sub(/QueryInputInterpolation/, \"QueryInputUntil\"); done=1 }} {{ print }}' \"$f\" > \"$f.tmp\"\n\
+         \x20 mv \"$f.tmp\" \"$f\"\n\
+         fi\n", project.join(golden).display()
+    ));
+    for (config, command) in [
+        ("crozier.yml", "./reference.sh"),
+        ("edited.yml", "./reference.sh edited"),
+    ] {
+        write(
+            root,
+            config,
+            &format!(
+                "spec: ./openapi.yaml\npackage-name: fern\nproject-name: default_package_name\n\
+             generators:\n  python:\n    reference:\n      command: {command}\n"
+            ),
+        );
+    }
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "crozier.yml"])
+        .assert()
+        .code(0);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let matched = result(&report, "crozier.yml", "python");
+    assert_eq!(matched["status"], "matched", "{matched:#}");
+    let observed: Vec<super::departures_ledger::Observed> = matched["comparison"]["departures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|departure| {
+            (
+                departure["file"].as_str().unwrap().to_string(),
+                usize::try_from(departure["line"].as_u64().unwrap()).unwrap(),
+                departure["id"].as_str().unwrap().to_string(),
+            )
+        })
+        .collect();
+    let correction = observed
+        .iter()
+        .find(|(_, _, id)| id == "body-query-parameter-value")
+        .unwrap();
+    assert_eq!(correction.0, "src/fern/execute/raw_client.py");
+    assert!(correction.1 > 0);
+    let ledger = super::departure_ledger().golden(golden, &[]).unwrap();
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains(&format!(
+            "{}:{} body-query-parameter-value",
+            correction.0, correction.1
+        )),
+        "{stderr}"
+    );
+
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "edited.yml"])
+        .assert()
+        .code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    let changed = result(&report, "edited.yml", "python");
+    assert_eq!(changed["status"], "mismatched");
+    assert_eq!(
+        changed["comparison"]["differing"],
+        serde_json::json!(["src/fern/execute/raw_client.py"])
+    );
+}
