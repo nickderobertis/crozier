@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Apiary Census
+  version: "1.0"
+servers:
+  - url: https://census.apiary.example
+paths:
+  /colonies:
+    get:
+      operationId: listColonies
+      summary: Colonies of the given castes, as JSON.
+      parameters:
+        - name: castes
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Caste'
+      responses:
+        "200":
+          description: The colonies.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /colonies/summary:
+    get:
+      operationId: summarizeColonies
+      summary: The same query, answered as plain text.
+      parameters:
+        - name: castes
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Caste'
+      responses:
+        "200":
+          description: A summary.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /colonies/search:
+    get:
+      operationId: searchColonies
+      summary: The same query beside a required map of labels, as JSON.
+      parameters:
+        - name: labels
+          in: query
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        - name: castes
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Caste'
+      responses:
+        "200":
+          description: The colonies.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Caste:
+      type: string
+      enum: [worker, drone, queen]

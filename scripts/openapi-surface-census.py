@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 195 of the 228 registered sources live in `corpus-sources/` (a split
+  and 196 of the 229 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -57,7 +57,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import Any, Callable, Iterable, Iterator
 from urllib.parse import unquote
 
 # Also loaded by the offline test tier through importlib, where the script
@@ -1048,6 +1048,28 @@ PREDICATES = {
     "mediaType.examples:named-beside-example": "one per request body's selected JSON media type writing both a non-null example and a named example that resolves to a value, so reference.md documents the singular example",
     "mediaType.examples:named-only": "one per request body's selected JSON media type writing a named example that resolves to a value and no non-null example, so reference.md documents the first named one",
     "operation.responses:wildcard-binary": "one per Operation Object whose success response, chosen as has_wildcard_binary_response chooses it, serves */* with an inline string schema of format binary: the endpoint mode build_example_inner reads before it renders any parameter example",
+    "schema.example:unread-date-time": (
+        "one per `format: date-time` Schema Object whose selected example is a "
+        "string Fern's append-`Z` reading rejects, which `datetime_example` of "
+        "`src/emit.rs` replaces with Fern's default"
+    ),
+    "mediaType.schema:allof-parent-body": (
+        "one per request body's selected JSON media type whose schema `$ref`s a "
+        "component composed `allOf` of an inline object and a `$ref` base, which "
+        "another component's `allOf` names in turn, and whose example names a "
+        "required field of each side: the body whose Markdown example lists its "
+        "own fields first"
+    ),
+    "mediaType.example:nested-null-member": (
+        "one per request body's selected JSON media type whose example gives "
+        "`null` to an optional property of a nested object, which the worked "
+        "examples leave out"
+    ),
+    "mediaType.example:deprecated-property": (
+        "one per request body's selected JSON media type whose example names a "
+        "property whose own schema is marked `deprecated: true`, which the worked "
+        "examples leave out unless it is required"
+    ),
     "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
     "components.schemas:cycle-into-cycle": (
         "one per component schema composing no `oneOf` or `anyOf` that names, "
@@ -2485,7 +2507,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "88e1af6b7b444d6b",
+    "endpoint_method_name": "32159cd5f102d9bb",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3777,6 +3799,58 @@ def request_body_media(document: Any) -> set[int]:
     return selected
 
 
+# The two Rust functions the worked-example predicates port: `own_deprecated` of
+# `src/ir.rs` (`deprecated_member`) and `read_datetime` of `src/emit.rs`
+# (`fern_reads_date_time`). `tests/surface_census_test.py` recomputes each one's
+# normalized-body digest, so an arm edited there fails until the port is read
+# again here.
+EXAMPLE_PORT_DIGESTS = {
+    ("src/ir.rs", "own_deprecated"): "453b400276e22e0a",
+    ("src/emit.rs", "read_datetime"): "17d1f36be9e0d0c2",
+}
+
+
+# A test of one example member: its declared property schema, its value, whether
+# its object requires it, and how deep in the example it sits.
+MemberTest = Callable[[Any, Any, bool, int], bool]
+
+
+def nested_null_member(declared: Any, value: Any, required: bool, depth: int) -> bool:
+    """`mediaType.example:nested-null-member`: an optional nested property given `null`."""
+    return depth > 0 and value is None and not required
+
+
+def deprecated_member(declared: Any, value: Any, required: bool, depth: int) -> bool:
+    """`mediaType.example:deprecated-property`: `own_deprecated` of `src/ir.rs`."""
+    return (
+        isinstance(declared, dict) and declared.get("deprecated") is True
+        and "$ref" not in declared and "allOf" not in declared
+    )
+
+
+def fern_reads_date_time(value: str) -> bool:
+    """`read_datetime` of `src/emit.rs`, after Fern's append-`Z` rewrite."""
+    if not (value.endswith("Z") or "+" in value):
+        value += "Z"
+    match = re.fullmatch(
+        r"(\d{4})-(\d{2})-(\d{2})(?:[Tt ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?(Z|[+-]\d{2}:?\d{2})",
+        value,
+        flags=re.ASCII,
+    )
+    if match is None:
+        return False
+    _, month, day, hour, minute, second, zone = match.groups()
+    if not (1 <= int(month) <= 12 and 1 <= int(day) <= 31):
+        return False
+    if hour is not None and (int(hour) > 23 or int(minute) > 59 or int(second or 0) > 59):
+        return False
+    if zone != "Z":
+        digits = zone[1:].replace(":", "")
+        if len(digits) != 4 or int(digits[:2]) > 23 or int(digits[2:]) > 59:
+            return False
+    return True
+
+
 def is_closed_empty_object(schema: Any) -> bool:
     """`is_closed_empty_object` of `src/ir.rs`: closed, object-typed, no `properties`."""
     return (
@@ -4058,6 +4132,13 @@ class Census:
                     "mediaType.examples:named-beside-example"
                     if node.get("example") is not None else "mediaType.examples:named-only"
                 )
+            example = self.media_example_value(node)
+            if self.allof_parent_body(node.get("schema"), example):
+                found.append("mediaType.schema:allof-parent-body")
+            if self.example_holds(node.get("schema"), example, nested_null_member, 0):
+                found.append("mediaType.example:nested-null-member")
+            if self.example_holds(node.get("schema"), example, deprecated_member, 0):
+                found.append("mediaType.example:deprecated-property")
         if kind_name == "parameter" and node.get("in") == "query" and self.declares_parameter_example(node):
             schema = node.get("schema")
             schema = self.component_target(schema["$ref"]) if (
@@ -4066,6 +4147,82 @@ class Census:
             if not parameter_schema_is_scalar(schema):
                 found.append("parameter.example:non-scalar-query")
         return found
+
+    def resolved_schema(self, schema: Any) -> Any:
+        """A schema with its local `components.schemas` references followed."""
+        seen: set[str] = set()
+        while isinstance(schema, dict) and isinstance(schema.get("$ref"), str):
+            reference = schema["$ref"]
+            if reference in seen:
+                return None
+            seen.add(reference)
+            schema = self.component_target(reference)
+        return schema
+
+    def object_members(self, schema: Any, depth: int = 0) -> tuple[dict[Any, Any], set[Any]]:
+        """A schema's properties and required names, its `allOf` members' merged in."""
+        schema = self.resolved_schema(schema)
+        if not isinstance(schema, dict) or depth > 16:
+            return {}, set()
+        properties = dict(schema["properties"]) if isinstance(schema.get("properties"), dict) else {}
+        required = set(schema["required"]) if isinstance(schema.get("required"), list) else set()
+        for member in schema.get("allOf") if isinstance(schema.get("allOf"), list) else []:
+            more, also = self.object_members(member, depth + 1)
+            for name, value in more.items():
+                properties.setdefault(name, value)
+            required |= also
+        return properties, required
+
+    def media_example_value(self, media: dict[Any, Any]) -> Any:
+        """The example a request media type's worked call reads: `example`, else the first named one."""
+        if media.get("example") is not None:
+            return media["example"]
+        examples = media.get("examples")
+        for example in examples.values() if isinstance(examples, dict) else []:
+            example = self.local_component("examples", example)
+            if isinstance(example, dict) and example.get("value") is not None:
+                return example["value"]
+        return None
+
+    def allof_parent_body(self, schema: Any, example: Any) -> bool:
+        """See `mediaType.schema:allof-parent-body`."""
+        if not isinstance(schema, dict) or not isinstance(schema.get("$ref"), str) or not isinstance(example, dict):
+            return False
+        reference = schema["$ref"]
+        target = self.component_target(reference)
+        members = target.get("allOf") if isinstance(target, dict) else None
+        if not isinstance(members, list):
+            return False
+        bases = [m for m in members if isinstance(m, dict) and isinstance(m.get("$ref"), str)]
+        inline = [m for m in members if isinstance(m, dict) and "$ref" not in m and isinstance(m.get("properties"), dict)]
+        if len(bases) != 1 or len(inline) != 1:
+            return False
+        parent = any(
+            isinstance(other, dict) and isinstance(other.get("allOf"), list)
+            and any(isinstance(m, dict) and m.get("$ref") == reference for m in other["allOf"])
+            for other in self.component_schemas.values()
+        )
+        own = set(inline[0]["properties"])
+        own_required = (set(inline[0].get("required") or []) | set(target.get("required") or [])) & own
+        _, base_required = self.object_members(bases[0])
+        return parent and bool(own_required & set(example)) and bool(base_required & set(example))
+
+    def example_holds(
+        self, schema: Any, example: Any, test: "MemberTest", depth: int
+    ) -> bool:
+        """Whether `test` holds of some member of an example object, read against its schema."""
+        if not isinstance(example, dict) or depth > 8:
+            return False
+        properties, required = self.object_members(schema)
+        for name, value in example.items():
+            declared = properties.get(name)
+            if declared is None:
+                continue
+            if test(declared, value, name in required, depth):
+                return True
+            if self.example_holds(declared, value, test, depth + 1):
+                return True
+        return False
 
     def resolvable_named_example(self, examples: Any) -> bool:
         """Whether a named `examples` map holds one example resolving to a value."""
@@ -4154,6 +4311,9 @@ class Census:
             example_kind = selected_example_kind(node)
             if example_kind is not None:
                 found.append(f"schema.example={example_kind}")
+            if example_kind == "string" and node.get("format") == "date-time":
+                if not fern_reads_date_time(schema_example(node)):
+                    found.append("schema.example:unread-date-time")
         if is_reference_node(node, kind_name):
             reference = OBJECTS["reference"]
             found += [

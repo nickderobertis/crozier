@@ -241,6 +241,7 @@ compares it. Row 224 is the one so far.
 | 313 | `breizhsport-catalogue` | github-raw | https://raw.githubusercontent.com/ImNotAOwl/e-commerce_microservices_CATALOGUE_API/460aed0c7e313e2289330e76bb6607f4eef9c4f3/openapi.yaml | `460aed0c7e313e2289330e76bb6607f4eef9c4f3` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The BreizhSport Catalogue API its own repository publishes: 3 paths and 3 component schemas; `Article.rating` is declared `type: float` beside `price` and `quantity` declared `type: int` |
 | 314 | `protoform-conformance` | github-raw | https://raw.githubusercontent.com/malinskibeniamin/protoform/a179fc14356cc98dce69402ae62c406107b0bf5b/openapi.yaml | `a179fc14356cc98dce69402ae62c406107b0bf5b` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Protoform bookstore Connect API its own repository publishes: five unary Book RPCs; `DeleteBook`'s success response is an inline object closed with `additionalProperties: false` that declares no `properties` |
 | 315 | `ere-ps-app` | github-raw | https://raw.githubusercontent.com/ere-health/ere-ps-app/9d8958380a7bdf3fc2e94bd6747cf59bb6d96de5/openapi/openapi.json | `9d8958380a7bdf3fc2e94bd6747cf59bb6d96de5` | GPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The `ere-ps-app` API its own repository publishes: 25 paths and 121 component schemas, 48 of whose models reach two or more reference cycles in an order no sort of their members reproduces |
+| 316 | `typescript-service-template` | github-raw | https://raw.githubusercontent.com/adiwajshing/typescript-service-template/bec0143414f9ec292e4a33dd3ee1c576984559d6/openapi.yaml | `bec0143414f9ec292e4a33dd3ee1c576984559d6` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The description a TypeScript service template publishes for its users API: one path, three operations and five component schemas; `usersPatch` takes a required query array of `$ref UserID` items and answers `application/json` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1493,3 +1494,22 @@ cycles in an order no sort of the members reproduces, 48 of them:
 The repair: the deferred imports follow Fern's per-field order, each name at
 the first place a field reaches it, and an `update_forward_refs` call names
 only the cycles its model's own references close.
+
+## Row 316 — a required query array of named items, answering JSON
+
+Fern's worked example passes a required query array with one sampled item
+whatever its item type, unless the operation's success body is `text/*` or it
+takes a required object or map query parameter beside the array; then it leaves
+every required query array out. The registered goldens held the omitting sides
+only (`amazonaws.com-cloudformation`'s `text/xml` operations), where crozier's
+earlier rule — leave out arrays of named items — gave the same bytes. A TypeScript
+service template's `usersPatch` takes a required array of `$ref UserID` items and
+answers `application/json`:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 316 | `typescript-service-template` | a required query array of `$ref` items under a JSON response | ✅ byte-matched after one repair |
+
+The repair: the omission is keyed on the response media type and a required
+object or map query parameter beside the array, as measured, rather than on the
+item type (see `docs/matching.md`, *What a worked example shows*).

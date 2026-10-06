@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: Apiary Registry
+  version: "1.0"
+servers:
+  - url: https://registry.apiary.example
+paths:
+  /colonies:
+    post:
+      operationId: registerColony
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColonyDraft'
+            example:
+              name: Meadow
+              queenMark: null
+              keeper:
+                handle: ada
+                phone: null
+      responses:
+        "204":
+          description: Registered.
+components:
+  schemas:
+    ColonyDraft:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        queenMark:
+          type: string
+        keeper:
+          $ref: '#/components/schemas/Keeper'
+    Keeper:
+      type: object
+      required: [handle]
+      properties:
+        handle:
+          type: string
+        phone:
+          type: string

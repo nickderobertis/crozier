@@ -221,6 +221,12 @@ def ingredients(selector: str) -> list[str]:
     fields = list(dict.fromkeys(FIELD.findall(selector)))
     if selector == "securityScheme:$ref":
         fields.extend(("securitySchemes", "$ref"))
+    media = re.fullmatch(r"mediaType\.([A-Za-z]+):([a-z-]+)", selector)
+    if media is not None:
+        # The census reads these Media Type shapes off request bodies only.
+        fields.extend(("requestBody", media[1]))
+        fields.extend({"allof-parent-body": ("allOf",), "deprecated-property": ("deprecated",)}
+                      .get(media[2], ()))
     for composition in ("oneOf", "anyOf"):
         if f"pointer-walk-reaches={composition}" in selector:
             fields.append(composition)
@@ -249,6 +255,8 @@ def distinguishing_phrase(selector: str, language: str, variant: int) -> str | N
     if "annotated-ref" in selector:
         term = "title" if variant else "description"
         return f'"{term}:"' if yaml else f'"\\"{term}\\""'
+    if selector == "mediaType.example:nested-null-member":
+        return '": null"' if yaml else '"null"'
     if "flows.password" in selector:
         return '"password:"' if yaml else '"password"'
     return None

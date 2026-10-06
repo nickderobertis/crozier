@@ -152,6 +152,18 @@ if [ "$LAYOUT" = flat ]; then
 fi
 
 spec="${SPEC_OVERRIDE:-$repo_root/tests/fixtures/$spec_fixture/openapi.yml}"
+# A flat golden over another fixture may name a registered corpus row whose source
+# is committed under tests/fixtures/corpus-sources/ rather than vendored beside a
+# fixture: the same lookup tests/e2e.rs's `corpus_spec` makes.
+if [ -z "$SPEC_OVERRIDE" ] && [ "$spec_fixture" != "$FIXTURE" ] && [ ! -f "$spec" ]; then
+  for candidate in openapi.json openapi.yaml openapi.yml; do
+    committed="$repo_root/tests/fixtures/corpus-sources/$spec_fixture/$candidate"
+    if [ -f "$committed" ]; then
+      spec="$committed"
+      break
+    fi
+  done
+fi
 fixture_dir="$repo_root/tests/fixtures/$FIXTURE"
 dest="${4:-$fixture_dir/$golden_name}"
 [ "$(basename "$dest")" = "$golden_name" ] || {
@@ -211,8 +223,12 @@ case "$EXTRA_FIELDS" in ""|allow|ignore|forbid) ;; *)
   echo "generate-fern-fixture: invalid extra_fields '$EXTRA_FIELDS' for '$FIXTURE'" >&2
   exit 1
 esac
-[ -z "$ORGANIZATION" ] || [[ "$ORGANIZATION" =~ ^[a-z][a-z0-9]*$ ]] || {
-  echo "generate-fern-fixture: invalid organization '$ORGANIZATION' for '$FIXTURE' — use lowercase letters and digits" >&2
+# Letters and digits, starting with a letter. Capitals are admitted: an
+# organization with an inner capital (`PetStore`) is what names a mixed-case
+# module and `{Organization}Api` client, which crozier derives from a mixed-case
+# `--package-name`.
+[ -z "$ORGANIZATION" ] || [[ "$ORGANIZATION" =~ ^[A-Za-z][A-Za-z0-9]*$ ]] || {
+  echo "generate-fern-fixture: invalid organization '$ORGANIZATION' for '$FIXTURE' — use letters and digits, starting with a letter" >&2
   exit 1
 }
 
@@ -490,7 +506,7 @@ elif [ -z "$SPEC_OVERRIDE" ]; then
 {
   "fern_python_sdk_version": "$FERN_PYTHON_VERSION",
   "fern_cli_version": "$FERN_CLI_VERSION",
-  "vendored_spec_path": "tests/fixtures/$spec_fixture/openapi.yml"$settings
+  "vendored_spec_path": "${spec#"$repo_root"/}"$settings
 }
 JSON
 fi

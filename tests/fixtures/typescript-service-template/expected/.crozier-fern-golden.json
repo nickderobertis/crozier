@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "typescript-service-template",
+  "corpus_spec_ref": "bec0143414f9ec292e4a33dd3ee1c576984559d6",
+  "corpus_spec_url": "https://raw.githubusercontent.com/adiwajshing/typescript-service-template/bec0143414f9ec292e4a33dd3ee1c576984559d6/openapi.yaml"
+}
