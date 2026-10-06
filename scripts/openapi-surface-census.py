@@ -57,7 +57,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import Any, Callable, Iterable, Iterator
 from urllib.parse import unquote
 
 # Also loaded by the offline test tier through importlib, where the script
@@ -3771,6 +3771,11 @@ def request_body_media(document: Any) -> set[int]:
     return selected
 
 
+# A test of one example member: its declared property schema, its value, whether
+# its object requires it, and how deep in the example it sits.
+MemberTest = Callable[[Any, Any, bool, int], bool]
+
+
 def nested_null_member(declared: Any, value: Any, required: bool, depth: int) -> bool:
     """`mediaType.example:nested-null-member`: an optional nested property given `null`."""
     return depth > 0 and value is None and not required
@@ -4015,7 +4020,9 @@ class Census:
         _, base_required = self.object_members(bases[0])
         return parent and bool(own_required & set(example)) and bool(base_required & set(example))
 
-    def example_holds(self, schema: Any, example: Any, test: Any, depth: int) -> bool:
+    def example_holds(
+        self, schema: Any, example: Any, test: "MemberTest", depth: int
+    ) -> bool:
         """Whether `test` holds of some member of an example object, read against its schema."""
         if not isinstance(example, dict) or depth > 8:
             return False
