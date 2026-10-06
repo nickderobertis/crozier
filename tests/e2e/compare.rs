@@ -1302,7 +1302,8 @@ fn compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_diff
     );
     // `reference.sh [same-construct|same-file]`: copy the committed Fern tree,
     // then make README.md differ inside the placeholder the departure
-    // corrects, or on a line it does not touch.
+    // corrects, or on a line it does not touch. awk edits only the first
+    // matching line, the same under GNU and BSD userlands.
     write_script(
         root,
         "scripts/reference.sh",
@@ -1310,11 +1311,13 @@ fn compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_diff
             "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
              cp -R '{}'/. \"$out\"\n\
              case \"${{1:-}}\" in\n\
-             \x20 same-construct) edit='0,/^        \"key\": \"value\"$/s//        \"key\": \"other\"/' ;;\n\
-             \x20 same-file) edit='s/^# Fern Python Library$/# Fern Python SDK/' ;;\n\
+             \x20 same-construct) from='        \"key\": \"value\"' to='        \"key\": \"other\"' ;;\n\
+             \x20 same-file) from='# Fern Python Library' to='# Fern Python SDK' ;;\n\
              \x20 *) exit 0 ;;\n\
              esac\n\
-             sed \"$edit\" \"$out/README.md\" > \"$out/README.tmp\"\n\
+             awk -v from=\"$from\" -v to=\"$to\" \
+             '!done && $0 == from {{ print to; done = 1; next }} {{ print }}' \
+             \"$out/README.md\" > \"$out/README.tmp\"\n\
              mv \"$out/README.tmp\" \"$out/README.md\"\n",
             case.join("fern-expected").display()
         ),
