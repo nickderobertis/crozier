@@ -22,9 +22,13 @@
 #      authenticated in this environment, into CLAUDE_ENV_FILE so later Bash calls
 #      inherit them.
 #
-# Harness selection: by default llmlint resolves the harness from `oneharness.toml`
-# (or llmlint.yml's `agents.default.harness`). If the harness you run in Claude
-# Code sessions differs from the committed default, export the override below.
+# Harness selection: llmlint.yml pins no harness, so the committed `oneharness.toml`
+# decides. It runs in fallback mode (codex + gpt-5.5 primary, claude-code +
+# opus-4.8 secondary): a contributor with Codex authenticated runs the primary, and
+# a Claude Code session or the CI runner, where codex is absent, falls through to
+# claude-code — no `ONEHARNESS_*` override needed (one would only clobber the
+# fallback list). If the fallback order can't select the right harness for some
+# environment, set ONEHARNESS_HARNESSES there.
 # llmlint: ignore-file[robust_shell, tool_output_is_signal, boundary_inputs_validated] deliberate for a session-startup installer (see header): `set -e` is omitted so a flaky install can't abort the hook — the script owns its exit codes and always exits 0; success stays quiet while failures log-and-continue rather than block startup; and the toolchain is installed from PyPI (`uv tool install llmlint-cli`) whose wheels ship with Trusted Publishing + PEP 740 attestations, so no unvalidated external input is executed.
 set -uo pipefail
 
@@ -33,14 +37,16 @@ set -uo pipefail
 # satisfying it; oneharness comes along transitively at a compatible version.
 # llmlint >= 0.3.7 finds `oneharness` beside its own executable (so a lone
 # `uv tool install llmlint-cli` works) and gives the whole-tree default the composed
-# llmlint.yml relies on (it omits `files.include`). >= 0.3.12 is required so the
-# diff-scoped run honors `files.exclude` (drops the vendored fixtures); older
-# builds re-include them and overflow the harness argv. >= 0.3.14 is the current
-# floor: it passes the judge system prompt by file rather than an argv string
-# (0.3.13, avoids argv-length truncation of the rules) and narrates the actual
-# lint set before judging (0.3.14). (0.3.15 fixes plain `--diff-base` three-dot
-# semantics but is not yet on PyPI; raise the floor once `llmlint-cli` ships it.)
-readonly LLMLINT_MIN="0.3.14"
+# llmlint.yml relies on (it omits `files.include`); >= 0.3.12 makes the diff-scoped
+# run honor `files.exclude` (drops the vendored fixtures); 0.3.15 treats a plain
+# `--diff-base <ref>` as three-dot/merge-base; 0.3.17 ships the deterministic
+# `validate` gate `just lint-llm-validate` runs; 0.3.23 bundles config_lint v1.2 so
+# `line_localizable_rules_require_attribution` is enforced (create-repo's floor).
+# The floor is 0.4.1, above that: the oldest release the vendored plugin set is
+# measured against (docs/llmlint-plugins.md), whose bundled config-lint rules match
+# the ones `llmlint-plugins/lock.json` records — `just test-llmlint-plugins`
+# asserts they resolve exactly.
+readonly LLMLINT_MIN="0.4.1"
 readonly BIN_DIR="$HOME/.local/bin"
 
 log() { printf 'setup-llmlint: %s\n' "$*" >&2; }
