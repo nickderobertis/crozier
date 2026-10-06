@@ -157,8 +157,6 @@ def load_fixture_aliases(root: Path) -> dict[str, str]:
             )
         aliases[name] = fixture
         fixtures.add(fixture)
-    if not aliases:
-        raise GoldensError(f"fixture alias file {path} has no aliases")
     return aliases
 
 

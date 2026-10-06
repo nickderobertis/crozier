@@ -116,6 +116,8 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nested_core_imports_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e malformed_property_schema_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_flat_matches_fern
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e swagger_petstore_flat_matches_fern
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e swagger_petstore_distribution_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e client_class_name_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audience_filter_strict_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_package_name_flat_matches_fern

@@ -6947,13 +6947,41 @@ class CorpusManifestAgreementTests(unittest.TestCase):
 
     def test_the_census_resolves_an_alias_the_way_the_fetcher_does(self) -> None:
         aliases = census.corpus_aliases(FIXTURES)
-        self.assertTrue(aliases, "the alias file is empty or unreadable")
+        self.assertTrue((FIXTURES / "corpus-aliases.tsv").is_file())
         for name in [*aliases, "apideck.com-crm"]:
             with self.subTest(name=name):
                 self.assertEqual(
                     self.shell(f'corpus_fixture_for "{name}"').strip(),
                     aliases.get(name, name),
                 )
+
+    def test_authored_aliases_agree_with_the_real_fetcher(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            for name in ("fetch-corpus.sh", "corpus-lib.sh", "lib.sh"):
+                shutil.copy2(REPO / "scripts" / name, scripts / name)
+            fixtures = root / "tests" / "fixtures"
+            fixtures.mkdir(parents=True)
+            (fixtures / "corpus-aliases.tsv").write_text(
+                "planet-window\talpha\nsignal-history\tbeta\n"
+            )
+            aliases = census.corpus_aliases(fixtures)
+            self.assertEqual({"planet-window": "alpha", "signal-history": "beta"}, aliases)
+            names = (*aliases, "gamma")
+            (fixtures / "CORPUS.md").write_text("\n".join(
+                f"| {number} | `{name}` | test | https://example.test/{name}.yaml "
+                "| `1` | MIT | link-ok | alias |"
+                for number, name in enumerate(names, start=1)
+            ) + "\n")
+            for name in names:
+                completed = subprocess.run(
+                    [scripts / "fetch-corpus.sh", "--dry-run", "--fixture", aliases.get(name, name)],
+                    cwd=root, capture_output=True, text=True,
+                )
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                self.assertTrue(completed.stdout.startswith(name + "\t"), completed.stdout)
 
 
 class YamlSubsetTests(unittest.TestCase):

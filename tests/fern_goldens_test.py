@@ -676,7 +676,60 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ).encode(),
         )
 
+    def test_empty_alias_registry_drives_generation_and_direct_resolution(self) -> None:
+        aliases = self.root / "tests" / "fixtures" / ALIASES.name
+        aliases.write_text("# Source name<TAB>fixture directory aliases.\n", encoding="utf-8")
+        generated = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("generated alpha", generated.stdout)
+        self.assertEqual("alpha", self.state("alpha")["corpus_spec_name"])
+        resolved = subprocess.run(
+            [self.root / "scripts" / "fetch-corpus.sh", "--dry-run", "--fixture", "alpha"],
+            cwd=self.root, text=True, capture_output=True,
+        )
+        self.assertEqual(0, resolved.returncode, resolved.stderr)
+        self.assertTrue(resolved.stdout.startswith("alpha\t"), resolved.stdout)
+
+    def test_alias_registry_refusals_preserve_validation_and_recover(self) -> None:
+        aliases = self.root / "tests" / "fixtures" / ALIASES.name
+        invalid = (
+            None,
+            "../outside\talpha\n",
+            "only-one-cell\n",
+            "planet-window\talpha\nplanet-window\tbeta\n",
+            "planet-window\talpha\nsignal-history\talpha\n",
+            "alpha\talpha\n",
+        )
+        for contents in invalid:
+            with self.subTest(contents=contents):
+                if contents is None:
+                    aliases.unlink(missing_ok=True)
+                else:
+                    aliases.write_text(contents, encoding="utf-8")
+                refused = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
+                self.assertNotEqual(0, refused.returncode, refused.stdout)
+                self.assertIn("alias", refused.stderr)
+                self.assertEqual([], self.calls())
+                resolved = subprocess.run(
+                    [self.root / "scripts" / "fetch-corpus.sh", "--dry-run", "--fixture", "alpha"],
+                    cwd=self.root, text=True, capture_output=True,
+                )
+                self.assertNotEqual(0, resolved.returncode, resolved.stdout)
+                self.assertIn("alias", resolved.stderr)
+        aliases.write_text("# Source name<TAB>fixture directory aliases.\n", encoding="utf-8")
+        recovered = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("generated alpha", recovered.stdout)
+        resolved = subprocess.run(
+            [self.root / "scripts" / "fetch-corpus.sh", "--dry-run", "--fixture", "alpha"],
+            cwd=self.root, text=True, capture_output=True,
+        )
+        self.assertEqual(0, resolved.returncode, resolved.stderr)
+        self.assertTrue(resolved.stdout.startswith("alpha\t"), resolved.stdout)
+
     def test_authoritative_aliases_drive_python_workflow_and_bash_helper(self) -> None:
+        (self.root / "tests" / "fixtures" / ALIASES.name).write_text(
+            "# Source name<TAB>fixture directory aliases.\n"
+            "planet-window\talpha\nsignal-history\tbeta\n", encoding="utf-8"
+        )
         aliases = self.fixture_aliases()
         rows = [
             f"| {number} | `{name}` | test | https://example.test/{name}/openapi.json "

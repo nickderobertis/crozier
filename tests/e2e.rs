@@ -10076,13 +10076,14 @@ fn safe_fixture_name(value: &str) -> bool {
 }
 
 fn corpus_fixture_aliases() -> Result<Vec<(&'static str, &'static str)>, String> {
+    parse_corpus_fixture_aliases(include_str!("fixtures/corpus-aliases.tsv"))
+}
+
+fn parse_corpus_fixture_aliases(input: &str) -> Result<Vec<(&str, &str)>, String> {
     let mut aliases = Vec::new();
     let mut sources = std::collections::HashSet::new();
     let mut fixtures = std::collections::HashSet::new();
-    for (index, line) in include_str!("fixtures/corpus-aliases.tsv")
-        .lines()
-        .enumerate()
-    {
+    for (index, line) in input.lines().enumerate() {
         if line.trim().is_empty() || line.trim_start().starts_with('#') {
             continue;
         }
@@ -10114,9 +10115,6 @@ fn corpus_fixture_aliases() -> Result<Vec<(&'static str, &'static str)>, String>
         }
         aliases.push((name, fixture));
     }
-    if aliases.is_empty() {
-        return Err("corpus-aliases.tsv contains no aliases".to_string());
-    }
     Ok(aliases)
 }
 
@@ -10125,6 +10123,77 @@ fn corpus_fixture_for<'a>(name: &'a str, aliases: &[(&'a str, &'a str)]) -> &'a 
         .iter()
         .find_map(|(source, fixture)| (*source == name).then_some(*fixture))
         .unwrap_or(name)
+}
+
+#[cfg(not(windows))]
+#[test]
+fn fixture_alias_readers_agree_on_validation_and_resolution() {
+    let python = python_interpreter().expect("Python is required for alias reader agreement");
+    let journey = r#"
+import json, subprocess, sys
+from tests.fern_goldens_test import FernGoldensBoundaryTests, ALIASES
+case = FernGoldensBoundaryTests()
+case.setUp()
+try:
+    (case.root / 'tests/fixtures' / ALIASES.name).write_text(sys.argv[1])
+    name = sys.argv[2]
+    (case.root / 'tests/fixtures/CORPUS.md').write_text(
+        '| # | name | method | source | pinned ref | license | decision | shapes |\n'
+        f'| 1 | `{name}` | test | https://example.test/alpha/openapi.yaml | `1` | MIT | link-ok | alias |\n'
+    )
+    generated = case.run_tool('generate', '--version', '4.9.0', '--fixture', name)
+    fetched = subprocess.run(
+        [case.root / 'scripts/fetch-corpus.sh', '--dry-run', '--fixture', 'alpha'],
+        cwd=case.root, text=True, capture_output=True,
+    )
+    if generated.returncode == 0:
+        case.assertEqual(name, case.state('alpha')['corpus_spec_name'])
+    if fetched.returncode == 0:
+        case.assertTrue(fetched.stdout.startswith(name + '\t'), fetched.stdout)
+    print(json.dumps({'python': generated.returncode, 'shell': fetched.returncode}))
+finally:
+    case.tearDown()
+"#;
+    for (input, requested, expected) in [
+        ("# aliases\n", "alpha", Some("alpha")),
+        (
+            "planet-window\talpha\nsignal-history\tbeta\n",
+            "planet-window",
+            Some("alpha"),
+        ),
+        ("../outside\talpha\n", "alpha", None),
+        ("only-one-cell\n", "alpha", None),
+        ("planet-window\talpha\nplanet-window\tbeta\n", "alpha", None),
+        (
+            "planet-window\talpha\nsignal-history\talpha\n",
+            "alpha",
+            None,
+        ),
+        ("alpha\talpha\n", "alpha", None),
+    ] {
+        let rust = parse_corpus_fixture_aliases(input);
+        assert_eq!(rust.is_ok(), expected.is_some(), "Rust reader: {input:?}");
+        if let Some(expected) = expected {
+            assert_eq!(corpus_fixture_for(requested, &rust.unwrap()), expected);
+        }
+        let output = std::process::Command::new(&python)
+            .args(["-c", journey, input, requested])
+            .output()
+            .expect("public alias workflows");
+        assert!(
+            output.status.success(),
+            "alias journey: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let statuses: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        for reader in ["python", "shell"] {
+            assert_eq!(
+                statuses[reader] == 0,
+                expected.is_some(),
+                "{reader}: {input:?}: {statuses}"
+            );
+        }
+    }
 }
 
 #[test]
