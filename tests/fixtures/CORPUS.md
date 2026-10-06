@@ -1472,7 +1472,7 @@ Fern 5.20.0 golden with `unmatched: &[]`:
 | 332 | `mi-music` | schemaless `text/plain`, `audio/mpeg` and `video/mp4` successes; titled bodies under HTTP Basic | ✅ byte-matched after three repairs |
 | 333 | `g4brym-download-manager` | a titled inline array body in a parameterless 3.0 operation | ✅ byte-matched after one repair |
 | 334 | `opentosca-license-engine` | a titled inline array body and inline `{}` successes in a 3.0 document | ✅ byte-matched after two repairs |
-| 335 | `chat-rest-api` | error keys spelled `404-message` and `404-file`; a text media type listed before a download | ✅ byte-matched after two repairs |
+| 335 | `chat-rest-api` | error keys spelled `404-message` and `404-file`; a text media type listed before a download | ✅ byte-matched after three repairs |
 | 336 | `esp32-streamline-bridge` | schemaless `audio/wav` successes | ✅ byte-matched after one repair |
 | 337 | `cphos-ai-question` | a schemaless `application/pdf` success listed before `text/markdown` | ✅ byte-matched after two repairs |
 | 338 | `flask-example-heroku` | a JSON request body declaring no schema | ✅ byte-matched after one repair |
@@ -1480,8 +1480,8 @@ Fern 5.20.0 golden with `unmatched: &[]`:
 
 The repairs: a single-use JSON body's model is dropped whatever its name, where
 crozier kept every `Body_*` model (row 330); an unknown success body is guarded
-in 3.0 as in 3.1 (rows 331, 334); a schemaless `text/*` success returns `str`,
-and a schemaless `audio/*` or `video/*` one streams bytes (row 332); a titled
+in 3.0 as in 3.1 (rows 331, 334); a schemaless `text/*` success returns `str`
+(rows 332, 335), and a schemaless `audio/*` or `video/*` one streams bytes (row 332); a titled
 schema keeps the JSON content-type header under HTTP Basic security (row 332); an
 inline container body's header follows its own `title` or `description`, not
 the document version or its items (rows 333, 334); a response key is read by its
