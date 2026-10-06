@@ -29,7 +29,7 @@ aka-somix/earth-overwatch:app/stacks/components/landfills/new-data-handler/src/a
 aka-somix/earth-overwatch:app/stacks/geo/api-services/monitor/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 673b5294b5b1	not run: the licence screen failed
 api-evangelist/investbamboo-com:openapi/_original/bamboo-openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 066721c5a6aa	not run: the licence screen failed
 apostrophecms/apostrophe:packages/apostrophecms-openapi/apostrophecms-openapi.yaml	passed: MIT (info.license)	passed: commit bf5a2a677067	failed: fern check did not finish within 900 s
-apostrophecms/docs:docs/public/apostrophecms-openapi.yaml	passed: MIT (info.license); MIT (repository)	passed: commit 10d18b367e6f	failed: fern check did not finish within 900 s
+apostrophecms/docs:docs/public/apostrophecms-openapi.yaml	passed: MIT (info.license); MIT (repository)	passed: commit 10d18b367e6f	failed: fern check did not finish within 900 s, nor on a retry within 2400 s
 azizkhalsi/Devops:DevOps_Project/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 2a493c0a6222	not run: the licence screen failed
 benediktschoeffmann/apidae-backend-spec:specs/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit cd721908ea9a	not run: the licence screen failed
 c4ts0up/my-stocks:backend/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit c046b1dac112	not run: the licence screen failed
