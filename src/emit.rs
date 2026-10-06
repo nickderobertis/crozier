@@ -6724,8 +6724,8 @@ fn root_client_class(
     Ok(rendered.trim_end_matches('\n').to_string())
 }
 
-/// One root client's per-tag slot: the attribute name (`endpoints_put`) and its
-/// client class (`EndpointsPutClient`/`AsyncEndpointsPutClient`).
+/// One root client's per-tag slot: the attribute name (`dispatch_bays`) and its
+/// client class (`DispatchBaysClient`/`AsyncDispatchBaysClient`).
 #[derive(Serialize)]
 struct RootModuleView {
     attr: String,
@@ -6896,8 +6896,8 @@ fn root_sub_client_import(module: &str, class: &str, client_name: &str) -> Strin
     }
 }
 
-/// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
-/// or `AsyncEndpointsPutClient`).
+/// The tag client class name for a module (`dispatch_bays` → `DispatchBaysClient`,
+/// or `AsyncDispatchBaysClient`).
 fn tag_client_name(module: &str, is_async: bool) -> String {
     let pascal = naming::to_pascal_case(module_stem(module));
     if is_async {
@@ -11508,9 +11508,9 @@ mod tests {
             raw_client_cls: String::new(),
             root_methods: Vec::new(),
             modules: vec![RootModuleView {
-                attr: "endpoints_put".to_string(),
-                cls: "EndpointsPutClient".to_string(),
-                import: "EndpointsPutClient".to_string(),
+                attr: "dispatch_bays".to_string(),
+                cls: "DispatchBaysClient".to_string(),
+                import: "DispatchBaysClient".to_string(),
                 wrap: false,
             }],
             is_async: false,
@@ -11526,10 +11526,10 @@ mod tests {
         assert!(out.contains("token=token,"));
         // One lazy slot and one cached property per module.
         assert!(
-            out.contains("        self._endpoints_put: typing.Optional[EndpointsPutClient] = None")
+            out.contains("        self._dispatch_bays: typing.Optional[DispatchBaysClient] = None")
         );
         assert!(out.contains(
-            "    @property\n    def endpoints_put(self):\n        if self._endpoints_put is None:"
+            "    @property\n    def dispatch_bays(self):\n        if self._dispatch_bays is None:"
         ));
     }
 
@@ -11565,16 +11565,16 @@ mod tests {
     #[test]
     fn client_class_lays_out_skeleton_and_methods() {
         let view = minijinja::context! {
-            class_name => "EndpointsPutClient",
+            class_name => "DispatchBaysClient",
             wrapper => "SyncClientWrapper",
-            raw_client_cls => "RawEndpointsPutClient",
+            raw_client_cls => "RawDispatchBaysClient",
             methods => vec!["    def add(self):\n        ...", "    def remove(self):\n        ..."],
         };
         let out = render_tmpl("client_class.py", view);
         assert!(out.starts_with(
-            "class EndpointsPutClient:\n    def __init__(self, *, client_wrapper: SyncClientWrapper):"
+            "class DispatchBaysClient:\n    def __init__(self, *, client_wrapper: SyncClientWrapper):"
         ));
-        assert!(out.contains("    def with_raw_response(self) -> RawEndpointsPutClient:"));
+        assert!(out.contains("    def with_raw_response(self) -> RawDispatchBaysClient:"));
         // Methods are separated by one blank line, in order.
         assert!(out.contains("        return self._raw_client\n\n    def add(self):"));
         assert!(out.contains("        ...\n\n    def remove(self):"));

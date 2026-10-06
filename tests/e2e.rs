@@ -10395,7 +10395,7 @@ fn runtime_python_env() -> Result<PathBuf, String> {
 /// hand-author the expected behavior, this derives it from Fern: the committed
 /// pytest suite ([`tests/runtime/test_wire.py`]) records the client's behavior
 /// (via an injected `httpx.MockTransport`) for **both** the committed Fern fixture
-/// SDK (`exhaustive/expected/src`, real runnable Fern output) and the
+/// SDK (`airbyte.local-config/expected/src`, generated from the registered API) and the
 /// crozier-generated SDK, and asserts — per journey — that the recordings match.
 ///
 /// Each journey captures the outgoing request (method, URL, headers, serialized
@@ -10405,17 +10405,13 @@ fn runtime_python_env() -> Result<PathBuf, String> {
 /// pydantic deserialization, and typed error raising, sync and async. The *only*
 /// allowed difference is the deliberate SDK-identity branding (`X-Crozier-*` vs
 /// `X-Fern-*`), which the recorder folds to a common prefix on both sides. It
-/// omits Fern 5.20's Runtime/Platform identity pair because the runnable
-/// `exhaustive` fixture predates them; managed 5.20 byte fixtures gate those lines
-/// exactly. This is the in-process analog of Fern's own WireMock
-/// wire tests (Docker/Enterprise-gated output crozier does not emit). This test
 /// drives the compiled binary and the compiled client, so it lives in the e2e
 /// binary, in its SDK Python-environment tier. See docs/matching.md.
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_crozier_matches_fern_runtime_behavior() {
     let out = tempfile::tempdir().expect("tempdir");
-    let spec = fixture_dir("exhaustive").join("openapi.yml");
+    let spec = corpus_spec(AIRBYTE_CONFIG.api).expect("registered Airbyte source");
     crozier()
         .args(["generate", "--spec"])
         .arg(&spec)
@@ -10434,7 +10430,7 @@ fn sdk_env_crozier_matches_fern_runtime_behavior() {
         .unwrap_or_else(|reason| panic!("runtime wire tests require a Python env: {reason}"));
 
     let runtime_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime");
-    let fern_src = fixture_dir("exhaustive").join("expected/src");
+    let fern_src = fixture_dir(AIRBYTE_CONFIG.api).join("expected/src");
     let output = std::process::Command::new(&py)
         .args(["-m", "pytest", "-q", "-p", "no:cacheprovider"])
         .arg(&runtime_dir)

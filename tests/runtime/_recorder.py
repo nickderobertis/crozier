@@ -61,21 +61,11 @@ def _canonical_headers(headers):
     identically to both SDKs. Lower-case the names (httpx lookup is
     case-insensitive) and neutralize the one deliberate difference: crozier brands
     its SDK-identity headers `X-Crozier-*` where Fern uses `X-Fern-*` (otherwise
-    identical values). The legacy exhaustive runtime fixture predates Fern 5.20's
-    Runtime/Platform identity headers, so those two are omitted on both sides;
-    their exact 5.20 source is byte-gated by the managed corpus. Every other SDK
-    header is folded by one prefix rule, and everything outside SDK identity —
-    auth, content-type, and httpx's own headers — must match verbatim."""
+    identical values). Everything outside SDK identity — auth, content-type,
+    and httpx's own headers — must match verbatim."""
     out = {}
     for name, value in headers.items():
         key = name.lower()
-        if key in {
-            "x-fern-runtime",
-            "x-crozier-runtime",
-            "x-fern-platform",
-            "x-crozier-platform",
-        }:
-            continue
         for prefix in ("x-fern-", "x-crozier-"):
             if key.startswith(prefix):
                 key = "x-sdk-" + key[len(prefix) :]
@@ -117,38 +107,56 @@ def _sync_client(sdk, status, payload, *, token=TOKEN):
     return client, box
 
 
+def _workspace_payload(name="Dispatch desk"):
+    return {
+        "customerId": "customer-a",
+        "workspaceId": "workspace-a",
+        "initialSetupComplete": True,
+        "name": name,
+        "slug": "dispatch-desk",
+    }
+
+
 def request_construction_and_response(sdk):
-    """A POST with an inlined object body: URL/method, bearer auth + SDK-identity
-    headers, body field-aliasing (`long_`->`long`, ...) with unset optionals
-    filtered out, and the JSON response parsed into a pydantic model."""
-    client, box = _sync_client(sdk, 200, {"string": "world", "long": 7, "bool": False, "list": ["x"]})
-    result = client.endpoints_object.endpoints_object_get_and_return_with_optional_field(
-        string="hello", integer=1, long_=42, bool_=True, list_=["a", "b"]
+    """An inline object body aliases snake-case fields and omits unset fields;
+    bearer auth and a typed response travel through the compiled SDK."""
+    client, box = _sync_client(sdk, 200, _workspace_payload())
+    result = client.workspace.create_workspace(
+        name="Dispatch desk", anonymous_data_collection=False, security_updates=True
     )
+    request = box["request"]
+    assert request.method == "POST"
+    assert request.url.path == "/v1/workspaces/create"
+    assert _body(request) == {
+        "name": "Dispatch desk", "anonymousDataCollection": False, "securityUpdates": True
+    }
+    assert request.headers["authorization"] == f"Bearer {TOKEN}"
+    assert result.workspace_id == "workspace-a"
+    return {
+        "request": _request_record(request),
+        "outcome": {"model": type(result).__name__, "data": _dump(result)},
+    }
+
+
+def no_auth_omits_authorization(sdk):
+    """The API's optional bearer token may be absent; the request still runs."""
+    client, box = _sync_client(sdk, 200, _workspace_payload(), token=None)
+    result = client.workspace.get_workspace(workspace_id="workspace-a")
+    assert "authorization" not in box["request"].headers
     return {
         "request": _request_record(box["request"]),
         "outcome": {"model": type(result).__name__, "data": _dump(result)},
     }
 
 
-def no_auth_omits_authorization(sdk):
-    """With no token the Authorization header is absent, but the SDK-identity
-    headers are still sent — the unauthenticated path stays wired up."""
-    client, box = _sync_client(sdk, 200, True, token=None)
-    result = client.noauth.postwithnoauth(request={"ping": 1})
-    return {
-        "request": _request_record(box["request"]),
-        "outcome": {"model": type(result).__name__, "data": result},
-    }
-
-
 def typed_error_is_raised(sdk):
-    """A declared 4xx becomes a generated typed exception whose `body` is the
-    parsed error model, not a raw dict. Failing to raise is a hard error."""
-    client, box = _sync_client(sdk, 400, {"message": "bad thing"}, token=None)
+    """A declared 400 raises a typed exception containing a parsed error model."""
+    client, box = _sync_client(sdk, 400, {"message": "invalid workspace", "exceptionClassName": "InvalidWorkspace"}, token=None)
     try:
-        client.noauth.postwithnoauth(request={"ping": 1})
+        client.source_oauth.set_instancewide_source_oauth_params(params={}, source_definition_id="source-a")
     except sdk.BadRequestError as err:
+        assert err.body.message == "invalid workspace"
+        assert err.body.exception_class_name == "InvalidWorkspace"
         return {
             "request": _request_record(box["request"]),
             "outcome": {"error": type(err).__name__, "status": err.status_code, "body": _dump(err.body)},
@@ -157,9 +165,14 @@ def typed_error_is_raised(sdk):
 
 
 def query_parameters_are_encoded(sdk):
-    """Keyword query args are encoded onto the URL, not the body."""
-    client, box = _sync_client(sdk, 200, {"items": [], "next": None})
-    result = client.endpoints_pagination.endpoints_pagination_list_items(cursor="abc", limit=10)
+    """Request options encode additional query parameters onto the URL."""
+    client, box = _sync_client(sdk, 200, _workspace_payload())
+    result = client.workspace.get_workspace(
+        workspace_id="workspace-a",
+        request_options={"additional_query_parameters": {"cursor": "dock & bay", "limit": 10}},
+    )
+    assert dict(box["request"].url.params) == {"cursor": "dock & bay", "limit": "10"}
+    assert _body(box["request"]) == {"workspaceId": "workspace-a"}
     return {
         "request": _request_record(box["request"]),
         "outcome": {"model": type(result).__name__, "data": _dump(result)},
@@ -167,12 +180,12 @@ def query_parameters_are_encoded(sdk):
 
 
 def raw_response_exposes_underlying_http(sdk):
-    """`.with_raw_response` returns the parsed data plus access to the response,
-    without a second network round-trip."""
-    client, box = _sync_client(sdk, 200, {"string": "raw"})
-    raw = client.endpoints_object.with_raw_response.endpoints_object_get_and_return_with_optional_field(string="s")
+    """Raw response access preserves the parsed model and response headers."""
+    client, box = _sync_client(sdk, 200, _workspace_payload())
+    raw = client.workspace.with_raw_response.get_workspace(workspace_id="workspace-a")
     if not isinstance(raw.headers, dict):
         raise AssertionError(f"raw response headers should be a dict, got {type(raw.headers)}")
+    assert raw.data.workspace_id == "workspace-a"
     return {
         "request": _request_record(box["request"]),
         "outcome": {"model": type(raw.data).__name__, "data": _dump(raw.data)},
@@ -180,21 +193,19 @@ def raw_response_exposes_underlying_http(sdk):
 
 
 def async_request_and_response(sdk):
-    """The async client makes the same request and deserializes the same way."""
-
+    """The async client aliases the same body fields and parses the response."""
     async def run():
-        transport, box = _capture(200, {"string": "async-world", "long": 9})
+        transport, box = _capture(200, _workspace_payload())
         client = sdk.AsyncFernApi(
             base_url=BASE_URL, token=TOKEN, httpx_client=httpx.AsyncClient(transport=transport)
         )
-        result = await client.endpoints_object.endpoints_object_get_and_return_with_optional_field(
-            string="hi", long_=1
-        )
+        result = await client.workspace.create_workspace(name="Dispatch desk", security_updates=True)
+        assert _body(box["request"]) == {"name": "Dispatch desk", "securityUpdates": True}
+        assert result.workspace_id == "workspace-a"
         return {
             "request": _request_record(box["request"]),
             "outcome": {"model": type(result).__name__, "data": _dump(result)},
         }
-
     return asyncio.run(run())
 
 

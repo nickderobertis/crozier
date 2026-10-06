@@ -4,7 +4,7 @@ A **pytest** suite that verifies a **generated** SDK's runtime behavior — the
 compiled client's behavior, not its source text (that is the byte-diff e2e's
 job) — **differentially against Fern**. Driven by
 `tests/e2e.rs::sdk_env_crozier_matches_fern_runtime_behavior`, which generates the
-`exhaustive` SDK, prepares a cached venv (httpx + pydantic + pytest), and runs
+`airbyte.local-config` SDK, prepares a cached venv (httpx + pydantic + pytest), and runs
 `pytest` here with `CROZIER_SDK_SRC` / `FERN_SDK_SRC` pointing at the two SDKs.
 Installing those from PyPI puts it in the SDK Python-environment tier: `just
 test-sdk-env` (CI's `sdk-env` job, required by `gate`), never the offline `check`.
@@ -15,26 +15,21 @@ test-sdk-env` (CI's `sdk-env` job, required by `gate`), never the offline `check
   body) and the outcome (response model dumped to a dict, or the typed error's
   class/status/body). The SDK import is **lazy** (`load_sdk`) so importing the
   module for `JOURNEY_NAMES` never loads a `fern` package.
-- **`test_wire.py`** records **both** the Fern fixture SDK (`exhaustive/expected/
-  src`, real runnable Fern output) and the crozier SDK — each in its own
+- **`test_wire.py`** records **both** the Fern fixture SDK (`airbyte.local-config/expected/src`, generated from the registered API) and the crozier SDK — each in its own
   subprocess, since both packages are named `fern` and can't coexist in one
   process — and a parametrized test asserts the recordings match **per journey**.
   So the expected behavior is *derived from Fern*, not authored here.
-- **How it mocks the wire.** This is the in-process analog of Fern's own wire
-  tests (a WireMock server in Docker, verified via its admin API); crozier does not
-  emit that Docker/`enable_wire_tests` tree, so we assert the same behaviors
-  without it. Journeys cover request/URL construction, bearer auth + SDK headers,
-  the unauthenticated path, body aliasing + `OMIT` filtering, query encoding,
-  typed deserialization, typed error raising, and `.with_raw_response` — sync +
-  async.
+- **How it drives the wire.** Journeys call the registered API's workspace
+  operations through the real generated clients with an injected transport.
+  They cover bearer auth + SDK headers, an absent optional token, snake-case
+  body-field aliases + `OMIT` filtering, query options, typed responses and
+  typed errors, and `.with_raw_response` — sync + async.
 - **The only allowed difference** is the deliberate SDK-identity branding
   (`X-Crozier-*` vs `X-Fern-*`). `_recorder._canonical_headers` folds either
-  vendor prefix to a common `x-sdk-*` via one prefix rule. It also omits only
-  Fern 5.20's Runtime/Platform identity pair because the runnable `exhaustive`
-  fixture is a legacy Fern snapshot; current managed byte fixtures gate those
-  lines exactly. This is the runtime analog of the byte-diff's
-  `sdk-identity-header-prefix` departure. Do not add other normalizations to hide a
-  real divergence — fix the generator instead.
+  vendor prefix to a common `x-sdk-*` via one prefix rule. Every SDK-identity
+  field is compared after that prefix change. This is the runtime analog of
+  the byte-diff's `sdk-identity-header-prefix` departure. Do not add other
+  normalizations to hide a real divergence — fix the generator instead.
 - **Adding a journey.** Add a function `(sdk) -> observation dict` to
   `_recorder.JOURNEYS`; it must raise on a broken structural contract (e.g. a
   declared 4xx that fails to raise) so it can never record nothing and match

@@ -170,7 +170,7 @@ pub struct Ir {
     /// The `reference.md` section title for each module, keyed by module name.
     /// Verbatim tag (`attachment-public`) for an underscore-style operationId,
     /// PascalCase tag (`Widgets`) for a camelCase one, PascalCase group when
-    /// untagged (`EndpointsContainer`) — see `module_title` for the full rule.
+    /// untagged (`WarehouseLabels`) — see `module_title` for the full rule.
     pub endpoint_module_titles: std::collections::BTreeMap<String, String>,
     /// Every operation, in document-traversal order, resolved for emission.
     pub endpoints: Vec<Endpoint>,
@@ -7863,9 +7863,9 @@ fn first_tag(op: &Operation) -> Option<&str> {
 /// Fern derives it from the `operationId` when there is one, and synthesizes it
 /// from the route otherwise:
 /// - `group_method` (grouped): the method is the suffix after the final `_`,
-///   flattened to lowercase for a single-segment group (`noAuth_postWithNoAuth`
-///   → `postwithnoauth`) or the whole id snake-cased for a multi-segment group
-///   (`endpoints_put_add`);
+///   flattened to lowercase for a single-segment group (`dockAuth_dispatchWithoutBadge`
+///   → `dispatchwithoutbadge`) or the whole id snake-cased for a multi-segment group
+///   (`warehouse_bins_add`);
 /// - groupless (`get-all-widgets`, `verify code`, `getThing`): the whole id is
 ///   `snake_case`d (→ `get_all_widgets`, `verify_code`, `get_thing`);
 /// - missing: a non-empty summary becomes the method name; without one,
@@ -8295,7 +8295,7 @@ fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, S
 /// (`Widgets`, `Companies`). But when the operationId carries an underscore
 /// separator (bunq's `CREATE_AttachmentPublic`), Fern keeps the tag **verbatim**
 /// (`attachment-public`, `content`). An untagged group falls back to the PascalCase
-/// operationId/path prefix (`EndpointsContainer`).
+/// operationId/path prefix (`WarehouseLabels`).
 fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
     // An explicitly grouped operation names its own section. Fern titles it with
     // the *tag* when the tag says the same thing as the group path — TrueForge's
@@ -8375,7 +8375,7 @@ fn tag_pascal(tag: &str) -> String {
 /// tag `attachment-public` groups as `attachment_public`, not `create`; the
 /// underscore prefix there is a verb, not the SDK group. Only an untagged operation
 /// falls back to the `group_method` operationId prefix (`endpoints_content_type`,
-/// `inlinedrequests`), then the whole id, then the leading path segment. Where the
+/// `parcelrouting`), then the whole id, then the leading path segment. Where the
 /// operationId prefix *does* equal the tag (`widgets_getWidget` under `Widgets`),
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
@@ -8462,12 +8462,12 @@ fn compact_module(tag: &str) -> String {
 /// Whether an operation should be grouped by its `group_method` operationId prefix
 /// rather than by its tag. True when the operation has no tag (the prefix is all we
 /// have), or when the prefix *is* the tag — the operationId genuinely encodes the
-/// group (`inlinedRequests_post…` under tag `InlinedRequests`, `endpoints_container_…`
-/// under `EndpointsContainer`). False when a tag is present but the prefix is
+/// group (`parcelRouting_dispatch…` under tag `ParcelRouting`, `warehouse_labels_…`
+/// under `WarehouseLabels`). False when a tag is present but the prefix is
 /// unrelated to it (bunq's `CREATE_…`/`READ_…` verbs under resource tags), where Fern
 /// groups by the tag and keeps the whole operationId as the method. Comparison is on
-/// the alphanumeric-only lowercasing of each, so `inlinedrequests` ≡ `InlinedRequests`
-/// and `endpoints_container` ≡ `EndpointsContainer` but `create` ≢ `attachment-public`.
+/// the alphanumeric-only lowercasing of each, so `parcelrouting` ≡ `ParcelRouting`
+/// and `warehouse_labels` ≡ `WarehouseLabels` but `create` ≢ `attachment-public`.
 fn group_prefix_is_tag(op: &Operation, id: &str) -> bool {
     match first_tag(op) {
         None => true,
@@ -14945,46 +14945,49 @@ mod tests {
 
     #[test]
     fn method_name_snakes_whole_id_for_multi_segment_groups() {
-        // The group prefix (`endpoints_put`) is multi-segment, so the whole
+        // The group prefix (`warehouse_bins`) is multi-segment, so the whole
         // operationId is snake-cased.
         assert_eq!(
-            method_from_grouped_id("endpoints_put_add"),
-            "endpoints_put_add"
+            method_from_grouped_id("warehouse_bins_add"),
+            "warehouse_bins_add"
         );
         assert_eq!(
-            method_from_grouped_id("endpoints_urls_withMixedCase"),
-            "endpoints_urls_with_mixed_case"
+            method_from_grouped_id("warehouse_routes_fetchMixedCase"),
+            "warehouse_routes_fetch_mixed_case"
         );
         assert_eq!(
-            method_from_grouped_id("endpoints_httpMethods_testGet"),
-            "endpoints_http_methods_test_get"
+            method_from_grouped_id("warehouse_loadingBays_findSlot"),
+            "warehouse_loading_bays_find_slot"
         );
     }
 
     #[test]
     fn method_name_lowercases_suffix_for_single_segment_groups() {
-        // A single-segment group (`noReqBody`) contributes nothing to the method
+        // A single-segment group (`weighStation`) contributes nothing to the method
         // name; only the suffix survives, flattened to lowercase.
         assert_eq!(
-            method_from_grouped_id("noReqBody_getWithNoRequestBody"),
-            "getwithnorequestbody"
+            method_from_grouped_id("weighStation_recordWithoutPayload"),
+            "recordwithoutpayload"
         );
         assert_eq!(
-            method_from_grouped_id("inlinedRequests_postWithObjectBodyandResponse"),
-            "postwithobjectbodyandresponse"
+            method_from_grouped_id("parcelRouting_dispatchWithReceipt"),
+            "dispatchwithreceipt"
         );
     }
 
     #[test]
     fn module_mirrors_the_group_naming() {
-        assert_eq!(module_from_grouped_id("endpoints_put_add"), "endpoints_put");
         assert_eq!(
-            module_from_grouped_id("endpoints_httpMethods_testGet"),
-            "endpoints_http_methods"
+            module_from_grouped_id("warehouse_bins_add"),
+            "warehouse_bins"
         );
         assert_eq!(
-            module_from_grouped_id("noReqBody_getWithNoRequestBody"),
-            "noreqbody"
+            module_from_grouped_id("warehouse_loadingBays_findSlot"),
+            "warehouse_loading_bays"
+        );
+        assert_eq!(
+            module_from_grouped_id("weighStation_recordWithoutPayload"),
+            "weighstation"
         );
     }
 
@@ -15025,23 +15028,17 @@ mod tests {
         use super::{endpoint_method_name, endpoint_module};
         // When the operationId prefix is the tag, grouping and method-stripping
         // agree.
-        let o = op(
-            "inlinedRequests_postWithObjectBodyandResponse",
-            "InlinedRequests",
-        );
-        assert_eq!(endpoint_module(&o, "/x"), "inlinedrequests");
+        let o = op("parcelRouting_dispatchWithReceipt", "ParcelRouting");
+        assert_eq!(endpoint_module(&o, "/x"), "parcelrouting");
         assert_eq!(
             endpoint_method_name(&o, "POST", "/x"),
-            "postwithobjectbodyandresponse"
+            "dispatchwithreceipt"
         );
-        let o = op(
-            "endpoints_container_getAndReturnListOfPrimitives",
-            "EndpointsContainer",
-        );
-        assert_eq!(endpoint_module(&o, "/x"), "endpoints_container");
+        let o = op("warehouse_labels_fetchLabelBatch", "WarehouseLabels");
+        assert_eq!(endpoint_module(&o, "/x"), "warehouse_labels");
         assert_eq!(
             endpoint_method_name(&o, "GET", "/x"),
-            "endpoints_container_get_and_return_list_of_primitives"
+            "warehouse_labels_fetch_label_batch"
         );
 
         // A lowercase tag does not infer camel-case word boundaries it did not

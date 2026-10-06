@@ -1055,7 +1055,7 @@ mod tests {
 
     #[test]
     fn snake_case_variants() {
-        assert_eq!(to_snake_case("NestedUser"), "nested_user");
+        assert_eq!(to_snake_case("ParcelNotice"), "parcel_notice");
         assert_eq!(to_snake_case("SearchResponse"), "search_response");
         assert_eq!(to_snake_case("name"), "name");
         assert_eq!(to_snake_case("customFields"), "custom_fields");
@@ -1066,14 +1066,14 @@ mod tests {
 
     #[test]
     fn pascal_case_is_idempotent_on_pascal() {
-        assert_eq!(to_pascal_case("NestedUser"), "NestedUser");
-        assert_eq!(to_pascal_case("nested_user"), "NestedUser");
+        assert_eq!(to_pascal_case("ParcelNotice"), "ParcelNotice");
+        assert_eq!(to_pascal_case("parcel_notice"), "ParcelNotice");
         assert_eq!(to_pascal_case("search_response"), "SearchResponse");
     }
 
     #[test]
     fn module_name_snakes_class() {
-        assert_eq!(module_name("NestedUser"), "nested_user");
+        assert_eq!(module_name("ParcelNotice"), "parcel_notice");
         assert_eq!(module_name("Class"), "class_");
         assert_eq!(module_name("_5GmmCause"), "_5_gmm_cause");
     }
@@ -1427,7 +1427,10 @@ mod tests {
         assert_eq!(sanitize_identifier("2fa"), "_2fa");
         assert_eq!(to_pascal_case("ipam_l2vpns_list"), "IpamL2VpnsList");
         // Already-legal identifiers pass through unchanged.
-        assert_eq!(sanitize_identifier("postwithnoauth"), "postwithnoauth");
+        assert_eq!(
+            sanitize_identifier("dispatchwithoutbadge"),
+            "dispatchwithoutbadge"
+        );
         assert_eq!(
             prose_identifier("The /content endpoint"),
             "the_content_endpoint"
@@ -1441,8 +1444,8 @@ mod tests {
             "returns200on_success_or422on_failure"
         );
         assert_eq!(
-            sanitize_identifier("endpoints_container"),
-            "endpoints_container"
+            sanitize_identifier("handling_manifest"),
+            "handling_manifest"
         );
     }
 
