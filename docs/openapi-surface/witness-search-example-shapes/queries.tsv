@@ -1,0 +1,12 @@
+shape	query	result_count	first_page_fetched
+required query array	"in" "query" "required" "array" "items" "$ref" "text/plain" filename:openapi.json	2796	100
+required query array	"in: query" "required: true" "type: array" "items:" "text/plain" filename:openapi.yaml	5144	100
+date-time example	"date-time" "-05:00" "example" "requestBody" filename:openapi.json	38	38
+date-time example	"format: date-time" "example:" "-05:00" filename:openapi.yaml	115	100
+date-time example	"format: date-time" "CDT" filename:openapi.yaml	124	100
+allOf request body	"allOf" "requestBody" "example" "required" "$ref" "properties" filename:openapi.json	7352	100
+allOf request body	"allOf:" "requestBody:" "example:" "required:" filename:openapi.yaml	12832	100
+request example null	"requestBody" "example" "null" "nullable" "properties" filename:openapi.json	7696	100
+request example null	"requestBody:" "example:" ": null" filename:openapi.yaml	8608	100
+request example deprecated property	"deprecated" "requestBody" "example" "properties" filename:openapi.json	5904	100
+request example deprecated property	"deprecated: true" "requestBody:" "example:" filename:openapi.yaml	4216	100

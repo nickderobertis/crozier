@@ -15,3 +15,4 @@ eos.local-extra-fields-forbid||false||forbid
 ziptax-node|v60|false||
 exhaustive-package-name||false|||acme
 apideck.com-ecosystem-client-class-name||false|EcosystemClient|
+swagger-petstore-organization||false|||PetStore

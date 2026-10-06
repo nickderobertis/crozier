@@ -504,6 +504,18 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(7, len(security_queries["github-code-search"]))
         self.assertEqual(2, len(security_queries["sourcegraph"]))
         self.assertTrue(all("$ref" in q for q in security_queries["sourcegraph"]))
+        # A request-body Media Type shape names the request body and its own field.
+        for key, fields, phrase in (
+            ("allof-parent-request-body", ("requestBody", "schema", "allOf"), None),
+            ("request-example-deprecated-property", ("requestBody", "example", "deprecated"), None),
+            ("request-example-nested-null", ("requestBody", "example"), "null"),
+        ):
+            with self.subTest(key=key):
+                plan = SEARCH.query_plan(keys[key]["selector"])
+                for query in plan["github-code-search"]:
+                    for field in fields:
+                        self.assertTrue(f'"{field}:"' in query or f'\\"{field}\\"' in query, query)
+                    self.assertEqual(phrase is not None, "null" in query, query)
 
     def test_registered_publishers_are_prioritized_without_dropping_results(
         self,
@@ -2482,12 +2494,12 @@ class HandwrittenKeyDerivationTest(unittest.TestCase):
             self.assertNotEqual(0, refused.returncode)
             # The committed regions hold other `handwritten` rows too, and the
             # refusal names whichever comes first; each lost its selector.
-            named = re.search(r"schemas/([a-z0-9-]+): handwritten, and no selector in witness-search-keys\.tsv",
+            named = re.search(r"([a-z0-9-]+)/([a-z0-9-]+): handwritten, and no selector in witness-search-keys\.tsv",
                               refused.stderr)
             self.assertIsNotNone(named, refused.stderr)
             self.assertTrue(any(
-                line.startswith(f"| {named[1]} |") and "| handwritten |" in line
-                for line in (regions / "schemas.md").read_text(encoding="utf-8").splitlines()), named[1])
+                line.startswith(f"| {named[2]} |") and "| handwritten |" in line
+                for line in (regions / f"{named[1]}.md").read_text(encoding="utf-8").splitlines()), named[2])
 
 
 if __name__ == "__main__":

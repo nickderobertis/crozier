@@ -211,6 +211,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e go_kratos_casbin_admin_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e descope_authzcache_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e swagger_petstore_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e swagger_petstore_organization_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cyclonedx_transparency_exchange_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_capital_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apivideo_android_uploader_matches_fern_output
@@ -306,6 +307,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zoonk_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openfoodfacts_taxonomy_editor_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e qontract_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e typescript_service_template_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oal_example_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e millenium_falcon_challenge_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e maximo_wxo_integration_matches_fern_output

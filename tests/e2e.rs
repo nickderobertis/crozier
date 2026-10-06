@@ -123,8 +123,8 @@ const QUERY_PARAMETERS_PACKAGED_EXPECTATIONS: &[PackagedExpectation] = &[
     },
     PackagedExpectation {
         path: "README.md",
-        len: 5_697,
-        fnv1a64: 0x92e578526100bf2a,
+        len: 5_619,
+        fnv1a64: 0x4bbcc6a0d1e02f8c,
     },
     PackagedExpectation {
         path: "pyproject.toml",
@@ -133,13 +133,13 @@ const QUERY_PARAMETERS_PACKAGED_EXPECTATIONS: &[PackagedExpectation] = &[
     },
     PackagedExpectation {
         path: "reference.md",
-        len: 2_309,
-        fnv1a64: 0x1dbb55afea9456ef,
+        len: 2_276,
+        fnv1a64: 0xb8a326b121319e24,
     },
     PackagedExpectation {
         path: "src/seed/client.py",
-        len: 16_711,
-        fnv1a64: 0x811b4c43d5d8a428,
+        len: 16_653,
+        fnv1a64: 0x8163a174ff7d9f68,
     },
     PackagedExpectation {
         path: "src/seed/core/client_wrapper.py",
@@ -2602,6 +2602,87 @@ fn handwritten_fixtures_match_fern_goldens() {
     );
 }
 
+/// Every `date-time` value crozier's worked examples write over the
+/// `unread-date-time-examples` hand-written fixture is an instant
+/// `datetime.datetime.fromisoformat` reads: a UTC `YYYY-MM-DD[T ]HH:MM:SS+00:00`
+/// with each field in range. The document's examples are a zone name and a
+/// negative offset, which Fern replaces with its default, beside a `Z` value it
+/// reads; no example carries either source string, and the docstring writer
+/// changes nothing but the date-time separator.
+#[test]
+fn worked_date_time_examples_always_parse() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/unread-date-time-examples/openapi.yml");
+    let out = tempfile::tempdir().expect("tempdir");
+    crozier()
+        .args(["generate", "python", "--spec"])
+        .arg(&fixture)
+        .arg("--output")
+        .arg(out.path())
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let valid = |value: &str| {
+        let bytes = value.as_bytes();
+        let digits = |range: std::ops::Range<usize>| {
+            value
+                .get(range)
+                .filter(|part| part.bytes().all(|byte| byte.is_ascii_digit()))
+                .and_then(|part| part.parse::<u32>().ok())
+        };
+        value.len() == 25
+            && value.ends_with("+00:00")
+            && bytes[4] == b'-'
+            && bytes[7] == b'-'
+            && matches!(bytes[10], b'T' | b' ')
+            && bytes[13] == b':'
+            && bytes[16] == b':'
+            && digits(0..4).is_some()
+            && digits(5..7).is_some_and(|month| (1..=12).contains(&month))
+            && digits(8..10).is_some_and(|day| (1..=31).contains(&day))
+            && digits(11..13).is_some_and(|hour| hour < 24)
+            && digits(14..16).is_some_and(|minute| minute < 60)
+            && digits(17..19).is_some_and(|second| second < 60)
+    };
+    let mut seen = Vec::new();
+    for rel in ["README.md", "reference.md", "src/fern/client.py"] {
+        let text = std::fs::read_to_string(out.path().join(rel)).expect(rel);
+        assert!(
+            !text.contains("CDT") && !text.contains("-05:00"),
+            "{rel} carries a source date-time Fern does not read"
+        );
+        let mut rest = text.as_str();
+        while let Some(at) = rest.find("datetime.datetime.fromisoformat(") {
+            rest = &rest[at + "datetime.datetime.fromisoformat(".len()..];
+            let open = rest.find('"').expect("a quoted argument");
+            let close = rest[open + 1..].find('"').expect("a closed argument") + open + 1;
+            let value = &rest[open + 1..close];
+            assert!(
+                valid(value),
+                "{rel}: `{value}` is not a date-time fromisoformat reads"
+            );
+            seen.push(value.to_string());
+            rest = &rest[close..];
+        }
+    }
+    for expected in [
+        "2024-01-15T09:30:00+00:00",
+        "2022-08-11T21:45:00+00:00",
+        "2024-01-15 09:30:00+00:00",
+        "2022-08-11 21:45:00+00:00",
+    ] {
+        assert!(
+            seen.iter().any(|value| value == expected),
+            "no example writes {expected}"
+        );
+    }
+}
+
 /// Every way the hand-written fixtures under `root` fail their contract, each
 /// naming the fixture (or row, or ledger) it is about. `root` is the repository
 /// for the real gate and a scratch tree laid out the same way for the tests
@@ -5019,6 +5100,7 @@ const CORPORA: &[&Corpus] = &[
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
+    &TYPESCRIPT_SERVICE_TEMPLATE,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -6960,7 +7042,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/products/client.py",
         "src/fern/products/raw_client.py",
         "src/fern/products/types/create_products_request_product.py",
-        "src/fern/scripts/client.py",
         "src/fern/scripts/raw_client.py",
         "src/fern/sites/__init__.py",
         "src/fern/sites/activity_logs/raw_client.py",
@@ -7959,6 +8040,20 @@ const ERE_PS_APP: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `typescript-service-template`: corpus row 316, a TypeScript service
+/// template's users API, whose `usersPatch` takes a required query array of
+/// `$ref UserID` items and answers JSON, so Fern's worked example passes it
+const TYPESCRIPT_SERVICE_TEMPLATE: Corpus = Corpus {
+    api: "typescript-service-template",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `oal-example`: corpus row 312, the OAL project's example description,
 /// whose `obj3.stuff` property `anyOf` holds an inline `oneOf` member
 const OAL_EXAMPLE: Corpus = Corpus {
@@ -7972,7 +8067,7 @@ const OAL_EXAMPLE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Waylay's query API, corpus row 326: both URL and JSON body keys named
+/// Waylay's query API, corpus row 327: both URL and JSON body keys named
 /// `resource` have distinct signature arguments. The body/query departure keeps
 /// the body value the caller passed while the query keeps its own value.
 const WAYLAY_QUERIES: Corpus = Corpus {
@@ -7986,7 +8081,7 @@ const WAYLAY_QUERIES: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `millenium-falcon-challenge`: corpus row 316, the Millennium Falcon challenge's odds API,
+/// `millenium-falcon-challenge`: corpus row 317, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
     api: "millenium-falcon-challenge",
@@ -7999,7 +8094,7 @@ const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `maximo-wxo-integration`: corpus row 317, IBM's Maximo integration API, whose OpenAPI 3.0.0
+/// `maximo-wxo-integration`: corpus row 318, IBM's Maximo integration API, whose OpenAPI 3.0.0
 /// success responses are inline `application/json` bodies declaring `{}`
 const MAXIMO_WXO_INTEGRATION: Corpus = Corpus {
     api: "maximo-wxo-integration",
@@ -8012,7 +8107,7 @@ const MAXIMO_WXO_INTEGRATION: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `mi-music`: corpus row 318, mi_music's API, with schemaless `text/plain`, `audio/mpeg` and
+/// `mi-music`: corpus row 319, mi_music's API, with schemaless `text/plain`, `audio/mpeg` and
 /// `video/mp4` successes and titled bodies under HTTP Basic security
 const MI_MUSIC: Corpus = Corpus {
     api: "mi-music",
@@ -8025,7 +8120,7 @@ const MI_MUSIC: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `g4brym-download-manager`: corpus row 319, download-manager's API, whose parameterless
+/// `g4brym-download-manager`: corpus row 320, download-manager's API, whose parameterless
 /// 3.0 operations post inline arrays titled `Files`
 const G4BRYM_DOWNLOAD_MANAGER: Corpus = Corpus {
     api: "g4brym-download-manager",
@@ -8038,7 +8133,7 @@ const G4BRYM_DOWNLOAD_MANAGER: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `opentosca-license-engine`: corpus row 320, the OpenTOSCA license engine's API, with a
+/// `opentosca-license-engine`: corpus row 321, the OpenTOSCA license engine's API, with a
 /// titled inline string-array body and inline `{}` successes in a 3.0 document
 const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
     api: "opentosca-license-engine",
@@ -8051,7 +8146,7 @@ const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `chat-rest-api`: corpus row 321, chat-rest-api's API, whose error keys `404-message`
+/// `chat-rest-api`: corpus row 322, chat-rest-api's API, whose error keys `404-message`
 /// and `404-file` both name 404 and whose success lists `text/plain` before
 /// `application/octet-stream`
 const CHAT_REST_API: Corpus = Corpus {
@@ -8065,7 +8160,7 @@ const CHAT_REST_API: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `esp32-streamline-bridge`: corpus row 322, the StreamLine bridge API, whose recordings
+/// `esp32-streamline-bridge`: corpus row 323, the StreamLine bridge API, whose recordings
 /// answer a schemaless `audio/wav`
 const ESP32_STREAMLINE_BRIDGE: Corpus = Corpus {
     api: "esp32-streamline-bridge",
@@ -8078,7 +8173,7 @@ const ESP32_STREAMLINE_BRIDGE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `cphos-ai-question`: corpus row 323, CPhOS's question-generation API, whose artifact
+/// `cphos-ai-question`: corpus row 324, CPhOS's question-generation API, whose artifact
 /// download lists a schemaless `application/pdf` before `text/markdown`
 const CPHOS_AI_QUESTION: Corpus = Corpus {
     api: "cphos-ai-question",
@@ -8091,7 +8186,7 @@ const CPHOS_AI_QUESTION: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `flask-example-heroku`: corpus row 324, a package-name extractor whose one operation
+/// `flask-example-heroku`: corpus row 325, a package-name extractor whose one operation
 /// declares a JSON request body with no schema
 const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
     api: "flask-example-heroku",
@@ -8104,7 +8199,7 @@ const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `oip-web-api`: corpus row 325, the Oip service web API, whose parameterless
+/// `oip-web-api`: corpus row 326, the Oip service web API, whose parameterless
 /// module registration declares an empty `requestBody.description`
 const OIP_WEB_API: Corpus = Corpus {
     api: "oip-web-api",
@@ -8832,10 +8927,10 @@ struct FlatGolden {
 /// it by `flat_goldens_are_the_declared_set`). Between them they exercise every
 /// setting that changes the flat tree: the default names (`exhaustive`), a
 /// client class name, audiences with strictness, a non-default `extra-fields`,
-/// and a custom package and project name. Fern's `organization` is what names
-/// the module, client and README the way crozier's `--package-name` does, and a
-/// flat tree carries no distribution, so the project name reaches no file of it
-/// (see docs/matching.md).
+/// a custom package and project name, and a mixed-case package name. Fern's
+/// `organization` is what names the module, client and README the way crozier's
+/// `--package-name` does, and a flat tree carries no distribution, so the
+/// project name reaches no file of it (see docs/matching.md).
 const FLAT_GOLDENS: &[FlatGolden] = &[
     FlatGolden {
         fixture: "exhaustive",
@@ -8859,6 +8954,24 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
             api: "exhaustive",
             package_name: "acme",
             project_name: "acme-dist",
+            audiences: &[],
+            audience_strict: false,
+            client_class_name: None,
+            extra_fields: None,
+            unmatched: &[],
+        }),
+    },
+    // Fern's organization with an inner capital and no client class name: the
+    // code names `PetStoreApi`, and so does crozier everywhere, where Fern's
+    // README lowers the inner capital (the `readme-client-class-casing`
+    // departure). Its docstrings import a tag package's type from a package not
+    // named `fern`, which Fern's isort pass groups with the root import.
+    FlatGolden {
+        fixture: "swagger-petstore-organization",
+        corpus: Some(&Corpus {
+            api: "swagger-petstore",
+            package_name: "PetStore",
+            project_name: "PetStore",
             audiences: &[],
             audience_strict: false,
             client_class_name: None,
@@ -8996,6 +9109,7 @@ flat_goldens! {
     audience_filter_strict_flat_matches_fern => "audience-filter-strict",
     eos_extra_fields_forbid_flat_matches_fern => "eos.local-extra-fields-forbid",
     exhaustive_package_name_flat_matches_fern => "exhaustive-package-name",
+    swagger_petstore_organization_flat_matches_fern => "swagger-petstore-organization",
 }
 
 /// `tests/fixtures/flat-goldens.txt` as `(fixture, spec fixture)` rows, the spec
@@ -9066,14 +9180,20 @@ fn flat_goldens_are_the_declared_set() {
 
     for golden in FLAT_GOLDENS {
         let corpus = flat_golden_corpus(golden);
-        // A spec-less golden rides a vendored document; any other uses its own.
+        // A spec-less golden rides a vendored or committed document; any other
+        // uses its own.
         if golden.corpus.is_some() {
             assert!(
                 !fixture_dir(golden.fixture).join("openapi.yml").exists(),
                 "{}: a golden with its own spec must not name another",
                 golden.fixture
             );
-            assert!(fixture_dir(corpus.api).join("openapi.yml").is_file());
+            assert!(
+                corpus_spec(corpus.api).is_some_and(|spec| spec.is_file()),
+                "{}: names `{}`, which has no vendored or committed spec",
+                golden.fixture,
+                corpus.api
+            );
         }
         // Provenance names the layout, so a flat golden is never mistaken for
         // (or refreshed as) a packaged one.
@@ -14825,6 +14945,11 @@ fn protoform_conformance_matches_fern_output() {
 #[test]
 fn ere_ps_app_matches_fern_output() {
     assert_committed_corpus_matches(&ERE_PS_APP);
+}
+
+#[test]
+fn typescript_service_template_matches_fern_output() {
+    assert_committed_corpus_matches(&TYPESCRIPT_SERVICE_TEMPLATE);
 }
 
 #[test]

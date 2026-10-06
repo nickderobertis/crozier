@@ -6,7 +6,7 @@ sends the query value under the body's key; the body argument is ignored.
 
 ## Certified real specification
 
-The Waylay query API, corpus row 326, at immutable commit
+The Waylay query API, corpus row 327, at immutable commit
 `8ab6c18e10f96c3665dbb849ebe2193c16a1659c`. The publisher's `LICENSE.txt`
 at that same commit grants redistribution. Route A generated the complete
 comment-stripped golden at Fern CLI 5.67.1 and Python SDK generator 5.20.0;

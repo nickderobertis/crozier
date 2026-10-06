@@ -361,6 +361,68 @@ Fern's committed examples are not a `ruff` fixed point: `ruff` reformats a long
 the long `await …(` line and only explodes the call arguments. Reproducing Fern
 here means matching Fern, not `ruff`.
 
+**What a worked example shows.** Measured with Fern CLI 5.67.1 and
+`fernapi/fern-python-sdk` 5.20.0 on crozier-authored documents varying one
+attribute at a time, and held by the goldens named:
+
+- *A required query array* is passed with one sampled item, whatever its item
+  type (`castes=[Caste.WORKER]`, `spots=[Spot()]`, `names=["names"]`), except
+  that Fern leaves every required query array out of an operation whose success
+  body is `text/*` (`text/plain`, `text/xml`, `text/csv`), or that takes a
+  required object or map query parameter beside it. `application/xml`, a `+json`
+  type, a JSON-and-text pair, a `204` and an error-only operation all show it, as
+  does an optional map beside it; the OpenAPI version and the item type change
+  nothing. Fern's signature types every query array `Optional[...] = None`, so
+  the shorter call matches it and runs: this is Fern behaviour, and crozier
+  reproduces it. Corpus row 316, `typescript-service-template`, holds the JSON
+  rendering; `amazonaws.com-cloudformation` and `aws-importexport` hold the
+  `text/xml` omission, and `query-parameters-openapi`'s pinned files the
+  object-parameter one; the authored probe
+  `parity-required-query-array-examples` holds all three in operations that
+  differ in that attribute alone.
+- *A `null` in a request example* is no value. The docstring leaves an optional
+  member out and synthesizes a required one; the Markdown writers do the same,
+  but write a required nullable member's `null` as `None`. Both hold at every
+  depth of the example. The hand-written fixture `request-example-nulls` holds
+  the optional members, top level and nested.
+- *A deprecated property* — one whose own schema says `deprecated: true` — is
+  left out of every example when it is optional, even where the request example
+  names it, at the top level and nested; a required one is shown. A `$ref` to a
+  deprecated schema, an `allOf` wrapper carrying the mark and a deprecated query
+  parameter are all shown. On the hand-written fixture
+  `request-example-deprecated`, whose example names an optional `legacyFrame` and
+  a required `oldCode`, both deprecated, every Fern example writes
+  `strength=4, old_code="K9"`: the required deprecated property is kept, so there
+  is no missing argument and nothing to correct.
+- *A `date-time` example* is written as the UTC instant Fern reads after
+  appending `Z` to any value that neither ends in `Z` nor holds a `+`, with any
+  fraction of a second dropped: a value with no zone or no time is read as UTC,
+  and a day past the month's end rolls into the next month. A value that reading
+  rejects takes Fern's `2024-01-15T09:30:00+00:00`: a zone name (`… CDT`), an
+  out-of-range field, and equally a negative offset or a lower-case `z`, which
+  the appended `Z` breaks. The default is valid for the schema and contradicts no
+  code, so this too is Fern behaviour; every value crozier writes parses with
+  `datetime.datetime.fromisoformat`, and the docstring writer changes only the
+  date-time separator. The hand-written fixture `unread-date-time-examples`
+  holds a zone name and a negative offset (each Fern's default) beside a `Z`
+  value (its own instant).
+- *A composed (`allOf`) request body* lists its bases' fields ahead of its own,
+  in declaration order and whatever `required` says: the docstring every base's
+  first all the way down, the Markdown writers each base's own fields before that
+  base's bases, and its own fields first when the body is itself a `$ref`
+  member of another schema's `allOf`. The members' order inside `allOf` changes
+  none of these. `tamoss` holds the two nested orders, and the hand-written
+  fixture `allof-parent-body-order` the parent case: its body
+  `allOf: [{acreage, label (required)}, $ref YardBase {yardId (required),
+  region}]` is documented `yard_id, region, acreage, label` in the docstring and
+  `acreage, label, yard_id, region` in `reference.md` and the README.
+- *Imports in a flat SDK whose package is not `fern`* are third-party to Fern's
+  isort pass, so a docstring's tag-package import joins the root import in one
+  sorted group (`from PetStore import PetStoreApi`, then `from PetStore.pet
+  import …`); `fern`, and every packaged SDK, files the tag import in a group of
+  its own above. `swagger-petstore-organization` holds it, beside the
+  `readme-client-class-casing` departure for the README's lowered class names.
+
 ## The 5.20.0 refresh and the rules it established
 
 `exhaustive` and the other hand-authored feature-coverage goldens were

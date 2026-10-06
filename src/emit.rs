@@ -222,52 +222,33 @@ fn parse_example_value(example: &str) -> Option<serde_json::Value> {
     serde_json::from_str(&json).ok()
 }
 
-/// A declared datetime example moved to UTC, the way Fern reads it through a
-/// JavaScript `Date`: Fergus's `filter[dateFrom]` example is
-/// `2025-12-02T00:00:00+13:00`, and its worked call passes
-/// `2025-12-01 11:00:00+00:00`. `None` when the value carries no non-zero
-/// `±HH:MM` offset or is not a date-time crozier can read.
-fn datetime_in_utc(value: &str) -> Option<String> {
-    let (body, sign, offset) = value
-        .rfind(['+', '-'])
-        .filter(|at| *at > 10)
-        .map(|at| (&value[..at], &value[at..=at], &value[at + 1..]))?;
-    let (offset_hours, offset_minutes) = offset.split_once(':')?;
-    let offset_minutes: i64 =
-        offset_hours.parse::<i64>().ok()? * 60 + offset_minutes.parse::<i64>().ok()?;
-    if offset_minutes == 0 {
-        return None;
-    }
-    let separator = body.get(10..11)?;
-    let (date, time) = (body.get(..10)?, body.get(11..)?);
-    let mut date_parts = date.splitn(3, '-').map(str::parse::<i64>);
-    let (year, month, day) = (
-        date_parts.next()?.ok()?,
-        date_parts.next()?.ok()?,
-        date_parts.next()?.ok()?,
-    );
-    let (clock, fraction) = time.split_at(time.find('.').unwrap_or(time.len()));
-    let mut clock_parts = clock.splitn(3, ':').map(str::parse::<i64>);
-    let (hour, minute, second) = (
-        clock_parts.next()?.ok()?,
-        clock_parts.next()?.ok()?,
-        clock_parts.next()?.ok()?,
-    );
-    // Days since the civil epoch (Howard Hinnant's `days_from_civil`).
-    let shifted_year = if month <= 2 { year - 1 } else { year };
-    let era = shifted_year.div_euclid(400);
-    let year_of_era = shifted_year - era * 400;
-    let day_of_year = (153 * (month + if month > 2 { -3 } else { 9 }) + 2) / 5 + day - 1;
-    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
-    let days = era * 146_097 + day_of_era;
-    let signed_offset = if sign == "+" {
-        offset_minutes
+/// The value Fern substitutes for a `date-time` example it cannot read.
+const FERN_DEFAULT_DATETIME: &str = "2024-01-15T09:30:00+00:00";
+
+/// A declared `date-time` example as a worked call writes it: the instant it
+/// names, in UTC, as `YYYY-MM-DDTHH:MM:SS+00:00` (a fraction of a second is
+/// dropped). Measured against `fernapi/fern-python-sdk` 5.20.0, Fern reads the
+/// value after appending `Z` unless it already ends in `Z` or holds a `+`, so
+/// Fergus's `2025-12-02T00:00:00+13:00` passes `2025-12-01 11:00:00+00:00`, a
+/// value with no zone (`2023-03-04 05:06:07`, `2023-03-04`) is read as UTC and a
+/// day past the month's end rolls into the next month. A value that reading
+/// rejects is replaced by [`FERN_DEFAULT_DATETIME`]: a zone name (`… CDT`), but
+/// equally a negative offset or a lower-case `z`, which the appended `Z`
+/// breaks. Every value returned parses with `datetime.datetime.fromisoformat`.
+fn datetime_example(value: &str) -> String {
+    let rewritten = if value.ends_with('Z') || value.contains('+') {
+        value.to_string()
     } else {
-        -offset_minutes
+        format!("{value}Z")
     };
-    let minutes = days * 1440 + hour * 60 + minute - signed_offset;
-    let (days, minute_of_day) = (minutes.div_euclid(1440), minutes.rem_euclid(1440));
-    // And back (`civil_from_days`).
+    let Some(seconds) = read_datetime(&rewritten) else {
+        return FERN_DEFAULT_DATETIME.to_string();
+    };
+    let (days, second_of_day) = (
+        seconds.div_euclid(86_400) + 719_468,
+        seconds.rem_euclid(86_400),
+    );
+    // `civil_from_days` (Howard Hinnant), from days since 0000-03-01.
     let era = days.div_euclid(146_097);
     let day_of_era = days - era * 146_097;
     let year_of_era =
@@ -281,11 +262,92 @@ fn datetime_in_utc(value: &str) -> Option<String> {
         month_index - 9
     };
     let year = year_of_era + era * 400 + i64::from(month <= 2);
-    Some(format!(
-        "{year:04}-{month:02}-{day:02}{separator}{:02}:{:02}:{second:02}{fraction}+00:00",
-        minute_of_day / 60,
-        minute_of_day % 60
-    ))
+    format!(
+        "{year:04}-{month:02}-{day:02}T{:02}:{:02}:{:02}+00:00",
+        second_of_day / 3600,
+        second_of_day / 60 % 60,
+        second_of_day % 60
+    )
+}
+
+/// The instant Fern reads from its rewritten `date-time` value, in whole seconds
+/// since the Unix epoch, or `None` where it reads none. The grammar is the one
+/// measured: a date alone or a date and a time (`T`, `t` or a space between, seconds
+/// and a fraction optional, the fraction dropped), then `Z` or a `±HH:MM` or
+/// `±HHMM` offset; any day up to 31, rolling past the month's end.
+fn read_datetime(value: &str) -> Option<i64> {
+    let bytes = value.as_bytes();
+    let number = |range: std::ops::Range<usize>| value.get(range).and_then(number_of);
+    let (year, month, day) = (number(0..4)?, number(5..7)?, number(8..10)?);
+    if bytes.get(4) != Some(&b'-') || bytes.get(7) != Some(&b'-') {
+        return None;
+    }
+    if !(1..=12).contains(&month) || !(1..=31).contains(&day) {
+        return None;
+    }
+    let mut at = 10;
+    let (mut hour, mut minute, mut second) = (0, 0, 0);
+    if matches!(bytes.get(at), Some(b'T' | b't' | b' ')) {
+        hour = number(at + 1..at + 3)?;
+        minute = number(at + 4..at + 6)?;
+        if bytes.get(at + 3) != Some(&b':') {
+            return None;
+        }
+        at += 6;
+        if bytes.get(at) == Some(&b':') {
+            second = number(at + 1..at + 3)?;
+            at += 3;
+            if bytes.get(at) == Some(&b'.') {
+                let digits = bytes[at + 1..]
+                    .iter()
+                    .take_while(|byte| byte.is_ascii_digit())
+                    .count();
+                if digits == 0 {
+                    return None;
+                }
+                at += 1 + digits;
+            }
+        }
+    }
+    if hour > 23 || minute > 59 || second > 59 {
+        return None;
+    }
+    let zone = value.get(at..)?;
+    let offset_minutes = if zone == "Z" {
+        0
+    } else {
+        let sign = match zone.as_bytes().first()? {
+            b'+' => 1,
+            b'-' => -1,
+            _ => return None,
+        };
+        let (hours, minutes) = match zone.len() {
+            6 if zone.as_bytes()[3] == b':' => (zone.get(1..3)?, zone.get(4..6)?),
+            5 => (zone.get(1..3)?, zone.get(3..5)?),
+            _ => return None,
+        };
+        let (hours, minutes) = (number_of(hours)?, number_of(minutes)?);
+        if hours > 23 || minutes > 59 {
+            return None;
+        }
+        sign * (hours * 60 + minutes)
+    };
+    // `days_from_civil` (Howard Hinnant); a day past the month's end simply
+    // counts on into the next month.
+    let shifted_year = if month <= 2 { year - 1 } else { year };
+    let era = shifted_year.div_euclid(400);
+    let year_of_era = shifted_year - era * 400;
+    let day_of_year = (153 * (month + if month > 2 { -3 } else { 9 }) + 2) / 5 + day - 1;
+    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+    let days = era * 146_097 + day_of_era - 719_468;
+    Some(days * 86_400 + hour * 3600 + (minute - offset_minutes) * 60 + second)
+}
+
+/// `digits` as a number, when it is nothing but ASCII digits.
+fn number_of(digits: &str) -> Option<i64> {
+    (!digits.is_empty() && digits.bytes().all(|byte| byte.is_ascii_digit()))
+        .then(|| digits.parse().ok())
+        .flatten()
 }
 
 /// Collects imports and renders them in Fern's order: group 1 is stdlib
@@ -1713,6 +1775,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
                 empty_namespace: false,
+                sdk_first_party: packaged || pkg == "fern",
                 children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
             };
             files.push(client_file(&env, &cx, &eps)?);
@@ -1746,6 +1809,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             tag_types: &tag_map,
             global_headers: &ir.global_headers,
             empty_namespace: false,
+            sdk_first_party: packaged || pkg == "fern",
             children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
         };
         files.push(client_file(&env, &cx, &[])?);
@@ -1845,6 +1909,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             tag_types: &empty_namespace_tag_map,
             global_headers: &ir.global_headers,
             empty_namespace: true,
+            sdk_first_party: packaged || pkg == "fern",
             children: &[],
         };
         files.push(client_file(&env, &cx, &empty_namespace_eps)?);
@@ -2406,6 +2471,7 @@ fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
         reference: false,
         field_examples_ignored: false,
         untyped_arguments: BTreeSet::new(),
+        sdk_first_party: true,
     };
     let lines = build_documentation_example(
         ep,
@@ -2622,6 +2688,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             reference: false,
             field_examples_ignored: false,
             untyped_arguments: BTreeSet::new(),
+            sdk_first_party: true,
         };
         build_documentation_example(
             first,
@@ -2656,6 +2723,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             reference: false,
             field_examples_ignored: false,
             untyped_arguments: BTreeSet::new(),
+            sdk_first_party: true,
         };
         build_documentation_example(
             first,
@@ -2901,6 +2969,7 @@ fn reference_entry(
         reference: false,
         field_examples_ignored: false,
         untyped_arguments: BTreeSet::new(),
+        sdk_first_party: true,
     };
     let example = (!ep.binary_schema_response || !module.is_empty() || ep.openapi_31)
         .then(|| {
@@ -4335,6 +4404,7 @@ fn render_discriminated_union(
                 docstring: None,
                 example: None,
                 declared_name: None,
+                deprecated: false,
                 admits_only_empty_object: false,
             },
             &mut imports,
@@ -6293,6 +6363,7 @@ fn root_client_methods(
         tag_types: tag_map,
         global_headers,
         empty_namespace: false,
+        sdk_first_party: true,
         children: &[],
     };
     let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
@@ -6721,6 +6792,9 @@ struct ClientCtx<'a> {
     global_headers: &'a [GlobalHeader],
     /// Whether this tag client is Fern's explicit empty dotted namespace.
     empty_namespace: bool,
+    /// Whether Fern's isort pass files the SDK's own imports as first-party; see
+    /// [`ExampleCtx::sdk_first_party`].
+    sdk_first_party: bool,
     /// Nested sub-client modules this client exposes as lazy properties, in the
     /// order Fern writes them (see [`module_children`]). Empty for a leaf client.
     children: &'a [String],
@@ -7012,6 +7086,7 @@ fn client_stream_docstring(
         reference: false,
         field_examples_ignored: false,
         untyped_arguments: BTreeSet::new(),
+        sdk_first_party: cx.sdk_first_party,
     };
     if let Some(ex_lines) = build_example(
         ep,
@@ -7143,6 +7218,7 @@ fn client_binary_stream_docstring(
         reference: false,
         field_examples_ignored: false,
         untyped_arguments: BTreeSet::new(),
+        sdk_first_party: cx.sdk_first_party,
     };
     if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response || ep.openapi_31)
         .then(|| {
@@ -7242,6 +7318,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         reference: false,
         field_examples_ignored: false,
         untyped_arguments: BTreeSet::new(),
+        sdk_first_party: cx.sdk_first_party,
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
@@ -7628,6 +7705,14 @@ struct ExampleCtx<'a> {
     /// The keyword arguments whose value is the placeholder of an *unknown*
     /// (`typing.Any`) field, which the Markdown writers leave on one line.
     untyped_arguments: BTreeSet<String>,
+    /// Whether Fern's isort pass files the SDK's own imports as first-party,
+    /// which it does when ruff can find the package: always in the packaged tree
+    /// (`src/<pkg>/`), and in the flat tree only for a package named `fern`,
+    /// which ruff resolves inside Fern's `/fern` container (the same split
+    /// `scaffolding_files` applies to `tests/test_aiohttp_autodetect.py`). A
+    /// docstring example then puts a tag package's import in a group of its own
+    /// above the root import; otherwise both are third-party, one sorted group.
+    sdk_first_party: bool,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -7709,16 +7794,12 @@ impl<'a> ExampleCtx<'a> {
             let mut value: String = serde_json::from_str(example).ok()?;
             self.note_datetime();
             let constructor = if matches!(t, TypeRef::Primitive(Prim::Datetime)) {
+                value = datetime_example(&value);
+                // The docstring writer spaces the date from the time; that
+                // separator is the only character it changes.
                 if !self.documentation {
-                    value = value.replacen('T', " ", 1);
+                    value.replace_range(10..11, " ");
                 }
-                if let Some(without_z) = value.strip_suffix('Z') {
-                    value = format!("{without_z}+00:00");
-                }
-                if let Some(utc) = datetime_in_utc(&value) {
-                    value = utc;
-                }
-                value = value.replace(".000+00:00", "+00:00");
                 "datetime.datetime.fromisoformat"
             } else {
                 "datetime.date.fromisoformat"
@@ -7857,55 +7938,82 @@ impl<'a> ExampleCtx<'a> {
                 let values = parse_example_value(example)?;
                 let values = values.as_object()?;
                 self.record_ref(name);
+                let documentation = self.documentation;
                 let args = fields
                     .into_iter()
                     // An example value of `{}` selects nothing: Fern renders no
                     // argument for an optional model field the example leaves
                     // empty (`mosip-esignet`'s `claims.id_token: {}`).
-                    .filter(|(_, wire_name, _, required, _, _)| {
-                        *required
-                            || values.get(wire_name).is_some_and(|value| {
-                                !value.as_object().is_some_and(serde_json::Map::is_empty)
-                            })
+                    // Nor does `null`, but in the Markdown writers, which write a
+                    // required nullable field's `null` as `None`; and an optional
+                    // field whose schema is deprecated is left out even where the
+                    // example names it.
+                    .filter(|field| {
+                        let value = values.get(&field.wire_name);
+                        field.requirement == Requirement::Required
+                            || field.requirement == Requirement::RequiredNullable
+                                && documentation
+                                && value.is_some_and(serde_json::Value::is_null)
+                            || !field.deprecated
+                                && value.is_some_and(|value| {
+                                    !value.is_null()
+                                        && !value.as_object().is_some_and(serde_json::Map::is_empty)
+                                })
                     })
-                    .map(|(py_name, wire_name, type_ref, _, _, _)| {
-                        let rendered = match values.get(&wire_name) {
-                            Some(serde_json::Value::String(value))
-                                if self.example_is_temporal(&type_ref)
-                                    && value.starts_with("2000-01-23T04:56:07") =>
-                            {
-                                self.value(&type_ref, Slot::Named(&wire_name))
-                            }
-                            // A YAML timestamp is a date to Fern's parser, so it
-                            // is no example for a field that is not temporal; see
-                            // [`yaml_resolves_as_timestamp`].
-                            Some(serde_json::Value::String(value))
-                                if self
-                                    .yaml_unquoted_timestamps
-                                    .is_some_and(|unquoted| unquoted.contains(value))
-                                    && !self.example_is_temporal(&type_ref)
-                                    && yaml_resolves_as_timestamp(value) =>
-                            {
-                                self.value(&type_ref, Slot::Named(&wire_name))
-                            }
-                            // An empty array carries no example value, so Fern
-                            // synthesizes one from the field name rather than
-                            // rendering `[]` (`mosip-esignet`'s
-                            // `permittedAuthorizeScopes: []`).
-                            Some(serde_json::Value::Array(items)) if items.is_empty() => {
-                                self.value(&type_ref, Slot::Named(&wire_name))
-                            }
-                            Some(value) => {
-                                let literal = value.to_string();
-                                self.value_from_example(&type_ref, &literal)
-                                    .unwrap_or_else(|| {
-                                        example_from_json_as(value.clone(), !self.documentation)
-                                    })
-                            }
-                            _ => self.value(&type_ref, Slot::Named(&wire_name)),
-                        };
-                        (Some(py_name), rendered)
-                    })
+                    .map(
+                        |ExampleField {
+                             py_name,
+                             wire_name,
+                             type_ref,
+                             requirement,
+                             ..
+                         }| {
+                            let rendered = match values.get(&wire_name) {
+                                Some(serde_json::Value::Null)
+                                    if self.documentation
+                                        && requirement == Requirement::RequiredNullable =>
+                                {
+                                    Example::Atom("None".to_string())
+                                }
+                                Some(serde_json::Value::Null) => {
+                                    self.value(&type_ref, Slot::Named(&wire_name))
+                                }
+                                Some(serde_json::Value::String(value))
+                                    if self.example_is_temporal(&type_ref)
+                                        && value.starts_with("2000-01-23T04:56:07") =>
+                                {
+                                    self.value(&type_ref, Slot::Named(&wire_name))
+                                }
+                                // A YAML timestamp is a date to Fern's parser, so it
+                                // is no example for a field that is not temporal; see
+                                // [`yaml_resolves_as_timestamp`].
+                                Some(serde_json::Value::String(value))
+                                    if self
+                                        .yaml_unquoted_timestamps
+                                        .is_some_and(|unquoted| unquoted.contains(value))
+                                        && !self.example_is_temporal(&type_ref)
+                                        && yaml_resolves_as_timestamp(value) =>
+                                {
+                                    self.value(&type_ref, Slot::Named(&wire_name))
+                                }
+                                // An empty array carries no example value, so Fern
+                                // synthesizes one from the field name rather than
+                                // rendering `[]` (`mosip-esignet`'s
+                                // `permittedAuthorizeScopes: []`).
+                                Some(serde_json::Value::Array(items)) if items.is_empty() => {
+                                    self.value(&type_ref, Slot::Named(&wire_name))
+                                }
+                                Some(value) => {
+                                    let literal = value.to_string();
+                                    self.value_from_example(&type_ref, &literal).unwrap_or_else(
+                                        || example_from_json_as(value.clone(), !self.documentation),
+                                    )
+                                }
+                                _ => self.value(&type_ref, Slot::Named(&wire_name)),
+                            };
+                            (Some(py_name), rendered)
+                        },
+                    )
                     .collect();
                 return Some(Example::Call(name.clone(), args));
             }
@@ -8090,18 +8198,24 @@ impl<'a> ExampleCtx<'a> {
                         };
                         self.object_fields(object)
                             .iter()
-                            .map(|(_, wire_name, type_ref, _, _, _)| {
-                                match values.get(wire_name).filter(|field| !field.is_null()) {
-                                    Some(field) => {
-                                        1 + self.fern_example_score(
-                                            type_ref,
-                                            field,
-                                            &mut Vec::new(),
-                                        )
+                            .map(
+                                |ExampleField {
+                                     wire_name,
+                                     type_ref,
+                                     ..
+                                 }| {
+                                    match values.get(wire_name).filter(|field| !field.is_null()) {
+                                        Some(field) => {
+                                            1 + self.fern_example_score(
+                                                type_ref,
+                                                field,
+                                                &mut Vec::new(),
+                                            )
+                                        }
+                                        None => -1,
                                     }
-                                    None => -1,
-                                }
-                            })
+                                },
+                            )
                             .sum()
                     }
                     Some(TypeDecl::Alias(alias)) => {
@@ -8207,7 +8321,14 @@ impl<'a> ExampleCtx<'a> {
                 let empty = serde_json::Map::new();
                 let values = value.as_object().unwrap_or(&empty);
                 let mut kept = serde_json::Map::new();
-                for (_, wire_name, type_ref, required, _, _) in fields {
+                for ExampleField {
+                    wire_name,
+                    type_ref,
+                    requirement,
+                    ..
+                } in fields
+                {
+                    let required = requirement == Requirement::Required;
                     match values.get(&wire_name).filter(|field| !field.is_null()) {
                         Some(field) => {
                             let field =
@@ -8260,13 +8381,11 @@ impl<'a> ExampleCtx<'a> {
                     let fields = self.object_fields(object);
                     fields
                         .iter()
-                        .filter(|(_, _, _, required, _, _)| *required)
-                        .all(|(_, wire_name, _, _, _, _)| values.contains_key(wire_name))
-                        && values.keys().all(|key| {
-                            fields
-                                .iter()
-                                .any(|(_, wire_name, _, _, _, _)| wire_name == key)
-                        })
+                        .filter(|field| field.requirement == Requirement::Required)
+                        .all(|field| values.contains_key(&field.wire_name))
+                        && values
+                            .keys()
+                            .all(|key| fields.iter().any(|field| field.wire_name == *key))
                 }),
                 Some(TypeDecl::Alias(_)) if aliases.contains(name) => false,
                 Some(TypeDecl::Alias(alias)) => {
@@ -8653,12 +8772,20 @@ impl<'a> ExampleCtx<'a> {
                 let fields = self.object_fields(obj);
                 let args = fields
                     .into_iter()
-                    .filter(|(_, _, _, required, _, parent_example)| *required || *parent_example)
-                    .map(|(py, wire, ty, _, example, _)| {
-                        if is_any_type(&ty) {
-                            self.untyped_arguments.insert(py.clone());
+                    .filter(|field| {
+                        field.requirement == Requirement::Required
+                            || field.parent_example && !field.deprecated
+                    })
+                    .map(|field| {
+                        if is_any_type(&field.type_ref) {
+                            self.untyped_arguments.insert(field.py_name.clone());
                         }
-                        (Some(py), self.field_example(&ty, &wire, example.as_deref()))
+                        let value = self.field_example(
+                            &field.type_ref,
+                            &field.wire_name,
+                            field.example.as_deref(),
+                        );
+                        (Some(field.py_name), value)
                     })
                     .collect::<Vec<_>>();
                 Example::Call(name.to_string(), args)
@@ -8888,22 +9015,8 @@ impl<'a> ExampleCtx<'a> {
     }
 
     /// An object's fields including those inherited from its base classes (bases
-    /// first, in declaration order): `(py_name, wire_name, type, required)`, where
-    /// `required` is a `required` property that is not also `Optional` in Python.
-    /// Fern's importer reads a required nullable property as optional, so its
-    /// example omits it: ramu-shogi's `evalCp: {type: [integer, null]}` and its
-    /// `$ref`s to `type: [object, null]` components are required and absent.
-    #[allow(
-        clippy::type_complexity,
-        reason = "a positional 5-tuple local to example synthesis: it is built here \
-                  and immediately destructured by the two callers (named_value and \
-                  the recursive base-class walk); a named struct would add a type \
-                  for a shape that never escapes this module"
-    )]
-    fn object_fields(
-        &self,
-        obj: &ObjectType,
-    ) -> Vec<(String, String, TypeRef, bool, Option<String>, bool)> {
+    /// first, in declaration order).
+    fn object_fields(&self, obj: &ObjectType) -> Vec<ExampleField> {
         let mut out = Vec::new();
         for base in &obj.bases {
             if let Some(TypeDecl::Object(b)) = self.find(base) {
@@ -8919,17 +9032,55 @@ impl<'a> ExampleCtx<'a> {
             } else {
                 f.py_name.clone()
             };
-            out.push((
+            out.push(ExampleField {
                 py_name,
-                f.wire_name.clone(),
-                f.type_ref.clone(),
-                f.spec_required && !f.optional,
-                f.example.clone(),
-                obj.example_fields.contains(&f.wire_name),
-            ));
+                wire_name: f.wire_name.clone(),
+                type_ref: f.type_ref.clone(),
+                requirement: match (f.spec_required, f.optional) {
+                    (true, false) => Requirement::Required,
+                    (true, true) => Requirement::RequiredNullable,
+                    (false, _) => Requirement::Optional,
+                },
+                example: f.example.clone(),
+                parent_example: obj.example_fields.contains(&f.wire_name),
+                deprecated: f.deprecated,
+            });
         }
         out
     }
+}
+
+/// Whether a model field's property is required, as example synthesis reads it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Requirement {
+    /// Not in the schema's `required` set.
+    Optional,
+    /// In `required`, and not `Optional` in Python.
+    Required,
+    /// In `required` but `Optional` in Python. Fern's importer reads such a
+    /// property as optional, so its example omits it — ramu-shogi's
+    /// `evalCp: {type: [integer, null]}` and its `$ref`s to `type: [object,
+    /// null]` components are required and absent — except that the Markdown
+    /// writers write an example's `null` for it as `None`.
+    RequiredNullable,
+}
+
+/// One field of a model, as example synthesis reads it: the field and its marks.
+struct ExampleField {
+    /// The keyword the model constructor takes.
+    py_name: String,
+    /// The JSON property name an example's value is keyed by.
+    wire_name: String,
+    /// The field's type.
+    type_ref: TypeRef,
+    /// Whether the property is required, and how Python types it.
+    requirement: Requirement,
+    /// The field's own example literal.
+    example: Option<String>,
+    /// Whether the model's schema-level example names the field.
+    parent_example: bool,
+    /// [`crate::ir::Field::deprecated`].
+    deprecated: bool,
 }
 
 /// How one required field of an **object-typed path parameter** renders inside
@@ -9352,19 +9503,25 @@ fn build_example_inner(
         .as_ref()
         .is_some_and(|body| body.is_wildcard_media() || matches!(body, RequestBody::Form(_)));
     let parameters_start = args.len();
+    let omits_required_query_arrays = ep.text_response
+        || ep.query_params.iter().any(|qp| {
+            qp.required
+                && (matches!(qp.type_ref, TypeRef::Dict(..)) || ctx.example_is_object(&qp.type_ref))
+        });
     for qp in ep
         .query_params
         .iter()
         .filter(|qp| !suppressed && !header_first_request && qp.required)
     {
-        // Fern omits required collections of referenced shapes from worked
-        // examples; their query encoding has no inline scalar placeholder.
-        if matches!(
-            &qp.type_ref,
-            TypeRef::List(inner) | TypeRef::Set(inner)
-                if matches!(inner.as_ref(), TypeRef::Named(_))
-                    || ctx.example_is_object(inner)
-        ) {
+        // A required array is shown with one sampled item, whatever its item
+        // type (`colors=[Color.RED]`, `spots=[Spot()]`), except that Fern leaves
+        // every one out of an operation whose success body is `text/*`, or that
+        // takes a required object or map query parameter. Measured on variants
+        // of one operation: `application/xml`, `+json`, `204` and error-only
+        // responses all show it, as does an optional map beside it. The
+        // signature makes every query array optional, so either call runs.
+        if omits_required_query_arrays && matches!(qp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
+        {
             continue;
         }
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
@@ -9656,12 +9813,34 @@ fn build_example_inner(
             // (exhaustive's `unknown`), so the exclusion keys on nullability — an
             // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
             let reference_fields = body_example.and_then(serde_json::Value::as_object);
-            let selected = |f: &&BodyField| {
-                reference_fields.is_some_and(|values| values.contains_key(&f.wire_name))
-                    || f.spec_required && (!f.optional || is_any_type(&f.type_ref))
-                    || reference_fields.is_none() && f.media_example
+            // An example's `null` is no value: Fern's docstring leaves the field
+            // out, or synthesizes it where the signature requires it; its
+            // Markdown writers do the same but write a required nullable
+            // field's `null` as `None`.
+            let example_null = |f: &BodyField| match reference_fields {
+                Some(values) => values
+                    .get(&f.wire_name)
+                    .is_some_and(serde_json::Value::is_null),
+                None => f.media_example && f.example.as_deref() == Some("null"),
             };
-            let composed_request_media_example = ep.body_all_of
+            let named_value = |f: &BodyField| {
+                reference_fields
+                    .and_then(|values| values.get(&f.wire_name))
+                    .filter(|value| !value.is_null())
+            };
+            // A required field is shown whatever its marks; an optional one whose
+            // schema is deprecated is left out even where the example names it.
+            let selected = |f: &&BodyField| {
+                if example_null(f) {
+                    return f.spec_required
+                        && (!f.optional || is_any_type(&f.type_ref) || documentation);
+                }
+                f.spec_required && (!f.optional || is_any_type(&f.type_ref))
+                    || !f.deprecated
+                        && (named_value(f).is_some()
+                            || reference_fields.is_none() && f.media_example)
+            };
+            let composed_request_media_example = ep.body_composition.is_all_of()
                 && fields
                     .iter()
                     .any(|field| field.media_example && !field.schema_body_example);
@@ -9694,35 +9873,37 @@ fn build_example_inner(
                     );
                 }
             }
-            if ep.body_all_of {
-                if documentation {
-                    example_fields
-                        .sort_by_key(|field| (!field.spec_required, field.reference_order));
-                } else {
+            // A composed body's example lists its bases' fields ahead of its own:
+            // the docstring every base's first all the way down, the Markdown
+            // writers each base's own fields before that base's bases (TAMS'
+            // `WebhookPut` documents `id`, then `WebhookWithId`'s base `Webhook`'s
+            // `url` and `events`, where its docstring writes `id` third), and the
+            // body's own first when it is itself an `allOf` parent. Measured on
+            // variants of one `allOf: [inline, $ref Base]` body, `required` and
+            // the members' order in `allOf` change none of these.
+            if ep.body_composition.is_all_of() {
+                if documentation && ep.body_composition == crate::ir::BodyComposition::AllOfParent {
                     example_fields.sort_by_key(|field| {
-                        (
-                            !field.spec_required,
-                            field.wire_name == "status",
-                            field.wire_name == "id",
-                            field.reference_order,
-                        )
+                        fields
+                            .iter()
+                            .position(|candidate| candidate.wire_name == field.wire_name)
                     });
+                } else if documentation {
+                    example_fields.sort_by_key(|field| field.markdown_order);
+                } else {
+                    example_fields.sort_by_key(|field| field.declaration_order);
                 }
             }
             for f in example_fields {
                 let supplied_example = f
                     .example
                     .as_deref()
-                    .filter(|_| reference_fields.is_none())
+                    .filter(|_| reference_fields.is_none() && !example_null(f))
                     // A binary download's inline body drops its media example:
                     // MockServer's file retrieval shows Fern's `name="name"`.
                     .filter(|_| !(ep.binary_response && f.media_example && !f.schema_body_example))
                     .map(str::to_string)
-                    .or_else(|| {
-                        reference_fields
-                            .and_then(|values| values.get(&f.wire_name))
-                            .map(serde_json::Value::to_string)
-                    });
+                    .or_else(|| named_value(f).map(serde_json::Value::to_string));
                 let supplied_example = supplied_example.map(|example| {
                         if matches!(&f.type_ref, TypeRef::List(inner) | TypeRef::Set(inner) if ctx.resolves_to_string(inner))
                             && example.starts_with('[')
@@ -9760,7 +9941,13 @@ fn build_example_inner(
                         }
                     })
                     .unwrap_or_else(|| {
-                        if f.admits_only_empty_object {
+                        if documentation
+                            && f.optional
+                            && !is_any_type(&f.type_ref)
+                            && example_null(f)
+                        {
+                            Example::Atom("None".to_string())
+                        } else if f.admits_only_empty_object {
                             ctx.empty_object()
                         } else {
                             ctx.value(&f.type_ref, Slot::Named(&f.wire_name))
@@ -10104,11 +10291,19 @@ fn build_example_inner(
             out.push(String::new());
         }
     }
-    if !tag_import_lines.is_empty() {
+    if documentation || ctx.sdk_first_party {
+        if !tag_import_lines.is_empty() {
+            out.extend(tag_import_lines);
+            out.push(String::new());
+        }
+        out.extend(import_lines);
+    } else {
+        // A third-party SDK's imports sort as one group, where the root module
+        // precedes its tag packages: `from acme import AcmeApi`, then
+        // `from acme.pet import …`, with no blank line between.
+        out.extend(import_lines);
         out.extend(tag_import_lines);
-        out.push(String::new());
     }
-    out.extend(import_lines);
     out.push(String::new());
     out.extend(client_block);
     if is_async {
@@ -11348,6 +11543,9 @@ mod tests {
             media_example: false,
             schema_body_example: false,
             reference_order: 0,
+            deprecated: false,
+            declaration_order: 0,
+            markdown_order: 0,
             admits_only_empty_object: false,
         }]));
         let mut lines = Vec::new();
@@ -11570,7 +11768,7 @@ mod tests {
             body_schema_is_response_heavy: false,
             body_schema_is_open: false,
             body_schema_implicit_object: false,
-            body_all_of: false,
+            body_composition: crate::ir::BodyComposition::Plain,
             body_response_same_ref: false,
             body_schema_is_success_response: false,
             response,
@@ -12001,6 +12199,9 @@ mod tests {
                 schema_body_example: false,
                 nullable: false,
                 reference_order: 0,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
@@ -12022,6 +12223,9 @@ mod tests {
                 schema_body_example: false,
                 nullable: false,
                 reference_order: 1,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
             // An optional convert field keeps `Optional` in both its signature and
@@ -12044,6 +12248,9 @@ mod tests {
                 schema_body_example: false,
                 nullable: false,
                 reference_order: 2,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
         ]));
@@ -12122,6 +12329,9 @@ mod tests {
             schema_body_example: false,
             nullable: false,
             reference_order: 0,
+            deprecated: false,
+            declaration_order: 0,
+            markdown_order: 0,
             admits_only_empty_object: false,
         }]));
         let reference = reference_entry(
@@ -12159,6 +12369,9 @@ mod tests {
                 schema_body_example: true,
                 nullable: false,
                 reference_order: 0,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
             BodyField {
@@ -12179,6 +12392,9 @@ mod tests {
                 schema_body_example: true,
                 nullable: false,
                 reference_order: 1,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
         ]));
@@ -12426,6 +12642,7 @@ mod tests {
             reference: false,
             field_examples_ignored: false,
             untyped_arguments: std::collections::BTreeSet::new(),
+            sdk_first_party: true,
         }
     }
 
@@ -12440,6 +12657,7 @@ mod tests {
             docstring: None,
             example: None,
             declared_name: None,
+            deprecated: false,
             admits_only_empty_object: false,
         }
     }
@@ -12592,17 +12810,73 @@ mod tests {
     }
 
     #[test]
-    fn datetime_examples_move_to_utc() {
+    fn datetime_examples_name_their_instant_in_utc() {
+        use super::datetime_example as written;
+        // Values Fern's reading accepts: `Z`, a positive offset (with or without
+        // its colon), no zone at all, a date alone, no seconds, a fraction, and
+        // a day past the month's end.
+        assert_eq!(written("2023-03-04T05:06:07Z"), "2023-03-04T05:06:07+00:00");
         assert_eq!(
-            super::datetime_in_utc("2025-12-02 00:00:00+13:00").as_deref(),
-            Some("2025-12-01 11:00:00+00:00")
+            written("2025-12-02T00:00:00+13:00"),
+            "2025-12-01T11:00:00+00:00"
         );
         assert_eq!(
-            super::datetime_in_utc("2024-02-28T23:30:00.5-01:00").as_deref(),
-            Some("2024-02-29T00:30:00.5+00:00")
+            written("2023-03-04T05:06:07+0200"),
+            "2023-03-04T03:06:07+00:00"
         );
-        assert_eq!(super::datetime_in_utc("2024-01-15T09:30:00+00:00"), None);
-        assert_eq!(super::datetime_in_utc("2024-01-15"), None);
+        assert_eq!(
+            written("2023-03-04 05:06:07+02:00"),
+            "2023-03-04T03:06:07+00:00"
+        );
+        assert_eq!(written("2023-03-04 05:06:07"), "2023-03-04T05:06:07+00:00");
+        assert_eq!(written("2023-03-04T05:06:07"), "2023-03-04T05:06:07+00:00");
+        assert_eq!(written("2023-03-04t05:06:07Z"), "2023-03-04T05:06:07+00:00");
+        assert_eq!(written("2023-03-04"), "2023-03-04T00:00:00+00:00");
+        assert_eq!(written("2023-03-04T05:06Z"), "2023-03-04T05:06:00+00:00");
+        assert_eq!(
+            written("2023-03-04T05:06:07.250Z"),
+            "2023-03-04T05:06:07+00:00"
+        );
+        assert_eq!(
+            written("2023-03-04T05:06:07.5+01:00"),
+            "2023-03-04T04:06:07+00:00"
+        );
+        assert_eq!(written("2023-02-30T05:06:07Z"), "2023-03-02T05:06:07+00:00");
+        assert_eq!(
+            written("2024-12-31T23:30:00+00:00"),
+            "2024-12-31T23:30:00+00:00"
+        );
+        // Values Fern's reading rejects take its replacement: a zone name, a
+        // missing separator, an hour, month, day or second out of range, a
+        // basic-format value, leading space, and every negative offset or
+        // lower-case `z`, which the appended `Z` breaks.
+        for invalid in [
+            "2023-03-04T05:06:07-05:00",
+            "2024-02-28T23:30:00.5-01:00",
+            "2023-03-04T05:06:07-00:00",
+            "2023-03-04t05:06:07z",
+            "2023-12-31 22:00:00-03:00",
+            "2022-08-11 14:00:00 CDT",
+            "20230304T050607Z",
+            "2023-03-04X05:06:07Z",
+            "2023-03-04T25:06:07Z",
+            "2023-13-04T05:06:07Z",
+            "2023-03-32T05:06:07Z",
+            "2023-03-04T05:06:60Z",
+            "  2023-03-04T05:06:07Z",
+            "2023-03-04T05:06-05:00",
+            "2023-02-30T05:06:07-05:00",
+            "2023-03-04T05:06:07.-05:00",
+            "2023-03-04T05:06:07+25:00",
+            "2023-03-04T05:06+a\u{e9}1",
+            "2023-03-04T05:06:07+0\u{e9}",
+            "not a date",
+            "2023/03/04T05:06:07Z",
+            "2023-03-04T05x06:07Z",
+            "",
+        ] {
+            assert_eq!(written(invalid), super::FERN_DEFAULT_DATETIME, "{invalid}");
+        }
     }
 
     #[test]
@@ -13556,6 +13830,9 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 reference_order: 0,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
             BodyField {
@@ -13576,6 +13853,9 @@ mod tests {
                 media_example: true,
                 schema_body_example: false,
                 reference_order: 1,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
         ]));
@@ -13634,6 +13914,9 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 reference_order: 0,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             }]));
             ep
@@ -13725,6 +14008,9 @@ mod tests {
                 media_example: true,
                 schema_body_example: true,
                 reference_order: 0,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
             BodyField {
@@ -13745,6 +14031,9 @@ mod tests {
                 media_example: true,
                 schema_body_example: true,
                 reference_order: 1,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             },
         ]));
@@ -13795,6 +14084,9 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 reference_order: 0,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             }],
         }));
@@ -13980,6 +14272,9 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 reference_order: 0,
+                deprecated: false,
+                declaration_order: 0,
+                markdown_order: 0,
                 admits_only_empty_object: false,
             }],
             multipart: false,
@@ -14000,6 +14295,7 @@ mod tests {
             tag_types: &tags,
             global_headers: &[],
             empty_namespace: false,
+            sdk_first_party: true,
             children: &[],
         };
         let mut imports = Imports::at(RefLoc::Client("events".to_string()), &tags);

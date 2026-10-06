@@ -2391,6 +2391,11 @@ class GrammarContractTests(unittest.TestCase):
         # Read an operation's method, route parameters or document version, or
         # resolve its success response's local `$ref`.
         *BODY_AND_RESPONSE_PREDICATES,
+        # Read a request body's selected media type and resolve the component
+        # schemas its schema and example reach.
+        "mediaType.schema:allof-parent-body",
+        "mediaType.example:nested-null-member",
+        "mediaType.example:deprecated-property",
         # Compare a document's component schemas against each other (the
         # reference graph), or read where a media type stands.
         "components.schemas:fields-reach-cycles-unsorted",
@@ -2414,9 +2419,11 @@ class GrammarContractTests(unittest.TestCase):
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
-            "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69,
+            "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69, "Seventy": 70,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
-            "seventeen": 17, "twenty": 20, "thirty-one": 31, "thirty-two": 32,
+            "seventeen": 17, "twenty": 20, "twenty-three": 23,
+            "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
+            "thirty-five": 35,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -3806,6 +3813,8 @@ NAMING_AND_EXAMPLE_BRANCH_PREDICATES = frozenset({
     "schema.properties:optional-example", "parameter.example:non-scalar-query",
     "mediaType.examples:named-beside-example", "mediaType.examples:named-only",
     "operation.responses:wildcard-binary",
+    "schema.example:unread-date-time", "mediaType.schema:allof-parent-body",
+    "mediaType.example:nested-null-member", "mediaType.example:deprecated-property",
 })
 
 
@@ -12066,6 +12075,39 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-derive operation.operationId:digit-leading-method from src/ir.rs's {name}",
                 )
 
+    def test_the_example_ports_track_their_rust_functions(self) -> None:
+        """`deprecated_member` and `fern_reads_date_time` port crozier's own functions.
+
+        Each is pinned by the same normalized-body digest the other ports use,
+        read from the file that declares it, so an edit to the Rust arm fails
+        here until the port is read again.
+        """
+        for (path, name), pinned in census.EXAMPLE_PORT_DIGESTS.items():
+            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
+            start = next(
+                (index for index, line in enumerate(lines)
+                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+            )
+            self.assertIsNotNone(start, f"{path} declares no fn {name}")
+            depth, started = 0, False
+            for end in range(start, len(lines)):
+                for char in lines[end]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                if started and depth == 0:
+                    break
+            kept = [
+                " ".join(line.split()) for line in lines[start:end + 1]
+                if line.strip() and not line.strip().startswith("//")
+            ]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-read the census's port of {path}'s {name}",
+                )
+
     def test_the_union_ports_track_their_rust_functions(self) -> None:
         """The unrequired-tag clause and `components.schemas:same-primitive-union`.
 
@@ -12349,6 +12391,61 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
                 "*/*": {"schema": {"type": "string", "format": "binary"}}}}}}),
             _operation_document({"responses": {"200": {"description": "ok", "content": {
                 "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}}}}}),
+        ),
+        # A negative offset is a value Fern's appended `Z` breaks; a positive one
+        # it reads.
+        "schema.example:unread-date-time": (
+            _root_document({"type": "string", "format": "date-time", "example": "2022-08-11T16:30:00-05:00"}),
+            _root_document({"type": "string", "format": "date-time", "example": "2022-08-11T16:30:00+05:00"}),
+        ),
+        # The same composed body, with and without another schema's `allOf`
+        # naming it.
+        "mediaType.schema:allof-parent-body": (
+            _operation_document(
+                _json_body({"schema": {"$ref": "#/components/schemas/S"}, "example": {"own": "a", "base": "b"}}),
+                components={"schemas": {
+                    "Base": {"type": "object", "required": ["base"], "properties": {"base": {"type": "string"}}},
+                    "S": {"allOf": [{"type": "object", "required": ["own"], "properties": {"own": {"type": "string"}}},
+                                    {"$ref": "#/components/schemas/Base"}]},
+                    "Child": {"allOf": [{"$ref": "#/components/schemas/S"}]},
+                }},
+            ),
+            _operation_document(
+                _json_body({"schema": {"$ref": "#/components/schemas/S"}, "example": {"own": "a", "base": "b"}}),
+                components={"schemas": {
+                    "Base": {"type": "object", "required": ["base"], "properties": {"base": {"type": "string"}}},
+                    "S": {"allOf": [{"type": "object", "required": ["own"], "properties": {"own": {"type": "string"}}},
+                                    {"$ref": "#/components/schemas/Base"}]},
+                }},
+            ),
+        ),
+        # `null` for a nested optional property, beside `null` at the top level.
+        "mediaType.example:nested-null-member": (
+            _operation_document(_json_body({
+                "schema": {"type": "object", "properties": {"inner": {
+                    "type": "object", "properties": {"note": {"type": "string"}}}}},
+                "example": {"inner": {"note": None}},
+            })),
+            _operation_document(_json_body({
+                "schema": {"type": "object", "properties": {"note": {"type": "string"}}},
+                "example": {"note": None},
+            })),
+        ),
+        # A property whose own schema is deprecated, beside a `$ref` carrying
+        # the mark as a sibling, which leaves the property in Fern's example.
+        "mediaType.example:deprecated-property": (
+            _operation_document(_json_body({
+                "schema": {"type": "object", "properties": {"old": {"type": "string", "deprecated": True}}},
+                "example": {"old": "x"},
+            })),
+            _operation_document(
+                _json_body({
+                    "schema": {"type": "object", "properties": {
+                        "old": {"$ref": "#/components/schemas/Old", "deprecated": True}}},
+                    "example": {"old": "x"},
+                }),
+                components={"schemas": {"Old": {"type": "string"}}},
+            ),
         ),
     }
 

@@ -1255,8 +1255,9 @@ pub struct Endpoint {
     pub body_schema_is_open: bool,
     /// Whether an inline request object was inferred from properties with no type.
     pub body_schema_implicit_object: bool,
-    /// Whether a referenced request schema is composed with `allOf`.
-    pub body_all_of: bool,
+    /// Whether a referenced request schema is composed with `allOf`, and whether
+    /// it is itself an `allOf` parent.
+    pub body_composition: BodyComposition,
     /// Whether the JSON request body and success response point at the same schema.
     pub body_response_same_ref: bool,
     /// Whether request and success response reference the same schema regardless
@@ -1574,6 +1575,19 @@ pub struct BodyField {
     /// document base fields before derived fields, required before optional
     /// within each declaration, even though method signatures use another order.
     pub reference_order: usize,
+    /// Whether the property's own schema is marked deprecated (see
+    /// [`Field::deprecated`]): an optional one stays out of worked examples.
+    pub deprecated: bool,
+    /// The field's place when a composed (`allOf`) body is written out in
+    /// declaration order with every base's fields ahead of its own, all the way
+    /// down, `required` playing no part: the order of Fern's docstring example.
+    pub declaration_order: usize,
+    /// The field's place in the order Fern's Markdown writers give a composed
+    /// body's example: each base's own fields, then that base's bases, and the
+    /// body's own fields last, `required` playing no part. A body that is itself
+    /// an `allOf` parent ([`BodyComposition::AllOfParent`]) is listed with its
+    /// own fields first instead, in the order the fields are declared.
+    pub markdown_order: usize,
 }
 
 /// A type hoisted out of an operation's inline request/response body. Unlike a
@@ -1696,6 +1710,28 @@ pub struct UnionMember {
     pub wrapped: bool,
 }
 
+/// How an endpoint's referenced JSON request schema is composed.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum BodyComposition {
+    /// Not composed with an `allOf` over a `$ref` base.
+    #[default]
+    Plain,
+    /// Composed with `allOf` over a `$ref` base.
+    AllOf,
+    /// Composed so, and itself a `$ref` member of another component schema's
+    /// `allOf`: Fern's Markdown writers then list the body's own fields before
+    /// the ones it inherits (see [`BodyField::markdown_order`]).
+    AllOfParent,
+}
+
+impl BodyComposition {
+    /// Whether the schema is composed with `allOf` at all.
+    #[must_use]
+    pub fn is_all_of(self) -> bool {
+        self != BodyComposition::Plain
+    }
+}
+
 /// A pydantic model type.
 #[derive(Debug, Clone)]
 pub struct ObjectType {
@@ -1744,6 +1780,10 @@ pub struct Field {
     /// derived from instead of the wire name, kept so the request keyword
     /// argument an inlined body derives from this field takes it too.
     pub declared_name: Option<String>,
+    /// Whether the property's own schema is marked `deprecated: true` (not one it
+    /// reaches through a `$ref` or an `allOf`). Fern's worked examples leave such
+    /// a property out unless it is required.
+    pub deprecated: bool,
 }
 
 impl Field {
@@ -3594,7 +3634,7 @@ fn build_endpoint(
                     .find_map(|media| media.schema.as_ref())
             })
             .is_some_and(|schema| schema.ty.is_none() && !schema.properties.is_empty()),
-        body_all_of: request_body_has_all_of(doc, op),
+        body_composition: request_body_composition(doc, op),
         body_response_same_ref: body_response_same_ref(doc, op),
         body_schema_is_success_response: request_and_response_refs_match(op),
         response,
@@ -4213,6 +4253,30 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
                 .as_ref()
                 .is_some_and(|members| members.iter().any(|member| member.reference.is_some()))
         })
+}
+
+/// How the operation's JSON request schema is composed: see [`BodyComposition`].
+fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
+    if !request_body_has_all_of(doc, op) {
+        return BodyComposition::Plain;
+    }
+    let reference = op
+        .request_body
+        .as_ref()
+        .and_then(|body| body.content.get("application/json"))
+        .and_then(|media| media.schema.as_ref())
+        .and_then(|schema| schema.reference.as_deref());
+    let parent =
+        doc.components.schemas.values().any(|schema| {
+            schema.all_of.iter().flatten().any(|member| {
+                member.reference.is_some() && member.reference.as_deref() == reference
+            })
+        });
+    if parent {
+        BodyComposition::AllOfParent
+    } else {
+        BodyComposition::AllOf
+    }
 }
 
 /// Whether the operation's selected success response is a Server-Sent-Events
@@ -5639,6 +5703,9 @@ fn hoist_inline_object(
             collision_prefix: Some(naming::field_name(ctx)),
             inline_object: true,
             reference_order,
+            deprecated: own_deprecated(prop_schema),
+            declaration_order: reference_order,
+            markdown_order: reference_order,
             admits_only_empty_object: admits_only_empty_object(prop_schema),
         });
     }
@@ -6162,6 +6229,7 @@ impl InlineHoister<'_> {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
+                deprecated: own_deprecated(prop_schema),
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
                 nullable: referenced_nullable
@@ -6831,6 +6899,9 @@ fn hoist_form_object(
                 media_example: false,
                 schema_body_example: false,
                 reference_order,
+                deprecated: own_deprecated(prop_schema),
+                declaration_order: reference_order,
+                markdown_order: reference_order,
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
             }
         })
@@ -6902,8 +6973,20 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
     let mut reference_names = Vec::new();
     let mut reference_seen = std::collections::HashSet::new();
     append_reference_field_names(obj, types, &mut reference_seen, &mut reference_names);
+    let mut declaration_names = Vec::new();
+    append_declaration_field_names(obj, types, &mut Default::default(), &mut declaration_names);
+    let mut markdown_names = Vec::new();
+    append_markdown_field_names(obj, types, &mut markdown_names);
     for field in &mut fields {
         field.reference_order = reference_names
+            .iter()
+            .position(|name| name == &field.wire_name)
+            .unwrap_or(usize::MAX);
+        field.declaration_order = declaration_names
+            .iter()
+            .position(|name| name == &field.wire_name)
+            .unwrap_or(usize::MAX);
+        field.markdown_order = markdown_names
             .iter()
             .position(|name| name == &field.wire_name)
             .unwrap_or(usize::MAX);
@@ -6941,6 +7024,66 @@ fn append_reference_field_names(
             .chain(obj.fields.iter().filter(|field| field.optional))
             .map(|field| field.wire_name.clone()),
     );
+}
+
+/// A composed object's field names with every base's ahead of its own, each
+/// object's in declaration order: [`BodyField::declaration_order`].
+fn append_declaration_field_names(
+    obj: &ObjectType,
+    types: &[TypeDecl],
+    seen: &mut std::collections::HashSet<String>,
+    out: &mut Vec<String>,
+) {
+    if !seen.insert(obj.name.clone()) {
+        return;
+    }
+    for base in &obj.bases {
+        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
+            _ => None,
+        }) {
+            append_declaration_field_names(base_obj, types, seen, out);
+        }
+    }
+    out.extend(obj.fields.iter().map(|field| field.wire_name.clone()));
+}
+
+/// A composed object's field names in [`BodyField::markdown_order`]: each base
+/// with its own fields ahead of its bases', then the object's own.
+fn append_markdown_field_names(obj: &ObjectType, types: &[TypeDecl], out: &mut Vec<String>) {
+    let mut seen = std::collections::HashSet::from([obj.name.clone()]);
+    for base in &obj.bases {
+        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
+            _ => None,
+        }) {
+            let mut base_fields = Vec::new();
+            append_own_first_field_names(base_obj, types, &mut seen, &mut base_fields);
+            out.extend(base_fields);
+        }
+    }
+    out.extend(obj.fields.iter().map(|field| field.wire_name.clone()));
+}
+
+/// An object's own field names, then its bases', each in declaration order.
+fn append_own_first_field_names(
+    obj: &ObjectType,
+    types: &[TypeDecl],
+    seen: &mut std::collections::HashSet<String>,
+    out: &mut Vec<String>,
+) {
+    if !seen.insert(obj.name.clone()) {
+        return;
+    }
+    out.extend(obj.fields.iter().map(|field| field.wire_name.clone()));
+    for base in &obj.bases {
+        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
+            _ => None,
+        }) {
+            append_own_first_field_names(base_obj, types, seen, out);
+        }
+    }
 }
 
 fn append_reference_base_field_names(
@@ -7001,6 +7144,9 @@ fn append_request_fields(
         media_example: false,
         schema_body_example: false,
         reference_order: 0,
+        deprecated: f.deprecated,
+        declaration_order: 0,
+        markdown_order: 0,
         admits_only_empty_object: f.admits_only_empty_object,
     }));
     for base in &obj.bases {
@@ -8922,6 +9068,7 @@ fn append_member_fields(
             wire_name: prop.clone(),
             py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
             declared_name: prop_schema.property_name().map(str::to_owned),
+            deprecated: own_deprecated(prop_schema),
             type_ref,
             optional: is_optional(prop_schema) || !spec_required,
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
@@ -9950,6 +10097,7 @@ impl Builder<'_> {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
+                deprecated: own_deprecated(prop_schema),
                 type_ref,
                 optional,
                 nullable: referenced_nullable
@@ -10252,6 +10400,7 @@ impl Builder<'_> {
                         docstring: None,
                         example: None,
                         declared_name: None,
+                        deprecated: false,
                         admits_only_empty_object: false,
                     }],
                     discriminant_index: None,
@@ -12884,6 +13033,13 @@ fn sole_non_null_member(schema: &Schema) -> Option<&Schema> {
     (non_null.next().is_none() && members.len() > 1).then_some(member)
 }
 
+/// Whether a property's own schema is marked `deprecated: true`. A mark Fern's
+/// examples do not see is not counted: one on the schema a `$ref` names, and one
+/// beside an `allOf` wrapping it, both leave the property in the example.
+fn own_deprecated(schema: &Schema) -> bool {
+    schema.deprecated && schema.reference.is_none() && schema.all_of.is_none()
+}
+
 /// Is a schema optional? Fern 5.20 reserves `Optional` for explicit nullability;
 /// an unknown (untyped) schema is bare `Any` and a containing field separately
 /// models whether the property may be absent.
@@ -13280,6 +13436,7 @@ mod tests {
             docstring: None,
             example: None,
             declared_name: None,
+            deprecated: false,
             admits_only_empty_object: false,
         }
     }
