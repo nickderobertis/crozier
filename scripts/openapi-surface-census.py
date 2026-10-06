@@ -57,7 +57,7 @@ import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import Any, Callable, Iterable, Iterator
 from urllib.parse import unquote
 
 # Also loaded by the offline test tier through importlib, where the script
@@ -4083,7 +4083,7 @@ class Census:
             ):
                 found.append("operation.responses:empty-schema-success-oas-three-zero")
             if json_media is None:
-                def schemaless(test: Any) -> bool:
+                def schemaless(test: Callable[[str], bool]) -> bool:
                     return any(
                         isinstance(key, str) and test(key.split(";", 1)[0].strip().lower())
                         and isinstance(value, dict) and "schema" not in value
