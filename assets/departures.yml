@@ -10,6 +10,24 @@
 # equal to this file), what each key holds, the defect rule, and how a fix adds
 # an entry. Entries are sorted by `id`.
 
+- id: closed-empty-object-example
+  kind: fern-defect
+  trigger: >-
+    A required argument whose schema is an object closed with
+    `additionalProperties: false` that declares no `properties`, and whose
+    `patternProperties`, if any, cannot hold a string: its usage example in
+    `README.md`, `reference.md` and the method's docstring.
+  fern: >-
+    The free-form placeholder `{"key": "value"}`, laid out over three lines in
+    `README.md` and `reference.md` and on one line in a docstring.
+  crozier: >-
+    `{}`, on one line, which the schema admits.
+  reason: >-
+    An example value invalid for its own schema: such an object admits no key
+    holding the string `"value"`, so validating `{"key": "value"}` against it
+    fails, and a snippet sending it sends a body the API's own schema rejects.
+  evidence: docs/departures/evidence/closed-empty-object-example.md
+
 - id: constant-header-docs-arguments
   kind: fern-defect
   trigger: >-

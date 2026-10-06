@@ -595,7 +595,8 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 9] = [
+pub const RULE_IDS: [&str; 10] = [
+    "closed-empty-object-example",
     "constant-header-docs-arguments",
     "fern-metadata-generator-config",
     "init-type-checking-import-order",
@@ -612,6 +613,11 @@ pub const RULE_IDS: [&str; 9] = [
 pub fn rule(id: &str) -> Option<Rule> {
     let none = Rule::default();
     Some(match id {
+        "closed-empty-object-example" => Rule {
+            region: Some(closed_empty_object_example_region),
+            line: Some(closed_empty_object_example_line),
+            added: None,
+        },
         "constant-header-docs-arguments" => Rule {
             region: Some(constant_header_docs_arguments),
             ..none
@@ -651,6 +657,93 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         _ => return None,
     })
+}
+
+/// Fern's free-form example placeholder, the value of `name={…}` in a snippet.
+const KEY_VALUE_PLACEHOLDER: &str = "\"key\": \"value\"";
+
+/// `(indentation, keyword)` of a snippet line `<indent><keyword>=<value>,` whose
+/// value is exactly `value`.
+fn keyword_argument<'l>(line: &'l str, value: &str) -> Option<(&'l str, &'l str)> {
+    let indent = &line[..line.len() - line.trim_start().len()];
+    let (keyword, rest) = line.trim_start().split_once('=')?;
+    let identifier = keyword
+        .chars()
+        .next()
+        .is_some_and(|first| first.is_ascii_alphabetic() || first == '_')
+        && keyword
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || ch == '_');
+    (identifier && rest == value).then_some((indent, keyword))
+}
+
+/// `closed-empty-object-example`, in a snippet laid out one argument per line:
+/// Fern's three lines `<indent><keyword>={`, `<indent>    "key": "value"`,
+/// `<indent>},` where crozier writes the one line `<indent><keyword>={},`.
+fn closed_empty_object_example_block(fern: &[&str], crozier: &str) -> bool {
+    let [open, member, close] = fern else {
+        return false;
+    };
+    let Some((indent, keyword)) = keyword_argument(open, "{") else {
+        return false;
+    };
+    *member == format!("{indent}    {KEY_VALUE_PLACEHOLDER}")
+        && *close == format!("{indent}}},")
+        && crozier == format!("{indent}{keyword}={{}},")
+}
+
+/// `closed-empty-object-example` in `README.md` or `reference.md`: the region
+/// from Fern's first three-line `{"key": "value"}` placeholder to its last.
+/// Every line before it is equal on both sides' line count, so the region
+/// starts at the same line on each; inside it, Fern's lines with each
+/// placeholder collapsed to crozier's `<keyword>={},` equal crozier's exactly.
+fn closed_empty_object_example_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let fern = pair.fern;
+    // Fern's lines with each placeholder collapsed, and the Fern and collapsed
+    // line ranges from the first placeholder to the end of the last.
+    let mut collapsed: Vec<String> = Vec::new();
+    let mut span: Option<(usize, usize, usize)> = None;
+    let mut index = 0;
+    while index < fern.len() {
+        let line = fern
+            .get(index..index + 3)
+            .and_then(|block| Some((block, keyword_argument(block[0], "{")?)))
+            .map(|(block, (indent, keyword))| (block, format!("{indent}{keyword}={{}},")))
+            .filter(|(block, line)| closed_empty_object_example_block(block, line));
+        if let Some((_, line)) = line {
+            let begin = span.map_or(index, |(begin, _, _)| begin);
+            collapsed.push(line);
+            index += 3;
+            span = Some((begin, index, collapsed.len()));
+        } else {
+            collapsed.push(fern[index].to_string());
+            index += 1;
+        }
+    }
+    let Some((begin, fern_end, end)) = span else {
+        return Ok(None);
+    };
+    let equal = pair.crozier.get(begin..end).is_some_and(|region| {
+        region
+            .iter()
+            .zip(&collapsed[begin..end])
+            .all(|(crozier, collapsed)| crozier == collapsed)
+    });
+    Ok(equal.then_some(Region {
+        fern: begin..fern_end,
+        crozier: begin..end,
+    }))
+}
+
+/// `closed-empty-object-example` written on one line, as a method docstring's
+/// example and a short snippet write it: Fern's `<indent><keyword>={"key":
+/// "value"},` where crozier's line is `<indent><keyword>={},`.
+fn closed_empty_object_example_line(_: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    keyword_argument(fern, &format!("{{{KEY_VALUE_PLACEHOLDER}}},"))
+        .is_some_and(|(indent, keyword)| crozier == format!("{indent}{keyword}={{}},"))
 }
 
 /// The SDK-relative path of Fern's own metadata record.
@@ -1991,6 +2084,97 @@ mod tests {
         assert_eq!(
             Context::from_trees(reference.path(), crozier.path()).reference_nullable_items(),
             &BTreeSet::from(["rows".to_string()])
+        );
+    }
+
+    #[test]
+    fn the_closed_empty_object_rule_recognises_only_the_placeholder_and_its_correction() {
+        let holds = |fern: &str, crozier: &str| {
+            closed_empty_object_example_line(&pair("src/fern/client.py", &[], &[]), fern, crozier)
+        };
+        assert!(holds(
+            "            profile={\"key\": \"value\"},",
+            "            profile={},"
+        ));
+        // Another value on either side, another keyword, or another indent.
+        assert!(!holds(
+            "            profile={\"key\": 1},",
+            "            profile={},"
+        ));
+        assert!(!holds(
+            "            profile={\"key\": \"value\"},",
+            "            profile={\"key\": \"value\"},"
+        ));
+        assert!(!holds(
+            "            profile={\"key\": \"value\"},",
+            "            notes={},"
+        ));
+        assert!(!holds(
+            "            profile={\"key\": \"value\"},",
+            "    profile={},"
+        ));
+        assert!(!holds(
+            "            1x={\"key\": \"value\"},",
+            "            1x={},"
+        ));
+
+        // The docs' region: from the first three-line placeholder to the last,
+        // everything between equal once each placeholder is collapsed.
+        let fern = [
+            "client.firings.schedule_firing(",
+            "    kiln=\"kiln\",",
+            "    profile={",
+            "        \"key\": \"value\"",
+            "    },",
+            ")",
+            "await client.firings.schedule_firing(",
+            "    profile={",
+            "        \"key\": \"value\"",
+            "    },",
+            ")",
+        ];
+        let crozier = [
+            "client.firings.schedule_firing(",
+            "    kiln=\"kiln\",",
+            "    profile={},",
+            ")",
+            "await client.firings.schedule_firing(",
+            "    profile={},",
+            ")",
+        ];
+        assert_eq!(
+            closed_empty_object_example_region(&pair("README.md", &fern, &crozier)),
+            Ok(Some(Region {
+                fern: 2..10,
+                crozier: 2..6
+            }))
+        );
+        // Only the README and the endpoint reference.
+        assert_eq!(
+            closed_empty_object_example_region(&pair("src/fern/client.py", &fern, &crozier)),
+            Ok(None)
+        );
+        // Anything else differing inside the region, or a placeholder crozier
+        // keeps, is not this departure.
+        let mut other = crozier;
+        other[3] = ");";
+        assert_eq!(
+            closed_empty_object_example_region(&pair("README.md", &fern, &other)),
+            Ok(None)
+        );
+        let open = ["    profile={", "        \"key\": \"value\"", "    },"];
+        assert_eq!(
+            closed_empty_object_example_region(&pair("reference.md", &open, &open)),
+            Ok(None)
+        );
+        let nested = ["    profile={", "        \"key\": 1", "    },"];
+        assert_eq!(
+            closed_empty_object_example_region(&pair(
+                "reference.md",
+                &nested,
+                &["    profile={},"]
+            )),
+            Ok(None)
         );
     }
 

@@ -362,6 +362,25 @@ Additional issue #77 real-world OpenAPI source specs:
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * BreizhSport Catalogue API: the publisher's own description at
+    https://raw.githubusercontent.com/ImNotAOwl/e-commerce_microservices_CATALOGUE_API/460aed0c7e313e2289330e76bb6607f4eef9c4f3/openapi.yaml.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 313 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * Protoform bookstore Connect API: the publisher's own description at
+    https://raw.githubusercontent.com/malinskibeniamin/protoform/a179fc14356cc98dce69402ae62c406107b0bf5b/openapi.yaml.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 314 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * ere-ps-app API: the publisher's own description at
+    https://raw.githubusercontent.com/ere-health/ere-ps-app/9d8958380a7bdf3fc2e94bd6747cf59bb6d96de5/openapi/openapi.json.
+    The repository's LICENSE at that same commit grants GPL-3.0
+    redistribution; corpus row 315 records the immutable reference.
+
   * Lootlog Battle Log API: the publisher's own description at
     https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml.
     The repository's LICENSE at that same commit grants MIT

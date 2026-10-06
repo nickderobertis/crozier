@@ -5108,6 +5108,9 @@ const CORPORA: &[&Corpus] = &[
     &OPENFOODFACTS_TAXONOMY_EDITOR,
     &QONTRACT_API,
     &OAL_EXAMPLE,
+    &BREIZHSPORT_CATALOGUE,
+    &PROTOFORM_CONFORMANCE,
+    &ERE_PS_APP,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -8042,6 +8045,45 @@ const OPENFOODFACTS_TAXONOMY_EDITOR: Corpus = Corpus {
 /// one-value `enum` that `required` leaves out
 const QONTRACT_API: Corpus = Corpus {
     api: "qontract-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `breizhsport-catalogue`: corpus row 313, whose `Article.rating` is declared
+/// `type: float` beside two `type: int` properties.
+const BREIZHSPORT_CATALOGUE: Corpus = Corpus {
+    api: "breizhsport-catalogue",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `protoform-conformance`: corpus row 314, whose `DeleteBook` answers with an
+/// inline object closed with `additionalProperties: false` and no `properties`.
+const PROTOFORM_CONFORMANCE: Corpus = Corpus {
+    api: "protoform-conformance",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `ere-ps-app`: corpus row 315, 48 of whose models reach two or more reference
+/// cycles in an order no sort of their members reproduces.
+const ERE_PS_APP: Corpus = Corpus {
+    api: "ere-ps-app",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14710,6 +14752,21 @@ fn qontract_api_matches_fern_output() {
 #[test]
 fn oal_example_matches_fern_output() {
     assert_committed_corpus_matches(&OAL_EXAMPLE);
+}
+
+#[test]
+fn breizhsport_catalogue_matches_fern_output() {
+    assert_committed_corpus_matches(&BREIZHSPORT_CATALOGUE);
+}
+
+#[test]
+fn protoform_conformance_matches_fern_output() {
+    assert_committed_corpus_matches(&PROTOFORM_CONFORMANCE);
+}
+
+#[test]
+fn ere_ps_app_matches_fern_output() {
+    assert_committed_corpus_matches(&ERE_PS_APP);
 }
 
 #[test]

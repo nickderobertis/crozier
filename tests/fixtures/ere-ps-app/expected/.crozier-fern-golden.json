@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "ere-ps-app",
+  "corpus_spec_ref": "9d8958380a7bdf3fc2e94bd6747cf59bb6d96de5",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ere-health/ere-ps-app/9d8958380a7bdf3fc2e94bd6747cf59bb6d96de5/openapi/openapi.json"
+}

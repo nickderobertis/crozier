@@ -1661,6 +1661,11 @@ pub struct BodyField {
     /// The field's `example` as a Python literal, shown in a worked snippet instead
     /// of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
+    /// Whether the property's schema admits only the empty object (an object
+    /// closed with `additionalProperties: false` that declares no `properties`),
+    /// so a worked snippet passes `{}` where Fern writes its `{"key": "value"}`
+    /// placeholder (the `closed-empty-object-example` departure).
+    pub admits_only_empty_object: bool,
     /// Whether a request media example explicitly selected this field.
     pub media_example: bool,
     /// Whether the field's body-level example came from the component schema
@@ -1834,6 +1839,9 @@ pub struct Field {
     /// The property's `example` as a Python literal, shown in a worked snippet
     /// instead of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
+    /// Whether the property's schema admits only the empty object; see
+    /// [`BodyField::admits_only_empty_object`].
+    pub admits_only_empty_object: bool,
     /// The `x-crozier-property-name` / `x-fern-property-name` the Python name was
     /// derived from instead of the wire name, kept so the request keyword
     /// argument an inlined body derives from this field takes it too.
@@ -4249,6 +4257,54 @@ fn schema_example_literal(schema: &Schema) -> Option<String> {
         })
 }
 
+/// Whether a schema rejects Fern's `{"key": "value"}` placeholder while
+/// admitting `{}`: an object closed with `additionalProperties: false` that
+/// declares no `properties`, written bare or as the sole member of a `oneOf` or
+/// `anyOf` ([`Field::admits_only_empty_object`]). A `patternProperties` whose
+/// value schemas could hold the string `"value"` might admit the placeholder,
+/// so such an object keeps it; cradl's `fieldConfig` patterns hold only objects.
+fn admits_only_empty_object(schema: &Schema) -> bool {
+    let closed = |schema: &Schema| {
+        is_closed_empty_object(schema)
+            && schema.pattern_properties.as_ref().is_none_or(|patterns| {
+                patterns
+                    .as_object()
+                    .is_some_and(|patterns| !patterns.values().any(may_hold_a_string))
+            })
+    };
+    closed(schema)
+        || matches!(
+            schema.one_of.as_deref().or(schema.any_of.as_deref()),
+            Some([only]) if closed(only)
+        )
+}
+
+/// Whether a JSON schema, as written, might accept a string value: anything
+/// but a schema whose `type` names no `string` or whose every `oneOf` / `anyOf`
+/// member is such a schema. A `$ref` or an unrecognised shape might.
+fn may_hold_a_string(schema: &serde_json::Value) -> bool {
+    let Some(schema) = schema.as_object() else {
+        return true;
+    };
+    if schema.contains_key("$ref") {
+        return true;
+    }
+    if let Some(members) = schema
+        .get("oneOf")
+        .or_else(|| schema.get("anyOf"))
+        .and_then(serde_json::Value::as_array)
+    {
+        return members.iter().any(may_hold_a_string);
+    }
+    match schema.get("type") {
+        Some(serde_json::Value::String(ty)) => ty == "string",
+        Some(serde_json::Value::Array(types)) => {
+            types.iter().any(|ty| ty.as_str() == Some("string"))
+        }
+        _ => true,
+    }
+}
+
 /// The example a property naming `target` by `$ref` takes from it. Fern's
 /// importer reads a map's own `example` alone — an object reads its full
 /// examples, the 3.1 `examples` array included — so a map declaring only
@@ -5632,6 +5688,7 @@ fn hoist_inline_object(
             collision_prefix: Some(naming::field_name(ctx)),
             inline_object: true,
             reference_order,
+            admits_only_empty_object: admits_only_empty_object(prop_schema),
         });
     }
     Some(fields)
@@ -6172,6 +6229,7 @@ impl InlineHoister<'_> {
                     let target = resolve_ref_from_schemas(self.schemas?, reference)?;
                     referenced_example_literal(target)
                 }),
+                admits_only_empty_object: admits_only_empty_object(prop_schema),
             });
         }
     }
@@ -6333,6 +6391,14 @@ impl InlineHoister<'_> {
                     return self.schemas.map_or_else(
                         || base_type_ref(member),
                         |schemas| full_type_ref_resolved(member, schemas),
+                    );
+                }
+                // A sole closed member with no properties is free-form, as the
+                // same member is on a component's property.
+                if members.len() == 1 && is_closed_empty_object(&members[0]) {
+                    return TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Any)),
                     );
                 }
                 if members.len() == 1 && is_inline_struct(&members[0]) {
@@ -6914,6 +6980,7 @@ fn hoist_form_object(
                 media_example: false,
                 schema_body_example: false,
                 reference_order,
+                admits_only_empty_object: admits_only_empty_object(prop_schema),
             }
         })
         .collect()
@@ -7068,6 +7135,7 @@ fn append_request_fields(
         media_example: false,
         schema_body_example: false,
         reference_order: 0,
+        admits_only_empty_object: f.admits_only_empty_object,
     }));
     for base in &obj.bases {
         if let Some(base_obj) = types.iter().find_map(|decl| match decl {
@@ -9044,6 +9112,7 @@ fn append_member_fields(
             spec_required,
             docstring: None,
             example: schema_example_literal(prop_schema),
+            admits_only_empty_object: admits_only_empty_object(prop_schema),
         });
     }
 }
@@ -10124,6 +10193,7 @@ impl Builder<'_> {
                             .and_then(referenced_example_literal)?;
                         Some(format!("[{item}]"))
                     }),
+                admits_only_empty_object: admits_only_empty_object(prop_schema),
             });
         }
     }
@@ -10366,6 +10436,7 @@ impl Builder<'_> {
                         docstring: None,
                         example: None,
                         declared_name: None,
+                        admits_only_empty_object: false,
                     }],
                     discriminant_index: None,
                     source: None,
@@ -12165,6 +12236,7 @@ fn is_inline_struct(schema: &Schema) -> bool {
                 && schema.properties.declared()
                 && schema.additional_properties.is_none())
             || (is_object_type(schema)
+                && schema.properties.declared()
                 && matches!(
                     schema.additional_properties,
                     Some(AdditionalProperties::Bool(false))
@@ -12376,7 +12448,11 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         }
         return TypeRef::Union(variants);
     }
-    if is_bare_object(schema) {
+    // An object closed with `additionalProperties: false` that declares no
+    // `properties` is free-form to Fern wherever it sits, the same as the bare
+    // form: an inline body property or inline response of that shape is
+    // `Dict[str, Any]`, not a hoisted empty model.
+    if is_bare_object(schema) || is_closed_empty_object(schema) {
         return TypeRef::Dict(
             Box::new(TypeRef::Primitive(Prim::Str)),
             Box::new(TypeRef::Primitive(Prim::Any)),
@@ -13391,6 +13467,7 @@ mod tests {
             docstring: None,
             example: None,
             declared_name: None,
+            admits_only_empty_object: false,
         }
     }
 
@@ -18281,17 +18358,27 @@ mod tests {
         );
 
         // Case 6, `schema.items>schema.additionalProperties=false`: the closed-object
-        // disjunct, against the other boolean of the same field.
+        // disjunct hoists a closed element declaring properties, against the other
+        // boolean of the same field. A closed element declaring none is free-form,
+        // as the open one is: Fern types it `List[List[Dict[str, Any]]]`.
         assert_eq!(
-            element(array_of(
-                serde_json::json!({ "type": "object", "additionalProperties": false })
-            )),
+            element(array_of(serde_json::json!({
+                "type": "object",
+                "additionalProperties": false,
+                "properties": { "id": { "type": "string" } }
+            }))),
             (
                 Some(TypeRef::List(Box::new(TypeRef::Named(
                     "RootItem".to_string()
                 )))),
                 vec!["Object(RootItem)".to_string()],
             )
+        );
+        assert_eq!(
+            element(array_of(
+                serde_json::json!({ "type": "object", "additionalProperties": false })
+            )),
+            (None, vec![])
         );
         assert_eq!(
             element(array_of(
@@ -18717,13 +18804,28 @@ mod tests {
             )
         );
 
-        // Cases 7c and 7d: the same helper's closed-object disjunct, against the
-        // open map the other boolean makes.
+        // Cases 7c and 7d: the same helper's closed-object disjunct, which hoists a
+        // closed item declaring properties, against the open map the other boolean
+        // makes. A closed item declaring none is that same map to Fern.
+        assert_eq!(
+            variant_ref(array_of(serde_json::json!({
+                "type": "object",
+                "additionalProperties": false,
+                "properties": { "id": { "type": "string" } }
+            }))),
+            hoisted_object_item
+        );
         assert_eq!(
             variant_ref(array_of(
                 serde_json::json!({ "type": "object", "additionalProperties": false })
             )),
-            hoisted_object_item
+            (
+                TypeRef::List(Box::new(TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Any)),
+                ))),
+                vec![],
+            )
         );
         assert_eq!(
             variant_ref(array_of(
@@ -18829,6 +18931,48 @@ mod tests {
     }
 
     #[test]
+    fn only_a_closed_object_that_rejects_the_placeholder_takes_an_empty_example() {
+        let holds = |value: serde_json::Value| super::admits_only_empty_object(&schema(value));
+        let closed = serde_json::json!({ "type": "object", "additionalProperties": false });
+        assert!(holds(closed.clone()));
+        assert!(holds(serde_json::json!({ "oneOf": [closed.clone()] })));
+        assert!(holds(serde_json::json!({ "anyOf": [closed.clone()] })));
+        // Patterns whose values can never be a string, as cradl's `fieldConfig`.
+        assert!(holds(serde_json::json!({
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^[a-z]+$": { "oneOf": [{ "type": "object" }, { "type": ["integer", "null"] }] }
+            }
+        })));
+        // Open, declaring properties, two members, or a pattern that might hold
+        // the placeholder's string: Fern's `{"key": "value"}` may be valid.
+        assert!(!holds(serde_json::json!({ "type": "object" })));
+        assert!(!holds(serde_json::json!({
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+        })));
+        assert!(!holds(
+            serde_json::json!({ "oneOf": [closed.clone(), closed.clone()] })
+        ));
+        for pattern in [
+            serde_json::json!({ "type": "string" }),
+            serde_json::json!({ "type": ["string", "null"] }),
+            serde_json::json!({ "$ref": "#/components/schemas/Label" }),
+            serde_json::json!({ "description": "anything" }),
+            serde_json::json!({ "anyOf": [{ "type": "object" }, { "type": "string" }] }),
+            serde_json::json!(true),
+        ] {
+            assert!(!holds(serde_json::json!({
+                "type": "object",
+                "additionalProperties": false,
+                "patternProperties": { "^.*$": pattern }
+            })));
+        }
+    }
+
+    #[test]
     fn prop_type_ref_separates_the_branches_its_selectors_name() {
         let property = |value: serde_json::Value| {
             let schemas = indexmap::IndexMap::new();
@@ -18886,9 +19030,13 @@ mod tests {
             (TypeRef::Primitive(Prim::Any), vec![])
         );
 
-        // Case 8d, `schema.properties>schema.additionalProperties=false`: the closed
-        // object hoists a model where the open one is `is_map`'s dictionary.
-        assert_eq!(property(closed.clone()), hoisted_object);
+        // Case 8d, `schema.properties>schema.additionalProperties=false`: a closed
+        // object declaring properties hoists a model, where one declaring none is
+        // free-form like the open one, `is_map`'s dictionary.
+        let mut closed_struct = struct_schema();
+        closed_struct["additionalProperties"] = serde_json::json!(false);
+        assert_eq!(property(closed_struct.clone()), hoisted_object);
+        assert_eq!(property(closed.clone()), (open_map.clone(), vec![]));
         assert_eq!(property(open.clone()), (open_map.clone(), vec![]));
 
         // Cases 11a and 11b, the two `sole-non-null-member` spellings: the nullable
@@ -18921,11 +19069,17 @@ mod tests {
         // a second member makes the arm an alias over a union, and an open map member
         // makes it an alias over a dictionary.
         for members in ["oneOf", "anyOf"] {
-            for member in [struct_schema(), closed.clone()] {
+            for member in [struct_schema(), closed_struct.clone()] {
                 let mut sole = serde_json::Map::new();
                 sole.insert(members.to_string(), serde_json::json!([member]));
                 assert_eq!(property(serde_json::Value::Object(sole)), hoisted_object);
             }
+            let mut sole_closed = serde_json::Map::new();
+            sole_closed.insert(members.to_string(), serde_json::json!([closed.clone()]));
+            assert_eq!(
+                property(serde_json::Value::Object(sole_closed)),
+                (open_map.clone(), vec![])
+            );
             let mut two = serde_json::Map::new();
             two.insert(
                 members.to_string(),

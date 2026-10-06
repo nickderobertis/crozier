@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "protoform-conformance",
+  "corpus_spec_ref": "a179fc14356cc98dce69402ae62c406107b0bf5b",
+  "corpus_spec_url": "https://raw.githubusercontent.com/malinskibeniamin/protoform/a179fc14356cc98dce69402ae62c406107b0bf5b/openapi.yaml"
+}

@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Kiln Studio
+  version: 1.0.0
+paths:
+  /firings:
+    post:
+      operationId: scheduleFiring
+      tags: [firings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kiln, profile]
+              properties:
+                kiln:
+                  type: string
+                profile:
+                  type: object
+                  additionalProperties: false
+                notes:
+                  type: object
+                  additionalProperties: false
+                ramp:
+                  oneOf:
+                    - type: object
+                      additionalProperties: false
+      responses:
+        '200':
+          description: The firing was scheduled.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+  /firings/{firingId}:
+    put:
+      operationId: amendFiring
+      tags: [firings]
+      parameters:
+        - name: firingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                glaze:
+                  type: object
+                  additionalProperties: false
+      responses:
+        '201':
+          description: The firing was amended.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
