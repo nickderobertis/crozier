@@ -7870,7 +7870,6 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
-    /// Whether `t` names an alias of a union.
     fn example_is_composite(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(_, _) => true,
