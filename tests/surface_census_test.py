@@ -12503,19 +12503,19 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
         selector = "parameter.schema:query-items-union"
         union = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
 
-        def query(name: str, schema: dict, location: str = "query") -> dict:
+        def parameter(name: str, schema: dict, location: str = "query") -> dict:
             return {"name": name, "in": location, "schema": schema}
 
         documents = {
             "positive": [
-                query("a", {"type": "array", "items": union}),
-                query("b", {"type": "array", "items": {"oneOf": [{"type": "string"}, {"type": "number"}]}}),
+                parameter("a", {"type": "array", "items": union}),
+                parameter("b", {"type": "array", "items": {"oneOf": [{"type": "string"}, {"type": "number"}]}}),
             ],
             "decoys": [
-                query("c", {"type": "array", "items": {"anyOf": [{"type": "string"}, {"type": "null"}]}}),
-                query("d", {"type": "array", "items": union}, "header"),
-                query("e", {"type": "array", "items": {"$ref": "#/components/schemas/Code"}}),
-                query("f", union),
+                parameter("c", {"type": "array", "items": {"anyOf": [{"type": "string"}, {"type": "null"}]}}),
+                parameter("d", {"type": "array", "items": union}, "header"),
+                parameter("e", {"type": "array", "items": {"$ref": "#/components/schemas/Code"}}),
+                parameter("f", union),
             ],
         }
         with tempfile.TemporaryDirectory() as directory:

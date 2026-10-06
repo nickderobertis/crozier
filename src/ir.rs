@@ -2774,7 +2774,8 @@ fn build_endpoint(
                 py_name: naming::field_name(&p.name),
                 // A path value that reaches nothing but scalars is interpolated as
                 // text, the same guard the query arm applies.
-                convert: hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref),
+                convert: hoister.needs_convert(&type_ref)
+                    && !hoister.reaches_url_as_scalars(&type_ref),
                 type_ref,
                 docstring: declared_doc(p.description.as_deref()),
                 // Without an importer example Fern's IR fallback reads no declared
@@ -2886,7 +2887,8 @@ fn build_endpoint(
             // A union with a `date` or `date-time` member is converted all the
             // same: its value may be one Pydantic serializes.
             let convert = hoister.needs_convert(&type_ref)
-                && (!hoister.is_scalar(&type_ref) || hoister.has_temporal_member(&type_ref));
+                && (!hoister.reaches_url_as_scalars(&type_ref)
+                    || hoister.has_temporal_member(&type_ref));
             let required = p.required == Some(true);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example =
@@ -6753,7 +6755,7 @@ impl InlineHoister<'_> {
     /// a name among the package-root types and the inline types just hoisted
     /// together, since a hoisted alias may name a root enum. An array reaches it
     /// element by element, so it is its element that decides.
-    fn is_scalar(&self, t: &TypeRef) -> bool {
+    fn reaches_url_as_scalars(&self, t: &TypeRef) -> bool {
         let element = match t {
             TypeRef::List(item) | TypeRef::Set(item) => item,
             other => other,
@@ -16554,7 +16556,8 @@ mod tests {
             &TypeRef::Named("FeedsListFeedsRequestOffset".to_string()),
             &hoister.out
         ));
-        assert!(hoister.is_scalar(&TypeRef::Named("FeedsListFeedsRequestOffset".to_string())));
+        assert!(hoister
+            .reaches_url_as_scalars(&TypeRef::Named("FeedsListFeedsRequestOffset".to_string())));
         let unknown_union = TypeDecl::Alias(AliasType {
             reach_refs: Vec::new(),
             name: "UnknownUnion".to_string(),
