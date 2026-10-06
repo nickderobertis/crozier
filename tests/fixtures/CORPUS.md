@@ -1544,3 +1544,20 @@ streams bytes (rows 322, 323); and a JSON request body declaring no schema
 sends nothing, where crozier dropped the whole method (row 324); and an empty
 `requestBody.description` is a description, so the body keeps its JSON
 content-type header (row 325).
+
+## Row 326 — a JSON body property sharing its name with a query parameter
+
+Where an inline JSON body property and a query parameter share a name, Fern
+keeps both in the signature, renaming the body argument, and then sends the
+query parameter's value under the body's key. The Waylay query API's
+`execute_query` declares that collision on several properties:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 326 | `waylay-queries` | inline JSON body properties sharing their names with query parameters | ✅ byte-matched after one repair, with the `body-query-parameter-value` departure |
+
+The repair: crozier keeps Fern's signature and query mapping, and sends the
+renamed body argument under the body key. That one substitution is the
+catalogued `body-query-parameter-value` departure, a Fern defect
+([evidence](../../docs/departures/evidence/body-query-parameter-value.md)),
+pinned line by line in `departures-ledger.tsv`.
