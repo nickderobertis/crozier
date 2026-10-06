@@ -12098,6 +12098,39 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-read the census's union port of src/ir.rs's {name}",
                 )
 
+    def test_the_schema_and_response_ports_track_their_rust_functions(self) -> None:
+        """Closed object and success selection ports.
+
+        Each function of `src/ir.rs` the schema and response ports read is pinned by the same
+        normalized-body digest, so an edit there fails here until the port is
+        read again.
+        """
+        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
+        for name, pinned in census.SCHEMA_RESPONSE_PORT_DIGESTS.items():
+            start = next(
+                (index for index, line in enumerate(lines)
+                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+            )
+            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            depth, started = 0, False
+            for end in range(start, len(lines)):
+                for char in lines[end]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                if started and depth == 0:
+                    break
+            kept = [
+                " ".join(line.split()) for line in lines[start:end + 1]
+                if line.strip() and not line.strip().startswith("//")
+            ]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-read the census's schema or response port of src/ir.rs's {name}",
+                )
+
     def test_the_port_reproduces_croziers_own_class_name_expectations(self) -> None:
         """The class-name side of the same mirror.
 
@@ -12529,7 +12562,8 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
         documents = {
             "positive": {"paths": {"/a": operation(
                 {"type": "object", "properties": {
-                    "profile": closed, "notes": closed, "kiln": {"type": "string"},
+                    "profile": closed, "notes": closed, "inferred": {"additionalProperties": False},
+                    "kiln": {"type": "string"},
                 }},
                 {"200": {"type": "string"}},
             )}},
@@ -12546,7 +12580,7 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
             },
         }
         selector = "mediaType.schema:closed-empty-object-property"
-        self.assertEqual({(selector, "positive"): 2}, self.census_one(selector, documents))
+        self.assertEqual({(selector, "positive"): 3}, self.census_one(selector, documents))
 
     def test_misspelled_scalar_counts_five_type_names_and_not_their_neighbours(self) -> None:
         """`schema.type:misspelled-scalar`: `double`, `int32`, `long`, `bool`, `decimal`.
@@ -12756,6 +12790,25 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         return rows(completed)
+
+    def test_success_selection_prefers_200_and_skips_unusable_media(self) -> None:
+        selector = "operation.responses:schemaless-text-success"
+        text = {"description": "text", "content": {"text/plain": {}}}
+        json_response = {"description": "json", "content": {
+            "application/json": {"schema": {"type": "string"}}}}
+        documents = {
+            "positive": {"paths": {
+                "/preferred": {"get": self.operation(responses={"201": json_response, "200": text})},
+                "/fallback": {"get": self.operation(responses={
+                    "200": {"description": "unusable", "content": {"/*": {}}}, "201": text})},
+                "/default": {"get": self.operation(responses={"default": text})},
+            }},
+            "decoys": {"paths": {
+                "/preferred": {"get": self.operation(responses={"201": text, "200": json_response})},
+                "/empty": {"get": self.operation(responses={"200": {"description": "empty"}, "201": text})},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 3}, self.census(selector, documents))
 
     def test_a_body_prefixed_body_counts_only_posted_once(self) -> None:
         selector = "operation.requestBody:body-prefixed-single-use"

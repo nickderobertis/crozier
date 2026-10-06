@@ -3107,6 +3107,15 @@ UNION_PORT_DIGESTS = {
 }
 
 
+# Schema and response ports share the Rust-body drift gate used by the union ports.
+SCHEMA_RESPONSE_PORT_DIGESTS = {
+    "is_closed_empty_object": "eb83d5799078bfd2",
+    "is_object_type": "94e34f083d5e67d8",
+    "success_response_entry": "69180ab47794ff99",
+    "has_dispatchable_media": "0d3fe2386094f82f",
+}
+
+
 def required_names(node: dict[Any, Any]) -> list[str]:
     """One schema's `required` array, as the `Vec<String>` `serde` reads it."""
     required = node.get("required")
@@ -3865,7 +3874,7 @@ def is_closed_empty_object(schema: Any) -> bool:
     return (
         isinstance(schema, dict)
         and "$ref" not in schema
-        and primary_type(schema.get("type")) == "object"
+        and (primary_type(schema.get("type")) == "object" or schema.get("type") is None)
         and "properties" not in schema
         and "allOf" not in schema
         and schema.get("additionalProperties") is False
@@ -4185,11 +4194,25 @@ class Census:
         responses = operation.get("responses")
         if not isinstance(responses, dict):
             return None, None
-        for code, value in responses.items():
-            text = str(code)
-            if text.isdigit() and 200 <= int(text) < 300:
-                return value, self.local_component("responses", value)
-        return None, None
+        resolved = {str(code): self.local_component("responses", value)
+                    for code, value in responses.items()}
+
+        def dispatchable(response: Any) -> bool:
+            content = response.get("content") if isinstance(response, dict) else None
+            return not isinstance(content, dict) or not content or any(
+                isinstance(media, str) and "/" in media and all(media.split("/", 1))
+                for media in content
+            )
+
+        key = "200" if "200" in resolved and dispatchable(resolved["200"]) else next(
+            (code for code, value in resolved.items()
+             if code.isdigit() and 200 <= int(code) < 300 and dispatchable(value)),
+            "default" if "default" in resolved else None,
+        )
+        if key is None:
+            return None, None
+        written = next(value for code, value in responses.items() if str(code) == key)
+        return written, resolved[key]
 
     def has_parameters(self, operation: dict[Any, Any], url: str) -> bool:
         """Whether the operation or its Path Item declares any parameter."""
@@ -4285,27 +4308,7 @@ class Census:
 
     def wildcard_binary_response(self, operation: dict[Any, Any]) -> bool:
         """`has_wildcard_binary_response` of `src/ir.rs`, over `success_response_entry`."""
-        responses = operation.get("responses")
-        if not isinstance(responses, dict):
-            return False
-        resolved = {str(code): self.local_component("responses", value) for code, value in responses.items()}
-
-        def dispatchable(response: Any) -> bool:
-            content = response.get("content") if isinstance(response, dict) else None
-            if not isinstance(content, dict) or not content:
-                return True
-            return any(
-                isinstance(media, str) and "/" in media and all(media.split("/", 1))
-                for media in content
-            )
-
-        success = resolved.get("200") if dispatchable(resolved.get("200")) and "200" in resolved else None
-        if success is None:
-            success = next(
-                (response for code, response in resolved.items()
-                 if code.isdigit() and 200 <= int(code) < 300 and dispatchable(response)),
-                resolved.get("default"),
-            )
+        _, success = self.success_entry(operation)
         content = success.get("content") if isinstance(success, dict) else None
         media = content.get("*/*") if isinstance(content, dict) else None
         schema = media.get("schema") if isinstance(media, dict) else None
