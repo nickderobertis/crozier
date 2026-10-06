@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 192 of the 225 registered sources live in `corpus-sources/` (a split
+  and 195 of the 228 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1049,6 +1049,27 @@ PREDICATES = {
     "mediaType.examples:named-only": "one per request body's selected JSON media type writing a named example that resolves to a value and no non-null example, so reference.md documents the first named one",
     "operation.responses:wildcard-binary": "one per Operation Object whose success response, chosen as has_wildcard_binary_response chooses it, serves */* with an inline string schema of format binary: the endpoint mode build_example_inner reads before it renders any parameter example",
     "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
+    "components.schemas:cycle-into-cycle": (
+        "one per component schema composing no `oneOf` or `anyOf` that names, "
+        "anywhere in its own body, a member of a reference cycle that has an "
+        "edge into a different reference cycle the schema itself names no member "
+        "of: `forward_repair_map` of `src/emit.rs` repairs the model with the "
+        "first cycle only"
+    ),
+    "components.schemas:fields-reach-cycles-unsorted": (
+        "one per component schema composing no `oneOf` or `anyOf` whose "
+        "`properties`, read in order, name members "
+        "of two or more different reference cycles, and whose cycles' members, "
+        "each cycle sorted and the cycles in the order the properties first reach "
+        "them, are not in sorted order: the trailing deferred imports "
+        "`object_deferred_order` of `src/emit.rs` writes"
+    ),
+    "mediaType.schema:closed-empty-object-property": (
+        "one per inline schema `{type: object, additionalProperties: false}` "
+        "declaring no `properties` that is a property of a request body's selected "
+        "JSON media type's inline schema: `base_type_ref` of `src/ir.rs` types it "
+        "`Dict[str, Any]` where `is_inline_struct` once hoisted an empty model"
+    ),
     "components.schemas:same-primitive-union": (
         "one per component schema whose `oneOf` (else `anyOf`) holds two or more "
         "inline scalar alternatives that all convert to one primitive and nothing "
@@ -1098,6 +1119,13 @@ PREDICATES = {
         "one per Schema Object whose `type` names `object` first among its non-`null` "
         "members, which is the first disjunct of `is_object_type` of `src/ir.rs` and "
         "the reading every arm that asks whether a schema closes an object makes"
+    ),
+    "schema.type:misspelled-scalar": (
+        "one per Schema Object whose `type` names `double`, `int32`, `long`, "
+        "`bool` or `decimal`: no OpenAPI type, which Fern reads as unknown and "
+        "`base_type_ref` of `src/ir.rs` types `Any` too; `float`, which "
+        "`normalize_float_type` of `src/openapi.rs` reads as a number, and `int` "
+        "are its two witnessed neighbours, kept apart"
     ),
     "schema.type:primary-scalar": (
         "one per Schema Object whose `type` names `string`, `number`, `integer` or "
@@ -1683,7 +1711,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "d18b44f1eb2c3221",
-    "prop_type_ref": "98ec4d7137906c59",
+    "prop_type_ref": "e2046726db880b3c",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -2457,7 +2485,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "c9024c0dc3d061e1",
+    "endpoint_method_name": "88e1af6b7b444d6b",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3008,7 +3036,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 UNION_PORT_DIGESTS = {
     "inferred_discriminant_property_with": "e89b0d632c061c3f",
     "same_primitive_union_last": "46bacd9b81edeea4",
-    "base_type_ref": "f433a87f0ba17562",
+    "base_type_ref": "aed18925c5369dea",
 }
 
 
@@ -3749,6 +3777,145 @@ def request_body_media(document: Any) -> set[int]:
     return selected
 
 
+def is_closed_empty_object(schema: Any) -> bool:
+    """`is_closed_empty_object` of `src/ir.rs`: closed, object-typed, no `properties`."""
+    return (
+        isinstance(schema, dict)
+        and "$ref" not in schema
+        and primary_type(schema.get("type")) == "object"
+        and "properties" not in schema
+        and "allOf" not in schema
+        and schema.get("additionalProperties") is False
+    )
+
+
+_NOT_SCHEMA_FIELDS = frozenset({"example", "examples", "default", "enum", "const"})
+
+
+def component_refs(node: Any) -> list[str]:
+    """The component schemas a schema names, in document order, `x-` keys unread."""
+    prefix = "#/components/schemas/"
+    found: list[str] = []
+
+    def walk(value: Any) -> None:
+        if isinstance(value, dict):
+            reference = value.get("$ref")
+            if isinstance(reference, str) and reference.startswith(prefix):
+                name = reference[len(prefix):]
+                if name not in found:
+                    found.append(name)
+                return
+            for key, child in value.items():
+                if isinstance(key, str) and not key.startswith("x-") and key not in _NOT_SCHEMA_FIELDS:
+                    walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+
+    walk(node)
+    return found
+
+
+def reference_cycles(schemas: dict[Any, Any]) -> dict[str, frozenset[str]]:
+    """Each component schema on a reference cycle, mapped to that cycle's members.
+
+    A cycle is a strongly connected component of the `components.schemas` `$ref`
+    graph with two or more members, or one member naming itself.
+    """
+    edges = {
+        name: [target for target in component_refs(schema) if target in schemas]
+        for name, schema in schemas.items() if isinstance(name, str)
+    }
+    index: dict[str, int] = {}
+    low: dict[str, int] = {}
+    stack: list[str] = []
+    on_stack: set[str] = set()
+    cycles: dict[str, frozenset[str]] = {}
+    for root in edges:
+        if root in index:
+            continue
+        frames = [(root, iter(edges[root]))]
+        index[root] = low[root] = len(index)
+        stack.append(root)
+        on_stack.add(root)
+        while frames:
+            node, pending = frames[-1]
+            following = next(pending, None)
+            if following is not None:
+                if following not in index:
+                    index[following] = low[following] = len(index)
+                    stack.append(following)
+                    on_stack.add(following)
+                    frames.append((following, iter(edges[following])))
+                elif following in on_stack:
+                    low[node] = min(low[node], index[following])
+                continue
+            frames.pop()
+            if frames:
+                parent = frames[-1][0]
+                low[parent] = min(low[parent], low[node])
+            if low[node] == index[node]:
+                members: set[str] = set()
+                while True:
+                    member = stack.pop()
+                    on_stack.discard(member)
+                    members.add(member)
+                    if member == node:
+                        break
+                if len(members) > 1 or node in edges[node]:
+                    for member in members:
+                        cycles[member] = frozenset(members)
+    return cycles
+
+
+def reference_cycle_predicates(schemas: Any) -> list[str]:
+    """`components.schemas:fields-reach-cycles-unsorted` and `:cycle-into-cycle`."""
+    if not isinstance(schemas, dict):
+        return []
+    cycles = reference_cycles(schemas)
+    edges = {
+        name: [target for target in component_refs(schema) if target in schemas]
+        for name, schema in schemas.items() if isinstance(name, str)
+    }
+    found: list[str] = []
+    for name, schema in schemas.items():
+        # Only a model takes `update_forward_refs`: a schema composing `oneOf` or
+        # `anyOf` beside its `properties` is a union alias (mockserver's
+        # `Expectation` is `typing.Union[typing.Any]`), whatever its fields reach.
+        if (
+            not isinstance(name, str) or name.startswith("x-") or not isinstance(schema, dict)
+            or "oneOf" in schema or "anyOf" in schema
+        ):
+            continue
+        properties = schema.get("properties")
+        if isinstance(properties, dict):
+            order: list[str] = []
+            reached: list[frozenset[str]] = []
+            for value in properties.values():
+                for target in component_refs(value):
+                    cycle = cycles.get(target)
+                    if cycle is None:
+                        continue
+                    if cycle not in reached:
+                        reached.append(cycle)
+                    order += [member for member in sorted(cycle - {name}) if member not in order]
+            if len(reached) > 1 and order != sorted(order):
+                found.append("components.schemas:fields-reach-cycles-unsorted")
+        named = [target for target in component_refs(schema) if target in schemas]
+        named_cycles = {cycles[target] for target in named if target in cycles}
+        for cycle in named_cycles:
+            downstream = {
+                cycles[target]
+                for member in cycle
+                for target in edges.get(member, [])
+                if target in cycles and cycles[target] != cycle
+            }
+            if downstream - named_cycles:
+                found.append("components.schemas:cycle-into-cycle")
+                break
+    return found
+
+
 def parameter_schema_is_scalar(schema: Any) -> bool:
     """`example_is_scalar`'s test of a query parameter's (once-resolved) schema."""
     def scalar(candidate: Any) -> bool:
@@ -3875,6 +4042,15 @@ class Census:
                 found.append("operation.operationId:digit-leading-method")
             if self.wildcard_binary_response(node):
                 found.append("operation.responses:wildcard-binary")
+        if kind_name == "mediaType":
+            schema = node.get("schema")
+            if id(node) in self.request_media and isinstance(schema, dict) and "$ref" not in schema:
+                properties = schema.get("properties")
+                found += [
+                    "mediaType.schema:closed-empty-object-property"
+                    for value in (properties.values() if isinstance(properties, dict) else [])
+                    if is_closed_empty_object(value)
+                ]
         if kind_name == "mediaType" and id(node) in self.request_media:
             named = self.resolvable_named_example(node.get("examples"))
             if named:
@@ -3970,6 +4146,7 @@ class Census:
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))
             found += self.same_primitive_unions(node.get("schemas"))
+            found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
         found += self.position_predicates(node, kind_name)
         if kind_name == "schema" and not is_reference_node(node, kind_name):
@@ -4235,6 +4412,8 @@ class Census:
             found.append("schema.type:primary=object")
         if primary in ("string", "number", "integer", "boolean"):
             found.append("schema.type:primary-scalar")
+        if primary in ("double", "int32", "long", "bool", "decimal"):
+            found.append("schema.type:misspelled-scalar")
         all_of = node.get("allOf")
         if isinstance(all_of, list) and len(all_of) == 1:
             found.append("schema.allOf:sole-member")
@@ -4394,6 +4573,10 @@ class Census:
             ) or member.get("nullable") is True:
                 return None
             kind, form = member.get("type"), member.get("format")
+            # `normalize_float_type` of `src/openapi.rs` runs first and reads the
+            # non-standard `type: float` as a number its `format` cannot narrow.
+            if kind == "float":
+                return "float"
             if kind == "string":
                 return {"date-time": "datetime", "date": "date"}.get(form, "str")
             if kind == "integer":

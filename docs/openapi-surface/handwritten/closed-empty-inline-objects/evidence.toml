@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "4c642735b3f2576bdccbff786890808e40f91702132b724020b4912acf2747ce"
+
+[[covers]]
+key = "request-body-property-closed-empty-object"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-type-and-cycle-shapes/README.md"
