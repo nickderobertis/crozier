@@ -9122,6 +9122,23 @@ struct FlatGolden {
 /// project name reaches no file of it (see docs/matching.md).
 const FLAT_GOLDENS: &[FlatGolden] = &[
     FlatGolden {
+        fixture: "swagger-petstore",
+        corpus: None,
+    },
+    FlatGolden {
+        fixture: "swagger-petstore-distribution",
+        corpus: Some(&Corpus {
+            api: "swagger-petstore",
+            package_name: "acme",
+            project_name: "acme-dist",
+            audiences: &[],
+            audience_strict: false,
+            client_class_name: None,
+            extra_fields: None,
+            unmatched: &[],
+        }),
+    },
+    FlatGolden {
         fixture: "exhaustive",
         corpus: None,
     },
@@ -9293,6 +9310,8 @@ macro_rules! flat_goldens {
 }
 
 flat_goldens! {
+    swagger_petstore_flat_matches_fern => "swagger-petstore",
+    swagger_petstore_distribution_flat_matches_fern => "swagger-petstore-distribution",
     exhaustive_flat_matches_fern => "exhaustive",
     client_class_name_flat_matches_fern => "client-class-name",
     audience_filter_strict_flat_matches_fern => "audience-filter-strict",

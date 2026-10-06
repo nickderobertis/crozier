@@ -2338,6 +2338,9 @@ tests/fixtures/svix-webhooks/expected	src/fern/core/client_wrapper.py	37	sdk-ide
 tests/fixtures/svix-webhooks/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/svix-webhooks/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/svix-webhooks/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/swagger-petstore-distribution/expected-flat	core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/swagger-petstore-distribution/expected-flat	core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/swagger-petstore-distribution/expected-flat	core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/swagger-petstore-organization/expected-flat	README.md	58	readme-client-class-casing
 tests/fixtures/swagger-petstore-organization/expected-flat	README.md	59	readme-client-class-casing
 tests/fixtures/swagger-petstore-organization/expected-flat	README.md	61	readme-client-class-casing
@@ -2394,6 +2397,9 @@ tests/fixtures/swagger-petstore/expected	src/fern/core/client_wrapper.py	39	sdk-
 tests/fixtures/swagger-petstore/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/swagger-petstore/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/swagger-petstore/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+tests/fixtures/swagger-petstore/expected-flat	core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/swagger-petstore/expected-flat	core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/swagger-petstore/expected-flat	core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/tag-based-grouping/expected	src/fern/__init__.py	12	init-type-checking-import-order
 tests/fixtures/tag-based-grouping/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/tag-based-grouping/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

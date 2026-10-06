@@ -12,6 +12,8 @@
 # already-registered document, differing only by a setting. Empty means the
 # fixture's own spec (vendored, or fetched for a CORPUS.md row).
 # fixture|spec
+swagger-petstore|
+swagger-petstore-distribution|swagger-petstore
 exhaustive|
 client-class-name|
 audience-filter-strict|

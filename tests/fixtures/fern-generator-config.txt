@@ -17,3 +17,4 @@ exhaustive-package-name||false|||acme
 apideck.com-ecosystem-client-class-name||false|EcosystemClient|
 swagger-petstore-organization||false|||PetStore
 marimo-client-class-name||false|DispatchClient|
+swagger-petstore-distribution||false|||acme

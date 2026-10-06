@@ -125,7 +125,7 @@ fn the_migration_guide_workflow_runs_as_written() {
     // The Fern golden for this API under organization `acme`, written flat.
     let fixture = root().join("tests/fixtures");
     copy_file(
-        &fixture.join("exhaustive/openapi.yml"),
+        &fixture.join("corpus-sources/swagger-petstore/openapi.yaml"),
         &in_repo(repo, spec),
     );
     copy_file(
@@ -136,7 +136,7 @@ fn the_migration_guide_workflow_runs_as_written() {
     let golden_dir = tempfile::tempdir().unwrap();
     let golden = golden_dir.path().join("reference");
     copy_tree(
-        &fixture.join("exhaustive-package-name/expected-flat"),
+        &fixture.join("swagger-petstore-distribution/expected-flat"),
         &golden,
     );
 
