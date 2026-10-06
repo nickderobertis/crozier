@@ -4412,10 +4412,13 @@ fn url_arg(ep: &Endpoint, imports: &mut Imports) -> String {
         let mut rendered = stripped.to_string();
         // A placeholder the document's base path lifts to the client reads the
         // value the client was constructed with.
-        for (wire_name, py_name) in &ep.client_path_params {
+        for lifted in &ep.client_path_params {
             rendered = rendered.replace(
-                &format!("{{{wire_name}}}"),
-                &format!("{{encode_path_param(self._client_wrapper._{py_name})}}"),
+                &format!("{{{}}}", lifted.wire_name),
+                &format!(
+                    "{{encode_path_param(self._client_wrapper._{})}}",
+                    lifted.py_name
+                ),
             );
         }
         for pp in &ep.path_params {

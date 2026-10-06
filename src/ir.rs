@@ -1218,9 +1218,9 @@ pub struct Endpoint {
     pub path: String,
     /// Path parameters, in declaration order.
     pub path_params: Vec<PathParam>,
-    /// The `(wire, Python)` names of the path's placeholders the document's base
-    /// path lifts to the client: the route reads each from the client wrapper.
-    pub client_path_params: Vec<(String, String)>,
+    /// The path's placeholders the document's base path lifts to the client:
+    /// the route reads each from the client wrapper.
+    pub client_path_params: Vec<ClientPathParameter>,
     /// Query parameters, in declaration order.
     pub query_params: Vec<QueryParam>,
     /// Header parameters, in declaration order.
@@ -2741,17 +2741,15 @@ fn build_endpoint(
         "{}{path}",
         base_path.map_or("", crate::openapi::BasePath::route_prefix)
     );
-    let client_path_params: Vec<(String, String)> = base_path
-        .map(crate::openapi::BasePath::parameters)
-        .unwrap_or_default()
+    let client_path_params: Vec<ClientPathParameter> = base_path_client_parameters(doc)
         .into_iter()
-        .filter(|parameter| route.contains(&format!("{{{}}}", parameter.name)))
-        .map(|parameter| (naming::field_name(&parameter.name), parameter.name))
-        .map(|(py_name, wire_name)| (wire_name, py_name))
+        .filter(|parameter| route.contains(&format!("{{{}}}", parameter.wire_name)))
         .collect();
     let lifted = |p: &crate::openapi::Parameter| {
         p.location == Some(ParameterLocation::Path)
-            && client_path_params.iter().any(|(wire, _)| *wire == p.name)
+            && client_path_params
+                .iter()
+                .any(|lifted| lifted.wire_name == p.name)
     };
     let mut path_params: Vec<PathParam> = op
         .parameters
@@ -2811,7 +2809,9 @@ fn build_endpoint(
         if path_params
             .iter()
             .any(|declared| declared.wire_name == name)
-            || client_path_params.iter().any(|(wire, _)| wire == name)
+            || client_path_params
+                .iter()
+                .any(|lifted| lifted.wire_name == name)
         {
             continue;
         }

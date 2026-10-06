@@ -98,12 +98,32 @@ pub enum BasePath {
         /// not prefixed again.
         #[serde(rename = "paths-include-base-path", default)]
         paths_include_base_path: bool,
-        /// The lifted parameters' schemas. Only the map form (`name: schema`)
-        /// gives one a default; Fern reads a list of Parameter Objects as naming
-        /// no defaults.
+        /// The lifted parameters' schemas.
         #[serde(default)]
-        parameters: Option<serde_json::Value>,
+        parameters: Option<BasePathParameters>,
     },
+}
+
+/// The object form's `parameters`. Only the map form gives a parameter a
+/// default; Fern reads a list of Parameter Objects as naming no defaults.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum BasePathParameters {
+    /// `name: schema`, each schema read for its `default`.
+    Map(IndexMap<String, BasePathParameterSchema>),
+    /// A list of Parameter Objects.
+    List(Vec<serde_json::Value>),
+    /// Anything else, which names no defaults rather than failing the document.
+    Other(serde_json::Value),
+}
+
+/// The part of a map-form parameter schema a lifted parameter reads.
+#[derive(Debug, Clone, Deserialize)]
+pub struct BasePathParameterSchema {
+    /// The schema's `default`, which makes the argument optional when it is a
+    /// string.
+    #[serde(default)]
+    pub default: Option<serde_json::Value>,
 }
 
 /// A placeholder of the base path, lifted to a client constructor argument.
@@ -148,7 +168,7 @@ impl BasePath {
     pub fn parameters(&self) -> Vec<BasePathParameter> {
         let declared = match self {
             Self::Object {
-                parameters: Some(serde_json::Value::Object(map)),
+                parameters: Some(BasePathParameters::Map(map)),
                 ..
             } => Some(map),
             _ => None,
@@ -162,7 +182,7 @@ impl BasePath {
             let name = &rest[open + 1..open + close];
             let default = declared
                 .and_then(|map| map.get(name))
-                .and_then(|schema| schema.get("default"))
+                .and_then(|schema| schema.default.as_ref())
                 .and_then(serde_json::Value::as_str)
                 .map(str::to_owned);
             if !name.is_empty() && out.iter().all(|p: &BasePathParameter| p.name != name) {
@@ -3318,6 +3338,26 @@ mod tests {
         .expect("the list form deserializes");
         assert_eq!(list.route_prefix(), "/{edition}");
         assert_eq!(list.parameters()[0].default, None);
+        assert!(matches!(
+            list,
+            BasePath::Object {
+                parameters: Some(BasePathParameters::List(_)),
+                ..
+            }
+        ));
+        // Any other spelling names no default rather than failing the document.
+        let other: BasePath = serde_json::from_value(serde_json::json!({
+            "path": "/{edition}",
+            "parameters": "edition"
+        }))
+        .expect("another spelling deserializes");
+        assert_eq!(
+            other.parameters(),
+            [BasePathParameter {
+                name: "edition".into(),
+                default: None
+            }]
+        );
         // The string form prefixes every route; an unclosed brace names nothing.
         let string: BasePath =
             serde_json::from_value(serde_json::json!("/v1/{open")).expect("string form");
