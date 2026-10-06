@@ -1427,13 +1427,16 @@ fn compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_diff
 /// departures `expected` lists among those whose id starts `lifted-`,
 /// `constant-` or `nullable-` — each by catalog id, file and line, and exactly
 /// the ledger's rows for that golden — and it fails, naming the file, once the
-/// reference is edited by any of `edits` (`name`, file, `sed` expression) so one
-/// more line differs.
+/// reference is edited by any of `edits` (`name`, file, line, replacement: the
+/// file's first line equal to `line` becomes `replacement`) so one more line
+/// differs. The edits are made here rather than by `sed` in the reference
+/// script, whose line-range addresses and replacement newlines BSD and GNU
+/// sed spell differently.
 #[cfg(unix)]
 fn parameter_docs_departure_journey(
     case: &str,
     expected: &[(&str, usize, &str)],
-    edits: &[(&str, &str, &str)],
+    edits: &[(&str, &str, &str, &str)],
 ) {
     let golden = format!("docs/fern-measurements/parameter-lowering/{case}/fern-expected");
     let case = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -1447,26 +1450,25 @@ fn parameter_docs_departure_journey(
         "openapi.yml",
         &std::fs::read_to_string(case.join("openapi.yml")).unwrap(),
     );
-    // `reference.sh [edit]`: copy the committed Fern tree, then apply one edit,
-    // failing when it changes nothing.
-    let arms: String = edits
-        .iter()
-        .map(|(name, file, edit)| format!("\x20 {name}) file={file}; edit='{edit}' ;;\n"))
-        .collect();
+    // `reference.sh [edit]`: copy the committed Fern tree, then overlay the one
+    // file `edit` names, edited here.
+    let fern = case.join("fern-expected");
+    for (name, file, line, replacement) in edits {
+        let text = std::fs::read_to_string(fern.join(file)).unwrap();
+        let edited = replace_first_line(&text, line, replacement)
+            .unwrap_or_else(|| panic!("{name}: {file} holds no line {line:?}"));
+        assert_ne!(edited, text, "{name}: the edit changes nothing");
+        write(root, &format!("edits/{name}/{file}"), &edited);
+    }
     write_script(
         root,
         "scripts/reference.sh",
         &format!(
             "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
              cp -R '{}'/. \"$out\"\n\
-             case \"${{1:-}}\" in\n\
-             {arms}\
-             \x20 *) exit 0 ;;\n\
-             esac\n\
-             sed \"$edit\" \"$out/$file\" > \"$out/edited.tmp\"\n\
-             cmp -s \"$out/edited.tmp\" \"$out/$file\" && exit 9\n\
-             mv \"$out/edited.tmp\" \"$out/$file\"\n",
-            case.join("fern-expected").display()
+             if [ -n \"${{1:-}}\" ]; then cp -R '{}'/\"$1\"/. \"$out\"; fi\n",
+            fern.display(),
+            root.join("edits").display()
         ),
     );
     let config = |generators: &str| {
@@ -1486,7 +1488,7 @@ fn parameter_docs_departure_journey(
         &config(
             &edits
                 .iter()
-                .map(|(edit, _, _)| {
+                .map(|(edit, _, _, _)| {
                     format!(
                         "  {edit}:\n    reference:\n      command: ./scripts/reference.sh {edit}\n"
                     )
@@ -1547,7 +1549,7 @@ fn parameter_docs_departure_journey(
         .code(3);
     let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
     validate_against_committed_schema(&report);
-    for (edit, file, _) in edits {
+    for (edit, file, _, _) in edits {
         let edited = result(&report, "edited.yml", edit);
         assert_eq!(edited["status"], "mismatched", "{edit}: {edited:#}");
         let comparison = &edited["comparison"];
@@ -1555,6 +1557,16 @@ fn parameter_docs_departure_journey(
         assert_eq!(comparison["only_in_reference"], serde_json::json!([]));
         assert_eq!(comparison["only_in_crozier"], serde_json::json!([]));
     }
+}
+
+/// `text` with its first line equal to `line` replaced by `replacement`, or
+/// `None` when no line equals it.
+#[cfg(unix)]
+fn replace_first_line(text: &str, line: &str, replacement: &str) -> Option<String> {
+    let mut lines: Vec<&str> = text.split('\n').collect();
+    let at = lines.iter().position(|candidate| *candidate == line)?;
+    lines[at] = replacement;
+    Some(lines.join("\n"))
 }
 
 /// The lifted base-path defects
@@ -1588,18 +1600,21 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
             (
                 "readme-call",
                 "README.md",
-                r#"s/^    title="title",$/    title="title",\n    opacity=1,/"#,
+                r#"    title="title","#,
+                "    title=\"title\",\n    opacity=1,",
             ),
             (
                 "readme-other",
                 "README.md",
-                "s/^## Environments$/## Environment/",
+                "## Environments",
+                "## Environment",
             ),
-            ("reference-other", "reference.md", "s/^## Layers$/## Layer/"),
+            ("reference-other", "reference.md", "## Layers", "## Layer"),
             (
                 "docstring",
                 "src/fern/client.py",
-                r#"0,/^        "v2",$/s//        "v3",/"#,
+                r#"        "v2","#,
+                r#"        "v3","#,
             ),
         ],
     );
@@ -1623,14 +1638,16 @@ fn compare_reports_the_parameter_docs_departures_and_fails_on_any_other_differen
             (
                 "readme-call",
                 "README.md",
-                r#"s/^    hatch_mode="down",$/    hatch_mode="down",\n    fan_speed=3,/"#,
+                r#"    hatch_mode="down","#,
+                "    hatch_mode=\"down\",\n    fan_speed=3,",
             ),
             (
                 "readme-other",
                 "README.md",
-                "s/^## Environments$/## Environment/",
+                "## Environments",
+                "## Environment",
             ),
-            ("reference-other", "reference.md", "s/^## Beds$/## Bed/"),
+            ("reference-other", "reference.md", "## Beds", "## Bed"),
         ],
     );
     let nullable = "nullable-items-docs";
@@ -1641,14 +1658,16 @@ fn compare_reports_the_parameter_docs_departures_and_fails_on_any_other_differen
             (
                 "readme-call",
                 "README.md",
-                r#"0,/^        None$/s//        None,\n        None/"#,
+                "        None",
+                "        None,\n        None",
             ),
             (
                 "readme-other",
                 "README.md",
-                "s/^## Environments$/## Environment/",
+                "## Environments",
+                "## Environment",
             ),
-            ("reference-other", "reference.md", "s/^## Beds$/## Bed/"),
+            ("reference-other", "reference.md", "## Beds", "## Bed"),
         ],
     );
 }
