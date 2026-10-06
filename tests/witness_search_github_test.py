@@ -2482,12 +2482,12 @@ class HandwrittenKeyDerivationTest(unittest.TestCase):
             self.assertNotEqual(0, refused.returncode)
             # The committed regions hold other `handwritten` rows too, and the
             # refusal names whichever comes first; each lost its selector.
-            named = re.search(r"schemas/([a-z0-9-]+): handwritten, and no selector in witness-search-keys\.tsv",
+            named = re.search(r"([a-z0-9-]+)/([a-z0-9-]+): handwritten, and no selector in witness-search-keys\.tsv",
                               refused.stderr)
             self.assertIsNotNone(named, refused.stderr)
             self.assertTrue(any(
-                line.startswith(f"| {named[1]} |") and "| handwritten |" in line
-                for line in (regions / "schemas.md").read_text(encoding="utf-8").splitlines()), named[1])
+                line.replace("`", "").startswith(f"| {named[2]} |") and "| handwritten |" in line
+                for line in (regions / f"{named[1]}.md").read_text(encoding="utf-8").splitlines()), named[2])
 
 
 if __name__ == "__main__":

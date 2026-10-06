@@ -573,18 +573,23 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             total > 0
                 && *count * 4 >= total * 3
                 && !is_transport_managed_parameter(wire_name)
+                && !is_auth_managed_header(doc, wire_name)
                 && !is_promotion_reserved_header(wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
         .map(|(wire_name, (count, required, py_type, default))| {
             // A header short of every operation is promoted as optional
             // whatever the operations that do declare it say.
+            // A string header's default on every operation makes the field
+            // optional, falling back to the default, required or not.
             let presence = match default {
+                Some(default) if count == total && (!required || py_type == HeaderType::Str) => {
+                    HeaderPresence::Defaulted(default)
+                }
                 _ if required && count == total => HeaderPresence::Required(py_type),
                 Some(default) if count < total && py_type == HeaderType::Str => {
                     HeaderPresence::Literal(default)
                 }
-                Some(default) if count == total => HeaderPresence::Defaulted(default),
                 _ => HeaderPresence::Optional(py_type),
             };
             GlobalHeader {
@@ -688,10 +693,15 @@ fn is_transport_managed_header(wire_name: &str) -> bool {
 /// api-key security scheme. `Content-Type` is additionally dropped there: the
 /// request's own media type decides that header, so Chaingateway.io's five
 /// `Content-Type` parameters reach neither the client wrapper nor a method
-/// signature. A security scheme that happens to name that header is a credential
-/// and keeps its constructor field.
+/// signature. So are `Origin` and `Cookie`, in any letter case, which Fern drops
+/// from a method and from promotion alike, while `Referer`, `Host` and
+/// `Accept-Encoding` stay ordinary arguments. A security scheme that happens to
+/// name one of these headers is a credential and keeps its constructor field.
 fn is_transport_managed_parameter(wire_name: &str) -> bool {
-    is_transport_managed_header(wire_name) || wire_name.eq_ignore_ascii_case("content-type")
+    is_transport_managed_header(wire_name)
+        || ["content-type", "origin", "cookie"]
+            .iter()
+            .any(|managed| wire_name.eq_ignore_ascii_case(managed))
 }
 
 /// Whether a header parameter is reserved from client-wrapper promotion.
@@ -2873,7 +2883,10 @@ fn build_endpoint(
             // text, so Fern serializes it directly even when the same type would
             // be converted in a request body (helios sends `block` raw as a query
             // parameter and converted as a body field).
-            let convert = hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref);
+            // A union with a `date` or `date-time` member is converted all the
+            // same: its value may be one Pydantic serializes.
+            let convert = hoister.needs_convert(&type_ref)
+                && (!hoister.is_scalar(&type_ref) || hoister.has_temporal_member(&type_ref));
             let required = p.required == Some(true);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example =
@@ -3007,12 +3020,15 @@ fn build_endpoint(
                 && !is_transport_managed_parameter(&p.name)
                 && !is_auth_managed_header(doc, &p.name)
         })
+        // An empty default is no constant: Fern keeps that header an optional
+        // argument.
         .filter_map(|p| {
             p.schema
                 .as_ref()?
                 .default
                 .as_ref()?
                 .as_str()
+                .filter(|value| !value.is_empty())
                 .map(|value| (p.name.clone(), value.to_owned()))
         })
         .collect();
@@ -6743,6 +6759,41 @@ impl InlineHoister<'_> {
             other => other,
         };
         type_is_scalar(element, &[self.root_types, &self.out], &mut Vec::new())
+    }
+
+    /// Whether `t` is, or names, a union one of whose members is a `date` or
+    /// `date-time` string.
+    fn has_temporal_member(&self, t: &TypeRef) -> bool {
+        union_has_temporal_member(t, &[self.root_types, &self.out], false, &mut Vec::new())
+    }
+}
+
+/// Whether `t` reaches a union (through optionality and named aliases) one of
+/// whose members is a `date` or `date-time` primitive; `in_union` says a union
+/// encloses `t` already.
+fn union_has_temporal_member<'a>(
+    t: &'a TypeRef,
+    types: &[&'a [TypeDecl]],
+    in_union: bool,
+    seen: &mut Vec<&'a str>,
+) -> bool {
+    match t {
+        TypeRef::Primitive(Prim::Date | Prim::Datetime) => in_union,
+        TypeRef::Optional(inner) => union_has_temporal_member(inner, types, in_union, seen),
+        TypeRef::Union(variants) => variants
+            .iter()
+            .any(|variant| union_has_temporal_member(variant, types, true, seen)),
+        TypeRef::Named(name) if !seen.contains(&name.as_str()) => {
+            seen.push(name.as_str());
+            let found = types.iter().flat_map(|types| types.iter()).any(|decl| {
+                matches!(decl, TypeDecl::Alias(alias)
+                    if alias.name == *name
+                        && union_has_temporal_member(&alias.target, types, in_union, seen))
+            });
+            seen.pop();
+            found
+        }
+        _ => false,
     }
 }
 
@@ -14141,6 +14192,32 @@ mod tests {
     }
 
     #[test]
+    fn a_header_defaulted_on_every_operation_is_optional_and_an_api_key_header_is_not_promoted() {
+        let defaulted = global_headers(&one_header_doc(
+            "{type: string, default: application/json}",
+            true,
+        ));
+        assert_eq!(defaulted.len(), 1);
+        assert!(!defaulted[0].required());
+        assert_eq!(defaulted[0].default(), Some("application/json"));
+        let doc: crate::openapi::OpenApi = serde_yaml_ng::from_str(
+            "components:\n  securitySchemes:\n    key: {type: apiKey, in: header, name: X-Things}\npaths:\n  /probe:\n    get:\n      parameters:\n        - {name: X-Things, in: header, required: false, schema: {type: string, default: k}}\n      responses: {'204': {description: OK}}\n",
+        )
+        .expect("document deserializes");
+        assert!(global_headers(&doc)
+            .iter()
+            .all(|header| header.wire_name != "X-Things"));
+        // The transport's own headers never promote.
+        for managed in ["Origin", "COOKIE"] {
+            let doc: crate::openapi::OpenApi = serde_yaml_ng::from_str(&format!(
+                "paths:\n  /probe:\n    get:\n      parameters:\n        - {{name: {managed}, in: header, required: true, schema: {{type: string}}}}\n      responses: {{'204': {{description: OK}}}}\n"
+            ))
+            .expect("document deserializes");
+            assert!(global_headers(&doc).is_empty(), "{managed}");
+        }
+    }
+
+    #[test]
     fn an_optional_promoted_header_keeps_its_string_default_as_a_str() {
         let headers = global_headers(&one_header_doc(
             "{type: array, items: {type: string}, default: all}",
@@ -14340,6 +14417,53 @@ mod tests {
         assert_eq!(
             endpoint.header_order,
             ["X-Watts", "X-Hue", "X-Vent", "X-Valve"]
+        );
+    }
+
+    #[test]
+    fn managed_headers_and_empty_defaults_follow_fern() {
+        let header = |name: &str, schema: serde_json::Value| serde_json::json!({ "name": name, "in": "header", "required": false, "schema": schema });
+        let endpoint = beds_endpoint(serde_json::json!([
+            header(
+                "Origin",
+                serde_json::json!({ "type": "string", "default": "unknown" })
+            ),
+            header("cookie", serde_json::json!({ "type": "string" })),
+            header("Referer", serde_json::json!({ "type": "string" })),
+            header(
+                "X-Note",
+                serde_json::json!({ "type": "string", "default": "" })
+            ),
+        ]));
+        assert!(endpoint.constant_headers.is_empty());
+        let arguments: Vec<&str> = endpoint
+            .header_params
+            .iter()
+            .map(|header| header.wire_name.as_str())
+            .collect();
+        assert_eq!(arguments, ["Referer", "X-Note"]);
+    }
+
+    #[test]
+    fn a_query_union_with_a_temporal_member_is_converted() {
+        let query = |name: &str, format: &str| {
+            serde_json::json!({ "name": name, "in": "query", "schema": {
+                "anyOf": [{ "type": "integer" }, { "type": "string", "format": format }]
+            } })
+        };
+        let endpoint = beds_endpoint(serde_json::json!([
+            query("since", "date"),
+            query("until", "date-time"),
+            query("code", "uuid"),
+        ]));
+        let converted: Vec<(&str, bool)> = endpoint
+            .query_params
+            .iter()
+            .map(|query| (query.py_name.as_str(), query.convert))
+            .collect();
+        assert_eq!(
+            converted,
+            [("since", true), ("until", true), ("code", false)]
         );
     }
 

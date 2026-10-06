@@ -2763,7 +2763,7 @@ fn parameter_lowering_measurements_match_fern() {
         .collect();
     cases.sort();
     assert!(
-        cases.len() >= 16,
+        cases.len() >= 18,
         "the measured cases are missing: {cases:?}"
     );
     let failures: Vec<String> = cases
@@ -2791,8 +2791,8 @@ fn parameter_lowering_measurements_match_fern() {
 /// `x-crozier-base-path` is `x-fern-base-path` under crozier's own spelling: on
 /// its own it generates the tree Fern measured for the `x-fern-base-path`
 /// document, and beside an `x-fern-base-path` naming another base path it wins,
-/// whichever of the two forms each one takes. The last case is the control:
-/// that other base path, read alone, does not generate the same tree.
+/// whichever of the two forms each one takes. The control: that other base
+/// path, read alone, lifts nothing.
 #[test]
 fn crozier_base_path_alias_matches_and_wins() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(PARAMETER_LOWERING_DIR);
@@ -2826,13 +2826,21 @@ fn crozier_base_path_alias_matches_and_wins() {
         let failures = filtered_tree_failures(name, &golden_path(&expected), &spec, &expected, &[]);
         assert!(failures.is_empty(), "{}", failures.join("\n\n"));
     }
+    // The control, outside the ledger-recording comparison: the literal base
+    // path alone lifts nothing, so the client takes no `edition`.
     let spec = work.path().join("control.yml");
     std::fs::write(&spec, document.replace(object, "x-fern-base-path: /v2\n")).unwrap();
-    let expected = lifted.join("fern-expected");
+    let out = work.path().join("control");
+    let result = probe_command(&spec, &out).output().expect("crozier runs");
     assert!(
-        !filtered_tree_failures("control", &golden_path(&expected), &spec, &expected, &[])
-            .is_empty(),
-        "the literal base path alone generated the lifted tree"
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    let client = std::fs::read_to_string(out.join("src/fern/client.py")).unwrap();
+    assert!(
+        !client.contains("edition"),
+        "the literal base path alone lifted a parameter: {client}"
     );
 }
 
@@ -5104,6 +5112,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
     &LOOTLOG_BATTLELOG,
+    &EGO_MICROSERVICES,
 ];
 
 #[test]
@@ -7756,6 +7765,21 @@ const HUATUO_NODE_TREE: Corpus = Corpus {
 /// argument because only the exact spelling `Authorization` is the credential's.
 const LOOTLOG_BATTLELOG: Corpus = Corpus {
     api: "lootlog-battlelog",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Ego's microservices API — corpus row 316, the publisher's own description.
+/// Its paginated listings' query `offset` and `limit` are `anyOf: [integer, $ref
+/// Empty]`, a union naming a component string enum with no array member, which
+/// Fern sends raw.
+const EGO_MICROSERVICES: Corpus = Corpus {
+    api: "ego-microservices",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14576,6 +14600,11 @@ fn huatuo_node_tree_matches_fern_output() {
 #[test]
 fn lootlog_battlelog_matches_fern_output() {
     assert_committed_corpus_matches(&LOOTLOG_BATTLELOG);
+}
+
+#[test]
+fn ego_microservices_matches_fern_output() {
+    assert_committed_corpus_matches(&EGO_MICROSERVICES);
 }
 
 #[test]

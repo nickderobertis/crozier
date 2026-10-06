@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Help Desk
+  version: 1.0.0
+servers:
+  - url: https://desk.example.net
+security:
+  - deskKey: []
+components:
+  securitySchemes:
+    deskKey:
+      type: apiKey
+      in: header
+      name: X-Desk-Key
+  parameters:
+    Accept:
+      name: Accept
+      in: header
+      required: true
+      schema:
+        type: string
+        default: application/json
+    DeskKey:
+      name: X-Desk-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        default: "{{desk-key}}"
+paths:
+  /tickets:
+    get:
+      operationId: listTickets
+      tags: [tickets]
+      parameters:
+        - $ref: "#/components/parameters/Accept"
+        - $ref: "#/components/parameters/DeskKey"
+        - name: Origin
+          in: header
+          required: false
+          schema: {type: string, default: unknown}
+        - name: Referer
+          in: header
+          required: false
+          schema: {type: string}
+        - name: Host
+          in: header
+          required: false
+          schema: {type: string}
+        - name: Cookie
+          in: header
+          required: false
+          schema: {type: string}
+        - name: Accept-Encoding
+          in: header
+          required: false
+          schema: {type: string}
+        - name: Content-Type
+          in: header
+          required: false
+          schema: {type: string}
+        - name: X-Note
+          in: header
+          required: false
+          schema: {type: string, default: ""}
+      responses:
+        "200":
+          description: Tickets.
+          content:
+            application/json:
+              schema: {type: array, items: {type: string}}
+    post:
+      operationId: openTicket
+      tags: [tickets]
+      parameters:
+        - $ref: "#/components/parameters/Accept"
+        - $ref: "#/components/parameters/DeskKey"
+      responses:
+        "204": {description: Opened.}
+  /tickets/{ticket_id}:
+    get:
+      operationId: getTicket
+      tags: [tickets]
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema: {type: string}
+        - $ref: "#/components/parameters/Accept"
+        - $ref: "#/components/parameters/DeskKey"
+      responses:
+        "200":
+          description: One ticket.
+          content:
+            application/json:
+              schema: {type: string}
+  /status:
+    get:
+      operationId: getStatus
+      tags: [status]
+      parameters:
+        - $ref: "#/components/parameters/Accept"
+      responses:
+        "200":
+          description: Status.
+          content:
+            application/json:
+              schema: {type: string}

@@ -23,10 +23,10 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 578 features. By category, 492 are `golden`, 52
-`limitations`, 12 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 581 features. By category, 492 are `golden`, 52
+`limitations`, 15 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 578
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 581
 split four ways:
 
 - **490 carry byte-match evidence against a registered real-world
@@ -38,12 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
-- **12 rest on a hand-written fixture, a weaker proof than a real
+- **15 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. Seven read `search-incomplete`. Of those,
+  decided and none is registrable. Ten read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -53,6 +53,12 @@ split four ways:
   declared source; its
   [renewed search](openapi-surface/witness-search-union-shapes/README.md) read
   693 documents a bounded code search returned and found it `none-registrable`.
+  The other three are the parameter-lowering shapes
+  `query-array-items-union`, `header-subset-string-default` and
+  `base-path-extension`: their
+  [search](openapi-surface/witness-search-parameter-lowering/README.md) read the
+  documents already acquired for the coverage searches, issued no live query,
+  and found each `none-registrable`.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
   490 and never count as a real-specification match.
@@ -72,7 +78,7 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-490 + 66 + 12 + 10 = 578.
+490 + 66 + 15 + 10 = 581.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 492 `golden` rows declare 920 handling sites in
@@ -183,7 +189,7 @@ class is yet one where crozier generates and Fern does not. A `generate`
 decision, which would write an SDK by default and refuse only under
 `fern-strict`, is the registry's to make, with a wire test proving the SDK.
 
-**What the census still cannot enumerate.** The 578 are what a selector over a
+**What the census still cannot enumerate.** The 581 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
 the census cannot measure the population beyond its own reach.
 
@@ -266,7 +272,10 @@ registrations added, and the four the closed and open empty-object disjunct of
 `anyof-anyof-variant`, `golden`. The naming and example branches of #361 add
 35 — 27 `golden` and 8 `gap` — bringing it to 577, and the component
 composition of one primitive (`component-same-primitive-union`), a `handwritten`
-row, to **578**. Counting only the
+row, to 578, and the three parameter-lowering shapes this run's
+hand-written fixtures cover (`query-array-items-union`,
+`header-subset-string-default` and `base-path-extension`), each a
+`handwritten` row, to **581**. Counting only the
 registered rows whose Fern golden crozier byte-matches as golden sources (#352)
 moved no row's category: every `golden` row's declarers include one.
 
@@ -404,7 +413,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-85, declared in `scripts/openapi-surface-census.py` and restated here, with a
+87, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -571,6 +580,15 @@ drift gate over the pair:
   declaring an example whose schema, after one local `$ref`, is neither a
   string, integer, number or boolean nor an array of one, so
   `build_example_inner` does not render the declared example.
+- `parameter.schema:query-items-union` — one per query Parameter Object whose
+  inline schema is an array whose inline `items` is a `oneOf` (else `anyOf`) of
+  two or more non-null members: the union `hoist_param_enum` hoists as the
+  parameter's `{Param}Item`.
+- `parameter.schema:subset-header-string-default` — one per header Parameter
+  Object declaring a non-empty string `default` whose name rides at least three
+  quarters but not all of the document's operations and is neither a header the
+  transport or an apiKey scheme owns nor `Authorization`: the header
+  `global_headers` promotes as a one-value `Literal`.
 - `mediaType.examples:named-beside-example` and `mediaType.examples:named-only`
   — one per request body's selected JSON media type writing a named example that
   resolves to a value, beside a non-null `example` (which `reference.md` then
@@ -730,7 +748,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Sixty-eight of the 85 are node-local**, which is what makes them one family:
+**Sixty-nine of the 87 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -738,18 +756,19 @@ in exactly that sense — a `$ref` *value* is one of the node's own declared
 fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further. The other
-seventeen — `operation.operationId:duplicate`,
+eighteen — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
 `schema.anyOf:discriminated-union`,
 `schema.discriminator:inheritance-union`,
+`parameter.schema:subset-header-string-default`,
 `operation.operationId:digit-leading-method`,
 `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`,
 `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`,
 `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
 `schema.example:on-ref-to-union` and `schema.example:on-ref-to-alias` — read
-the document beyond the node, and say so in their own sentence. The first eight
+the document beyond the node, and say so in their own sentence. The first nine
 compare one document's own values against each other; the last nine read where
 the node stands (an operation's route, a request body's selected media type) or
 resolve one local `#/components/...` reference. Those two
@@ -1453,10 +1472,10 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation),
   which `just check` now runs. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 243 sources (corpus rows through 313, after the withdrawals of rows
+  acquires 244 sources (corpus rows through 313 and row 316, after the withdrawals of rows
   224 and 223, with the `crozier-property-name` feature target), and the walk
-  reads the **226** registered sources, of which
-  **226** carry a committed golden; the 17 others carry none and are acquisition
+  reads the **227** registered sources, of which
+  **227** carry a committed golden; the 17 others carry none and are acquisition
   evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -1494,16 +1513,16 @@ for either; each bullet below says where its number comes from.
 
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| [`parameters`](openapi-surface/parameters.md) | 71 | 52 | 19 | 0 | 0 | 0 | 0 | 0 |
+| [`parameters`](openapi-surface/parameters.md) | 73 | 52 | 19 | 2 | 0 | 0 | 0 | 0 |
 | [`schemas`](openapi-surface/schemas.md) | 283 | 248 | 14 | 12 | 9 | 7 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 50 | 45 | 5 | 0 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 72 | 68 | 3 | 0 | 1 | 1 | 0 | 0 |
-| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 38 | 2 | 0 | 12 | 0 | 0 | 12 |
-| **total** | **578** | **492** | **52** | **12** | **22** | **8** | **0** | **14** |
+| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 53 | 38 | 2 | 1 | 12 | 0 | 0 | 12 |
+| **total** | **581** | **492** | **52** | **15** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **578** features and landed each in exactly one category:
-**492** `golden`, **52** `limitations`, **12** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **581** features and landed each in exactly one category:
+**492** `golden`, **52** `limitations`, **15** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -1654,7 +1673,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 578 rows carry 578 distinct
+**Each feature is classified exactly once.** The 581 rows carry 581 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Fifteen spec
@@ -1826,7 +1845,7 @@ is what makes the gap a *supply* problem rather than a closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 578](#what-the-walk-enumerated) is a
+[the walk's 581](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
 [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107
@@ -3003,6 +3022,17 @@ source has been walked or queried for it, and its
 [renewed search](openapi-surface/witness-search-union-shapes/README.md) found
 the 35 documents declaring it among 693 a bounded code search returned, every
 one failing a screen.
+
+Three more joined the same way, from the parameter-lowering repairs:
+`query-array-items-union` and `header-subset-string-default` in
+[`parameters.md`](openapi-surface/parameters.md),
+and `base-path-extension` in
+[`oas31-extensions.md`](openapi-surface/oas31-extensions.md). No registered
+source declares any of them, and the census predicates each one's key tracks
+were run over the documents already acquired for the coverage searches, with no
+live query, so each reads `search-incomplete`;
+[the record](openapi-surface/witness-search-parameter-lowering/README.md) names
+every declarer that search found and why none is registrable.
 
 **Five read `exhausted`, six read `search-incomplete` under the scope
 exception.** Each key's reconciled record is its

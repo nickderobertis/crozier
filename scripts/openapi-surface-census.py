@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 193 of the 226 registered sources live in `corpus-sources/` (a split
+  and 194 of the 227 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1045,6 +1045,17 @@ PREDICATES = {
     "schema.example:on-ref-to-alias": "one per Schema Object with a selected example whose $ref resolves in components.schemas to a schema declaring none of a non-empty properties map, allOf, oneOf, anyOf or a string-valued enum: the named alias the example arms follow to its target",
     "schema.properties:optional-example": "one per Schema Object one of whose properties its required list does not name selects an example: the optional field the example arms unwrap first",
     "parameter.example:non-scalar-query": "one per query Parameter Object declaring an example whose schema, after one local $ref, is neither a string, integer, number or boolean nor an array of one, so build_example_inner does not render the declared example",
+    "parameter.schema:query-items-union": (
+        "one per query Parameter Object whose inline schema is an array whose inline "
+        "`items` is a `oneOf` (else `anyOf`) of two or more non-null members, which "
+        "`hoist_param_enum` of `src/ir.rs` hoists as the `{Param}Item` union"
+    ),
+    "parameter.schema:subset-header-string-default": (
+        "one per header Parameter Object declaring a non-empty string `default` whose name "
+        "rides at least three quarters but not all of the document's operations and is "
+        "neither a header the transport or an apiKey scheme owns nor `Authorization`, which "
+        "`global_headers` of `src/ir.rs` promotes as a one-value `Literal`"
+    ),
     "mediaType.examples:named-beside-example": "one per request body's selected JSON media type writing both a non-null example and a named example that resolves to a value, so reference.md documents the singular example",
     "mediaType.examples:named-only": "one per request body's selected JSON media type writing a named example that resolves to a value and no non-null example, so reference.md documents the first named one",
     "operation.responses:wildcard-binary": "one per Operation Object whose success response, chosen as has_wildcard_binary_response chooses it, serves */* with an inline string schema of format binary: the endpoint mode build_example_inner reads before it renders any parameter example",
@@ -2457,7 +2468,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "e2b9c7694f19b140",
+    "endpoint_method_name": "95ccf3f92bed7a32",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3712,6 +3723,65 @@ def operation_routes(document: Any) -> dict[int, tuple[str, str]]:
     return routes
 
 
+# The header names `global_headers` of `src/ir.rs` never promotes, in any letter
+# case: the transport's own (`is_transport_managed_parameter`) and the reserved
+# `Authorization` (`is_promotion_reserved_header`).
+UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie", "authorization"})
+
+
+def header_operation_counts(document: Any) -> tuple[dict[str, int], int]:
+    """header name -> the operations declaring it, and the number of operations.
+
+    An operation declares a header in its own `parameters` or its Path Item's,
+    each a Parameter Object or a local `#/components/parameters/` reference.
+    """
+    counts: dict[str, int] = defaultdict(int)
+    total = 0
+    paths = document.get("paths") if isinstance(document, dict) else None
+    components = document.get("components") if isinstance(document, dict) else None
+    shared = components.get("parameters") if isinstance(components, dict) else None
+
+    def resolved(parameter: Any) -> Any:
+        reference = parameter.get("$ref") if isinstance(parameter, dict) else None
+        prefix = "#/components/parameters/"
+        if isinstance(reference, str) and reference.startswith(prefix) and isinstance(shared, dict):
+            return shared.get(reference[len(prefix):])
+        return parameter
+
+    for item in paths.values() if isinstance(paths, dict) else []:
+        if not isinstance(item, dict):
+            continue
+        inherited = item.get("parameters") if isinstance(item.get("parameters"), list) else []
+        for method in _HTTP_METHODS:
+            operation = item.get(method)
+            if not isinstance(operation, dict):
+                continue
+            total += 1
+            own = operation.get("parameters") if isinstance(operation.get("parameters"), list) else []
+            names = {
+                parameter.get("name")
+                for parameter in map(resolved, [*inherited, *own])
+                if isinstance(parameter, dict) and parameter.get("in") == "header"
+                and isinstance(parameter.get("name"), str)
+            }
+            for name in names:
+                counts[name] += 1
+    return dict(counts), total
+
+
+def composition_members(schema: Any) -> list[Any] | None:
+    """A schema's `oneOf` members, else its `anyOf` members, when it declares one."""
+    if not isinstance(schema, dict):
+        return None
+    members = schema.get("oneOf") if "oneOf" in schema else schema.get("anyOf")
+    return members if isinstance(members, list) else None
+
+
+def is_null_member(member: Any) -> bool:
+    """A composition's `type: null` alternative."""
+    return isinstance(member, dict) and member.get("type") == "null"
+
+
 def is_json_like_media_type(media_type: str) -> bool:
     """`is_json_like_media_type` of `src/ir.rs`."""
     base = media_type.split(";", 1)[0].strip()
@@ -3799,10 +3869,22 @@ class Census:
         # media type. The walk reaches either object without that position, so
         # both are read off the document once here, keyed by the object's `id()`.
         self.operation_routes: dict[int, tuple[str, str]] = operation_routes(document)
+        # `parameter.schema:subset-header-string-default` reads how many of the
+        # document's operations declare a header, which no one parameter shows.
+        self.header_operations, self.operation_total = header_operation_counts(document)
         self.request_media: set[int] = request_body_media(document)
         self.components: dict[Any, Any] = (
             document.get("components") if isinstance(document, dict)
             and isinstance(document.get("components"), dict) else {}
+        )
+        # `parameter.schema:subset-header-string-default` leaves out a header an
+        # apiKey scheme already writes, which promotion never takes.
+        schemes = self.components.get("securitySchemes")
+        self.api_key_headers: frozenset[str] = frozenset(
+            scheme["name"]
+            for scheme in (schemes.values() if isinstance(schemes, dict) else [])
+            if isinstance(scheme, dict) and scheme.get("type") == "apiKey"
+            and scheme.get("in") == "header" and isinstance(scheme.get("name"), str)
         )
         # One node's own selectors are asked for twice — once to record them, once
         # per conjunction group matched against them — and a document's objects
@@ -3889,6 +3971,29 @@ class Census:
             ) else schema
             if not parameter_schema_is_scalar(schema):
                 found.append("parameter.example:non-scalar-query")
+        if kind_name == "parameter":
+            found += self.parameter_shape_predicates(node)
+        return found
+
+    def parameter_shape_predicates(self, node: dict[Any, Any]) -> list[str]:
+        """The two parameter-lowering shapes a Parameter Object's own schema declares."""
+        found: list[str] = []
+        schema = node.get("schema")
+        if not isinstance(schema, dict) or "$ref" in schema:
+            return found
+        location = node.get("in")
+        if location == "query" and primary_type(schema.get("type")) == "array":
+            items = schema.get("items")
+            members = composition_members(items) if isinstance(items, dict) and "$ref" not in items else None
+            if members is not None and sum(not is_null_member(member) for member in members) >= 2:
+                found.append("parameter.schema:query-items-union")
+        name = node.get("name")
+        if location == "header" and isinstance(schema.get("default"), str) and schema["default"] \
+                and isinstance(name, str) and name.lower() not in UNPROMOTED_HEADERS \
+                and name not in self.api_key_headers:
+            carried = self.header_operations.get(name, 0)
+            if 0 < self.operation_total and carried * 4 >= self.operation_total * 3 and carried < self.operation_total:
+                found.append("parameter.schema:subset-header-string-default")
         return found
 
     def resolvable_named_example(self, examples: Any) -> bool:

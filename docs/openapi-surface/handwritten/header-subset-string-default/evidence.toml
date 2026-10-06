@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "1ddfc97d9b08b825888c4f261c66722d308e30535afba4a1f121e7c7ad27de3c"
+
+[[covers]]
+key = "header-subset-string-default"
+search = "docs/openapi-surface/parameters.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameter-lowering/README.md"

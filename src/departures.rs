@@ -1170,7 +1170,8 @@ fn constant_header_docs_arguments(pair: &Pair<'_>) -> Result<Option<Region>, Str
         .flat_map(|(wire, _)| header_doc_names(wire))
         .collect();
     let lines = pair.fern;
-    let mut kept: Vec<&str> = Vec::with_capacity(lines.len());
+    let mut kept: Vec<String> = Vec::with_capacity(lines.len());
+    let mut removed = false;
     let mut index = 0;
     while index < lines.len() {
         let block = parameter_block(lines, index, |line| {
@@ -1182,17 +1183,39 @@ fn constant_header_docs_arguments(pair: &Pair<'_>) -> Result<Option<Region>, Str
         });
         if let Some(length) = block {
             index += length;
+            removed = true;
             continue;
         }
         let passes_constant = passed.contains(lines[index].trim_start())
             && lines[index].len() > lines[index].trim_start().len()
             && call_opener(lines, index).is_some_and(opens_method_call);
-        if !passes_constant {
-            kept.push(lines[index]);
+        if passes_constant {
+            removed = true;
+        } else {
+            // A method call the constants were the only arguments of closes on
+            // its opening line, as crozier writes it.
+            let line = lines[index];
+            let indent = &line[..line.len() - line.trim_start().len()];
+            let closes_empty = line.trim_start() == ")"
+                && kept.last().is_some_and(|opener| {
+                    opener.ends_with('(')
+                        && opener.starts_with(indent)
+                        && opens_method_call(opener.trim_start())
+                });
+            match kept.last_mut() {
+                Some(opener) if closes_empty => opener.push(')'),
+                _ => kept.push(line.to_string()),
+            }
         }
         index += 1;
     }
-    if kept.len() == lines.len() || kept.as_slice() != pair.crozier {
+    if !removed
+        || kept.len() != pair.crozier.len()
+        || kept
+            .iter()
+            .zip(pair.crozier)
+            .any(|(left, right)| left != right)
+    {
         return Ok(None);
     }
     Ok(differing_window(pair.fern, pair.crozier))
@@ -1865,6 +1888,26 @@ mod tests {
                 "{fern}"
             );
         }
+        // A call the constant was the only argument of closes on its own line;
+        // a constructor never takes one.
+        assert!(region_of(
+            rule,
+            "README.md",
+            "client.beds.count_beds(\n    mist_mode=\"fine\",\n)",
+            "client.beds.count_beds()",
+            &context
+        )
+        .is_some());
+        assert_eq!(
+            region_of(
+                rule,
+                "README.md",
+                "client = FernApi(\n    mist_mode=\"fine\",\n)",
+                "client = FernApi()",
+                &context
+            ),
+            None
+        );
         assert_eq!(
             region_of(rule, "client.py", CONSTANT_FERN, CONSTANT_CROZIER, &context),
             None

@@ -3601,34 +3601,44 @@ fn client_wrapper_file(
         .chain(leading.iter().map(|h| &h.py_name))
         .map(|name| format!("        self._{name} = {name}\n"))
         .collect();
+    let header_line = |h: &GlobalHeader| {
+        // A non-string header is written as its `str()`, as Fern's is.
+        let value = if h.py_type() == HeaderType::Str {
+            format!("self._{}", h.py_name)
+        } else {
+            format!("str(self._{})", h.py_name)
+        };
+        if let Some(default) = h.default() {
+            format!(
+                "        headers[\"{}\"] = {value} if {value} is not None else \"{}\"\n",
+                escape_py_str(&h.wire_name),
+                escape_py_str(default)
+            )
+        } else if h.required() {
+            format!(
+                "        headers[\"{}\"] = {value}\n",
+                escape_py_str(&h.wire_name)
+            )
+        } else {
+            format!(
+                "        if self._{} is not None:\n            headers[\"{}\"] = {value}\n",
+                h.py_name,
+                escape_py_str(&h.wire_name)
+            )
+        }
+    };
+    // A defaulted header is written after the credential, as its field follows
+    // `logging`: Fern's `Accept`, defaulted on every operation, comes after the
+    // api-key header it sits beside.
     let gh_header: String = global_headers
         .iter()
-        .map(|h| {
-            // A non-string header is written as its `str()`, as Fern's is.
-            let value = if h.py_type() == HeaderType::Str {
-                format!("self._{}", h.py_name)
-            } else {
-                format!("str(self._{})", h.py_name)
-            };
-            if let Some(default) = h.default() {
-                format!(
-                    "        headers[\"{}\"] = {value} if {value} is not None else \"{}\"\n",
-                    escape_py_str(&h.wire_name),
-                    escape_py_str(default)
-                )
-            } else if h.required() {
-                format!(
-                    "        headers[\"{}\"] = {value}\n",
-                    escape_py_str(&h.wire_name)
-                )
-            } else {
-                format!(
-                    "        if self._{} is not None:\n            headers[\"{}\"] = {value}\n",
-                    h.py_name,
-                    escape_py_str(&h.wire_name)
-                )
-            }
-        })
+        .filter(|h| h.default().is_none())
+        .map(header_line)
+        .collect();
+    let tr_header: String = global_headers
+        .iter()
+        .filter(|h| h.default().is_some())
+        .map(header_line)
         .collect();
     let gh_super: String = client_path_parameters
         .iter()
@@ -3680,6 +3690,7 @@ fn client_wrapper_file(
     if !basic_auth {
         c.push_str(&a.header_block);
     }
+    c.push_str(&tr_header);
     c.push_str("        return headers\n\n");
     c.push_str(&a.token_method);
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
@@ -5574,43 +5585,39 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             lines.push(format!("                \"content-type\": \"{value}\","));
         }
         // Constants and arguments together, in the order the operation declares
-        // them.
-        let constant = |wire: &str| {
-            ep.constant_headers
-                .iter()
-                .find(|(name, _)| name == wire)
-                .map(|(name, value)| format!("                \"{name}\": {value:?},"))
-        };
-        let argument = |wire: &str| {
-            ep.header_params
-                .iter()
-                .find(|hp| hp.wire_name == wire)
-                .map(|hp| {
-                    let value = if hp.enum_value {
-                        format!("{}.value", hp.py_name)
-                    } else {
-                        format!("str({})", hp.py_name)
-                    };
-                    format!(
-                        "                \"{}\": {value} if {} is not None else None,",
-                        hp.wire_name, hp.py_name
-                    )
-                })
-        };
-        // A header the order does not name (an endpoint built by hand) follows,
-        // constants first.
-        let unordered = ep
+        // them; a header the order does not name (an endpoint built by hand)
+        // follows, constants first.
+        let mut headers: Vec<(&str, String)> = ep
             .constant_headers
             .iter()
-            .map(|(name, _)| name)
-            .chain(ep.header_params.iter().map(|hp| &hp.wire_name))
-            .filter(|wire| !ep.header_order.contains(wire));
-        lines.extend(
+            .map(|(name, value)| {
+                (
+                    name.as_str(),
+                    format!("                \"{name}\": {value:?},"),
+                )
+            })
+            .collect();
+        for hp in &ep.header_params {
+            let value = if hp.enum_value {
+                format!("{}.value", hp.py_name)
+            } else {
+                format!("str({})", hp.py_name)
+            };
+            headers.push((
+                hp.wire_name.as_str(),
+                format!(
+                    "                \"{}\": {value} if {} is not None else None,",
+                    hp.wire_name, hp.py_name
+                ),
+            ));
+        }
+        headers.sort_by_key(|(wire, _)| {
             ep.header_order
                 .iter()
-                .chain(unordered)
-                .filter_map(|wire| constant(wire).or_else(|| argument(wire))),
-        );
+                .position(|declared| declared == wire)
+                .unwrap_or(usize::MAX)
+        });
+        lines.extend(headers.into_iter().map(|(_, line)| line));
         lines.push("            },".to_string());
     }
     lines.push("            request_options=request_options,".to_string());
