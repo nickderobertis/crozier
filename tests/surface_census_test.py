@@ -13,9 +13,9 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 * The script under test is **read out of the justfile**, from the `surface-census`
   recipe itself. Renaming or rewiring the recipe fails these tests instead of
   silently leaving them testing a file nothing runs.
-* Every end-to-end case passes `--vendored-only`, which is the same code path the
-  unscoped recipe runs over both halves of the corpus — minus the fetch that would
-  put the network inside `just check`.
+* Source-witness cases select committed documents: `--vendored-only` for local
+  fixtures, or `--fixture <name>` for a registered publisher source. Both use the
+  recipe's census path without fetching a document.
 """
 
 from __future__ import annotations
@@ -50,15 +50,14 @@ FIXTURES = REPO / "tests" / "fixtures"
 # The vendored sources these cases assert against, and what each one is here for:
 # a 3.1 document with webhooks and a callback whose only `name:` line is a schema
 # property; a document whose `type:` lines mean three different things; the only
-# vendored document declaring cookie parameters; and the widest document in the
-# corpus, which reuses one YAML anchor 53 times.
+# locally authored document declaring cookie parameters. Publisher sources below
+# also prove reused security anchors and unquoted response-map keys.
 WEBHOOKS = "servers-webhooks"
 DISCRIMINATED = "discriminated-unions"
 COOKIES = "cookie-parameters"
-EXHAUSTIVE = "exhaustive"
-# The vendored source that keys its one Responses Object with an unquoted YAML
-# integer, which is what makes it the walk's free-map-key regression witness.
-UNQUOTED_STATUS = "query-parameters-openapi"
+ANCHORED_SECURITY = "waylay-queries"
+# The publisher source with unquoted integer response-map keys.
+UNQUOTED_STATUS = "marimo"
 
 
 def grep_speaks_pcre() -> bool:
@@ -2992,13 +2991,13 @@ class CensusReportTests(unittest.TestCase):
         self.assertEqual(["pathItem.trace"], payload["absent_selectors"])
 
     def test_every_declaration_site_counts_including_a_reused_yaml_anchor(self) -> None:
-        """`security: *ref_0` declares the field again; the census counts both uses."""
-        source = (FIXTURES / EXHAUSTIVE / "openapi.yml").read_text(encoding="utf-8")
+        """Each aliased security declaration counts at its operation."""
+        source = (FIXTURES / "corpus-sources" / ANCHORED_SECURITY / "openapi.yaml").read_text(encoding="utf-8")
         written = len(re.findall(r"^ *security:", source, re.M))
         anchored = len(re.findall(r"^ *security: \*", source, re.M))
-        self.assertGreater(anchored, 1, "the exhaustive fixture no longer reuses an anchor")
-        completed = run("--vendored-only", "--fixture", EXHAUSTIVE, "--selector", "operation.security")
-        self.assertEqual({("operation.security", EXHAUSTIVE): written}, rows(completed))
+        self.assertGreater(anchored, 1, "the publisher source no longer reuses an anchor")
+        completed = run("--fixture", ANCHORED_SECURITY, "--selector", "operation.security")
+        self.assertEqual({("operation.security", ANCHORED_SECURITY): written}, rows(completed))
 
     def test_a_vendor_extension_is_reported_under_the_object_that_carries_it(self) -> None:
         """The `oas31-extensions` region is built on this: `x-` keys are census rows."""
@@ -6551,22 +6550,22 @@ class FreeMapKeyWalkTests(unittest.TestCase):
                 )
                 self.assertNotIn("responses.200", declared)
 
-    def test_the_vendored_source_that_writes_an_unquoted_status_code_is_read(self) -> None:
-        """`query-parameters-openapi` writes `200:`; its one response is surface.
+    def test_the_publisher_source_that_writes_unquoted_status_codes_is_read(self) -> None:
+        """Marimo writes `200:`; its response subtrees must remain reachable.
 
-        The counts are this source's own, so a walk that loses the subtree again
-        reports zero for the three response-side selectors and one fewer array
-        schema, and fails here rather than in a region file's evidence cell.
+        These counts include declarations below integer response-map keys. A walk
+        that drops those subtrees loses response and schema declarations and fails
+        here rather than in a region file's evidence cell.
         """
-        counted = rows(run("--vendored-only", "--fixture", UNQUOTED_STATUS))
-        source = (FIXTURES / UNQUOTED_STATUS / "openapi.yml").read_text(encoding="utf-8")
+        counted = rows(run("--fixture", UNQUOTED_STATUS))
+        source = (FIXTURES / "corpus-sources" / UNQUOTED_STATUS / "openapi.yaml").read_text(encoding="utf-8")
         self.assertIn("\n        200:\n", source, "the fixture no longer writes `200:`")
         for selector, count in (
-            ("response.description", 1),
-            ("response.content", 1),
-            ("mediaType.schema", 1),
-            ("schema.properties", 3),
-            ("schema.type=array", 7),
+            ("response.description", 104),
+            ("response.content", 87),
+            ("mediaType.schema", 151),
+            ("schema.properties", 291),
+            ("schema.type=array", 140),
         ):
             with self.subTest(selector=selector):
                 self.assertEqual(count, counted.get((selector, UNQUOTED_STATUS), 0))
