@@ -362,13 +362,6 @@ upgrade:
     cargo update
     @just check
 
-# Legacy reproduction aid for the offline seed; pass `exhaustive` to reproduce
-# that historical container-generated target too. Numbered corpus maintenance
-# uses the Fern goldens workflow; see docs/fern-goldens.md.
-fixtures-refresh *args:
-    ./scripts/fixtures-refresh.sh {{args}}
-
-
 # Rebuild-only: fetch pinned corpus sources into .local/corpus or a supplied
 # destination. Routine checks use committed copies; this is Fern maintenance.
 fetch-corpus *args:

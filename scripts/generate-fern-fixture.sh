@@ -19,9 +19,9 @@
 # the same kind of overlay, for crozier's `default-max-retries`.
 #
 # Fern's generator only runs under a container runtime (Docker/Podman), which is
-# not available in every environment — so this is a SEPARATE, opt-in script, not
-# part of `just fixtures-refresh`'s default offline path. Run it on a machine
-# with Docker; it produces tests/fixtures/<fixture>/expected/.
+# not available in every environment. Generation is opt-in; routine comparisons
+# use committed sources and goldens. Run this on a machine with Docker; it
+# produces tests/fixtures/<fixture>/expected/.
 #
 # Requirements:
 #   - Docker running (Fern runs the generator image locally)
