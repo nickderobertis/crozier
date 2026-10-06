@@ -1205,6 +1205,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 evaluated = subprocess.run([*command, "--stage", "evaluate"], env=env,
                                            capture_output=True, text=True)
                 self.assertEqual(0, evaluated.returncode, evaluated.stderr)
+                original_candidates = (evidence / "candidates.jsonl").read_bytes()
                 rows = list(map(json.loads, (evidence / "candidates.jsonl").read_text(encoding="utf-8").splitlines()))
                 opaque = [row for row in rows if row["path"] == token]
                 self.assertEqual(1, len(opaque))
@@ -1222,11 +1223,13 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 self.assertEqual(1, rejected.returncode)
                 self.assertIn("unsupported opaque identity version v3", rejected.stderr)
                 self.assertEqual(acquired, len(self.server.state["requests"]))
+                self.assertEqual(original_candidates, (evidence / "candidates.jsonl").read_bytes())
                 queries_path.write_text(original_queries, encoding="utf-8")
                 recovered = subprocess.run([*command, "--stage", "evaluate"], env=env,
                                            capture_output=True, text=True)
                 self.assertEqual(0, recovered.returncode, recovered.stderr)
                 self.assertEqual(acquired, len(self.server.state["requests"]))
+                self.assertEqual(original_candidates, (evidence / "candidates.jsonl").read_bytes())
 
     def test_cli_search_evaluate_walk_resume_and_failure_exits(self) -> None:
         script = REPO / "scripts/witness-search-github.py"

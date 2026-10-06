@@ -67,6 +67,7 @@ class _Raw(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self) -> None:
+        self.server.requests.append(self.path)
         files = {
             f"/acme/shop/{COMMIT}/openapi.yaml": DOCUMENT,
             f"/acme/shop/{COMMIT}/LICENSE": b"MIT License\n\nCopyright (c) acme\n",
@@ -91,6 +92,8 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.evidence = self.root / "witness-search-sourcegraph"
         self.evidence.mkdir(parents=True)
         server = ThreadingHTTPServer(("127.0.0.1", 0), _Raw)
+        server.requests = []
+        self.server = server
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
@@ -113,6 +116,58 @@ class LegacyScreenCliTests(unittest.TestCase):
         if not path.is_file():
             return []
         return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+    def test_excluded_repositories_fail_before_fetching_or_filing(self) -> None:
+        for repository in sorted(INDEX.EXCLUDED_REPOSITORIES):
+            with self.subTest(repository=repository):
+                rejected = self.screen(repository=repository)
+                self.assertNotEqual(0, rejected.returncode)
+                self.assertIn("excluded by the repository rule", rejected.stderr)
+                self.assertIn("specification publisher's repository", rejected.stderr)
+                self.assertEqual([], self.server.requests)
+                self.assertEqual([], list(self.evidence.iterdir()))
+        recovered = self.screen("--disposition", "witness-found")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertTrue(self.server.requests)
+        self.assertEqual(1, len(self.rows()))
+
+    def test_measure_refuses_opaque_history_before_its_real_fetch_boundary(self) -> None:
+        load("rate_limit_guard", REPO / "scripts/rate_limit_guard.py")
+        github = load("witness_screen_acquirer_for_test", REPO / "scripts/witness-search-github.py")
+        acquirer = github.Acquirer(self.evidence, cache=self.scratch / "cache",
+                                   raw_github_url=self.env["CROZIER_RAW_GITHUB_URL"])
+        token = INDEX.make_opaque_identity("d" * 32, 1)
+        logs = self.evidence / "measurement-logs"
+        with self.assertRaisesRegex(SystemExit, "opaque history cannot be measured again"):
+            SCREEN.measure(repository="example/copied-input", commit=token, path=token,
+                           expected_sha256=token,
+                           fetch=lambda url, subject: acquirer.raw_github_get(url, "sample-shape", subject),
+                           raw_base=acquirer.raw_github_url, logs=logs, base=self.evidence)
+        self.assertEqual([], self.server.requests)
+        self.assertFalse(logs.exists())
+        self.assertEqual([], self.rows())
+
+    def test_opaque_history_is_skipped_and_unknown_versions_fail_without_writes(self) -> None:
+        def token(number: int) -> str:
+            return INDEX.make_opaque_identity("b" * 32, number)
+        arguments = ["--path", token(1), "--commit", token(2), "--sha256", token(3)]
+        skipped = self.screen(*arguments, repository="example/copied-input")
+        self.assertEqual(0, skipped.returncode, skipped.stderr)
+        self.assertIn("screened by repository rule", skipped.stdout)
+        self.assertEqual(1, len(skipped.stdout.splitlines()))
+        self.assertEqual([], self.server.requests)
+        self.assertEqual([], list(self.evidence.iterdir()))
+        invalid = [arg.replace(":v2:", ":v3:") for arg in arguments]
+        rejected = self.screen(*invalid, repository="example/copied-input")
+        self.assertNotEqual(0, rejected.returncode)
+        self.assertIn("unsupported opaque identity version v3", rejected.stderr)
+        self.assertIn("restore valid v2 evidence", rejected.stderr)
+        self.assertEqual([], self.server.requests)
+        self.assertEqual([], list(self.evidence.iterdir()))
+        recovered = self.screen(*arguments, repository="example/copied-input")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual([], self.server.requests)
+        self.assertEqual([], list(self.evidence.iterdir()))
 
     def test_a_candidate_passing_every_screen_is_filed_with_its_measured_record(self) -> None:
         # Passing every screen owes a disposition; nothing is filed without one.

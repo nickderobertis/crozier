@@ -53,6 +53,7 @@ import tempfile
 import urllib.parse
 from collections import Counter
 from collections.abc import Callable
+from enum import Enum
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -402,6 +403,28 @@ def write_log(logs: Path, base: Path, sha256: str, screen: str, text: str) -> tu
     return path.relative_to(base).as_posix(), digest
 
 
+class ScreeningMode(Enum):
+    MEASURE = "measure"
+    SCREENED_HISTORY = "screened-history"
+
+
+def screening_mode_or_fail(repository: str, commit: str, path: str, sha256: str = "") -> ScreeningMode:
+    """Return the screening mode, exiting through SystemExit on invalid or excluded input."""
+    index = _load("witness_screen_identity", REPO / "scripts" / "witness-search-github-index.py")
+    try:
+        if index.opaque_identity(path):
+            row = {"repository": repository, "commit": commit, "path": path}
+            if sha256:
+                row["sha256"] = sha256
+            index.validate_opaque_values(row)
+            return ScreeningMode.SCREENED_HISTORY
+    except ValueError as error:
+        fail(f"{error}; restore valid {index.OPAQUE_PREFIX.split(':')[1]} evidence from git and rerun")
+    if index.excluded_repository(repository):
+        fail(f"{repository}: excluded by the repository rule; use the specification publisher's repository")
+    return ScreeningMode.MEASURE
+
+
 def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: str,
             logs: Path, base: Path, expected_sha256: str = "", licence_refusal: str = "",
             timeout: int = 1800, now: str | None = None) -> dict[str, Any]:
@@ -410,6 +433,8 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     `fetch(url, subject)` is the guarded acquirer's exact-commit raw route; it
     answers `(status, bytes)`. Logs land in `logs`, recorded relative to `base`.
     """
+    if screening_mode_or_fail(repository, commit, path, expected_sha256) is ScreeningMode.SCREENED_HISTORY:
+        fail("opaque history cannot be measured again; resume through the screening CLI to retain it unchanged")
     if not REPOSITORY.fullmatch(repository):
         fail(f"{repository!r} is no `<owner>/<name>` repository; pass the one the candidate was acquired from")
     url = raw_url(raw_base, repository, commit, path)
@@ -641,6 +666,9 @@ def legacy_screen(args: argparse.Namespace) -> int:
     if args.fern is not None:
         fail("`--fern` is no longer a measurement: this stage runs pinned Fern itself and records its exit "
              "status and log — drop `--fern`")
+    if screening_mode_or_fail(args.repository, args.commit, args.path, args.sha256) is ScreeningMode.SCREENED_HISTORY:
+        print(f"witness-screen: {args.source}: opaque input screened by repository rule; history retained")
+        return 0
     directory = args.evidence_root / f"witness-search-{args.source}"
     if not directory.is_dir():
         fail(f"{directory} does not exist; acquire {args.source} through its witness-search script first")
