@@ -2369,6 +2369,11 @@ class GrammarContractTests(unittest.TestCase):
         "schema.example:on-ref-to-enum",
         "schema.example:on-ref-to-union",
         "schema.example:on-ref-to-alias",
+        # Read a request body's selected media type and resolve the component
+        # schemas its schema and example reach.
+        "mediaType.schema:allof-parent-body",
+        "mediaType.example:nested-null-member",
+        "mediaType.example:deprecated-property",
     })
 
     def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
@@ -2387,7 +2392,7 @@ class GrammarContractTests(unittest.TestCase):
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
-            "Sixty-seven": 67, "Sixty-eight": 68,
+            "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69, "twenty": 20,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
             "seventeen": 17,
         }
@@ -3779,6 +3784,8 @@ NAMING_AND_EXAMPLE_BRANCH_PREDICATES = frozenset({
     "schema.properties:optional-example", "parameter.example:non-scalar-query",
     "mediaType.examples:named-beside-example", "mediaType.examples:named-only",
     "operation.responses:wildcard-binary",
+    "schema.example:unread-date-time", "mediaType.schema:allof-parent-body",
+    "mediaType.example:nested-null-member", "mediaType.example:deprecated-property",
 })
 
 
@@ -12285,6 +12292,61 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
                 "*/*": {"schema": {"type": "string", "format": "binary"}}}}}}),
             _operation_document({"responses": {"200": {"description": "ok", "content": {
                 "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}}}}}),
+        ),
+        # A negative offset is a value Fern's appended `Z` breaks; a positive one
+        # it reads.
+        "schema.example:unread-date-time": (
+            _root_document({"type": "string", "format": "date-time", "example": "2022-08-11T16:30:00-05:00"}),
+            _root_document({"type": "string", "format": "date-time", "example": "2022-08-11T16:30:00+05:00"}),
+        ),
+        # The same composed body, with and without another schema's `allOf`
+        # naming it.
+        "mediaType.schema:allof-parent-body": (
+            _operation_document(
+                _json_body({"schema": {"$ref": "#/components/schemas/S"}, "example": {"own": "a", "base": "b"}}),
+                components={"schemas": {
+                    "Base": {"type": "object", "required": ["base"], "properties": {"base": {"type": "string"}}},
+                    "S": {"allOf": [{"type": "object", "required": ["own"], "properties": {"own": {"type": "string"}}},
+                                    {"$ref": "#/components/schemas/Base"}]},
+                    "Child": {"allOf": [{"$ref": "#/components/schemas/S"}]},
+                }},
+            ),
+            _operation_document(
+                _json_body({"schema": {"$ref": "#/components/schemas/S"}, "example": {"own": "a", "base": "b"}}),
+                components={"schemas": {
+                    "Base": {"type": "object", "required": ["base"], "properties": {"base": {"type": "string"}}},
+                    "S": {"allOf": [{"type": "object", "required": ["own"], "properties": {"own": {"type": "string"}}},
+                                    {"$ref": "#/components/schemas/Base"}]},
+                }},
+            ),
+        ),
+        # `null` for a nested optional property, beside `null` at the top level.
+        "mediaType.example:nested-null-member": (
+            _operation_document(_json_body({
+                "schema": {"type": "object", "properties": {"inner": {
+                    "type": "object", "properties": {"note": {"type": "string"}}}}},
+                "example": {"inner": {"note": None}},
+            })),
+            _operation_document(_json_body({
+                "schema": {"type": "object", "properties": {"note": {"type": "string"}}},
+                "example": {"note": None},
+            })),
+        ),
+        # A property whose own schema is deprecated, beside a `$ref` carrying
+        # the mark as a sibling, which leaves the property in Fern's example.
+        "mediaType.example:deprecated-property": (
+            _operation_document(_json_body({
+                "schema": {"type": "object", "properties": {"old": {"type": "string", "deprecated": True}}},
+                "example": {"old": "x"},
+            })),
+            _operation_document(
+                _json_body({
+                    "schema": {"type": "object", "properties": {
+                        "old": {"$ref": "#/components/schemas/Old", "deprecated": True}}},
+                    "example": {"old": "x"},
+                }),
+                components={"schemas": {"Old": {"type": "string"}}},
+            ),
         ),
     }
 

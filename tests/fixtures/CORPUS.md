@@ -238,6 +238,7 @@ compares it. Row 224 is the one so far.
 | 310 | `openfoodfacts-taxonomy-editor` | github-raw | https://raw.githubusercontent.com/openfoodfacts/taxonomy-editor/dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3/backend/openapi/openapi.json | `dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3` | AGPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Open Food Facts taxonomy editor's API as its FastAPI backend publishes it: 25 paths and 16 component schemas; `EntryNodeSearchResult.filters` items are a `filterType`-discriminated `oneOf` of seven `$ref` members whose `readOnly` properties `required` also lists |
 | 311 | `qontract-api` | github-raw | https://raw.githubusercontent.com/app-sre/qontract-reconcile/4f643a29084cb9b9e8c90e878e03bbe6ac80a5db/qontract_api/openapi.json | `4f643a29084cb9b9e8c90e878e03bbe6ac80a5db` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Qontract API as qontract-reconcile's FastAPI service publishes it: 34 paths and 145 component schemas; the Quay-repository and Slack-usergroup task results' `actions` items are `$ref`-only unions whose members tag `action_type` with a one-value `enum` that `required` leaves out |
 | 312 | `oal-example` | github-raw | https://raw.githubusercontent.com/oxlip-lang/oal/9c76fd5fd74c1f64c62a219aa2156b021a820f4a/examples/openapi.yaml | `9c76fd5fd74c1f64c62a219aa2156b021a820f4a` | Apache-2.0 (`info.license`, and the publisher repository's pinned `LICENSE.txt`) | committed | The example description the OAL project compiles from its own API language and publishes: 4 paths and 6 component schemas; `obj3.stuff` is an `anyOf` whose first member is an inline `oneOf` beside an inline object |
+| 340 | `typescript-service-template` | github-raw | https://raw.githubusercontent.com/adiwajshing/typescript-service-template/bec0143414f9ec292e4a33dd3ee1c576984559d6/openapi.yaml | `bec0143414f9ec292e4a33dd3ee1c576984559d6` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The description a TypeScript service template publishes for its users API: one path, three operations and five component schemas; `usersPatch` takes a required query array of `$ref UserID` items and answers `application/json` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1446,3 +1447,22 @@ first:
 The repair: a property union's member composing two or more alternatives of
 its own is hoisted to `{Owner}{Prop}{Ordinal}` rather than inlined as a nested
 `typing.Union`.
+
+## Row 340 — a required query array of named items, answering JSON
+
+Fern's worked example passes a required query array with one sampled item
+whatever its item type, unless the operation's success body is `text/*` or it
+takes a required object or map query parameter beside the array; then it leaves
+every required query array out. The registered goldens held the omitting sides
+only (`amazonaws.com-cloudformation`'s `text/xml` operations), where crozier's
+earlier rule — leave out arrays of named items — gave the same bytes. A TypeScript
+service template's `usersPatch` takes a required array of `$ref UserID` items and
+answers `application/json`:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 340 | `typescript-service-template` | a required query array of `$ref` items under a JSON response | ✅ byte-matched after one repair |
+
+The repair: the omission is keyed on the response media type and a required
+object or map query parameter beside the array, as measured, rather than on the
+item type (see `docs/matching.md`, *What a worked example shows*).

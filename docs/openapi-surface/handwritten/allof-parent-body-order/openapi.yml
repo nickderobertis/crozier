@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Apiary Yards
+  version: "1.0"
+servers:
+  - url: https://yards.apiary.example
+paths:
+  /yards:
+    post:
+      operationId: openYard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YardRequest'
+            example:
+              acreage: 3
+              label: east
+              yardId: y-1
+              region: hills
+      responses:
+        "204":
+          description: Opened.
+components:
+  schemas:
+    YardBase:
+      type: object
+      required: [yardId]
+      properties:
+        yardId:
+          type: string
+        region:
+          type: string
+    YardRequest:
+      allOf:
+        - type: object
+          required: [label]
+          properties:
+            acreage:
+              type: integer
+            label:
+              type: string
+        - $ref: '#/components/schemas/YardBase'
+    YardRecord:
+      allOf:
+        - $ref: '#/components/schemas/YardRequest'
+        - type: object
+          properties:
+            openedOn:
+              type: string

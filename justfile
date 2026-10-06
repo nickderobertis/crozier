@@ -307,6 +307,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zoonk_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openfoodfacts_taxonomy_editor_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e qontract_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e typescript_service_template_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oal_example_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecosystem_client_class_name_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e yourbrand_ticketing_matches_fern_output

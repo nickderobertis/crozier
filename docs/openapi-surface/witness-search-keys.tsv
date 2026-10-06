@@ -1,4 +1,5 @@
 key	selector	region	census_status
+allof-parent-request-body	mediaType.schema:allof-parent-body	bodies-media.md	supported
 annotated-ref-target-string-const	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued	schemas.md	supported
 array-item-inheritance-union	schema.items>schema.discriminator:inheritance-union	schemas.md	supported
 array-item-pointer-walk-oneof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf	schemas.md	supported
@@ -12,6 +13,8 @@ property-sole-anyof-composed-member	schema.properties>schema.anyOf:sole-member&s
 property-sole-anyof-empty-object-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
 property-sole-oneof-composed-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported
 property-sole-oneof-empty-object-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
+request-example-deprecated-property	mediaType.example:deprecated-property	bodies-media.md	supported
+request-example-nested-null	mediaType.example:nested-null-member	bodies-media.md	supported
 schema-example-array-null-element	schema.example:array-null-element	schemas.md	supported
 schema-example-fractional-on-integer	schema.example:fractional-on-integer	schemas.md	supported
 schema-example-on-ref-to-enum	schema.example:on-ref-to-enum	schemas.md	supported
@@ -19,3 +22,4 @@ schema-example-on-ref-to-object	schema.example:on-ref-to-object	schemas.md	suppo
 schema-example-on-ref-to-union	schema.example:on-ref-to-union	schemas.md	supported
 schema-example-temporal-duplicate-element	schema.example:temporal-duplicate-element	schemas.md	supported
 schema-example-union-ref-sentinel	schema.example:union-ref-sentinel	schemas.md	supported
+unread-date-time-example	schema.example:unread-date-time	schemas.md	supported

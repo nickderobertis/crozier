@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: Apiary Inspections
+  version: "1.0"
+servers:
+  - url: https://inspections.apiary.example
+paths:
+  /inspections:
+    post:
+      operationId: logInspection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Inspection'
+      responses:
+        "204":
+          description: Logged.
+components:
+  schemas:
+    Inspection:
+      type: object
+      required: [openedAt, closedAt, sealedAt]
+      properties:
+        openedAt:
+          type: string
+          format: date-time
+          example: "2022-08-11 14:00:00 CDT"
+        closedAt:
+          type: string
+          format: date-time
+          example: "2022-08-11T16:30:00-05:00"
+        sealedAt:
+          type: string
+          format: date-time
+          example: "2022-08-11T21:45:00Z"

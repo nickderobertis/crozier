@@ -2602,6 +2602,87 @@ fn handwritten_fixtures_match_fern_goldens() {
     );
 }
 
+/// Every `date-time` value crozier's worked examples write over the
+/// `unread-date-time-examples` hand-written fixture is an instant
+/// `datetime.datetime.fromisoformat` reads: a UTC `YYYY-MM-DD[T ]HH:MM:SS+00:00`
+/// with each field in range. The document's examples are a zone name and a
+/// negative offset, which Fern replaces with its default, beside a `Z` value it
+/// reads; no example carries either source string, and the docstring writer
+/// changes nothing but the date-time separator.
+#[test]
+fn worked_date_time_examples_always_parse() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/unread-date-time-examples/openapi.yml");
+    let out = tempfile::tempdir().expect("tempdir");
+    crozier()
+        .args(["generate", "python", "--spec"])
+        .arg(&fixture)
+        .arg("--output")
+        .arg(out.path())
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let valid = |value: &str| {
+        let bytes = value.as_bytes();
+        let digits = |range: std::ops::Range<usize>| {
+            value
+                .get(range)
+                .filter(|part| part.bytes().all(|byte| byte.is_ascii_digit()))
+                .and_then(|part| part.parse::<u32>().ok())
+        };
+        value.len() == 25
+            && value.ends_with("+00:00")
+            && bytes[4] == b'-'
+            && bytes[7] == b'-'
+            && matches!(bytes[10], b'T' | b' ')
+            && bytes[13] == b':'
+            && bytes[16] == b':'
+            && digits(0..4).is_some()
+            && digits(5..7).is_some_and(|month| (1..=12).contains(&month))
+            && digits(8..10).is_some_and(|day| (1..=31).contains(&day))
+            && digits(11..13).is_some_and(|hour| hour < 24)
+            && digits(14..16).is_some_and(|minute| minute < 60)
+            && digits(17..19).is_some_and(|second| second < 60)
+    };
+    let mut seen = Vec::new();
+    for rel in ["README.md", "reference.md", "src/fern/client.py"] {
+        let text = std::fs::read_to_string(out.path().join(rel)).expect(rel);
+        assert!(
+            !text.contains("CDT") && !text.contains("-05:00"),
+            "{rel} carries a source date-time Fern does not read"
+        );
+        let mut rest = text.as_str();
+        while let Some(at) = rest.find("datetime.datetime.fromisoformat(") {
+            rest = &rest[at + "datetime.datetime.fromisoformat(".len()..];
+            let open = rest.find('"').expect("a quoted argument");
+            let close = rest[open + 1..].find('"').expect("a closed argument") + open + 1;
+            let value = &rest[open + 1..close];
+            assert!(
+                valid(value),
+                "{rel}: `{value}` is not a date-time fromisoformat reads"
+            );
+            seen.push(value.to_string());
+            rest = &rest[close..];
+        }
+    }
+    for expected in [
+        "2024-01-15T09:30:00+00:00",
+        "2022-08-11T21:45:00+00:00",
+        "2024-01-15 09:30:00+00:00",
+        "2022-08-11 21:45:00+00:00",
+    ] {
+        assert!(
+            seen.iter().any(|value| value == expected),
+            "no example writes {expected}"
+        );
+    }
+}
+
 /// Every way the hand-written fixtures under `root` fail their contract, each
 /// naming the fixture (or row, or ledger) it is about. `root` is the repository
 /// for the real gate and a scratch tree laid out the same way for the tests
@@ -5005,6 +5086,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENFOODFACTS_TAXONOMY_EDITOR,
     &QONTRACT_API,
     &OAL_EXAMPLE,
+    &TYPESCRIPT_SERVICE_TEMPLATE,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7906,6 +7988,20 @@ const OPENFOODFACTS_TAXONOMY_EDITOR: Corpus = Corpus {
 /// one-value `enum` that `required` leaves out
 const QONTRACT_API: Corpus = Corpus {
     api: "qontract-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `typescript-service-template`: corpus row 340, a TypeScript service
+/// template's users API, whose `usersPatch` takes a required query array of
+/// `$ref UserID` items and answers JSON, so Fern's worked example passes it
+const TYPESCRIPT_SERVICE_TEMPLATE: Corpus = Corpus {
+    api: "typescript-service-template",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14587,6 +14683,11 @@ fn qontract_api_matches_fern_output() {
 #[test]
 fn oal_example_matches_fern_output() {
     assert_committed_corpus_matches(&OAL_EXAMPLE);
+}
+
+#[test]
+fn typescript_service_template_matches_fern_output() {
+    assert_committed_corpus_matches(&TYPESCRIPT_SERVICE_TEMPLATE);
 }
 
 #[test]

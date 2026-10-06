@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "986b73b3dd7f476cac7ae7cc0d944afca756972daf94d5700db679e4e30798ab"
+
+[[covers]]
+key = "request-example-deprecated-property"
+search = "docs/openapi-surface/witness-search-example-shapes/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-example-shapes/README.md"
