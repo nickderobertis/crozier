@@ -22,13 +22,9 @@
 #      authenticated in this environment, into CLAUDE_ENV_FILE so later Bash calls
 #      inherit them.
 #
-# Harness selection: llmlint.yml pins no harness, so the committed `oneharness.toml`
-# decides. It runs in fallback mode (codex + gpt-5.5 primary, claude-code +
-# opus-4.8 secondary): a contributor with Codex authenticated runs the primary, and
-# a Claude Code session or the CI runner, where codex is absent, falls through to
-# claude-code — no `ONEHARNESS_*` override needed (one would only clobber the
-# fallback list). If the fallback order can't select the right harness for some
-# environment, set ONEHARNESS_HARNESSES there.
+# Harness selection: llmlint.yml pins no harness, so the committed fallback
+# `oneharness.toml` decides (see its header). If its order can't select the right
+# harness for some environment, set ONEHARNESS_HARNESSES there.
 # llmlint: ignore-file[robust_shell, tool_output_is_signal, boundary_inputs_validated] deliberate for a session-startup installer (see header): `set -e` is omitted so a flaky install can't abort the hook — the script owns its exit codes and always exits 0; success stays quiet while failures log-and-continue rather than block startup; and the toolchain is installed from PyPI (`uv tool install llmlint-cli`) whose wheels ship with Trusted Publishing + PEP 740 attestations, so no unvalidated external input is executed.
 set -uo pipefail
 

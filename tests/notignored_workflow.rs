@@ -4,13 +4,14 @@
 //! read-only tree and comment-only write grant, skips forks (whose token cannot
 //! comment), sees the base branch it diffs against, and never becomes part of a
 //! required check — a required context that skips on forks would block them.
+//! Every context `ci.yml` reports is a candidate for branch protection, so the
+//! job must share a name with none of them and none may depend on it.
+// llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace yet; this integration test sits in tests/ beside release_workflow.rs, its sibling workflow test, and runs under `just test`.
 
 use serde_yaml_ng::{Mapping, Value};
 
 const NOTIGNORED_WORKFLOW: &str = include_str!("../.github/workflows/notignored.yml");
 const CI_WORKFLOW: &str = include_str!("../.github/workflows/ci.yml");
-/// The status-check contexts branch protection requires.
-const REQUIRED_CONTEXTS: [&str; 3] = ["gate", "commitlint", "llmlint"];
 const FORK_GUARD: &str = "github.event.pull_request.head.repo.full_name == github.repository";
 
 fn parse(source: &str) -> Value {
@@ -119,30 +120,22 @@ fn skips_forks_and_checks_out_full_history_before_the_action() {
 }
 
 #[test]
-fn is_not_a_required_context_nor_a_dependency_of_one() {
+fn shares_no_context_with_ci_and_nothing_in_ci_needs_it() {
     let notignored = parse(NOTIGNORED_WORKFLOW);
     let (id, job) = only_job(&notignored);
-    assert!(
-        !REQUIRED_CONTEXTS.contains(&context(id, job)),
-        "notignored reports a required context's name"
-    );
+    let own = context(id, job);
 
     let ci = parse(CI_WORKFLOW);
     let ci_jobs = jobs(&ci);
-    let mut reported = Vec::new();
     for (ci_id, ci_job) in ci_jobs {
         let ci_id = ci_id.as_str().expect("job ids are strings");
         let ci_job = ci_job.as_mapping().expect("each job is a mapping");
         let name = context(ci_id, ci_job);
-        if !REQUIRED_CONTEXTS.contains(&name) {
-            continue;
-        }
-        reported.push(name);
-        // Walk the required job's whole `needs` closure.
+        assert_ne!(name, own, "notignored reports ci.yml's {name} context");
         let mut pending = needs(ci_job);
         let mut seen = Vec::new();
         while let Some(need) = pending.pop() {
-            assert_ne!(need, id, "required context {name} needs notignored's job");
+            assert_ne!(need, id, "ci.yml's {name} needs notignored's job");
             if seen.contains(&need) {
                 continue;
             }
@@ -154,10 +147,4 @@ fn is_not_a_required_context_nor_a_dependency_of_one() {
             seen.push(need);
         }
     }
-    reported.sort_unstable();
-    assert_eq!(
-        reported,
-        ["commitlint", "gate", "llmlint"],
-        "ci.yml must still report every required context"
-    );
 }
