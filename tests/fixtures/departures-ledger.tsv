@@ -1252,6 +1252,12 @@ tests/fixtures/cookie-parameters/expected	src/fern/core/client_wrapper.py	39	sdk
 tests/fixtures/cookie-parameters/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/cookie-parameters/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/cookie-parameters/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+tests/fixtures/cphos-ai-question/expected	src/fern/__init__.py	54	init-type-checking-import-order
+tests/fixtures/cphos-ai-question/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/cphos-ai-question/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/cphos-ai-question/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/cphos-ai-question/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/cphos-ai-question/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/cradl/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/cradl/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/cradl/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -1399,6 +1405,11 @@ tests/fixtures/error-responses/expected	src/fern/core/client_wrapper.py	37	sdk-i
 tests/fixtures/error-responses/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/error-responses/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/error-responses/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/esp32-streamline-bridge/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/esp32-streamline-bridge/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/esp32-streamline-bridge/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/esp32-streamline-bridge/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/esp32-streamline-bridge/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	src/fern/__init__.py	93	init-type-checking-import-order
 tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -1437,6 +1448,11 @@ tests/fixtures/fiware-context-generator/expected	src/fern/core/client_wrapper.py
 tests/fixtures/fiware-context-generator/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/fiware-context-generator/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/fiware-context-generator/expected	src/fern/types/__init__.py	12	init-type-checking-import-order
+tests/fixtures/flask-example-heroku/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+tests/fixtures/flask-example-heroku/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+tests/fixtures/flask-example-heroku/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/flask-example-heroku/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/flask-example-heroku/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/flowdapt/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/flowdapt/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/flowdapt/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix

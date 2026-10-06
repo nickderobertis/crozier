@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "flask-example-heroku",
+  "corpus_spec_ref": "2703c6ee5627d8543703a4cd9436c260fc4723c8",
+  "corpus_spec_url": "https://raw.githubusercontent.com/rctatman/flask_example_heroku/2703c6ee5627d8543703a4cd9436c260fc4723c8/openapi.yaml"
+}

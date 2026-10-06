@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "cphos-ai-question",
+  "corpus_spec_ref": "951028cbbcfb1ab15ee26dc02824029cb50fd1ab",
+  "corpus_spec_url": "https://raw.githubusercontent.com/CPHOS/AI_Question/951028cbbcfb1ab15ee26dc02824029cb50fd1ab/docs/api/openapi.json"
+}

@@ -244,6 +244,9 @@ compares it. Row 224 is the one so far.
 | 333 | `g4brym-download-manager` | github-raw | https://raw.githubusercontent.com/G4brym/download-manager/459a6d8ef8dbee4289b7b5b629e1377e623c2b4e/swagger/openapi.json | `459a6d8ef8dbee4289b7b5b629e1377e623c2b4e` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | download-manager's API as its FastAPI service publishes it, at OpenAPI 3.0.2: 6 paths and 7 component schemas; two parameterless operations post an inline array titled `Files`, one of `$ref` items and one of strings |
 | 334 | `opentosca-license-engine` | github-raw | https://raw.githubusercontent.com/OpenTOSCA/license-engine/ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65/src/main/resources/openapi/openapi.json | `ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The OpenTOSCA license engine's API as its repository publishes it, at OpenAPI 3.0.2: 14 paths and 10 component schemas; `POST /licenses/check/` posts an inline string array titled `Usedlicenses` with no parameter, and twelve success responses are an inline `application/json` declaring `{}` |
 | 335 | `chat-rest-api` | github-raw | https://raw.githubusercontent.com/Ke11nyk/chat-rest-api/e761a7bf0d32147aff6571b9f9d325abd010e545/docs/openapi.yaml | `e761a7bf0d32147aff6571b9f9d325abd010e545` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | chat-rest-api's API as its repository publishes it, at OpenAPI 3.0.0: 5 paths and 1 component schema; `GET /message/content/{id}` declares the error keys `404-message` and `404-file`, and its success lists a schemaless `text/plain` before a schemaless `application/octet-stream` |
+| 336 | `esp32-streamline-bridge` | github-raw | https://raw.githubusercontent.com/lutyjj/esp32-streamline/f50f678a3569d5c10e250cdd03e16cf1d17df16a/docs/bridge-openapi.json | `f50f678a3569d5c10e250cdd03e16cf1d17df16a` | GPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The StreamLine bridge API as esp32-streamline publishes it: 13 paths and 25 component schemas; `GET /api/recordings/{recording_id}/file` and `GET /streamline.wav` answer a schemaless `audio/wav` |
+| 337 | `cphos-ai-question` | github-raw | https://raw.githubusercontent.com/CPHOS/AI_Question/951028cbbcfb1ab15ee26dc02824029cb50fd1ab/docs/api/openapi.json | `951028cbbcfb1ab15ee26dc02824029cb50fd1ab` | AGPL-3.0 (`info.license` `AGPL-3.0-or-later`, and the publisher repository's pinned `LICENSE`) | committed | CPhOS's physics-question generation API as its FastAPI service publishes it: 31 paths and 45 component schemas; `GET /api/tasks/{task_id}/artifacts/{name}` answers a schemaless `application/pdf` listed before `text/markdown`, beside JSON error responses |
+| 338 | `flask-example-heroku` | github-raw | https://raw.githubusercontent.com/rctatman/flask_example_heroku/2703c6ee5627d8543703a4cd9436c260fc4723c8/openapi.yaml | `2703c6ee5627d8543703a4cd9436c260fc4723c8` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | A Python package-name extractor's API as its repository publishes it, at OpenAPI 3.0.0: 1 path and no component schemas; `POST /extractpackages` declares a required request body whose `application/json` media type has no schema |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1453,7 +1456,7 @@ The repair: a property union's member composing two or more alternatives of
 its own is hoisted to `{Owner}{Prop}{Ordinal}` rather than inlined as a nested
 `typing.Union`.
 
-## Rows 330–335 — request bodies and schemaless responses
+## Rows 330–338 — request bodies and schemaless responses
 
 A request body's model, its JSON content-type header, a success response that
 declares no schema, and a status key spelled with a suffix are each decided by
@@ -1469,6 +1472,9 @@ Fern 5.20.0 golden with `unmatched: &[]`:
 | 333 | `g4brym-download-manager` | a titled inline array body in a parameterless 3.0 operation | ✅ byte-matched after one repair |
 | 334 | `opentosca-license-engine` | a titled inline array body and inline `{}` successes in a 3.0 document | ✅ byte-matched after two repairs |
 | 335 | `chat-rest-api` | error keys spelled `404-message` and `404-file`; a text media type listed before a download | ✅ byte-matched after two repairs |
+| 336 | `esp32-streamline-bridge` | schemaless `audio/wav` successes | ✅ byte-matched after one repair |
+| 337 | `cphos-ai-question` | a schemaless `application/pdf` success listed before `text/markdown` | ✅ byte-matched after two repairs |
+| 338 | `flask-example-heroku` | a JSON request body declaring no schema | ✅ byte-matched after one repair |
 
 The repairs: a single-use JSON body's model is dropped whatever its name, where
 crozier kept every `Body_*` model (row 330); an unknown success body is guarded
@@ -1478,5 +1484,9 @@ schema keeps the JSON content-type header under HTTP Basic security (row 332); a
 inline container body's header follows its own `title` or `description`, not
 the document version or its items (rows 333, 334); a response key is read by its
 leading integer, so `404-message` and `404-file` both raise `NotFoundError`
-(row 335); and the first of a text and a download media type in a success's
-content decides between `str` and a byte stream (row 335).
+(row 335); the first of a text and a download media type in a success's
+content decides between `str` and a byte stream (row 335), and a Markdown media
+type listed after a download leaves the download's worked example its path
+arguments (row 337); a schemaless `audio/wav` or `application/pdf` success
+streams bytes (rows 336, 337); and a JSON request body declaring no schema
+sends nothing, where crozier dropped the whole method (row 338).

@@ -5011,6 +5011,9 @@ const CORPORA: &[&Corpus] = &[
     &G4BRYM_DOWNLOAD_MANAGER,
     &OPENTOSCA_LICENSE_ENGINE,
     &CHAT_REST_API,
+    &ESP32_STREAMLINE_BRIDGE,
+    &CPHOS_AI_QUESTION,
+    &FLASK_EXAMPLE_HEROKU,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7995,6 +7998,45 @@ const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
 /// `application/octet-stream`
 const CHAT_REST_API: Corpus = Corpus {
     api: "chat-rest-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `esp32-streamline-bridge`: corpus row 336, the StreamLine bridge API, whose recordings
+/// answer a schemaless `audio/wav`
+const ESP32_STREAMLINE_BRIDGE: Corpus = Corpus {
+    api: "esp32-streamline-bridge",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `cphos-ai-question`: corpus row 337, CPhOS's question-generation API, whose artifact
+/// download lists a schemaless `application/pdf` before `text/markdown`
+const CPHOS_AI_QUESTION: Corpus = Corpus {
+    api: "cphos-ai-question",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `flask-example-heroku`: corpus row 338, a package-name extractor whose one operation
+/// declares a JSON request body with no schema
+const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
+    api: "flask-example-heroku",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14672,6 +14714,21 @@ fn opentosca_license_engine_matches_fern_output() {
 #[test]
 fn chat_rest_api_matches_fern_output() {
     assert_committed_corpus_matches(&CHAT_REST_API);
+}
+
+#[test]
+fn esp32_streamline_bridge_matches_fern_output() {
+    assert_committed_corpus_matches(&ESP32_STREAMLINE_BRIDGE);
+}
+
+#[test]
+fn cphos_ai_question_matches_fern_output() {
+    assert_committed_corpus_matches(&CPHOS_AI_QUESTION);
+}
+
+#[test]
+fn flask_example_heroku_matches_fern_output() {
+    assert_committed_corpus_matches(&FLASK_EXAMPLE_HEROKU);
 }
 
 #[test]

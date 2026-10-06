@@ -404,6 +404,27 @@ Additional issue #77 real-world OpenAPI source specs:
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * StreamLine bridge API: the publisher's own description at
+    https://raw.githubusercontent.com/lutyjj/esp32-streamline/f50f678a3569d5c10e250cdd03e16cf1d17df16a/docs/bridge-openapi.json.
+    The repository's LICENSE at that same commit grants GPL-3.0
+    redistribution; corpus row 336 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * CPhOS question-generation API: the publisher's own description at
+    https://raw.githubusercontent.com/CPHOS/AI_Question/951028cbbcfb1ab15ee26dc02824029cb50fd1ab/docs/api/openapi.json.
+    The repository's LICENSE at that same commit grants AGPL-3.0
+    redistribution; corpus row 337 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * Python package name extractor API: the publisher's own description at
+    https://raw.githubusercontent.com/rctatman/flask_example_heroku/2703c6ee5627d8543703a4cd9436c260fc4723c8/openapi.yaml.
+    The repository's LICENSE at that same commit grants Apache-2.0
+    redistribution; corpus row 338 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The
