@@ -5078,6 +5078,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENEPCIS_DPP_READY,
     &NDW_ACCESSIBILITY_MAP,
     &MARIMO,
+    &MARIMO_CLIENT_CLASS_NAME,
     &BLACKADI_OAUTH2,
     &MOSIP_ESIGNET,
     &OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG,
@@ -6188,6 +6189,18 @@ const MARIMO: Corpus = Corpus {
     audiences: &[],
     audience_strict: false,
     client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Configured class names over the registered package-root API.
+const MARIMO_CLIENT_CLASS_NAME: Corpus = Corpus {
+    api: "marimo-client-class-name",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: Some("DispatchClient"),
     extra_fields: None,
     unmatched: &[],
 };
@@ -8510,6 +8523,24 @@ fn eos_extra_fields_forbid_matches_fern_output() {
 #[test]
 fn med_anvisa_price_matches_fern_output() {
     assert_committed_corpus_matches(&MED_ANVISA_PRICE);
+    let spec = corpus_spec(MED_ANVISA_PRICE.api).expect("registered medication-price source");
+    let document: serde_yaml_ng::Value =
+        serde_yaml_ng::from_str(&std::fs::read_to_string(spec).expect("read medication-price source"))
+            .expect("parse medication-price source");
+    let parameter = &document["paths"]["/medication"]["get"]["parameters"][1];
+    assert_eq!(parameter["name"].as_str(), Some("value"));
+    assert!(parameter.get("schema").is_none());
+    assert!(parameter.get("content").is_none());
+    let out = generate_corpus(&MED_ANVISA_PRICE);
+    for path in ["client.py", "raw_client.py"] {
+        let source = std::fs::read_to_string(out.path().join("src/fern/medication").join(path))
+            .expect("generated medication query client");
+        assert_eq!(
+            source.matches("value: typing.Optional[str] = None").count(),
+            2,
+            "{path}"
+        );
+    }
 }
 
 #[test]
@@ -8570,6 +8601,28 @@ fn ndw_accessibility_map_matches_fern_output() {
 #[test]
 fn marimo_matches_fern_output() {
     assert_committed_corpus_matches(&MARIMO);
+}
+
+#[test]
+fn marimo_client_class_name_matches_fern_output() {
+    assert_committed_corpus_matches(&MARIMO_CLIENT_CLASS_NAME);
+    let out = generate_corpus(&MARIMO_CLIENT_CLASS_NAME);
+    for (path, classes) in [
+        (
+            "client.py",
+            ["class DispatchClient:", "class AsyncDispatchClient:"],
+        ),
+        (
+            "raw_client.py",
+            ["class RawDispatchClient:", "class AsyncRawDispatchClient:"],
+        ),
+    ] {
+        let source = std::fs::read_to_string(out.path().join("src/fern").join(path))
+            .expect("generated package-root client");
+        for class in classes {
+            assert!(source.contains(class), "{path} is missing {class}");
+        }
+    }
 }
 
 #[test]

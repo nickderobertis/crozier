@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .environment_variable_discovery_value import EnvironmentVariableDiscoveryValue
+from .safe_literal_discovery_value import SafeLiteralDiscoveryValue
+
+DetectedDataSourceConfigurationValue = typing.Union[EnvironmentVariableDiscoveryValue, SafeLiteralDiscoveryValue]

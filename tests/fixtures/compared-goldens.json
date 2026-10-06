@@ -398,6 +398,7 @@
     "tests/fixtures/loris-dataquery/expected": {},
     "tests/fixtures/maif.local-otoroshi/expected": {},
     "tests/fixtures/malformed-property-schema/expected": {},
+    "tests/fixtures/marimo-client-class-name/expected": {},
     "tests/fixtures/marimo-plugins/expected": {},
     "tests/fixtures/marimo/expected": {},
     "tests/fixtures/maximo-wxo-integration/expected": {},

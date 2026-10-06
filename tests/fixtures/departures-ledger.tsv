@@ -1881,6 +1881,13 @@ tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.p
 tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/marimo-client-class-name/expected	.fern/metadata.json	6	fern-metadata-generator-config
+tests/fixtures/marimo-client-class-name/expected	src/fern/__init__.py	453	init-type-checking-import-order
+tests/fixtures/marimo-client-class-name/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+tests/fixtures/marimo-client-class-name/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+tests/fixtures/marimo-client-class-name/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/marimo-client-class-name/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/marimo-client-class-name/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/marimo-plugins/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/marimo-plugins/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/marimo-plugins/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

@@ -507,3 +507,10 @@ Additional request-body collision specification:
     redistribution; corpus row 329 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
+
+  * tests/fixtures/marimo-client-class-name/expected/ is generated from Marimo's
+    published OpenAPI document at revision
+    257ea7a983e2dbe4627f0168072fdcd538c93c5c of marimo-team/marimo, with a
+    configured client name. CORPUS.md row 330 records its immutable source;
+    docs/corpus-licensing.md records the redistribution grant. Only generated
+    output is vendored, with Python comments stripped as described above.
