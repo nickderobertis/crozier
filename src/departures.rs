@@ -373,8 +373,8 @@ impl Context {
     }
 
     /// The query parameters the reference's `reference.md` documents with
-    /// nullable items: `**NAME:** \`typing.Optional[typing.Union[typing.Optional[T],
-    /// typing.Sequence[typing.Optional[T]]]]\``.
+    /// nullable items, as
+    /// ``**NAME:** `typing.Optional[typing.Union[typing.Optional[T], typing.Sequence[typing.Optional[T]]]]` ``.
     pub fn reference_nullable_items(&self) -> &BTreeSet<String> {
         self.reference_nullable_items.get_or_init(|| {
             let Some((root, _)) = self.roots.as_ref() else {
