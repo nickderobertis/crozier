@@ -116,18 +116,10 @@ after both resolved **38 rules**:
 ### The set today
 
 A later refresh (create-repo v1.47.3) moved `base` and `ci` forward and added
-`releasing`, whose one rule judges the release wiring crozier ships through
-release-plz, crates.io and PyPI. The lock now records **39 rules**:
-
-| plugin | version | rules |
-| --- | --- | --- |
-| `base` | 1.13.0 | 17 |
-| `ci` | 1.5 | 5 |
-| `releasing` | 1.1 | 1 |
-| `languages/bash` | 1.3.0 | 3 |
-| `languages/rust` | 1.1 | 3 |
-| `shapes/cli` | 1.1.1 | 2 |
-| `config-lint` (bundled in the binary) | — | 8 |
+`releasing`, which judges the release wiring crozier ships through release-plz,
+crates.io and PyPI. `lock.json` is the record of the set as it stands — its
+versions, hashes and rules — and `just test-llmlint-plugins` holds the resolved
+rules to it, so this document does not restate them.
 
 A refresh that moves a rule shows up as a change to `lock.json` — a
 version bump, a different `sha256`, a name added or removed — so a genuine

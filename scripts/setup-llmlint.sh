@@ -35,17 +35,11 @@ set -uo pipefail
 # Version floor, as a PyPI constraint (the `llmlint-cli` package version tracks the
 # wrapped binary version). `uv tool install --upgrade` installs the newest release
 # satisfying it; oneharness comes along transitively at a compatible version.
-# llmlint >= 0.3.7 finds `oneharness` beside its own executable (so a lone
-# `uv tool install llmlint-cli` works) and gives the whole-tree default the composed
-# llmlint.yml relies on (it omits `files.include`); >= 0.3.12 makes the diff-scoped
-# run honor `files.exclude` (drops the vendored fixtures); 0.3.15 treats a plain
-# `--diff-base <ref>` as three-dot/merge-base; 0.3.17 ships the deterministic
-# `validate` gate `just lint-llm-validate` runs; 0.3.23 bundles config_lint v1.2 so
-# `line_localizable_rules_require_attribution` is enforced (create-repo's floor).
-# The floor is 0.4.1, above that: the oldest release the vendored plugin set is
-# measured against (docs/llmlint-plugins.md), whose bundled config-lint rules match
-# the ones `llmlint-plugins/lock.json` records — `just test-llmlint-plugins`
-# asserts they resolve exactly.
+# The floor is 0.4.1: past create-repo's 0.3.23 (the `validate` gate `just
+# lint-llm-validate` runs, merge-base `--diff-base`, config_lint v1.2), it is the
+# oldest release the vendored plugin set is measured against
+# (docs/llmlint-plugins.md), whose bundled config-lint rules match the ones
+# `llmlint-plugins/lock.json` records — `just test-llmlint-plugins` asserts that.
 readonly LLMLINT_MIN="0.4.1"
 readonly BIN_DIR="$HOME/.local/bin"
 
