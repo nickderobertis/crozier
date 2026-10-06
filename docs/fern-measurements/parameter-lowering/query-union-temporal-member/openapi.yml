@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: Almanac
+  version: 1.0.0
+servers:
+  - url: https://almanac.example.net
+paths:
+  /entries:
+    get:
+      operationId: listEntries
+      tags: [entries]
+      parameters:
+        - name: since
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: string
+                format: date
+        - name: until
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+                format: date-time
+        - name: season
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - $ref: "#/components/schemas/Season"
+              - type: string
+                format: date
+        - name: tide
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: integer
+              - type: string
+                format: date
+      responses:
+        "200":
+          description: Entries.
+          content:
+            application/json:
+              schema: {type: array, items: {type: string}}
+components:
+  schemas:
+    Season:
+      type: string
+      enum: [spring, autumn]

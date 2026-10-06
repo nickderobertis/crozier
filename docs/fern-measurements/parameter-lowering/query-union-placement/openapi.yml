@@ -1,0 +1,103 @@
+openapi: 3.1.0
+info:
+  title: Orchard
+  version: 1.0.0
+paths:
+  /harvests:
+    get:
+      operationId: listHarvests
+      tags: [harvests]
+      parameters:
+        - name: ripeness
+          in: query
+          schema:
+            anyOf:
+              - type: string
+              - type: integer
+              - type: "null"
+        - name: crate
+          in: query
+          schema:
+            title: Crate
+            anyOf:
+              - type: string
+              - type: number
+              - type: "null"
+      responses:
+        "200":
+          description: Harvests matching the filters.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /harvests/weighed:
+    get:
+      operationId: listWeighedHarvests
+      tags: [harvests]
+      parameters:
+        - name: unit
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - const: kilograms
+              - const: pounds
+        - name: grade
+          in: query
+          schema:
+            title: Grade
+            anyOf:
+              - type: string
+              - type: integer
+      responses:
+        "200":
+          description: Weighed harvests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /rows/{row}:
+    get:
+      operationId: getRow
+      tags: [rows]
+      parameters:
+        - name: row
+          in: path
+          required: true
+          schema:
+            anyOf:
+              - type: string
+              - type: integer
+        - name: season
+          in: query
+          required: true
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+        - name: picker
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - const: morning
+              - const: evening
+              - type: "null"
+        - name: X-Orchard-Block
+          in: header
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: integer
+      responses:
+        "200":
+          description: One orchard row.
+          content:
+            application/json:
+              schema:
+                type: string

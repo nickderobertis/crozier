@@ -1,0 +1,66 @@
+openapi: 3.1.0
+info:
+  title: Observatory
+  version: 1.0.0
+paths:
+  /exposures:
+    get:
+      operationId: listExposures
+      tags: [exposures]
+      parameters:
+        - name: filters
+          in: query
+          schema:
+            type: array
+            items:
+              anyOf:
+                - $ref: "#/components/schemas/Filter"
+                - type: string
+        - name: gains
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              oneOf:
+                - type: integer
+                - type: number
+      responses:
+        "200":
+          description: Exposures taken with the given settings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /targets:
+    get:
+      operationId: listTargets
+      tags: [targets]
+      parameters:
+        - name: kinds
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              anyOf:
+                - type: string
+                  enum: [nebula, cluster, galaxy]
+                - type: integer
+                - type: boolean
+      responses:
+        "200":
+          description: Targets of the given kinds.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Filter:
+      type: string
+      enum: [luminance, hydrogen-alpha, oxygen-iii]

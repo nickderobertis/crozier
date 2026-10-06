@@ -7,7 +7,7 @@ class {{ class_name }}:
     base_url : {{ base_url_doc_ty }}
         The base url to use for requests from the client.
 
-{{ env_doc }}{{ server_variable_doc }}{{ gh_doc }}{{ doc_param }}    headers : typing.Optional[typing.Dict[str, str]]
+{{ env_doc }}{{ server_variable_doc }}{{ client_param_doc }}{{ doc_param }}    headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
 {{ async_token_doc }}    timeout : typing.Optional[float]
@@ -35,18 +35,18 @@ class {{ class_name }}:
     --------
     from {{ pkg }} import {{ class_name }}
 
-{% if gh_example == "" and example_line == "" and example_base_url == "" %}
+{% if client_param_example == "" and example_line == "" and example_base_url == "" %}
     client = {{ class_name }}()
 {% else %}
     client = {{ class_name }}(
-{{ gh_example }}{{ example_line }}{{ example_base_url }}    )
+{{ client_param_example }}{{ example_line }}{{ example_base_url }}    )
 {% endif %}
     """
 
     def __init__(
         self,
         *,
-{{ base_url_ctor }}{{ gh_ctor }}{{ ctor_param }}        headers: typing.Optional[typing.Dict[str, str]] = None,
+{{ base_url_ctor }}{{ client_param_ctor }}{{ ctor_param }}        headers: typing.Optional[typing.Dict[str, str]] = None,
 {{ async_token_ctor }}        timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
         stream_reconnection_enabled: typing.Optional[bool] = None,
@@ -59,7 +59,7 @@ class {{ class_name }}:
         _defaulted_max_retries = max_retries if max_retries is not None else {{ default_max_retries }}
 {{ server_variable_init }}        self._client_wrapper = {{ wrapper }}(
             base_url={{ wrapper_base_url }},
-{{ gh_wrapper }}{{ wrapper_arg }}
+{{ client_param_wrapper }}{{ wrapper_arg }}
             headers=headers,
 {{ async_token_wrapper }}            httpx_client=httpx_client
             if httpx_client is not None

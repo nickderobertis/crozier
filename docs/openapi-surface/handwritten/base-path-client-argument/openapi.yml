@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: Orchard Registry
+  version: 1.0.0
+x-fern-base-path:
+  path: /{season}
+  paths-include-base-path: true
+  parameters:
+    season:
+      type: string
+      default: spring
+servers:
+  - url: https://orchards.example.net
+paths:
+  /{season}/trees:
+    post:
+      operationId: plantTree
+      tags: [trees]
+      parameters:
+        - name: season
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Tree"
+      responses:
+        "200":
+          description: The planted tree.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tree"
+components:
+  schemas:
+    Tree:
+      type: object
+      required: [variety]
+      properties:
+        variety:
+          type: string

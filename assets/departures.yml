@@ -44,6 +44,25 @@
     fails, and a snippet sending it sends a body the API's own schema rejects.
   evidence: docs/departures/evidence/closed-empty-object-example.md
 
+- id: constant-header-docs-arguments
+  kind: fern-defect
+  trigger: >-
+    An operation header whose schema defaults to a string (a plain string or an
+    inline string enum, required or not), which the method does not take and
+    the request sends as that constant: `README.md` and `reference.md`.
+  fern: >-
+    Method snippets passing the header as an argument with its default
+    (`mist_mode="fine"`), and a `reference.md` parameter block documenting it
+    under the method as `typing.Literal`.
+  crozier: >-
+    Method snippets and parameter lists without it.
+  reason: >-
+    The examples contradict the generated code: the method has no such
+    argument, so the documented call raises `TypeError` for an unexpected
+    keyword argument, and `reference.md` documents an argument the method does
+    not have.
+  evidence: docs/departures/evidence/constant-header-docs-arguments.md
+
 - id: fern-metadata-generator-config
   kind: provenance
   trigger: >-
@@ -79,6 +98,63 @@
     identical. crozier emits a deterministic sorted order rather than
     reproducing Fern's collection order.
   evidence: docs/departures/evidence/init-type-checking-import-order.md
+
+- id: lifted-base-path-docs-examples
+  kind: fern-defect
+  trigger: >-
+    A document-level `x-fern-base-path` (or `x-crozier-base-path`) object whose
+    `path` names a `{placeholder}`, which the client lifts out of every method
+    into a constructor argument: `README.md` and `reference.md`.
+  fern: >-
+    Method snippets passing the lifted argument (`edition="v2"`) to methods that
+    do not take it, a `reference.md` parameter block documenting it under each
+    such method, and client constructors that leave it out — even where it is
+    required.
+  crozier: >-
+    Method snippets and parameter lists without it, and every snippet's
+    constructor passing it first, by keyword: its default (`edition="v2"`), or
+    the `YOUR_EDITION` placeholder Fern's own docstrings use when it has none.
+  reason: >-
+    The examples contradict the generated code: each method call raises
+    `TypeError` for an unexpected keyword argument, a required lifted argument
+    left out of the constructor raises `TypeError` for the missing one, and
+    `reference.md` documents an argument the method does not have.
+  evidence: docs/departures/evidence/lifted-base-path-docs-examples.md
+
+- id: lifted-base-path-positional-example
+  kind: fern-defect
+  trigger: >-
+    A lifted base-path parameter (see `lifted-base-path-docs-examples`) with a
+    string `default`: the client constructor examples in the docstrings of the
+    root client and every resource client.
+  fern: >-
+    The default passed positionally, `FernApi("v2",)`.
+  crozier: >-
+    The default passed by keyword, `FernApi(edition="v2",)`.
+  reason: >-
+    The generated constructor is keyword-only, so the example call does not
+    match its signature: it raises `TypeError` (`takes 1 positional argument but
+    2 were given`).
+  evidence: docs/departures/evidence/lifted-base-path-positional-example.md
+
+- id: nullable-items-docs
+  kind: fern-defect
+  trigger: >-
+    A query parameter whose inline array `items` admit `null` (`nullable: true`,
+    or a 3.1 `type` list naming `null`), typed `Optional[Union[T, Sequence[T]]]`
+    in the signature: `README.md` and `reference.md`.
+  fern: >-
+    `reference.md` documenting the parameter as
+    `Optional[Union[Optional[T], Sequence[Optional[T]]]]`, and a required one's
+    worked call passing `[None]`.
+  crozier: >-
+    The signature's own type, and the element Fern's worked call passes for the
+    same items without `nullable` (`[1]`, `["trays"]`).
+  reason: >-
+    The docs contradict the generated code: `reference.md` documents a type the
+    method's signature does not have, and the documented call passes `None`
+    items that the signature's `Sequence[T]` rejects.
+  evidence: docs/departures/evidence/nullable-items-docs.md
 
 - id: readme-client-class-casing
   kind: fern-defect

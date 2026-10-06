@@ -891,7 +891,8 @@ fn load_departure_ledger(root: &Path) -> Result<Ledger, Vec<String>> {
 /// The inventory of compared goldens, derived from the comparisons' own
 /// registrations under `root`: each registered corpus's `expected/` and each
 /// overlay golden of one, with that corpus's file-level carve-outs; each flat
-/// golden; each probe, authored-probe and hand-written tree; and each Fern
+/// golden; each probe, authored-probe, hand-written and measured
+/// parameter-lowering tree; and each Fern
 /// reference tree a departure's evidence holds, which `crozier compare` reads in
 /// `departures_ledger_gate`. An overlay
 /// golden holds the files it carries but its manifest; a file it takes from
@@ -933,6 +934,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
+        (PARAMETER_LOWERING_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -2117,6 +2119,10 @@ fn sha256_matches_the_fips_180_4_test_vectors() {
 
 const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 
+/// The measured parameter-lowering cases `parameter_lowering_measurements_match_fern`
+/// compares, one directory per case.
+const PARAMETER_LOWERING_DIR: &str = "docs/fern-measurements/parameter-lowering";
+
 /// The naming tickets' (#350, #354, #357) authored probes are the case
 /// directories `376-<ticket>-<shape>`; `authored_probe_measurements_match_fern`
 /// byte-compares each against Fern's tree by default. A document Fern refused
@@ -2820,6 +2826,103 @@ fn handwritten_documents(
         })
         .unwrap_or_default();
     (evidence, failures)
+}
+
+/// The measured parameter-lowering cases under
+/// `docs/fern-measurements/parameter-lowering/`: every case with a committed
+/// `fern-expected/` tree is generated with crozier and compared whole, under the
+/// same normalization the hand-written gate applies. Its README states the rule
+/// each case pins.
+#[test]
+fn parameter_lowering_measurements_match_fern() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(PARAMETER_LOWERING_DIR);
+    let mut cases: Vec<PathBuf> = std::fs::read_dir(&root)
+        .expect("the measurement directory exists")
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.join("fern-expected").is_dir())
+        .collect();
+    cases.sort();
+    assert!(
+        cases.len() >= 18,
+        "the measured cases are missing: {cases:?}"
+    );
+    let failures: Vec<String> = cases
+        .iter()
+        .flat_map(|case| {
+            let name = case
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            {
+                let expected = case.join("fern-expected");
+                filtered_tree_failures(
+                    &name,
+                    &golden_path(&expected),
+                    &case.join("openapi.yml"),
+                    &expected,
+                    &[],
+                )
+            }
+        })
+        .collect();
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+/// `x-crozier-base-path` is `x-fern-base-path` under crozier's own spelling: on
+/// its own it generates the tree Fern measured for the `x-fern-base-path`
+/// document, and beside an `x-fern-base-path` naming another base path it wins,
+/// whichever of the two forms each one takes. The control: that other base
+/// path, read alone, lifts nothing.
+#[test]
+fn crozier_base_path_alias_matches_and_wins() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(PARAMETER_LOWERING_DIR);
+    let lifted = root.join("base-path-lifted-unincluded");
+    let literal = root.join("base-path-string");
+    let document = std::fs::read_to_string(lifted.join("openapi.yml")).unwrap();
+    let object = "x-fern-base-path:\n  path: /{edition}\n  parameters:\n    edition:\n      type: string\n      default: v2\n";
+    assert!(
+        document.contains(object),
+        "the lifted document's extension moved"
+    );
+    let crozier_object = object.replace("x-fern-base-path:", "x-crozier-base-path:");
+    let cases = [
+        ("alias-alone", crozier_object.clone(), &lifted),
+        (
+            "alias-wins-over-a-literal",
+            format!("x-fern-base-path: /v2\n{crozier_object}"),
+            &lifted,
+        ),
+        (
+            "alias-wins-over-an-object",
+            format!("{object}x-crozier-base-path: /v2\n"),
+            &literal,
+        ),
+    ];
+    let work = tempfile::tempdir().expect("alias tempdir");
+    for (name, extension, golden) in cases {
+        let spec = work.path().join(format!("{name}.yml"));
+        std::fs::write(&spec, document.replace(object, &extension)).unwrap();
+        let expected = golden.join("fern-expected");
+        let failures = filtered_tree_failures(name, &golden_path(&expected), &spec, &expected, &[]);
+        assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+    }
+    // The control, outside the ledger-recording comparison: the literal base
+    // path alone lifts nothing, so the client takes no `edition`.
+    let spec = work.path().join("control.yml");
+    std::fs::write(&spec, document.replace(object, "x-fern-base-path: /v2\n")).unwrap();
+    let out = work.path().join("control");
+    let result = probe_command(&spec, &out).output().expect("crozier runs");
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    let client = std::fs::read_to_string(out.join("src/fern/client.py")).unwrap();
+    assert!(
+        !client.contains("edition"),
+        "the literal base path alone lifted a parameter: {client}"
+    );
 }
 
 /// The gate's name keeps it out of the golden-only tier, which selects every
@@ -5104,6 +5207,8 @@ const CORPORA: &[&Corpus] = &[
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
+    &LOOTLOG_BATTLELOG,
+    &EGO_MICROSERVICES,
 ];
 
 #[test]
@@ -7739,6 +7844,36 @@ const HUATUO_NODE_TREE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Lootlog's Battle Log API — corpus row 317, the publisher's own description.
+/// Its `POST /internal/delete-user-data` takes an optional header spelled
+/// `authorization` beside an `http: bearer` scheme, which Fern keeps as a method
+/// argument because only the exact spelling `Authorization` is the credential's.
+const LOOTLOG_BATTLELOG: Corpus = Corpus {
+    api: "lootlog-battlelog",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Ego's microservices API — corpus row 318, the publisher's own description.
+/// Its paginated listings' query `offset` and `limit` are `anyOf: [integer, $ref
+/// Empty]`, a union naming a component string enum with no array member, which
+/// Fern sends raw.
+const EGO_MICROSERVICES: Corpus = Corpus {
+    api: "ego-microservices",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// VisKit Studio API — corpus row 167, the publisher's own description.
 const VISKIT_STUDIO: Corpus = Corpus {
     api: "viskit-studio",
@@ -8067,7 +8202,7 @@ const OAL_EXAMPLE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Waylay's query API, corpus row 327: both URL and JSON body keys named
+/// Waylay's query API, corpus row 329: both URL and JSON body keys named
 /// `resource` have distinct signature arguments. The body/query departure keeps
 /// the body value the caller passed while the query keeps its own value.
 const WAYLAY_QUERIES: Corpus = Corpus {
@@ -8081,7 +8216,7 @@ const WAYLAY_QUERIES: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `millenium-falcon-challenge`: corpus row 317, the Millennium Falcon challenge's odds API,
+/// `millenium-falcon-challenge`: corpus row 319, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
     api: "millenium-falcon-challenge",
@@ -8094,7 +8229,7 @@ const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `maximo-wxo-integration`: corpus row 318, IBM's Maximo integration API, whose OpenAPI 3.0.0
+/// `maximo-wxo-integration`: corpus row 320, IBM's Maximo integration API, whose OpenAPI 3.0.0
 /// success responses are inline `application/json` bodies declaring `{}`
 const MAXIMO_WXO_INTEGRATION: Corpus = Corpus {
     api: "maximo-wxo-integration",
@@ -8107,7 +8242,7 @@ const MAXIMO_WXO_INTEGRATION: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `mi-music`: corpus row 319, mi_music's API, with schemaless `text/plain`, `audio/mpeg` and
+/// `mi-music`: corpus row 321, mi_music's API, with schemaless `text/plain`, `audio/mpeg` and
 /// `video/mp4` successes and titled bodies under HTTP Basic security
 const MI_MUSIC: Corpus = Corpus {
     api: "mi-music",
@@ -8120,7 +8255,7 @@ const MI_MUSIC: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `g4brym-download-manager`: corpus row 320, download-manager's API, whose parameterless
+/// `g4brym-download-manager`: corpus row 322, download-manager's API, whose parameterless
 /// 3.0 operations post inline arrays titled `Files`
 const G4BRYM_DOWNLOAD_MANAGER: Corpus = Corpus {
     api: "g4brym-download-manager",
@@ -8133,7 +8268,7 @@ const G4BRYM_DOWNLOAD_MANAGER: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `opentosca-license-engine`: corpus row 321, the OpenTOSCA license engine's API, with a
+/// `opentosca-license-engine`: corpus row 323, the OpenTOSCA license engine's API, with a
 /// titled inline string-array body and inline `{}` successes in a 3.0 document
 const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
     api: "opentosca-license-engine",
@@ -8146,7 +8281,7 @@ const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `chat-rest-api`: corpus row 322, chat-rest-api's API, whose error keys `404-message`
+/// `chat-rest-api`: corpus row 324, chat-rest-api's API, whose error keys `404-message`
 /// and `404-file` both name 404 and whose success lists `text/plain` before
 /// `application/octet-stream`
 const CHAT_REST_API: Corpus = Corpus {
@@ -8160,7 +8295,7 @@ const CHAT_REST_API: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `esp32-streamline-bridge`: corpus row 323, the StreamLine bridge API, whose recordings
+/// `esp32-streamline-bridge`: corpus row 325, the StreamLine bridge API, whose recordings
 /// answer a schemaless `audio/wav`
 const ESP32_STREAMLINE_BRIDGE: Corpus = Corpus {
     api: "esp32-streamline-bridge",
@@ -8173,7 +8308,7 @@ const ESP32_STREAMLINE_BRIDGE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `cphos-ai-question`: corpus row 324, CPhOS's question-generation API, whose artifact
+/// `cphos-ai-question`: corpus row 326, CPhOS's question-generation API, whose artifact
 /// download lists a schemaless `application/pdf` before `text/markdown`
 const CPHOS_AI_QUESTION: Corpus = Corpus {
     api: "cphos-ai-question",
@@ -8186,7 +8321,7 @@ const CPHOS_AI_QUESTION: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `flask-example-heroku`: corpus row 325, a package-name extractor whose one operation
+/// `flask-example-heroku`: corpus row 327, a package-name extractor whose one operation
 /// declares a JSON request body with no schema
 const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
     api: "flask-example-heroku",
@@ -8199,7 +8334,7 @@ const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `oip-web-api`: corpus row 326, the Oip service web API, whose parameterless
+/// `oip-web-api`: corpus row 328, the Oip service web API, whose parameterless
 /// module registration declares an empty `requestBody.description`
 const OIP_WEB_API: Corpus = Corpus {
     api: "oip-web-api",
@@ -10980,10 +11115,12 @@ fn path_parameter_enums_hoist_to_tag_types() {
     );
 }
 
+/// A second operation keeps the `X-Mode` header a method argument rather than a
+/// promoted client field.
 #[test]
 fn referenced_parameter_examples_populate_worked_calls() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n        - { name: X-Mode, in: header, required: true, schema: { $ref: '#/components/schemas/Mode' } }\n      responses:\n        '204': { description: Found }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    Mode: { type: string, example: 'safe' }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n        - { name: X-Mode, in: header, required: true, schema: { $ref: '#/components/schemas/Mode' } }\n      responses:\n        '204': { description: Found }\n  /widgets:\n    get:\n      operationId: countWidgets\n      tags: [widgets]\n      responses:\n        '204': { description: Counted }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    Mode: { type: string, example: 'safe' }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("widgets client is generated");
@@ -14775,6 +14912,16 @@ fn huatuo_server_matches_fern_output() {
 #[test]
 fn huatuo_node_tree_matches_fern_output() {
     assert_committed_corpus_matches(&HUATUO_NODE_TREE);
+}
+
+#[test]
+fn lootlog_battlelog_matches_fern_output() {
+    assert_committed_corpus_matches(&LOOTLOG_BATTLELOG);
+}
+
+#[test]
+fn ego_microservices_matches_fern_output() {
+    assert_committed_corpus_matches(&EGO_MICROSERVICES);
 }
 
 #[test]

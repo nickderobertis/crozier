@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Ledger Sync
+  version: 1.0.0
+paths:
+  /entries:
+    post:
+      operationId: postEntry
+      tags: [entries]
+      parameters:
+        - $ref: "#/components/parameters/LedgerMode"
+        - $ref: "#/components/parameters/RetryBudget"
+        - name: X-Book
+          in: header
+          required: true
+          schema:
+            type: string
+            default: general
+      responses:
+        "204":
+          description: Posted.
+  /entries/void:
+    post:
+      operationId: voidEntry
+      tags: [entries]
+      parameters:
+        - $ref: "#/components/parameters/LedgerMode"
+        - $ref: "#/components/parameters/RetryBudget"
+        - name: X-Book
+          in: header
+          required: true
+          schema:
+            type: string
+            default: general
+      responses:
+        "204":
+          description: Voided.
+  /entries/reconcile:
+    post:
+      operationId: reconcileEntries
+      tags: [entries]
+      parameters:
+        - $ref: "#/components/parameters/LedgerMode"
+        - $ref: "#/components/parameters/RetryBudget"
+        - name: X-Book
+          in: header
+          required: true
+          schema:
+            type: string
+            default: general
+      responses:
+        "204":
+          description: Reconciled.
+  /health:
+    get:
+      operationId: getHealth
+      tags: [health]
+      responses:
+        "200":
+          description: The service is up.
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  parameters:
+    LedgerMode:
+      name: X-Ledger-Mode
+      in: header
+      required: false
+      schema:
+        type: string
+        default: draft
+    RetryBudget:
+      name: X-Retry-Budget
+      in: header
+      required: false
+      schema:
+        type: integer
+        default: 3

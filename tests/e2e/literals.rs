@@ -6,7 +6,7 @@ use std::path::Path;
 
 /// Two string enums, one reached through a model field and one through an
 /// operation header (a component, since Fern refuses an inline enum header
-/// schema).
+/// schema) on one of two operations, so it stays that method's argument.
 pub(super) const ENUM_SPEC: &str = "openapi: 3.0.0
 info:
   title: Pets
@@ -26,6 +26,13 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Pet' }
+  /pets/count:
+    get:
+      operationId: countPets
+      tags: [Pets]
+      responses:
+        '204':
+          description: Counted.
 components:
   schemas:
     Mode:

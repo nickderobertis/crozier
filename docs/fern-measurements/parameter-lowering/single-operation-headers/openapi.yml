@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Kiln
+  version: 1.0.0
+servers:
+  - url: https://kiln.example.org
+paths:
+  /firings:
+    get:
+      operationId: listFirings
+      parameters:
+        - name: X-Kiln-Token
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Kiln-Zone
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: cone
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Firings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

@@ -390,73 +390,87 @@ Additional issue #77 real-world OpenAPI source specs:
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Lootlog Battle Log API: the publisher's own description at
+    https://raw.githubusercontent.com/lootlog/monorepo/e2796c4f48ca4a749f53fdc5a127eece50567b56/apps/battlelog/openapi.yaml.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 317 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * Ego microservices API: the publisher's own description at
+    https://raw.githubusercontent.com/dreek1337/Ego/e0ebe7a5219488545820408b46f67f4f9fa9c83c/openapi.yaml.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 318 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Millennium Falcon challenge odds API: the publisher's own description at
     https://raw.githubusercontent.com/jondavies00/millenium-falcon-challenge/508e939a0ae568f13c10f872580d7c9605e29a97/openapi.json.
     The repository's LICENSE at that same commit grants Apache-2.0
-    redistribution; corpus row 317 records the immutable reference.
+    redistribution; corpus row 319 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * Maximo integration API (IBM): the publisher's own description at
     https://raw.githubusercontent.com/IBM/maximo-wxo-integration/54a2c3879173a44c8ed6d321d09066c9975de488/openapi.json.
     The repository's LICENSE at that same commit grants Apache-2.0
-    redistribution; corpus row 318 records the immutable reference.
+    redistribution; corpus row 320 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * mi_music API: the publisher's own description at
     https://raw.githubusercontent.com/jokezc/mi_music/2a114dff3bb9528a3e772ef7de0f850fe488ff27/docs/openapi.json.
     The repository's LICENSE at that same commit grants MIT
-    redistribution; corpus row 319 records the immutable reference.
+    redistribution; corpus row 321 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * download-manager API: the publisher's own description at
     https://raw.githubusercontent.com/G4brym/download-manager/459a6d8ef8dbee4289b7b5b629e1377e623c2b4e/swagger/openapi.json.
     The repository's LICENSE at that same commit grants MIT
-    redistribution; corpus row 320 records the immutable reference.
+    redistribution; corpus row 322 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * OpenTOSCA license engine API: the publisher's own description at
     https://raw.githubusercontent.com/OpenTOSCA/license-engine/ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65/src/main/resources/openapi/openapi.json.
     The repository's LICENSE at that same commit grants Apache-2.0
-    redistribution; corpus row 321 records the immutable reference.
+    redistribution; corpus row 323 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * chat-rest-api API: the publisher's own description at
     https://raw.githubusercontent.com/Ke11nyk/chat-rest-api/e761a7bf0d32147aff6571b9f9d325abd010e545/docs/openapi.yaml.
     The repository's LICENSE at that same commit grants MIT
-    redistribution; corpus row 322 records the immutable reference.
+    redistribution; corpus row 324 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * StreamLine bridge API: the publisher's own description at
     https://raw.githubusercontent.com/lutyjj/esp32-streamline/f50f678a3569d5c10e250cdd03e16cf1d17df16a/docs/bridge-openapi.json.
     The repository's LICENSE at that same commit grants GPL-3.0
-    redistribution; corpus row 323 records the immutable reference.
+    redistribution; corpus row 325 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * CPhOS question-generation API: the publisher's own description at
     https://raw.githubusercontent.com/CPHOS/AI_Question/951028cbbcfb1ab15ee26dc02824029cb50fd1ab/docs/api/openapi.json.
     The repository's LICENSE at that same commit grants AGPL-3.0
-    redistribution; corpus row 324 records the immutable reference.
+    redistribution; corpus row 326 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * Python package name extractor API: the publisher's own description at
     https://raw.githubusercontent.com/rctatman/flask_example_heroku/2703c6ee5627d8543703a4cd9436c260fc4723c8/openapi.yaml.
     The repository's LICENSE at that same commit grants Apache-2.0
-    redistribution; corpus row 325 records the immutable reference.
+    redistribution; corpus row 327 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
   * Oip service web API: the publisher's own description at
     https://raw.githubusercontent.com/g10101k/Oip/e3a6ecd60b1204c64907d543b37652f4230fee89/src/OipOpenApi.json.
     The repository's LICENSE at that same commit grants MIT
-    redistribution; corpus row 326 records the immutable reference.
+    redistribution; corpus row 328 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
@@ -490,6 +504,6 @@ Additional request-body collision specification:
   * Waylay query API: the publisher's own description at
     https://raw.githubusercontent.com/waylayio/waylay-sdk-queries-py/8ab6c18e10f96c3665dbb849ebe2193c16a1659c/openapi/queries.openapi.yaml.
     The repository's LICENSE.txt at that same commit grants ISC
-    redistribution; corpus row 327 records the immutable reference.
+    redistribution; corpus row 329 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.

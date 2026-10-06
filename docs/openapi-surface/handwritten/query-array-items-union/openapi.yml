@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Tide Gauges
+  version: 1.0.0
+servers:
+  - url: https://tides.example.net
+paths:
+  /readings:
+    get:
+      operationId: listReadings
+      tags: [readings]
+      parameters:
+        - name: gauges
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              anyOf:
+                - type: string
+                - type: integer
+      responses:
+        "200":
+          description: Readings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: number

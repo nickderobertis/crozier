@@ -2378,6 +2378,7 @@ class GrammarContractTests(unittest.TestCase):
         "schema.oneOf:discriminated-union",
         "schema.anyOf:discriminated-union",
         "schema.discriminator:inheritance-union",
+        "parameter.schema:subset-header-string-default",
         # Read where the node stands, or resolve one local reference (#361).
         "operation.operationId:digit-leading-method",
         "operation.responses:wildcard-binary",
@@ -2420,10 +2421,12 @@ class GrammarContractTests(unittest.TestCase):
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
             "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69, "Seventy": 70,
+            "Seventy-one": 71,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
-            "seventeen": 17, "twenty": 20, "twenty-three": 23,
+            "seventeen": 17, "eighteen": 18, "twenty": 20, "twenty-one": 21,
+            "twenty-three": 23, "twenty-four": 24,
             "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
-            "thirty-five": 35,
+            "thirty-five": 35, "thirty-six": 36,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -4357,7 +4360,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
            "components.schemas:fields-reach-cycles-unsorted",
            "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
            "schema.type:misspelled-scalar",
-           "securityScheme:$ref"} \
+           "securityScheme:$ref", "parameter.schema:query-items-union",
+           "parameter.schema:subset-header-string-default"} \
         - BODY_AND_RESPONSE_PREDICATES \
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
 
@@ -12174,6 +12178,39 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-read the census's schema or response port of src/ir.rs's {name}",
                 )
 
+    def test_the_parameter_ports_track_their_rust_functions(self) -> None:
+        """The parameter predicates' ports of the items-union hoist and promotion.
+
+        Each function of `src/ir.rs` the predicate reads is pinned by the same
+        normalized-body digest, so an edit there fails here until the port is
+        read again.
+        """
+        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
+        for name, pinned in census.PARAMETER_PORT_DIGESTS.items():
+            start = next(
+                (index for index, line in enumerate(lines)
+                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+            )
+            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            depth, started = 0, False
+            for end in range(start, len(lines)):
+                for char in lines[end]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                if started and depth == 0:
+                    break
+            kept = [
+                " ".join(line.split()) for line in lines[start:end + 1]
+                if line.strip() and not line.strip().startswith("//")
+            ]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-read the census's parameter port of src/ir.rs's {name}",
+                )
+
     def test_the_port_reproduces_croziers_own_class_name_expectations(self) -> None:
         """The class-name side of the same mirror.
 
@@ -12737,6 +12774,87 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 2}, rows(completed))
+
+    def test_query_items_union_counts_an_inline_items_union_and_not_its_near_misses(self) -> None:
+        """An array query parameter whose inline `items` composes two members.
+
+        The positive writes an `anyOf` and a `oneOf` items union; the decoys write
+        one non-null member beside `null`, the same union in a header, a `$ref`
+        items, and the union as the parameter's own schema rather than its items.
+        """
+        selector = "parameter.schema:query-items-union"
+        union = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
+
+        def parameter(name: str, schema: dict, location: str = "query") -> dict:
+            return {"name": name, "in": location, "schema": schema}
+
+        documents = {
+            "positive": [
+                parameter("a", {"type": "array", "items": union}),
+                parameter("b", {"type": "array", "items": {"oneOf": [{"type": "string"}, {"type": "number"}]}}),
+            ],
+            "decoys": [
+                parameter("c", {"type": "array", "items": {"anyOf": [{"type": "string"}, {"type": "null"}]}}),
+                parameter("d", {"type": "array", "items": union}, "header"),
+                parameter("e", {"type": "array", "items": {"$ref": "#/components/schemas/Code"}}),
+                parameter("f", union),
+            ],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, parameters in documents.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {"/items": {"get": {"parameters": parameters,
+                                                 "responses": {"204": {"description": "ok"}}}}},
+                    "components": {"schemas": {"Code": union}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 2}, rows(completed))
+
+    def test_subset_header_string_default_counts_only_a_promotable_subset_header(self) -> None:
+        """A defaulted header on at least three quarters but not all operations.
+
+        The positive declares `X-Region` with a string default on three of four
+        operations. The decoys declare it on every operation, on two of four,
+        with an empty default, and under names promotion never takes: one an
+        apiKey scheme writes, and `Origin`.
+        """
+        selector = "parameter.schema:subset-header-string-default"
+
+        def document(name: str, carried: int, default: str = "north", total: int = 4) -> dict:
+            header = {"name": name, "in": "header", "schema": {"type": "string", "default": default}}
+            return {
+                "openapi": "3.1.0", "info": {"title": name, "version": "1"},
+                "components": {"securitySchemes": {
+                    "key": {"type": "apiKey", "in": "header", "name": "X-Key"}}},
+                "paths": {
+                    f"/op{index}": {"get": {
+                        "parameters": [header] if index < carried else [],
+                        "responses": {"204": {"description": "ok"}},
+                    }}
+                    for index in range(total)
+                },
+            }
+
+        documents = {
+            "positive": document("X-Region", 3),
+            "everywhere": document("X-Region", 4),
+            "half": document("X-Region", 2),
+            "empty": document("X-Region", 3, ""),
+            "apikey": document("X-Key", 3),
+            "origin": document("Origin", 3),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, body in documents.items():
+                write_fixture(root, fixture, json.dumps(body))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 3}, rows(completed))
 
     def test_an_unrequired_tag_discriminates_only_reference_members(self) -> None:
         """`inferred_discriminant_property_with`'s `unrequired_tag` clause.

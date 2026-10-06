@@ -1,0 +1,26 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .bad_request_error_body_message import BadRequestErrorBodyMessage
+
+
+class BadRequestErrorBody(UniversalBaseModel):
+    error: str
+    message: BadRequestErrorBodyMessage
+    status_code: typing_extensions.Annotated[
+        float, FieldMetadata(alias="statusCode"), pydantic.Field(alias="statusCode")
+    ]
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

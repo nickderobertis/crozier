@@ -6,7 +6,7 @@ content-type header, a status key spelled with a suffix, the empty-body guard in
 OpenAPI 3.0, and schemaless text and download successes. A shape this search
 found in a registrable document is registered in
 [`../../../tests/fixtures/CORPUS.md`](../../../tests/fixtures/CORPUS.md) (rows
-317–326); a shape it did not is carried by a hand-written fixture under
+319–328); a shape it did not is carried by a hand-written fixture under
 [`../handwritten/`](../handwritten/AGENTS.md), whose cover cites this record.
 
 ## Bounded search
@@ -28,15 +28,15 @@ sense of [the coverage document](../../openapi-surface-coverage.md#what-makes-a-
 
 | key | outcome | declarers | registered witness |
 |---|---|---|---|
-| `operation.requestBody:body-prefixed-single-use` | `witness-found` | 66 | corpus row 317, `millenium-falcon-challenge` |
-| `operation.responses:empty-schema-success-oas-three-zero` | `witness-found` | 172 | corpus row 318, `maximo-wxo-integration` (also row 321) |
-| `operation.responses:schemaless-text-success` | `witness-found` | 99 | corpus row 319, `mi-music` (also row 322) |
-| `operation.responses:schemaless-download-success` | `witness-found` | 60 | corpus row 319, `mi-music` (`audio/mpeg`, `video/mp4`); row 324, `cphos-ai-question` (`application/pdf`) |
-| `operation.requestBody:titled-inline-container-oas-three-zero` | `witness-found` | 11 | corpus rows 320, `g4brym-download-manager`, and 321, `opentosca-license-engine` |
-| `operation.responses:suffixed-status-key` | `witness-found` | 3 | corpus row 322, `chat-rest-api` (`404-message`, `404-file`) |
-| `operation.responses:schemaless-wav-success` | `witness-found` | 9 | corpus row 323, `esp32-streamline-bridge` |
-| `operation.requestBody:schemaless-json` | `witness-found` | 26 | corpus row 325, `flask-example-heroku` |
-| `operation.requestBody:blank-description-optional-object` | `witness-found` | 31 | corpus row 326, `oip-web-api` |
+| `operation.requestBody:body-prefixed-single-use` | `witness-found` | 66 | corpus row 319, `millenium-falcon-challenge` |
+| `operation.responses:empty-schema-success-oas-three-zero` | `witness-found` | 172 | corpus row 320, `maximo-wxo-integration` (also row 323) |
+| `operation.responses:schemaless-text-success` | `witness-found` | 99 | corpus row 321, `mi-music` (also row 324) |
+| `operation.responses:schemaless-download-success` | `witness-found` | 60 | corpus row 321, `mi-music` (`audio/mpeg`, `video/mp4`); row 326, `cphos-ai-question` (`application/pdf`) |
+| `operation.requestBody:titled-inline-container-oas-three-zero` | `witness-found` | 11 | corpus rows 322, `g4brym-download-manager`, and 323, `opentosca-license-engine` |
+| `operation.responses:suffixed-status-key` | `witness-found` | 3 | corpus row 324, `chat-rest-api` (`404-message`, `404-file`) |
+| `operation.responses:schemaless-wav-success` | `witness-found` | 9 | corpus row 325, `esp32-streamline-bridge` |
+| `operation.requestBody:schemaless-json` | `witness-found` | 26 | corpus row 327, `flask-example-heroku` |
+| `operation.requestBody:blank-description-optional-object` | `witness-found` | 31 | corpus row 328, `oip-web-api` |
 | `operation.requestBody:described-inline-scalar` | `none-registrable` | 0 | none: no document read declares it |
 | `operation.responses:space-suffixed-status-key` | `none-registrable` | 0 | none: no document read declares it |
 

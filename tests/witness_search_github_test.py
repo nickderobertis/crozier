@@ -2498,7 +2498,7 @@ class HandwrittenKeyDerivationTest(unittest.TestCase):
                               refused.stderr)
             self.assertIsNotNone(named, refused.stderr)
             self.assertTrue(any(
-                line.startswith(f"| {named[2]} |") and "| handwritten |" in line
+                line.replace("`", "").startswith(f"| {named[2]} |") and "| handwritten |" in line
                 for line in (regions / f"{named[1]}.md").read_text(encoding="utf-8").splitlines()), named[2])
 
 

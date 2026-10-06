@@ -274,15 +274,18 @@ pub fn render_reference(entries: &[Departure]) -> String {
 }
 
 /// What a rule may consult about the two trees a file pair belongs to: the
-/// top-level class names each tree's Python modules define, and the
-/// distribution name crozier's `pyproject.toml` declares, read on first use. A
-/// file compared on its own has an empty context, so no rule that needs one
-/// applies to it.
+/// top-level class names each tree's Python modules define, the base-path
+/// parameters crozier's routes read from the client, and the distribution name
+/// crozier's `pyproject.toml` declares, read on first use. A file compared on
+/// its own has an empty context, so no rule that needs one applies to it.
 #[derive(Debug, Default)]
 pub struct Context {
     roots: Option<(std::path::PathBuf, std::path::PathBuf)>,
     reference_classes: OnceLock<BTreeSet<String>>,
     crozier_classes: OnceLock<BTreeSet<String>>,
+    crozier_lifted: OnceLock<BTreeSet<String>>,
+    crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
+    reference_nullable_items: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
 }
 
@@ -292,6 +295,7 @@ impl Context {
         reference: impl IntoIterator<Item = (&'a str, &'a str)>,
         crozier: impl IntoIterator<Item = (&'a str, &'a str)>,
     ) -> Self {
+        let reference: Vec<(&str, &str)> = reference.into_iter().collect();
         let crozier: Vec<(&str, &str)> = crozier.into_iter().collect();
         let project = crozier
             .iter()
@@ -299,8 +303,16 @@ impl Context {
             .and_then(|(_, text)| project_name(text));
         Context {
             roots: None,
-            reference_classes: OnceLock::from(classes(reference)),
-            crozier_classes: OnceLock::from(classes(crozier)),
+            reference_classes: OnceLock::from(classes(reference.iter().copied())),
+            crozier_classes: OnceLock::from(classes(crozier.iter().copied())),
+            crozier_lifted: OnceLock::from(lifted_parameters(crozier.iter().copied())),
+            crozier_constant_headers: OnceLock::from(constant_headers(crozier.iter().copied())),
+            reference_nullable_items: OnceLock::from(nullable_item_parameters(
+                reference
+                    .iter()
+                    .filter(|(path, _)| *path == "reference.md")
+                    .map(|(_, text)| *text),
+            )),
             crozier_project: OnceLock::from(project),
         }
     }
@@ -327,6 +339,52 @@ impl Context {
             .get_or_init(|| self.tree_classes(|(_, crozier)| crozier))
     }
 
+    /// The base-path parameters crozier's routes read from the client wrapper
+    /// rather than take as method arguments: each `X` of a route's
+    /// `encode_path_param(self._client_wrapper._X)`.
+    pub fn crozier_lifted_parameters(&self) -> &BTreeSet<String> {
+        self.crozier_lifted.get_or_init(|| {
+            let Some((_, root)) = self.roots.as_ref() else {
+                return BTreeSet::new();
+            };
+            let sources: Vec<(String, String)> = python_sources(root);
+            lifted_parameters(
+                sources
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            )
+        })
+    }
+
+    /// The headers crozier's raw clients send as constants, each as the
+    /// `(wire name, value)` of a `"<wire>": "<value>",` line of a `headers` dict.
+    pub fn crozier_constant_headers(&self) -> &BTreeSet<(String, String)> {
+        self.crozier_constant_headers.get_or_init(|| {
+            let Some((_, root)) = self.roots.as_ref() else {
+                return BTreeSet::new();
+            };
+            let sources = python_sources(root);
+            constant_headers(
+                sources
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            )
+        })
+    }
+
+    /// The query parameters the reference's `reference.md` documents with
+    /// nullable items, as
+    /// ``**NAME:** `typing.Optional[typing.Union[typing.Optional[T], typing.Sequence[typing.Optional[T]]]]` ``.
+    pub fn reference_nullable_items(&self) -> &BTreeSet<String> {
+        self.reference_nullable_items.get_or_init(|| {
+            let Some((root, _)) = self.roots.as_ref() else {
+                return BTreeSet::new();
+            };
+            let text = std::fs::read_to_string(root.join("reference.md")).unwrap_or_default();
+            nullable_item_parameters([text.as_str()])
+        })
+    }
+
     /// The distribution name crozier's `pyproject.toml` declares, if its tree
     /// has one.
     pub fn crozier_project(&self) -> Option<&str> {
@@ -346,21 +404,125 @@ impl Context {
         let Some(root) = self.roots.as_ref().map(side) else {
             return BTreeSet::new();
         };
-        let sources: Vec<(String, String)> = crate::parity::walk_files(root)
-            .unwrap_or_default()
-            .into_iter()
-            .filter(|rel| rel.ends_with(".py"))
-            .filter_map(|rel| {
-                let text = std::fs::read_to_string(root.join(&rel)).ok()?;
-                Some((rel, text))
-            })
-            .collect();
+        let sources = python_sources(root);
         classes(
             sources
                 .iter()
                 .map(|(rel, text)| (rel.as_str(), text.as_str())),
         )
     }
+}
+
+/// Every `.py` file under `root` as `(relative path, text)`; a module that
+/// cannot be read is left out.
+fn python_sources(root: &std::path::Path) -> Vec<(String, String)> {
+    crate::parity::walk_files(root)
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|rel| rel.ends_with(".py"))
+        .filter_map(|rel| {
+            let text = std::fs::read_to_string(root.join(&rel)).ok()?;
+            Some((rel, text))
+        })
+        .collect()
+}
+
+/// The names `X` the `.py` files among `sources` read as
+/// `encode_path_param(self._client_wrapper._X)`: base-path parameters a route
+/// takes from the client.
+fn lifted_parameters<'a>(
+    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> BTreeSet<String> {
+    const READ: &str = "encode_path_param(self._client_wrapper._";
+    sources
+        .into_iter()
+        .filter(|(path, _)| path.ends_with(".py"))
+        .flat_map(|(_, text)| {
+            text.match_indices(READ)
+                .map(move |(at, _)| &text[at + READ.len()..])
+        })
+        .filter_map(|rest| {
+            let name: String = rest
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+            (!name.is_empty() && rest[name.len()..].starts_with(')')).then_some(name)
+        })
+        .collect()
+}
+
+/// The `(wire name, value)` of every `"<wire>": "<value>",` line inside a
+/// `headers={` dict of the raw clients among `sources`.
+fn constant_headers<'a>(
+    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> BTreeSet<(String, String)> {
+    let mut found = BTreeSet::new();
+    for (path, text) in sources {
+        if !path.ends_with("raw_client.py") {
+            continue;
+        }
+        let mut in_headers = false;
+        for line in text.lines() {
+            let trimmed = line.trim();
+            if trimmed == "headers={" {
+                in_headers = true;
+                continue;
+            }
+            if in_headers && trimmed.starts_with('}') {
+                in_headers = false;
+                continue;
+            }
+            if !in_headers {
+                continue;
+            }
+            let pair = trimmed
+                .strip_suffix(',')
+                .and_then(|entry| entry.split_once(": "))
+                .and_then(|(key, value)| {
+                    let key = key.strip_prefix('"')?.strip_suffix('"')?;
+                    let value = value.strip_prefix('"')?.strip_suffix('"')?;
+                    (!key.contains('"') && !value.contains('"'))
+                        .then(|| (key.to_string(), value.to_string()))
+                });
+            found.extend(pair);
+        }
+    }
+    found
+}
+
+/// `(the reference.md type Fern writes, crozier's)` for a one-or-many query
+/// parameter over `item`: Fern keeps the items' nullability that the signature
+/// drops.
+fn nullable_items_types(item: &str) -> (String, String) {
+    (
+        format!(
+            "typing.Optional[typing.Union[typing.Optional[{item}], typing.Sequence[typing.Optional[{item}]]]]"
+        ),
+        format!("typing.Optional[typing.Union[{item}, typing.Sequence[{item}]]]"),
+    )
+}
+
+/// `(NAME, type)` of a `reference.md` parameter line `**NAME:** \`type\` …`.
+fn documented_parameter(line: &str) -> Option<(&str, &str)> {
+    let (name, rest) = line.strip_prefix("**")?.split_once(":** `")?;
+    let (annotation, _) = rest.split_once('`')?;
+    Some((name, annotation))
+}
+
+/// The names `reference.md` texts document with Fern's nullable-items type.
+fn nullable_item_parameters<'a>(texts: impl IntoIterator<Item = &'a str>) -> BTreeSet<String> {
+    texts
+        .into_iter()
+        .flat_map(str::lines)
+        .filter_map(documented_parameter)
+        .filter(|(_, annotation)| {
+            annotation
+                .strip_prefix("typing.Optional[typing.Union[typing.Optional[")
+                .and_then(|rest| rest.split_once("], "))
+                .is_some_and(|(item, _)| nullable_items_types(item).0 == *annotation)
+        })
+        .map(|(name, _)| name.to_string())
+        .collect()
 }
 
 /// The first `name = "…"` a `pyproject.toml` declares: its `[project]` name.
@@ -433,11 +595,15 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 7] = [
+pub const RULE_IDS: [&str; 11] = [
     "body-query-parameter-value",
     "closed-empty-object-example",
+    "constant-header-docs-arguments",
     "fern-metadata-generator-config",
     "init-type-checking-import-order",
+    "lifted-base-path-docs-examples",
+    "lifted-base-path-positional-example",
+    "nullable-items-docs",
     "readme-client-class-casing",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
@@ -457,12 +623,28 @@ pub fn rule(id: &str) -> Option<Rule> {
             line: Some(closed_empty_object_example_line),
             added: None,
         },
+        "constant-header-docs-arguments" => Rule {
+            region: Some(constant_header_docs_arguments),
+            ..none
+        },
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
             ..none
         },
         "init-type-checking-import-order" => Rule {
             region: Some(init_type_checking_import_order),
+            ..none
+        },
+        "lifted-base-path-docs-examples" => Rule {
+            region: Some(lifted_base_path_docs_examples),
+            ..none
+        },
+        "lifted-base-path-positional-example" => Rule {
+            line: Some(lifted_base_path_positional_example),
+            ..none
+        },
+        "nullable-items-docs" => Rule {
+            region: Some(nullable_items_docs),
             ..none
         },
         "readme-client-class-casing" => Rule {
@@ -1060,6 +1242,317 @@ fn readme_client_class_casing(pair: &Pair<'_>, fern: &str, crozier: &str) -> boo
     renamed > 0
 }
 
+/// `NAME` of an argument line `<indent>NAME=<value>,` whose `NAME` is one of
+/// `names`.
+fn lifted_argument<'l>(line: &'l str, names: &BTreeSet<String>) -> Option<&'l str> {
+    let trimmed = line.trim_start();
+    if trimmed.len() == line.len() || !line.ends_with(',') {
+        return None;
+    }
+    let (name, _) = trimmed.split_once('=')?;
+    names.contains(name).then_some(name)
+}
+
+/// The line opening the call whose argument list holds line `index`: the
+/// nearest line above it ending in `(`.
+fn call_opener<'l>(lines: &[&'l str], index: usize) -> Option<&'l str> {
+    lines[..index]
+        .iter()
+        .rev()
+        .find(|line| line.ends_with('('))
+        .map(|line| line.trim_start())
+}
+
+/// Whether `opener` opens a call of an endpoint method, `client.<…>(` or
+/// `await client.<…>(`, rather than the client's constructor.
+fn opens_method_call(opener: &str) -> bool {
+    let call = opener.strip_prefix("await ").unwrap_or(opener);
+    call.starts_with("client.")
+}
+
+/// Whether `opener` opens a client constructor call, `client = <Class>(`.
+fn opens_constructor_call(opener: &str) -> bool {
+    opener.strip_prefix("client = ").is_some_and(|class| {
+        class.strip_suffix('(').is_some_and(|name| {
+            !name.is_empty() && name.chars().all(|c| c.is_alphanumeric() || c == '_')
+        })
+    })
+}
+
+/// The length of the `reference.md` parameter block starting at `lines[at]`
+/// that documents one of `names` — `<dl>`, `<dd>`, a blank line, `**NAME:** …`,
+/// a whitespace-only line, `</dd>`, `</dl>` and a blank line — if one starts
+/// there.
+fn lifted_parameter_block(lines: &[&str], at: usize, names: &BTreeSet<String>) -> Option<usize> {
+    parameter_block(lines, at, |line| {
+        line.strip_prefix("**")
+            .and_then(|rest| rest.split_once(":** "))
+            .is_some_and(|(name, _)| names.contains(name))
+    })
+}
+
+/// The length of the `reference.md` parameter block starting at `lines[at]`
+/// whose `**NAME:** …` line `documents` accepts, if one starts there.
+fn parameter_block(lines: &[&str], at: usize, documents: impl Fn(&str) -> bool) -> Option<usize> {
+    let block = lines.get(at..at + 8)?;
+    let documented = documents(block[3]);
+    (block[0] == "<dl>"
+        && block[1] == "<dd>"
+        && block[2].is_empty()
+        && documented
+        && block[4].trim().is_empty()
+        && block[5] == "</dd>"
+        && block[6] == "</dl>"
+        && block[7].is_empty())
+    .then_some(8)
+}
+
+/// Fern's documentation lines with its lifted-argument defects taken out: each
+/// method call's argument line naming a lifted parameter, and each
+/// `reference.md` block documenting one. `None` when there is none to take out.
+fn fern_docs_without_lifted<'l>(
+    lines: &[&'l str],
+    names: &BTreeSet<String>,
+) -> Option<Vec<&'l str>> {
+    let mut kept = Vec::with_capacity(lines.len());
+    let mut index = 0;
+    while index < lines.len() {
+        if let Some(length) = lifted_parameter_block(lines, index, names) {
+            index += length;
+            continue;
+        }
+        let in_method_call = lifted_argument(lines[index], names).is_some()
+            && call_opener(lines, index).is_some_and(opens_method_call);
+        if !in_method_call {
+            kept.push(lines[index]);
+        }
+        index += 1;
+    }
+    (kept.len() < lines.len()).then_some(kept)
+}
+
+/// crozier's documentation lines with its lifted constructor arguments taken
+/// out, a constructor call left empty closing on its opening line
+/// (`client = FernApi()`), as Fern writes it. `None` when there is none.
+fn crozier_docs_without_lifted(lines: &[&str], names: &BTreeSet<String>) -> Option<Vec<String>> {
+    let mut kept: Vec<String> = Vec::with_capacity(lines.len());
+    let mut removed = false;
+    for (index, line) in lines.iter().enumerate() {
+        if lifted_argument(line, names).is_some()
+            && call_opener(lines, index).is_some_and(opens_constructor_call)
+        {
+            removed = true;
+            continue;
+        }
+        let closes_empty = *line == ")"
+            && kept
+                .last()
+                .is_some_and(|opener| opens_constructor_call(opener));
+        match kept.last_mut() {
+            Some(opener) if closes_empty => opener.push(')'),
+            _ => kept.push((*line).to_string()),
+        }
+    }
+    removed.then_some(kept)
+}
+
+/// `lifted-base-path-docs-examples`: in `README.md` or `reference.md`, Fern's
+/// file is crozier's once three things move back to where Fern puts them —
+/// every lifted base-path parameter crozier passes to the client constructor
+/// leaves it (a constructor left empty closes on its own line,
+/// `client = FernApi()`), and Fern's method calls passing a lifted parameter and
+/// `reference.md` blocks documenting one under a method are set aside. Both
+/// sides must carry the construct. The region is the two files' differing
+/// window, so any other difference in the file is left unexplained.
+fn lifted_base_path_docs_examples(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let names = pair.context.crozier_lifted_parameters();
+    if names.is_empty() {
+        return Ok(None);
+    }
+    let (Some(fern), Some(crozier)) = (
+        fern_docs_without_lifted(pair.fern, names),
+        crozier_docs_without_lifted(pair.crozier, names),
+    ) else {
+        return Ok(None);
+    };
+    if fern.len() != crozier.len()
+        || fern
+            .iter()
+            .zip(&crozier)
+            .any(|(left, right)| *left != right)
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// The names Fern's Markdown gives the header `wire`: its parameter stem (`X-`
+/// dropped) and its whole name, each snake-cased.
+fn header_doc_names(wire: &str) -> [String; 2] {
+    [
+        crate::naming::field_name(crate::ir::header_param_stem(wire)),
+        crate::naming::field_name(wire)
+            .trim_end_matches('_')
+            .to_string(),
+    ]
+}
+
+/// `constant-header-docs-arguments`: in `README.md` or `reference.md`, Fern's
+/// file is crozier's but for the headers crozier's raw clients send as
+/// constants: every method call line passing one its constant,
+/// `<indent>NAME="<value>",`, and every `reference.md` block documenting one as
+/// `**NAME:** \`typing.Literal\``. Both are set aside, and the rest must equal
+/// crozier's file; the region is the two files' differing window.
+fn constant_header_docs_arguments(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let constants = pair.context.crozier_constant_headers();
+    if constants.is_empty() {
+        return Ok(None);
+    }
+    let passed: BTreeSet<String> = constants
+        .iter()
+        .flat_map(|(wire, value)| header_doc_names(wire).map(|name| format!("{name}=\"{value}\",")))
+        .collect();
+    let documented: BTreeSet<String> = constants
+        .iter()
+        .flat_map(|(wire, _)| header_doc_names(wire))
+        .collect();
+    let lines = pair.fern;
+    let mut kept: Vec<String> = Vec::with_capacity(lines.len());
+    let mut removed = false;
+    let mut index = 0;
+    while index < lines.len() {
+        let block = parameter_block(lines, index, |line| {
+            line.strip_prefix("**")
+                .and_then(|rest| rest.split_once(":** `typing.Literal`"))
+                .is_some_and(|(name, after)| {
+                    documented.contains(name) && (after == " " || after.starts_with(" — "))
+                })
+        });
+        if let Some(length) = block {
+            index += length;
+            removed = true;
+            continue;
+        }
+        let passes_constant = passed.contains(lines[index].trim_start())
+            && lines[index].len() > lines[index].trim_start().len()
+            && call_opener(lines, index).is_some_and(opens_method_call);
+        if passes_constant {
+            removed = true;
+        } else {
+            // A method call the constants were the only arguments of closes on
+            // its opening line, as crozier writes it.
+            let line = lines[index];
+            let indent = &line[..line.len() - line.trim_start().len()];
+            let closes_empty = line.trim_start() == ")"
+                && kept.last().is_some_and(|opener| {
+                    opener.ends_with('(')
+                        && opener.starts_with(indent)
+                        && opens_method_call(opener.trim_start())
+                });
+            match kept.last_mut() {
+                Some(opener) if closes_empty => opener.push(')'),
+                _ => kept.push(line.to_string()),
+            }
+        }
+        index += 1;
+    }
+    if !removed
+        || kept.len() != pair.crozier.len()
+        || kept
+            .iter()
+            .zip(pair.crozier)
+            .any(|(left, right)| left != right)
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// `nullable-items-docs`: in `README.md` or `reference.md`, Fern's file is
+/// crozier's once each query parameter Fern's `reference.md` documents with
+/// nullable items is written Fern's way — its type with the items' `Optional`
+/// restored, and each element of its worked list `None` — and both sides carry
+/// the construct. The region is the two files' differing window.
+fn nullable_items_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let names = pair.context.reference_nullable_items();
+    if names.is_empty() {
+        return Ok(None);
+    }
+    let mut fern_form: Vec<String> = Vec::with_capacity(pair.crozier.len());
+    let mut list: Option<String> = None;
+    for line in pair.crozier {
+        if let Some(close) = &list {
+            if *line == close {
+                list = None;
+                fern_form.push((*line).to_string());
+            } else {
+                let indent = &line[..line.len() - line.trim_start().len()];
+                fern_form.push(format!("{indent}None"));
+            }
+            continue;
+        }
+        let trimmed = line.trim_start();
+        let indent = &line[..line.len() - trimmed.len()];
+        if let Some(name) = trimmed.strip_suffix("=[") {
+            if names.contains(name) {
+                list = Some(format!("{indent}],"));
+            }
+            fern_form.push((*line).to_string());
+            continue;
+        }
+        let restored = documented_parameter(line).and_then(|(name, annotation)| {
+            if !names.contains(name) {
+                return None;
+            }
+            let item = annotation
+                .strip_prefix("typing.Optional[typing.Union[")?
+                .split_once(", typing.Sequence[")?
+                .0;
+            let (fern, crozier) = nullable_items_types(item);
+            (crozier == annotation).then(|| line.replacen(&crozier, &fern, 1))
+        });
+        fern_form.push(restored.unwrap_or_else(|| (*line).to_string()));
+    }
+    if fern_form.len() != pair.fern.len()
+        || fern_form
+            .iter()
+            .zip(pair.fern)
+            .any(|(left, right)| left != right)
+        || fern_form
+            .iter()
+            .zip(pair.crozier)
+            .all(|(left, right)| left == right)
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// `lifted-base-path-positional-example`: in a `.py` file, Fern's line passes a
+/// string positionally, `<indent>"<value>",`, where crozier's line passes the
+/// same string by the keyword of a lifted base-path parameter,
+/// `<indent>NAME="<value>",`.
+fn lifted_base_path_positional_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !pair.rel.ends_with(".py") {
+        return false;
+    }
+    let Some(name) = lifted_argument(crozier, pair.context.crozier_lifted_parameters()) else {
+        return false;
+    };
+    let indent = &crozier[..crozier.len() - crozier.trim_start().len()];
+    let value = &crozier.trim_start()[name.len() + 1..];
+    value.starts_with('"') && fern.strip_prefix(indent) == Some(value)
+}
+
 /// Whether `rel` is an SDK's client wrapper, where the identity headers are set.
 fn is_client_wrapper(rel: &str) -> bool {
     rel == "core/client_wrapper.py" || rel.ends_with("/core/client_wrapper.py")
@@ -1386,6 +1879,372 @@ mod tests {
             "x = LanternharborApi",
             "x = LanternHarborApi"
         ));
+    }
+
+    /// A context whose crozier tree's routes read `edition` from the client.
+    fn lifted_context() -> Context {
+        Context::from_sources(
+            [],
+            [(
+                "src/acme/layers/raw_client.py",
+                "f\"{encode_path_param(self._client_wrapper._edition)}/layers\",\n",
+            )],
+        )
+    }
+
+    #[test]
+    fn lifted_parameters_are_read_from_routes_reading_the_client_wrapper() {
+        assert_eq!(
+            lifted_context().crozier_lifted_parameters(),
+            &BTreeSet::from(["edition".to_string()])
+        );
+        // An attribute read anywhere else, or not closed at once: none.
+        let other = Context::from_sources(
+            [("a.py", "encode_path_param(self._client_wrapper._edition)\n")],
+            [
+                ("README.md", "encode_path_param(self._client_wrapper._a)\n"),
+                (
+                    "b.py",
+                    "self._client_wrapper._b\nencode_path_param(self._client_wrapper._c.x)\n",
+                ),
+            ],
+        );
+        assert!(other.crozier_lifted_parameters().is_empty());
+        let crozier = tempfile::tempdir().unwrap();
+        std::fs::write(
+            crozier.path().join("raw_client.py"),
+            "encode_path_param(self._client_wrapper._tenant)\n",
+        )
+        .unwrap();
+        let reference = tempfile::tempdir().unwrap();
+        assert_eq!(
+            Context::from_trees(reference.path(), crozier.path()).crozier_lifted_parameters(),
+            &BTreeSet::from(["tenant".to_string()])
+        );
+        assert!(Context::default().crozier_lifted_parameters().is_empty());
+    }
+
+    const LIFTED_FERN: &str = "client = FernApi()\n\nclient.layers.create_layer(\n    edition=\"v2\",\n    title=\"title\",\n)\n\n<dl>\n<dd>\n\n**edition:** `str` \n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**request:** `Layer` \n";
+    const LIFTED_CROZIER: &str = "client = FernApi(\n    edition=\"v2\",\n)\n\nclient.layers.create_layer(\n    title=\"title\",\n)\n\n<dl>\n<dd>\n\n**request:** `Layer` \n";
+
+    fn docs_region(rel: &str, fern: &str, crozier: &str, context: &Context) -> Option<Region> {
+        let fern: Vec<&str> = fern.split('\n').collect();
+        let crozier: Vec<&str> = crozier.split('\n').collect();
+        let pair = Pair {
+            rel,
+            fern: &fern,
+            crozier: &crozier,
+            context,
+        };
+        lifted_base_path_docs_examples(&pair).unwrap()
+    }
+
+    #[test]
+    fn the_lifted_docs_rule_takes_exactly_the_three_constructs() {
+        let context = lifted_context();
+        assert_eq!(
+            docs_region("reference.md", LIFTED_FERN, LIFTED_CROZIER, &context),
+            Some(Region {
+                fern: 0..14,
+                crozier: 0..7,
+            })
+        );
+        // The required form: crozier adds the argument to a constructor that
+        // keeps another, and an awaited method call loses it.
+        assert!(docs_region(
+            "README.md",
+            "client = AsyncFernApi(\n    environment=E,\n)\n    await client.layers.get(\n        edition=\"edition\",\n    )",
+            "client = AsyncFernApi(\n    edition=\"YOUR_EDITION\",\n    environment=E,\n)\n    await client.layers.get(\n    )",
+            &context,
+        )
+        .is_some());
+        // One more line differing anywhere, another argument only Fern passes,
+        // a lifted argument crozier passes to a method, or a name the routes do
+        // not lift: not this.
+        for (fern, crozier) in [
+            (format!("{LIFTED_FERN}x"), format!("{LIFTED_CROZIER}y")),
+            (
+                LIFTED_FERN.replace("    title=", "    opacity=1,\n    title="),
+                LIFTED_CROZIER.to_string(),
+            ),
+            (
+                LIFTED_FERN.to_string(),
+                LIFTED_CROZIER.replace("    title=", "    edition=\"v2\",\n    title="),
+            ),
+            (
+                LIFTED_FERN.replace("**edition:**", "**tenant:**"),
+                LIFTED_CROZIER.to_string(),
+            ),
+            (
+                LIFTED_FERN.to_string(),
+                LIFTED_CROZIER.replace("    edition=\"v2\",\n", "    tenant=\"v2\",\n"),
+            ),
+            (
+                LIFTED_FERN.replace("client = FernApi()", "client = FernApi(1)"),
+                LIFTED_CROZIER.to_string(),
+            ),
+        ] {
+            assert_eq!(
+                docs_region("reference.md", &fern, &crozier, &context),
+                None,
+                "{fern}\n---\n{crozier}"
+            );
+        }
+        // Only the README and the endpoint reference, only with lifted
+        // parameters, and only where both sides carry the construct.
+        assert_eq!(
+            docs_region("client.py", LIFTED_FERN, LIFTED_CROZIER, &context),
+            None
+        );
+        assert_eq!(
+            docs_region(
+                "README.md",
+                LIFTED_FERN,
+                LIFTED_CROZIER,
+                &Context::default()
+            ),
+            None
+        );
+        assert_eq!(
+            docs_region("README.md", LIFTED_FERN, LIFTED_FERN, &context),
+            None
+        );
+        assert_eq!(
+            docs_region("README.md", LIFTED_CROZIER, LIFTED_CROZIER, &context),
+            None
+        );
+    }
+
+    #[test]
+    fn the_positional_rule_takes_only_the_lifted_keyword_with_the_same_value() {
+        let context = lifted_context();
+        let lines: [&str; 0] = [];
+        let pair = Pair {
+            rel: "src/acme/client.py",
+            fern: &lines,
+            crozier: &lines,
+            context: &context,
+        };
+        let holds =
+            |fern: &str, crozier: &str| lifted_base_path_positional_example(&pair, fern, crozier);
+        assert!(holds("        \"v2\",", "        edition=\"v2\","));
+        assert!(!holds("        \"v3\",", "        edition=\"v2\","));
+        assert!(!holds("    \"v2\",", "        edition=\"v2\","));
+        assert!(!holds("        \"v2\",", "        tenant=\"v2\","));
+        assert!(!holds("        edition=\"v2\",", "        edition=\"v2\","));
+        assert!(!holds("        2,", "        edition=2,"));
+        assert!(!holds("\"v2\",", "edition=\"v2\","));
+        let readme = Pair {
+            rel: "README.md",
+            ..pair
+        };
+        assert!(!lifted_base_path_positional_example(
+            &readme,
+            "    \"v2\",",
+            "    edition=\"v2\","
+        ));
+    }
+
+    fn region_of(
+        rule: RegionRule,
+        rel: &str,
+        fern: &str,
+        crozier: &str,
+        context: &Context,
+    ) -> Option<Region> {
+        let fern: Vec<&str> = fern.split('\n').collect();
+        let crozier: Vec<&str> = crozier.split('\n').collect();
+        rule(&Pair {
+            rel,
+            fern: &fern,
+            crozier: &crozier,
+            context,
+        })
+        .unwrap()
+    }
+
+    #[test]
+    fn constant_headers_are_read_from_raw_client_header_dicts() {
+        let context = Context::from_sources(
+            [],
+            [
+                (
+                    "src/acme/beds/raw_client.py",
+                    "json={\n    \"kind\": \"x\",\n},\nheaders={\n    \"X-Mist-Mode\": \"fine\",\n    \"X-Vent\": str(vent) if vent is not None else None,\n},\n",
+                ),
+                ("src/acme/client.py", "headers={\n    \"X-Other\": \"y\",\n},\n"),
+            ],
+        );
+        assert_eq!(
+            context.crozier_constant_headers(),
+            &BTreeSet::from([("X-Mist-Mode".to_string(), "fine".to_string())])
+        );
+        assert!(Context::default().crozier_constant_headers().is_empty());
+        let crozier = tempfile::tempdir().unwrap();
+        std::fs::write(
+            crozier.path().join("raw_client.py"),
+            "headers={\n    \"storage-unit\": \"GB\",\n},\n",
+        )
+        .unwrap();
+        let reference = tempfile::tempdir().unwrap();
+        assert_eq!(
+            Context::from_trees(reference.path(), crozier.path()).crozier_constant_headers(),
+            &BTreeSet::from([("storage-unit".to_string(), "GB".to_string())])
+        );
+    }
+
+    const CONSTANT_FERN: &str = "client.beds.list_beds(\n    section=\"section\",\n    mist_mode=\"fine\",\n)\n\n<dl>\n<dd>\n\n**mist_mode:** `typing.Literal` — How fine.\n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**section:** `str` \n";
+    const CONSTANT_CROZIER: &str = "client.beds.list_beds(\n    section=\"section\",\n)\n\n<dl>\n<dd>\n\n**section:** `str` \n";
+
+    #[test]
+    fn the_constant_header_docs_rule_takes_only_the_constants_arguments_and_blocks() {
+        let context = Context::from_sources(
+            [],
+            [(
+                "raw_client.py",
+                "headers={\n    \"X-Mist-Mode\": \"fine\",\n},\n",
+            )],
+        );
+        let rule: RegionRule = constant_header_docs_arguments;
+        assert!(region_of(
+            rule,
+            "reference.md",
+            CONSTANT_FERN,
+            CONSTANT_CROZIER,
+            &context
+        )
+        .is_some());
+        for (fern, crozier) in [
+            // Another value, another argument, one more difference, an
+            // argument to the constructor, a block typed otherwise.
+            (
+                CONSTANT_FERN.replace("=\"fine\"", "=\"coarse\""),
+                CONSTANT_CROZIER.to_string(),
+            ),
+            (
+                CONSTANT_FERN.replace("    mist_mode", "    fan_speed=3,\n    mist_mode"),
+                CONSTANT_CROZIER.to_string(),
+            ),
+            (format!("{CONSTANT_FERN}x"), format!("{CONSTANT_CROZIER}y")),
+            (
+                CONSTANT_FERN.replace("client.beds.list_beds(", "client = FernApi("),
+                CONSTANT_CROZIER.replace("client.beds.list_beds(", "client = FernApi("),
+            ),
+            (
+                CONSTANT_FERN.replace("`typing.Literal`", "`str`"),
+                CONSTANT_CROZIER.to_string(),
+            ),
+        ] {
+            assert_eq!(
+                region_of(rule, "reference.md", &fern, &crozier, &context),
+                None,
+                "{fern}"
+            );
+        }
+        // A call the constant was the only argument of closes on its own line;
+        // a constructor never takes one.
+        assert!(region_of(
+            rule,
+            "README.md",
+            "client.beds.count_beds(\n    mist_mode=\"fine\",\n)",
+            "client.beds.count_beds()",
+            &context
+        )
+        .is_some());
+        assert_eq!(
+            region_of(
+                rule,
+                "README.md",
+                "client = FernApi(\n    mist_mode=\"fine\",\n)",
+                "client = FernApi()",
+                &context
+            ),
+            None
+        );
+        assert_eq!(
+            region_of(rule, "client.py", CONSTANT_FERN, CONSTANT_CROZIER, &context),
+            None
+        );
+        assert_eq!(
+            region_of(
+                rule,
+                "README.md",
+                CONSTANT_FERN,
+                CONSTANT_CROZIER,
+                &Context::default()
+            ),
+            None
+        );
+        assert_eq!(
+            region_of(rule, "README.md", CONSTANT_FERN, CONSTANT_FERN, &context),
+            None
+        );
+    }
+
+    const NULLABLE_FERN: &str = "client.beds.list_beds(\n    rows=[\n        None\n    ],\n)\n\n**rows:** `typing.Optional[typing.Union[typing.Optional[int], typing.Sequence[typing.Optional[int]]]]` \n";
+    const NULLABLE_CROZIER: &str = "client.beds.list_beds(\n    rows=[\n        1\n    ],\n)\n\n**rows:** `typing.Optional[typing.Union[int, typing.Sequence[int]]]` \n";
+
+    #[test]
+    fn the_nullable_items_rule_takes_only_the_documented_parameters() {
+        let context = Context::from_sources([("reference.md", NULLABLE_FERN)], []);
+        assert_eq!(
+            context.reference_nullable_items(),
+            &BTreeSet::from(["rows".to_string()])
+        );
+        let rule: RegionRule = nullable_items_docs;
+        assert!(region_of(
+            rule,
+            "reference.md",
+            NULLABLE_FERN,
+            NULLABLE_CROZIER,
+            &context
+        )
+        .is_some());
+        // The README carries only the worked call.
+        let call = |text: &str| text.split("\n\n").next().unwrap().to_string();
+        assert!(region_of(
+            rule,
+            "README.md",
+            &call(NULLABLE_FERN),
+            &call(NULLABLE_CROZIER),
+            &context
+        )
+        .is_some());
+        for (fern, crozier) in [
+            // Another parameter, another type, one more difference, the same
+            // file on both sides.
+            (
+                NULLABLE_FERN.replace("rows", "pots"),
+                NULLABLE_CROZIER.replace("rows", "pots"),
+            ),
+            (
+                NULLABLE_FERN.to_string(),
+                NULLABLE_CROZIER.replace(
+                    "typing.Union[int, typing.Sequence[int]]",
+                    "typing.Sequence[int]",
+                ),
+            ),
+            (format!("{NULLABLE_FERN}x"), format!("{NULLABLE_CROZIER}y")),
+            (NULLABLE_FERN.to_string(), NULLABLE_FERN.to_string()),
+        ] {
+            assert_eq!(
+                region_of(rule, "reference.md", &fern, &crozier, &context),
+                None,
+                "{fern}"
+            );
+        }
+        assert_eq!(
+            region_of(rule, "client.py", NULLABLE_FERN, NULLABLE_CROZIER, &context),
+            None
+        );
+        assert!(Context::default().reference_nullable_items().is_empty());
+        let reference = tempfile::tempdir().unwrap();
+        std::fs::write(reference.path().join("reference.md"), NULLABLE_FERN).unwrap();
+        let crozier = tempfile::tempdir().unwrap();
+        assert_eq!(
+            Context::from_trees(reference.path(), crozier.path()).reference_nullable_items(),
+            &BTreeSet::from(["rows".to_string()])
+        );
     }
 
     #[test]

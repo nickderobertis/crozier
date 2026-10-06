@@ -17,9 +17,9 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    is_json_like_media_type, Auth, BodyField, BodySchemaShape, Endpoint, EndpointPagination,
-    ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim, QueryParam, RequestBody,
-    TagTypeDecl, TypeDecl, TypeRef,
+    is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Endpoint,
+    EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim,
+    QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -1672,6 +1672,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         packaged.then_some(ir.project_name.as_str()),
         &ir.auth,
         &ir.global_headers,
+        &ir.client_path_parameters,
         ir.default_max_retries,
     ));
 
@@ -1774,6 +1775,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 has_environment: ir.environment.is_some(),
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
+                client_path_parameters: &ir.client_path_parameters,
                 empty_namespace: false,
                 sdk_first_party: packaged || pkg == "fern",
                 children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
@@ -1808,6 +1810,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             has_environment: ir.environment.is_some(),
             tag_types: &tag_map,
             global_headers: &ir.global_headers,
+            client_path_parameters: &ir.client_path_parameters,
             empty_namespace: false,
             sdk_first_party: packaged || pkg == "fern",
             children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
@@ -1848,6 +1851,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 auth: &ir.auth,
                 environment: ir.environment.as_ref(),
                 global_headers: &ir.global_headers,
+                client_path_parameters: &ir.client_path_parameters,
                 default_max_retries: ir.default_max_retries,
             },
         )?);
@@ -1908,6 +1912,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             has_environment: ir.environment.is_some(),
             tag_types: &empty_namespace_tag_map,
             global_headers: &ir.global_headers,
+            client_path_parameters: &ir.client_path_parameters,
             empty_namespace: true,
             sdk_first_party: packaged || pkg == "fern",
             children: &[],
@@ -2389,6 +2394,50 @@ fn root_init_file(
     })
 }
 
+/// A lifted base-path parameter's constructor argument line: a required `str`,
+/// or an `Optional[str]` defaulting to its declared default on the client and
+/// to `None` in the wrapper beneath it.
+fn client_path_parameter_param(parameter: &ClientPathParameter, on_client: bool) -> String {
+    match &parameter.default {
+        None => format!("        {}: str,\n", parameter.py_name),
+        Some(value) if on_client => format!(
+            "        {}: typing.Optional[str] = \"{}\",\n",
+            parameter.py_name,
+            escape_py_str(value)
+        ),
+        Some(_) => format!(
+            "        {}: typing.Optional[str] = None,\n",
+            parameter.py_name
+        ),
+    }
+}
+
+/// A lifted base-path parameter's example argument: its default by keyword, or
+/// the placeholder a required constructor argument takes. Fern writes the
+/// default positionally, `FernApi("v2")`, which a keyword-only constructor
+/// rejects with a `TypeError`; crozier names it by keyword instead (the
+/// `lifted-base-path-positional-example` departure).
+fn client_path_parameter_example(parameter: &ClientPathParameter) -> String {
+    match &parameter.default {
+        Some(value) => format!("{}=\"{}\"", parameter.py_name, escape_py_str(value)),
+        None => format!(
+            "{}=\"YOUR_{}\"",
+            parameter.py_name,
+            parameter.py_name.to_uppercase()
+        ),
+    }
+}
+
+/// A promoted header's constructor annotation, before any `Optional[...]`: its
+/// scalar or list type, or the one-value `typing.Literal` a subset-promoted
+/// string header with a `default` takes.
+fn global_header_annotation(header: &crate::ir::GlobalHeader) -> String {
+    match header.literal() {
+        Some(value) => format!("typing.Literal[\"{}\"]", escape_py_str(value)),
+        None => header.py_type().python().to_string(),
+    }
+}
+
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
 /// when the body is not complex, else a literal `...` placeholder. Fern 5.20 does
 /// not wrap these advanced README calls,
@@ -2465,6 +2514,7 @@ fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
+        client_path_parameters: &ir.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -2644,19 +2694,16 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_name = format!("Async{}", ir.client_name);
 
     // The abbreviated calls in the error-handling and advanced sections show `...`
-    // whenever the endpoint has a path, query, or header argument or a request body;
-    // an argument-free endpoint (and the `_` placeholder) shows empty parens. The
+    // whenever the endpoint has a path or query argument or a request body; an
+    // argument-free endpoint (and the `_` placeholder) shows empty parens. The
     // error/raw-response calls are ruff-wrapped at the snippet width 88. A golden
     // refresh that reintroduces body-shape-sensitive placeholders is a Fern behavior
     // change, not a regression here.
-    // An array header is no argument here: Fern writes `client.probe()` for an
-    // endpoint whose only parameter is one, required or not.
+    // A header is no argument here: measured at 5.20.0, Fern writes
+    // `client.probe()` for an endpoint whose only parameter is a header, scalar or
+    // array, required or not.
     let has_arguments = !first.path_params.is_empty()
         || !first.query_params.is_empty()
-        || first
-            .header_params
-            .iter()
-            .any(|header| !matches!(header.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
         || first.request_body.is_some();
     let complex = first.method_name != "_" && has_arguments;
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
@@ -2682,6 +2729,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
+            client_path_parameters: &ir.client_path_parameters,
             building: Default::default(),
             expanding_aliases: Vec::new(),
             documentation: false,
@@ -2717,6 +2765,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
+            client_path_parameters: &ir.client_path_parameters,
             building: Default::default(),
             expanding_aliases: Vec::new(),
             documentation: false,
@@ -2738,10 +2787,11 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .join("\n")
     };
 
-    let mut streaming_args = documentation_client_example_args(&ir.auth, &ir.global_headers)
-        .into_iter()
-        .map(|arg| format!("    {arg},\n"))
-        .collect::<String>();
+    let mut streaming_args =
+        documentation_client_example_args(&ir.auth, &ir.global_headers, &ir.client_path_parameters)
+            .into_iter()
+            .map(|arg| format!("    {arg},\n"))
+            .collect::<String>();
     if ir.environment.is_none() {
         streaming_args.push_str("    base_url=\"https://yourhost.com/path/to/api\",\n");
     }
@@ -2805,10 +2855,20 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         )
         .replace(
             "@@ENVIRONMENTS@@\n\n",
-            if ir.environment.is_some() {
-                "## Environments\n\nThis SDK allows you to configure different environments for API requests.\n\n```python\nfrom @@PKG@@ import @@CLIENT@@\nfrom @@PKG@@.environment import @@CLIENT@@Environment\n\nclient = @@CLIENT@@(\n    environment=@@ENV_DEFAULT@@,\n)\n```\n\n"
+            &if ir.environment.is_some() {
+                // A lifted base-path parameter leads the constructor here too,
+                // as in every snippet (the `lifted-base-path-docs-examples`
+                // departure): without a default, Fern's call misses it.
+                let lifted: String = ir
+                    .client_path_parameters
+                    .iter()
+                    .map(|parameter| format!("    {},\n", client_path_parameter_example(parameter)))
+                    .collect();
+                format!(
+                    "## Environments\n\nThis SDK allows you to configure different environments for API requests.\n\n```python\nfrom @@PKG@@ import @@CLIENT@@\nfrom @@PKG@@.environment import @@CLIENT@@Environment\n\nclient = @@CLIENT@@(\n{lifted}    environment=@@ENV_DEFAULT@@,\n)\n```\n\n"
+                )
             } else {
-                ""
+                String::new()
             },
         )
         // Fern's shield credits the organization. Only the flat layout follows
@@ -2963,6 +3023,7 @@ fn reference_entry(
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
+        client_path_parameters: &ir.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -3060,17 +3121,9 @@ fn reference_entry(
             }
         }
     }
-    let mut reference_header = mp.header;
-    reference_header.extend(
-        ep.constant_header_descriptions
-            .iter()
-            .map(|(name, description)| DocParam {
-                name: naming::field_name(name),
-                annotation: "typing.Literal".to_string(),
-                default: None,
-                description: Some(description.clone()),
-            }),
-    );
+    // Nor does it document a constant header, which Fern's does (the
+    // `constant-header-docs-arguments` departure).
+    let reference_header = mp.header;
     for dp in ordered_keyword_params(&mp.query, &reference_header, &reference_body) {
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
         let query_is_list = ep
@@ -3169,18 +3222,6 @@ fn reference_entry(
             suffix: reference_param_suffix(description),
         });
     }
-    params.extend(
-        ep.constant_headers
-            .iter()
-            .filter(|(name, _)| !ep.constant_header_descriptions.contains_key(name))
-            .map(|(wire_name, _)| ParamRow {
-                name: naming::field_name(wire_name)
-                    .trim_end_matches('_')
-                    .to_string(),
-                annot: "typing.Literal".to_string(),
-                suffix: " ".to_string(),
-            }),
-    );
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
@@ -3749,6 +3790,7 @@ fn client_wrapper_file(
     sdk_name: Option<&str>,
     auth: &Auth,
     global_headers: &[GlobalHeader],
+    client_path_parameters: &[ClientPathParameter],
     default_max_retries: u32,
 ) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
@@ -3776,56 +3818,81 @@ fn client_wrapper_file(
     // the auth credential's, matching Fern's ordering. A required header is a
     // mandatory `str` set unconditionally; an optional one is `Optional[str] = None`
     // set only when provided.
-    let gh_param: String = distinct_global_header_params(&leading)
-        .into_iter()
-        .map(|h| {
-            if h.required() {
-                format!("        {}: {},\n", h.py_name, h.py_type().python())
-            } else {
-                format!(
-                    "        {}: typing.Optional[{}] = None,\n",
-                    h.py_name,
-                    h.py_type().python()
-                )
-            }
-        })
-        .collect();
-    let gh_assign: String = leading
+    // A lifted base-path parameter leads them: a field the routes read, never a
+    // header.
+    let path_param: String = client_path_parameters
         .iter()
-        .map(|h| format!("        self._{0} = {0}\n", h.py_name))
+        .map(|parameter| client_path_parameter_param(parameter, false))
         .collect();
+    let client_param: String = path_param
+        + &distinct_global_header_params(&leading)
+            .into_iter()
+            .map(|h| {
+                if h.required() {
+                    format!("        {}: {},\n", h.py_name, global_header_annotation(h))
+                } else {
+                    format!(
+                        "        {}: typing.Optional[{}] = None,\n",
+                        h.py_name,
+                        global_header_annotation(h)
+                    )
+                }
+            })
+            .collect::<String>();
+    let client_assign: String = client_path_parameters
+        .iter()
+        .map(|parameter| &parameter.py_name)
+        .chain(leading.iter().map(|h| &h.py_name))
+        .map(|name| format!("        self._{name} = {name}\n"))
+        .collect();
+    let header_line = |h: &GlobalHeader| {
+        // A non-string header is written as its `str()`, as Fern's is.
+        let value = if h.py_type() == HeaderType::Str {
+            format!("self._{}", h.py_name)
+        } else {
+            format!("str(self._{})", h.py_name)
+        };
+        if let Some(default) = h.default() {
+            format!(
+                "        headers[\"{}\"] = {value} if {value} is not None else \"{}\"\n",
+                escape_py_str(&h.wire_name),
+                escape_py_str(default)
+            )
+        } else if h.required() {
+            format!(
+                "        headers[\"{}\"] = {value}\n",
+                escape_py_str(&h.wire_name)
+            )
+        } else {
+            format!(
+                "        if self._{} is not None:\n            headers[\"{}\"] = {value}\n",
+                h.py_name,
+                escape_py_str(&h.wire_name)
+            )
+        }
+    };
+    // A defaulted header is written after the credential, as its field follows
+    // `logging`: Fern's `Accept`, defaulted on every operation, comes after the
+    // api-key header it sits beside.
     let gh_header: String = global_headers
         .iter()
-        .map(|h| {
-            // A non-string header is written as its `str()`, as Fern's is.
-            let value = if h.py_type() == HeaderType::Str {
-                format!("self._{}", h.py_name)
-            } else {
-                format!("str(self._{})", h.py_name)
-            };
-            if let Some(default) = h.default() {
-                format!(
-                    "        headers[\"{}\"] = {value} if {value} is not None else \"{}\"\n",
-                    escape_py_str(&h.wire_name),
-                    escape_py_str(default)
-                )
-            } else if h.required() {
-                format!(
-                    "        headers[\"{}\"] = {value}\n",
-                    escape_py_str(&h.wire_name)
-                )
-            } else {
-                format!(
-                    "        if self._{} is not None:\n            headers[\"{}\"] = {value}\n",
-                    h.py_name,
-                    escape_py_str(&h.wire_name)
-                )
-            }
-        })
+        .filter(|h| h.default().is_none())
+        .map(header_line)
         .collect();
-    let gh_super: String = distinct_global_header_params(&leading)
-        .into_iter()
-        .map(|h| format!("{0}={0}, ", h.py_name))
+    let tr_header: String = global_headers
+        .iter()
+        .filter(|h| h.default().is_some())
+        .map(header_line)
+        .collect();
+    let client_super: String = client_path_parameters
+        .iter()
+        .map(|parameter| &parameter.py_name)
+        .chain(
+            distinct_global_header_params(&leading)
+                .into_iter()
+                .map(|h| &h.py_name),
+        )
+        .map(|name| format!("{name}={name}, "))
         .collect();
     // crozier brands its own SDK-identity headers rather than impersonating Fern:
     // the `sdk-identity-header-prefix` departure (docs/departures/README.md),
@@ -3846,10 +3913,10 @@ fn client_wrapper_file(
     // Fern's own stripped header leaves, so the leading layout matches.
     c.push_str(HEADER);
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
-    c.push_str(&gh_param);
+    c.push_str(&client_param);
     c.push_str(&a.param);
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}    ):\n"));
-    c.push_str(&gh_assign);
+    c.push_str(&client_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
     // Fern applies the credential after the global headers for every scheme but
@@ -3867,21 +3934,22 @@ fn client_wrapper_file(
     if !basic_auth {
         c.push_str(&a.header_block);
     }
+    c.push_str(&tr_header);
     c.push_str("        return headers\n\n");
     c.push_str(&a.token_method);
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
-    c.push_str(&gh_param);
+    c.push_str(&client_param);
     c.push_str(&a.param);
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            "));
-    c.push_str(&gh_super);
+    c.push_str(&client_super);
     c.push_str(&a.super_arg);
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
     c.push_str("        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
-    c.push_str(&gh_param);
+    c.push_str(&client_param);
     c.push_str(&a.param);
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            "));
-    c.push_str(&gh_super);
+    c.push_str(&client_super);
     c.push_str(&a.super_arg);
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
@@ -4587,6 +4655,17 @@ fn url_arg(ep: &Endpoint, imports: &mut Imports) -> String {
     let stripped = ep.path.strip_prefix('/').unwrap_or(&ep.path);
     if stripped.contains('{') {
         let mut rendered = stripped.to_string();
+        // A placeholder the document's base path lifts to the client reads the
+        // value the client was constructed with.
+        for lifted in &ep.client_path_params {
+            rendered = rendered.replace(
+                &format!("{{{}}}", lifted.wire_name),
+                &format!(
+                    "{{encode_path_param(self._client_wrapper._{})}}",
+                    lifted.py_name
+                ),
+            );
+        }
         for pp in &ep.path_params {
             let value = if pp.convert {
                 imports.add_core("serialization", "convert_and_respect_annotation_metadata");
@@ -4691,7 +4770,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             // the same way — the null alternative only supplies the `Optional`
             // this arm already writes.
             let array = match &qp.type_ref {
-                TypeRef::List(inner) => Some((inner, qp.required)),
+                TypeRef::List(inner) => Some((inner, qp.argument_required())),
                 TypeRef::Optional(inner) => match inner.as_ref() {
                     TypeRef::List(item) => Some((item, false)),
                     _ => None,
@@ -4700,6 +4779,13 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             };
             if let Some((inner, required)) = array {
                 if qp.allow_multiple {
+                    // Nullable items lose their `Optional` here, as in Fern's
+                    // signature; its `reference.md` keeps it (the
+                    // `nullable-items-docs` departure).
+                    let inner = match inner.as_ref() {
+                        TypeRef::Optional(item) => item,
+                        _ => inner,
+                    };
                     let item = raw_type_str(inner, imports);
                     return DocParam {
                         name: qp.py_name.clone(),
@@ -4719,7 +4805,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             }
             optional_arg(
                 raw_type_str(&qp.type_ref, imports),
-                qp.required,
+                qp.argument_required(),
                 qp.docstring.clone(),
                 qp.py_name.clone(),
             )
@@ -5163,7 +5249,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
     let api_error = imports.add_core_local("api_error", "ApiError");
-    if !ep.path_params.is_empty() {
+    if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
     imports.add_core("parse_error", "ParsingError");
@@ -5299,7 +5385,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             } else if type_serializes_as(&qp.type_ref, Prim::Date)
                 || qp.aliased_datetime == Some(Prim::Date)
             {
-                let value = if qp.required {
+                let value = if qp.argument_required() {
                     format!("str({})", qp.py_name)
                 } else {
                     format!(
@@ -5312,7 +5398,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 || qp.aliased_datetime == Some(Prim::Datetime)
             {
                 imports.add_core("datetime_utils", "serialize_datetime");
-                let value = if qp.required {
+                let value = if qp.argument_required() {
                     format!("serialize_datetime({})", qp.py_name)
                 } else {
                     format!(
@@ -5745,20 +5831,40 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         if let Some(value) = content_type {
             lines.push(format!("                \"content-type\": \"{value}\","));
         }
-        for (name, value) in &ep.constant_headers {
-            lines.push(format!("                \"{name}\": {value:?},"));
-        }
+        // Constants and arguments together, in the order the operation declares
+        // them; a header the order does not name (an endpoint built by hand)
+        // follows, constants first.
+        let mut headers: Vec<(&str, String)> = ep
+            .constant_headers
+            .iter()
+            .map(|(name, value)| {
+                (
+                    name.as_str(),
+                    format!("                \"{name}\": {value:?},"),
+                )
+            })
+            .collect();
         for hp in &ep.header_params {
             let value = if hp.enum_value {
                 format!("{}.value", hp.py_name)
             } else {
                 format!("str({})", hp.py_name)
             };
-            lines.push(format!(
-                "                \"{}\": {value} if {} is not None else None,",
-                hp.wire_name, hp.py_name
+            headers.push((
+                hp.wire_name.as_str(),
+                format!(
+                    "                \"{}\": {value} if {} is not None else None,",
+                    hp.wire_name, hp.py_name
+                ),
             ));
         }
+        headers.sort_by_key(|(wire, _)| {
+            ep.header_order
+                .iter()
+                .position(|declared| declared == wire)
+                .unwrap_or(usize::MAX)
+        });
+        lines.extend(headers.into_iter().map(|(_, line)| line));
         lines.push("            },".to_string());
     }
     lines.push("            request_options=request_options,".to_string());
@@ -5814,7 +5920,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_core("parse_error", "ParsingError");
     imports.add_core("pydantic_utilities", "parse_sse_obj");
     imports.add_from("pydantic", "ValidationError");
-    if !ep.path_params.is_empty() {
+    if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
 
@@ -5979,7 +6085,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     }
     imports.add_core("parse_error", "ParsingError");
     imports.add_from("pydantic", "ValidationError");
-    if !ep.path_params.is_empty() {
+    if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
 
@@ -6145,6 +6251,7 @@ struct RootClientFileCtx<'a> {
     auth: &'a Auth,
     environment: Option<&'a crate::ir::Environment>,
     global_headers: &'a [GlobalHeader],
+    client_path_parameters: &'a [ClientPathParameter],
     /// The fallback for an unset `max_retries` (Fern's `default_max_retries`).
     default_max_retries: u32,
 }
@@ -6166,6 +6273,7 @@ fn root_client_file(
         auth,
         environment,
         global_headers,
+        client_path_parameters,
         default_max_retries,
     } = cx;
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
@@ -6225,6 +6333,7 @@ fn root_client_file(
         auth,
         environment,
         global_headers,
+        client_path_parameters,
         default_max_retries,
     };
     let root_methods = root_client_methods(
@@ -6239,6 +6348,7 @@ fn root_client_file(
         tag_map,
         auth,
         global_headers,
+        client_path_parameters,
         environment.is_some(),
         false,
         &mut imports,
@@ -6255,6 +6365,7 @@ fn root_client_file(
         tag_map,
         auth,
         global_headers,
+        client_path_parameters,
         environment.is_some(),
         true,
         &mut imports,
@@ -6324,6 +6435,7 @@ struct RootClientCfg<'a> {
     auth: &'a Auth,
     environment: Option<&'a crate::ir::Environment>,
     global_headers: &'a [GlobalHeader],
+    client_path_parameters: &'a [ClientPathParameter],
     default_max_retries: u32,
 }
 
@@ -6343,6 +6455,7 @@ fn root_client_methods(
     tag_map: &BTreeMap<String, String>,
     auth: &Auth,
     global_headers: &[GlobalHeader],
+    client_path_parameters: &[ClientPathParameter],
     has_environment: bool,
     is_async: bool,
     imports: &mut Imports,
@@ -6362,6 +6475,7 @@ fn root_client_methods(
         has_environment,
         tag_types: tag_map,
         global_headers,
+        client_path_parameters,
         empty_namespace: false,
         sdk_first_party: true,
         children: &[],
@@ -6457,44 +6571,66 @@ fn root_client_class(
     // right after `base_url` and before the auth credential. A required header is a
     // mandatory `str`; an optional one is `Optional[str] = None` — matching the
     // client wrapper.
-    let gh_doc: String = global_headers
+    // A lifted base-path parameter leads the promoted headers on every line.
+    let client_path_parameters = cfg.client_path_parameters;
+    let client_param_doc: String = client_path_parameters
         .iter()
-        .map(|h| {
-            let ty = if h.required() {
-                h.py_type().python().to_string()
+        .map(|parameter| {
+            let ty = if parameter.default.is_some() {
+                "typing.Optional[str]"
             } else {
-                format!("typing.Optional[{}]", h.py_type().python())
+                "str"
+            };
+            format!("    {} : {ty}\n", parameter.py_name)
+        })
+        .chain(global_headers.iter().map(|h| {
+            let ty = if h.required() {
+                global_header_annotation(h)
+            } else {
+                format!("typing.Optional[{}]", global_header_annotation(h))
             };
             format!("    {} : {ty}\n", h.py_name)
-        })
+        }))
         .collect();
-    let gh_ctor: String = distinct_global_header_params(global_headers)
-        .into_iter()
-        .map(|h| {
-            if h.required() {
-                format!("        {}: {},\n", h.py_name, h.py_type().python())
-            } else {
-                format!(
-                    "        {}: typing.Optional[{}] = None,\n",
-                    h.py_name,
-                    h.py_type().python()
-                )
-            }
-        })
-        .collect();
-    let gh_example: String = global_headers
+    let client_param_ctor: String = client_path_parameters
         .iter()
-        .map(|h| {
+        .map(|parameter| client_path_parameter_param(parameter, true))
+        .chain(
+            distinct_global_header_params(global_headers)
+                .into_iter()
+                .map(|h| {
+                    if h.required() {
+                        format!("        {}: {},\n", h.py_name, global_header_annotation(h))
+                    } else {
+                        format!(
+                            "        {}: typing.Optional[{}] = None,\n",
+                            h.py_name,
+                            global_header_annotation(h)
+                        )
+                    }
+                }),
+        )
+        .collect();
+    let client_param_example: String = client_path_parameters
+        .iter()
+        .map(|parameter| format!("        {},\n", client_path_parameter_example(parameter)))
+        .chain(global_headers.iter().map(|h| {
             format!(
                 "        {}=\"YOUR_{}\",\n",
                 h.py_name,
                 h.py_name.to_uppercase()
             )
-        })
+        }))
         .collect();
-    let gh_wrapper: String = distinct_global_header_params(global_headers)
-        .into_iter()
-        .map(|h| format!("            {0}={0},\n", h.py_name))
+    let client_param_wrapper: String = client_path_parameters
+        .iter()
+        .map(|parameter| &parameter.py_name)
+        .chain(
+            distinct_global_header_params(global_headers)
+                .into_iter()
+                .map(|h| &h.py_name),
+        )
+        .map(|name| format!("            {name}={name},\n"))
         .collect();
     let module_views: Vec<RootModuleView> = modules
         .iter()
@@ -6541,10 +6677,10 @@ fn root_client_class(
         } else {
             "        base_url=\"https://yourhost.com/path/to/api\",\n".to_string()
         },
-        gh_doc,
-        gh_ctor,
-        gh_example,
-        gh_wrapper,
+        client_param_doc,
+        client_param_ctor,
+        client_param_example,
+        client_param_wrapper,
         tr_doc,
         tr_ctor,
         tr_wrapper,
@@ -6633,13 +6769,13 @@ struct RootClientView {
     /// The `Examples` client instantiation's `base_url` line (empty with
     /// environments, which drop it).
     example_base_url: String,
-    /// Promoted global-header lines (empty without any): the docstring `Parameters`
+    /// Lifted base-path and promoted global-header lines: the docstring `Parameters`
     /// entries, the constructor parameters, the `Examples` arguments, and the
     /// client-wrapper call arguments — all placed after `base_url`.
-    gh_doc: String,
-    gh_ctor: String,
-    gh_example: String,
-    gh_wrapper: String,
+    client_param_doc: String,
+    client_param_ctor: String,
+    client_param_example: String,
+    client_param_wrapper: String,
     /// Defaulted global-header lines (empty without any): the docstring
     /// `Parameters` entries, the constructor parameters and the client-wrapper call
     /// arguments, all placed after `logging`.
@@ -6790,6 +6926,7 @@ struct ClientCtx<'a> {
     has_environment: bool,
     tag_types: &'a BTreeMap<String, String>,
     global_headers: &'a [GlobalHeader],
+    client_path_parameters: &'a [ClientPathParameter],
     /// Whether this tag client is Fern's explicit empty dotted namespace.
     empty_namespace: bool,
     /// Whether Fern's isort pass files the SDK's own imports as first-party; see
@@ -7080,6 +7217,7 @@ fn client_stream_docstring(
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
+        client_path_parameters: cx.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -7212,6 +7350,7 @@ fn client_binary_stream_docstring(
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
+        client_path_parameters: cx.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -7312,6 +7451,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
+        client_path_parameters: cx.client_path_parameters,
         building: Default::default(),
         expanding_aliases: Vec::new(),
         documentation: false,
@@ -7683,6 +7823,7 @@ struct ExampleCtx<'a> {
     /// Promoted global headers, shown as `tenant="YOUR_TENANT"` example lines
     /// before the auth credential in the client instantiation.
     global_headers: &'a [GlobalHeader],
+    client_path_parameters: &'a [ClientPathParameter],
     /// Named types currently being expanded on the active path, so a recursive
     /// schema (a tree node, a recursive union) terminates instead of overflowing
     /// the stack (issue #84): a list of an ancestor type renders empty, matching
@@ -8699,15 +8840,27 @@ impl<'a> ExampleCtx<'a> {
         // A later enum alternative is exampled by its first member (marimo's
         // `totalRows`, `Union[float, MarimoTableDataTotalRowsOne]`, is
         // `MarimoTableDataTotalRowsOne.TOO_MANY`), except in a path, where the
-        // value below is its plain string.
+        // value below is its plain string. So it is where a `str` alternative
+        // before the enum already holds that value: a query parameter's
+        // `anyOf: [string, $ref Weave]` is exampled `"plain"`, not `Weave.PLAIN`.
         if !matches!(slot, Slot::Path(_)) {
-            if let Some(name) = variants.iter().skip(1).find_map(|variant| match variant {
-                TypeRef::Named(name) if matches!(self.find(name), Some(TypeDecl::Enum(_))) => {
-                    Some(name.clone())
+            if let Some((index, name)) =
+                variants
+                    .iter()
+                    .enumerate()
+                    .skip(1)
+                    .find_map(|(index, variant)| match variant {
+                        TypeRef::Named(name)
+                            if matches!(self.find(name), Some(TypeDecl::Enum(_))) =>
+                        {
+                            Some((index, name.clone()))
+                        }
+                        _ => None,
+                    })
+            {
+                if !variants[..index].contains(&TypeRef::Primitive(Prim::Str)) {
+                    return self.named_value(&name, slot);
                 }
-                _ => None,
-            }) {
-                return self.named_value(&name, slot);
             }
         }
         if let Some(value) = variants
@@ -9535,7 +9688,18 @@ fn build_example_inner(
             ctx.value_from_example(&qp.type_ref, ex)
                 .unwrap_or_else(|| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)))
         } else if let TypeRef::List(inner) = &qp.type_ref {
-            Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+            if qp.one_or_many && !reference {
+                ctx.value(inner, Slot::Named(&qp.wire_name))
+            } else if matches!(inner.as_ref(), TypeRef::Optional(_)) && !documentation {
+                // Nullable items: a docstring passes an empty list. The Markdown
+                // passes one element, the non-null one Fern renders for the same
+                // items without `nullable`, where Fern's own passes `None`, which
+                // the signature's `Sequence[int]` rejects (the
+                // `nullable-items-docs` departure).
+                Example::List(Vec::new())
+            } else {
+                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+            }
         } else if let TypeRef::Dict(_, value) = &qp.type_ref {
             let pairs = vec![(
                 qp.wire_name.clone(),
@@ -9717,16 +9881,8 @@ fn build_example_inner(
         args.extend(headers);
         args.extend(rest);
     }
-    if documentation && !suppressed {
-        for (name, value) in &ep.constant_headers {
-            if ep.constant_header_descriptions.contains_key(name) {
-                args.push((
-                    Some(naming::field_name(name)),
-                    Example::Atom(format!("{value:?}")),
-                ));
-            }
-        }
-    }
+    // A constant header is no argument, so no call passes it, though Fern's
+    // Markdown does (the `constant-header-docs-arguments` departure).
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
             let mut v = if let Some(example) = body_example {
@@ -10248,10 +10404,17 @@ fn build_example_inner(
     // Method docstrings follow constructor order (global headers, auth). Fern's
     // Markdown snippets instead lead with auth and omit optional global headers.
     if documentation {
-        for arg in documentation_client_example_args(ctx.auth, ctx.global_headers) {
+        for arg in documentation_client_example_args(
+            ctx.auth,
+            ctx.global_headers,
+            ctx.client_path_parameters,
+        ) {
             client_args.push(format!("    {arg},"));
         }
     } else {
+        for parameter in ctx.client_path_parameters {
+            client_args.push(format!("    {},", client_path_parameter_example(parameter)));
+        }
         for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
             client_args.push(format!(
                 "    {}=\"YOUR_{}\",",
@@ -10352,9 +10515,19 @@ fn build_example_inner(
 
 /// The client-constructor arguments Fern's Markdown snippets pass: auth first,
 /// then every *required* global header (optional ones are left out).
-fn documentation_client_example_args(auth: &Auth, global_headers: &[GlobalHeader]) -> Vec<String> {
-    documentation_auth_example_args(auth)
-        .into_iter()
+fn documentation_client_example_args(
+    auth: &Auth,
+    global_headers: &[GlobalHeader],
+    client_path_parameters: &[ClientPathParameter],
+) -> Vec<String> {
+    // Fern's Markdown passes a lifted base-path parameter to each method, which
+    // does not take it, and leaves it out of the constructor; crozier passes it
+    // to the constructor, first, by keyword: its default, or the placeholder the
+    // method docstrings use (the `lifted-base-path-docs-examples` departure).
+    client_path_parameters
+        .iter()
+        .map(client_path_parameter_example)
+        .chain(documentation_auth_example_args(auth))
         .chain(
             global_headers
                 .iter()
@@ -11326,10 +11499,10 @@ mod tests {
             wrapper_base_url: "base_url".to_string(),
             example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n"
                 .to_string(),
-            gh_doc: String::new(),
-            gh_ctor: String::new(),
-            gh_example: String::new(),
-            gh_wrapper: String::new(),
+            client_param_doc: String::new(),
+            client_param_ctor: String::new(),
+            client_param_example: String::new(),
+            client_param_wrapper: String::new(),
             tr_doc: String::new(),
             tr_ctor: String::new(),
             tr_wrapper: String::new(),
@@ -11735,10 +11908,11 @@ mod tests {
             http_method: "GET",
             path: path.to_string(),
             path_params: params,
+            client_path_params: Vec::new(),
             query_params: Vec::new(),
             header_params: Vec::new(),
             constant_headers: Vec::new(),
-            constant_header_descriptions: Default::default(),
+            header_order: Vec::new(),
             request_body: None,
             request_body_required: false,
             request_body_has_multipart_related: false,
@@ -11814,6 +11988,7 @@ mod tests {
             errors: Vec::new(),
             auth: Auth::None,
             global_headers: Vec::new(),
+            client_path_parameters: Vec::new(),
             environment: None,
             extra_fields: crate::settings::ExtraFields::Allow,
             enum_type: crate::settings::EnumType::PythonEnums,
@@ -12306,10 +12481,8 @@ mod tests {
             &std::collections::BTreeMap::new(),
         )
         .expect("reference entry renders");
-        assert!(
-            reference.contains("**storage_unit:** `typing.Literal` "),
-            "{reference}"
-        );
+        // The reference documents no argument the method does not take.
+        assert!(!reference.contains("storage_unit"), "{reference}");
 
         ep.request_body = Some(RequestBody::Inline(vec![BodyField {
             wire_name: "1st".to_string(),
@@ -12538,9 +12711,11 @@ mod tests {
             py_name: "tag".to_string(),
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
+            nullable: false,
             convert: false,
             comma_separated: true,
             allow_multiple: true,
+            one_or_many: false,
             example: None,
             example_is_scalar: false,
             aliased_datetime: None,
@@ -12582,9 +12757,11 @@ mod tests {
             py_name: "start".to_string(),
             type_ref: TypeRef::Primitive(Prim::Datetime),
             required: false,
+            nullable: false,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
+            one_or_many: false,
             example: None,
             example_is_scalar: false,
             aliased_datetime: None,
@@ -12636,6 +12813,7 @@ mod tests {
             auth,
             has_environment: false,
             global_headers: &[],
+            client_path_parameters: &[],
             building: Default::default(),
             expanding_aliases: Vec::new(),
             documentation: false,
@@ -13732,9 +13910,11 @@ mod tests {
                 py_name: "tags".to_string(),
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
                 required: true,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: None,
                 example_is_scalar: false,
                 aliased_datetime: None,
@@ -13745,9 +13925,11 @@ mod tests {
                 py_name: "limit".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: Some("3".to_string()),
                 example_is_scalar: true,
                 aliased_datetime: None,
@@ -14116,9 +14298,11 @@ mod tests {
             py_name: "filter".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
             required: false,
+            nullable: false,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
+            one_or_many: false,
             example: Some("\"active\"".to_string()),
             example_is_scalar: true,
             aliased_datetime: None,
@@ -14163,9 +14347,11 @@ mod tests {
                 py_name: "where_".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: Some("\"active\"".to_string()),
                 example_is_scalar: true,
                 aliased_datetime: None,
@@ -14176,9 +14362,11 @@ mod tests {
                 py_name: "order".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: Some("\"name\"".to_string()),
                 example_is_scalar: true,
                 aliased_datetime: None,
@@ -14189,9 +14377,11 @@ mod tests {
                 py_name: "page".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
+                nullable: false,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
+                one_or_many: false,
                 example: Some("1".to_string()),
                 example_is_scalar: true,
                 aliased_datetime: None,
@@ -14236,9 +14426,11 @@ mod tests {
             py_name: "cursor".to_string(),
             type_ref: TypeRef::Primitive(Prim::Str),
             required: true,
+            nullable: false,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
+            one_or_many: false,
             example: None,
             example_is_scalar: true,
             aliased_datetime: None,
@@ -14294,6 +14486,7 @@ mod tests {
             has_environment: false,
             tag_types: &tags,
             global_headers: &[],
+            client_path_parameters: &[],
             empty_namespace: false,
             sdk_first_party: true,
             children: &[],
@@ -14456,5 +14649,555 @@ mod tests {
             raw.contains("params={\n                \"voltage\": voltage,"),
             "{raw}"
         );
+    }
+}
+
+#[cfg(test)]
+mod parameter_lowering_tests {
+    //! Each parameter-lowering rule driven through the whole generator, one
+    //! document per rule, asserting on the files a user receives.
+    use serde_json::{json, Value};
+
+    /// Every file the generator writes for `document`, keyed by path.
+    fn files(document: Value) -> std::collections::BTreeMap<String, String> {
+        let doc: crate::openapi::OpenApi =
+            serde_json::from_value(document).expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .expect("the config is well formed");
+        super::generate(&crate::ir::build(&doc, &config))
+            .expect("the document generates")
+            .into_iter()
+            .map(|file| {
+                (
+                    file.path.to_string_lossy().replace('\\', "/"),
+                    file.contents,
+                )
+            })
+            .collect()
+    }
+
+    /// A document of `GET` operations tagged `sky`, one per `(path, parameters)`.
+    fn document(version: &str, operations: &[(&str, Value)]) -> Value {
+        let mut paths = serde_json::Map::new();
+        for (name, parameters) in operations {
+            paths.insert(
+                format!("/sky/{name}"),
+                json!({"get": {
+                    "operationId": name,
+                    "tags": ["sky"],
+                    "parameters": parameters,
+                    "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"type": "string"}}}}}
+                }}),
+            );
+        }
+        json!({"openapi": version, "info": {"title": "Api", "version": "1"}, "paths": paths})
+    }
+
+    fn query(required: bool, schema: Value) -> Value {
+        json!([{"name": "band", "in": "query", "required": required, "schema": schema}])
+    }
+
+    fn has(files: &std::collections::BTreeMap<String, String>, path: &str) -> bool {
+        files.contains_key(path)
+    }
+
+    #[test]
+    fn a_query_union_sits_in_the_tag_exactly_when_required_iff_not_nullable() {
+        let mix = json!([{"type": "string"}, {"type": "integer"}]);
+        let mix_null = json!([{"type": "string"}, {"type": "integer"}, {"type": "null"}]);
+        let consts = json!([{"const": "near"}, {"const": "far"}]);
+        let files = files(document(
+            "3.1.0",
+            &[
+                ("reqMix", query(true, json!({"anyOf": mix}))),
+                (
+                    "optMix",
+                    query(false, json!({"anyOf": mix, "title": "Band"})),
+                ),
+                ("optNullMix", query(false, json!({"anyOf": mix_null}))),
+                ("reqNullMix", query(true, json!({"oneOf": mix_null}))),
+                ("optConsts", query(false, json!({"anyOf": consts}))),
+                (
+                    "optNullable",
+                    query(false, json!({"anyOf": mix, "nullable": true})),
+                ),
+                (
+                    "headerMix",
+                    json!([{"name": "X-Band", "in": "header", "required": false, "schema": {"anyOf": mix}}]),
+                ),
+                (
+                    "soleEnum",
+                    query(
+                        true,
+                        json!({"anyOf": [{"type": "string", "enum": ["a", "b"]}, {"type": "null"}]}),
+                    ),
+                ),
+            ],
+        ));
+        for tag_local in [
+            "src/api/sky/types/req_mix_request_band.py",
+            "src/api/sky/types/opt_null_mix_request_band.py",
+            "src/api/sky/types/opt_nullable_request_band.py",
+            "src/api/sky/types/header_mix_request_x_band.py",
+            "src/api/sky/types/sole_enum_request_band.py",
+        ] {
+            assert!(has(&files, tag_local), "{tag_local} missing");
+        }
+        for root in [
+            "src/api/types/opt_mix_request_band.py",
+            "src/api/types/req_null_mix_request_band.py",
+            "src/api/types/opt_consts_request_band.py",
+        ] {
+            assert!(has(&files, root), "{root} missing");
+        }
+        // A 3.0 `nullable: true` beside the composition makes the argument optional.
+        let raw = &files["src/api/sky/raw_client.py"];
+        assert!(
+            raw.contains("band: typing.Optional[OptNullableRequestBand] = None"),
+            "{raw}"
+        );
+    }
+
+    #[test]
+    fn an_array_query_parameter_names_its_union_element() {
+        let files = files(document(
+            "3.1.0",
+            &[
+                (
+                    "focus",
+                    query(
+                        false,
+                        json!({"type": "array", "items": {"anyOf": [
+                            {"type": "string", "enum": ["wide", "tele"]}, {"type": "integer"}
+                        ]}}),
+                    ),
+                ),
+                (
+                    "nullItems",
+                    query(
+                        true,
+                        json!({"type": "array", "items": {"anyOf": [
+                            {"type": "string"}, {"type": "integer"}, {"type": "null"}
+                        ]}}),
+                    ),
+                ),
+            ],
+        ));
+        assert_eq!(
+            files["src/api/sky/types/focus_request_band_item.py"]
+                .lines()
+                .last()
+                .unwrap_or_default(),
+            "FocusRequestBandItem = typing.Union[FocusRequestBandItemZero, int]"
+        );
+        assert!(has(
+            &files,
+            "src/api/sky/types/focus_request_band_item_zero.py"
+        ));
+        let raw = &files["src/api/sky/raw_client.py"];
+        assert!(
+            raw.contains(
+                "typing.Union[FocusRequestBandItem, typing.Sequence[FocusRequestBandItem]]"
+            ),
+            "{raw}"
+        );
+        // A `null` member leaves the alias, and the signature names it bare.
+        assert!(
+            raw.contains("typing.Sequence[NullItemsRequestBandItem]"),
+            "{raw}"
+        );
+        // The scalar element reaches the URL as text.
+        assert!(raw.contains("\"band\": band,"), "{raw}");
+        // A required one is exampled by its element's first member.
+        let client = &files["src/api/sky/client.py"];
+        assert!(client.contains("band=[\"band\"]"), "{client}");
+    }
+
+    #[test]
+    fn a_scalar_or_array_query_parameter_is_one_or_many_only_where_required_iff_nullable() {
+        let one_or_many = |null: bool| {
+            let mut members = vec![
+                json!({"type": "integer"}),
+                json!({"type": "array", "items": {"type": "integer"}}),
+            ];
+            if null {
+                members.push(json!({"type": "null"}));
+            }
+            json!({"oneOf": members})
+        };
+        let files = files(document(
+            "3.1.0",
+            &[
+                ("required", query(true, one_or_many(false))),
+                ("requiredNull", query(true, one_or_many(true))),
+                ("optional", query(false, one_or_many(false))),
+                (
+                    "enumOrMany",
+                    query(
+                        false,
+                        json!({"anyOf": [
+                            {"type": "string", "enum": ["x", "y"]},
+                            {"type": "array", "items": {"type": "string", "enum": ["x", "y"]}}
+                        ]}),
+                    ),
+                ),
+            ],
+        ));
+        let raw = &files["src/api/sky/raw_client.py"];
+        // Required and not nullable: a named, required, converted union.
+        assert!(has(&files, "src/api/sky/types/required_request_band.py"));
+        assert!(raw.contains("band: RequiredRequestBand,"), "{raw}");
+        assert!(
+            raw.contains("object_=band, annotation=RequiredRequestBand, direction=\"write\""),
+            "{raw}"
+        );
+        // The other diagonal keeps the optional one-or-many shorthand.
+        assert!(
+            raw.contains("band: typing.Optional[typing.Union[int, typing.Sequence[int]]] = None"),
+            "{raw}"
+        );
+        assert!(!has(&files, "src/api/types/optional_request_band.py"));
+        // An enum spelling is a union whose array member names its element.
+        assert!(has(
+            &files,
+            "src/api/types/enum_or_many_request_band_one_item.py"
+        ));
+        // A required, nullable one is exampled by its scalar in the docstring and
+        // as a list in the reference.
+        let client = &files["src/api/sky/client.py"];
+        assert!(
+            client.contains("client.sky.required_null(\n            band=1,\n        )"),
+            "{client}"
+        );
+        assert!(
+            client.contains("client.sky.required(\n            band=1,\n        )"),
+            "{client}"
+        );
+        let reference = &files["reference.md"];
+        assert!(
+            reference.contains("client.sky.required_null(\n    band=[\n        1\n    ],\n)"),
+            "{reference}"
+        );
+    }
+
+    #[test]
+    fn a_query_union_over_a_component_string_enum_is_written_raw() {
+        let mut document = document(
+            "3.1.0",
+            &[(
+                "weave",
+                query(
+                    true,
+                    json!({"anyOf": [{"type": "string"}, {"$ref": "#/components/schemas/Weave"}]}),
+                ),
+            )],
+        );
+        document["components"] =
+            json!({"schemas": {"Weave": {"type": "string", "enum": ["plain", "twill"]}}});
+        let files = files(document);
+        let raw = &files["src/api/sky/raw_client.py"];
+        assert!(raw.contains("\"band\": band,"), "{raw}");
+        assert!(
+            !raw.contains("convert_and_respect_annotation_metadata"),
+            "{raw}"
+        );
+        // The `str` member ahead of the enum holds its value as plain text.
+        let client = &files["src/api/sky/client.py"];
+        assert!(client.contains("band=\"plain\","), "{client}");
+    }
+
+    fn header_document(schemes: Value, names: &[&str]) -> Value {
+        let operations: Vec<(String, Value)> = names
+            .iter()
+            .enumerate()
+            .map(|(index, name)| {
+                (
+                    format!("fly{index}"),
+                    json!([{"name": name, "in": "header", "required": false, "schema": {"type": "string"}}]),
+                )
+            })
+            .collect();
+        let borrowed: Vec<(&str, Value)> = operations
+            .iter()
+            .map(|(name, value)| (name.as_str(), value.clone()))
+            .collect();
+        let mut document = document("3.0.3", &borrowed);
+        document["components"] = json!({"securitySchemes": schemes});
+        document["security"] = json!([{"tok": []}]);
+        document
+    }
+
+    #[test]
+    fn only_the_exact_spelling_of_a_credential_header_is_dropped() {
+        let bearer = files(header_document(
+            json!({"tok": {"type": "http", "scheme": "bearer"}}),
+            &["authorization", "AUTHORIZATION", "Authorization"],
+        ));
+        let raw = &bearer["src/api/sky/raw_client.py"];
+        assert!(
+            raw.contains("\"authorization\": str(authorization)"),
+            "{raw}"
+        );
+        assert!(
+            raw.contains("\"AUTHORIZATION\": str(authorization)"),
+            "{raw}"
+        );
+        assert!(!raw.contains("\"Authorization\""), "{raw}");
+        let key = files(header_document(
+            json!({"tok": {"type": "apiKey", "in": "header", "name": "X-Kite-Key"}}),
+            &["X-Kite-Key", "x-kite-key"],
+        ));
+        let raw = &key["src/api/sky/raw_client.py"];
+        assert!(raw.contains("\"x-kite-key\""), "{raw}");
+        assert!(!raw.contains("\"X-Kite-Key\": str("), "{raw}");
+        // A header argument is no argument to the README's abbreviated calls.
+        assert!(
+            key["README.md"].contains("client.sky.fly0()"),
+            "{}",
+            key["README.md"]
+        );
+    }
+
+    #[test]
+    fn a_subset_promoted_string_header_with_a_default_is_a_literal() {
+        let mut operations = Vec::new();
+        for index in 0..4 {
+            let mut parameters = vec![
+                json!({"name": "X-Count", "in": "header", "required": false, "schema": {"type": "integer", "default": 3}}),
+            ];
+            if index < 3 {
+                parameters.push(json!({"name": "Dry-Run", "in": "header", "required": false, "schema": {"type": "string", "default": "off"}}));
+            } else {
+                parameters.clear();
+            }
+            operations.push((format!("op{index}"), Value::Array(parameters)));
+        }
+        let borrowed: Vec<(&str, Value)> = operations
+            .iter()
+            .map(|(name, value)| (name.as_str(), value.clone()))
+            .collect();
+        let files = files(document("3.0.3", &borrowed));
+        let client = &files["src/api/client.py"];
+        assert!(
+            client.contains("dry_run: typing.Optional[typing.Literal[\"off\"]] = None,"),
+            "{client}"
+        );
+        // A non-string default keeps the plain scalar.
+        assert!(
+            client.contains("count: typing.Optional[int] = None,"),
+            "{client}"
+        );
+        let wrapper = &files["src/api/core/client_wrapper.py"];
+        assert!(
+            wrapper.contains("headers[\"Dry-Run\"] = self._dry_run\n"),
+            "{wrapper}"
+        );
+    }
+
+    fn base_path_document(extension: (&str, Value), include: bool) -> Value {
+        let prefix = if include { "/{edition}" } else { "" };
+        let mut document = json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "servers": [{"url": "https://maps.example.org"}],
+            "paths": {
+                format!("{prefix}/regions"): {"post": {
+                    "operationId": "createRegion",
+                    "tags": ["regions"],
+                    "parameters": if include {
+                        json!([{"name": "edition", "in": "path", "required": true, "schema": {"type": "string"}}])
+                    } else {
+                        json!([])
+                    },
+                    "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Region"}}}},
+                    "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Region"}}}}}
+                }}
+            },
+            "components": {"schemas": {"Region": {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]}}}
+        });
+        document[extension.0] = extension.1;
+        document
+    }
+
+    #[test]
+    fn a_base_path_lifts_its_placeholders_to_the_client() {
+        let defaulted = files(base_path_document(
+            (
+                "x-fern-base-path",
+                json!({"path": "/{edition}", "paths-include-base-path": true, "parameters": {"edition": {"type": "string", "default": "v2"}}}),
+            ),
+            true,
+        ));
+        let client = &defaulted["src/api/client.py"];
+        assert!(
+            client.contains("edition: typing.Optional[str] = \"v2\","),
+            "{client}"
+        );
+        assert!(client.contains("        edition=\"v2\",\n"), "{client}");
+        let wrapper = &defaulted["src/api/core/client_wrapper.py"];
+        assert!(
+            wrapper.contains("edition: typing.Optional[str] = None,"),
+            "{wrapper}"
+        );
+        assert!(!wrapper.contains("headers[\"edition\"]"), "{wrapper}");
+        let raw = &defaulted["src/api/regions/raw_client.py"];
+        assert!(
+            raw.contains("f\"{encode_path_param(self._client_wrapper._edition)}/regions\""),
+            "{raw}"
+        );
+        assert!(
+            raw.contains("def create_region(\n        self, *, name: str"),
+            "{raw}"
+        );
+        assert!(!raw.contains("content-type"), "{raw}");
+        // The Markdown passes it by keyword with its default to the three
+        // constructors that name arguments (sync, async, environments), and to
+        // no method.
+        let readme = &defaulted["README.md"];
+        assert!(
+            readme.contains("client = ApiApi(\n    edition=\"v2\",\n)"),
+            "{readme}"
+        );
+        assert_eq!(readme.matches("edition=").count(), 3, "{readme}");
+        assert!(
+            !readme.contains("    edition=\"v2\",\n    name="),
+            "{readme}"
+        );
+
+        // Without a default the argument is required, and the Markdown constructs
+        // the client with it.
+        let required = files(base_path_document(
+            ("x-crozier-base-path", json!({"path": "/{edition}"})),
+            false,
+        ));
+        assert!(required["src/api/client.py"].contains("        edition: str,\n"));
+        assert!(
+            required["README.md"].contains("client = ApiApi(\n    edition=\"YOUR_EDITION\",\n)"),
+            "{}",
+            required["README.md"]
+        );
+        assert!(required["src/api/regions/raw_client.py"]
+            .contains("self._client_wrapper._edition)}/regions"));
+
+        // `x-crozier-base-path` wins over `x-fern-base-path`.
+        let mut both = base_path_document(("x-fern-base-path", json!("/v1")), false);
+        both["x-crozier-base-path"] = json!("/v2/");
+        let both = files(both);
+        assert!(
+            both["src/api/regions/raw_client.py"].contains("\"v2/regions\""),
+            "{}",
+            both["src/api/regions/raw_client.py"]
+        );
+    }
+
+    #[test]
+    fn a_map_value_under_a_one_letter_owner_is_named_across_the_join() {
+        let files = files(json!({
+            "openapi": "3.0.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {"Dto": {"type": "object", "properties": {
+                "f": {"type": "object", "properties": {
+                    "w": {"type": "object", "additionalProperties": {
+                        "type": "object", "properties": {"id": {"type": "number"}}
+                    }}
+                }}
+            }}}}
+        }));
+        assert!(
+            files
+                .keys()
+                .any(|path| path.ends_with("types/dto_fw_value.py")),
+            "{:?}",
+            files.keys()
+        );
+        assert!(files
+            .values()
+            .any(|text| text.contains("class DtoFwValue(")));
+    }
+
+    /// One `GET /beds` operation (beside a second operation, so no header is
+    /// promoted) taking `parameters`.
+    fn beds_document(parameters: Value) -> Value {
+        json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Beds", "version": "1"},
+            "paths": {
+                "/beds": {"get": {
+                    "operationId": "listBeds",
+                    "tags": ["beds"],
+                    "parameters": parameters,
+                    "responses": {"204": {"description": "ok"}}
+                }},
+                "/beds/count": {"get": {
+                    "operationId": "countBeds",
+                    "tags": ["beds"],
+                    "responses": {"204": {"description": "ok"}}
+                }}
+            }
+        })
+    }
+
+    #[test]
+    fn nullable_array_items_lose_their_optional_in_the_signature_and_docs() {
+        let files = files(beds_document(json!([{
+            "name": "trays", "in": "query", "required": true,
+            "schema": {"type": "array", "items": {"type": "string", "nullable": true}}
+        }])));
+        let annotation = "typing.Optional[typing.Union[str, typing.Sequence[str]]]";
+        let client = &files["src/api/beds/client.py"];
+        assert!(
+            client.contains(&format!("trays: {annotation} = None,")),
+            "{client}"
+        );
+        // A docstring passes an empty list; the Markdown one non-null element.
+        assert!(client.contains("            trays=[],\n"), "{client}");
+        let reference = &files["reference.md"];
+        assert!(
+            reference.contains(&format!("**trays:** `{annotation}`")),
+            "{reference}"
+        );
+        assert!(
+            reference.contains("    trays=[\n        \"trays\"\n    ],"),
+            "{reference}"
+        );
+        assert!(!reference.contains("None"), "{reference}");
+    }
+
+    #[test]
+    fn constant_headers_are_sent_in_order_and_left_out_of_the_docs() {
+        let header = |name: &str, required: bool, schema: Value| json!({"name": name, "in": "header", "required": required, "schema": schema});
+        let files = files(beds_document(json!([
+            header("X-Watts", true, json!({"type": "integer", "default": 40})),
+            header("X-Hue", true, json!({"type": "string", "default": "amber"})),
+            header(
+                "X-Mist",
+                false,
+                json!({"type": "string", "enum": ["fine", "coarse"], "default": "fine"})
+            ),
+        ])));
+        let raw = &files["src/api/beds/raw_client.py"];
+        assert!(
+            raw.contains(
+                "                \"X-Watts\": str(watts) if watts is not None else None,\n                \"X-Hue\": \"amber\",\n                \"X-Mist\": \"fine\",\n"
+            ),
+            "{raw}"
+        );
+        for doc in ["README.md", "reference.md"] {
+            let text = &files[doc];
+            assert!(text.contains("watts=1"), "{doc}: {text}");
+            assert!(
+                !text.contains("hue") && !text.contains("mist"),
+                "{doc}: {text}"
+            );
+        }
     }
 }
