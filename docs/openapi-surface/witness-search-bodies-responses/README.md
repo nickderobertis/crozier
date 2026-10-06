@@ -23,8 +23,7 @@ screened on licence (the repository `LICENSE` at the indexed commit, read throug
 the guard) and immutable reference, and those passing both on pinned Fern (CLI
 5.67.1, `fernapi/fern-python-sdk` 5.20.0) until a registrable witness was found;
 each outcome is in [`screens.tsv`](screens.tsv). The search answered GitHub code
-search alone, at one page per phrasing, so it is no exhaustive search in the
-sense of [the coverage document](../../openapi-surface-coverage.md#what-makes-a-search-exhaustive).
+search alone, at one page per phrasing, so it is not an exhaustive search.
 
 | key | outcome | declarers | registered witness |
 |---|---|---|---|
@@ -47,9 +46,8 @@ registered, because one witness settles the shape; `screens.tsv` names them.
 ## Renewed search
 
 The two keys no registrable document declares, each the key of a hand-written
-fixture's cover, spelled as [`../bodies-media.md`](../bodies-media.md) spells
-them; their `search-incomplete` lines are that file's
-[witness-search record](../bodies-media.md#witness-search-exhaustive):
+fixture's cover, spelled as the `bodies-media` region file spells them, where
+their `search-incomplete` lines are its witness-search record:
 
 | key | outcome | selector | documents declaring it | hand-written fixture |
 |---|---|---|---|---|
