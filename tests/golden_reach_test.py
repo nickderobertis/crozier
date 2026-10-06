@@ -1876,7 +1876,7 @@ class ArmSearchNetworkStageTests(_StageScratch):
                     row["subject"].startswith("screened-nonpublic-input:")]
         self.assertEqual(1, len(excluded))
         token = excluded[0]["subject"]
-        self.assertRegex(token, r"^screened-nonpublic-input:v1:[0-9a-f]{32}:[1-9][0-9]*$")
+        self.assertRegex(token, r"^screened-nonpublic-input:v2:[0-9a-f]{32}:[1-9][0-9]*@screened-nonpublic-input:v2:[0-9a-f]{32}:[1-9][0-9]*$")
         self.assertEqual("not-run: screened by repository rule", excluded[0]["result"])
         self.assertFalse(any("fern-api/fern/contents" in path for path in self.loopback.requests))
         self.assertNotIn(token, golden_reach_search.candidate_index("github-code-search"))
@@ -1909,19 +1909,27 @@ class ArmSearchNetworkStageTests(_StageScratch):
         self.assertEqual(original, (directory / "records.tsv").read_bytes())
         self.assertFalse((directory / "screens.jsonl").exists())
         self.assertEqual(requests, self.loopback.requests)
-        (directory / "records.tsv").write_bytes(original.replace(b":v1:", b":v2:"))
-        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v2"):
+        (directory / "records.tsv").write_bytes(original.replace(b":v2:", b":v3:"))
+        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v3"):
             golden_reach_search.main(["screen", "--source", "github-code-search", "--key", self.KEY,
                                       "--candidate", f"example/api:openapi.yaml@{_Loopback.COMMIT}"])
         (directory / "records.tsv").write_bytes(original)
         self.assertEqual(requests, self.loopback.requests)
-        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v2"):
+        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v3"):
             golden_reach_search.main(["screen", "--source", "github-code-search", "--key", self.KEY,
-                                      "--candidate", token.replace(":v1:", ":v2:")])
+                                      "--candidate", token.replace(":v2:", ":v3:")])
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(0, golden_reach_search.main(["screen", "--source", "github-code-search",
                                                        "--key", self.KEY, "--candidate", token]))
         self.assertEqual(requests, self.loopback.requests)
+        invalid_subject = token.split("@", 1)[0] + "@" + _Loopback.COMMIT
+        with self.assertRaisesRegex(SystemExit, "opaque subject requires an opaque revision token"):
+            golden_reach_search.main(["screen", "--source", "github-code-search", "--key", self.KEY,
+                                      "--candidate", invalid_subject])
+        self.assertEqual(requests, self.loopback.requests)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["screen", "--source", "github-code-search",
+                                                       "--key", self.KEY, "--candidate", token]))
 
     def test_a_query_records_each_phrasing_s_answer_and_censuses_what_it_fetched(self) -> None:
         queries = self.scratch / "queries.tsv"
@@ -1979,21 +1987,71 @@ class ArmSearchNetworkStageTests(_StageScratch):
         self.assertEqual("passed", rows[("screen", f"{candidate} fern")])
         self.assertIn(("wait", "github-code-search guard log raw-github-calls.jsonl"), rows)
 
+    def test_continuations_preserve_opaque_history_without_fetching(self) -> None:
+        self.loopback.requests = []
+        def token(number: int) -> str:
+            return golden_reach_search.INDEX.make_opaque_identity("c" * 32, number)
+        subject = f"{token(1)}@{token(2)}"
+        directory = golden_reach_search.EVIDENCE / "github-code-search"
+        directory.mkdir(parents=True)
+        ledger = directory / "candidates.jsonl"
+        ledger.write_text(json.dumps({"key": self.KEY, "repository": "example/copied-input",
+                                      "path": token(1), "commit": token(2), "sha256": token(3),
+                                      "document": token(4), "disposition": "parse-failure"}) + "\n")
+        golden_reach_search.replace_records("github-code-search", [{
+            "key": self.KEY, "kind": "document", "subject": subject,
+            "result": "unreadable: parser refused the document", "file": ledger.name}])
+        refusal = directory / golden_reach_search.REFUSED_FILE
+        refusal.write_text("\t".join(golden_reach_search.REFUSED_FIELDS) + "\n" +
+                           f"{subject}\t{token(3)}\tpinned-parser\tsyntax\thistorical reading\n")
+        probe = {"key": self.KEY, "candidate": subject, "status": "ok", "reached": ["site"],
+                 "build": self.head[:12]}
+        (directory / "probe.jsonl").write_text(json.dumps(probe) + "\n")
+        screen = {"key": self.KEY, "candidate": subject, "fern": "failed: previous refusal"}
+        (directory / "screens.jsonl").write_text(json.dumps(screen) + "\n")
+        rescreen = directory / golden_reach_search.RESCREEN_FILE
+        rescreen.write_text(json.dumps({"candidate": subject, "sha256": token(3),
+                                       "exit": 1, "diagnostic": "historical refusal"}) + "\n")
+        original = {path: path.read_bytes() for path in
+                    (ledger, refusal, rescreen, directory / "screens.jsonl", directory / "records.tsv")}
+        for stage in ("recensus", "refuse", "fern-rescreen"):
+            with self.subTest(stage=stage), contextlib.redirect_stdout(io.StringIO()) as printed:
+                self.assertEqual(0, golden_reach_search.main([stage, "--source", "github-code-search",
+                                                             *(["--key", self.KEY] if stage == "fern-rescreen" else [])]))
+            self.assertIn("1 opaque v2 record(s) screened by repository rule", printed.getvalue())
+            self.assertEqual(1, len(printed.getvalue().splitlines()))
+            self.assertEqual([], self.loopback.requests)
+            for path, data in original.items():
+                self.assertEqual(data, path.read_bytes(), str(path))
+        ledger.write_bytes(original[ledger].replace(b":v2:", b":v3:"))
+        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v3"):
+            golden_reach_search.main(["recensus", "--source", "github-code-search"])
+        self.assertEqual([], self.loopback.requests)
+        ledger.write_bytes(original[ledger])
+        refusal.write_bytes(original[refusal].replace(token(3).encode(), token(3).replace(":v2:", ":v3:").encode()))
+        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v3"):
+            golden_reach_search.main(["refuse", "--source", "github-code-search"])
+        self.assertEqual([], self.loopback.requests)
+        refusal.write_bytes(original[refusal])
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["recensus", "--source", "github-code-search"]))
+        self.assertEqual([], self.loopback.requests)
+
     def test_fetch_pins_skips_opaque_history_and_refuses_invalid_versions(self) -> None:
-        token = "screened-nonpublic-input:v1:" + "d" * 32 + ":31"
+        token = "screened-nonpublic-input:v2:" + "d" * 32 + ":31"
         shared = golden_reach_search.SURFACE / "witness-search-github-publisher-trees"
         shared.mkdir(parents=True)
         ledger = shared / "documents.jsonl"
-        original = json.dumps({"repository": token, "path": token, "commit": token, "blob": token}) + "\n"
+        original = json.dumps({"repository": "fern-api/fern", "path": token, "commit": token, "blob": token}) + "\n"
         ledger.write_text(original)
         with contextlib.redirect_stdout(io.StringIO()) as printed:
             self.assertEqual(0, golden_reach_search.main(["fetch-pins", "--root", str(self.root)]))
-        self.assertIn("1 opaque v1 record(s) screened by repository rule", printed.getvalue())
+        self.assertIn("1 opaque v2 record(s) screened by repository rule", printed.getvalue())
         self.assertEqual(original, ledger.read_text())
         self.assertEqual([], getattr(self.loopback, "requests", []))
         self.assertEqual([], golden_reach_search.pinned_listing("github-publisher-trees"))
-        ledger.write_text(original.replace(":v1:", ":v2:"))
-        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v2"):
+        ledger.write_text(original.replace(":v2:", ":v3:"))
+        with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v3"):
             golden_reach_search.main(["fetch-pins", "--root", str(self.root)])
         self.assertEqual([], getattr(self.loopback, "requests", []))
         ledger.write_text(original)

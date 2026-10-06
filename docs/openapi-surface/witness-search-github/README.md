@@ -12,19 +12,22 @@ candidate identity, digest when fetched, classification, screens, and dispositio
 `candidates.tsv` is their consolidated index; regenerate and check both with
 `python3 scripts/witness-search-github-index.py` and its `--check` option.
 
-Excluded inputs use `screened-nonpublic-input:v1:I:N`, where `I` is a random 32-character lowercase
+Excluded inputs use `screened-nonpublic-input:v2:I:N`, where `I` is a random 32-character lowercase
 hexadecimal invocation ID and `N` is a positive assigned integer. Neither is
 derived from the public name, path or content hash. The migration uses one
-invocation ID; a fresh search uses a new one. Within that invocation the same
-input revision carries the same token throughout its records. Distinct revisions
-keep distinct tokens; a `supersedes` token names the prior input revision. Tokens from different
-invocations never join records as the same input. Repository
-and path fields both hold that token; a retained locator or digest field also
-holds it, while optional locators may be omitted. No reverse mapping is
-committed. Readers must accept version `v1` and reject other versions explicitly.
+invocation ID; a fresh search uses a new one. Within that invocation, each distinct original locator value gets an assigned
+number for its kind: path, revision, blob, digest or other locator. A path locator
+is the original repository and relative path together. Equal values
+of one kind retain equal tokens; distinct revisions retain distinct revision
+tokens. Repository retains its public name; path, revision and SHA256 fields
+hold their independent tokens. A `supersedes` token names the prior revision.
+The candidate name is the path token; a search subject is
+`path-token@revision-token`. Tokens from different invocations never join as
+the same input. Optional locators may be omitted. No reverse mapping is
+committed. Readers accept version `v2` and reject other versions explicitly.
 These historical rows preserve their measured selectors, counts, screens and
 verdicts. Acquisition and census continuations must skip them as screened by the
-repository exclusion rule; fresh candidates from `fern-api/fern` must be excluded
+repository exclusion rule; fresh candidates from `fern-api/fern` and its mirror `khulnasoft/RapidDocs` must be excluded
 and recorded opaquely before fetching. A fresh exclusion uses raw status `excluded-repository` with no measured
 selector counts; it makes no claim that the document lacks a shape. Migrated
 rows keep their original dispositions and counts. Other candidates retain their

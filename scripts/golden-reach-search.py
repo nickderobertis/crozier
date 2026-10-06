@@ -159,9 +159,9 @@ def fail(message: str) -> None:
 
 def opaque_candidate(value: str) -> str | None:
     try:
-        return INDEX.opaque_identity(value)
+        return INDEX.opaque_subject(value)
     except ValueError as error:
-        fail(f"{error}; restore valid v1 evidence from git and rerun the command")
+        fail(f"{error}; restore valid v2 evidence from git and rerun the command")
 
 
 def read_tsv(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[str, str]]:
@@ -722,7 +722,7 @@ def fetch_pins(args: argparse.Namespace) -> int:
     pins = read_jsonl(shared, ("repository", "path", "commit", "blob"),
                       "restore it from git; it is the publisher trees' committed pin list")
     for pin in pins:
-        if INDEX.opaque_identity(pin["repository"]):
+        if INDEX.opaque_identity(pin["path"]):
             screened += 1
             continue
         # The shared pin lists a few documents twice over, word for word; a walk
@@ -754,7 +754,7 @@ def fetch_pins(args: argparse.Namespace) -> int:
         writer.writeheader()
         writer.writerows(resolved)
     record_guard_logs(source)
-    suffix = f"; {screened} opaque v1 record(s) screened by repository rule" if screened else ""
+    suffix = f"; {screened} opaque v2 record(s) screened by repository rule" if screened else ""
     print(f"golden-reach-search: {source}: {len(resolved)} pins, {fetched} fetched, {missing} unresolved{suffix}")
     return 0
 
@@ -859,9 +859,7 @@ def query(args: argparse.Namespace) -> int:
             new.append({"key": key, "kind": "query", "subject": phrasing, "result": str(total),
                         "file": "queries.jsonl"})
             for document in fetched:
-                candidate = INDEX.opaque_identity(document.get("repository")) or (
-                    f"{document.get('repository')}:{document.get('path')}@{document.get('commit')}"
-                )
+                candidate = f"{INDEX.candidate_name(document)}@{INDEX.candidate_revision(document)}"
                 if document.get("document"):
                     index[candidate] = document["document"]
                 readable = ("declares", "does-not-declare", "excluded-non-openapi-3")
@@ -1458,7 +1456,10 @@ def read_refused(source: str) -> dict[str, dict[str, str]]:
                  f"or re-run `refuse --source {source}`")
         rows = list(reader)
     for row in rows:
-        if row["verdict"] not in REFUSED_VERDICTS or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+        if row["verdict"] not in REFUSED_VERDICTS or not (
+                (opaque_candidate(row["document"]) and opaque_candidate(row["sha256"])
+                 and "@" not in row["sha256"])
+                or re.fullmatch(r"[0-9a-f]{64}", row["sha256"])):
             fail(f"{path}: `{row['document']}` is not a {'/'.join(REFUSED_VERDICTS)} verdict over a SHA-256; "
                  f"re-run `refuse --source {source}`")
     return {row["document"]: row for row in rows}
@@ -2099,8 +2100,14 @@ def _one_line(text: str) -> str:
     return " ".join(text.split())
 
 
+def opaque_summary(count: int) -> str:
+    version = INDEX.OPAQUE_PREFIX.split(":")[1]
+    return f"; {count} opaque {version} record(s) screened by repository rule" if count else ""
+
+
 def local_copies(
-    source: str, root: Path | None, fetch: bool, every: bool = False, timed_out: bool = False
+    source: str, root: Path | None, fetch: bool, every: bool = False, timed_out: bool = False,
+    screened: set[str] | None = None,
 ) -> dict[str, tuple[Path, str]]:
     """Local copies of one source's documents to read again, each with its pinned digest.
 
@@ -2139,12 +2146,19 @@ def local_copies(
     ledger = source_dir(source) / "candidates.jsonl"
     if ledger.is_file():
         for row in read_jsonl(ledger, ("repository", "path", "commit"), "restore it from git"):
+            if INDEX.opaque_identity(row["path"]):
+                continue
             if row.get("document"):
                 fetched.setdefault(f"{row['repository']}:{row['path']}@{row['commit']}", row)
     acquirer = None
     index = candidate_index(source)
-    for record in read_records(source):
+    records = read_records(source)
+    skipped = screened if screened is not None else set()
+    for record in records:
         if record["kind"] != "document":
+            continue
+        if opaque_candidate(record["subject"]):
+            skipped.add(record["subject"])
             continue
         if not (every and record["result"].startswith("census ")) and not record["result"].startswith(
                 ("acquisition-failure: parse-failure", "unreadable: ")):
@@ -2207,7 +2221,8 @@ def recensus(args: argparse.Namespace) -> int:
     source = args.source
     # A query source's census was taken when each document was fetched, so a
     # loader repair since reaches it only by counting every cached copy again.
-    copies = local_copies(source, args.root, fetch=True, every=source not in WALKS, timed_out=True)
+    skipped: set[str] = set()
+    copies = local_copies(source, args.root, fetch=True, every=source not in WALKS, timed_out=True, screened=skipped)
     refused = read_refused(source)
     readings: dict[str, tuple[dict[str, int], Any, str, str]] = {}
     for document, (local, sha256) in sorted(copies.items()):
@@ -2275,7 +2290,7 @@ def recensus(args: argparse.Namespace) -> int:
         writer.writerows(filed[document] for document in sorted(filed))
     fallback = sum(1 for _counts, _parsed, loader, _digest in readings.values() if loader)
     print(f"golden-reach-search: {source}: {len(readings)} of {len(copies)} documents counted, "
-          f"{fallback} through {YAML_LOADER}")
+          f"{fallback} through {YAML_LOADER}{opaque_summary(len(skipped))}")
     return 0
 
 
@@ -2289,8 +2304,11 @@ def refuse(args: argparse.Namespace) -> int:
     out: the census alone failed on it, and it stays outstanding.
     """
     source = args.source
-    unread = local_copies(source, args.root, fetch=False)
-    rows, kept = [], 0
+    skipped: set[str] = set()
+    unread = local_copies(source, args.root, fetch=False, screened=skipped)
+    rows = [row for document, row in read_refused(source).items() if opaque_candidate(document)]
+    historical = len(rows)
+    kept = 0
     for document, (local, sha256) in sorted(unread.items()):
         if not local.is_file():
             continue
@@ -2310,7 +2328,8 @@ def refuse(args: argparse.Namespace) -> int:
         writer.writeheader()
         writer.writerows(rows)
     print(f"golden-reach-search: {source}: {len(unread)} unread, {len(rows)} census-refused, "
-          f"{kept} read by the full parser (still outstanding), {len(unread) - len(rows) - kept} without local bytes")
+          f"{kept} read by the full parser (still outstanding), {len(unread) - (len(rows) - historical) - kept} without local bytes"
+          f"{opaque_summary(len(skipped))}")
     return 0
 
 RESCREEN_FILE = "fern-rescreen.jsonl"
@@ -2394,6 +2413,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
                               if record_build(p.read_text(encoding="utf-8"), p) == build)
     wanted: dict[str, list[tuple[str, str, dict[str, Any]]]] = defaultdict(list)
     paths: dict[str, Path] = {}
+    skipped = set()
     for key in keys:
         reaching = _reaching(key, args.source, build)
         latest: dict[str, dict[str, Any]] = {}
@@ -2404,6 +2424,9 @@ def fern_rescreen(args: argparse.Namespace) -> int:
                     latest[row["candidate"]] = row
         located = dict(declarers(args.source, key, args.root)) if reaching else {}
         for candidate in sorted(reaching):
+            if opaque_candidate(candidate):
+                skipped.add(candidate)
+                continue
             row = latest.get(candidate)
             # A refusal already measured here stands; only one filed without
             # Fern's exit status is taken again.
@@ -2417,6 +2440,9 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
             wanted[digest].append((key, candidate, row))
             paths.setdefault(digest, path)
+    if skipped and not wanted:
+        print(f"golden-reach-search: {args.source}: no documents re-screened{opaque_summary(len(skipped))}")
+        return 0
     cache_path = CACHE / RESCREEN_CACHE
     cache: dict[str, dict[str, Any]] = {}
     if cache_path.is_file():
@@ -2457,7 +2483,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
     evidence.write_text("".join(json.dumps(r, sort_keys=True) + "\n"
                                 for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8")
     print(f"golden-reach-search: {args.source}: {len(wanted)} documents re-screened, {filed} screens re-filed, "
-          f"{unsettled} left on their earlier screen by a timeout")
+          f"{unsettled} left on their earlier screen by a timeout{opaque_summary(len(skipped))}")
     return 0
 
 

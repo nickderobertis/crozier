@@ -120,7 +120,7 @@ class OpaqueContinuationTest(unittest.TestCase):
                "CROZIER_RAW_GITHUB_URL": url, "GITHUB_TOKEN": "offline-test-token"}
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "evidence"
-            token = "screened-nonpublic-input:v1:" + "a" * 32 + ":731"
+            token = "screened-nonpublic-input:v2:" + "a" * 32 + ":731"
             for stage, source, status in (
                 ("full-yaml", "sourcegraph", "parse-failure"),
                 ("reacquire-head", "github-code-search", "acquisition-failure"),
@@ -131,13 +131,13 @@ class OpaqueContinuationTest(unittest.TestCase):
                     keys_file(evidence)
                     ledger = evidence / "candidates.jsonl"
                     historical = {"source": source, "key": KEY, "selector": SELECTOR,
-                                  "repository": token, "path": token, "sha256": token,
+                                  "repository": "fern-api/fern", "path": token, "sha256": token,
                                   "blob": token, "commit": token,
                                   "disposition": status, "status": 404,
                                   "reacquired_at_head": stage == "reacquire-namesake",
                                   "diagnostic": "HTTP 404"}
                     prior = token.rsplit(":", 1)[0] + ":730"
-                    earlier = {**historical, "repository": prior, "path": prior, "sha256": prior,
+                    earlier = {**historical, "path": token, "sha256": prior,
                                "blob": prior, "commit": prior}
                     historical["supersedes"] = prior
                     repeated = {k: v for k, v in historical.items() if k != "supersedes"}
@@ -148,16 +148,16 @@ class OpaqueContinuationTest(unittest.TestCase):
                         "--cache-dir", str(cache), "--again")
                     completed = run("--evidence-root", str(root), stage, *options, env=env)
                     self.assertEqual(0, completed.returncode, completed.stderr)
-                    self.assertIn("1 opaque v1 record(s) screened by repository rule", completed.stdout)
+                    self.assertIn("1 opaque v2 record(s) screened by repository rule", completed.stdout)
                     self.assertEqual(1, len(completed.stdout.splitlines()))
                     self.assertEqual(original, ledger.read_text(encoding="utf-8"))
                     self.assertFalse((cache / "documents").exists())
                     self.assertFalse((evidence / "raw-github-calls.jsonl").exists())
                     self.assertEqual([], server.paths)
-                    ledger.write_text(original.replace(":v1:", ":v2:"), encoding="utf-8")
+                    ledger.write_text(original.replace(":v2:", ":v3:"), encoding="utf-8")
                     rejected = run("--evidence-root", str(root), stage, *options, env=env)
                     self.assertEqual(1, rejected.returncode)
-                    self.assertIn("unsupported opaque identity version v2", rejected.stderr)
+                    self.assertIn("unsupported opaque identity version v3", rejected.stderr)
                     ledger.write_text(original, encoding="utf-8")
                     recovered = run("--evidence-root", str(root), stage, *options, env=env)
                     self.assertEqual(0, recovered.returncode, recovered.stderr)

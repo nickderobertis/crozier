@@ -243,9 +243,14 @@ SCREEN_FIELDS = {"licence": "license", "ref": "ref", "fern": "fern"}
 HISTORICAL_SCREEN = "historical screen: filed before scripts/witness_screen.py, with no measured record"
 
 
-OPAQUE_PREFIX = "screened-nonpublic-input:v1:"
+OPAQUE_PREFIX = "screened-nonpublic-input:v2:"
 EXCLUDED_REPOSITORY = "fern-api/fern"
+EXCLUDED_REPOSITORIES = frozenset((EXCLUDED_REPOSITORY, "khulnasoft/RapidDocs"))
 OPAQUE_LOCATORS = ("name", "url", "raw_url", "sha", "blob", "sha256", "document", "commit", "revision")
+
+
+def excluded_repository(repository: str) -> bool:
+    return normalize_repo(repository).lower() in {repo.lower() for repo in EXCLUDED_REPOSITORIES}
 
 
 def make_opaque_identity(invocation: str, number: int) -> str:
@@ -267,31 +272,43 @@ def opaque_identity(value: Any) -> str | None:
     return value
 
 
+def opaque_subject(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    parts = value.split("@", 1)
+    token = opaque_identity(parts[0])
+    if token and len(parts) == 2 and not opaque_identity(parts[1]):
+        raise ValueError("opaque subject requires an opaque revision token")
+    return value if token else None
+
+
 def validate_opaque_values(value: Any) -> None:
     """Validate nested query results as well as top-level candidate fields."""
     if isinstance(value, dict):
         if (value.get("disposition") or value.get("status")) == RAW_EXCLUDED:
-            if not opaque_identity(value.get("repository")):
+            if not opaque_identity(value.get("path")):
                 raise ValueError("excluded-repository requires an opaque identity")
             if "selector_count" in value or "selector_counts" in value:
                 raise ValueError("excluded-repository cannot carry measured selector counts")
         if "repository" in value and "path" in value:
             name = candidate_name(value)
-            if opaque_identity(name):
+            if opaque_identity(name) or any(opaque_identity(value.get(field)) for field in OPAQUE_LOCATORS):
+                if not opaque_identity(value["path"]):
+                    raise ValueError("opaque locator path must carry an opaque revision")
                 for field in (*OPAQUE_LOCATORS, "supersedes"):
                     if field not in value:
                         continue
                     locator = opaque_identity(value[field])
-                    if not locator or (field != "supersedes" and locator != name):
+                    if not locator:
                         raise ValueError(f"opaque locator {field} must carry an opaque revision; "
-                                         "restore valid v1 evidence from git and rerun the command")
+                                         "restore valid v2 evidence from git and rerun the command")
         for item in value.values():
             validate_opaque_values(item)
     elif isinstance(value, list):
         for item in value:
             validate_opaque_values(item)
     else:
-        opaque_identity(value)
+        opaque_subject(value)
 
 
 def normalize_repo(value: str) -> str:
@@ -299,26 +316,21 @@ def normalize_repo(value: str) -> str:
 
 
 def candidate_name(row: dict[str, Any]) -> str:
-    repository = opaque_identity(row["repository"])
     path = opaque_identity(row["path"])
-    if repository or path:
-        if repository != path:
-            raise ValueError("opaque repository and path must carry the same identity")
-        return repository
+    if path:
+        return path
+    opaque_identity(row["repository"])
     return f"{normalize_repo(row['repository'])}:{row['path']}"
 
 
 def candidate_revision(row: dict[str, Any]) -> str:
-    return opaque_identity(candidate_name(row)) or (
-        row.get("commit") or f"blob:{row.get('blob') or row.get('sha') or 'unresolved'}"
-    )
+    if opaque_identity(candidate_name(row)):
+        return row.get("commit") or row.get("blob") or row.get("sha") or "unresolved"
+    return row.get("commit") or f"blob:{row.get('blob') or row.get('sha') or 'unresolved'}"
 
 
 def superseded_row(row: dict[str, Any]) -> dict[str, Any]:
-    prior = row["supersedes"]
-    if opaque_identity(row["repository"]):
-        return {**row, "repository": prior, "path": prior, "commit": prior}
-    return {**row, "commit": prior}
+    return {**row, "commit": row["supersedes"]}
 
 
 def screen_value(value: str) -> str:

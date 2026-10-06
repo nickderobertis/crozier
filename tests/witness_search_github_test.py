@@ -96,7 +96,11 @@ class LedgerShardTests(unittest.TestCase):
     def test_documented_identity_grammar_matches_the_shared_contract(self) -> None:
         readme = (REPO / "docs/openapi-surface/witness-search-github/README.md").read_text()
         self.assertIn(f"`{SEARCH.INDEX.OPAQUE_PREFIX}I:N`", readme)
-        self.assertIn(f"`{SEARCH.INDEX.EXCLUDED_REPOSITORY}`", readme)
+        version = SEARCH.INDEX.OPAQUE_PREFIX.split(":")[1]
+        self.assertEqual({version}, set(re.findall(r"\bv[0-9]+\b", readme)))
+        contract = readme.split("Excluded inputs use ", 1)[1].split("\nGitHub refuses ", 1)[0]
+        named_repositories = set(re.findall(r"`([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)`", contract))
+        self.assertEqual(SEARCH.INDEX.EXCLUDED_REPOSITORIES, named_repositories)
         token = SEARCH.INDEX.make_opaque_identity("f" * 32, 17)
         self.assertEqual(token, SEARCH.INDEX.opaque_identity(token))
         with self.assertRaisesRegex(ValueError, "positive assigned integer"):
@@ -178,12 +182,12 @@ class LedgerShardTests(unittest.TestCase):
         (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
             json.dumps({"publishers": []}), encoding="utf-8"
         )
-        token = "screened-nonpublic-input:v1:" + "a" * 32 + ":731"
+        token = "screened-nonpublic-input:v2:" + "a" * 32 + ":731"
         ordinary = {"source": "sourcegraph", "key": "shape",
                     "repository": "example/api", "path": "openapi.yaml",
                     "commit": "c" * 40, "sha256": "d" * 64,
                     "disposition": "does-not-declare", "selector_count": 0}
-        historical = {**ordinary, "repository": token, "path": token, "commit": token,
+        historical = {**ordinary, "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY, "path": token, "commit": token,
                       "sha256": token, "selector_count": 0}
         ledger = root / "witness-search-sourcegraph/candidates.jsonl"
 
@@ -206,7 +210,7 @@ class LedgerShardTests(unittest.TestCase):
             self.assertEqual(rows["example/api:openapi.yaml"][field], rows[token][field])
         subprocess.run([*command, "--check"], check=True, capture_output=True, text=True)
         other_token = token.replace("a" * 32, "b" * 32)
-        fresh = {"source": "sourcegraph", "key": "shape", "repository": other_token,
+        fresh = {"source": "sourcegraph", "key": "shape", "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY,
                  "path": other_token, "disposition": "excluded-repository"}
         ledger.write_text(ledger.read_text(encoding="utf-8") + json.dumps(fresh) + "\n",
                           encoding="utf-8")
@@ -218,11 +222,11 @@ class LedgerShardTests(unittest.TestCase):
         self.assertEqual("rejected", distinct[other_token]["disposition"])
 
         for invalid, message in (
-            ({**historical, "repository": token.replace(":v1:", ":v2:")},
-             "unsupported opaque identity version v2"),
+            ({**historical, "path": token.replace(":v2:", ":v3:")},
+             "unsupported opaque identity version v3"),
             ({**historical, "path": "openapi.yaml"},
-             "opaque repository and path must carry the same identity"),
-            ({**historical, "sha256": "screened-nonpublic-input:v1:" + "a" * 32 + ":0"},
+             "opaque locator path must carry an opaque revision"),
+            ({**historical, "sha256": "screened-nonpublic-input:v2:" + "a" * 32 + ":0"},
              "invalid opaque identity"),
             ({**ordinary, "disposition": "excluded-repository"},
              "excluded-repository requires an opaque identity"),
@@ -230,7 +234,7 @@ class LedgerShardTests(unittest.TestCase):
              "excluded-repository cannot carry measured selector counts"),
             *(({**historical, field: value}, f"opaque locator {field} must carry an opaque revision")
               for field in SEARCH.INDEX.OPAQUE_LOCATORS
-              for value in ("c" * 40, other_token)),
+              for value in ("c" * 40,)),
         ):
             with self.subTest(message=message):
                 write(invalid)
@@ -240,6 +244,47 @@ class LedgerShardTests(unittest.TestCase):
         write(historical)
         subprocess.run(command, check=True, capture_output=True, text=True)
         subprocess.run([*command, "--check"], check=True, capture_output=True, text=True)
+
+    def test_index_preserves_shared_screen_joins_across_opaque_revisions(self) -> None:
+        root = self.root / "shared-screen"
+        for source in SEARCH.INDEX.SOURCES:
+            directory = root / f"witness-search-{source}"
+            directory.mkdir(parents=True)
+            (directory / "keys.json").write_text(json.dumps({"keys": {
+                "shape": {"selector": "schema.additionalProperties=false"}
+            }}), encoding="utf-8")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
+            json.dumps({"publishers": []}), encoding="utf-8")
+        def token(number: int) -> str:
+            return SEARCH.INDEX.make_opaque_identity("e" * 32, number)
+        candidate = {"source": "sourcegraph", "key": "shape", "selector_count": 1,
+                     "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY, "path": token(1),
+                     "sha256": token(2), "disposition": "declares"}
+        directory = root / "witness-search-sourcegraph"
+        ledger = directory / "candidates.jsonl"
+        ledger.write_text("".join(json.dumps({**candidate, "commit": token(n)}) + "\n"
+                                  for n in (3, 4)), encoding="utf-8")
+        screen = {**candidate, "commit": token(3), "keys": ["shape"],
+                  "license": "passed", "ref": "passed", "fern": "failed: measured refusal",
+                  "disposition": "rejected", "screened_at": "2025-01-01T00:00:00Z"}
+        (directory / "screens.jsonl").write_text(json.dumps(screen) + "\n", encoding="utf-8")
+        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
+                   "--evidence-root", str(root)]
+        generated = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(0, generated.returncode, generated.stderr)
+        with (directory / "records.tsv").open(encoding="utf-8") as stream:
+            records = list(csv.DictReader(stream, delimiter="\t"))
+        self.assertEqual({token(3), token(4)}, {row["revision"] for row in records})
+        self.assertTrue(all(row["candidate"] == token(1) and row["digest"] == token(2)
+                            and row["fern_screen"] == "failed: measured refusal"
+                            and row["disposition"] == "rejected" for row in records), records)
+        subprocess.run([*command, "--check"], check=True, capture_output=True, text=True)
+        ledger.write_text(ledger.read_text().replace(token(2), token(2).replace(":v2:", ":v3:")))
+        rejected = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(1, rejected.returncode)
+        self.assertIn("unsupported opaque identity version v3", rejected.stderr)
+        ledger.write_text(ledger.read_text().replace(":v3:", ":v2:"))
+        subprocess.run(command, check=True, capture_output=True, text=True)
 
     def test_index_replaces_the_prior_opaque_input_revision(self) -> None:
         root = self.root / "opaque-revisions"
@@ -252,19 +297,19 @@ class LedgerShardTests(unittest.TestCase):
         (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
             json.dumps({"publishers": []}), encoding="utf-8"
         )
-        first = "screened-nonpublic-input:v1:" + "a" * 32 + ":41"
-        second = "screened-nonpublic-input:v1:" + "a" * 32 + ":42"
-        old = {"source": "github-code-search", "key": "shape", "repository": first,
+        first = "screened-nonpublic-input:v2:" + "a" * 32 + ":41"
+        second = "screened-nonpublic-input:v2:" + "a" * 32 + ":42"
+        old = {"source": "github-code-search", "key": "shape", "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY,
                "path": first, "commit": first, "blob": first, "sha256": first,
                "disposition": "does-not-declare", "selector_count": 0}
-        replacement = {**old, "repository": second, "path": second, "commit": second,
+        replacement = {**old, "commit": second,
                        "blob": second, "sha256": second, "supersedes": first}
         directory = root / "witness-search-github-code-search"
         ledger = directory / "candidates.jsonl"
         ledger.write_text(json.dumps(old) + "\n" + json.dumps(replacement) + "\n", encoding="utf-8")
         (directory / "queries.jsonl").write_text(json.dumps({
             "source": "github-code-search", "key": "shape", "query": "object shape",
-            "outcome": "answered", "results": [{"repository": first, "path": first,
+            "outcome": "answered", "results": [{"repository": SEARCH.INDEX.EXCLUDED_REPOSITORY, "path": first,
                                                  "sha": first, "commit": first}]
         }) + "\n", encoding="utf-8")
         command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
@@ -274,7 +319,7 @@ class LedgerShardTests(unittest.TestCase):
         with (directory / "records.tsv").open(encoding="utf-8") as stream:
             records = list(csv.DictReader(stream, delimiter="\t"))
         self.assertEqual(1, len(records), records)
-        self.assertEqual(second, records[0]["candidate"])
+        self.assertEqual(first, records[0]["candidate"])
         self.assertEqual(second, records[0]["revision"])
         self.assertEqual("rejected", records[0]["disposition"])
         subprocess.run([*command, "--check"], check=True, capture_output=True, text=True)
@@ -1034,13 +1079,16 @@ class WitnessSearchGithubTests(unittest.TestCase):
                    "--evidence", str(evidence), "--cache", str(cache),
                    "--source", "github-publisher-trees", "--stage", "walk",
                    "--publisher-file", str(publisher_file)]
-        rejected = subprocess.run(command, env=env, capture_output=True, text=True)
-        self.assertEqual(2, rejected.returncode)
-        self.assertIn("excluded by the repository rule", rejected.stderr)
-        self.assertIn("use the specification publisher's repository", rejected.stderr)
-        self.assertEqual([], self.server.state.get("requests", []))
-        self.assertFalse(evidence.exists())
-        self.assertFalse(cache.exists())
+        for repository in sorted(SEARCH.INDEX.EXCLUDED_REPOSITORIES):
+            with self.subTest(repository=repository):
+                publisher_file.write_text(json.dumps({"publishers": [{**publisher, "repository": repository}]}))
+                rejected = subprocess.run(command, env=env, capture_output=True, text=True)
+                self.assertEqual(2, rejected.returncode)
+                self.assertIn("excluded by the repository rule", rejected.stderr)
+                self.assertIn("use the specification publisher's repository", rejected.stderr)
+                self.assertEqual([], self.server.state.get("requests", []))
+                self.assertFalse(evidence.exists())
+                self.assertFalse(cache.exists())
         publisher_file.write_text(json.dumps({"publishers": [
             {**publisher, "repository": "example/api"}
         ]}), encoding="utf-8")
@@ -1052,6 +1100,36 @@ class WitnessSearchGithubTests(unittest.TestCase):
         documents = list(map(json.loads, (evidence / "documents.jsonl").read_text(encoding="utf-8").splitlines()))
         self.assertEqual(hashlib.sha256(DOCUMENT).hexdigest(), documents[0]["sha256"])
 
+    def test_search_preserves_repository_relative_paths_and_shared_blobs(self) -> None:
+        self.server.state["search_items"] = [
+            {"repository": {"full_name": repository}, "path": "harbor-metering/api.yaml",
+             "sha": "b" * 40,
+             "url": f"{self.url}/repos/{repository}/contents/harbor-metering/api.yaml?ref={'c' * 40}"}
+            for repository in sorted(SEARCH.INDEX.EXCLUDED_REPOSITORIES)
+        ]
+        self.search.github_search("closed-object", "additionalProperties")
+        results = SEARCH.jsonl(self.root / "queries.jsonl")[0]["results"]
+        self.assertEqual(2, len(results))
+        self.assertEqual(2, len({item["path"] for item in results}))
+        self.assertEqual(1, len({item["sha"] for item in results}))
+        self.assertEqual(SEARCH.INDEX.EXCLUDED_REPOSITORIES, {item["repository"] for item in results})
+        self.assertFalse(any("/contents/harbor-metering" in path for path in self.server.state["requests"]))
+
+    def test_search_keeps_distinct_blobs_when_the_contents_url_names_a_branch(self) -> None:
+        self.server.state["search_items"] = [
+            {"repository": {"full_name": SEARCH.INDEX.EXCLUDED_REPOSITORY},
+             "path": "harbor-metering/api.yaml", "sha": revision,
+             "url": f"{self.url}/repos/fern-api/fern/contents/harbor-metering/api.yaml?ref=main"}
+            for revision in ("b" * 40, "c" * 40)
+        ]
+        self.search.github_search("closed-object", "additionalProperties")
+        results = SEARCH.jsonl(self.root / "queries.jsonl")[0]["results"]
+        self.assertEqual(2, len(results))
+        self.assertEqual(2, len({item["sha"] for item in results}))
+        self.assertEqual(1, len({item["path"] for item in results}))
+        self.assertEqual(1, len({item["url"] for item in results}))
+        self.assertFalse(any("/contents/harbor-metering" in path for path in self.server.state["requests"]))
+
     def test_acquirer_records_opaque_revisions_and_skips_direct_reacquisition(self) -> None:
         row = {"source": "sourcegraph", "key": "shape", "selector": "schema.additionalProperties=false",
                "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY, "path": "harbor-metering/api.yaml",
@@ -1060,9 +1138,10 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.search.write("candidates.jsonl", {**row, "commit": "c" * 40, "supersedes": row["commit"]})
         ledger = self.root / "candidates.jsonl"
         first, replacement = SEARCH.jsonl(ledger)
-        self.assertNotEqual(first["repository"], replacement["repository"])
-        self.assertEqual(first["repository"], replacement["supersedes"])
-        self.assertEqual(replacement["repository"], replacement["commit"])
+        self.assertEqual(first["path"], replacement["path"])
+        self.assertNotEqual(first["commit"], replacement["commit"])
+        self.assertEqual(first["commit"], replacement["supersedes"])
+        self.assertNotEqual(replacement["path"], replacement["commit"])
         original = ledger.read_bytes()
         requests = list(self.server.state.get("requests", []))
         self.assertIsNone(self.search.resolve(replacement, "shape"))
@@ -1112,7 +1191,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 for query in queries:
                     self.assertEqual(2, query["result_count"])
                     self.assertEqual(2, len(query["results"]))
-                    tokens.add(query["results"][1]["repository"])
+                    tokens.add(query["results"][1]["path"])
                 self.assertEqual(1, len(tokens))
                 token = tokens.pop()
                 self.assertEqual(token, SEARCH.INDEX.opaque_identity(token))
@@ -1122,26 +1201,26 @@ class WitnessSearchGithubTests(unittest.TestCase):
                     self.assertEqual(token, result["path"])
                     for field in ("url", "sha", "blob", "sha256", "commit"):
                         if field in result:
-                            self.assertEqual(token, result[field])
+                            self.assertEqual(result[field], SEARCH.INDEX.opaque_identity(result[field]))
                 evaluated = subprocess.run([*command, "--stage", "evaluate"], env=env,
                                            capture_output=True, text=True)
                 self.assertEqual(0, evaluated.returncode, evaluated.stderr)
                 rows = list(map(json.loads, (evidence / "candidates.jsonl").read_text(encoding="utf-8").splitlines()))
-                opaque = [row for row in rows if row["repository"] == token]
+                opaque = [row for row in rows if row["path"] == token]
                 self.assertEqual(1, len(opaque))
                 self.assertEqual("excluded-repository", opaque[0]["disposition"])
                 self.assertNotIn("selector_count", opaque[0])
-                regular = next(row for row in rows if row["repository"] != token)
+                regular = next(row for row in rows if row["path"] != token)
                 self.assertEqual("does-not-declare", regular["disposition"])
                 self.assertEqual(hashlib.sha256(DOCUMENT).hexdigest(), regular["sha256"])
                 self.assertFalse(any("/fern-api/fern/" in path for path in self.server.state["requests"]))
                 acquired = len(self.server.state["requests"])
-                queries_path.write_text(original_queries.replace(token, token.replace(":v1:", ":v2:")),
+                queries_path.write_text(original_queries.replace(token, token.replace(":v2:", ":v3:")),
                                         encoding="utf-8")
                 rejected = subprocess.run([*command, "--stage", "evaluate"], env=env,
                                           capture_output=True, text=True)
                 self.assertEqual(1, rejected.returncode)
-                self.assertIn("unsupported opaque identity version v2", rejected.stderr)
+                self.assertIn("unsupported opaque identity version v3", rejected.stderr)
                 self.assertEqual(acquired, len(self.server.state["requests"]))
                 queries_path.write_text(original_queries, encoding="utf-8")
                 recovered = subprocess.run([*command, "--stage", "evaluate"], env=env,

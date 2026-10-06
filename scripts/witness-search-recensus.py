@@ -109,12 +109,12 @@ def latest_rows(evidence: Path, source: str) -> list[tuple[int, dict[str, Any]]]
 
 def continuation_rows(evidence: Path, source: str) -> tuple[list[tuple[int, dict[str, Any]]], int]:
     rows = latest_rows(evidence, source)
-    eligible = [item for item in rows if not INDEX.opaque_identity(item[1]["repository"])]
+    eligible = [item for item in rows if not INDEX.opaque_identity(item[1]["path"])]
     return eligible, len(rows) - len(eligible)
 
 
 def opaque_summary(count: int) -> str:
-    return f"; {count} opaque v1 record(s) screened by repository rule" if count else ""
+    return f"; {count} opaque v2 record(s) screened by repository rule" if count else ""
 
 
 def status_of(row: dict[str, Any]) -> str:
