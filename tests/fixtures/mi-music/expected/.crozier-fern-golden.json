@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "mi-music",
+  "corpus_spec_ref": "2a114dff3bb9528a3e772ef7de0f850fe488ff27",
+  "corpus_spec_url": "https://raw.githubusercontent.com/jokezc/mi_music/2a114dff3bb9528a3e772ef7de0f850fe488ff27/docs/openapi.json"
+}

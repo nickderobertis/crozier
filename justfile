@@ -307,6 +307,12 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openfoodfacts_taxonomy_editor_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e qontract_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oal_example_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e millenium_falcon_challenge_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e maximo_wxo_integration_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mi_music_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e g4brym_download_manager_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e opentosca_license_engine_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e chat_rest_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecosystem_client_class_name_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e yourbrand_ticketing_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e peopledatalabs_matches_fern_output

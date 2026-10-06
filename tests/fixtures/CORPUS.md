@@ -238,6 +238,12 @@ compares it. Row 224 is the one so far.
 | 310 | `openfoodfacts-taxonomy-editor` | github-raw | https://raw.githubusercontent.com/openfoodfacts/taxonomy-editor/dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3/backend/openapi/openapi.json | `dc63220b1f9e9b7837dcb7d71a1964546d2e6ed3` | AGPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Open Food Facts taxonomy editor's API as its FastAPI backend publishes it: 25 paths and 16 component schemas; `EntryNodeSearchResult.filters` items are a `filterType`-discriminated `oneOf` of seven `$ref` members whose `readOnly` properties `required` also lists |
 | 311 | `qontract-api` | github-raw | https://raw.githubusercontent.com/app-sre/qontract-reconcile/4f643a29084cb9b9e8c90e878e03bbe6ac80a5db/qontract_api/openapi.json | `4f643a29084cb9b9e8c90e878e03bbe6ac80a5db` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Qontract API as qontract-reconcile's FastAPI service publishes it: 34 paths and 145 component schemas; the Quay-repository and Slack-usergroup task results' `actions` items are `$ref`-only unions whose members tag `action_type` with a one-value `enum` that `required` leaves out |
 | 312 | `oal-example` | github-raw | https://raw.githubusercontent.com/oxlip-lang/oal/9c76fd5fd74c1f64c62a219aa2156b021a820f4a/examples/openapi.yaml | `9c76fd5fd74c1f64c62a219aa2156b021a820f4a` | Apache-2.0 (`info.license`, and the publisher repository's pinned `LICENSE.txt`) | committed | The example description the OAL project compiles from its own API language and publishes: 4 paths and 6 component schemas; `obj3.stuff` is an `anyOf` whose first member is an inline `oneOf` beside an inline object |
+| 330 | `millenium-falcon-challenge` | github-raw | https://raw.githubusercontent.com/jondavies00/millenium-falcon-challenge/508e939a0ae568f13c10f872580d7c9605e29a97/openapi.json | `508e939a0ae568f13c10f872580d7c9605e29a97` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Millennium Falcon challenge's odds API as its FastAPI app publishes it: 1 path and 6 component schemas; `POST /odds` posts a `Body_odds_odds_post` JSON body nothing else references |
+| 331 | `maximo-wxo-integration` | github-raw | https://raw.githubusercontent.com/IBM/maximo-wxo-integration/54a2c3879173a44c8ed6d321d09066c9975de488/openapi.json | `54a2c3879173a44c8ed6d321d09066c9975de488` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | IBM's Maximo integration API as its FastAPI wrapper publishes it, at OpenAPI 3.0.0: 9 paths and no component schemas; five success responses are an inline `application/json` declaring the empty schema `{}` |
+| 332 | `mi-music` | github-raw | https://raw.githubusercontent.com/jokezc/mi_music/2a114dff3bb9528a3e772ef7de0f850fe488ff27/docs/openapi.json | `2a114dff3bb9528a3e772ef7de0f850fe488ff27` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | mi_music's API as its FastAPI service publishes it: 42 paths and 30 component schemas; `GET /downloadlog` answers a schemaless `text/plain`, `GET /music/{file_path}` and `GET /proxy` a schemaless `audio/mpeg` (the latter beside `video/mp4`), and 37 operations ride HTTP Basic security with titled `$ref` bodies |
+| 333 | `g4brym-download-manager` | github-raw | https://raw.githubusercontent.com/G4brym/download-manager/459a6d8ef8dbee4289b7b5b629e1377e623c2b4e/swagger/openapi.json | `459a6d8ef8dbee4289b7b5b629e1377e623c2b4e` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | download-manager's API as its FastAPI service publishes it, at OpenAPI 3.0.2: 6 paths and 7 component schemas; two parameterless operations post an inline array titled `Files`, one of `$ref` items and one of strings |
+| 334 | `opentosca-license-engine` | github-raw | https://raw.githubusercontent.com/OpenTOSCA/license-engine/ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65/src/main/resources/openapi/openapi.json | `ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The OpenTOSCA license engine's API as its repository publishes it, at OpenAPI 3.0.2: 14 paths and 10 component schemas; `POST /licenses/check/` posts an inline string array titled `Usedlicenses` with no parameter, and twelve success responses are an inline `application/json` declaring `{}` |
+| 335 | `chat-rest-api` | github-raw | https://raw.githubusercontent.com/Ke11nyk/chat-rest-api/e761a7bf0d32147aff6571b9f9d325abd010e545/docs/openapi.yaml | `e761a7bf0d32147aff6571b9f9d325abd010e545` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | chat-rest-api's API as its repository publishes it, at OpenAPI 3.0.0: 5 paths and 1 component schema; `GET /message/content/{id}` declares the error keys `404-message` and `404-file`, and its success lists a schemaless `text/plain` before a schemaless `application/octet-stream` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1446,3 +1452,31 @@ first:
 The repair: a property union's member composing two or more alternatives of
 its own is hoisted to `{Owner}{Prop}{Ordinal}` rather than inlined as a nested
 `typing.Union`.
+
+## Rows 330–335 — request bodies and schemaless responses
+
+A request body's model, its JSON content-type header, a success response that
+declares no schema, and a status key spelled with a suffix are each decided by
+a rule Fern applies whatever else a document says; each row below declares one
+of those shapes in a combination no earlier row did, and each byte-matches its
+Fern 5.20.0 golden with `unmatched: &[]`:
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 330 | `millenium-falcon-challenge` | a FastAPI `Body_*` JSON body posted once, whose model Fern drops | ✅ byte-matched after one repair |
+| 331 | `maximo-wxo-integration` | an inline `{}` success in an OpenAPI 3.0 document, guarded against an empty body | ✅ byte-matched after one repair |
+| 332 | `mi-music` | schemaless `text/plain`, `audio/mpeg` and `video/mp4` successes; titled bodies under HTTP Basic | ✅ byte-matched after three repairs |
+| 333 | `g4brym-download-manager` | a titled inline array body in a parameterless 3.0 operation | ✅ byte-matched after one repair |
+| 334 | `opentosca-license-engine` | a titled inline array body and inline `{}` successes in a 3.0 document | ✅ byte-matched after two repairs |
+| 335 | `chat-rest-api` | error keys spelled `404-message` and `404-file`; a text media type listed before a download | ✅ byte-matched after two repairs |
+
+The repairs: a single-use JSON body's model is dropped whatever its name, where
+crozier kept every `Body_*` model (row 330); an unknown success body is guarded
+in 3.0 as in 3.1 (rows 331, 334); a schemaless `text/*` success returns `str`,
+and a schemaless `audio/*` or `video/*` one streams bytes (row 332); a titled
+schema keeps the JSON content-type header under HTTP Basic security (row 332); an
+inline container body's header follows its own `title` or `description`, not
+the document version or its items (rows 333, 334); a response key is read by its
+leading integer, so `404-message` and `404-file` both raise `NotFoundError`
+(row 335); and the first of a text and a download media type in a success's
+content decides between `str` and a byte stream (row 335).

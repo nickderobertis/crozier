@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "maximo-wxo-integration",
+  "corpus_spec_ref": "54a2c3879173a44c8ed6d321d09066c9975de488",
+  "corpus_spec_url": "https://raw.githubusercontent.com/IBM/maximo-wxo-integration/54a2c3879173a44c8ed6d321d09066c9975de488/openapi.json"
+}

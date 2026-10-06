@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "millenium-falcon-challenge",
+  "corpus_spec_ref": "508e939a0ae568f13c10f872580d7c9605e29a97",
+  "corpus_spec_url": "https://raw.githubusercontent.com/jondavies00/millenium-falcon-challenge/508e939a0ae568f13c10f872580d7c9605e29a97/openapi.json"
+}

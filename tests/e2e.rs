@@ -5005,6 +5005,12 @@ const CORPORA: &[&Corpus] = &[
     &OPENFOODFACTS_TAXONOMY_EDITOR,
     &QONTRACT_API,
     &OAL_EXAMPLE,
+    &MILLENIUM_FALCON_CHALLENGE,
+    &MAXIMO_WXO_INTEGRATION,
+    &MI_MUSIC,
+    &G4BRYM_DOWNLOAD_MANAGER,
+    &OPENTOSCA_LICENSE_ENGINE,
+    &CHAT_REST_API,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -7910,6 +7916,85 @@ const QONTRACT_API: Corpus = Corpus {
 /// whose `obj3.stuff` property `anyOf` holds an inline `oneOf` member
 const OAL_EXAMPLE: Corpus = Corpus {
     api: "oal-example",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `millenium-falcon-challenge`: corpus row 330, the Millennium Falcon challenge's odds API,
+/// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
+const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
+    api: "millenium-falcon-challenge",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `maximo-wxo-integration`: corpus row 331, IBM's Maximo integration API, whose OpenAPI 3.0.0
+/// success responses are inline `application/json` bodies declaring `{}`
+const MAXIMO_WXO_INTEGRATION: Corpus = Corpus {
+    api: "maximo-wxo-integration",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `mi-music`: corpus row 332, mi_music's API, with schemaless `text/plain`, `audio/mpeg` and
+/// `video/mp4` successes and titled bodies under HTTP Basic security
+const MI_MUSIC: Corpus = Corpus {
+    api: "mi-music",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `g4brym-download-manager`: corpus row 333, download-manager's API, whose parameterless
+/// 3.0 operations post inline arrays titled `Files`
+const G4BRYM_DOWNLOAD_MANAGER: Corpus = Corpus {
+    api: "g4brym-download-manager",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `opentosca-license-engine`: corpus row 334, the OpenTOSCA license engine's API, with a
+/// titled inline string-array body and inline `{}` successes in a 3.0 document
+const OPENTOSCA_LICENSE_ENGINE: Corpus = Corpus {
+    api: "opentosca-license-engine",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `chat-rest-api`: corpus row 335, chat-rest-api's API, whose error keys `404-message`
+/// and `404-file` both name 404 and whose success lists `text/plain` before
+/// `application/octet-stream`
+const CHAT_REST_API: Corpus = Corpus {
+    api: "chat-rest-api",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14557,6 +14642,36 @@ fn qontract_api_matches_fern_output() {
 #[test]
 fn oal_example_matches_fern_output() {
     assert_committed_corpus_matches(&OAL_EXAMPLE);
+}
+
+#[test]
+fn millenium_falcon_challenge_matches_fern_output() {
+    assert_committed_corpus_matches(&MILLENIUM_FALCON_CHALLENGE);
+}
+
+#[test]
+fn maximo_wxo_integration_matches_fern_output() {
+    assert_committed_corpus_matches(&MAXIMO_WXO_INTEGRATION);
+}
+
+#[test]
+fn mi_music_matches_fern_output() {
+    assert_committed_corpus_matches(&MI_MUSIC);
+}
+
+#[test]
+fn g4brym_download_manager_matches_fern_output() {
+    assert_committed_corpus_matches(&G4BRYM_DOWNLOAD_MANAGER);
+}
+
+#[test]
+fn opentosca_license_engine_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENTOSCA_LICENSE_ENGINE);
+}
+
+#[test]
+fn chat_rest_api_matches_fern_output() {
+    assert_committed_corpus_matches(&CHAT_REST_API);
 }
 
 #[test]

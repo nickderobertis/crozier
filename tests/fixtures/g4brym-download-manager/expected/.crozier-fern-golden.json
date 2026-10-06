@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "g4brym-download-manager",
+  "corpus_spec_ref": "459a6d8ef8dbee4289b7b5b629e1377e623c2b4e",
+  "corpus_spec_url": "https://raw.githubusercontent.com/G4brym/download-manager/459a6d8ef8dbee4289b7b5b629e1377e623c2b4e/swagger/openapi.json"
+}

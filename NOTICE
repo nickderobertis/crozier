@@ -362,6 +362,48 @@ Additional issue #77 real-world OpenAPI source specs:
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Millennium Falcon challenge odds API: the publisher's own description at
+    https://raw.githubusercontent.com/jondavies00/millenium-falcon-challenge/508e939a0ae568f13c10f872580d7c9605e29a97/openapi.json.
+    The repository's LICENSE at that same commit grants Apache-2.0
+    redistribution; corpus row 330 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * Maximo integration API (IBM): the publisher's own description at
+    https://raw.githubusercontent.com/IBM/maximo-wxo-integration/54a2c3879173a44c8ed6d321d09066c9975de488/openapi.json.
+    The repository's LICENSE at that same commit grants Apache-2.0
+    redistribution; corpus row 331 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * mi_music API: the publisher's own description at
+    https://raw.githubusercontent.com/jokezc/mi_music/2a114dff3bb9528a3e772ef7de0f850fe488ff27/docs/openapi.json.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 332 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * download-manager API: the publisher's own description at
+    https://raw.githubusercontent.com/G4brym/download-manager/459a6d8ef8dbee4289b7b5b629e1377e623c2b4e/swagger/openapi.json.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 333 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * OpenTOSCA license engine API: the publisher's own description at
+    https://raw.githubusercontent.com/OpenTOSCA/license-engine/ebf2f4a2a750feb31d3e6eff8fdd22dab4c00d65/src/main/resources/openapi/openapi.json.
+    The repository's LICENSE at that same commit grants Apache-2.0
+    redistribution; corpus row 334 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * chat-rest-api API: the publisher's own description at
+    https://raw.githubusercontent.com/Ke11nyk/chat-rest-api/e761a7bf0d32147aff6571b9f9d325abd010e545/docs/openapi.yaml.
+    The repository's LICENSE at that same commit grants MIT
+    redistribution; corpus row 335 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The
