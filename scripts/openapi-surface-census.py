@@ -3771,6 +3771,17 @@ def request_body_media(document: Any) -> set[int]:
     return selected
 
 
+# The two Rust functions the worked-example predicates port: `own_deprecated` of
+# `src/ir.rs` (`deprecated_member`) and `read_datetime` of `src/emit.rs`
+# (`fern_reads_date_time`). `tests/surface_census_test.py` recomputes each one's
+# normalized-body digest, so an arm edited there fails until the port is read
+# again here.
+EXAMPLE_PORT_DIGESTS = {
+    ("src/ir.rs", "own_deprecated"): "453b400276e22e0a",
+    ("src/emit.rs", "read_datetime"): "17d1f36be9e0d0c2",
+}
+
+
 # A test of one example member: its declared property schema, its value, whether
 # its object requires it, and how deep in the example it sits.
 MemberTest = Callable[[Any, Any, bool, int], bool]
