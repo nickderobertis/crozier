@@ -87,11 +87,181 @@ class PublisherSelectionTests(unittest.TestCase):
 
 
 
+class StringMapSearchRecordTests(unittest.TestCase):
+    """The bounded search summary agrees with its real acquisition and screen records."""
+
+    def test_summary_counts_and_dispositions_match_the_retained_measurements(self) -> None:
+        root = REPO / "docs/openapi-surface/witness-search-string-map"
+        queries = [json.loads(line) for line in (root / "sourcegraph/queries.jsonl").read_text().splitlines()]
+        with (root / "queries.tsv").open(newline="") as handle:
+            summary = list(csv.DictReader(handle, delimiter="\t"))
+        self.assertEqual(2, len(queries))
+        self.assertEqual(len(queries), len(summary))
+        record = (root / "README.md").read_text()
+        for measured, stated in zip(queries, summary):
+            self.assertEqual(measured["key"], stated["key"])
+            self.assertEqual(measured["query"], stated["query"])
+            self.assertEqual(measured["outcome"], stated["outcome"])
+            self.assertEqual(len(measured["results"]), int(stated["result_count"]))
+            self.assertEqual(measured["result_count"], int(stated["result_count"]))
+            self.assertIn(f"{measured['result_count']:,}", record)
+        publisher = root / "github-publisher-trees"
+        documents = [json.loads(line) for line in (publisher / "documents.jsonl").read_text().splitlines()]
+        identities = {(row["repository"], row["commit"], row["path"]): row for row in documents}
+        self.assertEqual(4, len(identities))
+        for row in identities.values():
+            label = f"| {row['repository']}, {row['path']} | `{row['commit']}` |"
+            matches = [line for line in record.splitlines() if line.startswith(label)]
+            self.assertEqual(1, len(matches), label)
+            self.assertEqual(row["selector_counts"]["request-body-string-map"],
+                             int(matches[0].split("|")[3]))
+        latest = {}
+        for line in (publisher / "screens.jsonl").read_text().splitlines():
+            row = json.loads(line)
+            latest[row["repository"], row["commit"], row["path"]] = row
+        self.assertEqual(2, len(latest))
+        for identity, row in latest.items():
+            self.assertEqual(identities[identity]["sha256"], row["sha256"])
+            self.assertTrue(row["disposition"].startswith("declined:"), row["disposition"])
+            for stage in ("licence", "ref", "fern"):
+                measured = row["measured"][stage]
+                self.assertTrue(measured["outcome"].startswith("passed"))
+                self.assertEqual(measured["log_sha256"],
+                                 hashlib.sha256((publisher / measured["log"]).read_bytes()).hexdigest())
+            pins = row["measured"]["fern"]["pins"]
+            self.assertEqual("5.67.1", pins["fern_cli"])
+            self.assertEqual("5.20.0", pins["generator_version"])
+
+
 class LedgerShardTests(unittest.TestCase):
     """A ledger past GitHub's blob limit is kept as line-aligned parts."""
 
     GITHUB_BLOB_LIMIT = 100 * 1000 * 1000
     GITHUB_WARNING_SIZE = 50 * 1000 * 1000
+
+    def test_history_verifier_rejects_changed_joins_and_verdicts_and_recovers(self) -> None:
+        script = REPO / "scripts/witness-evidence-integrity.py"
+        spec = importlib.util.spec_from_file_location("integrity_boundary", script)
+        assert spec and spec.loader
+        integrity = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(integrity)
+        def token(number: int) -> str:
+            return SEARCH.INDEX.make_opaque_identity("f" * 32, number)
+        directory = "docs/openapi-surface/example-history"
+        candidate = {"repository": "example/metering", "path": token(1), "commit": token(2),
+                     "sha": token(3), "sha256": token(4), "key": "schema-object",
+                     "selector_count": 1, "status": "read"}
+        screen = {**candidate, "fern": "pass", "keys": ["schema-object"]}
+        rows = {"candidates.jsonl": [candidate, dict(candidate)], "screens.jsonl": [screen],
+                "probe.jsonl": [{"key": "schema-object", "candidate": f"{token(1)}@{token(2)}",
+                                 "status": "ok", "reached": ["conversion-arm"]}]}
+        files = {f"{directory}/{name}": len(values) for name, values in rows.items()}
+        root = self.root / "repository"
+        for name, values in rows.items():
+            path = root / directory / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("".join(json.dumps(row) + "\n" for row in values))
+        baseline = self.root / "profile.json"
+        baseline.write_text(json.dumps(integrity.profile(files, integrity.opaque_path, root)))
+
+        def verify() -> subprocess.CompletedProcess[str]:
+            return subprocess.run([sys.executable, str(script), "--root", str(root),
+                                   "--baseline", str(baseline)], capture_output=True, text=True)
+
+        self.assertEqual(0, verify().returncode)
+        saved_baseline = baseline.read_bytes()
+        expected = json.loads(saved_baseline)
+        for invalid_counts in (None, [], {}, {next(iter(files)): 0},
+                               {next(iter(files)): -1}, {next(iter(files)): True}):
+            with self.subTest(record_counts=invalid_counts):
+                baseline.write_text(json.dumps({**expected, "record_counts": invalid_counts}))
+                rejected = verify()
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn("record_counts must map ledger paths to positive integers", rejected.stderr)
+                baseline.write_bytes(saved_baseline)
+                self.assertEqual(0, verify().returncode)
+        for invalid_path in (str(root / "outside.jsonl"),
+                             "docs/openapi-surface/../outside.jsonl", "tests/outside.jsonl"):
+            with self.subTest(ledger_path=invalid_path):
+                baseline.write_text(json.dumps({**expected, "record_counts": {invalid_path: 1}}))
+                rejected = verify()
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn("invalid historical ledger path", rejected.stderr)
+                self.assertIn("restore the baseline from git", rejected.stderr)
+                baseline.write_bytes(saved_baseline)
+                self.assertEqual(0, verify().returncode)
+        path = root / directory / "candidates.jsonl"
+        saved = path.read_bytes()
+        path.write_text(json.dumps(candidate) + "\n")
+        truncated = verify()
+        self.assertEqual(1, truncated.returncode)
+        self.assertIn("historical prefix needs 2 records, found 1", truncated.stderr)
+        self.assertIn("restore the ledger from git", truncated.stderr)
+        path.write_bytes(saved)
+        self.assertEqual(0, verify().returncode)
+        for field, replacement, metric in (("commit", token(5), "revision_groups"),
+                                          ("sha", token(5), "blob_groups"),
+                                          ("sha256", token(5), "digest_groups"),
+                                          ("selector_count", 0, "verdicts")):
+            with self.subTest(field=field):
+                path.write_text(json.dumps({**candidate, field: replacement}) + "\n" +
+                                json.dumps(candidate) + "\n")
+                rejected = verify()
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn(metric, rejected.stderr)
+                self.assertIn("restore the retained records and joins", rejected.stderr)
+                path.write_bytes(saved)
+                self.assertEqual(0, verify().returncode)
+        probe = root / directory / "probe.jsonl"
+        saved_probe = probe.read_bytes()
+        probe.write_text(json.dumps({**rows["probe.jsonl"][0],
+                                     "candidate": f"{token(1)}@{token(5)}"}) + "\n")
+        rejected = verify()
+        self.assertEqual(1, rejected.returncode)
+        self.assertIn("subject_joins", rejected.stderr)
+        probe.write_bytes(saved_probe)
+        self.assertEqual(0, verify().returncode)
+
+        # The earlier publisher spelling and the replacement token must retain
+        # the same join, including a URL-host prefix on the probe's subject.
+        publisher = {**candidate, "path": "flow.yaml", "commit": "a" * 40,
+                     "sha": "b" * 40, "sha256": "c" * 64}
+        publisher_screen = {**screen, **{key: publisher[key] for key in ("path", "commit", "sha", "sha256")}}
+        publisher_probe = {**rows["probe.jsonl"][0],
+                           "candidate": f"github.com/example/metering:flow.yaml@{'a' * 40}"}
+        original_rows = {"candidates.jsonl": [publisher, dict(publisher)],
+                         "screens.jsonl": [publisher_screen], "probe.jsonl": [publisher_probe]}
+        for name, values in original_rows.items():
+            (root / directory / name).write_text("".join(json.dumps(row) + "\n" for row in values))
+        baseline.write_text(json.dumps(integrity.profile(files, lambda _row, _location: True, root)))
+        for name, values in rows.items():
+            (root / directory / name).write_text("".join(json.dumps(row) + "\n" for row in values))
+        recovered = verify()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_retained_opaque_history_preserves_record_groups_and_verdicts(self) -> None:
+        script = REPO / "scripts/witness-evidence-integrity.py"
+        baseline = REPO / "docs/openapi-surface/opaque-history-profile.json"
+        saved = json.loads(baseline.read_text())
+        self.assertGreater(sum(saved["node_counts"].values()), 0)
+        self.assertGreater(saved["screen_joins"]["pairs"], 0)
+        invalid = self.root / "unsupported-profile.json"
+        invalid.write_text("[]")
+        malformed = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
+                                   capture_output=True, text=True)
+        self.assertEqual(1, malformed.returncode)
+        self.assertIn("profile must be a JSON object", malformed.stderr)
+        invalid.write_text(json.dumps({**saved, "version": 99}))
+        rejected = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
+                                  capture_output=True, text=True)
+        self.assertEqual(1, rejected.returncode)
+        self.assertIn("unsupported profile version 99", rejected.stderr)
+        self.assertIn("restore version 1 evidence", rejected.stderr)
+        invalid.write_text(json.dumps(saved))
+        recovered = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
+                                   capture_output=True, text=True)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual("witness-evidence-integrity: historical records and joins preserved\n", recovered.stdout)
 
     def test_documented_identity_grammar_matches_the_shared_contract(self) -> None:
         readme = (REPO / "docs/openapi-surface/witness-search-github/README.md").read_text()
@@ -2176,6 +2346,33 @@ components:
         )
         self.assertEqual("acquisition-failure", document["status"])
         self.assertIn("IncompleteRead after 3 attempts", document["diagnostic"])
+        self.assertEqual(3, self.server.state["raw_hits"])
+
+    def test_plain_string_map_search_uses_its_fields_and_censuses_real_downloads(self) -> None:
+        selector = "operation.requestBody:plain-string-map"
+        plan = SEARCH.query_plan(selector)
+        for source, queries in plan.items():
+            with self.subTest(source=source):
+                self.assertTrue(queries)
+                self.assertTrue(all("requestBody" in query and "additionalProperties" in query for query in queries))
+        document = {"openapi": "3.0.3", "info": {"title": "Meter labels", "version": "1"},
+                    "paths": {"/labels": {"put": {"requestBody": {
+                        "required": True, "content": {"application/json": {"schema": {
+                            "type": "object", "additionalProperties": {"type": "string"}}}}},
+                        "responses": {"204": {"description": "saved"}}}}}}
+        original = json.dumps(document).encode()
+        candidate = {"repository": "github.com/example/api", "path": "openapi.json", "commit": "c" * 40}
+        self.server.state["raw_document"] = original
+        matched = self.search.sourcegraph_document("request-body-string-map", selector, candidate)
+        self.assertEqual(("declares", 1), (matched["disposition"], matched["selector_count"]))
+        document["paths"]["/labels"]["put"]["requestBody"]["content"]["application/json"]["schema"]["additionalProperties"]["type"] = "integer"
+        self.server.state["raw_document"] = json.dumps(document).encode()
+        rejected = self.search.sourcegraph_document("request-body-string-map", selector, {**candidate, "commit": "d" * 40})
+        self.assertEqual(("does-not-declare", 0), (rejected["disposition"], rejected["selector_count"]))
+        self.server.state["raw_document"] = original
+        recovered = self.search.sourcegraph_document("request-body-string-map", selector, candidate)
+        self.assertEqual(("declares", 1), (recovered["disposition"], recovered["selector_count"]))
+        self.assertEqual(matched["sha256"], recovered["sha256"])
         self.assertEqual(3, self.server.state["raw_hits"])
 
     def test_newer_openapi_three_document_is_censused(self) -> None:

@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/confluentinc/ccloud-sdk-go-v2/8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2/connect/v1/api/openapi.yaml
+HTTP 200
+200227 bytes, sha256 4d183aef6bb6e0b176e334c7e2d7ebc28e9cb022c4c0ef69956de9347a596839
+pinned sha256 4d183aef6bb6e0b176e334c7e2d7ebc28e9cb022c4c0ef69956de9347a596839
+outcome: passed: 200227 bytes read at the immutable commit 8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2, sha256 4d183aef6bb6e0b176e334c7e2d7ebc28e9cb022c4c0ef69956de9347a596839

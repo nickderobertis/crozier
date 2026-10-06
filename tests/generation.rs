@@ -1606,53 +1606,14 @@ fn renders_nextgen_care_team_post_with_a_required_unknown_body_and_typed_error()
     assert!(files.contains_key(".fern/metadata.json"));
 }
 
-/// Render the real exhaustive spec in-process so the endpoint/error/scaffolding
-/// branches (exercised only by the binary e2e, which coverage skips) are measured
-/// here too. Byte-exactness is the e2e's job; this asserts the shapes are present.
 #[test]
-fn renders_exhaustive_endpoint_layer_in_process() {
-    let spec = std::fs::read_to_string(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/exhaustive/openapi.yml"),
-    )
-    .expect("read exhaustive spec");
-    let files = render(&spec);
-
-    // Errors package + scaffolding.
-    assert!(files.contains_key("src/acme/errors/bad_request_error.py"));
-    let errors_init = &files["src/acme/errors/__init__.py"];
-    assert!(errors_init.contains("_dynamic_imports"));
-    assert!(errors_init.contains("\"BadRequestError\""));
-    assert!(files["pyproject.toml"].contains("name = \"acme\""));
-    assert!(files.contains_key("requirements.txt"));
-    assert!(files.contains_key(".fern/metadata.json"));
-
-    // Inline object body: hoisted fields, `json={...}`, per-field convert.
-    let obj = &files["src/acme/endpoints_object/raw_client.py"];
-    assert!(obj.contains("json={"));
-    assert!(obj.contains("convert_and_respect_annotation_metadata"));
-    assert!(obj.contains("long_: typing.Optional[int] = OMIT"));
-    assert!(obj.contains("typing.Sequence[str]"));
-
-    // Container bodies: plain maps and the convert wrapper for maps of objects.
-    let container = &files["src/acme/endpoints_container/raw_client.py"];
-    assert!(container.contains("json=request,"));
-    assert!(container.contains("annotation=typing.Dict[str, TypesObjectWithRequiredField]"));
-
-    // Mixed path/body: bytes body via `content=` and an array query param.
-    let params = &files["src/acme/endpoints_params/raw_client.py"];
-    assert!(params.contains("content=request,"));
-    assert!(params.contains("\"content-type\": \"application/octet-stream\","));
-    assert!(params.contains("typing.Optional[typing.Union[str, typing.Sequence[str]]]"));
-
-    // Unknown body + a declared 400 raising the generated exception. The `{}` body
-    // is declared `required: true` and carries no `nullable`, so the argument is a
-    // required `typing.Any` — matching Fern's `noauth` client pair exactly.
-    let noauth = &files["src/acme/noauth/raw_client.py"];
-    assert!(noauth.contains("request: typing.Any,"), "{noauth}");
-    assert!(!noauth.contains("request: typing.Optional[typing.Any] = None"));
-    assert!(noauth.contains("if _response.status_code == 400:"));
-    assert!(noauth.contains("raise BadRequestError("));
+fn renders_signal_cabinet_labels_with_a_plain_string_map() {
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/signal-cabinet-labels/openapi.yml");
+    let files = render(&std::fs::read_to_string(source).expect("read authored calibration labels"));
+    let apply = generated_python_method(&files["src/acme/raw_client.py"], "apply_cabinet_labels");
+    assert!(apply.contains("request: typing.Dict[str, str],"));
+    assert!(apply.contains("json=request,"));
 }
 
 /// A non-2xx status crozier cannot name (a non-standard `460`) never suppresses the

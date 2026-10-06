@@ -2596,10 +2596,10 @@
 {"at": "2026-09-26T17:49:25.346+00:00", "cause": "spacing", "duration_s": 1.961, "key": "ref-pointer-composition-index", "subject": "embedpdf/embed-pdf-viewer:cloudpdf/contract/openapi.json@2516e2786ee894383220ecd436fbd248182ef444"}
 {"at": "2026-09-26T17:49:27.568+00:00", "cause": "spacing", "duration_s": 1.869, "key": "oneof-discriminated-union", "subject": "endpoints4s/endpoints4s:documentation/manual/src/main/paradox/documented-counter-openapi.json@e19ddf290f1688dc7eb61c49b519cbe0e8bc0cc6"}
 {"at": "2026-09-26T17:49:29.823+00:00", "cause": "spacing", "duration_s": 1.999, "key": "oneof-discriminated-union", "subject": "fastforgedev/fastforge:apps/studio-api/openapi.yaml@ce39d1da1cdde1bd532766bee5f679749f2f9024"}
-{"at": "2026-09-26T17:49:32.094+00:00", "cause": "spacing", "duration_s": 1.989, "key": "x-fern-or-crozier-ignore", "subject": "fern-api/fern:generators/cli/sdk/cli/openapi-fixture/openapi.yaml@7afb6e0db4ba7455ea0bc83229153f8368c54181"}
-{"at": "2026-09-26T17:49:34.316+00:00", "cause": "spacing", "duration_s": 1.988, "key": "x-fern-or-crozier-ignore", "subject": "fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181"}
-{"at": "2026-09-26T17:49:36.574+00:00", "cause": "spacing", "duration_s": 1.999, "key": "x-fern-or-crozier-ignore", "subject": "fern-api/fern:packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181"}
-{"at": "2026-09-26T17:49:38.819+00:00", "cause": "spacing", "duration_s": 1.999, "key": "x-fern-or-crozier-ignore", "subject": "fern-api/fern:packages/cli/workspace/oss-validator/src/rules/no-duplicate-overrides/__test__/fixtures/fern-ignore/openapi/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181"}
+{"at": "2026-09-26T17:49:32.094+00:00", "cause": "spacing", "duration_s": 1.989, "key": "x-fern-or-crozier-ignore", "subject": "screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:1@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2"}
+{"at": "2026-09-26T17:49:34.316+00:00", "cause": "spacing", "duration_s": 1.988, "key": "x-fern-or-crozier-ignore", "subject": "screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:120@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2"}
+{"at": "2026-09-26T17:49:36.574+00:00", "cause": "spacing", "duration_s": 1.999, "key": "x-fern-or-crozier-ignore", "subject": "screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:118@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2"}
+{"at": "2026-09-26T17:49:38.819+00:00", "cause": "spacing", "duration_s": 1.999, "key": "x-fern-or-crozier-ignore", "subject": "screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:122@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2"}
 {"at": "2026-09-26T17:49:41.255+00:00", "cause": "spacing", "duration_s": 1.999, "key": "oneof-discriminated-union", "subject": "formancehq/ledger:openapi.yaml@8880965c2968ea1dabcbfc261cf8ed02c5f4206a"}
 {"at": "2026-09-26T17:49:43.759+00:00", "cause": "spacing", "duration_s": 1.953, "key": "oneof-discriminated-union", "subject": "formancehq/ledger:openapi/v2.yaml@8880965c2968ea1dabcbfc261cf8ed02c5f4206a"}
 {"at": "2026-09-26T17:49:46.001+00:00", "cause": "spacing", "duration_s": 1.97, "key": "oneof-discriminated-union", "subject": "formancehq/ledger:openapi/v3.yaml@8880965c2968ea1dabcbfc261cf8ed02c5f4206a"}
@@ -10229,7 +10229,7 @@
 {"at": "2026-09-27T13:42:21.950+00:00", "cause": "spacing", "duration_s": 1.988, "key": "*", "subject": "Unpackerr/unpackerr:pkg/unpackerr/openapi.json"}
 {"at": "2026-09-27T13:42:24.324+00:00", "cause": "spacing", "duration_s": 1.977, "key": "*", "subject": "apache/dubbo-go:tools/protoc-gen-triple-openapi/example/greet.triple.openapi.yaml"}
 {"at": "2026-09-27T13:42:26.746+00:00", "cause": "spacing", "duration_s": 1.999, "key": "*", "subject": "deckhouse/deckhouse:modules/110-istio/openapi/config-values.yaml"}
-{"at": "2026-09-27T13:42:29.085+00:00", "cause": "spacing", "duration_s": 1.976, "key": "*", "subject": "fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/allof-oneof-anyof-edge-cases/openapi.yml"}
+{"at": "2026-09-27T13:42:29.085+00:00", "cause": "spacing", "duration_s": 1.976, "key": "*", "subject": "screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:116"}
 {"at": "2026-09-27T13:42:31.526+00:00", "cause": "spacing", "duration_s": 1.998, "key": "*", "subject": "omnara-ai/omnara:api/openapi/openapi.yaml"}
 {"at": "2026-09-27T13:42:34.278+00:00", "cause": "spacing", "duration_s": 1.929, "key": "*", "subject": "omnara-ai/omnara:docs/api-reference/openapi.yaml"}
 {"at": "2026-09-27T13:42:36.523+00:00", "cause": "spacing", "duration_s": 1.897, "key": "*", "subject": "open5gs/open5gs:lib/sbi/support/r16-20210629-openapitools-5.2.0/modified/TS29519_Application_Data.yaml"}
@@ -10916,7 +10916,7 @@
 {"at": "2026-09-29T12:56:00.370+00:00", "cause": "spacing", "duration_s": 1.999, "key": "*", "subject": "datamodel-code-generator/datamodel-code-generator:tests/data/openapi/anyof_required.yaml"}
 {"at": "2026-09-29T12:56:02.717+00:00", "cause": "spacing", "duration_s": 1.999, "key": "*", "subject": "datawhalechina/hello-agents:Co-creation-projects/senming666-api_test_assistant/tests/fixtures/chat_openapi.json"}
 {"at": "2026-09-29T12:56:05.069+00:00", "cause": "spacing", "duration_s": 1.99, "key": "*", "subject": "dograh-hq/dograh:docs/api-reference/openapi.json"}
-{"at": "2026-09-29T12:56:07.368+00:00", "cause": "spacing", "duration_s": 1.919, "key": "*", "subject": "fern-api/fern:seed/cli/nullable-request-body/cli/nullable-request-body/openapi0.json"}
+{"at": "2026-09-29T12:56:07.368+00:00", "cause": "spacing", "duration_s": 1.919, "key": "*", "subject": "screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:126"}
 {"at": "2026-09-29T12:56:09.601+00:00", "cause": "spacing", "duration_s": 1.999, "key": "*", "subject": "fluxerapp/fluxer:fluxer_admin/openapi-admin.json"}
 {"at": "2026-09-29T12:56:11.879+00:00", "cause": "spacing", "duration_s": 1.87, "key": "*", "subject": "google/sec-gemini:openapi/openapi.json"}
 {"at": "2026-09-29T12:56:14.130+00:00", "cause": "spacing", "duration_s": 1.987, "key": "*", "subject": "guaidao2/XuanMu-RedTeam-Agent:openapi.json"}
@@ -11231,7 +11231,7 @@
 {"at": "2026-09-29T13:09:27.170+00:00", "cause": "spacing", "duration_s": 1.855, "key": "*", "subject": "Unpackerr/unpackerr:pkg/unpackerr/openapi.json"}
 {"at": "2026-09-29T13:09:29.522+00:00", "cause": "spacing", "duration_s": 1.974, "key": "*", "subject": "apache/dubbo-go:tools/protoc-gen-triple-openapi/example/greet.triple.openapi.yaml"}
 {"at": "2026-09-29T13:09:31.801+00:00", "cause": "spacing", "duration_s": 1.995, "key": "*", "subject": "deckhouse/deckhouse:modules/110-istio/openapi/config-values.yaml"}
-{"at": "2026-09-29T13:09:34.104+00:00", "cause": "spacing", "duration_s": 1.966, "key": "*", "subject": "fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/allof-oneof-anyof-edge-cases/openapi.yml"}
+{"at": "2026-09-29T13:09:34.104+00:00", "cause": "spacing", "duration_s": 1.966, "key": "*", "subject": "screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:116"}
 {"at": "2026-09-29T13:09:36.421+00:00", "cause": "spacing", "duration_s": 2.0, "key": "*", "subject": "lobehub/lobehub:packages/openapi/openapi.yml"}
 {"at": "2026-09-29T13:09:38.967+00:00", "cause": "spacing", "duration_s": 1.847, "key": "*", "subject": "omnara-ai/omnara:api/openapi/openapi.yaml"}
 {"at": "2026-09-29T13:09:41.365+00:00", "cause": "spacing", "duration_s": 1.876, "key": "*", "subject": "omnara-ai/omnara:docs/api-reference/openapi.yaml"}

@@ -446,7 +446,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-107, declared in `scripts/openapi-surface-census.py` and restated here, with a
+108, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -707,6 +707,11 @@ drift gate over the pair:
   declaring no `enum` and a `description`: the body `resolve_request_body` of
   `src/ir.rs` sends with the JSON content-type header, where a `title` alone
   does not.
+- `operation.requestBody:plain-string-map` — one per Operation Object whose
+  JSON-like request content declares a top-level object without named
+  properties, with an unformatted, non-enum, non-nullable string
+  `additionalProperties` schema. Local component references are resolved with
+  cycle protection, and multiple qualifying media types still count once.
 - `operation.requestBody:schemaless-json` — one per Operation Object whose
   request body's content holds only JSON media types and none of them declares a
   `schema`: the body `request_body_ignored` of `src/ir.rs` sends nothing for.
@@ -873,7 +878,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Seventy-one of the 107 are node-local**, which is what makes them one family:
+**Seventy-one of the 108 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -882,7 +887,7 @@ fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further, and `schema.example:unread-date-time`, which reads one node's `format`
 and selected example. The other
-thirty-six — `operation.operationId:duplicate`,
+thirty-seven — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
@@ -905,6 +910,7 @@ thirty-six — `operation.operationId:duplicate`,
 `operation.responses:space-suffixed-status-key`,
 `operation.requestBody:blank-description-optional-object` and
 `operation.requestBody:described-inline-scalar`,
+`operation.requestBody:plain-string-map`,
 `operation.responses:contentless-two-hundred-with-created`,
 `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`,
 `mediaType.example:deprecated-property`,
@@ -915,9 +921,9 @@ node, and say so in their own sentence. The first nine and the two cycle
 readings compare one document's own values against each other; the next
 twenty-two read where the node stands (an operation's route, a request body's
 selected media type, the document's version) or resolve one local
-`#/components/...` reference; the last three read a request body's selected
-media type and resolve the `#/components/schemas/...` references its schema
-and example's properties reach. Those two
+`#/components/...` reference; the last four read a request body's selected
+media type and resolve the `#/components/schemas/...` references reached by its
+schema or examples. Those two
 numbers partition the closed list, and a check reconciles the split with it. Every
 document-reading predicate reads **the document context**: the census carries the
 document's own `components` maps, its route and request-body positions, and the

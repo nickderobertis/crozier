@@ -41,6 +41,12 @@ source's `records.tsv`, `candidates.jsonl` and `queries.jsonl`. Read the parts
 concatenated in that order; a `records.tsv:N` or `candidates.jsonl:N` reference
 counts lines across all of them.
 
+[`opaque-history-profile.json`](../opaque-history-profile.json) pins the retained
+historical prefixes. `scripts/witness-evidence-integrity.py` verifies their
+record counts, shared locator values, revision/blob/digest groups, screen,
+probe and supersession joins, and verdict multisets without a reverse mapping. Later appended evidence falls
+outside that snapshot; its existing records remain protected.
+
 `outstanding.tsv` is the checkpoint inventory by key and source, derived from
 the same ledgers by the same index script and held to them by `--check`. It lists
 unissued query phrasings verbatim, issued but incomplete phrasings, unfetched

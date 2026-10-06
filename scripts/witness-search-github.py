@@ -220,6 +220,8 @@ def checked_service_url(value: str, name: str, expected_host: str) -> str:
 def ingredients(selector: str) -> list[str]:
     """The required field spellings visible in a selector."""
     fields = list(dict.fromkeys(FIELD.findall(selector)))
+    if selector == "operation.requestBody:plain-string-map":
+        fields.extend(("requestBody", "additionalProperties"))
     if selector == "securityScheme:$ref":
         fields.extend(("securitySchemes", "$ref"))
     media = re.fullmatch(r"mediaType\.([A-Za-z]+):([a-z-]+)", selector)

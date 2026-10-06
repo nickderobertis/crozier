@@ -2241,6 +2241,7 @@ BODY_AND_RESPONSE_PREDICATES = frozenset({
     "operation.responses:space-suffixed-status-key",
     "operation.requestBody:blank-description-optional-object",
     "operation.requestBody:described-inline-scalar",
+    "operation.requestBody:plain-string-map",
 })
 
 
@@ -2426,7 +2427,7 @@ class GrammarContractTests(unittest.TestCase):
             "seventeen": 17, "eighteen": 18, "twenty": 20, "twenty-one": 21,
             "twenty-three": 23, "twenty-four": 24,
             "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
-            "thirty-five": 35, "thirty-six": 36,
+            "thirty-five": 35, "thirty-six": 36, "thirty-seven": 37,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -13193,6 +13194,55 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
             }},
         }
         self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+    def test_plain_string_map_requests_count_through_refs_once_and_reject_near_misses(self) -> None:
+        selector = "operation.requestBody:plain-string-map"
+        plain = {"type": "object", "additionalProperties": {"type": "string"}}
+        schemas = {
+            "Labels": plain, "Alias": {"$ref": "#/components/schemas/Labels"},
+            "Value": {"type": "string"},
+            "ReferencedValue": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Value"}},
+            "CycleA": {"$ref": "#/components/schemas/CycleB"},
+            "CycleB": {"$ref": "#/components/schemas/CycleA"},
+        }
+        positive = {
+            "openapi": "3.0.3", "paths": {
+                "/inline": {"post": self.operation(body=self.json_body(plain))},
+                "/alias": {"put": self.operation(body=self.json_body({"$ref": "#/components/schemas/Alias"}))},
+                "/value": {"patch": self.operation(body=self.json_body({"$ref": "#/components/schemas/ReferencedValue"}))},
+                "/suffix": {"post": self.operation(body={"content": {"application/merge-patch+json": {"schema": plain}}})},
+                "/body": {"post": self.operation(body={"$ref": "#/components/requestBodies/Alias"})},
+                "/twice": {"put": self.operation(body={"content": {
+                    "application/json": {"schema": plain}, "application/merge-patch+json": {"schema": plain}}})},
+            }, "components": {"schemas": schemas, "requestBodies": {
+                "Alias": {"$ref": "#/components/requestBodies/Labels"}, "Labels": self.json_body(plain)}},
+        }
+        near_misses = [
+            {**plain, "properties": {"label": {"type": "string"}}},
+            {**plain, "additionalProperties": True},
+            {**plain, "additionalProperties": False},
+            {**plain, "additionalProperties": {"type": "integer"}},
+            {**plain, "additionalProperties": {"type": "object"}},
+            {**plain, "additionalProperties": {"type": "string", "enum": ["fixed"]}},
+            {**plain, "additionalProperties": {"type": "string", "format": "date"}},
+            {**plain, "additionalProperties": {"type": "string", "nullable": True}},
+            {**plain, "additionalProperties": {"type": ["string", "null"]}},
+            {"type": "array", "items": plain},
+            {"$ref": "#/components/schemas/CycleA"},
+            {"$ref": "#/components/schemas/Missing"},
+            {**plain, "additionalProperties": {"$ref": "#/components/schemas/CycleA"}},
+        ]
+        decoys = {
+            "openapi": "3.1.0", "paths": {
+                f"/near-{number}": {"post": self.operation(body=self.json_body(schema))}
+                for number, schema in enumerate(near_misses)
+            }, "components": {"schemas": schemas, "requestBodies": {
+                "CycleA": {"$ref": "#/components/requestBodies/CycleB"},
+                "CycleB": {"$ref": "#/components/requestBodies/CycleA"}}},
+        }
+        decoys["paths"]["/body-cycle"] = {"post": self.operation(body={"$ref": "#/components/requestBodies/CycleA"})}
+        decoys["paths"]["/text"] = {"post": self.operation(body={"content": {"text/plain": {"schema": plain}}})}
+        self.assertEqual({(selector, "positive"): 6}, self.census(selector, {"positive": positive, "decoys": decoys}))
 
     def test_a_schemaless_json_request_body_counts_only_when_no_media_declares_a_schema(self) -> None:
         selector = "operation.requestBody:schemaless-json"

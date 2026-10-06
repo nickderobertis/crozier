@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 209 of the 242 registered sources live in `corpus-sources/` (a split
+  and 210 of the 243 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1138,6 +1138,12 @@ PREDICATES = {
         "one per Operation Object whose request body's content holds only JSON "
         "media types and none of them declares a `schema`: the body "
         "`request_body_ignored` of `src/ir.rs` sends nothing for"
+    ),
+    "operation.requestBody:plain-string-map": (
+        "one per Operation Object whose JSON-like request content declares a "
+        "top-level object without named properties and with an unformatted, "
+        "non-enum, non-nullable string additionalProperties schema; local "
+        "component references are followed with cycle protection"
     ),
     "operation.responses:schemaless-wav-success": (
         "one per Operation Object whose success response holds an `audio/wav` "
@@ -4523,6 +4529,38 @@ class Census:
         content = body.get("content") if isinstance(body, dict) else None
         media = content.get("application/json") if isinstance(content, dict) else None
         schema = media.get("schema") if isinstance(media, dict) else None
+        map_body = body
+        seen_bodies: set[str] = set()
+        while isinstance(map_body, dict) and isinstance(map_body.get("$ref"), str):
+            reference = map_body["$ref"]
+            if reference in seen_bodies:
+                map_body = None
+                break
+            seen_bodies.add(reference)
+            target = self.local_component("requestBodies", map_body)
+            if target is map_body:
+                map_body = None
+                break
+            map_body = target
+        map_content = map_body.get("content") if isinstance(map_body, dict) else None
+        for media_type, value in map_content.items() if isinstance(map_content, dict) else ():
+            if not isinstance(media_type, str) or not is_json_like_media_type(media_type) or not isinstance(value, dict):
+                continue
+            map_schema = self.resolved_schema(value.get("schema"))
+            if not isinstance(map_schema, dict) or primary_type(map_schema.get("type")) != "object" or map_schema.get("properties"):
+                continue
+            additional = self.resolved_schema(map_schema.get("additionalProperties"))
+            if not isinstance(additional, dict):
+                continue
+            additional_type = additional.get("type")
+            if (
+                primary_type(additional_type) == "string"
+                and additional.get("format") is None and additional.get("enum") is None
+                and not additional.get("nullable")
+                and not (isinstance(additional_type, list) and "null" in additional_type)
+            ):
+                found.append("operation.requestBody:plain-string-map")
+                break
         if isinstance(schema, dict):
             reference = schema.get("$ref")
             name = reference[len(_COMPONENT_SCHEMAS_PREFIX):] if (

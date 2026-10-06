@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "5fed785a505adc4811bc726dfd7d49d16adddf4d444abf6fc60c89fba60b5881"
+
+[[covers]]
+key = "request-body-string-map"
+search = "docs/openapi-surface/witness-search-string-map/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-string-map/README.md"

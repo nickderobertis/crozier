@@ -1,0 +1,343 @@
+{
+  "version": 1,
+  "record_counts": {
+    "docs/openapi-surface/golden-reach-witnesses/github-code-search/candidates.jsonl": 10120,
+    "docs/openapi-surface/golden-reach-witnesses/github-code-search/probe.jsonl": 3243,
+    "docs/openapi-surface/golden-reach-witnesses/github-code-search/raw-github-calls.jsonl": 1039,
+    "docs/openapi-surface/golden-reach-witnesses/github-code-search/raw-github-waits.jsonl": 1033,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/candidates.jsonl": 10746,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/probe.jsonl": 2289,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.001.jsonl": 46,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.002.jsonl": 58,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.jsonl": 162,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/raw-github-calls.jsonl": 12381,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/raw-github-waits.jsonl": 11796,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/screens.jsonl": 132,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.001.jsonl": 45713,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.002.jsonl": 43506,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.003.jsonl": 44122,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.004.jsonl": 7268,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.jsonl": 49074,
+    "docs/openapi-surface/witness-search-github-code-search/queries.001.jsonl": 1857,
+    "docs/openapi-surface/witness-search-github-code-search/queries.002.jsonl": 253,
+    "docs/openapi-surface/witness-search-github-code-search/queries.jsonl": 1632,
+    "docs/openapi-surface/witness-search-github-code-search/raw-github-calls.jsonl": 81690,
+    "docs/openapi-surface/witness-search-github-code-search/raw-github-waits.jsonl": 79482,
+    "docs/openapi-surface/witness-search-github-code-search/screens.jsonl": 84,
+    "docs/openapi-surface/witness-search-sourcegraph/candidates.001.jsonl": 23776,
+    "docs/openapi-surface/witness-search-sourcegraph/candidates.jsonl": 50810,
+    "docs/openapi-surface/witness-search-sourcegraph/queries.jsonl": 72,
+    "docs/openapi-surface/witness-search-sourcegraph/raw-github-calls.jsonl": 21263,
+    "docs/openapi-surface/witness-search-sourcegraph/raw-github-waits.jsonl": 20211,
+    "docs/openapi-surface/witness-search-sourcegraph/screens.jsonl": 149
+  },
+  "node_counts": {
+    "docs/openapi-surface/golden-reach-witnesses/github-code-search/candidates.jsonl": 151,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/candidates.jsonl": 24,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.001.jsonl": 1522,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.002.jsonl": 210,
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.jsonl": 1694,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.001.jsonl": 126,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.002.jsonl": 83,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.003.jsonl": 105,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.004.jsonl": 8,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.jsonl": 32,
+    "docs/openapi-surface/witness-search-github-code-search/queries.001.jsonl": 219,
+    "docs/openapi-surface/witness-search-github-code-search/queries.002.jsonl": 5,
+    "docs/openapi-surface/witness-search-github-code-search/queries.jsonl": 210,
+    "docs/openapi-surface/witness-search-github-code-search/screens.jsonl": 2,
+    "docs/openapi-surface/witness-search-sourcegraph/candidates.001.jsonl": 576,
+    "docs/openapi-surface/witness-search-sourcegraph/candidates.jsonl": 215,
+    "docs/openapi-surface/witness-search-sourcegraph/queries.jsonl": 2148,
+    "docs/openapi-surface/witness-search-sourcegraph/screens.jsonl": 2
+  },
+  "revision_groups": {
+    "groups": 6061,
+    "sizes": {
+      "1": 4865,
+      "2": 1141,
+      "3": 38,
+      "4": 14,
+      "5": 3
+    },
+    "memberships": "9b5fa4db2b6c3a22d37008e61cca24f58816f778bca8120fffe08dd2fa8ba399"
+  },
+  "locator_groups": {
+    "path": {
+      "groups": 1095,
+      "sizes": {
+        "1": 263,
+        "2": 187,
+        "3": 104,
+        "4": 127,
+        "5": 113,
+        "6": 30,
+        "7": 40,
+        "8": 29,
+        "9": 30,
+        "10": 12,
+        "11": 18,
+        "12": 10,
+        "13": 9,
+        "14": 11,
+        "15": 23,
+        "16": 4,
+        "17": 3,
+        "18": 6,
+        "19": 4,
+        "20": 1,
+        "21": 1,
+        "22": 1,
+        "26": 3,
+        "27": 2,
+        "29": 1,
+        "30": 21,
+        "32": 1,
+        "33": 2,
+        "34": 3,
+        "35": 3,
+        "36": 3,
+        "37": 3,
+        "39": 1,
+        "41": 2,
+        "42": 4,
+        "43": 2,
+        "44": 1,
+        "48": 1,
+        "51": 2,
+        "56": 2,
+        "57": 1,
+        "62": 1,
+        "63": 1,
+        "69": 1,
+        "73": 1,
+        "75": 1,
+        "76": 1,
+        "78": 1,
+        "80": 1,
+        "93": 1,
+        "100": 1,
+        "110": 1
+      },
+      "memberships": "fc10ffd41fe20c36367863a3ed5dcf77142894e3c2412ce1a37cb383ffcdbca0"
+    },
+    "revision": {
+      "groups": 23,
+      "sizes": {
+        "1": 1,
+        "2": 2,
+        "4": 2,
+        "6": 1,
+        "7": 1,
+        "10": 1,
+        "13": 1,
+        "14": 1,
+        "30": 1,
+        "33": 1,
+        "86": 1,
+        "115": 1,
+        "126": 1,
+        "193": 1,
+        "217": 1,
+        "272": 1,
+        "291": 1,
+        "333": 1,
+        "470": 1,
+        "1750": 1,
+        "3353": 1
+      },
+      "memberships": "c1aeb360eaaf0253773bab8e0bc015396417e334777e573bd79ccab84f0580e1"
+    },
+    "blob": {
+      "groups": 111,
+      "sizes": {
+        "1": 10,
+        "2": 14,
+        "3": 8,
+        "4": 20,
+        "5": 5,
+        "6": 8,
+        "7": 3,
+        "8": 5,
+        "9": 5,
+        "10": 7,
+        "11": 2,
+        "12": 2,
+        "13": 1,
+        "14": 3,
+        "17": 2,
+        "18": 3,
+        "19": 2,
+        "20": 2,
+        "22": 1,
+        "25": 1,
+        "26": 1,
+        "28": 1,
+        "29": 2,
+        "37": 1,
+        "42": 1,
+        "43": 1
+      },
+      "memberships": "9f472c687ca05ccefaf8110c165de18a9980b81aee6488033429f23f2ee933f0"
+    },
+    "digest": {
+      "groups": 219,
+      "sizes": {
+        "1": 36,
+        "2": 54,
+        "3": 43,
+        "4": 20,
+        "5": 9,
+        "6": 10,
+        "7": 4,
+        "8": 11,
+        "9": 4,
+        "10": 5,
+        "11": 2,
+        "12": 3,
+        "14": 1,
+        "18": 2,
+        "20": 2,
+        "21": 1,
+        "23": 1,
+        "27": 1,
+        "29": 1,
+        "30": 1,
+        "32": 2,
+        "35": 1,
+        "40": 1,
+        "41": 1,
+        "45": 1,
+        "53": 1,
+        "108": 1
+      },
+      "memberships": "91c2aa754f058b45583fc18a0f44c3f4faad078c63ed23793686ef40a0c9443c"
+    }
+  },
+  "blob_groups": {
+    "groups": 464,
+    "sizes": {
+      "1": 163,
+      "2": 223,
+      "3": 13,
+      "4": 40,
+      "5": 20,
+      "6": 4,
+      "7": 1
+    },
+    "memberships": "a5f6a4a99e291ee2cd454f9d34704a38ce7a269f732c2691e7b763d19f5033bf"
+  },
+  "digest_groups": {
+    "groups": 405,
+    "sizes": {
+      "1": 139,
+      "2": 80,
+      "3": 68,
+      "4": 28,
+      "5": 15,
+      "6": 33,
+      "7": 7,
+      "8": 3,
+      "9": 5,
+      "10": 12,
+      "11": 4,
+      "12": 4,
+      "13": 2,
+      "14": 1,
+      "15": 1,
+      "16": 2,
+      "19": 1
+    },
+    "memberships": "092866ac27e831357726bb83cb3997fe2f3fc7b300698145be7e1adf371cb7f9"
+  },
+  "screen_joins": {
+    "pairs": 3,
+    "memberships": "80d86cb98566419ab2324c9bda217b11832a6cdf6cec8d6dd3f064e881be767f"
+  },
+  "supersedes_joins": {
+    "pairs": 0,
+    "memberships": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "subject_joins": {
+    "pairs": 34,
+    "memberships": "5418792d3ca0a8ef0fb348be6a9be0ba9af86df6e03b492609020c2b00cecafb"
+  },
+  "subject_verdicts": {
+    "count": 20,
+    "multiset": "fe9c52ef46522904b3ee6e9a4e6fa4058332c1eb3924bf03626c02be564fbc30"
+  },
+  "verdicts": {
+    "docs/openapi-surface/golden-reach-witnesses/github-code-search/candidates.jsonl": {
+      "count": 151,
+      "multiset": "8500e10a2b8f0489f57b5d2eb22897bdb3d7679602839635d2ac2a8f897cca16"
+    },
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/candidates.jsonl": {
+      "count": 24,
+      "multiset": "72a599dc7f1f9c2bfc96a7cd6efc5dd776e397a31dd86165751d96768663edd3"
+    },
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.001.jsonl": {
+      "count": 1522,
+      "multiset": "fbca755971fd727b89ef8c044be6f818a044ddfaa6b1fe42087a8e98b393958c"
+    },
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.002.jsonl": {
+      "count": 210,
+      "multiset": "e36c54805ca9ec74272ac3cdb5e7e12de7fc0a98b9cfcb7cb4513fedab2c54ee"
+    },
+    "docs/openapi-surface/golden-reach-witnesses/sourcegraph/queries.jsonl": {
+      "count": 1694,
+      "multiset": "54dfaa3dd84b2f39a8201357ab811146c99850f3a459c2d19441ed94f2816722"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/candidates.001.jsonl": {
+      "count": 126,
+      "multiset": "e25afdea730460e2d920fca2cd0822f9b54cb5c8fe9e4a416b4227aa057c9ffb"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/candidates.002.jsonl": {
+      "count": 83,
+      "multiset": "b21fc7b9d128dc7ab9f17dac1f5c99202e09e01fabfcf4e14c9fedc9910ac2fe"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/candidates.003.jsonl": {
+      "count": 105,
+      "multiset": "e022055c72f48ba206ada16f06c62b17753b36d9cfada294da6b5ed5be623ef5"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/candidates.004.jsonl": {
+      "count": 8,
+      "multiset": "0f296d53fb761428875095b24ab8d3c819557f2ba3f18c054be68f5fd6a983b3"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/candidates.jsonl": {
+      "count": 32,
+      "multiset": "9e3d76af6e6643eab4b1a6d22713fa1a67de0f30358c193f559d1f5d49b9ea18"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/queries.001.jsonl": {
+      "count": 219,
+      "multiset": "cceda9e732288f7b75966ac4abafafc10580cc3763dcbc7038de6762dd30e8b9"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/queries.002.jsonl": {
+      "count": 5,
+      "multiset": "41c59fa49883d81ae06e0f85cd424fdd923da420c94d48b79dadc845a96ee61f"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/queries.jsonl": {
+      "count": 210,
+      "multiset": "e36c54805ca9ec74272ac3cdb5e7e12de7fc0a98b9cfcb7cb4513fedab2c54ee"
+    },
+    "docs/openapi-surface/witness-search-github-code-search/screens.jsonl": {
+      "count": 2,
+      "multiset": "c17a2930f60ba96d17ea58e5878c98434871daf236ad6360443a30a3cfd5edda"
+    },
+    "docs/openapi-surface/witness-search-sourcegraph/candidates.001.jsonl": {
+      "count": 576,
+      "multiset": "dc297735189e1da33f05d7ba856fdd4c3c78059159d449fa5c163676a7d75c29"
+    },
+    "docs/openapi-surface/witness-search-sourcegraph/candidates.jsonl": {
+      "count": 215,
+      "multiset": "bc1fb461022d5f99fc6acfe264edf116f45c37fd533bcfcae787f8bbe584e0ca"
+    },
+    "docs/openapi-surface/witness-search-sourcegraph/queries.jsonl": {
+      "count": 2148,
+      "multiset": "133b443553ffff30c0c0d5842359971cbd82f51cfffe8165dc30408a6c7bb9f6"
+    },
+    "docs/openapi-surface/witness-search-sourcegraph/screens.jsonl": {
+      "count": 2,
+      "multiset": "c17a2930f60ba96d17ea58e5878c98434871daf236ad6360443a30a3cfd5edda"
+    }
+  }
+}

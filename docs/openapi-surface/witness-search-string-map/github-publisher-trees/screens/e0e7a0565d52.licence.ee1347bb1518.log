@@ -1,0 +1,10 @@
+rule docs/corpus-licensing.md sha256 f01729ef062b5c065460cbb7cfc7e2b86a1b5a6e11e2b702029a1aeb0efc8373: admits Apache-2.0, MIT, BSD, CC0, GPL, AGPL, LGPL, MPL, EPL, CC-BY, CC-BY-SA, CC-BY-ND
+info.license: '' -> None
+GET LICENSE: HTTP 200
+licence file LICENSE -> Apache-2.0
+--- LICENSE (first 30 non-blank lines) ---
+The project is licensed under the Confluent Community License, except some 
+modules such as the client-* and avro-* libs, which are licensed under the 
+Apache 2.0 license.
+See the LICENSE file in each subfolder for its respective license agreement.
+outcome: passed: no info.license, LICENSE at the pinned commit reads as Apache-2.0, which the corpus rule admits
