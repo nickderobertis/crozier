@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.104](https://github.com/nickderobertis/crozier/compare/v0.0.103...v0.0.104) - 2026-10-06
+
+### Fixed
+
+- *(ir)* match Fern on query unions and authorization or defaulted headers ([#416](https://github.com/nickderobertis/crozier/pull/416))
+
 ## [0.0.103](https://github.com/nickderobertis/crozier/compare/v0.0.102...v0.0.103) - 2026-10-06
 
 ### Fixed
