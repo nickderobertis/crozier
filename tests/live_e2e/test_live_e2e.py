@@ -99,19 +99,14 @@ def test_partial_corpus_exercises_the_fern_5_20_parsing_error_classifier(recordi
 
 
 def test_placeholder_snippet_endpoint_is_driven_for_real(recordings):
-    """The one endpoint Fern documents with an abbreviated
-    `client.<sub>.<method>(...)` placeholder rather than a worked example —
-    `exhaustive`'s file upload, whose raw `application/octet-stream` body gives
-    Fern no example bytes to synthesize — is resolved and driven, not skipped.
+    """Resolve Qakka's abbreviated binary-request snippet into a real call.
 
-    crozier reproduces that placeholder byte-for-byte, so this pins the driver's
-    resolution path end to end: the endpoint is present, it went through the
-    synthesized-argument branch (rather than merely being catalogued), it really
-    round-tripped through Prism, and the reply deserialized into the declared
-    response model. Drop the upload operation, stop invoking it, or let it fall
-    back to a non-synthesized path and this fails."""
-    upload = "endpoints_params.endpoints_params_upload_with_path"
-    recording = recordings["exhaustive"]
+    The observation must show synthesized arguments, a successful Prism request,
+    and the declared response model. Dropping the endpoint or bypassing argument
+    synthesis fails this journey.
+    """
+    upload = "queues.send_message_binary"
+    recording = recordings["apache.org-qakka"]
     assert upload in recording, (
         f"{upload} was not driven — the placeholder snippet was dropped instead of "
         f"being resolved into a real call"
@@ -123,7 +118,7 @@ def test_placeholder_snippet_endpoint_is_driven_for_real(recordings):
     assert observation.get("ok"), (
         f"{upload} did not round-trip: {observation.get('error')}"
     )
-    assert observation["model"] == "TypesObjectWithRequiredField", (
+    assert observation["model"] == "ApiResponse", (
         f"{upload} returned {observation['model']}, not the declared response model"
     )
 
