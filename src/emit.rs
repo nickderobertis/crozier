@@ -5200,7 +5200,7 @@ fn raw_docstring(
 /// description slot, then a trailing blank line. Fern fills the slot when the spec
 /// gives a non-empty description, emits a *blank* slot when it declares an empty one
 /// (`Some("")`, e.g. bunq's path params — two blank lines total), and omits the slot
-/// entirely when it declares none (`None`, the exhaustive seed — one blank line).
+/// entirely when it declares none (`None` — one blank line).
 /// See [`crate::ir`]'s `path_param_doc`.
 fn push_path_param(lines: &mut Vec<String>, name: &str, ty: &str, desc: &Option<String>) {
     lines.push(format!("        {name} : {ty}"));
@@ -5705,8 +5705,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // what leaves the echo `Message` of the same-`$ref` case
                         // (one optional field) its header. Every other way to be
                         // shared keeps it:
-                        // exhaustive's bodies carry `required: true` or are sent
-                        // whole, and Adyen's `GrantInfo` is posted by one operation.
+                        // bodies declaring `required: true` or sent whole retain
+                        // the header. Adyen's `GrantInfo` is posted by one operation.
                         && !(ep.body_schema_shared
                             && !ep.body_declared_required
                             && !body.all_fields_required()
@@ -5754,9 +5754,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // `Share`, `AdminProfile` and `UserProfile`,
                         // Audiobookshelf's `EmailSettings` and `Podcast`, LORIS's
                         // `QueryObject` and all 28 of AGCO's are untitled and lose
-                        // the header, while letta's `CreateBlock`/`BlockUpdate` and
-                        // exhaustive's `typesObjectWithOptionalField` and
-                        // `typesObjectWithRequiredField` carry one and keep it. A
+                        // the header, while letta's titled `CreateBlock`/`BlockUpdate`
+                        // carry one and keep it. A
                         // body offering SEVERAL media types drops it either way,
                         // which is what AGCO measured first and what no titled
                         // source has since contradicted. A `stream-condition`
@@ -9916,7 +9915,7 @@ fn build_example_inner(
             // gambitcomm's `set_protocols` posts the same shape — its item is
             // described too — and answers JSON, and its golden documents
             // `request=["string"]`, as do audiobookshelf's `downloadEpisodes`,
-            // komga's `markAnnouncementsRead` and exhaustive's list-of-primitives.
+            // komga's `markAnnouncementsRead`.
             if ep.binary_response && body_example.is_none() && s.example.is_none() {
                 v = match &v {
                     Example::List(items) => match items.as_slice() {
@@ -9965,8 +9964,8 @@ fn build_example_inner(
         Some(RequestBody::Inline(fields)) => {
             // Fern's worked example shows a required field unless it is *nullable*
             // (a required-but-nullable field like apideck's `company_name` is
-            // omitted). A required field with an unknown (`Any`) type is still shown
-            // (exhaustive's `unknown`), so the exclusion keys on nullability — an
+            // omitted). A required field with an unknown (`Any`) type is still shown,
+            // so the exclusion keys on nullability — an
             // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
             let reference_fields = body_example.and_then(serde_json::Value::as_object);
             // An example's `null` is no value: Fern's docstring leaves the field

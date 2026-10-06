@@ -376,8 +376,8 @@ fn percent_encode_server_variable(value: &str) -> String {
 /// An operation header promoted to a client-wrapper-level field. Fern lifts a
 /// header carried by *every* operation out of the methods and applies it once at
 /// client construction — `X-Tenant` becomes the `tenant` constructor field. A
-/// header on only some operations stays a per-method parameter (e.g. exhaustive's
-/// `X-TEST-ENDPOINT-HEADER`). Its [`HeaderPresence`] drives the rendering.
+/// header on only some operations stays a per-method parameter.
+/// Its [`HeaderPresence`] drives the rendering.
 #[derive(Debug, Clone)]
 pub struct GlobalHeader {
     /// The wire header name (the `headers` dict key), e.g. `X-Tenant`.
@@ -2526,8 +2526,7 @@ fn normalize_error_body_types(doc: &OpenApi, endpoints: &mut [Endpoint]) {
         for err in &mut ep.errors {
             // The multiply-declared rule reaches only the body type this module
             // *coins* from an inline schema. A `$ref` body keeps its named type
-            // however many operations declare the status (`exhaustive`'s three
-            // `400`s all resolve to `BadObjectRequestInfo`).
+            // however many operations declare the status.
             // A component schema already carrying that name is a `$ref` body, not
             // a coinage: OpenCodeUI's `BadRequestError` schema is renamed
             // `BadRequestErrorBody` (see `openapi::normalize_error_class_schema_names`)
@@ -3426,9 +3425,8 @@ fn build_endpoint(
                             // A `$ref` sent as one `request` lowers to its bare
                             // type name too, unless its target declares a `title`:
                             // marimo-plugins' map, nullable-scalar and `type:
-                            // "null"` bodies send no `content-type`, where
-                            // exhaustive's titled `typesMapOfDocumentedUnknownType`
-                            // keeps it. The request body's own description is no
+                            // "null"` bodies send no `content-type`; a titled
+                            // map body keeps it. The request body's own description is no
                             // bar here — Fern's importer never carries it into the
                             // JSON request — so Otoroshi's described `$ref: Empty`
                             // bodies collapse all the same.
@@ -5540,8 +5538,7 @@ fn resolve_request_body(
     // renders as `typing.Any`, with a plain `json=request` and no content-type.
     // `nullable` on the schema — not the document version — is what makes the
     // argument optional: letta declares all three shapes and Fern splits them on
-    // exactly that (`{}` → required, `{nullable: true}` → `Optional[Any] = None`),
-    // and `exhaustive`'s 3.0.1 `noAuth_postWithNoAuth` takes the required form too.
+    // exactly that (`{}` → required, `{nullable: true}` → `Optional[Any] = None`).
     if is_unknown(schema) {
         return Some(single(
             TypeRef::Primitive(Prim::Any),
@@ -7597,8 +7594,8 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
         // A nullable success schema returns an optional body: discord declares
         // `type: [array, null]` on `list_my_connections` and Fern's return type is
         // `Optional[List[ConnectedAccountResponse]]`. A `nullable` *beside* a
-        // `$ref` is not that: 3.0 ignores a reference's siblings, and
-        // `exhaustive`'s `getAndReturnOptional` returns the bare model.
+        // `$ref` is not that: 3.0 ignores a reference's siblings and
+        // returns the bare model.
         .map(|schema| {
             if schema.reference.is_none() && is_optional(schema) {
                 // A nullable *unknown* body is `Optional[Any]` here, not the bare
@@ -13626,7 +13623,7 @@ fn reference_description_suffix(description: &str) -> String {
 /// empty one, `Some(text)` otherwise. The empty-vs-absent distinction is visible in
 /// Fern's output for path parameters (a blank docstring slot vs none) and for model
 /// fields (a `pydantic.Field(default=None)` + empty docstring vs a bare `= None`).
-/// bunq declares `description: ""` on many nodes; the synthetic seeds omit it.
+/// bunq declares `description: ""` on many nodes.
 fn declared_doc(desc: Option<&str>) -> Option<String> {
     // Preserve the description verbatim (Fern does not trim it — a trailing space in
     // `"The URL to visit to "` survives into the docstring), but terminal line breaks
@@ -15026,9 +15023,8 @@ mod tests {
     #[test]
     fn operationid_prefix_that_is_the_tag_still_groups_by_the_prefix() {
         use super::{endpoint_method_name, endpoint_module};
-        // The synthetic seeds: the operationId prefix *is* the tag, so grouping and
-        // method-stripping are unchanged (both rules agree) — this is what keeps the
-        // apideck/exhaustive corpora byte-identical after the tag-first change.
+        // When the operationId prefix is the tag, grouping and method-stripping
+        // agree.
         let o = op(
             "inlinedRequests_postWithObjectBodyandResponse",
             "InlinedRequests",
@@ -17109,9 +17105,8 @@ mod tests {
             matches!(resolved, Some(RequestBody::Single(ref body)) if body.required),
             "{resolved:?}"
         );
-        // The document version does not enter into it: `exhaustive` is 3.0.1 and
-        // Fern types its `{}` body required just as it does letta's 3.1 one. Only
-        // the schema's `nullable` and the wrapper's own `required: false` relax it.
+        // The document version does not enter into it. Only the schema's
+        // `nullable` and the wrapper's own `required: false` relax it.
         let legacy_doc: OpenApi = serde_json::from_value(serde_json::json!({ "openapi": "3.0.1" }))
             .expect("3.0 document deserializes");
         let resolved = super::resolve_request_body(
