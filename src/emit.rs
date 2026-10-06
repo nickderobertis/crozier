@@ -3755,7 +3755,7 @@ fn client_wrapper_file(
         .iter()
         .map(|parameter| client_path_parameter_param(parameter, false))
         .collect();
-    let gh_param: String = path_param
+    let client_param: String = path_param
         + &distinct_global_header_params(&leading)
             .into_iter()
             .map(|h| {
@@ -3770,7 +3770,7 @@ fn client_wrapper_file(
                 }
             })
             .collect::<String>();
-    let gh_assign: String = client_path_parameters
+    let client_assign: String = client_path_parameters
         .iter()
         .map(|parameter| &parameter.py_name)
         .chain(leading.iter().map(|h| &h.py_name))
@@ -3815,7 +3815,7 @@ fn client_wrapper_file(
         .filter(|h| h.default().is_some())
         .map(header_line)
         .collect();
-    let gh_super: String = client_path_parameters
+    let client_super: String = client_path_parameters
         .iter()
         .map(|parameter| &parameter.py_name)
         .chain(
@@ -3844,10 +3844,10 @@ fn client_wrapper_file(
     // Fern's own stripped header leaves, so the leading layout matches.
     c.push_str(HEADER);
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
-    c.push_str(&gh_param);
+    c.push_str(&client_param);
     c.push_str(&a.param);
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}    ):\n"));
-    c.push_str(&gh_assign);
+    c.push_str(&client_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
     // Fern applies the credential after the global headers for every scheme but
@@ -3869,18 +3869,18 @@ fn client_wrapper_file(
     c.push_str("        return headers\n\n");
     c.push_str(&a.token_method);
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
-    c.push_str(&gh_param);
+    c.push_str(&client_param);
     c.push_str(&a.param);
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            "));
-    c.push_str(&gh_super);
+    c.push_str(&client_super);
     c.push_str(&a.super_arg);
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
     c.push_str("        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
-    c.push_str(&gh_param);
+    c.push_str(&client_param);
     c.push_str(&a.param);
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            "));
-    c.push_str(&gh_super);
+    c.push_str(&client_super);
     c.push_str(&a.super_arg);
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
@@ -6493,7 +6493,7 @@ fn root_client_class(
     // client wrapper.
     // A lifted base-path parameter leads the promoted headers on every line.
     let client_path_parameters = cfg.client_path_parameters;
-    let gh_doc: String = client_path_parameters
+    let client_param_doc: String = client_path_parameters
         .iter()
         .map(|parameter| {
             let ty = if parameter.default.is_some() {
@@ -6512,7 +6512,7 @@ fn root_client_class(
             format!("    {} : {ty}\n", h.py_name)
         }))
         .collect();
-    let gh_ctor: String = client_path_parameters
+    let client_param_ctor: String = client_path_parameters
         .iter()
         .map(|parameter| client_path_parameter_param(parameter, true))
         .chain(
@@ -6531,7 +6531,7 @@ fn root_client_class(
                 }),
         )
         .collect();
-    let gh_example: String = client_path_parameters
+    let client_param_example: String = client_path_parameters
         .iter()
         .map(|parameter| format!("        {},\n", client_path_parameter_example(parameter)))
         .chain(global_headers.iter().map(|h| {
@@ -6542,7 +6542,7 @@ fn root_client_class(
             )
         }))
         .collect();
-    let gh_wrapper: String = client_path_parameters
+    let client_param_wrapper: String = client_path_parameters
         .iter()
         .map(|parameter| &parameter.py_name)
         .chain(
@@ -6597,10 +6597,10 @@ fn root_client_class(
         } else {
             "        base_url=\"https://yourhost.com/path/to/api\",\n".to_string()
         },
-        gh_doc,
-        gh_ctor,
-        gh_example,
-        gh_wrapper,
+        client_param_doc,
+        client_param_ctor,
+        client_param_example,
+        client_param_wrapper,
         tr_doc,
         tr_ctor,
         tr_wrapper,
@@ -6689,13 +6689,13 @@ struct RootClientView {
     /// The `Examples` client instantiation's `base_url` line (empty with
     /// environments, which drop it).
     example_base_url: String,
-    /// Promoted global-header lines (empty without any): the docstring `Parameters`
+    /// Lifted base-path and promoted global-header lines: the docstring `Parameters`
     /// entries, the constructor parameters, the `Examples` arguments, and the
     /// client-wrapper call arguments — all placed after `base_url`.
-    gh_doc: String,
-    gh_ctor: String,
-    gh_example: String,
-    gh_wrapper: String,
+    client_param_doc: String,
+    client_param_ctor: String,
+    client_param_example: String,
+    client_param_wrapper: String,
     /// Defaulted global-header lines (empty without any): the docstring
     /// `Parameters` entries, the constructor parameters and the client-wrapper call
     /// arguments, all placed after `logging`.
@@ -11303,10 +11303,10 @@ mod tests {
             wrapper_base_url: "base_url".to_string(),
             example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n"
                 .to_string(),
-            gh_doc: String::new(),
-            gh_ctor: String::new(),
-            gh_example: String::new(),
-            gh_wrapper: String::new(),
+            client_param_doc: String::new(),
+            client_param_ctor: String::new(),
+            client_param_example: String::new(),
+            client_param_wrapper: String::new(),
             tr_doc: String::new(),
             tr_ctor: String::new(),
             tr_wrapper: String::new(),
