@@ -16,7 +16,8 @@ Excluded inputs use `screened-nonpublic-input:v1:I:N`, where `I` is a random 32-
 hexadecimal invocation ID and `N` is a positive assigned integer. Neither is
 derived from the public name, path or content hash. The migration uses one
 invocation ID; a fresh search uses a new one. Within that invocation the same
-candidate carries the same token throughout its records. Tokens from different
+input revision carries the same token throughout its records. Distinct revisions
+keep distinct tokens; a `supersedes` token names the prior input revision. Tokens from different
 invocations never join records as the same input. Repository
 and path fields both hold that token; a retained locator or digest field also
 holds it, while optional locators may be omitted. No reverse mapping is

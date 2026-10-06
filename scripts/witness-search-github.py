@@ -33,6 +33,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -390,6 +391,9 @@ def validate_publisher(publisher: dict[str, Any]) -> None:
         r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository
     ):
         raise ValueError(f"invalid publisher repository: {repository!r}")
+    if repository.lower() == INDEX.EXCLUDED_REPOSITORY:
+        raise ValueError(f"{repository}: excluded by the repository rule; crozier does not register "
+                         "specifications from this repository; use the specification publisher's repository")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
         raise ValueError(f"{repository}: publisher commit must be a 40-hex SHA")
     if not isinstance(scope, (str, list)) or (
@@ -397,6 +401,18 @@ def validate_publisher(publisher: dict[str, Any]) -> None:
         and any(not isinstance(item, str) for item in scope)
     ):
         raise ValueError(f"{repository}: publisher scope must be a path or path list")
+
+
+def publisher_file_rows(path: Path) -> list[dict[str, Any]]:
+    try:
+        publishers = json.loads(path.read_text(encoding="utf-8"))["publishers"]
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        raise ValueError(f"--publisher-file cannot be read: {error}") from error
+    if not isinstance(publishers, list) or any(not isinstance(row, dict) for row in publishers):
+        raise ValueError("--publisher-file must contain publisher objects")
+    for publisher in publishers:
+        validate_publisher(publisher)
+    return publishers
 
 
 class Acquirer:
@@ -419,6 +435,8 @@ class Acquirer:
         split_budget: int = 0,
     ) -> None:
         self.evidence = evidence
+        self.invocation_id = uuid.uuid4().hex
+        self.excluded_identities: dict[tuple[str, str, str], str] = {}
         # Breadth before depth: every planned query answers its first page, and so
         # records its count, before any one query's partitions and later pages are
         # read. A deferred window stays in the ledger and a later run resumes it.
@@ -456,7 +474,71 @@ class Acquirer:
         # One parse and one census per distinct byte string, whichever keys ask.
         self.verdicts: dict[str, tuple[str, dict[str, int] | str | None]] = {}
 
+    def assigned_identity(self, repository: str, path: str, revision: str) -> str:
+        identity = (INDEX.normalize_repo(repository).lower(), path, revision)
+        if identity not in self.excluded_identities:
+            self.excluded_identities[identity] = (
+                INDEX.make_opaque_identity(self.invocation_id, len(self.excluded_identities) + 1)
+            )
+        return self.excluded_identities[identity]
+
+    def opaque_record(self, value: Any) -> Any:
+        """Apply the README's identity contract without changing measured outcomes."""
+        if isinstance(value, list):
+            return [self.opaque_record(item) for item in value]
+        if not isinstance(value, dict):
+            return value
+        result = {field: self.opaque_record(item) for field, item in value.items()}
+        repository = value.get("repository")
+        if isinstance(repository, dict):
+            repository = repository.get("full_name")
+        path = value.get("path")
+        if not isinstance(repository, str) or not isinstance(path, str):
+            return result
+        token = INDEX.opaque_identity(repository)
+        if token:
+            INDEX.validate_opaque_values(value)
+        elif INDEX.normalize_repo(repository).lower() == INDEX.EXCLUDED_REPOSITORY:
+            url = value.get("url")
+            url_revision = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query).get("ref", [None])[0] if isinstance(url, str) else None
+            revision = value.get("commit") or url_revision or value.get("blob") or value.get("sha") or value.get("sha256") or "unresolved"
+            token = self.assigned_identity(repository, path, str(revision))
+        else:
+            return result
+        for field in ("repository", "path", *INDEX.OPAQUE_LOCATORS):
+            if field in result:
+                if result[field] is None:
+                    result.pop(field)
+                else:
+                    result[field] = token
+        if result.get("supersedes"):
+            prior = INDEX.opaque_identity(result["supersedes"])
+            if not prior:
+                prior = self.assigned_identity(repository, path, str(result["supersedes"]))
+            result["supersedes"] = prior
+        for field in ("content", "preview", "lineMatches", "textMatches", "excerpt"):
+            result.pop(field, None)
+        return result
+
+    def record_excluded_candidate(
+        self, source: str, key: str, selector: str, item: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        redacted = self.opaque_record(item)
+        token = INDEX.opaque_identity(redacted.get("repository"))
+        if not token:
+            return None
+        record = {"source": source, "key": key, "selector": selector,
+                  "repository": token, "path": token, "disposition": INDEX.RAW_EXCLUDED}
+        for field in ("commit", "sha", "blob"):
+            if field in redacted:
+                record[field] = redacted[field]
+        self.write("candidates.jsonl", record)
+        return record
+
     def write(self, filename: str, record: dict[str, Any]) -> None:
+        INDEX.validate_opaque_values(record)
+        record = self.opaque_record(record)
+        INDEX.validate_opaque_values(record)
         if filename in ("candidates.jsonl", "documents.jsonl"):
             status = record.get("disposition") or record.get("status")
             if status not in INDEX.RAW_STATUSES:
@@ -1283,6 +1365,9 @@ class Acquirer:
     def sourcegraph_document(
         self, key: str, selector: str, item: dict[str, Any]
     ) -> dict[str, Any]:
+        excluded = self.record_excluded_candidate("sourcegraph", key, selector, item)
+        if excluded is not None:
+            return excluded
         repo = item.get("repository")
         path = item.get("path")
         commit = item.get("commit")
@@ -1465,6 +1550,9 @@ class Acquirer:
         raw.githubusercontent.com on its own paced lane, which spends no REST
         bucket and waits out a 429 or `Retry-After` rather than skipping.
         """
+        excluded = self.record_excluded_candidate("github-code-search", key, item["selector"], item)
+        if excluded is not None:
+            return excluded
         identity = {
             "source": "github-code-search",
             "key": key,
@@ -1616,6 +1704,9 @@ class Acquirer:
         digest. None means the source answered something other than the
         document, as an acquisition records that as a failure, not a reading.
         """
+        if INDEX.opaque_identity(row.get("repository")):
+            INDEX.candidate_name(row)
+            return None
         digest = row.get("sha256")
         subject = f"{row.get('repository')}/{row.get('path')}@{row.get('commit')}"
         if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
@@ -1642,6 +1733,9 @@ class Acquirer:
 
     def reacquire(self, row: dict[str, Any], key: str) -> bytes | None:
         """Request a ledger row's document again at the commit it records, by its route."""
+        if INDEX.opaque_identity(row.get("repository")):
+            INDEX.candidate_name(row)
+            return None
         repository = row.get("served_by") or row.get("repository")
         path = row.get("path")
         commit = row.get("commit")
@@ -1706,6 +1800,8 @@ class Acquirer:
         key reaching that document still carries its own selector output, or the
         same acquisition failure with the key it was recorded under.
         """
+        if INDEX.opaque_identity(fetched.get("repository")):
+            return self.record_excluded_candidate(fetched["source"], key, selector, fetched)
         identity = {
             **{
                 field: fetched[field]
@@ -1790,6 +1886,12 @@ def _main() -> int:
         parser.error("--split-truncated-floor must be a positive number of bytes")
     if args.split_budget < 0:
         parser.error("--split-budget must not be negative")
+    supplied_publishers = None
+    if args.publisher_file and args.source == "github-publisher-trees" and args.stage == "walk" and not args.derive_only:
+        try:
+            supplied_publishers = publisher_file_rows(args.publisher_file)
+        except ValueError as error:
+            parser.error(str(error))
     try:
         keys = derive_keys(args.regions)
     except (OSError, ValueError) as error:
@@ -1912,19 +2014,8 @@ def _main() -> int:
         split_budget=args.split_budget,
     )
     if args.stage == "walk":
-        if args.publisher_file:
-            try:
-                publisher_input = json.loads(args.publisher_file.read_text(encoding="utf-8"))
-                publishers = publisher_input["publishers"]
-            except (OSError, ValueError, KeyError, TypeError) as error:
-                parser.error(f"--publisher-file cannot be read: {error}")
-            if not isinstance(publishers, list) or any(not isinstance(row, dict) for row in publishers):
-                parser.error("--publisher-file must contain publisher objects")
-            try:
-                for publisher in publishers:
-                    validate_publisher(publisher)
-            except ValueError as error:
-                parser.error(str(error))
+        if supplied_publishers is not None:
+            publishers = supplied_publishers
         else:
             try:
                 publishers = publisher_set(args.publisher_root)
@@ -2163,6 +2254,10 @@ def jsonl(path: Path) -> list[dict[str, Any]]:
                 datetime.datetime.fromisoformat(stamp)
             except ValueError as error:
                 raise EvidenceError(f"{path}:{number}: invalid call timestamp: {error}") from error
+        try:
+            INDEX.validate_opaque_values(row)
+        except ValueError as error:
+            raise EvidenceError(f"{path}:{number}: {error}") from error
         records.append(row)
     return records
 

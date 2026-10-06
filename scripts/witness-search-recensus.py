@@ -92,7 +92,7 @@ def ledger_name(source: str) -> str:
 def identity(source: str, row: dict[str, Any]) -> tuple[str, ...]:
     """What a later ledger row replaces an earlier one by, as the index reads it."""
     name = INDEX.candidate_name(row)
-    revision = row.get("commit") or f"blob:{row.get('blob') or row.get('sha') or 'unresolved'}"
+    revision = INDEX.candidate_revision(row)
     if source == "github-publisher-trees":
         return (name, revision)
     return (row["key"], name, revision)
@@ -103,7 +103,7 @@ def latest_rows(evidence: Path, source: str) -> list[tuple[int, dict[str, Any]]]
     for number, row in INDEX.jsonl(evidence / ledger_name(source)):
         latest[identity(source, row)] = (number, row)
         if row.get("supersedes"):
-            latest.pop(identity(source, {**row, "commit": row["supersedes"]}), None)
+            latest.pop(identity(source, INDEX.superseded_row(row)), None)
     return sorted(latest.values(), key=lambda item: item[0])
 
 

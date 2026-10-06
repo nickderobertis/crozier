@@ -132,11 +132,16 @@ class OpaqueContinuationTest(unittest.TestCase):
                     ledger = evidence / "candidates.jsonl"
                     historical = {"source": source, "key": KEY, "selector": SELECTOR,
                                   "repository": token, "path": token, "sha256": token,
-                                  "blob": token, "commit": "c" * 40,
+                                  "blob": token, "commit": token,
                                   "disposition": status, "status": 404,
                                   "reacquired_at_head": stage == "reacquire-namesake",
                                   "diagnostic": "HTTP 404"}
-                    original = json.dumps(historical) + "\n"
+                    prior = token.rsplit(":", 1)[0] + ":730"
+                    earlier = {**historical, "repository": prior, "path": prior, "sha256": prior,
+                               "blob": prior, "commit": prior}
+                    historical["supersedes"] = prior
+                    repeated = {k: v for k, v in historical.items() if k != "supersedes"}
+                    original = "".join(json.dumps(row) + "\n" for row in (earlier, historical, repeated))
                     ledger.write_text(original, encoding="utf-8")
                     cache = Path(tmp) / stage
                     options = ("--source", source, "--cache", str(cache)) if stage == "full-yaml" else (

@@ -242,15 +242,26 @@ SCREEN_FIELDS = {"licence": "license", "ref": "ref", "fern": "fern"}
 HISTORICAL_SCREEN = "historical screen: filed before scripts/witness_screen.py, with no measured record"
 
 
+OPAQUE_PREFIX = "screened-nonpublic-input:v1:"
+EXCLUDED_REPOSITORY = "fern-api/fern"
+OPAQUE_LOCATORS = ("name", "url", "raw_url", "sha", "blob", "sha256", "document", "commit", "revision")
+
+
+def make_opaque_identity(invocation: str, number: int) -> str:
+    token = f"{OPAQUE_PREFIX}{invocation}:{number}"
+    opaque_identity(token)
+    return token
+
+
 def opaque_identity(value: Any) -> str | None:
     """Recognize the versioned identity contract in the search records' README."""
     if not isinstance(value, str) or not value.startswith("screened-nonpublic-input:"):
         return None
     parts = value.split(":")
     version = parts[1] if len(parts) > 1 else ""
-    if version != "v1":
+    if version != OPAQUE_PREFIX.split(":")[1]:
         raise ValueError(f"unsupported opaque identity version {version}")
-    if not re.fullmatch(r"screened-nonpublic-input:v1:[0-9a-f]{32}:[1-9][0-9]*", value):
+    if not re.fullmatch(re.escape(OPAQUE_PREFIX) + r"[0-9a-f]{32}:[1-9][0-9]*", value):
         raise ValueError("invalid opaque identity: expected an invocation ID and a positive assigned integer")
     return value
 
@@ -264,7 +275,15 @@ def validate_opaque_values(value: Any) -> None:
             if "selector_count" in value or "selector_counts" in value:
                 raise ValueError("excluded-repository cannot carry measured selector counts")
         if "repository" in value and "path" in value:
-            candidate_name(value)
+            name = candidate_name(value)
+            if opaque_identity(name):
+                for field in (*OPAQUE_LOCATORS, "supersedes"):
+                    if field not in value:
+                        continue
+                    locator = opaque_identity(value[field])
+                    if not locator or (field != "supersedes" and locator != name):
+                        raise ValueError(f"opaque locator {field} must carry an opaque revision; "
+                                         "restore valid v1 evidence from git and rerun the command")
         for item in value.values():
             validate_opaque_values(item)
     elif isinstance(value, list):
@@ -286,6 +305,19 @@ def candidate_name(row: dict[str, Any]) -> str:
             raise ValueError("opaque repository and path must carry the same identity")
         return repository
     return f"{normalize_repo(row['repository'])}:{row['path']}"
+
+
+def candidate_revision(row: dict[str, Any]) -> str:
+    return opaque_identity(candidate_name(row)) or (
+        row.get("commit") or f"blob:{row.get('blob') or row.get('sha') or 'unresolved'}"
+    )
+
+
+def superseded_row(row: dict[str, Any]) -> dict[str, Any]:
+    prior = row["supersedes"]
+    if opaque_identity(row["repository"]):
+        return {**row, "repository": prior, "path": prior, "commit": prior}
+    return {**row, "commit": prior}
 
 
 def screen_value(value: str) -> str:
@@ -315,9 +347,7 @@ def classify(
     closed: bool = False,
 ) -> dict[str, str]:
     name = candidate_name(row)
-    revision = (
-        row.get("commit") or f"blob:{row.get('blob') or row.get('sha') or 'unresolved'}"
-    )
+    revision = candidate_revision(row)
     digest = row.get("sha256") or "not-fetched"
     count = row.get("selector_count", row.get("selector_counts", {}).get(key, 0))
     status = row.get("disposition") or row.get("status") or "acquisition-outstanding"
@@ -425,7 +455,8 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
             latest[(key, result["candidate"], result["revision"])] = result
             # A re-acquisition at a later commit replaces the row it re-requested.
             if row.get("supersedes"):
-                latest.pop((key, result["candidate"], row["supersedes"]), None)
+                prior = superseded_row(row)
+                latest.pop((key, candidate_name(prior), prior["commit"]), None)
             if source == "github-code-search" and row.get("blob"):
                 resolved_blobs.add((key, result["candidate"], row["blob"]))
     if source == "github-publisher-trees":
@@ -458,9 +489,7 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
             closed = (directory / f"closure-{key}.json").is_file()
             for item in query.get("results", []):
                 name = candidate_name(item)
-                revision = (
-                    item.get("commit") or f"blob:{item.get('sha') or 'unresolved'}"
-                )
+                revision = candidate_revision(item)
                 identity = (key, name, revision)
                 if identity in latest:
                     continue
