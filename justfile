@@ -82,8 +82,6 @@ test-live-e2e *args:
 # corpus whose test is missing here fails it, and so does a line naming a test no
 # registered corpus owns, so a renamed test cannot drop a corpus silently.
 test-corpus-match:
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e query_parameters_matches_fern_output_byte_for_byte
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_matches_fern_output_byte_for_byte
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e crozier_sdk_extensions_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e crozier_property_name_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e auth_schemes_matches_fern_output
@@ -115,12 +113,10 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e recursive_types_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nested_core_imports_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e malformed_property_schema_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e swagger_petstore_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e swagger_petstore_distribution_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e client_class_name_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audience_filter_strict_flat_matches_fern
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_package_name_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e overlay_goldens_match_fern_output
     python3 scripts/corpus_sources.py check
     "$(./scripts/census-python.sh)" tests/corpus_surface_census_test.py

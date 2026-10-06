@@ -3043,39 +3043,21 @@ class CensusReportTests(unittest.TestCase):
 
 
 class ConjunctionCensusTests(unittest.TestCase):
-    """What the fourth kind of selector answers, driven end to end over the corpus.
+    """Conjunction counts over local fixtures and two registered publisher sources.
 
-    A conjunction has no counting logic of its own — the census composes its
-    members under `&` and `>` as it walks — so the only way to know a spelling
-    counts what it says is to run the real script over the real vendored documents
-    and assert every entry's number. One exemplar would leave the other eight
-    unproven, which is exactly how a mis-composed member would survive.
-
-    Each map below is the whole answer for one selector: every registered vendored
-    source that declares it and how many times. An empty map is the other answer
-    the instrument must be able to give — a shape the corpus has never seen — and
-    it is the evidence a `gap` row would cite.
-
-    The closed list and not more: a case carries a selector only where every
-    property the arm's own condition reads is one the grammar can name — a field
-    written, a member of a closed value set, or one of the predicates — because
-    anything else the arm reads, an example's JSON kind or the *absence* of a
-    sibling declaration, is a condition no selector kind expresses and a selector
-    ignoring it would count documents the generator sends elsewhere. Every case
-    that carries no selector is an enumeration hole, and
-    `GrammarContractTests` holds the two states to the case analysis's own rows.
-
-    The numbers are the census's own, and an independent count over every vendored
-    document agrees with all nine. They were taken before the free-map-key walk
-    repair `FreeMapKeyWalkTests` guards and are unchanged by it: that repair
-    restores the Response Object subtree under an unquoted `200:` status code,
-    which moves the plain `schema.properties`, `schema.items` and `schema.type`
-    selectors on `query-parameters-openapi` and reaches no conjunction — so the
-    classification these numbers carry is the repaired walk's as well.
+    Every selector retains its complete answer over the selected source window.
+    Publisher documents cover composition shapes alongside the locally authored
+    controls. Empty answers remain explicit, scoped to that same window.
     """
 
-    # The nine the conjunction pass declared, kept apart from the twenty-eight the
-    # node-local predicate family added, so each pass's own coverage is readable.
+    @staticmethod
+    def source_args() -> tuple[str, ...]:
+        local = census.registered_sources(FIXTURES, FIXTURES / "corpus-sources", True)
+        names = {source.fixture for source in local} | {"groupe-psa", "nexmo-messages"}
+        return tuple(argument for name in sorted(names) for argument in ("--fixture", name))
+
+    # The original conjunctions stay distinct from the node-local predicate
+    # families, so each family's coverage remains readable.
     PRE_EXISTING = (
         "schema.anyOf>schema.$ref",
         "schema.anyOf>schema.allOf",
@@ -3092,25 +3074,43 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.anyOf>schema.$ref": {},
         "schema.anyOf>schema.allOf": {},
         "schema.items>schema.$ref": {
-            "audience-filter": 1, "audience-filter-strict": 1, "crozier-sdk-extensions": 1, "exhaustive": 7, "inline-array-request": 1, "inline-request-response": 1, "oauth-client-credentials": 1, "query-parameters-openapi": 2, "recursive-types": 2
+            "audience-filter": 1,
+            "audience-filter-strict": 1,
+            "crozier-sdk-extensions": 1,
+            "groupe-psa": 38,
+            "inline-array-request": 1,
+            "inline-request-response": 1,
+            "oauth-client-credentials": 1,
+            "recursive-types": 2
         },
         "schema.items>schema.anyOf": {},
         "schema.items>schema.oneOf": {},
         "schema.oneOf>schema.$ref": {
-            "crozier-property-name": 1, "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
+            "crozier-property-name": 1,
+            "discriminated-unions": 1,
+            "nexmo-messages": 3,
+            "recursive-types": 1
         },
-        "schema.oneOf>schema.allOf": {"exhaustive": 1},
-        # hoist_union_variant's string-enum arm, cases 2a to 2d: no vendored
-        # source declares a string enum or const as a union member.
-        "schema.oneOf>schema.enum:string-valued": {},
+        "schema.oneOf>schema.allOf": {
+            "nexmo-messages": 5
+        },
+        "schema.oneOf>schema.enum:string-valued": {
+            "groupe-psa": 2
+        },
         "schema.anyOf>schema.enum:string-valued": {},
         "schema.oneOf>schema.const:string-valued": {},
         "schema.anyOf>schema.const:string-valued": {},
         "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": {},
         "schema.properties>schema.anyOf": {},
-        "schema.properties>schema.oneOf": {},
+        "schema.properties>schema.oneOf": {
+            "groupe-psa": 2
+        },
         "schema.items>schema.type:primary=array": {},
-        "schema.items>schema.properties:non-empty": {"inline-array-request": 1},
+        "schema.items>schema.properties:non-empty": {
+            "groupe-psa": 4,
+            "inline-array-request": 1,
+            "nexmo-messages": 3
+        },
         "schema.items>schema.additionalProperties=false": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": {},
@@ -3124,51 +3124,63 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": {},
-        "schema.oneOf>schema.properties:non-empty": {},
+        "schema.oneOf>schema.properties:non-empty": {
+            "nexmo-messages": 1
+        },
         "schema.anyOf>schema.properties:non-empty": {},
-        # The nested-composition arm the case table gained with corpus row 193.
-        "schema.oneOf>schema.oneOf": {},
+        "schema.oneOf>schema.oneOf": {
+            "nexmo-messages": 1
+        },
         "schema.oneOf>schema.anyOf": {},
         "schema.anyOf>schema.oneOf": {},
         "schema.anyOf>schema.anyOf": {},
         "schema.properties>schema.enum:string-valued": {
-            "discriminated-unions": 2, "exhaustive": 2, "recursive-types": 2
+            "discriminated-unions": 2,
+            "groupe-psa": 52,
+            "nexmo-messages": 40,
+            "recursive-types": 2
         },
         "schema.properties>schema.const:string-valued": {},
         "schema.properties>schema.properties:non-empty": {
-            "crozier-property-name": 1, "inline-request-response": 2, "nested-core-imports": 1
+            "crozier-property-name": 1,
+            "groupe-psa": 63,
+            "inline-request-response": 2,
+            "nested-core-imports": 1,
+            "nexmo-messages": 37
         },
         "schema.properties>schema.additionalProperties=false": {},
         "schema.properties>schema.oneOf:sole-non-null-member": {},
         "schema.properties>schema.anyOf:sole-non-null-member": {},
         "schema.properties>schema.type:primary=array": {
-            "crozier-property-name": 1, "crozier-sdk-extensions": 1, "exhaustive": 3, "inline-request-response": 1, "malformed-property-schema": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 1
+            "crozier-property-name": 1,
+            "crozier-sdk-extensions": 1,
+            "groupe-psa": 41,
+            "inline-request-response": 1,
+            "malformed-property-schema": 1,
+            "nexmo-messages": 3,
+            "recursive-types": 2,
+            "schema-constraints": 1
         },
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": {},
-        # The ten the annotated-`$ref` pass declared. Every one is zero over the
-        # vendored half: no vendored document writes an `allOf` of a `$ref` beside
-        # a description at all, which `AnnotatedRefSelectorDiscriminationTests`
-        # answers for by constructing the documents rather than borrowing them.
-        "schema.properties>schema.allOf:annotated-ref": {},
+        "schema.properties>schema.allOf:annotated-ref": {
+            "groupe-psa": 5
+        },
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf": {},
-        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty": {},
-        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty": {
+            "groupe-psa": 1
+        },
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf": {
+            "groupe-psa": 3
+        },
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
-        # The nine the discriminated-union pass declared. Every one is zero over
-        # the vendored half: the two vendored documents that declare a union
-        # `discriminated_union` builds — `discriminated-unions` and
-        # `recursive-types` — write it as a named component, which no conjunction
-        # anchored on `items`, on a union member or on a property reaches.
-        # `DiscriminatedUnionSelectorDiscriminationTests` answers for all nine by
-        # constructing the documents rather than borrowing them.
         "schema.items>schema.oneOf:discriminated-union": {},
         "schema.items>schema.anyOf:discriminated-union": {},
         "schema.items>schema.discriminator:inheritance-union": {},
@@ -3178,57 +3190,93 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union": {},
         "schema.properties>schema.oneOf:discriminated-union": {},
         "schema.properties>schema.anyOf:discriminated-union": {},
-        # The five the pointer-walk pass declared. Every one is zero over the
-        # vendored half for the reason
-        # `PointerFormSelectorDiscriminationTests` already asserts: no vendored
-        # document writes a `#/components/schemas/` pointer carrying a segment
-        # after its head at all, so none of these arms is reachable there.
-        # `PointerWalkSelectorDiscriminationTests` answers for all five by
-        # constructing the documents rather than borrowing them.
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=allOf": {},
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf": {},
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf": {},
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties": {},
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items": {},
-        # The thirteen the negation pass declared beside the seven residual arms
-        # below. Every one is zero over the vendored half: none of these documents
-        # writes an `allOf` on a property, an item or a sole composition member
-        # without a scalar `type` beside it, and none writes an explicitly empty
-        # `properties: {}` at all.
-        "schema.items>!schema.type:primary-scalar&schema.allOf": {},
+        "schema.items>!schema.type:primary-scalar&schema.allOf": {
+            "groupe-psa": 2
+        },
         "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf": {},
         "schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf": {},
         "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
-        "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref": {},
-        "schema.properties>!schema.type:primary-scalar&schema.allOf": {},
+        "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref": {
+            "groupe-psa": 1
+        },
+        "schema.properties>!schema.type:primary-scalar&schema.allOf": {
+            "groupe-psa": 11
+        },
         "schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
-        # The four `hoist_union_variant` cases 10a to 10d added beside the empty
-        # `properties: {}` union member. No vendored document writes one.
         "schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": {},
         "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": {},
-        # The seven residual arms, whose selectors are composed from the case
-        # table rather than written. They are the most-travelled paths in the six
-        # functions and the vendored half declares four of them, which is what a
-        # residual arm should look like: `prop_type_ref`'s own residual is the
-        # widest number in this table.
-        "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "crozier-property-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
-        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
+        "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {
+            "client-class-name": 1,
+            "crozier-property-name": 1,
+            "error-responses": 1,
+            "groupe-psa": 23,
+            "malformed-property-schema": 1,
+            "missing-operation-id": 1,
+            "nexmo-messages": 1,
+            "operation-id-non-identifier": 1,
+            "pydantic-extra-fields": 1,
+            "schema-constraints": 1,
+            "tag-based-grouping": 2
+        },
+        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {
+            "groupe-psa": 2
+        },
         "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
-        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
-        "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {
+            "groupe-psa": 1
+        },
+        "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {
+            "groupe-psa": 2
+        },
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf": {},
-        "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {"audience-filter": 3, "audience-filter-strict": 4, "auth-schemes": 2, "bracketed-property-names": 2, "client-class-name": 1, "cookie-parameters": 1, "crozier-property-name": 9, "crozier-sdk-extensions": 5, "digit-leading-property": 1, "discriminated-unions": 2, "enum-name-sanitization": 1, "enum-query-param": 1, "enum-receiver-collision": 1, "error-responses": 2, "exhaustive": 16, "form-bodies": 4, "inline-array-request": 2, "inline-request-response": 6, "integer-enums": 1, "nested-core-imports": 1, "oauth-client-credentials": 3, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 2, "servers-webhooks": 3, "sse-streaming": 1, "tag-based-grouping": 2, "writeonly-fields": 1},
+        "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {
+            "audience-filter": 3,
+            "audience-filter-strict": 4,
+            "auth-schemes": 2,
+            "bracketed-property-names": 2,
+            "client-class-name": 1,
+            "cookie-parameters": 1,
+            "crozier-property-name": 9,
+            "crozier-sdk-extensions": 5,
+            "digit-leading-property": 1,
+            "discriminated-unions": 2,
+            "enum-name-sanitization": 1,
+            "enum-query-param": 1,
+            "enum-receiver-collision": 1,
+            "error-responses": 2,
+            "form-bodies": 4,
+            "groupe-psa": 154,
+            "inline-array-request": 2,
+            "inline-request-response": 6,
+            "integer-enums": 1,
+            "nested-core-imports": 1,
+            "nexmo-messages": 84,
+            "oauth-client-credentials": 3,
+            "operation-id-non-identifier": 1,
+            "pydantic-extra-fields": 1,
+            "recursive-types": 2,
+            "schema-constraints": 2,
+            "servers-webhooks": 3,
+            "sse-streaming": 1,
+            "tag-based-grouping": 2,
+            "writeonly-fields": 1
+        }
     }
 
-    # A conjunction no vendored source declares, asserted as absent rather than as
+    # A conjunction no selected source declares, asserted as absent rather than as
     # silence — the other half of what `--selector` has to answer.
     ABSENT = "schema.items>schema.anyOf"
 
@@ -3237,7 +3285,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         self.assertEqual(set(census.CONJUNCTIONS), set(self.DECLARED))
 
     def test_every_conjunction_counts_what_its_own_composition_implies(self) -> None:
-        completed = run("--vendored-only", "--json")
+        completed = run(*self.source_args(), "--json")
         self.assertEqual(0, completed.returncode, completed.stderr)
         reported: dict[str, dict[str, int]] = {selector: {} for selector in census.CONJUNCTIONS}
         for row in json.loads(completed.stdout)["rows"]:
@@ -3250,7 +3298,7 @@ class ConjunctionCensusTests(unittest.TestCase):
     def test_a_conjunction_reports_one_row_per_source_declaring_it(self) -> None:
         """`--selector` takes a conjunction like any other selector."""
         selector = "schema.oneOf>schema.$ref"
-        completed = run("--vendored-only", "--selector", selector)
+        completed = run(*self.source_args(), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual(
             {(selector, fixture): count for fixture, count in self.DECLARED[selector].items()},
@@ -3370,21 +3418,21 @@ class ConjunctionCensusTests(unittest.TestCase):
             ),
         ):
             with self.subTest(selector=selector):
-                completed = run("--vendored-only", "--selector", selector)
+                completed = run(*self.source_args(), "--selector", selector)
                 self.assertEqual(1, completed.returncode, completed.stdout)
                 self.assertIn(repr(selector), completed.stderr)
                 self.assertIn(expected, completed.stderr)
                 self.assertNotIn("declared by no registered source", completed.stdout)
 
-    def test_a_conjunction_no_registered_source_declares_is_reported_as_absent(self) -> None:
+    def test_a_conjunction_no_selected_source_declares_is_reported_as_absent(self) -> None:
         self.assertEqual({}, self.DECLARED[self.ABSENT], "the corpus now declares the absent case")
-        completed = run("--vendored-only", "--selector", self.ABSENT)
+        completed = run(*self.source_args(), "--selector", self.ABSENT)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))
         self.assertIn(self.ABSENT, completed.stdout)
         self.assertIn("(declared by no registered source)", completed.stdout)
 
-        as_json = run("--vendored-only", "--json", "--selector", self.ABSENT)
+        as_json = run(*self.source_args(), "--json", "--selector", self.ABSENT)
         payload = json.loads(as_json.stdout)
         self.assertEqual([], payload["rows"])
         self.assertEqual([self.ABSENT], payload["absent_selectors"])

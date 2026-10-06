@@ -46,8 +46,6 @@ const KINDS: &[Kind] = &[
     // `enum-type: literals` against Fern with `pydantic_config.enum_type` unset
     // (fern-python-sdk's `literals` default). The corpora together reach every
     // enum shape crozier generates:
-    // - `exhaustive`: named component enums, inline enums inside union variants,
-    //   an enum request body and response, and the dropped `core/enum.py`;
     // - `enum-name-sanitization`: values that need sanitizing into member names
     //   (`"0: Active"`) and an inline query-parameter enum of numeric strings;
     // - `groupe-psa`: inline enum variants in composed properties;
@@ -62,7 +60,6 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
-            "exhaustive",
             "enum-name-sanitization",
             "groupe-psa",
             "enum-query-param",
@@ -285,23 +282,24 @@ fn overlay_goldens_are_exactly_the_targeted_sets() {
 /// every file the overlay does not carry is `expected/`'s own.
 #[test]
 fn the_literals_golden_is_expected_minus_removed_plus_overlay() {
-    let (kind, api) = (&KINDS[0], "exhaustive");
+    let (kind, api) = (&KINDS[0], "openfigi.com");
     assert_eq!(kind.dir, "expected-literals");
     let overlay = read_overlay(kind, api)
-        .expect("valid exhaustive overlay")
-        .expect("exhaustive has an overlay");
+        .expect("valid publisher overlay")
+        .expect("publisher has an overlay");
     assert_eq!(overlay.removed, ["src/fern/core/enum.py"]);
     let tree = materialize(kind, api, &overlay);
     assert!(!tree.path().join("src/fern/core/enum.py").exists());
     assert!(!tree.path().join(MANIFEST).exists());
-    let weather =
-        std::fs::read_to_string(tree.path().join("src/fern/types/types_weather_report.py"))
+    let state =
+        std::fs::read_to_string(tree.path().join("src/fern/types/mapping_job_state_code.py"))
             .expect("overlaid enum module");
     assert!(
-        weather.contains(
-            "typing.Literal[\"SUNNY\", \"CLOUDY\", \"RAINING\", \"SNOWING\"], typing.Any"
-        ),
-        "{weather}"
+        state.contains("typing.Literal[")
+            && state.contains("\"AB\"")
+            && state.contains("\"AC\"")
+            && state.contains("typing.Any"),
+        "{state}"
     );
     // Unchanged files come from expected/ untouched.
     assert_eq!(

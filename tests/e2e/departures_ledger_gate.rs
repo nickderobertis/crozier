@@ -10,8 +10,8 @@ use std::path::Path;
 use super::departures_ledger::{self, GoldenLedger, Ledger, Row};
 use super::{
     assert_generated_tree_matches, compared_goldens, corpus_golden_ledger, golden_differences,
-    golden_tree_failures, load_departure_ledger, Corpus, CORPORA, EXHAUSTIVE, QUERY_PARAMETERS,
-    WEBFLOW_V2, WEBFLOW_V2_CROZIER_ONLY,
+    golden_tree_failures, load_departure_ledger, Corpus, CORPORA, OPENFIGI, WEBFLOW_V2,
+    WEBFLOW_V2_CROZIER_ONLY,
 };
 
 /// The directory, inside each case under the catalog's evidence directory, of
@@ -49,11 +49,10 @@ fn ledger_text(rows: &str) -> String {
 const SCRATCH_INVENTORY: &str = r#"{
   "goldens": {
     "docs/openapi-surface/authored-probes/demo/fern-expected": {},
-    "tests/fixtures/exhaustive/expected": {},
-    "tests/fixtures/exhaustive/expected-literals": {
+    "tests/fixtures/openfigi.com/expected": {},
+    "tests/fixtures/openfigi.com/expected-literals": {
       "excluded": [".crozier-overlay.json"]
     },
-    "tests/fixtures/query-parameters-openapi/expected": {},
     "tests/fixtures/webflow-v2/expected": {}
   }
 }
@@ -263,7 +262,7 @@ fn rows_naming_an_unknown_departure_golden_or_file_are_refused() {
         "{}",
     );
     assert_eq!(load_failures(root.path()).len(), 1);
-    let overlay = format!("tests/fixtures/{}/expected-literals", EXHAUSTIVE.api);
+    let overlay = format!("tests/fixtures/{}/expected-literals", OPENFIGI.api);
     let root = repository(&ledger_text(&format!(
         "{overlay}\t.crozier-overlay.json\t1\tsdk-identity-header-prefix\n"
     )));
@@ -338,9 +337,9 @@ fn a_file_also_carved_out_at_file_level_is_refused() {
     // An `unmatched` entry.
     static UNMATCHED: Corpus = Corpus {
         unmatched: &["README.md"],
-        ..EXHAUSTIVE
+        ..OPENFIGI
     };
-    let (root, golden) = corpus_repository(EXHAUSTIVE.api, "README.md");
+    let (root, golden) = corpus_repository(OPENFIGI.api, "README.md");
     let ledger = loaded(root.path());
     let row = format!("{golden}\tREADME.md\t3\tsdk-identity-header-prefix");
     assert_names(
@@ -356,24 +355,17 @@ fn a_file_also_carved_out_at_file_level_is_refused() {
         file,
         "also a crozier-only file",
     );
-    // A file pinned to crozier's own bytes.
-    let (root, golden) = corpus_repository(QUERY_PARAMETERS.api, "README.md");
-    assert_names(
-        &carve_out_failures(&loaded(root.path()), &golden, &QUERY_PARAMETERS),
-        "README.md",
-        "also a file pinned to crozier's own bytes",
-    );
     // The same row over a corpus that carves nothing out is admitted.
-    assert!(corpus_golden_ledger(&ledger, &golden, &EXHAUSTIVE).is_ok());
+    assert!(corpus_golden_ledger(&ledger, &golden, &OPENFIGI).is_ok());
 }
 
 #[test]
 fn a_carve_out_the_inventory_records_is_refused_at_load() {
-    let (root, golden) = corpus_repository(EXHAUSTIVE.api, "README.md");
+    let (root, golden) = corpus_repository(OPENFIGI.api, "README.md");
     write(
         root.path(),
         departures_ledger::INVENTORY,
-        r#"{"goldens": {"tests/fixtures/exhaustive/expected": {"carve_outs": {"unmatched": ["README.md"]}}}}"#,
+        r#"{"goldens": {"tests/fixtures/openfigi.com/expected": {"carve_outs": {"unmatched": ["README.md"]}}}}"#,
     );
     assert_names(
         &load_failures(root.path()),
@@ -383,27 +375,27 @@ fn a_carve_out_the_inventory_records_is_refused_at_load() {
     write(
         root.path(),
         departures_ledger::INVENTORY,
-        r#"{"goldens": {"tests/fixtures/exhaustive/expected": {"carve_outs": {"vendored": []}}}}"#,
+        r#"{"goldens": {"tests/fixtures/openfigi.com/expected": {"carve_outs": {"vendored": []}}}}"#,
     );
     assert!(load_failures(root.path())[0].contains("unknown carve-out kind `vendored`"));
 }
 
 #[test]
 fn the_corpus_gate_holds_its_golden_to_the_ledger() {
-    let (root, golden) = corpus_repository(EXHAUSTIVE.api, WRAPPER);
-    assert!(CORPORA.iter().any(|corpus| corpus.api == EXHAUSTIVE.api));
+    let (root, golden) = corpus_repository(OPENFIGI.api, WRAPPER);
+    assert!(CORPORA.iter().any(|corpus| corpus.api == OPENFIGI.api));
     let expected = root.path().join(&golden);
     let ledger =
-        corpus_golden_ledger(&loaded(root.path()), &golden, &EXHAUSTIVE).expect("no carve-out");
+        corpus_golden_ledger(&loaded(root.path()), &golden, &OPENFIGI).expect("no carve-out");
     assert_generated_tree_matches(
-        &EXHAUSTIVE,
+        &OPENFIGI,
         &ledger,
         &expected,
         output(CROZIER_WRAPPER).path(),
     );
     let gate = |out: &Path, ledger: &GoldenLedger| {
         let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            assert_generated_tree_matches(&EXHAUSTIVE, ledger, &expected, out);
+            assert_generated_tree_matches(&OPENFIGI, ledger, &expected, out);
         }))
         .expect_err("the corpus gate fails");
         panic.downcast_ref::<String>().cloned().unwrap_or_default()
@@ -420,7 +412,7 @@ fn the_corpus_gate_holds_its_golden_to_the_ledger() {
     let bare = corpus_golden_ledger(
         &loaded(root.path()),
         "tests/fixtures/other/expected",
-        &EXHAUSTIVE,
+        &OPENFIGI,
     )
     .expect("no row");
     let message = gate(output(CROZIER_WRAPPER).path(), &bare);
@@ -471,8 +463,8 @@ fn the_flat_and_reporter_comparison_holds_the_ledger() {
 
 #[test]
 fn an_overlay_takes_base_rows_only_for_the_files_it_inherits() {
-    let base = format!("tests/fixtures/{}/expected", EXHAUSTIVE.api);
-    let overlay = format!("tests/fixtures/{}/expected-literals", EXHAUSTIVE.api);
+    let base = format!("tests/fixtures/{}/expected", OPENFIGI.api);
+    let overlay = format!("tests/fixtures/{}/expected-literals", OPENFIGI.api);
     let root = repository(&ledger_text(&format!(
         "{}{}",
         wrapper_row(&base),
@@ -513,7 +505,7 @@ fn an_overlay_takes_base_rows_only_for_the_files_it_inherits() {
 
 #[test]
 fn recorded_departures_merge_into_the_ledger_golden_by_golden() {
-    let base = format!("tests/fixtures/{}/expected", EXHAUSTIVE.api);
+    let base = format!("tests/fixtures/{}/expected", OPENFIGI.api);
     let root = repository(&ledger_text(&format!(
         "{}{}",
         wrapper_row(GOLDEN),

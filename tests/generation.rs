@@ -13975,9 +13975,9 @@ fn aiohttp_hint_follows_ruffs_layout_for_the_name_length() {
     assert!(packaged("default_package_name").contains(&three_lines("default_package_name")));
 
     // A name too long even for the split call splits the string too.
-    let long = packaged("fern_query-parameters-openapi");
+    let long = packaged("navigation_instrument_archive");
     assert!(long.contains(
-        "                \"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install fern_query-parameters-openapi[aiohttp]\"\n"
+        "                \"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install navigation_instrument_archive[aiohttp]\"\n"
     ));
     assert!(long.lines().all(|line| line.len() <= 120));
 }

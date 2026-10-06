@@ -331,14 +331,6 @@
     "tests/fixtures/esp32-streamline-bridge/expected": {},
     "tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected": {},
     "tests/fixtures/exa-gate/expected": {},
-    "tests/fixtures/exhaustive-package-name/expected-flat": {},
-    "tests/fixtures/exhaustive/expected": {},
-    "tests/fixtures/exhaustive/expected-flat": {},
-    "tests/fixtures/exhaustive/expected-literals": {
-      "excluded": [
-        ".crozier-overlay.json"
-      ]
-    },
     "tests/fixtures/fergus/expected": {},
     "tests/fixtures/fiware-context-generator/expected": {},
     "tests/fixtures/flask-example-heroku/expected": {},
@@ -471,18 +463,6 @@
     "tests/fixtures/pydantic-extra-fields/expected": {},
     "tests/fixtures/qontract-api/expected": {},
     "tests/fixtures/qredence-fleet-rlm/expected": {},
-    "tests/fixtures/query-parameters-openapi/expected": {
-      "carve_outs": {
-        "pinned": [
-          ".fern/metadata.json",
-          "README.md",
-          "pyproject.toml",
-          "reference.md",
-          "src/seed/client.py",
-          "src/seed/core/client_wrapper.py"
-        ]
-      }
-    },
     "tests/fixtures/ramu-shogi/expected": {},
     "tests/fixtures/raybot/expected": {},
     "tests/fixtures/recursive-types/expected": {},

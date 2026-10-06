@@ -161,7 +161,7 @@ class TheCommittedTreeHolds(unittest.TestCase):
 
     def test_prepare_rejects_unsafe_names(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            completed = run(REPO, "prepare", "--fixture", "../exhaustive", "--output", directory)
+            completed = run(REPO, "prepare", "--fixture", "../outside-source", "--output", directory)
             self.assertEqual(1, completed.returncode)
             self.assertIn("unsafe fixture name", completed.stderr)
 

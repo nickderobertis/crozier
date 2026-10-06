@@ -29,7 +29,7 @@ SCRIPT = REPO / "scripts" / "fixtures-coverage.sh"
 REPORTER = REPO / "scripts" / "fixtures-coverage-report.py"
 
 # Vendored (never fetched) goldens, so the scoped runs stay offline.
-OFFLINE_GOLDEN = "query_parameters_matches_fern_output_byte_for_byte"
+OFFLINE_GOLDEN = "med_anvisa_price_matches_fern_output"
 JOURNEY = "help_lists_generate"
 UNIT = "wrap::tests::flat_atom_is_verbatim"
 OFFLINE_SCOPE = (
@@ -112,9 +112,9 @@ class TierSelectionTests(unittest.TestCase):
 
     def test_the_golden_tier_is_exactly_the_committed_byte_match_tests(self) -> None:
         golden = {name for _binary, name in nextest_list(tier_expressions()["golden"])}
-        # Both vendored byte-for-byte goldens and a representative corpus golden.
+        # Publisher byte-match goldens and their generator-setting variant.
         self.assertIn(OFFLINE_GOLDEN, golden)
-        self.assertIn("exhaustive_matches_fern_output_byte_for_byte", golden)
+        self.assertIn("marimo_client_class_name_matches_fern_output", golden)
         self.assertIn("frankfurter_matches_fern_output", golden)
         # Deliberately NOT golden: the runtime-behavior comparison is a wire test,
         # not a byte comparison against a committed golden, and the CalorieNinjas

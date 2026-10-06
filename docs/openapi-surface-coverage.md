@@ -349,7 +349,7 @@ just surface-census --selector pathItem.trace      # one feature: who declares i
 just surface-census --fixture apideck.com-crm --json
 ```
 
-Every registered source is committed: the 33 original
+Every registered source is committed: the 31 original
 `tests/fixtures/<name>/openapi.*` documents and the remaining sources under
 `tests/fixtures/corpus-sources/`, including every referenced file. Pinned URLs in
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md) are rebuild provenance;
