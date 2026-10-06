@@ -160,7 +160,7 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
         gate = load_gate()
         row = (REPO / "docs/openapi-surface/schemas.md").read_text(
             encoding="utf-8"
-        ).split("\n")[1271]
+        ).split("\n")[1274]
         candidate = row.strip().strip("|").split(" | ")[0]
         self.assertEqual(len(gate.documents_in(candidate)), 10)
 

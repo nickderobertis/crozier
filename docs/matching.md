@@ -374,7 +374,7 @@ attribute at a time, and held by the goldens named:
   does an optional map beside it; the OpenAPI version and the item type change
   nothing. Fern's signature types every query array `Optional[...] = None`, so
   the shorter call matches it and runs: this is Fern behaviour, and crozier
-  reproduces it. Corpus row 340, `typescript-service-template`, holds the JSON
+  reproduces it. Corpus row 316, `typescript-service-template`, holds the JSON
   rendering; `amazonaws.com-cloudformation` and `aws-importexport` hold the
   `text/xml` omission, and `query-parameters-openapi`'s pinned files the
   object-parameter one; the authored probe

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "40ae2b8f688f3e7bf8ae5b9dbab5a89efd23193e5c2db084dc2205d337abcef0"
+
+[[covers]]
+key = "type-misspelled-scalar"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-type-and-cycle-shapes/README.md"

@@ -162,11 +162,20 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 1 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 2 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
+
+### `closed-empty-object-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A required argument whose schema is an object closed with `additionalProperties: false` that declares no `properties`, and whose `patternProperties`, if any, cannot hold a string: its usage example in `README.md`, `reference.md` and the method's docstring.
+- **Fern writes:** The free-form placeholder `{"key": "value"}`, laid out over three lines in `README.md` and `reference.md` and on one line in a docstring.
+- **crozier writes:** `{}`, on one line, which the schema admits.
+- **Why:** An example value invalid for its own schema: such an object admits no key holding the string `"value"`, so validating `{"key": "value"}` against it fails, and a snippet sending it sends a body the API's own schema rejects.
+- **Evidence:** [`docs/departures/evidence/closed-empty-object-example.md`](../../docs/departures/evidence/closed-empty-object-example.md)
 
 ### `fern-metadata-generator-config`
 

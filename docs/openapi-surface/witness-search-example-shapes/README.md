@@ -76,7 +76,7 @@ registered here.
 ## Required query arrays
 
 A required query array needs no hand-written fixture: registered goldens declare
-every side of the measured rule. The JSON side is corpus row 340,
+every side of the measured rule. The JSON side is corpus row 316,
 `typescript-service-template`, registered from this search (`usersPatch`'s
 required `$ref UserID` array, which Fern's example passes); the `text/*` side is
 `amazonaws.com-cloudformation` (`text/xml` responses, where it leaves every
