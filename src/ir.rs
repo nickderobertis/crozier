@@ -6768,21 +6768,22 @@ fn hoist_form_object(
         .collect()
 }
 
-/// A one-argument request body.
 /// Whether an inline container request body — an array, a map or a bare object,
 /// sent whole as one `request` argument — carries the JSON content-type header
 /// when nothing else (a parameter, a media-type override) decides it. Measured at
 /// Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, the header follows the
 /// schema alone: a `title` or a `description` on it — even an empty one — sends
-/// the header, and an untitled, undescribed one leaves the content type to httpx. Neither the
-/// OpenAPI version, a `$ref` item, `requestBody.required` nor the request body's
-/// own `description` moves it: deepsearch-ds-v2's and letta's titled `$ref`-item
-/// arrays, FastAPI's `title: Data` bodies and blackadi-oauth2's described bare
-/// objects all carry it.
+/// the header, and an untitled, undescribed one leaves the content type to httpx.
+/// Neither the OpenAPI version, a `$ref` item, `requestBody.required` nor the
+/// request body's own `description` moves it: download-manager's and the OpenTOSCA
+/// license engine's titled 3.0 arrays, letta's and deepsearch-ds-v2's titled 3.1
+/// arrays, komga's described map and blackadi-oauth2's described bare objects all
+/// carry it.
 fn inline_container_carries_content_type(schema: &Schema) -> bool {
     schema.title.is_some() || schema.description.is_some()
 }
 
+/// A one-argument request body.
 fn single(type_ref: TypeRef, required: bool, convert: bool, content_type: bool) -> RequestBody {
     single_with_override(type_ref, required, convert, content_type, None)
 }
