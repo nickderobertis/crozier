@@ -247,6 +247,7 @@ compares it. Row 224 is the one so far.
 | 336 | `esp32-streamline-bridge` | github-raw | https://raw.githubusercontent.com/lutyjj/esp32-streamline/f50f678a3569d5c10e250cdd03e16cf1d17df16a/docs/bridge-openapi.json | `f50f678a3569d5c10e250cdd03e16cf1d17df16a` | GPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The StreamLine bridge API as esp32-streamline publishes it: 13 paths and 25 component schemas; `GET /api/recordings/{recording_id}/file` and `GET /streamline.wav` answer a schemaless `audio/wav` |
 | 337 | `cphos-ai-question` | github-raw | https://raw.githubusercontent.com/CPHOS/AI_Question/951028cbbcfb1ab15ee26dc02824029cb50fd1ab/docs/api/openapi.json | `951028cbbcfb1ab15ee26dc02824029cb50fd1ab` | AGPL-3.0 (`info.license` `AGPL-3.0-or-later`, and the publisher repository's pinned `LICENSE`) | committed | CPhOS's physics-question generation API as its FastAPI service publishes it: 31 paths and 45 component schemas; `GET /api/tasks/{task_id}/artifacts/{name}` answers a schemaless `application/pdf` listed before `text/markdown`, beside JSON error responses |
 | 338 | `flask-example-heroku` | github-raw | https://raw.githubusercontent.com/rctatman/flask_example_heroku/2703c6ee5627d8543703a4cd9436c260fc4723c8/openapi.yaml | `2703c6ee5627d8543703a4cd9436c260fc4723c8` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | A Python package-name extractor's API as its repository publishes it, at OpenAPI 3.0.0: 1 path and no component schemas; `POST /extractpackages` declares a required request body whose `application/json` media type has no schema |
+| 339 | `oip-web-api` | github-raw | https://raw.githubusercontent.com/g10101k/Oip/e3a6ecd60b1204c64907d543b37652f4230fee89/src/OipOpenApi.json | `e3a6ecd60b1204c64907d543b37652f4230fee89` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The Oip service web API as its repository's Swashbuckle build publishes it, at OpenAPI 3.0.1: 2 paths and 2 component schemas; the parameterless `POST /api/module-federation/register-module` declares `requestBody.description: ""` over a single-use `$ref` body with optional properties |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1456,7 +1457,7 @@ The repair: a property union's member composing two or more alternatives of
 its own is hoisted to `{Owner}{Prop}{Ordinal}` rather than inlined as a nested
 `typing.Union`.
 
-## Rows 330–338 — request bodies and schemaless responses
+## Rows 330–339 — request bodies and schemaless responses
 
 A request body's model, its JSON content-type header, a success response that
 declares no schema, and a status key spelled with a suffix are each decided by
@@ -1475,6 +1476,7 @@ Fern 5.20.0 golden with `unmatched: &[]`:
 | 336 | `esp32-streamline-bridge` | schemaless `audio/wav` successes | ✅ byte-matched after one repair |
 | 337 | `cphos-ai-question` | a schemaless `application/pdf` success listed before `text/markdown` | ✅ byte-matched after two repairs |
 | 338 | `flask-example-heroku` | a JSON request body declaring no schema | ✅ byte-matched after one repair |
+| 339 | `oip-web-api` | an empty `requestBody.description` over a body with optional fields | ✅ byte-matched after one repair |
 
 The repairs: a single-use JSON body's model is dropped whatever its name, where
 crozier kept every `Body_*` model (row 330); an unknown success body is guarded
@@ -1489,4 +1491,6 @@ content decides between `str` and a byte stream (row 335), and a Markdown media
 type listed after a download leaves the download's worked example its path
 arguments (row 337); a schemaless `audio/wav` or `application/pdf` success
 streams bytes (rows 336, 337); and a JSON request body declaring no schema
-sends nothing, where crozier dropped the whole method (row 338).
+sends nothing, where crozier dropped the whole method (row 338); and an empty
+`requestBody.description` is a description, so the body keeps its JSON
+content-type header (row 339).

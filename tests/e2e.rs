@@ -5014,6 +5014,7 @@ const CORPORA: &[&Corpus] = &[
     &ESP32_STREAMLINE_BRIDGE,
     &CPHOS_AI_QUESTION,
     &FLASK_EXAMPLE_HEROKU,
+    &OIP_WEB_API,
     &HUATUO_NODE_TREE,
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
@@ -8037,6 +8038,19 @@ const CPHOS_AI_QUESTION: Corpus = Corpus {
 /// declares a JSON request body with no schema
 const FLASK_EXAMPLE_HEROKU: Corpus = Corpus {
     api: "flask-example-heroku",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `oip-web-api`: corpus row 339, the Oip service web API, whose parameterless
+/// module registration declares an empty `requestBody.description`
+const OIP_WEB_API: Corpus = Corpus {
+    api: "oip-web-api",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -14729,6 +14743,11 @@ fn cphos_ai_question_matches_fern_output() {
 #[test]
 fn flask_example_heroku_matches_fern_output() {
     assert_committed_corpus_matches(&FLASK_EXAMPLE_HEROKU);
+}
+
+#[test]
+fn oip_web_api_matches_fern_output() {
+    assert_committed_corpus_matches(&OIP_WEB_API);
 }
 
 #[test]

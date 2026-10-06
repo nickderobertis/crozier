@@ -386,6 +386,7 @@
     "tests/fixtures/npq-registration/expected": {},
     "tests/fixtures/oal-example/expected": {},
     "tests/fixtures/oauth-client-credentials/expected": {},
+    "tests/fixtures/oip-web-api/expected": {},
     "tests/fixtures/onevoice/expected": {},
     "tests/fixtures/openaire-graph/expected": {},
     "tests/fixtures/openbanking-brasil-directory/expected": {},
