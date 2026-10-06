@@ -1303,7 +1303,8 @@ fn compare_reports_the_readme_casing_departure_on_the_mixed_case_organization_go
     );
     // `reference.sh [readme|docstring]`: copy the committed Fern tree, then edit
     // one line of README.md, or split a docstring's imports as Fern does only
-    // for a package named `fern`.
+    // for a package named `fern`. Each edit is POSIX awk so it applies under
+    // BSD and GNU userlands alike.
     write_script(
         root,
         "scripts/reference.sh",
@@ -1311,11 +1312,11 @@ fn compare_reports_the_readme_casing_departure_on_the_mixed_case_organization_go
             "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
              cp -R '{}'/. \"$out\"\n\
              case \"${{1:-}}\" in\n\
-             \x20 readme) file=README.md; edit='s/^# PetStore Python Library$/# PetStore Python SDK/' ;;\n\
-             \x20 docstring) file=pet/client.py; edit='0,/^        from PetStore.pet import/s//\\n        from PetStore.pet import/' ;;\n\
+             \x20 readme) file=README.md; edit='$0 == \"# PetStore Python Library\" {{ $0 = \"# PetStore Python SDK\" }} {{ print }}' ;;\n\
+             \x20 docstring) file=pet/client.py; edit='!done && /^        from PetStore[.]pet import/ {{ print \"\"; done = 1 }} {{ print }}' ;;\n\
              \x20 *) exit 0 ;;\n\
              esac\n\
-             sed \"$edit\" \"$out/$file\" > \"$out/edited.tmp\"\n\
+             awk \"$edit\" \"$out/$file\" > \"$out/edited.tmp\"\n\
              mv \"$out/edited.tmp\" \"$out/$file\"\n",
             manifest.join(golden).display()
         ),
