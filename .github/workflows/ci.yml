@@ -7,6 +7,9 @@ on:
   push:
     branches: [main]
   pull_request:
+    # The default types plus `ready_for_review`: a draft lifted to ready must
+    # re-report the required contexts on its head, not lean on draft-time runs.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
