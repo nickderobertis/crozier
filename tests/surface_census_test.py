@@ -12900,13 +12900,13 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
                 "/fallback": {"get": self.operation(responses={
                     "200": {"description": "unusable", "content": {"/*": {}}}, "201": text})},
                 "/default": {"get": self.operation(responses={"default": text})},
+                "/empty": {"get": self.operation(responses={"200": {"description": "empty"}, "201": text})},
             }},
             "decoys": {"paths": {
                 "/preferred": {"get": self.operation(responses={"201": text, "200": json_response})},
-                "/empty": {"get": self.operation(responses={"200": {"description": "empty"}, "201": text})},
             }},
         }
-        self.assertEqual({(selector, "positive"): 3, (selector, "decoys"): 1}, self.census(selector, documents))
+        self.assertEqual({(selector, "positive"): 4}, self.census(selector, documents))
 
     def test_contentless_200_with_201_counts_inline_and_referenced_responses(self) -> None:
         selector = "operation.responses:contentless-two-hundred-with-created"
