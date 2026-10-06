@@ -272,7 +272,7 @@ fn datetime_example(value: &str) -> String {
 
 /// The instant Fern reads from its rewritten `date-time` value, in whole seconds
 /// since the Unix epoch, or `None` where it reads none. The grammar is the one
-/// measured: a date alone or a date and a time (`T` or a space between, seconds
+/// measured: a date alone or a date and a time (`T`, `t` or a space between, seconds
 /// and a fraction optional, the fraction dropped), then `Z` or a `±HH:MM` or
 /// `±HHMM` offset; any day up to 31, rolling past the month's end.
 fn read_datetime(value: &str) -> Option<i64> {
@@ -287,7 +287,7 @@ fn read_datetime(value: &str) -> Option<i64> {
     }
     let mut at = 10;
     let (mut hour, mut minute, mut second) = (0, 0, 0);
-    if matches!(bytes.get(at), Some(b'T' | b' ')) {
+    if matches!(bytes.get(at), Some(b'T' | b't' | b' ')) {
         hour = number(at + 1..at + 3)?;
         minute = number(at + 4..at + 6)?;
         if bytes.get(at + 3) != Some(&b':') {
@@ -12494,6 +12494,7 @@ mod tests {
         );
         assert_eq!(written("2023-03-04 05:06:07"), "2023-03-04T05:06:07+00:00");
         assert_eq!(written("2023-03-04T05:06:07"), "2023-03-04T05:06:07+00:00");
+        assert_eq!(written("2023-03-04t05:06:07Z"), "2023-03-04T05:06:07+00:00");
         assert_eq!(written("2023-03-04"), "2023-03-04T00:00:00+00:00");
         assert_eq!(written("2023-03-04T05:06Z"), "2023-03-04T05:06:00+00:00");
         assert_eq!(
@@ -12525,7 +12526,6 @@ mod tests {
             "2023-03-04T25:06:07Z",
             "2023-13-04T05:06:07Z",
             "2023-03-32T05:06:07Z",
-            "2023-03-04t05:06:07Z",
             "2023-03-04T05:06:60Z",
             "  2023-03-04T05:06:07Z",
             "2023-03-04T05:06-05:00",
