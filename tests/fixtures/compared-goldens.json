@@ -81,6 +81,7 @@
     "docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected": {},
     "docs/openapi-surface/handwritten/signal-cabinet-labels/fern-expected": {},
     "docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected": {},
+    "docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected": {},
     "docs/openapi-surface/handwritten/unread-date-time-examples/fern-expected": {},
     "docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-closed-object": {},

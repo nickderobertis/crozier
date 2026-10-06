@@ -133,6 +133,54 @@ class StringMapSearchRecordTests(unittest.TestCase):
             self.assertEqual("5.20.0", pins["generator_version"])
 
 
+class IntegerFormatSearchRecordTests(unittest.TestCase):
+    """The bounded format search agrees with its real acquisitions and refusal."""
+
+    def test_summary_counts_and_refusal_match_the_retained_measurements(self) -> None:
+        root = REPO / "docs/openapi-surface/witness-search-integer-format"
+        source = root / "sourcegraph"
+        queries = [json.loads(line) for line in (source / "queries.jsonl").read_text().splitlines()]
+        with (root / "queries.tsv").open(newline="") as handle:
+            summary = list(csv.DictReader(handle, delimiter="\t"))
+        self.assertEqual(2, len(queries))
+        self.assertEqual(len(queries), len(summary))
+        record = (root / "README.md").read_text()
+        for measured, stated in zip(queries, summary):
+            self.assertEqual(measured["key"], stated["key"])
+            self.assertEqual(measured["query"], stated["query"])
+            self.assertEqual(measured["outcome"], stated["outcome"])
+            self.assertEqual(len(measured["results"]), int(stated["result_count"]))
+            self.assertEqual(measured["result_count"], int(stated["result_count"]))
+            self.assertIn(str(measured["result_count"]), record)
+        documents = [json.loads(line) for line in (source / "candidates.jsonl").read_text().splitlines()]
+        identities = {
+            (row["repository"].removeprefix("github.com/"), row["commit"], row["path"]): row
+            for row in documents
+        }
+        self.assertEqual(3, len(identities))
+        for (repository, commit, path), row in identities.items():
+            label = f"| {repository}, {path} | `{commit}` |"
+            matches = [line for line in record.splitlines() if line.startswith(label)]
+            self.assertEqual(1, len(matches), label)
+            self.assertEqual(row["selector_count"], int(matches[0].split("|")[3]))
+        screens = [json.loads(line) for line in (source / "screens.jsonl").read_text().splitlines()]
+        self.assertEqual(1, len(screens))
+        row = screens[0]
+        identity = row["repository"], row["commit"], row["path"]
+        self.assertEqual(identities[identity]["sha256"], row["sha256"])
+        self.assertEqual("rejected", row["disposition"])
+        for stage in ("licence", "ref", "fern"):
+            measured = row["measured"][stage]
+            expected = "failed" if stage == "fern" else "passed"
+            self.assertTrue(measured["outcome"].startswith(expected), measured["outcome"])
+            self.assertEqual(measured["log_sha256"],
+                             hashlib.sha256((source / measured["log"]).read_bytes()).hexdigest())
+        fern = row["measured"]["fern"]
+        self.assertEqual("5.67.1", fern["pins"]["fern_cli"])
+        self.assertEqual("5.20.0", fern["pins"]["generator_version"])
+        self.assertEqual("1", fern["run"]["check_exit"])
+
+
 class LedgerShardTests(unittest.TestCase):
     """A ledger past GitHub's blob limit is kept as line-aligned parts."""
 

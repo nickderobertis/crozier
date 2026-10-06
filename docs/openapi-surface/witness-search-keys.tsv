@@ -7,6 +7,7 @@ base-path-extension	openapi.x-fern-base-path	oas31-extensions.md	supported
 component-same-primitive-union	components.schemas:same-primitive-union	schemas.md	supported
 cycle-into-cycle	components.schemas:cycle-into-cycle	schemas.md	supported
 header-subset-string-default	parameter.schema:subset-header-string-default	parameters.md	supported
+integer-format-fallback	schema.format=bigint	schemas.md	supported
 oneof-array-variant-annotated-ref-item	schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component	schemas.md	supported
 oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union	schemas.md	supported
 oneof-array-variant-anyof-nullable-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	schemas.md	supported
