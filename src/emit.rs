@@ -12551,6 +12551,8 @@ mod tests {
             "2023-03-04T05:06+a\u{e9}1",
             "2023-03-04T05:06:07+0\u{e9}",
             "not a date",
+            "2023/03/04T05:06:07Z",
+            "2023-03-04T05x06:07Z",
             "",
         ] {
             assert_eq!(written(invalid), super::FERN_DEFAULT_DATETIME, "{invalid}");
