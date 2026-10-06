@@ -1749,9 +1749,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         generator = subprocess.run(
             self.script_command(
                 REPO / "scripts" / "generate-fern-fixture.sh",
-                "exhaustive",
+                "auth-schemes",
                 "4.35.0",
-                str(REPO / "tests" / "fixtures" / "exhaustive" / "openapi.yml"),
+                str(REPO / "tests" / "fixtures" / "auth-schemes" / "openapi.yml"),
                 str(outside / "expected"),
             ),
             cwd=REPO,
