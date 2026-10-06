@@ -3613,7 +3613,11 @@ fn build_endpoint(
         streaming: is_streaming(op),
         stream_chunk: stream_chunk_type(op),
         text_response: has_text_response(op),
-        markdown_response: has_markdown_response(op),
+        // A Markdown media type beside a download listed before it is not the
+        // body: the method streams the download and documents its path
+        // arguments, as CPHOS's `download_artifact` (`application/pdf` first,
+        // `text/markdown` third) does at Fern 5.20.0.
+        markdown_response: has_markdown_response(op) && !is_binary_response(doc, op),
         binary_response: is_binary_response(doc, op),
         importer_example_missing: fern_imports_no_endpoint_example(doc, op),
         binary_schema_response: has_binary_schema_response(doc, op),
@@ -18359,6 +18363,35 @@ mod tests {
         )
         .expect("the config is well formed");
         super::build(&doc, &config)
+    }
+
+    #[test]
+    fn markdown_beside_a_download_listed_first_is_not_the_body() {
+        let endpoint = |content: serde_json::Value| {
+            let ir = build_document(serde_json::json!({
+                "openapi": "3.1.0",
+                "info": { "title": "Artifacts", "version": "1" },
+                "paths": { "/artifacts/{name}": { "get": {
+                    "parameters": [{ "name": "name", "in": "path", "required": true,
+                                     "schema": { "type": "string" } }],
+                    "responses": { "200": { "description": "the artifact", "content": content } }
+                } } }
+            }));
+            let endpoint = &ir.endpoints[0];
+            (endpoint.binary_response, endpoint.markdown_response)
+        };
+        assert_eq!(
+            endpoint(serde_json::json!({ "application/pdf": {}, "text/markdown": {} })),
+            (true, false)
+        );
+        assert_eq!(
+            endpoint(serde_json::json!({ "text/markdown": {}, "application/pdf": {} })),
+            (false, true)
+        );
+        assert_eq!(
+            endpoint(serde_json::json!({ "text/markdown": {} })),
+            (false, true)
+        );
     }
 
     #[test]
