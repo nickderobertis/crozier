@@ -404,7 +404,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-85, declared in `scripts/openapi-surface-census.py` and restated here, with a
+89, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -449,6 +449,28 @@ drift gate over the pair:
   alternative's ordinal. Read at the Components Object, the one position where
   the name shows; `integer` and `format: int64` convert to different primitives,
   as Fern keeps them apart.
+- `components.schemas:fields-reach-cycles-unsorted` — one per component schema
+  composing no `oneOf` or `anyOf` whose `properties`, read in order, name
+  members of two or more reference cycles (strongly connected components of the
+  `components.schemas` `$ref` graph), where each cycle's members sorted and the
+  cycles taken in the order the properties first reach them are not in sorted
+  order: the trailing deferred imports `object_deferred_order` of `src/emit.rs`
+  writes in that order.
+- `components.schemas:cycle-into-cycle` — one per component schema composing no
+  `oneOf` or `anyOf` that names a member of a reference cycle with an edge into
+  a different reference cycle the schema names no member of: the case
+  `forward_repair_map` of `src/emit.rs` repairs with the first cycle only.
+- `mediaType.schema:closed-empty-object-property` — one per inline schema
+  `{type: object, additionalProperties: false}` declaring no `properties` that is
+  a property of a request body's selected JSON media type's inline schema: the
+  position `base_type_ref` of `src/ir.rs` types `Dict[str, Any]` where
+  `is_inline_struct` once hoisted an empty model. The same object as an inline
+  success response is corpus row 314's.
+- `schema.type:misspelled-scalar` — one per Schema Object whose `type` names
+  `double`, `int32`, `long`, `bool` or `decimal`, none an OpenAPI type: Fern
+  reads each as unknown, and `base_type_ref` types it `Any` too. `float`, which
+  `normalize_float_type` of `src/openapi.rs` reads as a number, and `int` are
+  corpus row 313's, and kept apart.
 - `securityScheme:$ref` — one per `components.securitySchemes` entry that is a
   Reference Object rather than a Security Scheme Object, the entry
   `normalize_security_scheme_refs` of `src/openapi.rs` resolves. The walk counts
@@ -730,7 +752,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Sixty-eight of the 85 are node-local**, which is what makes them one family:
+**Sixty-nine of the 89 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -738,7 +760,7 @@ in exactly that sense — a `$ref` *value* is one of the node's own declared
 fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further. The other
-seventeen — `operation.operationId:duplicate`,
+twenty — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
@@ -748,10 +770,13 @@ seventeen — `operation.operationId:duplicate`,
 `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`,
 `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`,
 `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
-`schema.example:on-ref-to-union` and `schema.example:on-ref-to-alias` — read
-the document beyond the node, and say so in their own sentence. The first eight
-compare one document's own values against each other; the last nine read where
-the node stands (an operation's route, a request body's selected media type) or
+`schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`,
+`components.schemas:fields-reach-cycles-unsorted`,
+`components.schemas:cycle-into-cycle` and
+`mediaType.schema:closed-empty-object-property` — read the document beyond the node, and
+say so in their own sentence. The first eight and the two cycle readings compare
+one document's own values against each other; the other ten read where the node
+stands (an operation's route, a request body's selected media type) or
 resolve one local `#/components/...` reference. Those two
 numbers partition the closed list, and a check reconciles the split with it. Every
 document-reading predicate reads **the document context**: the census carries the
@@ -3794,6 +3819,14 @@ helper read again, inside the one-member arity its own arm tests. Cases 11a and
 `$ref`, an unknown, a map, an inline struct, and an array whose inline element
 hoists as case 15's does (corpus row 218's `directoryScopeOptions`) — are not
 split into rows.
+
+**Cases 8d, 12c and 12d over-count by one shape.** Since the
+`empty-closed-object-schema` repair, `is_inline_struct`'s closed-object disjunct
+holds only for an object that also writes `properties`, and a sole member
+closed with no `properties` returns `Dict[str, Any]` ahead of case 12, as Fern
+types both. Their selectors still count a closed object writing no
+`properties`, which now takes the free-form path; narrowing them is a
+re-derivation of this table's conjunctions, left to the census reconciliation.
 
 **Cases 1 to 5 are one path and are read at two grains.** Case 1 is the gate,
 which reads the property in front of it and nothing else; cases 2 to 5 sit inside

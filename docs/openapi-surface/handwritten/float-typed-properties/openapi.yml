@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: Glacier Survey
+  version: 1.0.0
+paths:
+  /stakes:
+    post:
+      operationId: recordStake
+      tags: [stakes]
+      parameters:
+        - name: tolerance
+          in: query
+          schema:
+            type: float
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ablation]
+              properties:
+                ablation:
+                  type: float
+                albedo:
+                  type: float
+                  format: double
+                readings:
+                  type: array
+                  items:
+                    type: float
+      responses:
+        '200':
+          description: The stake reading was recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stake'
+components:
+  schemas:
+    Elevation:
+      type: float
+    Stake:
+      type: object
+      required: [melt]
+      properties:
+        melt:
+          type: float
+        drift:
+          type: [float, 'null']
+        wholeMetres:
+          type: float
+          format: int32
+        firn:
+          type: int
+        density:
+          type: double
+        segment:
+          type: int32
+        epoch:
+          type: long
+        buried:
+          type: bool
+        mass:
+          type: decimal
+        elevation:
+          $ref: '#/components/schemas/Elevation'
+        layers:
+          type: array
+          items:
+            type: float
+        bands:
+          type: object
+          additionalProperties:
+            type: float

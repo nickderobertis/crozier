@@ -2369,6 +2369,11 @@ class GrammarContractTests(unittest.TestCase):
         "schema.example:on-ref-to-enum",
         "schema.example:on-ref-to-union",
         "schema.example:on-ref-to-alias",
+        # Compare a document's component schemas against each other (the
+        # reference graph), or read where a media type stands.
+        "components.schemas:fields-reach-cycles-unsorted",
+        "components.schemas:cycle-into-cycle",
+        "mediaType.schema:closed-empty-object-property",
     })
 
     def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
@@ -2387,9 +2392,9 @@ class GrammarContractTests(unittest.TestCase):
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
-            "Sixty-seven": 67, "Sixty-eight": 68,
+            "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
-            "seventeen": 17,
+            "seventeen": 17, "twenty": 20,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -4318,6 +4323,9 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - {name for name in census.PREDICATES
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
         - {"components.schemas:nonidentifier-name", "components.schemas:same-primitive-union",
+           "components.schemas:fields-reach-cycles-unsorted",
+           "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
+           "schema.type:misspelled-scalar",
            "securityScheme:$ref"} \
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
 
@@ -12420,6 +12428,119 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def census_one(self, selector: str, documents: dict[str, dict]) -> dict:
+        """Census each `(fixture, document)` pair for one selector, offline."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, document in documents.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {}, **document,
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return rows(completed)
+
+    def test_cycle_predicates_count_models_and_not_their_near_misses(self) -> None:
+        """`fields-reach-cycles-unsorted` and `cycle-into-cycle`.
+
+        The positive's `Timetable` reaches `Wharf`'s cycle before `Buoy`'s, and
+        `Roster` names `Captain`, whose cycle with `Vessel` points into the
+        self-recursive `Harbor`. The decoys reach two cycles in sorted order, name
+        the downstream cycle themselves, or compose a union beside `properties`.
+        """
+        ref = lambda name: {"$ref": f"#/components/schemas/{name}"}  # noqa: E731
+        selfish = lambda field, name: {"type": "object", "properties": {field: ref(name)}}  # noqa: E731
+        positive = {"components": {"schemas": {
+            "Timetable": {"type": "object", "properties": {"wharf": ref("Wharf"), "buoy": ref("Buoy")}},
+            "Wharf": selfish("annex", "Wharf"),
+            "Buoy": {"type": "object", "properties": {"tethered": {"type": "array", "items": ref("Buoy")}}},
+            "Roster": {"type": "object", "properties": {"captain": ref("Captain")}},
+            "Captain": selfish("vessel", "Vessel"),
+            "Vessel": {"type": "object", "properties": {"skipper": ref("Captain"), "port": ref("Harbor")}},
+            "Harbor": selfish("district", "Harbor"),
+        }}}
+        decoys = {"components": {"schemas": {
+            "Sorted": {"type": "object", "properties": {"buoy": ref("Buoy"), "wharf": ref("Wharf")}},
+            "Union": {"type": "object", "oneOf": [ref("Buoy")],
+                      "properties": {"wharf": ref("Wharf"), "buoy": ref("Buoy")}},
+            "Wharf": selfish("annex", "Wharf"),
+            "Buoy": selfish("tethered", "Buoy"),
+            "Fleet": {"type": "object", "properties": {"captain": ref("Captain"), "port": ref("Yard")}},
+            "Captain": selfish("vessel", "Vessel"),
+            "Vessel": {"type": "object", "properties": {"skipper": ref("Captain"), "port": ref("Yard")}},
+            "Yard": selfish("district", "Yard"),
+            "x-Ignored": selfish("annex", "Wharf"),
+        }}}
+        unsorted = "components.schemas:fields-reach-cycles-unsorted"
+        self.assertEqual({(unsorted, "positive"): 1},
+                         self.census_one(unsorted, {"positive": positive, "decoys": decoys}))
+        chained = "components.schemas:cycle-into-cycle"
+        # `Roster` and `Captain`; in the decoys `Captain` alone, as `Fleet` names
+        # `Yard` itself, and `Vessel` names the downstream cycle directly in both.
+        self.assertEqual({(chained, "positive"): 2, (chained, "decoys"): 1},
+                         self.census_one(chained, {"positive": positive, "decoys": decoys}))
+
+    def test_closed_empty_object_property_counts_inline_body_properties(self) -> None:
+        """`mediaType.schema:closed-empty-object-property`, request bodies only.
+
+        The positive closes two request-body properties; the decoys declare
+        `properties`, leave the object open, reach the closed object through a
+        `$ref`, or close a response, which corpus row 314 witnesses apart.
+        """
+        closed = {"type": "object", "additionalProperties": False}
+
+        def operation(body: dict, responses: dict) -> dict:
+            return {"post": {
+                "requestBody": {"content": {"application/json": {"schema": body}}},
+                "responses": {code: {"description": "d", "content": {"application/json": {"schema": schema}}}
+                              for code, schema in responses.items()},
+            }}
+
+        documents = {
+            "positive": {"paths": {"/a": operation(
+                {"type": "object", "properties": {
+                    "profile": closed, "notes": closed, "kiln": {"type": "string"},
+                }},
+                {"200": {"type": "string"}},
+            )}},
+            "decoys": {
+                "paths": {"/b": operation(
+                    {"type": "object", "properties": {
+                        "declared": {**closed, "properties": {}},
+                        "open": {"type": "object"},
+                        "shared": {"$ref": "#/components/schemas/Closed"},
+                    }},
+                    {"200": closed, "404": closed},
+                )},
+                "components": {"schemas": {"Closed": closed}},
+            },
+        }
+        selector = "mediaType.schema:closed-empty-object-property"
+        self.assertEqual({(selector, "positive"): 2}, self.census_one(selector, documents))
+
+    def test_misspelled_scalar_counts_five_type_names_and_not_their_neighbours(self) -> None:
+        """`schema.type:misspelled-scalar`: `double`, `int32`, `long`, `bool`, `decimal`.
+
+        `float` and `int`, the real OpenAPI types, and a 3.1 list leading with
+        `null` before a real type are decoys; a list leading with one of the five
+        counts, as `TypeField::primary` reads its first non-`null` member.
+        """
+        def holder(types: list) -> dict:
+            return {"components": {"schemas": {"Holder": {"type": "object", "properties": {
+                f"p{index}": {"type": kind} for index, kind in enumerate(types)
+            }}}}}
+
+        selector = "schema.type:misspelled-scalar"
+        self.assertEqual(
+            {(selector, "positive"): 6},
+            self.census_one(selector, {
+                "positive": holder(["double", "int32", "long", "bool", "decimal", ["null", "long"]]),
+                "decoys": holder(["float", "int", "number", "integer", "boolean", ["null", "number"]]),
+            }),
+        )
 
     def test_same_primitive_union_counts_a_component_and_not_its_near_misses(self) -> None:
         """A component composition of one primitive, and nothing beside it.

@@ -1080,12 +1080,159 @@ struct ForwardRepair {
     member_names: std::collections::HashMap<String, Vec<String>>,
     triggers: std::collections::HashSet<String>,
     import_order: Vec<String>,
+    /// For an object, the order Fern writes its trailing deferred imports in:
+    /// field by field, each named type contributing first the cycle it closes
+    /// (sorted, minus the model itself) and then every non-union cyclic type it
+    /// reaches (sorted), each name kept at its first position. Fern registers
+    /// those as unused ghost imports and its lint pass prunes the ones nothing
+    /// names, so only the order survives: a model whose `wharf` field closes
+    /// one cycle and whose later `buoy` field closes another imports `Wharf`
+    /// ahead of `Buoy`.
+    deferred_order: Vec<String>,
     /// Whether the declaration reaches a cycle through its *own* annotations
     /// rather than only through a base class. Eozilla's `QualifiedValue` extends
     /// `Format`, whose `schema` field closes the `Schema` map-of-self cycle, and
     /// Fern gives the subclass `from __future__ import annotations` but no
     /// `update_forward_refs` call — the base's own module already repaired it.
     own_reach: bool,
+}
+
+/// Each node of the type-reference graph mapped to the id of its strongly
+/// connected component (Tarjan's algorithm, iterative so a deep reference chain
+/// cannot exhaust the stack). Two names share an id exactly when each reaches
+/// the other, so a cycle is one id however many cycles the graph chains.
+fn cycle_components(
+    edges: &std::collections::HashMap<String, Vec<String>>,
+) -> std::collections::HashMap<String, usize> {
+    use std::collections::HashMap;
+
+    let mut names: Vec<&str> = edges.keys().map(String::as_str).collect();
+    names.sort_unstable();
+    let mut index: HashMap<&str, usize> = HashMap::new();
+    let mut low: HashMap<&str, usize> = HashMap::new();
+    let mut on_stack: std::collections::HashSet<&str> = std::collections::HashSet::new();
+    let mut stack: Vec<&str> = Vec::new();
+    let mut component: HashMap<String, usize> = HashMap::new();
+    let mut next_index = 0;
+    let mut next_component = 0;
+    let neighbours = |node: &str| -> Vec<&str> {
+        edges
+            .get(node)
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .filter(|name| edges.contains_key(*name))
+            .collect()
+    };
+    for root in names {
+        if index.contains_key(root) {
+            continue;
+        }
+        // Each frame is a node and the neighbours it has still to visit.
+        let mut frames: Vec<(&str, Vec<&str>)> = Vec::new();
+        index.insert(root, next_index);
+        low.insert(root, next_index);
+        next_index += 1;
+        stack.push(root);
+        on_stack.insert(root);
+        frames.push((root, neighbours(root)));
+        while let Some((node, pending)) = frames.last_mut() {
+            let node = *node;
+            if let Some(next) = pending.pop() {
+                if !index.contains_key(next) {
+                    index.insert(next, next_index);
+                    low.insert(next, next_index);
+                    next_index += 1;
+                    stack.push(next);
+                    on_stack.insert(next);
+                    frames.push((next, neighbours(next)));
+                } else if on_stack.contains(next) {
+                    let reached = index[next];
+                    let entry = low.get_mut(node).expect("visited node has a low-link");
+                    *entry = (*entry).min(reached);
+                }
+                continue;
+            }
+            frames.pop();
+            let node_low = low[node];
+            if let Some((parent, _)) = frames.last() {
+                let entry = low.get_mut(*parent).expect("visited node has a low-link");
+                *entry = (*entry).min(node_low);
+            }
+            if node_low == index[node] {
+                while let Some(member) = stack.pop() {
+                    on_stack.remove(member);
+                    component.insert(member.to_string(), next_component);
+                    if member == node {
+                        break;
+                    }
+                }
+                next_component += 1;
+            }
+        }
+    }
+    component
+}
+
+/// [`ForwardRepair::deferred_order`] for one object: the names its trailing
+/// deferred imports follow, field by field.
+fn object_deferred_order(
+    object: &ObjectType,
+    edges: &std::collections::HashMap<String, Vec<String>>,
+    cyclic: &std::collections::HashSet<&str>,
+    unions: &std::collections::HashSet<&str>,
+    component: &std::collections::HashMap<String, usize>,
+) -> Vec<String> {
+    let mut order: Vec<String> = Vec::new();
+    let push = |order: &mut Vec<String>, name: &str| {
+        if !order.iter().any(|known| known == name) {
+            order.push(name.to_string());
+        }
+    };
+    for base in &object.bases {
+        push(&mut order, base);
+    }
+    let mut annotated = Vec::new();
+    for field in &object.fields {
+        let mut refs = Vec::new();
+        collect_named_refs(&field.type_ref, &mut refs);
+        for name in &refs {
+            // The cycle this name closes, without the model being written.
+            let mut cycle: Vec<&str> = match component.get(name.as_str()) {
+                Some(id) if cyclic.contains(name.as_str()) => component
+                    .iter()
+                    .filter(|(member, member_id)| {
+                        *member_id == id && member.as_str() != object.name
+                    })
+                    .map(|(member, _)| member.as_str())
+                    .collect(),
+                _ => Vec::new(),
+            };
+            cycle.sort_by(|left, right| natural_cmp(left, right));
+            // Every non-union cyclic declaration the name reaches.
+            let mut reached: Vec<&str> = Vec::new();
+            let mut stack = vec![name.as_str()];
+            let mut seen = std::collections::HashSet::new();
+            while let Some(node) = stack.pop() {
+                if seen.insert(node) {
+                    if cyclic.contains(node) && !unions.contains(node) && node != object.name {
+                        reached.push(node);
+                    }
+                    stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
+                }
+            }
+            reached.sort_by(|left, right| natural_cmp(left, right));
+            for member in cycle.into_iter().chain(reached) {
+                push(&mut order, member);
+            }
+        }
+        annotated.extend(refs);
+    }
+    // The field annotations themselves follow the ghost references.
+    for name in &annotated {
+        push(&mut order, name);
+    }
+    order
 }
 
 fn forward_repair_map(
@@ -1143,6 +1290,24 @@ fn forward_repair_map(
         .chain(tag_types.iter().map(|tag| &tag.decl))
         .filter_map(|decl| matches!(decl, TypeDecl::Alias(_)).then_some(decl.name()))
         .collect();
+    let unions: HashSet<&str> = types
+        .iter()
+        .chain(tag_types.iter().map(|tag| &tag.decl))
+        .filter_map(|decl| {
+            let union = match decl {
+                TypeDecl::DiscriminatedUnion(_) => true,
+                TypeDecl::Alias(alias) => is_union_target(&alias.target),
+                _ => false,
+            };
+            union.then_some(decl.name())
+        })
+        .collect();
+    let component = cycle_components(&edges);
+    let same_cycle = |left: &str, right: &str| {
+        component
+            .get(left)
+            .is_some_and(|id| component.get(right) == Some(id))
+    };
     let classes: HashSet<&str> = types
         .iter()
         .chain(tag_types.iter().map(|tag| &tag.decl))
@@ -1187,12 +1352,16 @@ fn forward_repair_map(
         // `update_forward_refs`.
         let own_reach = reaches_repairable(&decl_own_refs(decl));
 
-        // The names one declaration's `update_forward_refs` call must resolve: the
-        // cyclic names its own annotations reach, walking on **through the cyclic
-        // ones only**. A non-cyclic node is a leaf — whatever it references is
-        // repaired in its own module, not here — which is why NDW's
-        // `FeatureCollection` names nothing (it annotates `Feature`, which is not
-        // cyclic) while its `Feature` names `FeatureProperties` directly.
+        // The names one declaration's `update_forward_refs` call must resolve: for
+        // each cyclic name its own annotations reach, the cycle that name closes,
+        // walking on **through that cycle's members only**. A non-cyclic node is
+        // a leaf — whatever it references is repaired in its own module, not
+        // here — which is why NDW's `FeatureCollection` names nothing (it
+        // annotates `Feature`, which is not cyclic) while its `Feature` names
+        // `FeatureProperties` directly. So is a node of a *different* cycle the
+        // walk could reach: a model naming `Captain`, whose cycle with `Vessel`
+        // points into a self-recursive `Harbor`, resolves `Captain` and `Vessel`
+        // and leaves `Harbor` to the modules of the cycle that closes it.
         //
         // A union is walked by its *variant targets*, not by its wrappers' fields.
         // The wrappers are flattened views of those models, so a field they
@@ -1203,23 +1372,22 @@ fn forward_repair_map(
         // reach `Reason`, because the only wrapper carrying it flattened the
         // acyclic `DestinationFeatureProperties`.
         let closure = |starts: Vec<&str>| -> HashSet<String> {
-            let mut stack: Vec<&str> = starts
-                .into_iter()
-                .filter(|name| cyclic.contains(name))
-                .collect();
-            let mut seen = HashSet::new();
             let mut found = HashSet::new();
-            while let Some(node) = stack.pop() {
-                found.insert(node.to_string());
-                if seen.insert(node) {
-                    stack.extend(
-                        walk_edges
-                            .get(node)
-                            .into_iter()
-                            .flatten()
-                            .map(String::as_str)
-                            .filter(|name| cyclic.contains(name)),
-                    );
+            for start in starts.into_iter().filter(|name| cyclic.contains(name)) {
+                let mut stack = vec![start];
+                let mut seen = HashSet::new();
+                while let Some(node) = stack.pop() {
+                    if seen.insert(node) {
+                        found.insert(node.to_string());
+                        stack.extend(
+                            walk_edges
+                                .get(node)
+                                .into_iter()
+                                .flatten()
+                                .map(String::as_str)
+                                .filter(|name| same_cycle(start, name)),
+                        );
+                    }
                 }
             }
             found
@@ -1284,6 +1452,12 @@ fn forward_repair_map(
                     .cmp(&aliases.contains(right.as_str()))
                     .then_with(|| natural_cmp(left, right))
             });
+            let deferred_order = match decl {
+                TypeDecl::Object(object) => {
+                    object_deferred_order(object, &edges, &cyclic, &unions, &component)
+                }
+                _ => Vec::new(),
+            };
             out.insert(
                 decl.name().to_string(),
                 ForwardRepair {
@@ -1291,6 +1465,7 @@ fn forward_repair_map(
                     member_names,
                     triggers,
                     import_order,
+                    deferred_order,
                     own_reach,
                 },
             );
@@ -3858,18 +4033,17 @@ fn render_type_decl(
                 // imports (a blank line after them), then the forward-ref repair.
                 file.push_str("\n\n\n");
                 if !imports.deferred.is_empty() {
-                    // Fern's reserved-module path registers direct model refs
-                    // before its repair namespace; ordinary modules sort this
-                    // block. Preserve that distinction (`Class` → `class_`).
-                    let reserved_module = obj
-                        .module
-                        .strip_suffix('_')
-                        .is_some_and(naming::is_reserved);
-                    let deferred: Vec<&String> = if reserved_module {
-                        imports.deferred_order.iter().collect()
-                    } else {
-                        imports.deferred.iter().collect()
-                    };
+                    // Fern's per-field order (`ForwardRepair::deferred_order`); a
+                    // line naming nothing in it keeps the sorted tail.
+                    let mut deferred: Vec<&String> = imports.deferred.iter().collect();
+                    deferred.sort_by_key(|line| {
+                        let name = line.rsplit(' ').next().unwrap_or_default();
+                        repair
+                            .deferred_order
+                            .iter()
+                            .position(|known| known == name)
+                            .unwrap_or(usize::MAX)
+                    });
                     for line in deferred {
                         file.push_str(line);
                         file.push('\n');
@@ -4161,6 +4335,7 @@ fn render_discriminated_union(
                 docstring: None,
                 example: None,
                 declared_name: None,
+                admits_only_empty_object: false,
             },
             &mut imports,
         );
@@ -8513,7 +8688,7 @@ impl<'a> ExampleCtx<'a> {
                     // and the example passes it, back in the schema position the
                     // model moved the tag out of.
                     let mut args = Vec::new();
-                    for (py_name, wire_name, ty, example) in m
+                    for (py_name, wire_name, ty, example, empty_only) in m
                         .fields
                         .iter()
                         .filter(|f| f.spec_required && !f.optional)
@@ -8523,14 +8698,17 @@ impl<'a> ExampleCtx<'a> {
                                 f.wire_name.clone(),
                                 f.type_ref.clone(),
                                 f.example.clone(),
+                                f.admits_only_empty_object,
                             )
                         })
                         .collect::<Vec<_>>()
                     {
-                        args.push((
-                            Some(py_name),
-                            self.field_example(&ty, &wire_name, example.as_deref()),
-                        ));
+                        let value = if empty_only {
+                            self.empty_object()
+                        } else {
+                            self.field_example(&ty, &wire_name, example.as_deref())
+                        };
+                        args.push((Some(py_name), value));
                     }
                     if let Some(index) = m.discriminant_index {
                         let enum_name = m.source.as_deref().map(|source| {
@@ -8657,6 +8835,17 @@ impl<'a> ExampleCtx<'a> {
     /// otherwise. A union wrapper's fields are exampled the same way an object's
     /// are — NDW's `AreaRequest_Municipality` opens with the `GM0344` its
     /// `MunicipalityAreaRequest.id` declares.
+    /// The example of a value whose schema admits only the empty object: `{}`,
+    /// where Fern writes its `{"key": "value"}` placeholder, which the schema
+    /// rejects (the `closed-empty-object-example` departure).
+    fn empty_object(&self) -> Example {
+        if self.reference {
+            Example::ReferenceDict(Vec::new())
+        } else {
+            Example::Dict(Vec::new())
+        }
+    }
+
     fn field_example(&mut self, ty: &TypeRef, wire: &str, example: Option<&str>) -> Example {
         // A field typed by a map to unknown (`Dict[str, Any]`) takes Fern's fixed
         // `{"key": "value"}` placeholder whatever the schema declares: HelixDB's
@@ -9561,7 +9750,13 @@ fn build_example_inner(
                             None
                         }
                     })
-                    .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
+                    .unwrap_or_else(|| {
+                        if f.admits_only_empty_object {
+                            ctx.empty_object()
+                        } else {
+                            ctx.value(&f.type_ref, Slot::Named(&f.wire_name))
+                        }
+                    });
                 let synthesized_items =
                     ((ep.text_response || ep.binary_response || ep.importer_example_missing)
                         && f.spec_required)
@@ -9661,6 +9856,8 @@ fn build_example_inner(
                     } else {
                         Example::Atom(format!("\"example_{}\"", f.wire_name))
                     }
+                } else if f.admits_only_empty_object {
+                    ctx.empty_object()
                 } else {
                     // A declared example is shown where a JSON field's would be:
                     // Zulip's `to` is a union whose example `[9, 10]` Fern passes
@@ -10514,14 +10711,14 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
-        build_documentation_example, build_example, client_method, environment, escape_py_str,
-        example_from_json_as, example_import_cmp, field_decl, generate, natural_cmp,
-        path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
-        readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
-        render, render_class_body, render_enum, render_type_decl, root_sub_client_alias,
-        root_sub_client_import, url_arg, BodySchemaShape, ClientCtx, DeclSettings, Example,
-        ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField,
-        RootClientView, RootModuleView, Slot,
+        build_documentation_example, build_example, client_method, cycle_components, environment,
+        escape_py_str, example_from_json_as, example_import_cmp, field_decl, forward_repair_map,
+        generate, natural_cmp, path_field_render, path_object_decl, path_object_documented,
+        raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible, reference_entry,
+        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
+        root_sub_client_alias, root_sub_client_import, url_arg, BodySchemaShape, ClientCtx,
+        DeclSettings, Example, ExampleCtx, FieldView, ForwardRepair, Imports, ParamRow, RefLoc,
+        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -11142,6 +11339,7 @@ mod tests {
             media_example: false,
             schema_body_example: false,
             reference_order: 0,
+            admits_only_empty_object: false,
         }]));
         let mut lines = Vec::new();
         super::append_request_call_args(&mut lines, &ep, &mut imports);
@@ -11796,6 +11994,7 @@ mod tests {
                 schema_body_example: false,
                 nullable: false,
                 reference_order: 0,
+                admits_only_empty_object: false,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -11816,6 +12015,7 @@ mod tests {
                 schema_body_example: false,
                 nullable: false,
                 reference_order: 1,
+                admits_only_empty_object: false,
             },
             // An optional convert field keeps `Optional` in both its signature and
             // serialization annotation.
@@ -11837,6 +12037,7 @@ mod tests {
                 schema_body_example: false,
                 nullable: false,
                 reference_order: 2,
+                admits_only_empty_object: false,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);
@@ -11914,6 +12115,7 @@ mod tests {
             schema_body_example: false,
             nullable: false,
             reference_order: 0,
+            admits_only_empty_object: false,
         }]));
         let reference = reference_entry(
             &environment(),
@@ -11950,6 +12152,7 @@ mod tests {
                 schema_body_example: true,
                 nullable: false,
                 reference_order: 0,
+                admits_only_empty_object: false,
             },
             BodyField {
                 wire_name: "note".to_string(),
@@ -11969,6 +12172,7 @@ mod tests {
                 schema_body_example: true,
                 nullable: false,
                 reference_order: 1,
+                admits_only_empty_object: false,
             },
         ]));
         ep.body_schema_has_example = true;
@@ -12229,7 +12433,120 @@ mod tests {
             docstring: None,
             example: None,
             declared_name: None,
+            admits_only_empty_object: false,
         }
+    }
+
+    fn object_of(name: &str, fields: Vec<(&str, TypeRef)>) -> TypeDecl {
+        TypeDecl::Object(ObjectType {
+            name: name.to_string(),
+            module: crate::naming::module_name(name),
+            bases: Vec::new(),
+            fields: fields
+                .into_iter()
+                .map(|(field, type_ref)| model_field(field, type_ref, false))
+                .collect(),
+            example_fields: Default::default(),
+            docstring: None,
+        })
+    }
+
+    fn named(name: &str) -> TypeRef {
+        TypeRef::Named(name.to_string())
+    }
+
+    fn sorted_names(repair: &ForwardRepair) -> Vec<&str> {
+        let mut names: Vec<&str> = repair.names.iter().map(String::as_str).collect();
+        names.sort_unstable();
+        names
+    }
+
+    #[test]
+    fn a_repair_names_only_the_cycles_its_direct_references_close() {
+        // `Captain` and `Vessel` close one cycle, which points into the
+        // self-recursive `Harbor`; `Roster` sits outside both.
+        let types = vec![
+            object_of("Roster", vec![("captain", named("Captain"))]),
+            object_of(
+                "Captain",
+                vec![("vessels", TypeRef::List(Box::new(named("Vessel"))))],
+            ),
+            object_of(
+                "Vessel",
+                vec![("skipper", named("Captain")), ("homeport", named("Harbor"))],
+            ),
+            object_of("Harbor", vec![("district", named("Harbor"))]),
+        ];
+        let map = forward_repair_map(&types, &[]);
+        assert_eq!(sorted_names(&map["Roster"]), ["Captain", "Vessel"]);
+        assert_eq!(sorted_names(&map["Captain"]), ["Vessel"]);
+        assert_eq!(sorted_names(&map["Vessel"]), ["Captain", "Harbor"]);
+        assert_eq!(sorted_names(&map["Harbor"]), Vec::<&str>::new());
+
+        let components = cycle_components(&std::collections::HashMap::from([
+            ("A".to_string(), vec!["B".to_string()]),
+            ("B".to_string(), vec!["A".to_string(), "C".to_string()]),
+            (
+                "C".to_string(),
+                vec!["C".to_string(), "Elsewhere".to_string()],
+            ),
+        ]));
+        assert_eq!(components["A"], components["B"]);
+        assert_ne!(components["A"], components["C"]);
+        assert!(!components.contains_key("Elsewhere"));
+    }
+
+    #[test]
+    fn deferred_imports_follow_the_fields_cycle_by_cycle() {
+        // Fields reaching two one-member cycles and then a two-member one, in an
+        // order no sort reproduces.
+        let types = vec![
+            object_of(
+                "Timetable",
+                vec![
+                    ("wharf", named("Wharf")),
+                    ("buoys", TypeRef::List(Box::new(named("Buoy")))),
+                    ("route", named("Route")),
+                ],
+            ),
+            object_of("Wharf", vec![("annex", named("Wharf"))]),
+            object_of(
+                "Buoy",
+                vec![("tethered", TypeRef::List(Box::new(named("Buoy"))))],
+            ),
+            object_of(
+                "Route",
+                vec![("stops", TypeRef::List(Box::new(named("Stop"))))],
+            ),
+            object_of("Stop", vec![("route", named("Route"))]),
+        ];
+        let map = forward_repair_map(&types, &[]);
+        assert_eq!(
+            map["Timetable"].deferred_order,
+            ["Wharf", "Buoy", "Route", "Stop"]
+        );
+
+        // A field reaching a cycle without naming it registers the cycle's
+        // non-union members first; the union arrives with the field that names
+        // its cycle, so `Knot` precedes `Alpha`.
+        let types = vec![
+            object_of(
+                "Holder",
+                vec![("lead", named("Lead")), ("knot", named("Knot"))],
+            ),
+            object_of("Lead", vec![("knot", named("Knot"))]),
+            object_of("Knot", vec![("twist", named("Alpha"))]),
+            TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
+                name: "Alpha".to_string(),
+                module: "alpha".to_string(),
+                target: TypeRef::Union(vec![named("Knot"), TypeRef::Primitive(Prim::Str)]),
+                docstring: None,
+            }),
+        ];
+        let map = forward_repair_map(&types, &[]);
+        assert_eq!(map["Holder"].deferred_order, ["Knot", "Alpha", "Lead"]);
+        assert_eq!(sorted_names(&map["Holder"]), ["Alpha", "Knot"]);
     }
 
     #[test]
@@ -13232,6 +13549,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 reference_order: 0,
+                admits_only_empty_object: false,
             },
             BodyField {
                 wire_name: "metadata".to_string(),
@@ -13251,6 +13569,7 @@ mod tests {
                 media_example: true,
                 schema_body_example: false,
                 reference_order: 1,
+                admits_only_empty_object: false,
             },
         ]));
         let mut ctx = example_ctx(&[], &[], &Auth::None);
@@ -13308,6 +13627,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 reference_order: 0,
+                admits_only_empty_object: false,
             }]));
             ep
         };
@@ -13398,6 +13718,7 @@ mod tests {
                 media_example: true,
                 schema_body_example: true,
                 reference_order: 0,
+                admits_only_empty_object: false,
             },
             BodyField {
                 wire_name: "5gMmCauseValue".to_string(),
@@ -13417,6 +13738,7 @@ mod tests {
                 media_example: true,
                 schema_body_example: true,
                 reference_order: 1,
+                admits_only_empty_object: false,
             },
         ]));
 
@@ -13466,6 +13788,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 reference_order: 0,
+                admits_only_empty_object: false,
             }],
         }));
         ep.body_schema_shape = BodySchemaShape::Ref;
@@ -13650,6 +13973,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 reference_order: 0,
+                admits_only_empty_object: false,
             }],
             multipart: false,
         }));

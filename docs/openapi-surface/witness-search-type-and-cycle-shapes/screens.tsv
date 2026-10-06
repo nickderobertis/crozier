@@ -1,0 +1,62 @@
+document	licence	ref	fern
+5GZORRO/slice-manager:openapi.yaml	passed: MIT (repository)	passed: commit 8c4758e4325e	failed: fern check exits 1
+APIs-guru/openapi-directory:APIs/googleapis.com/automl/v1beta1/openapi.yaml	passed: Creative Commons Attribution 3.0 (info.license); CC0-1.0 (repository)	passed: commit f04b8d0bcd39	passed: fern check and generate exit 0
+Bond-Protocol/order-services:crates/private_api_server/src/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 503f8af4d22d	not run: the licence screen failed
+Dhafer84/DevOps_Project:src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 8ab2b4636a14	not run: the licence screen failed
+Emissary-Tech/emissary-api-docs:api/openapi.yaml	passed: Apache 2.0 (info.license); MIT (repository)	passed: commit 7a21b2a9f757	passed: fern check and generate exit 0
+EuropeanUniversityFoundation/occapi-openapi:public/v2/openapi.yaml	passed: MIT (repository)	passed: commit 93aa457e2d6c	passed: fern check and generate exit 0
+FirasHadjAmeur/5NIDS1-G3-Projet4:backend/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 79620c533185	not run: the licence screen failed
+GetStream/protocol:openapi/moderation-openapi.yaml	failed: repository licence reported NOASSERTION (info.license -)	passed: commit dfac6b7fc4b6	not run: the licence screen failed
+Griguich/DevOps:Back/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit d1e906c972ea	not run: the licence screen failed
+HaithemGhattass/DevOpsBackend:src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 564075f1cfb6	not run: the licence screen failed
+HamaRegaya/projet-4-spring-Angular:DevOps_Project/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 30601ab59417	not run: the licence screen failed
+ImNotAOwl/e-commerce_microservices_CATALOGUE_API:openapi.yaml	passed: MIT (repository)	passed: commit 460aed0c7e31	passed: fern check and generate exit 0
+JuliaYarlykova/increase-productivity:backend/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 3401b2e84bd2	not run: the licence screen failed
+KiboSoftware/java-rest-sdk:kibocommerce/inventory/api/openapi.yaml	passed: MIT (repository)	passed: commit abf09bee84c4	failed: fern check exits 1
+KiboSoftware/java-sdk-poc:Inventory/api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 2752a8d7869a	not run: the licence screen failed
+MOLKA296/MolkaDevops:Front/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit fbdfacd8e5c0	not run: the licence screen failed
+NacerKH/Montoring-containerization-springBoot-angular:app/backend/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit e05645138c1a	not run: the licence screen failed
+Open-EO/openeo-api:openapi.yaml	passed: Apache 2.0 (info.license); Apache-2.0 (repository)	passed: commit 1881dae18b3c	failed: the generator crashes writing a file name too long (OSError 36)
+Permify/permify:docs/api-reference/openapi.json	passed: AGPL-3.0 license (info.license); AGPL-3.0 (repository)	passed: commit 93186e8bea88	passed: fern check and generate exit 0
+PersonalGroceryManager/backend:openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 1c2b922a0111	not run: the licence screen failed
+RafrafiNawress/Spring-Angular-Crud:SummerWorkshop_SpringBoot/src/main/java/tn/esprit/summerworkshop_springboot/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 5169b4005b82	not run: the licence screen failed
+RidgeRun/detection-service:api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 6bc86afee2b1	not run: the licence screen failed
+RoukaiaKHELIFI/DevOps_Project:DevOps_Project-main/DevOps_Project/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit c08747bb5d1f	not run: the licence screen failed
+SkanderKasmi/Devops:src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit de8185f7806e	not run: the licence screen failed
+Zied-Dahmani/DevOps:src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit cdf40b2d1490	not run: the licence screen failed
+ahmed-a-hsouna/devops-test:src/main/java/tn/esprit/tiramisu/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 77b664d08ee0	not run: the licence screen failed
+aka-somix/earth-overwatch:app/stacks/components/landfills/new-data-handler/src/apis/_openapi/monitoring.openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 673b5294b5b1	not run: the licence screen failed
+aka-somix/earth-overwatch:app/stacks/geo/api-services/monitor/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 673b5294b5b1	not run: the licence screen failed
+api-evangelist/investbamboo-com:openapi/_original/bamboo-openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 066721c5a6aa	not run: the licence screen failed
+apostrophecms/apostrophe:packages/apostrophecms-openapi/apostrophecms-openapi.yaml	passed: MIT (info.license)	passed: commit bf5a2a677067	failed: fern check did not finish within 900 s
+apostrophecms/docs:docs/public/apostrophecms-openapi.yaml	passed: MIT (info.license); MIT (repository)	passed: commit 10d18b367e6f	failed: fern check did not finish within 900 s
+azizkhalsi/Devops:DevOps_Project/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 2a493c0a6222	not run: the licence screen failed
+benediktschoeffmann/apidae-backend-spec:specs/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit cd721908ea9a	not run: the licence screen failed
+c4ts0up/my-stocks:backend/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit c046b1dac112	not run: the licence screen failed
+dcp-ai-protocol/dcp-ai:api/openapi.yaml	passed: Apache-2.0 (info.license); Apache-2.0 (repository)	passed: commit 808cc50bd15a	passed: fern check and generate exit 0
+easysoft/zendata:xdoc/openapi.yaml	passed: Apache 2.0 (info.license); GPL-3.0 (repository)	passed: commit 19c563dfb455	failed: fern check exits 1
+eliaspeteri/erp:products/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit e68f91d95c35	not run: the licence screen failed
+ere-health/ere-ps-app:openapi/openapi.json	passed: GPL-3.0 (repository)	passed: commit 9d8958380a7b	passed: fern check and generate exit 0
+gronkanium/gronka:web/public/openapi.json	passed: MIT (repository)	passed: commit 166487ba799e	passed: fern check and generate exit 0
+hamoudaattia1/DevOpsProject:Backend/src/main/java/tn/esprit/devops_project/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 691aaa780b68	not run: the licence screen failed
+hashintel/hash:libs/@local/graph/api/openapi/openapi.json	failed: repository licence reported NOASSERTION (info.license AGPL-3)	passed: commit 049a8c5f09dc	not run: the licence screen failed
+i10416/wikipedia4s:protocol/openapi.yaml	passed: Apache 2.0 (info.license)	passed: commit 62685fe4b654	passed: fern check and generate exit 0
+jacklv111/aifs-client-go:api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit cf4711b4d8a2	not run: the licence screen failed
+jentic/jentic-public-apis:apis/openapi/bulksms.com/main/1.0.0/openapi.json	passed: CC0-1.0 (repository)	passed: commit d6f6f530f416	passed: fern check and generate exit 0
+jjcaburrasi/marketplace_app:OpenAPI.yaml	failed: no info.license and no repository LICENSE	passed: commit 9d3ef754cbf2	not run: the licence screen failed
+jmccrae/teanga-services:dummy_OAS_webserver/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit b8fbcd5070b3	not run: the licence screen failed
+joshualyon/signoz-mcp-server:docs/development/api/signoz_openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 7a52944f27b4	not run: the licence screen failed
+keycloak/keycloak.github.io:docs-api/26.0.8/rest-api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 1e108822dde4	not run: the licence screen failed
+keycloak/keycloak.github.io:docs-api/26.1.5/rest-api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 1e108822dde4	not run: the licence screen failed
+keycloak/keycloak.github.io:docs-api/26.2.5/rest-api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 1e108822dde4	not run: the licence screen failed
+keycloak/keycloak.github.io:docs-api/26.3.5/rest-api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 1e108822dde4	not run: the licence screen failed
+keycloak/keycloak.github.io:docs-api/26.4.7/rest-api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 1e108822dde4	not run: the licence screen failed
+keycloak/keycloak.github.io:docs-api/26.5.7/rest-api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 1e108822dde4	not run: the licence screen failed
+konfig-dev/konfig:sdks/db/intermediate-fixed-specs/redkik/openapi.yaml	passed: MIT (repository)	passed: commit bec3d36b9a34	failed: fern check, 3 errors
+konfig-sdks/openapi-examples:redkik/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit 161ab49c45e4	not run: the licence screen failed
+measure-your-life-squad/measure-your-life:api_backend_server/web_app/openapi.yaml	passed: MIT (info.license); MIT (repository)	passed: commit 27cf5a1d02db	passed: fern check and generate exit 0
+mehlium/nanogpt-client:openapi.yaml	passed: Apache-2.0 (repository)	passed: commit afd86df46822	passed: fern check and generate exit 0
+nordicmicroalgae/backend:openapi/openapi.yaml	passed: MIT (repository)	passed: commit 1a1221daa62f	passed: fern check and generate exit 0
+oqlos/oqlos:openapi.yaml	passed: Apache-2.0 (repository)	passed: commit de3c5d8e9ff3	failed: fern check exits 1
+qoretechnologies/qore:qlib/BitbucketDataProvider/bitbucket-openapi.json	passed: GPL-2.0 (repository)	passed: commit 613c8d952f65	passed: fern check and generate exit 0
+xludx/paytrail-java-dsksdsksdk:api/openapi.yaml	failed: no info.license and no repository LICENSE	passed: commit a9fb6ebe9457	not run: the licence screen failed

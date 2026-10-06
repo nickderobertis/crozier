@@ -1277,6 +1277,148 @@ fn compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference
     );
 }
 
+/// The closed empty object example defect
+/// (`docs/departures/evidence/closed-empty-object-example.md`): the reference is
+/// the certified pair's tree for the hand-written fixture
+/// `closed-empty-inline-objects`, whose snippets pass a required argument that
+/// admits only `{}` the value `{"key": "value"}`. `crozier compare` matches it,
+/// reporting each corrected snippet by catalog id, file and line — exactly the
+/// ledger's rows for that golden — and fails, naming the file, when any other
+/// difference remains: inside the placeholder the departure corrects, or
+/// elsewhere in the same file.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_difference() {
+    let golden = "docs/openapi-surface/handwritten/closed-empty-inline-objects/fern-expected";
+    let case = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/closed-empty-inline-objects");
+    let repo = tempfile::tempdir().expect("repo tempdir");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yml",
+        &std::fs::read_to_string(case.join("openapi.yml")).unwrap(),
+    );
+    // `reference.sh [same-construct|same-file]`: copy the committed Fern tree,
+    // then make README.md differ inside the placeholder the departure
+    // corrects, or on a line it does not touch.
+    write_script(
+        root,
+        "scripts/reference.sh",
+        &format!(
+            "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
+             cp -R '{}'/. \"$out\"\n\
+             case \"${{1:-}}\" in\n\
+             \x20 same-construct) edit='0,/^        \"key\": \"value\"$/s//        \"key\": \"other\"/' ;;\n\
+             \x20 same-file) edit='s/^# Fern Python Library$/# Fern Python SDK/' ;;\n\
+             \x20 *) exit 0 ;;\n\
+             esac\n\
+             sed \"$edit\" \"$out/README.md\" > \"$out/README.tmp\"\n\
+             mv \"$out/README.tmp\" \"$out/README.md\"\n",
+            case.join("fern-expected").display()
+        ),
+    );
+    let config = |generators: &str| {
+        format!(
+            "spec: ./openapi.yml\npackage-name: fern\n\
+             project-name: default_package_name\ngenerators:\n{generators}"
+        )
+    };
+    write(
+        root,
+        "crozier.yml",
+        &config("  python:\n    reference:\n      command: ./scripts/reference.sh\n"),
+    );
+    write(
+        root,
+        "edited.yml",
+        &config(
+            "  same-construct:\n    reference:\n      command: ./scripts/reference.sh same-construct\n\
+             \x20 same-file:\n    reference:\n      command: ./scripts/reference.sh same-file\n",
+        ),
+    );
+
+    // Only departures differ: matched, exit 0, each departure listed.
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "crozier.yml"])
+        .assert()
+        .code(0);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let python = result(&report, "crozier.yml", "python");
+    assert_eq!(python["status"], "matched", "{python:#}");
+    let observed: Vec<super::departures_ledger::Observed> = python["comparison"]["departures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|departure| {
+            (
+                departure["file"].as_str().unwrap().to_string(),
+                usize::try_from(departure["line"].as_u64().unwrap()).unwrap(),
+                departure["id"].as_str().unwrap().to_string(),
+            )
+        })
+        .collect();
+    let corrected: Vec<(&str, usize)> = observed
+        .iter()
+        .filter(|(_, _, id)| id == "closed-empty-object-example")
+        .map(|(file, line, _)| (file.as_str(), *line))
+        .collect();
+    // The README's two snippets are one region, reported at its first line.
+    assert_eq!(
+        corrected,
+        [
+            ("README.md", 45),
+            ("reference.md", 24),
+            ("src/fern/firings/client.py", 65),
+            ("src/fern/firings/client.py", 167),
+        ]
+    );
+    // Exactly the ledger's rows for the fixture's golden.
+    let ledger = super::departure_ledger()
+        .golden(golden, &[])
+        .unwrap_or_else(|failures| panic!("{failures:?}"));
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains("      README.md:45 closed-empty-object-example\n")
+            && stderr.contains("Result: every checked generator matched the reference"),
+        "{stderr}"
+    );
+
+    // Any other difference fails, naming the file. A placeholder Fern wrote
+    // differently is no longer the construct, so the README's region is not
+    // corrected; a change elsewhere leaves the region corrected and still fails.
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "edited.yml"])
+        .assert()
+        .code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    for (generator, region_corrected) in [("same-construct", false), ("same-file", true)] {
+        let edited = result(&report, "edited.yml", generator);
+        assert_eq!(edited["status"], "mismatched", "{edited:#}");
+        let comparison = &edited["comparison"];
+        assert_eq!(comparison["differing"], serde_json::json!(["README.md"]));
+        assert_eq!(comparison["only_in_reference"], serde_json::json!([]));
+        assert_eq!(comparison["only_in_crozier"], serde_json::json!([]));
+        let at_45 = comparison["departures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|departure| departure["file"] == "README.md" && departure["line"] == 45);
+        assert_eq!(at_45, region_corrected, "{generator}: {comparison:#}");
+    }
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains("  same-construct: mismatched")
+            && stderr.contains("    differing (1):\n      README.md\n"),
+        "{stderr}"
+    );
+}
+
 /// The packaged golden's file `rel`, with `from` replaced by `to` — which must
 /// occur in it.
 #[cfg(unix)]

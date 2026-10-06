@@ -889,6 +889,11 @@ pub struct Schema {
     /// `additionalProperties` — a bool or a schema.
     #[serde(rename = "additionalProperties", default)]
     pub additional_properties: Option<AdditionalProperties>,
+    /// `patternProperties`, kept as written: nothing is generated from it, and
+    /// it is read only to decide whether a closed object with no `properties`
+    /// can hold a string-valued key (see `admits_only_empty_object` in `ir.rs`).
+    #[serde(rename = "patternProperties", default)]
+    pub pattern_properties: Option<serde_json::Value>,
     /// Enum values (strings for the cases crozier generates).
     #[serde(rename = "enum", default)]
     pub enum_values: Option<Vec<serde_json::Value>>,
@@ -1690,6 +1695,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
     normalize_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
@@ -2200,6 +2206,35 @@ fn normalize_unlisted_required(doc: &mut OpenApi) {
 /// of the same shape. A `null` member stays optionality: it leaves the union and
 /// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
 /// emits for a five-member list ending in `null`.
+/// Read the non-standard `type: float` as Fern does: a `number` whose `format`
+/// no longer narrows it. Fern types `{type: float}` as `float` wherever it
+/// appears, and keeps `float` (and a float example) under `format: int32` or
+/// `int64` too, where a real `number` would become an `int`. Every other
+/// misspelled type name (`int`, `double`, `bool`, `decimal`, …) stays unknown
+/// on both sides, so only this one is rewritten.
+fn normalize_float_type(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let renamed = match node.ty.as_mut() {
+                Some(TypeField::Single(ty)) if ty == "float" => {
+                    *ty = "number".to_string();
+                    true
+                }
+                Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "float") => {
+                    for ty in types.iter_mut().filter(|ty| *ty == "float") {
+                        *ty = "number".to_string();
+                    }
+                    true
+                }
+                _ => false,
+            };
+            if renamed {
+                node.format = None;
+            }
+        });
+    });
+}
+
 fn normalize_multi_type_schemas(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
@@ -3232,6 +3267,82 @@ mod tests {
         }));
         assert_eq!(blank.declared_type_name(), Some("Gadget"));
         assert_eq!(schema(serde_json::json!({})).declared_type_name(), None);
+    }
+
+    #[test]
+    fn float_type_reads_as_an_unnarrowed_number_and_its_siblings_stay_unknown() {
+        let mut doc = parse(
+            r"
+openapi: 3.1.0
+info: { title: t, version: '1' }
+paths:
+  /gauges:
+    get:
+      parameters:
+        - { name: tolerance, in: query, schema: { type: float } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema: { type: array, items: { type: float } }
+components:
+  schemas:
+    Gauge:
+      type: object
+      properties:
+        plain: { type: float }
+        narrowed: { type: float, format: int32 }
+        nullable: { type: [float, 'null'] }
+        counted: { type: int, format: int32 }
+        real: { type: number, format: int64 }
+",
+        );
+        normalize_float_type(&mut doc);
+        let gauge = &doc.components.schemas["Gauge"];
+        let field = |name: &str| {
+            let schema = gauge.properties.get(name).expect("property");
+            (
+                schema
+                    .ty
+                    .as_ref()
+                    .and_then(TypeField::primary)
+                    .map(str::to_owned),
+                schema.format.clone(),
+            )
+        };
+        assert_eq!(field("plain"), (Some("number".to_owned()), None));
+        assert_eq!(field("narrowed"), (Some("number".to_owned()), None));
+        assert_eq!(field("nullable"), (Some("number".to_owned()), None));
+        assert!(matches!(
+            &gauge.properties.get("nullable").unwrap().ty,
+            Some(TypeField::Multiple(types)) if types == &["number", "null"]
+        ));
+        // Another misspelled name, and a real `number`, are left exactly as written.
+        assert_eq!(
+            field("counted"),
+            (Some("int".to_owned()), Some("int32".to_owned()))
+        );
+        assert_eq!(
+            field("real"),
+            (Some("number".to_owned()), Some("int64".to_owned()))
+        );
+        // Parameters and responses are rewritten as well as components.
+        let operation = doc.paths["/gauges"].get.as_ref().expect("get");
+        let parameter = operation.parameters[0].schema.as_ref().expect("schema");
+        assert_eq!(
+            parameter.ty.as_ref().and_then(TypeField::primary),
+            Some("number")
+        );
+        let response = operation.responses["200"].content["application/json"]
+            .schema
+            .as_ref()
+            .expect("schema");
+        let item = response.items.as_deref().expect("items");
+        assert_eq!(
+            item.ty.as_ref().and_then(TypeField::primary),
+            Some("number")
+        );
     }
 
     #[test]
