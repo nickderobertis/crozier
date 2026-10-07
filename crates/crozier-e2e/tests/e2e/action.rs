@@ -1340,6 +1340,7 @@ fn ruff_is_installed_at_its_pinned_version_only_when_absent() {
 
     // An install of ruff that fails stops the step with how to supply it.
     std::fs::remove_file(&record).unwrap();
+    // llmlint: ignore[e2e_not_mocked] a real pipx fails here only by failing to reach PyPI, which needs pipx on the test host (it is not on every developer's) and turns a network outage into the case under test; the stand-in fails the way pipx does, a non-zero exit with its reason on stderr, and the real install-ruff.sh's handling of that exit is what is asserted.
     write_executable(
         stubs.path(),
         "pipx",
@@ -1890,4 +1891,34 @@ fn the_documented_required_check_runs_compare_only_when_specs_or_configs_change(
     git(repo.path(), &["commit", "-qm", "only"]);
     assert_eq!(relevant(repo.path(), &"0".repeat(40)), "true");
     assert_eq!(relevant(repo.path(), ""), "true");
+}
+
+/// The fixture's reference command takes `--alter` or nothing: a mistyped flag
+/// would otherwise write an unchanged golden and turn the `mismatched` row into
+/// a match.
+#[test]
+fn the_fixture_reference_refuses_an_argument_it_does_not_know() {
+    let script =
+        repo_root().join("crates/crozier-e2e/tests/action-fixture/reference/copy-golden.sh");
+    for args in [&["--alte"][..], &["--alter", "README.md"][..]] {
+        let output = tempfile::tempdir().unwrap();
+        let out = Command::new(bash())
+            .arg(&script)
+            .args(args)
+            .env("CROZIER_REFERENCE_OUTPUT", output.path())
+            .output()
+            .unwrap();
+        let stderr = String::from_utf8(out.stderr).unwrap();
+        assert_eq!(out.status.code(), Some(2), "{args:?}: {stderr}");
+        assert!(
+            stderr.contains("copy-golden: usage: copy-golden.sh [--alter]")
+                && stderr.contains("fix the reference command in crozier.yml"),
+            "{stderr}"
+        );
+        assert_eq!(
+            std::fs::read_dir(output.path()).unwrap().count(),
+            0,
+            "{args:?} wrote a reference"
+        );
+    }
 }

@@ -55,6 +55,16 @@ use departures_ledger::{GoldenLedger, Ledger, Observed};
 #[path = "e2e/departures_ledger_gate.rs"]
 mod departures_ledger_gate;
 
+/// `fixtures-report.sh` and `departures-ledger.sh`, run as their recipes run them.
+#[cfg(unix)]
+#[path = "e2e/report_scripts.rs"]
+mod report_scripts;
+
+/// The last line of `report_fixture_gaps` / `report_fixture_diffs`, which
+/// `fixtures-report.sh` requires to know a reporter ran: one source for both.
+const GAPS_SUMMARY: &str = "file(s) still unmatched across all corpora";
+const DIFFS_SUMMARY: &str = "differing file(s) across the reported corpora";
+
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
 /// byte-for-byte today (paths relative to the output root). `unmatched` is the
@@ -9394,14 +9404,21 @@ fn flat_goldens_are_the_declared_set() {
     }
 }
 
-/// `fixtures-report.sh` (the runner of the two reporters below) captures cargo's
-/// output in a named temporary file rather than a shell variable, so a report of
-/// any size survives and the run log can be shown in full when it fails.
+/// `fixtures-report.sh` (the runner of the two reporters below) requires each
+/// one's summary line, spelled once as `GAPS_SUMMARY` / `DIFFS_SUMMARY`: a
+/// marker the script spells differently would fail every report.
 #[test]
-fn the_fixtures_reports_write_through_a_temp_file() {
+fn the_fixtures_report_script_requires_the_reporters_own_summaries() {
     let script = include_str!("../fixtures-report.sh");
-    assert!(script.contains("crozier-fixtures-$1.XXXXXX"), "{script}");
-    assert!(!script.contains("out=$(cargo"), "{script}");
+    for (reporter, summary) in [
+        ("report_fixture_gaps", GAPS_SUMMARY),
+        ("report_fixture_diffs", DIFFS_SUMMARY),
+    ] {
+        assert!(
+            script.contains(&format!("reporter={reporter} summary='{summary}'")),
+            "fixtures-report.sh does not require {reporter}'s summary {summary:?}"
+        );
+    }
 }
 
 /// Measurement aid — generate every available corpus and print the exact residual
@@ -9538,7 +9555,7 @@ fn report_fixture_gaps() {
         total_unmatched += differences.len();
     }
     println!(
-        "\n{total_unmatched} file(s) still unmatched across all corpora; \
+        "\n{total_unmatched} {GAPS_SUMMARY}; \
          {total_expected} expected file(s) across {corpus_count} corpora."
     );
 }
@@ -9745,7 +9762,7 @@ fn report_fixture_diffs() {
         "\n{generation_failures} comparison generation failure(s) across the reported corpora."
     );
     println!("{processing_failures} comparison processing failure(s) across the reported corpora.");
-    println!("\n{total} differing file(s) across the reported corpora.");
+    println!("\n{total} {DIFFS_SUMMARY}.");
 }
 
 /// Print one golden's differences for `report_fixture_diffs`, tagging each one

@@ -1,9 +1,5 @@
-# The root is both the `crozier` package and the Cargo workspace. It stays a
-# package (rather than a virtual manifest over `crates/crozier`) because `src/`
-# is a path the committed measurement ledgers key on thousands of times
-# (docs/openapi-surface/golden-reach*.tsv and the witness records), and because
-# `cargo install --path .`, maturin's root `pyproject.toml`, `action.yml` and the
-# release archives all build this manifest by that path. See src/AGENTS.md.
+# The root is both the `crozier` package and the Cargo workspace, not a virtual
+# manifest; src/AGENTS.md says why.
 [workspace]
 members = [".", "crates/crozier-e2e", "tools/ci", "tools/ci-journeys", "tools/github-action"]
 resolver = "2"
