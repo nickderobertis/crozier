@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.106](https://github.com/nickderobertis/crozier/compare/v0.0.105...v0.0.106) - 2026-10-07
+
+### Fixed
+
+- *(corpus)* replace the vendored Fern seed and stop naming Fern's tests ([#423](https://github.com/nickderobertis/crozier/pull/423))
+
 ## [0.0.105](https://github.com/nickderobertis/crozier/compare/v0.0.104...v0.0.105) - 2026-10-06
 
 ### Fixed
