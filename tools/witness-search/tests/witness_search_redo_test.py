@@ -142,6 +142,40 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 result = self.run_validator(shard)
                 self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_a_malformed_contract_is_refused_before_any_shard_is_validated(self) -> None:
+        text = CONTRACT.read_text(encoding="utf-8")
+        key, selector = self.contract_keys()[0]
+        row = f"| `{key}` | `{selector}` |\n"
+        self.assertIn(row, text)
+        head = text.split("## Owned keys", 1)[0]
+        cases = (
+            (text.replace(row, row + f"| `{key}` | `schema.items` |\n", 1), f"owned key {key} is named twice"),
+            (text.replace(row, row + "| `empty-selector` | `` |\n", 1), "owned key row 2 is not two nonempty"),
+            (text.replace(row, row + "| `three` | `schema.items` | `cells` |\n", 1), "owned key row 2 is not two nonempty"),
+            (head + "## Owned keys\n\n| key | selector |\n|---|---|\n", "the `## Owned keys` table owns no key"),
+            (head + "## Owned keys\n\n| name | rule |\n|---|---|\n" + row, "no `## Owned keys` table with a `key | selector` header"),
+            (head, "no `## Owned keys` table"),
+        )
+        directory = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, directory)
+        contract = directory / "contract.md"
+        for changed, message in cases:
+            with self.subTest(message=message):
+                contract.write_text(changed, encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(SCRIPT), str(contract), *(str(shard) for shard in SHARDS)],
+                    cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8",
+                )
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn(f"witness-search-redo: {contract}: {message}", result.stderr)
+                self.assertIn("repair the contract, or restore the committed one, and rerun", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+        # The committed contract, restored, validates both shards again.
+        contract.write_text(text, encoding="utf-8")
+        result = subprocess.run([sys.executable, str(SCRIPT), str(contract), *(str(shard) for shard in SHARDS)],
+                                cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_catalogue_report_covers_every_owned_key_and_source(self) -> None:
         result = self.run_validator(SHARDS[0])
         self.assertEqual(0, result.returncode, result.stderr)

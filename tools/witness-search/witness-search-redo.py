@@ -77,8 +77,24 @@ def authoritative_details(
 
 
 def contract_keys(path: Path) -> dict[str, str]:
+    """Each owned key's frozen selector, refused unless the contract's table is well formed.
+
+    The `## Owned keys` table must have a `key | selector` header and at least
+    one row, and each row two nonempty cells and a key no other row names."""
     rows = table(path.read_text(encoding="utf-8"), "## Owned keys")
-    return {row[0].strip("`"): row[1].strip("`") for row in rows[1:] if len(row) == 2}
+    if not rows or [value(cell) for cell in rows[0]] != ["key", "selector"]:
+        raise ValueError(f"{path}: no `## Owned keys` table with a `key | selector` header")
+    keys: dict[str, str] = {}
+    for number, row in enumerate(rows[1:], 1):
+        if len(row) != 2 or not all(value(cell) for cell in row):
+            raise ValueError(f"{path}: owned key row {number} is not two nonempty key and selector cells: {row}")
+        key, selector = map(value, row)
+        if key in keys:
+            raise ValueError(f"{path}: owned key {key} is named twice")
+        keys[key] = selector
+    if not keys:
+        raise ValueError(f"{path}: the `## Owned keys` table owns no key")
+    return keys
 
 
 def validate_shard(path: Path, contract: Path) -> list[str]:
@@ -312,11 +328,16 @@ def main() -> int:
             parser.error(f"--supplement-candidates requires a candidate file: {supplement}")
     if args.reconcile and args.schemas is None:
         parser.error("--reconcile requires --schemas PATH")
-    failures = (
-        reconcile(args.shards, args.contract, args.schemas, args.candidates or args.contract.with_name("candidates.md"), tuple(args.supplement_candidates))
-        if args.reconcile
-        else validate_documents(args.shards, args.contract)
-    )
+    try:
+        failures = (
+            reconcile(args.shards, args.contract, args.schemas, args.candidates or args.contract.with_name("candidates.md"), tuple(args.supplement_candidates))
+            if args.reconcile
+            else validate_documents(args.shards, args.contract)
+        )
+    except (OSError, ValueError) as error:
+        print(f"witness-search-redo: {error} — repair the contract, or restore the committed one, and rerun",
+              file=sys.stderr)
+        return 1
     if failures:
         print("\n".join(failures), file=sys.stderr)
         return 1
