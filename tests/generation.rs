@@ -1607,11 +1607,15 @@ fn renders_nextgen_care_team_post_with_a_required_unknown_body_and_typed_error()
 }
 
 #[test]
-fn renders_signal_cabinet_labels_with_a_plain_string_map() {
+fn renders_kafka_connect_validation_with_a_plain_string_map() {
     let source = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("docs/openapi-surface/handwritten/signal-cabinet-labels/openapi.yml");
-    let files = render(&std::fs::read_to_string(source).expect("read authored calibration labels"));
-    let apply = generated_python_method(&files["src/acme/raw_client.py"], "apply_cabinet_labels");
+        .join("tests/fixtures/corpus-sources/confluent-kafka-connect/openapi.yaml");
+    let files =
+        render(&std::fs::read_to_string(source).expect("read Confluent Kafka Connect source"));
+    let apply = generated_python_method(
+        &files["src/acme/managed_connector_plugins_connect_v1/raw_client.py"],
+        "validate_connectv1connector_plugin",
+    );
     assert!(apply.contains("request: typing.Dict[str, str],"));
     assert!(apply.contains("json=request,"));
 }

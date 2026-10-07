@@ -5450,13 +5450,23 @@ fn resolve_request_body(
     if is_map(schema) {
         let type_ref = base_type_ref(schema);
         let convert = type_needs_convert(&type_ref, types);
-        return Some(single_with_override(
+        let string_map = matches!(&type_ref, TypeRef::Dict(_, value)
+            if **value == TypeRef::Primitive(Prim::Str));
+        let mut body = single_with_override(
             type_ref,
             required,
             convert,
             content_type_override.is_some() || inline_container_carries_content_type(schema),
             content_type_override,
-        ));
+        );
+        // Kafka Connect's configuration validation documents the declared map
+        // example in both its method docstrings and its reference usage snippet.
+        if string_map {
+            if let RequestBody::Single(single) = &mut body {
+                single.example = media_example(doc, media).map(serde_json::Value::to_string);
+            }
+        }
+        return Some(body);
     }
     // An inline array body: a single `request` argument, carrying the JSON content
     // type exactly when its schema names or describes itself.
