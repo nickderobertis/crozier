@@ -7453,11 +7453,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 self.assertIn("a flow collection is used as a mapping key", str(raised.exception))
 
 
-@unittest.skipIf(
-    os.name == "nt",
-    "the POSIX shell resolver's semantics are not reproduced by MSYS",
-)
-class CensusInterpreterTests(unittest.TestCase):
+class CensusInterpreterCase(unittest.TestCase):
     """Pin the census interpreter's repository provenance."""
 
     RESOLVER = REPO / "scripts" / "census-python.sh"
@@ -7495,6 +7491,44 @@ class CensusInterpreterTests(unittest.TestCase):
             timeout=CENSUS_TIMEOUT, encoding="utf-8",
         )
 
+
+class PortableCensusInterpreterTests(CensusInterpreterCase):
+    """Exercise resolver spellings on every platform with Bash available."""
+
+    # llmlint: ignore[shell_test_tiers_stay_split] Bash and Python are the census suite's required execution runtimes, not an additional host-tool tier; this offline resolver boundary test copies the installed runtime, installs nothing and opens no sockets, like the adjacent interpreter-provenance journeys.
+    def test_a_system_python_without_the_python3_spelling_is_usable(self) -> None:
+        """Windows Python installations need not install a python3 executable."""
+        with tempfile.TemporaryDirectory() as directory:
+            interpreter = Path(directory) / ("python.exe" if os.name == "nt" else "python")
+            shutil.copy2(Path(sys.executable).resolve(), interpreter)
+            if os.name == "nt":
+                # PATH is deliberately restricted, so retain the real runtime's
+                # adjacent DLLs as well as its executable.
+                runtime = Path(sys.executable).resolve().parent
+                for library in runtime.glob("*.dll"):
+                    shutil.copy2(library, Path(directory) / library.name)
+                # A copied Windows executable also needs its standard library
+                # when no installed Python directory remains on PATH.
+                shutil.copytree(runtime / "Lib", Path(directory) / "Lib",
+                                ignore=shutil.ignore_patterns("site-packages", "__pycache__"))
+            completed = self.resolve(path=self.shell_path(Path(directory)))
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            invoked = subprocess.run(
+                [self.shell(), "-c", '"$1" -c "$2"', "census-python",
+                 completed.stdout.strip(), "import sys; print(sys.version_info.major)"],
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
+            )
+            self.assertEqual(0, invoked.returncode, invoked.stderr)
+            self.assertEqual("3", invoked.stdout.strip())
+
+
+@unittest.skipIf(
+    os.name == "nt",
+    "the POSIX shell resolver's semantics are not reproduced by MSYS",
+)
+class CensusInterpreterTests(CensusInterpreterCase):
+    """Pin POSIX interpreter provenance and virtualenv selection."""
+
     def test_both_census_recipes_resolve_the_interpreter_through_the_resolver(self) -> None:
         for recipe in ("surface-census", "test-surface-census"):
             with self.subTest(recipe=recipe):
@@ -7527,27 +7561,6 @@ class CensusInterpreterTests(unittest.TestCase):
         self.assertFalse((REPO / ".venv").exists(), "this case assumes no local .venv")
         first, second = prefixes.stdout.split()
         self.assertEqual(first, second, "the resolver chose a virtualenv")
-
-    # llmlint: ignore[shell_test_tiers_stay_split] Bash and Python are the census suite's required execution runtimes, not an additional host-tool tier; this offline resolver boundary test copies the installed runtime, installs nothing and opens no sockets, like the adjacent interpreter-provenance journeys.
-    def test_a_system_python_without_the_python3_spelling_is_usable(self) -> None:
-        """Windows Python installations need not install a python3 executable."""
-        with tempfile.TemporaryDirectory() as directory:
-            interpreter = Path(directory) / ("python.exe" if os.name == "nt" else "python")
-            shutil.copy2(Path(sys.executable).resolve(), interpreter)
-            if os.name == "nt":
-                # PATH is deliberately restricted, so retain the real runtime's
-                # adjacent DLLs as well as its executable.
-                for library in Path(sys.executable).resolve().parent.glob("*.dll"):
-                    shutil.copy2(library, Path(directory) / library.name)
-            completed = self.resolve(path=self.shell_path(Path(directory)))
-            self.assertEqual(0, completed.returncode, completed.stderr)
-            invoked = subprocess.run(
-                [self.shell(), "-c", '"$1" -c "$2"', "census-python",
-                 completed.stdout.strip(), "import sys; print(sys.version_info.major)"],
-                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
-            )
-            self.assertEqual(0, invoked.returncode, invoked.stderr)
-            self.assertEqual("3", invoked.stdout.strip())
 
     def test_a_repo_local_venv_is_preferred_over_anything_on_path(self) -> None:
         """The first branch, driven rather than tolerated.
