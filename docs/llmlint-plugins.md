@@ -117,7 +117,9 @@ after both resolved **38 rules**:
 
 A later refresh (create-repo v1.47.3) moved `base` and `ci` forward and added
 `releasing`, which judges the release wiring crozier ships through release-plz,
-crates.io and PyPI. `lock.json` is the record of the set as it stands — its
+crates.io and PyPI; `project-graph` joined when the gate moved onto an Nx
+project graph, to judge where new code lands and how projects declare their
+targets and boundaries. `lock.json` is the record of the set as it stands — its
 versions, hashes and rules — and `just test-llmlint-plugins` holds the resolved
 rules to it, so this document does not restate them.
 
