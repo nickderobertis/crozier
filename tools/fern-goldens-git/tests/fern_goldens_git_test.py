@@ -2310,6 +2310,18 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             failed.stderr,
         )
         self.assertIn("then re-run with --only alpha", failed.stderr)
+        # The failing generator's own output is shown before the fix.
+        self.assertIn("generate-fern-fixture: simulated failure\n", failed.stderr)
+
+    def test_a_batch_reports_one_line_for_every_fixture_it_generated(self) -> None:
+        beta = self.root / "tests" / "fixtures" / "beta"
+        beta.mkdir()
+        (beta / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+        result = self.run_script("--committed")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stderr.splitlines(), [
+            "generate-corpus-fixtures: generated 2 fixtures (alpha beta) — review, then wire them into the "
+            "e2e manifest (see docs/matching.md)"])
 
     @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "file modes do not deny this reader")
     def test_an_unreadable_manifest_generates_nothing(self) -> None:

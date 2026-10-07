@@ -152,21 +152,39 @@ if [ "${#plan[@]}" -eq 0 ]; then
   exit 1
 fi
 
+# Each generation's output is kept, and shown only when it fails: one fixture
+# reports the generator's own summary, a batch one line for all of them.
+generated=()
+log=""
+if [ "$dry_run" -eq 0 ]; then
+  log="$(mktemp "${TMPDIR:-/tmp}/generate-corpus-fixtures.XXXXXX")" || {
+    echo "generate-corpus-fixtures: cannot create a temporary log under ${TMPDIR:-/tmp} — point" \
+         "TMPDIR at a writable directory, then re-run" >&2
+    exit 1
+  }
+  trap 'rm -f "$log" || echo "generate-corpus-fixtures: could not remove $log; delete it by hand" >&2' EXIT
+fi
 for item in "${plan[@]}"; do
   fixture="${item%%|*}"
   source_desc="${item#*|}"
   if [ "$dry_run" -eq 1 ]; then
     printf '%s\t%s\n' "$fixture" "$source_desc"
   else
-    # The generator prints its own one-line summary; the fixture and its source
-    # are named here only when it fails.
     status=0
-    "$repo_root/tools/fern-goldens/generate-fern-fixture.sh" "$fixture" "${FERN_PYTHON_VERSION-}" "$source_desc" ||
-      status=$?
+    "$repo_root/tools/fern-goldens/generate-fern-fixture.sh" "$fixture" "${FERN_PYTHON_VERSION-}" "$source_desc" \
+      >"$log" 2>&1 || status=$?
     if [ "$status" -ne 0 ]; then
+      cat "$log" >&2 || echo "generate-corpus-fixtures: could not read the generator's log $log" >&2
       echo "generate-corpus-fixtures: generating $fixture (spec source: $source_desc) exited" \
            "$status — fix the error above, then re-run with --only $fixture" >&2
       exit "$status"
     fi
+    generated+=("$fixture")
   fi
 done
+if [ "${#generated[@]}" -eq 1 ]; then
+  tail -n 1 "$log" >&2
+elif [ "${#generated[@]}" -gt 1 ]; then
+  echo "generate-corpus-fixtures: generated ${#generated[@]} fixtures (${generated[*]}) — review," \
+       "then wire them into the e2e manifest (see docs/matching.md)" >&2
+fi
