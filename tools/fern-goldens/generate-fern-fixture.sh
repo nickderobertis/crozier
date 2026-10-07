@@ -238,6 +238,37 @@ esac
   echo "generate-fern-fixture: invalid organization '$ORGANIZATION' for '$FIXTURE' — use letters and digits, starting with a letter" >&2
   exit 1
 }
+# Audiences and the client class name are written into generators.yml as plain
+# YAML scalars, so each must be one: no YAML syntax, and no word YAML reads as a
+# boolean or null instead of a string.
+yaml_keyword() {
+  case "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" in
+    true|false|yes|no|on|off|y|n|null) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+if [ -n "$FERN_AUDIENCES" ]; then
+  _audiences_valid=1
+  [[ ",$FERN_AUDIENCES," != *,,* ]] || _audiences_valid=0
+  IFS=',' read -ra _auds <<<"$FERN_AUDIENCES"
+  for _a in "${_auds[@]}"; do
+    [[ "$_a" =~ ^[A-Za-z][A-Za-z0-9._-]*$ ]] && ! yaml_keyword "$_a" || _audiences_valid=0
+  done
+  [ "$_audiences_valid" -eq 1 ] || {
+    echo "generate-fern-fixture: invalid audiences '$FERN_AUDIENCES' for '$FIXTURE' — use" \
+         "comma-separated labels of letters, digits, '.', '_' and '-', each starting with a" \
+         "letter and not true/false/yes/no/on/off/y/n/null (FERN_AUDIENCES or its" \
+         "$fixture_config column)" >&2
+    exit 1
+  }
+fi
+[ -z "$CLIENT_CLASS_NAME" ] || { [[ "$CLIENT_CLASS_NAME" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] &&
+  ! yaml_keyword "$CLIENT_CLASS_NAME"; } || {
+  echo "generate-fern-fixture: invalid client_class_name '$CLIENT_CLASS_NAME' for '$FIXTURE' —" \
+       "use a Python class name (letters, digits and '_', not starting with a digit; not" \
+       "true/false/yes/no/on/off/y/n/null) (CLIENT_CLASS_NAME or its $fixture_config column)" >&2
+  exit 1
+}
 
 if [ -z "$FERN_PYTHON_VERSION" ]; then
   FERN_PYTHON_VERSION="$("$repo_root/tools/fern-goldens/fern-goldens" latest-version)"

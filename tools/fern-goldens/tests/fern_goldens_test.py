@@ -1745,6 +1745,69 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertIn("CROZIER_FERN_NO_DOCKER_SHIM=1", failed.stderr)
         self.assertIn("set CROZIER_FERN_DOCKER_CA to the bundle", failed.stderr)
 
+    def test_every_committed_audience_and_client_class_row_renders_its_generators_yml(self) -> None:
+        root, script, environment = self.generator_repo("committed config repo")
+        fixtures = root / "tests" / "fixtures"
+        shutil.copy2(REPO / "tests" / "fixtures" / "fern-generator-config.txt", fixtures)
+        self.write_executable(
+            root / "fake bin" / "fern",
+            r"""
+            #!/usr/bin/env python3
+            import os
+            import pathlib
+            import shutil
+            import sys
+
+            arguments = sys.argv[1:]
+            shutil.copy2("generators.yml", os.environ["GENERATOR_CONFIG_RECORD"])
+            output = pathlib.Path(arguments[arguments.index("--output") + 1])
+            generated = output / "fern-python-sdk" / "src" / "fern"
+            generated.mkdir(parents=True)
+            (generated / "version.py").write_text("generated\n", encoding="utf-8")
+            """,
+        )
+        rows = [
+            line.split("|")
+            for line in (fixtures / "fern-generator-config.txt").read_text(encoding="utf-8").splitlines()
+            if line and not line.startswith("#")
+        ]
+        rows = [row for row in rows if row[1] or row[3]]
+        self.assertGreaterEqual(len(rows), 4, "the committed table should set audiences and client names")
+        for fixture, audiences, _, client_class_name, extra_fields, *_ in rows:
+            with self.subTest(fixture=fixture):
+                (fixtures / fixture).mkdir(exist_ok=True)
+                (fixtures / fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+                record = root / f"{fixture}.generators.yml"
+                result = subprocess.run(
+                    self.script_command(script, fixture, "5.20.0"),
+                    cwd=root,
+                    env={**environment, "GENERATOR_CONFIG_RECORD": str(record)},
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                audience_lines = "".join(f"      - {label}\n" for label in audiences.split(",") if label)
+                self.assertEqual(
+                    record.read_text(encoding="utf-8"),
+                    "api:\n"
+                    "  path: openapi/openapi.yml\n"
+                    "groups:\n"
+                    "  python-sdk:\n"
+                    + ("    audiences:\n" + audience_lines if audiences else "")
+                    + "    generators:\n"
+                    "      - name: fernapi/fern-python-sdk\n"
+                    "        version: 5.20.0\n"
+                    "        config:\n"
+                    + (f"          client_class_name: {client_class_name}\n" if client_class_name else "")
+                    + "          pydantic_config:\n"
+                    "            enum_type: python_enums\n"
+                    + (f"            extra_fields: {extra_fields}\n" if extra_fields else "")
+                    + "        output:\n"
+                    "          location: local-file-system\n"
+                    "          path: ../generated/python\n",
+                )
+
     def test_real_generator_script_names_a_next_action_for_every_refusal(self) -> None:
         root, script, environment = self.generator_repo("refusing repo")
         fixtures = root / "tests" / "fixtures"
@@ -1768,6 +1831,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ),
             (("beta", "5.20.0"), {"AUDIENCE_STRICT": "maybe"}, "use true, false, or leave it empty"),
             (("beta", "5.20.0"), {"EXTRA_FIELDS": "sometimes"}, "use allow, ignore, forbid, or leave it empty"),
+            (("beta", "5.20.0"), {"FERN_AUDIENCES": "public: [x]"}, "invalid audiences 'public: [x]'"),
+            (("beta", "5.20.0"), {"FERN_AUDIENCES": "public,,internal"}, "use comma-separated labels"),
+            (("beta", "5.20.0"), {"FERN_AUDIENCES": "public,"}, "each starting with a letter"),
+            (("beta", "5.20.0"), {"FERN_AUDIENCES": "Off"}, "not true/false/yes/no/on/off/y/n/null"),
+            (("beta", "5.20.0"), {"CLIENT_CLASS_NAME": "Acme\n          timeout: 1"}, "invalid client_class_name"),
+            (("beta", "5.20.0"), {"CLIENT_CLASS_NAME": "9Client"}, "use a Python class name"),
+            (("beta", "5.20.0"), {"CLIENT_CLASS_NAME": "null"}, "CLIENT_CLASS_NAME or its"),
             (("gamma", "5.20.0"), {}, "or pass the document as SPEC_PATH"),
             (("beta", "5.20.0"), {"FERN_NO_OUTPUT": "1"}, "no packaged SDK"),
             (("--layout", "flat", "beta", "5.20.0"), {"FERN_NO_OUTPUT": "1"}, "without an __init__.py"),
