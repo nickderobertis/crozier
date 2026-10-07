@@ -16,6 +16,9 @@ nothing serves. `reacquire-namesake` against the same server: a refused fork
 whose parent's history still holds its blob, and ones no namesake holds. Every
 REST call is logged by the rate-limit guard.
 
+Without SIGALRM (as on Windows), each stage reads through spawned readers, one
+killed mid-reading failing the stage.
+
 It needs the search's pinned ruamel.yaml: run it as `just test-census-fallback`.
 """
 
@@ -864,11 +867,36 @@ class LenientReadingTest(unittest.TestCase):
         self.assertIn("unrecognised tags read untagged", read["loader"])
 
 
+# A startup hook for this run and every child it spawns: it removes
+# `signal.SIGALRM`, so a stage takes the branch it takes on Windows, and with
+# RECENSUS_TEST_DIE_ON set, a spawned reader opening that document dies there
+# without a verdict, as one the host kills would.
+WITHOUT_SIGALRM = """\
+import multiprocessing, os, signal, sys
+del signal.SIGALRM
+_doomed = os.environ.get("RECENSUS_TEST_DIE_ON")
+if _doomed:
+    def _die(event, args):
+        if event == "open" and _doomed in str(args[0]) and multiprocessing.parent_process() is not None:
+            os._exit(3)
+    sys.addaudithook(_die)
+"""
+
+
+def without_sigalrm(tmp: str, **extra: str) -> dict[str, str]:
+    """The environment that runs the script with `WITHOUT_SIGALRM` installed."""
+    startup = Path(tmp) / "startup"
+    startup.mkdir(exist_ok=True)
+    (startup / "sitecustomize.py").write_text(WITHOUT_SIGALRM, encoding="utf-8")
+    return {**os.environ, **extra,
+            "PYTHONPATH": os.pathsep.join(filter(None, (str(startup), os.environ.get("PYTHONPATH"))))}
+
+
 class SpawnBoundTest(unittest.TestCase):
     """The bound where SIGALRM does not exist, as on Windows: spawned readers ended at it.
 
-    A startup hook removes `signal.SIGALRM` from this run and from every child
-    it spawns, so the stage takes the branch it takes on Windows."""
+    `WITHOUT_SIGALRM` removes `signal.SIGALRM` from this run and from every
+    child it spawns, so each stage takes the branch it takes on Windows."""
 
     def test_parse_and_census_end_at_the_requested_bound_without_sigalrm(self) -> None:
         huge = b"openapi: 3.0.3\nx:\n" + b"".join(b"  k%d: [a, {b: c}]\n" % n for n in range(400_000))
@@ -876,9 +904,6 @@ class SpawnBoundTest(unittest.TestCase):
                 "    L0: &l0 {type: object, properties: {a: {type: string}}}"]
         bomb += [f"    L{n}: &l{n} {{allOf: [{', '.join([f'*l{n - 1}'] * 8)}]}}" for n in range(1, 12)]
         with tempfile.TemporaryDirectory() as tmp:
-            startup = Path(tmp) / "startup"
-            startup.mkdir()
-            (startup / "sitecustomize.py").write_text("import signal\ndel signal.SIGALRM\n", encoding="utf-8")
             root = Path(tmp) / "evidence"
             evidence = root / "witness-search-sourcegraph"
             keys_file(evidence)
@@ -891,7 +916,7 @@ class SpawnBoundTest(unittest.TestCase):
                 rows.append({"source": "sourcegraph", "key": KEY, "repository": f"github.com/example/{name}",
                              "path": "a.yaml", "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"})
             (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
-            env = {**os.environ, "PYTHONPATH": os.pathsep.join(filter(None, (str(startup), os.environ.get("PYTHONPATH"))))}
+            env = without_sigalrm(tmp)
             probe = subprocess.run([sys.executable, "-c", "import signal; print(hasattr(signal, 'SIGALRM'))"],
                                    capture_output=True, text=True, env=env, timeout=60)
             self.assertEqual("False", probe.stdout.strip(), probe.stderr)
@@ -916,6 +941,66 @@ class SpawnBoundTest(unittest.TestCase):
             # A document inside the bound is read and counted on the same branch.
             self.assertEqual(("declares", 1), (read["declarer"]["disposition"], read["declarer"]["selector_count"]))
             self.assertLess(elapsed, 90)
+
+
+    def test_a_reader_that_dies_without_a_verdict_fails_the_stage_and_records_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-sourcegraph"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            (cache / "documents").mkdir(parents=True)
+            digest = hashlib.sha256(DECLARER).hexdigest()
+            (cache / "documents" / f"{digest}.yaml").write_bytes(DECLARER)
+            row = {"source": "sourcegraph", "key": KEY, "repository": "github.com/example/doomed", "path": "a.yaml",
+                   "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"}
+            ledger = evidence / "candidates.jsonl"
+            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            args = ("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph", "--cache", str(cache))
+            died = subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True, timeout=120,
+                                  env=without_sigalrm(tmp, RECENSUS_TEST_DIE_ON=digest))
+            self.assertEqual(1, died.returncode, died.stderr)
+            self.assertNotIn("Traceback", died.stderr)
+            self.assertIn(f"witness-search-recensus: the reader of sha256 {digest} exited 3 without a verdict; "
+                          "inspect the ledger and cache named and rerun", died.stderr)
+            self.assertEqual(json.dumps(row) + "\n", ledger.read_text(encoding="utf-8"))
+            # The rerun the message names reads it.
+            rerun = subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True, timeout=120,
+                                   env=without_sigalrm(tmp))
+            self.assertEqual(0, rerun.returncode, rerun.stderr)
+            self.assertIn("1 parse-failure row(s) over 1 document(s) read again: 1 declares", rerun.stdout)
+
+    def test_a_document_reacquired_at_head_or_from_a_namesake_is_read_by_a_spawned_reader(self) -> None:
+        _server, url = serve_upstream(self)
+        with tempfile.TemporaryDirectory() as tmp:
+            # The doomed document is the one each stage reacquires, so only a
+            # spawned reader of it — never this process — can have read it.
+            env = without_sigalrm(tmp, CROZIER_GITHUB_API_URL=url, CROZIER_RAW_GITHUB_URL=url,
+                                  CROZIER_SOURCEGRAPH_URL=url, GITHUB_TOKEN="offline-test-token")
+            for stage, name, extra, served in (("reacquire-head", "kept", {}, "census 1; read by ruamel.yaml 0.19.1 "
+                                                "(YAML 1.2)"),
+                                               ("reacquire-namesake", "forked", {"reacquired_at_head": True},
+                                                "census 1; read by ruamel.yaml 0.19.1 (YAML 1.2); served by "
+                                                "upstream/Forked")):
+                with self.subTest(stage=stage):
+                    root = Path(tmp) / stage
+                    refused_rows(root / "witness-search-github-code-search", (name,), **extra)
+                    completed = subprocess.run(
+                        [sys.executable, str(SCRIPT), "--evidence-root", str(root), stage,
+                         "--cache-dir", str(Path(tmp) / f"{stage}-cache")],
+                        capture_output=True, text=True, timeout=120, env=env)
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    (record,) = INDEX.source_rows(root, "github-code-search")
+                    self.assertEqual(served, record["census"])
+                    # The same reading, its reader killed, fails the stage rather than record it.
+                    refused_rows(root / "witness-search-github-code-search", (name,), **extra)
+                    digest = hashlib.sha256(DECLARER).hexdigest()
+                    died = subprocess.run(
+                        [sys.executable, str(SCRIPT), "--evidence-root", str(root), stage,
+                         "--cache-dir", str(Path(tmp) / f"{stage}-cache-again")],
+                        capture_output=True, text=True, timeout=120, env={**env, "RECENSUS_TEST_DIE_ON": digest})
+                    self.assertEqual(1, died.returncode, died.stderr)
+                    self.assertIn("without a verdict; inspect the ledger and cache named and rerun", died.stderr)
 
 
 if __name__ == "__main__":
