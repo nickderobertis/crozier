@@ -8,8 +8,8 @@ with it. This folder holds the inputs; the mechanics live in
 `scripts/` because the pre-push guard and the Visual-docs workflow run it by that
 path) and [`demo-gif.py`](demo-gif.py) (the animated hero). `capture` and
 `demo-gif` build crozier but run outside both gate tiers (screencomp owns the
-comparison), so the project declares no edge to the crate: a CLI change does not
-pull in its one gate target, which tests the renderer against a stub binary.
+comparison). Its gate target, `test`, renders the session from the freshly
+built crozier (it runs after `crozier:build`) and refuses a broken binary.
 
 ## What's here
 

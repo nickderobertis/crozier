@@ -121,7 +121,9 @@ class TheGateHoldsTheFinishedRecord(unittest.TestCase):
         self.assertEqual(result.stderr, "")
 
     def test_the_record_screens_the_certain_candidate(self) -> None:
-        """LORIS is the one candidate the task named as already settled."""
+        """LORIS is the admitted candidate the record settles a gap row with (and a
+        registered corpus row since), so the record must keep naming it at the
+        commit it was screened at."""
         text = (REPO / RECORD).read_text(encoding="utf-8")
         self.assertIn("aces/Loris", text)
         self.assertIn("3305a00312178ea75f135be1564beaf222b25822", text)
@@ -289,6 +291,17 @@ class TheGateStillDiscriminates(unittest.TestCase):
         result = self.gate_over(ledger, lines)
         self.assertEqual(result.returncode, 1)
         self.assertIn("does not name example/one:openapi.yaml", result.stderr)
+
+    def test_a_citation_sharing_only_the_file_name_does_not_name_the_document(self) -> None:
+        """Another repository's document of the same name is not this one."""
+        ledger = [ledger_row("`example/one` `openapi.yaml`"), ledger_row("`example/two` `api.json`")]
+        lines = [
+            record_line(source="`schemas.md:{row1}`"),
+            record_line(candidate="`other/repo` `openapi.yaml`", source="`schemas.md:{row1}`"),
+        ]
+        result = self.gate_over(ledger, lines)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("does not name other/repo:openapi.yaml", result.stderr)
 
     def test_a_missing_source_citation_fails(self) -> None:
         result = self.gate_over(*self.one(source="the schemas ledger"))

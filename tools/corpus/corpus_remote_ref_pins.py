@@ -204,7 +204,11 @@ def strip_fragment(reference: str) -> str:
 
 
 def is_absolute_reference(reference: str) -> bool:
-    parsed = urlsplit(strip_fragment(reference))
+    try:
+        parsed = urlsplit(strip_fragment(reference))
+    except ValueError as error:
+        raise PinError(f"$ref {reference!r} is not a well-formed URL ({error}); fix the reference in the "
+                       "document (or its manifest row), then re-run") from error
     return bool(parsed.scheme) and bool(parsed.netloc)
 
 

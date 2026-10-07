@@ -1713,10 +1713,10 @@ def fixture_declined(key: str, evidence: EvidenceDirectory) -> set[str]:
     """Candidates whose latest screen in `directory/screens.jsonl` declines them as a test fixture.
 
     A document written to exercise a tool is hand-written, not a specification,
-    so it is no witness however its three screens read. This exemption is the
-    manager's amendment to Contract B — ruling (B) to `thin-goldens-continue-2`:
-    such a candidate is recorded with that measured reason, naming what makes it
-    a fixture, and its arm reads `exhausted` with no real witness. The phrase is
+    so it is no witness however its three screens read. This exemption is part
+    of the arm-search contract `docs/openapi-surface-coverage.md` states: such a
+    candidate is recorded with that measured reason, naming what makes it a
+    fixture, and its arm reads `exhausted` with no real witness. The phrase is
     the arm search's own, read from `tools/surface-census/golden-reach-search.py`.
     """
     marker = golden_reach_search().FIXTURE_DECLINE + " — "
@@ -1858,8 +1858,8 @@ def exhaustive_line_failures(
                 )
             continue
         # A golden-arm candidate the counted build's probe finds reaching nothing
-        # keeps its row, marked with that probe (the manager's ruling to
-        # `thin-goldens-continue-2`): it is accounted for, and no candidate.
+        # keeps its row, marked with that probe, as the arm-search contract in
+        # docs/openapi-surface-coverage.md says: it is accounted for, and no candidate.
         unreaching = not_reaching_failures(key, candidate, census_run, evidence)
         if unreaching is not None:
             failures += unreaching
@@ -1964,7 +1964,10 @@ def config_gated_record_failures(
     root: Path,
     capabilities: dict[str, tuple[bool, bool, str]],
 ) -> list[str]:
-    """Every way a `config-gated` arm-search record falls short of the manager's ruling.
+    """Every way a `config-gated` arm-search record falls short of its contract.
+
+    The contract is the one docs/openapi-surface-coverage.md states for an arm
+    only a generation setting reaches (*Every unreached arm, and its search verdict*).
 
     No Contract B search ran for such an arm, so the record owes three things in
     its place, each checked against the tree rather than its prose: (1) the
@@ -8661,15 +8664,12 @@ class RankedBacklogTests(unittest.TestCase):
         this assertion would say so.
 
         **An empty answer is a legitimate one, and is checked rather than
-        assumed.** This used to require the command to exit 0, on the reading that
-        a `grep` finding nothing meant the marker had been reworded out from under
-        it. Round 5 measured the last seven witness-supply rows into
-        `limitations`, so the true answer is now the empty set and `grep` exits 1
-        on it. What replaces the exit-status assertion is stricter, not looser:
-        the command's answer must equal the derivation taken off the `settlement`
-        cells here, and the two are compared whichever way they come out — so a
-        marker reworded while a row still settles `PROBE` gives a non-empty
-        derivation against an empty command answer and fails, exactly as before.
+        assumed.** No row settles as a witness-supply probe today, so the true
+        answer is the empty set and `grep` exits 1 on it. The exit status therefore
+        proves nothing; what is asserted is that the command's answer equals the
+        derivation taken off the `settlement` cells here, compared whichever way
+        they come out — so a marker reworded while a row still settles `PROBE`
+        gives a non-empty derivation against an empty command answer and fails.
         """
         command = re.search(
             r"^grep -h '[^']+' docs/openapi-surface/\*\.md \| grep -oP '[^']+'$",

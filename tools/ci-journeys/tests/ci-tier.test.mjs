@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { test } from "node:test";
-import { commitChange, git, scratchWorkspace } from "./support.mjs";
+import { commitChange, git, ran, scratchWorkspace, write } from "./support.mjs";
 
 function decide(root, env) {
   const clean = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GITHUB_") && key !== "CROZIER_PUSH_BEFORE"));
@@ -51,4 +51,46 @@ test("an event with no derivable base runs the broader tier rather than a scoped
   ]) {
     assert.equal(decide(root, env).tier, "sweep", JSON.stringify(env));
   }
+});
+
+// The dispatch itself, through the recipe the workflows call: the tier it
+// chose, the base it hands the gate as NX_BASE, the arguments it forwards, and
+// the gate's status as its own.
+function ciCheck(root, args, env) {
+  const clean = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
+    !key.startsWith("GITHUB_") && key !== "CROZIER_PUSH_BEFORE" && key !== "NX_BASE"));
+  const run = spawnSync("just", ["ci-check", ...args], {
+    cwd: root, env: { ...clean, NX_DAEMON: "false", NX_NO_CLOUD: "true", ...env }, encoding: "utf8",
+    shell: process.platform === "win32",
+  });
+  return { status: run.status, stdout: run.stdout ?? "", output: `${run.stdout}${run.stderr}` };
+}
+
+test("ci-check runs the gate in the tier it chose, with its base and the arguments it was given", (t) => {
+  const root = scratchWorkspace(t);
+  const base = git(root, "rev-parse", "HEAD");
+  commitChange(root, "a/src.txt", "feature\n");
+
+  const pr = ciCheck(root, [], { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
+  assert.equal(pr.status, 0, pr.output);
+  assert.match(pr.stdout, /ci-tier: affected — pull request: merge base with origin\/main/);
+  assert.match(pr.stdout, new RegExp(`gate: affected tier against ${base.slice(0, 12)} \\(NX_BASE=${base}\\)`));
+  assert.ok(ran(root, "a") && !ran(root, "b"), pr.output);
+
+  const release = ciCheck(root, ["--exclude=a"], {
+    GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "release-plz-2026-10-07T12-00-00Z", GITHUB_BASE_REF: "main",
+  });
+  assert.equal(release.status, 0, release.output);
+  assert.match(release.stdout, /gate: broader tier \(--sweep\)/);
+  assert.match(release.stdout, /gate: projects: b\n/);
+  assert.ok(ran(root, "b"), release.output);
+});
+
+test("ci-check exits with the gate's own failure", (t) => {
+  const root = scratchWorkspace(t);
+  write(root, { "a/project.json": JSON.stringify({ name: "a", tags: ["type:tooling"], targets: { test: { command: "exit 3" } } }) });
+  commitChange(root, "a/src.txt", "breaks\n");
+  const failed = ciCheck(root, [], { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
+  assert.notEqual(failed.status, 0, failed.output);
+  assert.match(failed.output, /gate: a target failed/);
 });

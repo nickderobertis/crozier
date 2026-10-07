@@ -822,6 +822,8 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 ("another source", good.replace("jentic", "apis.guru", 1), "is filed under jentic but names source 'apis.guru'"),
                 ("unknown screen", good.replace("\tpass\tpass\tpass", "\tpass\tok\tpass"),
                  "has revision_screen 'ok', not pass, failed: <reason> or not-run: <reason>"),
+                ("screen without its reason", good.replace("\tpass\tpass\tpass", "\tpass\tfailed: \tpass"),
+                 "has revision_screen 'failed: ', not pass, failed: <reason> or not-run: <reason>"),
                 ("unknown disposition", good.replace("witness-found", "approved"),
                  "has disposition 'approved', which the index grammar does not read"),
             ):
@@ -839,6 +841,9 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 ("census status", root / "witness-search-keys.tsv",
                  "key\tselector\tregion\tcensus_status\nshape-a\tx\ts.md\tmaybe\n",
                  "witness-search-keys.tsv:2 has census_status 'maybe', not one of supported, unsupported-by-census"),
+                ("unreadable without its reason", portals / "enumeration.tsv",
+                 "walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\nk\tx.json\tabc\t-\t\tunreadable: \n",
+                 "enumeration.tsv:2 has status 'unreadable: ', not readable or unreadable: <reason>"),
                 ("enumeration status", portals / "enumeration.tsv",
                  "walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\nk\tx.json\tabc\t-\t\tskipped\n",
                  "enumeration.tsv:2 has status 'skipped', not readable or unreadable: <reason>"),

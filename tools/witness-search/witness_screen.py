@@ -584,6 +584,9 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
             missing.append(f"the {name} screen's outcome")
             continue
         outcome = section["outcome"]
+        if outcome.startswith(("not-run: ", "failed: ")) and not outcome.split(": ", 1)[1].strip():
+            missing.append(f"the {name} screen's reason: {outcome!r} says what happened but not why")
+            continue
         if outcome.startswith("not-run: "):
             earlier = SCREENS[:SCREENS.index(name)] if name != "licence" else ("ref",)
             if not any(isinstance(record.get(e), dict)

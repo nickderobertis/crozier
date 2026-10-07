@@ -502,6 +502,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             (lambda r: r["document"].update(repository="../acme"),
              "the document it read (['repository'] of `document`)"),
             (lambda r: r["ref"].update(outcome="passed-invalid"), "a ref outcome reading `passed` or `failed: "),
+            (lambda r: r["fern"].update(outcome="failed: "), "the fern screen's reason: 'failed: ' says what happened"),
             (lambda r: r["ref"]["pins"].update(path="other.yaml"), "its repository, commit and path pins"),
             (lambda r: r["ref"]["pins"].update(expected_sha256="0" * 64), "the bytes its pin names"),
             (licence_pins(judgement="a third-party copy"), "a judgement can only refuse"),

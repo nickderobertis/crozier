@@ -83,8 +83,10 @@ def read_tsv(path: Path, columns: tuple[str, ...], *, optional: bool = False) ->
 
 
 def screen_cell(value: str) -> bool:
-    """A records.tsv screen cell: `pass`, `failed: <reason>` or `not-run: <reason>`."""
-    return value == "pass" or value.startswith(("failed: ", "not-run: "))
+    """A records.tsv screen cell: `pass`, `failed: <reason>` or `not-run: <reason>`, the
+    reason non-empty."""
+    return value == "pass" or any(value.startswith(prefix) and value[len(prefix):].strip()
+                                  for prefix in ("failed: ", "not-run: "))
 
 
 def records(root: Path, source: str) -> list[tuple[int, dict[str, str]]]:
@@ -145,7 +147,8 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
         enumeration = read_tsv(directory / "enumeration.tsv",
                                ("document", "revision", "status"), optional=True)
         for number, row in enumerate(enumeration, 2):
-            if row["status"] != "readable" and not row["status"].startswith("unreadable: "):
+            if row["status"] != "readable" and not (row["status"].startswith("unreadable: ")
+                                                    and row["status"][len("unreadable: "):].strip()):
                 raise ValueError(f"{directory / 'enumeration.tsv'}:{number} has status {row['status']!r}, "
                                  "not readable or unreadable: <reason>")
         unreadable = [row for row in enumeration if row["status"] != "readable"]

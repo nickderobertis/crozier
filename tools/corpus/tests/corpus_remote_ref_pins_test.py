@@ -10,6 +10,7 @@ Run: `just test-corpus-remote-ref-pins` (part of `just check`).
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -151,6 +152,28 @@ class TheLintStillDiscriminates(unittest.TestCase):
                 result = self.check((*self.GOOD[:2], malformed, self.GOOD[3]))
                 self.assert_rejected(result, "is not a well-formed URL", "pin the reference")
                 self.assertNotIn("Traceback", result.stderr)
+
+    def test_a_document_reference_that_is_no_url_is_refused_by_apply(self) -> None:
+        self.assertEqual(0, self.check(self.GOOD, self.SECOND).returncode)
+        # `apply` reads the document through the census's reader, which reads the pins back.
+        for relative in ("tools/surface-census/openapi-surface-census.py", "tools/corpus/corpus_remote_ref_pins.py"):
+            (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO / relative, self.root / relative)
+        document = self.root / "openapi.yaml"
+        # Every recorded pin is referenced, so the reading reaches the malformed one.
+        document.write_text(
+            "openapi: 3.0.3\npaths:\n"
+            f"  /a:\n    $ref: '{self.GOOD[1]}'\n  /b:\n    $ref: '{self.SECOND[1]}'\n"
+            "  /c:\n    $ref: 'http://[raw.githubusercontent.com/x.yaml'\n",
+            encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, str(MODULE), "--root", str(self.root), "apply", "helios-verifiable-api", str(document)],
+            text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertIn("is not a well-formed URL", result.stderr)
+        self.assertIn("fix the reference in the document", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
 
     def test_a_malformed_digest_is_rejected(self) -> None:
         self.assert_rejected(

@@ -377,9 +377,11 @@ def check(root: Path) -> list[str]:
             if not row.startswith("| "):
                 problems.append(f"{where} — {place} is not a table row")
                 continue
+            # The cited row must name this document's repository: a region row
+            # records its witnesses by repository, and a bare file name is one
+            # any other repository's document can share.
             slug = document.split(":")[0]
-            tail = document.split(":")[-1]
-            if slug not in row and tail not in row:
+            if slug not in row:
                 problems.append(
                     f"{where} — {place} does not name {document}, so the"
                     " provenance citation does not hold"
