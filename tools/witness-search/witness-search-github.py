@@ -160,12 +160,12 @@ def load(name: str, path: Path) -> Any:
     return module
 
 
-CENSUS = load("witness_github_census", REPO / "scripts/openapi-surface-census.py")
+CENSUS = load("witness_github_census", REPO / "tools/surface-census/openapi-surface-census.py")
 INDEX = load("witness_github_index", REPO / "tools/witness-search/witness-search-github-index.py")
 REGION_ROWS = load(
-    "witness_github_rows", REPO / "tests/surface_census_test.py"
+    "witness_github_rows", REPO / "tools/surface-census/tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows
-REGION_KEYS = load("witness_github_region_keys", REPO / "scripts/witness-search-region-keys.py")
+REGION_KEYS = load("witness_github_region_keys", REPO / "tools/surface-census/witness-search-region-keys.py")
 
 
 def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
@@ -186,7 +186,7 @@ def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
                     raise ValueError(
                         f"{region}/{key}: handwritten, and no selector in witness-search-keys.tsv; "
                         "restore that file from git, or regenerate it with "
-                        "`scripts/witness-search-region-keys.py`"
+                        "`tools/surface-census/witness-search-region-keys.py`"
                     )
                 selector = tracked[key]
             elif row[3].strip("`") != "gap" or not re.search(r"\bFIXTURE\b", row[7]):

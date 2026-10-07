@@ -264,7 +264,7 @@ class StrictMeasurement(unittest.TestCase):
         (root / "tests" / "fixtures").mkdir(parents=True)
         (root / "tests" / "fixtures" / "CORPUS.md").write_text("", encoding="utf-8")
         # The fetcher's GitHub module reads the census's region rows from this test at import.
-        for relative in ("tests/surface_census_test.py", "justfile"):
+        for relative in ("tools/surface-census/tests/surface_census_test.py", "justfile"):
             shutil.copy(REPO / relative, root / relative)
         (surface / "fern-refusals").mkdir(parents=True)
         (surface / "fern-refusals" / "dropped-sources.tsv").write_text(

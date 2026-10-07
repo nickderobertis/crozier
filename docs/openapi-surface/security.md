@@ -176,7 +176,7 @@ from the repository root:
 import collections, importlib.util, sys
 from pathlib import Path
 root = Path.cwd()
-spec = importlib.util.spec_from_file_location("census", root / "scripts/openapi-surface-census.py")
+spec = importlib.util.spec_from_file_location("census", root / "tools/surface-census/openapi-surface-census.py")
 census = importlib.util.module_from_spec(spec); sys.modules["census"] = census
 spec.loader.exec_module(census)
 fx = root / "tests/fixtures"
@@ -342,7 +342,7 @@ keys its map by name, so a scheme whose name starts with `x-` is recorded as a
 vendor extension of the requirement. No row in this file rests on it — the
 requirement rows are measured by the shape read above, not by that selector — and
 the source is a golden-less accepted-exception row either way. Fixing it belongs
-to `scripts/openapi-surface-census.py`, not to this file.
+to `tools/surface-census/openapi-surface-census.py`, not to this file.
 
 ### What this region could not settle
 
@@ -416,7 +416,7 @@ printed `All checks passed` and exited 0 — the same false success `CORPUS.md`
 records against `conjur.local` and `dapr`. A document Fern failed to parse is not
 a document Fern accepted, so those rows read `fern-rejected` and the cell carries
 both what Fern printed and the exit code. Every check ran the local `fern` CLI
-against the workspace shape `scripts/generate-fern-fixture.sh` scaffolds — CLI
+against the workspace shape `tools/fern-goldens/generate-fern-fixture.sh` scaffolds — CLI
 `5.67.1` pinned in `fern.config.json`, `fernapi/fern-python-sdk` `5.20.0`,
 `pydantic_config.enum_type: python_enums` — over the document fetched at the ref
 the row names.

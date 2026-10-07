@@ -262,7 +262,7 @@ the census cannot measure the population beyond its own reach.
    and explicit `? ` mapping keys, scalar and structured, as the pinned
    `ruamel.yaml` reads them: the pinned Stripe description, which needed the
    fallback for its three long component names, is
-   [a committed sample](../tests/data/census-fallback-sample.tsv) the standard
+   [a committed sample](../tools/surface-census/tests/data/census-fallback-sample.tsv) the standard
    path reads to the full loader's counts (#363). What stays outside is the
    parse failures the searches recorded for keys already `golden`, and any
    document neither reading parses.
@@ -446,7 +446,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-107, declared in `scripts/openapi-surface-census.py` and restated here, with a
+107, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -939,7 +939,7 @@ as absent.
 
 Five readings are a conjunction **member** and are not selectors. They are a
 closed list of 5, declared as `MEMBER_ONLY_PREDICATES` in
-`scripts/openapi-surface-census.py` and restated here, with a drift gate over the
+`tools/surface-census/openapi-surface-census.py` and restated here, with a drift gate over the
 pair, exactly as the predicates above are.
 
 **Why they are not predicates**, which is the whole reason the list exists apart
@@ -1173,7 +1173,7 @@ A case earns a selector when every property its own condition reads is one the
 grammar can name — a field written, a member of a closed value set, or one of the
 node-local predicates above — and those members compose into one conjunction.
 The conjunctions are themselves a closed list of 94, declared in
-`scripts/openapi-surface-census.py` beside the predicate table and restated here,
+`tools/surface-census/openapi-surface-census.py` beside the predicate table and restated here,
 with a drift gate over the pair:
 
 - `schema.anyOf>schema.$ref` — one per Schema Object one of whose `anyOf`
@@ -1647,7 +1647,7 @@ The six region files, read as one body of work. Two measurements feed it:
   see [Refreshing the coverage snapshot](#refreshing-the-coverage-snapshot).
 
 What this section takes from the six region files, `RankedBacklogTests` in
-`tests/surface_census_test.py` takes back from them — the per-region counts and
+`tools/surface-census/tests/surface_census_test.py` takes back from them — the per-region counts and
 the totals narrated from them, both backlogs' membership and their stated sizes, each ranked row's
 owning region, criterion 1, and — while the ranked list has rows — the rubric
 order and the median it produces. `just
@@ -2173,7 +2173,7 @@ unreached by any Fern-accepted document.
 An owned row with a site still unreached carries an **arm search**: the six
 declared sources searched for a real-world document that declares the row *and*
 executes the site, recorded at `golden-reach-witnesses/searches/<key>.md` and
-linked from the row's reach cell. `scripts/golden-reach-search.py` walks the four
+linked from the row's reach cell. `tools/surface-census/golden-reach-search.py` walks the four
 enumerable sources' pinned documents and issues two phrasings to each text-query
 source through the guarded acquirer; every declarer the census finds is then run
 through the instrumented `crozier` the reach cells were measured with, and only
@@ -2487,7 +2487,7 @@ timestamp drop is an open gap
 
 An unreached arm with neither an arm-level hand-written cover nor a refused-document
 record is unproven. It may stand only as a **named gap**: a row below saying why,
-which `finished_state_failures` in `tests/surface_census_test.py` checks. Over an
+which `finished_state_failures` in `tools/surface-census/tests/surface_census_test.py` checks. Over an
 arm search the reason is that search's `search-incomplete` verdict; where no arm
 search has been run, the reason is `not searched`, its own reason, and never
 `exhausted` or `search-incomplete`. A named gap is never counted as proven. It
@@ -2631,7 +2631,7 @@ residual: `komga` (corpus row 130, 25 files), `short-io` (row 131, 61 files) and
 file of its golden outside that list is byte-compared. A row whose only
 golden-only witnesses are among the three is proven only where the code it emits
 sits in a byte-matched file, so
-[`residual-attribution.py`](../scripts/residual-attribution.py) (`just
+[`residual-attribution.py`](../tools/surface-census/residual-attribution.py) (`just
 residual-attribution`) answers that from crozier itself: it renders the witness
 with the feature's declaring nodes perturbed, generates both documents, and
 splits the files that move by whether the golden test compares them. Five rows
@@ -3481,9 +3481,9 @@ selector kind can express and what closing it would take — the way
 is in both.
 
 **This table is machine-readable, and this is the restatement of it.** The
-derivation is declared once, as `CASES` in `scripts/openapi-surface-census.py` —
+derivation is declared once, as `CASES` in `tools/surface-census/openapi-surface-census.py` —
 one entry per blind function, its cases in order, each case's selector or hole,
-and the enclosing gate each case sits inside. `tests/surface_census_test.py`
+and the enclosing gate each case sits inside. `tools/surface-census/tests/surface_census_test.py`
 reconciles the two in both directions, so a case in one and not the other fails
 the gate, and so does a case whose verdict differs. The declaration lives there
 rather than here because something has to be *composed* from it: a residual arm's
@@ -3599,7 +3599,7 @@ untyped `enum` tags, so an `anyOf` member's `enum` tag counts only when typed. A
 a `oneOf`" would have been broader than all three arms and would have put parity
 evidence under documents the generator demonstrably sends elsewhere. The reading
 is a port of the function rather than a resemblance to it, and
-`tests/surface_census_test.py` drives the real census over four documents alike in
+`tools/surface-census/tests/surface_census_test.py` drives the real census over four documents alike in
 every other respect — the canonical written union, the same union one of whose
 members carries no discriminable value, a `discriminator` beside an `anyOf`, and a
 union with no `discriminator` whose members tag themselves — and asserts that the
@@ -3671,7 +3671,7 @@ walks: `openbanking-brasil-directory` writes
 parameter's schema, which selects no case of this function's table at all. An
 earlier draft of this pass declared those five as predicates and gave them five
 rows of their own; they were withdrawn, with the rows, for exactly that miscount,
-and `tests/surface_census_test.py` now drives the real census over the fifteen
+and `tools/surface-census/tests/surface_census_test.py` now drives the real census over the fifteen
 documents that used to break it and requires nothing to count them.
 
 **It needed no second descent operator, and that was settled against the arms.**
@@ -3748,7 +3748,7 @@ block changes what that block's residual matches with no selector text edited.
 **The case table is machine-readable now, and that is why the residuals could be
 composed at all.** A residual written out as prose would be a hand-copy of the
 table that goes quietly wrong the day a branch is added; declared as `CASES` in
-`scripts/openapi-surface-census.py`, with the coverage document's case analysis
+`tools/surface-census/openapi-surface-census.py`, with the coverage document's case analysis
 restating it and the gate reconciling the two in both directions, it is a single
 source with two readers. The table also carries a digest of each of the six
 functions' normalized bodies, so a branch added, removed or edited without the
@@ -3839,7 +3839,7 @@ of it, and it is the conjunction that is the selector.
 A **later** segment is read only where every earlier arm's body resolved, which
 is why a predicate over the reference string alone would not do:
 `A/items/allOf/0` selects case 3 where `A` writes `items` and selects only case 7
-where it does not, and `tests/surface_census_test.py` drives the census over both
+where it does not, and `tools/surface-census/tests/surface_census_test.py` drives the census over both
 documents and over one addressing a position under two arms in sequence.
 
 **Every one of the five carries this function's caller gate**, which is the other
@@ -4288,7 +4288,7 @@ describe, run per function by the script below.
 
 **None of that movement is the conjunction pass's.** The two changes that made
 it — the one declaring the nine selectors and the one classifying them — touched
-`docs/`, `scripts/openapi-surface-census.py` and `tests/surface_census_test.py`
+`docs/`, `tools/surface-census/openapi-surface-census.py` and `tools/surface-census/tests/surface_census_test.py`
 and nothing else: no `src/` file, no `tests/fixtures/` golden, no `CORPUS.md`
 row. A pass that registers no golden cannot move a golden blind spot, and this
 pair of columns is what says so with a number instead of an argument. What did
@@ -4331,7 +4331,7 @@ tiers minus the golden tier, the same set the report's `total N region(s)` line
 counts. This reproduces that attribution. It reuses the recipe's own `load_tier`
 and `drop_test_regions`, so the `#[cfg(test)]` exclusion and the shared
 denominator keep their single definition in
-`scripts/fixtures-coverage-report.py`, and it lands a blind region on the
+`tools/surface-census/fixtures-coverage-report.py`, and it lands a blind region on the
 innermost `fn` whose brace-matched span contains its first line.
 
     python3 blind-by-function.py src/ir.rs
@@ -4341,12 +4341,12 @@ from pathlib import Path
 
 REPO = Path.cwd()
 spec = importlib.util.spec_from_file_location(
-    "fixtures_coverage_report", REPO / "scripts" / "fixtures-coverage-report.py"
+    "fixtures_coverage_report", REPO / "tools" / "surface-census" / "fixtures-coverage-report.py"
 )
 report = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(report)
 
-recipe = (REPO / "scripts" / "fixtures-coverage.sh").read_text(encoding="utf-8")
+recipe = (REPO / "tools" / "surface-census" / "fixtures-coverage.sh").read_text(encoding="utf-8")
 out_dir = REPO / re.search(r'^out_dir="\$repo_root/([^"]+)"', recipe, re.M).group(1)
 golden = re.search(r"^  --golden-tier (\S+)", recipe, re.M).group(1)
 names = re.findall(r'--output-path "\$out_dir/([a-z0-9-]+)\.json"', recipe)
@@ -4553,7 +4553,7 @@ updating one alone fails rather than passing silently.
 
 Everything else — the rubric order, the published median, the two backlogs
 against the six region files, and the two tables' agreement with each other — is
-`RankedBacklogTests` in `tests/surface_census_test.py`. Run it with
+`RankedBacklogTests` in `tools/surface-census/tests/surface_census_test.py`. Run it with
 `just test-surface-census`, which `just check` already does.
 
 ## The probe backlog
@@ -4623,7 +4623,7 @@ So the list splits in two below, and no row's kind is adjudicated here. Each
 row's own `settlement` cell in its region file states which kind it is, in the
 terms that row's own evidence supports; the two parts are derived from those
 cells rather than decided beside them, and `RankedBacklogTests` in
-`tests/surface_census_test.py` reconciles the derivation both ways, so a reworded
+`tools/surface-census/tests/surface_census_test.py` reconciles the derivation both ways, so a reworded
 cell fails the gate rather than leaving a table here quietly wrong.
 
 **No row in either part rests on a census selector, and the gate refuses one
@@ -4912,7 +4912,7 @@ verdict and no crozier-versus-Fern parity evidence — that is the whole of what
 these routes buy and the whole of what they cost.
 
 **The gate reads all of it.** `RankedBacklogTests` in
-[`../tests/surface_census_test.py`](../tests/surface_census_test.py) accepts a
+[`../tools/surface-census/tests/surface_census_test.py`](../tools/surface-census/tests/surface_census_test.py) accepts a
 row conforming to the above and refuses one settled with no recorded search, one
 whose recorded search drops a source its region declares, one that names every
 source but records no query against one or no result for one, one whose search
@@ -5010,7 +5010,7 @@ checks three more things. The two committed trees must be identical; if they are
 not, the feature is generation, the row leaves the manifest, and it goes to the
 real-specification route as a `gap`. The two documents must not be
 byte-identical. And the pair must isolate its feature:
-[`../scripts/probe-differential-isolation.py`](../scripts/probe-differential-isolation.py)
+[`../tools/surface-census/probe-differential-isolation.py`](../tools/surface-census/probe-differential-isolation.py)
 runs the shape's census selector over both parsed documents, requires the probe
 to declare the shape and the control not to, and requires every difference
 between them to lie inside that declaration. For a `refusal` row it checks the
@@ -5069,7 +5069,7 @@ reconciliation then reconciles it.
    query.** No two may be the same string, and each is recorded verbatim in a
    code span with the count it returned.
 3. **A candidate is tested for the shape by the census, never by a keyword
-   grep.** It is parsed and run through `scripts/openapi-surface-census.py`'s own
+   grep.** It is parsed and run through `tools/surface-census/openapi-surface-census.py`'s own
    selector engine. Keyword queries find candidates, and the census alone decides
    whether a candidate declares the shape.
 4. **Every candidate the census confirms is screened on all three corpus

@@ -373,7 +373,7 @@ const QUERY_PARAMETERS: Corpus = Corpus {
 };
 
 /// The broad `exhaustive` target: Fern 5.20.0 output over the vendored OpenAPI
-/// document (see scripts/generate-fern-fixture.sh). All 111 files match — the
+/// document (see tools/fern-goldens/generate-fern-fixture.sh). All 111 files match — the
 /// widest single proof of parity in the corpus. See docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
@@ -394,7 +394,7 @@ const EXHAUSTIVE: Corpus = Corpus {
 ///
 /// Their Fern `expected/` trees were produced by running Fern's container
 /// generator with the scaffold defaults (`--package-name fern`,
-/// `--project-name default_package_name`; see scripts/generate-fern-fixture.sh),
+/// `--project-name default_package_name`; see tools/fern-goldens/generate-fern-fixture.sh),
 /// so the corpora drive crozier with the same naming. Every `unmatched` list is
 /// empty: each target reproduces its whole golden byte-for-byte.
 const FEATURE_TARGETS: &[Corpus] = &[
@@ -509,7 +509,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         unmatched: &[],
     },
     // Gap-exercising targets: previously unproven OpenAPI shapes, each now with its
-    // golden Fern `expected/` tree generated (via scripts/generate-fern-fixture.sh)
+    // golden Fern `expected/` tree generated (via tools/fern-goldens/generate-fern-fixture.sh)
     // and byte-matched in full. The comment on each records the shape it pins.
     //
     // basic-auth: HTTP `basic` as the sole/primary security scheme. crozier's auth
@@ -1194,7 +1194,7 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
         .or_else(|| {
             let interpreter = if cfg!(windows) { "python" } else { "python3" };
             let output = std::process::Command::new(interpreter)
-                .arg(repo_root().join("scripts/corpus_remote_ref_pins.py"))
+                .arg(repo_root().join("tools/corpus/corpus_remote_ref_pins.py"))
                 .arg("tree-root")
                 .arg(api)
                 .output()
@@ -1993,7 +1993,7 @@ fn differential_isolation_failures(
             "{key}: no python3/python on PATH to run the census selector over the pair"
         )];
     };
-    let script = repo_root().join("scripts/probe-differential-isolation.py");
+    let script = repo_root().join("tools/surface-census/probe-differential-isolation.py");
     match std::process::Command::new(python)
         .arg(script)
         .arg(root)
@@ -2621,7 +2621,7 @@ const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
 /// of proof than a real specification: it is admitted only after a failed
 /// real-specification search it cites, and never counts as a corpus golden, so
 /// this is not a `*matches_fern_output*` test and the golden-only tier never
-/// runs it. `scripts/handwritten-fixtures.py gate` checks what the committed
+/// runs it. `tools/surface-census/handwritten-fixtures.py gate` checks what the committed
 /// documents say; this adds Contract A's digest, the pin, and crozier's
 /// byte-match against each fixture's `fern-expected/`.
 // llmlint: ignore[names_match_behavior] The name is the one the contract in docs/openapi-surface/handwritten/AGENTS.md and this node's acceptance criteria give the gate, and the `cargo nextest -E 'test(handwritten_fixtures_match_fern_goldens)'` check selects it by; renaming it would silently empty that filter.
@@ -2791,7 +2791,7 @@ fn handwritten_fixture_failures(root: &Path) -> Vec<String> {
 }
 
 /// The document half of the gate: each fixture's parsed pins and digest, and
-/// every failure `scripts/handwritten-fixtures.py gate` reports over `root`.
+/// every failure `tools/surface-census/handwritten-fixtures.py gate` reports over `root`.
 fn handwritten_documents(
     root: &Path,
 ) -> (
@@ -2804,7 +2804,7 @@ fn handwritten_documents(
             vec!["no python3/python on PATH to read the hand-written fixtures' documents".into()],
         );
     };
-    let script = repo_root().join("scripts/handwritten-fixtures.py");
+    let script = repo_root().join("tools/surface-census/handwritten-fixtures.py");
     let output = match std::process::Command::new(python)
         .arg(script)
         .arg("--repo-root")
@@ -2954,22 +2954,22 @@ fn crozier_base_path_alias_matches_and_wins() {
 }
 
 /// The gate's name keeps it out of the golden-only tier, which selects every
-/// `*matches_fern_output*` test in `scripts/fixtures-coverage.sh` and in
-/// `scripts/openapi-surface-census.py`, whose selector `scripts/golden-reach.py`
+/// `*matches_fern_output*` test in `tools/surface-census/fixtures-coverage.sh` and in
+/// `tools/surface-census/openapi-surface-census.py`, whose selector `tools/surface-census/golden-reach.py`
 /// imports: a hand-written fixture never counts as a corpus golden.
 #[test]
 fn the_handwritten_gate_is_outside_the_golden_only_tier() {
     let root = repo_root();
     for (script, selector) in [
         (
-            "scripts/fixtures-coverage.sh",
+            "tools/surface-census/fixtures-coverage.sh",
             "test(/matches_fern_output/)",
         ),
         (
-            "scripts/openapi-surface-census.py",
+            "tools/surface-census/openapi-surface-census.py",
             "GOLDEN_TEST = re.compile(r\"matches_fern_output\")",
         ),
-        ("scripts/golden-reach.py", "_census_module().GOLDEN_TEST"),
+        ("tools/surface-census/golden-reach.py", "_census_module().GOLDEN_TEST"),
     ] {
         let text = std::fs::read_to_string(root.join(script)).expect("tier selector script");
         assert!(
@@ -4272,7 +4272,7 @@ fn generate_corpus_with(c: &Corpus, extra: &[&str]) -> tempfile::TempDir {
 fn corpus_command(c: &Corpus, output: &Path) -> (Command, tempfile::TempDir) {
     let staged = tempfile::tempdir().expect("source staging directory");
     let prepared = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" })
-        .arg(repo_root().join("scripts/corpus_sources.py"))
+        .arg(repo_root().join("tools/corpus/corpus_sources.py"))
         .args(["prepare", "--fixture", c.api, "--output"])
         .arg(staged.path())
         .output()
@@ -9069,7 +9069,7 @@ fn every_feature_target_has_its_own_golden_test() {
 // Fern writes two trees: the packaged SDK (`--preview --output`, the `expected/`
 // goldens above) and a flat module tree (a `local-file-system` output path).
 // crozier reproduces the second with `--layout flat`; these goldens are Fern's
-// own flat output, produced by `scripts/generate-fern-fixture.sh --layout flat`
+// own flat output, produced by `tools/fern-goldens/generate-fern-fixture.sh --layout flat`
 // and compared under exactly the rules the packaged goldens are.
 
 /// The directory holding a fixture's flat golden, beside its packaged `expected/`.

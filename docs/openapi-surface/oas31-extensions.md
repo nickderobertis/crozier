@@ -106,7 +106,7 @@ has fetched the registered sources; it does not alter the working tree:
 import importlib.util
 import sys
 
-spec = importlib.util.spec_from_file_location("c", "scripts/openapi-surface-census.py")
+spec = importlib.util.spec_from_file_location("c", "tools/surface-census/openapi-surface-census.py")
 c = importlib.util.module_from_spec(spec)
 sys.modules["c"] = c
 spec.loader.exec_module(c)
@@ -212,9 +212,9 @@ candidates reached, not the first candidate examined.
 Every `witness-found`, `fern-rejected` and `witness-blocked` row names a document
 that was **fetched at the exact reference in its `immutable ref` cell and read**;
 the count in its `witness` cell is what this repository's own
-`scripts/openapi-surface-census.py` (`census_document`) reported on that fetched
+`tools/surface-census/openapi-surface-census.py` (`census_document`) reported on that fetched
 document, never a search-result snippet. `fern check` ran in the workspace layout
-`scripts/generate-fern-fixture.sh` builds — `fern/openapi/openapi.yml` beside a
+`tools/fern-goldens/generate-fern-fixture.sh` builds — `fern/openapi/openapi.yml` beside a
 `fern.config.json` at CLI `5.67.1` and a `generators.yml` naming
 `fernapi/fern-python-sdk` `5.20.0` with `enum_type: python_enums` — against the
 raw document at that reference.
@@ -286,7 +286,7 @@ The re-search described in the `reference-summary` row found four documents
 besides the witness that carry a `$ref` with a `summary` sibling, and the third
 search recorded at the end of that row found a fifth. None is a
 witness, and each is recorded so nobody screens it twice. Counts are read out of
-each document's own fetched bytes by `scripts/openapi-surface-census.py`'s walk,
+each document's own fetched bytes by `tools/surface-census/openapi-surface-census.py`'s walk,
 and each row also says which of the four rows searched alongside it — this file's
 `reference-summary`, [`document-paths.md`](document-paths.md#witness-search-issue-188)'s
 `duplicate-normalized-paths` and `duplicate-operation-id`, and

@@ -2,7 +2,7 @@
 # llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this test sits in tests/ beside golden_reach_test.py and runs under `just test-census-fallback`, which CI's live-e2e leg runs.
 """The arm search's YAML fallback counts what the census's own loader would.
 
-`scripts/golden-reach-search.py recensus` counts a document the census's stdlib
+`tools/surface-census/golden-reach-search.py recensus` counts a document the census's stdlib
 YAML loader refuses through ruamel.yaml, the full YAML 1.2 parser the search
 pins. That reading is only as good as its agreement with the loader it stands
 in for, so this suite holds it to two things over a committed sample:
@@ -10,8 +10,8 @@ in for, so this suite holds it to two things over a committed sample:
 * on every registered-corpus YAML source the stdlib loader reads, the census's
   object-model walk counts exactly the same selectors over both readings;
 * on one real document of each form only ruamel.yaml reads —
-  `tests/data/census-fallback-sample.tsv`, pinned by commit, digest and licence,
-  each committed under `tests/data/census-fallback-sample/` — the
+  `tools/surface-census/tests/data/census-fallback-sample.tsv`, pinned by commit, digest and licence,
+  each committed under `tools/surface-census/tests/data/census-fallback-sample/` — the
   stdlib loader refuses it and the fallback reading counts the declarations the
   document visibly makes. A form the stdlib loader has since learned
   (`STDLIB_READS`) keeps its sample, now read by both loaders identically.
@@ -47,7 +47,7 @@ def _load(name: str, path: Path):
     return module
 
 
-search = _load("golden_reach_search", REPO / "scripts" / "golden-reach-search.py")
+search = _load("golden_reach_search", REPO / "tools" / "surface-census" / "golden-reach-search.py")
 
 
 def registered_yaml_sources() -> list[Path]:
@@ -169,7 +169,7 @@ class FallbackAgreementTests(unittest.TestCase):
                 COMMITTED = original
 
     def test_the_pin_is_the_one_the_inline_metadata_installs(self) -> None:
-        header = (REPO / "scripts" / "golden-reach-search.py").read_text(encoding="utf-8").split('"""', 1)[0]
+        header = (REPO / "tools" / "surface-census" / "golden-reach-search.py").read_text(encoding="utf-8").split('"""', 1)[0]
         self.assertIn(f'# dependencies = ["ruamel.yaml=={search.RUAMEL_YAML_PIN}"]', header)
         import ruamel.yaml
 

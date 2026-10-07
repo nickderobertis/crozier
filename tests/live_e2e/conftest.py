@@ -213,7 +213,7 @@ def _spec_path(fixture: Fixture, work: Path) -> Path:
     if fixture.spec_url is None:
         return _FIXTURES / fixture.name / "openapi.yml"
     result = subprocess.run(
-        [sys.executable, str(_FIXTURES.parent.parent / "scripts/corpus_sources.py"),
+        [sys.executable, str(_FIXTURES.parent.parent / "tools/corpus/corpus_sources.py"),
          "prepare", "--fixture", fixture.name, "--output", str(work / "source")],
         check=True, capture_output=True, text=True,
     )

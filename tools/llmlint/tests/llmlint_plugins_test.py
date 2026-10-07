@@ -68,8 +68,8 @@ class GeneratedProbeExpectationsStayNarrowlyExcluded(unittest.TestCase):
         )
         authored = (
             "docs/openapi-surface/probes/annotated-ref-target-closed-object.yml",
-            "scripts/openapi-surface-census.py",
-            "tests/surface_census_test.py",
+            "tools/surface-census/openapi-surface-census.py",
+            "tools/surface-census/tests/surface_census_test.py",
             "crates/crozier-e2e/tests/e2e.rs",
         )
 

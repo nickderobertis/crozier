@@ -49,7 +49,7 @@ def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
     case.assertEqual(0, fetch.returncode, fetch.stderr)
     # The fallback samples need the pinned parser: install that package so
     # the denied run resolves it from uv's cache alone.
-    pin = REPO / "scripts/golden-reach-search.py"
+    pin = REPO / "tools/surface-census/golden-reach-search.py"
     if pin.is_file():
         dependency = re.search(r'^# dependencies = \["(.*)"\]$', pin.read_text(encoding="utf-8"), re.M)
         case.assertIsNotNone(dependency, f"{pin.relative_to(REPO)} lost its '# dependencies = [\"...\"]' pin; restore it")

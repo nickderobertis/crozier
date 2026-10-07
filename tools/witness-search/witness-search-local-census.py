@@ -20,7 +20,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 
 def load_census() -> Any:
-    path = REPO / "scripts/openapi-surface-census.py"
+    path = REPO / "tools/surface-census/openapi-surface-census.py"
     spec = importlib.util.spec_from_file_location("local_source_census", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

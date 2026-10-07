@@ -23,7 +23,7 @@ document-level `x-fern-base-path` object whose `path` is `/{edition}`:
 ## Fern's output
 
 Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 (the certified pair), in
-the workspace `scripts/generate-fern-fixture.sh` scaffolds (`organization:
+the workspace `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (`organization:
 fern`, `pydantic_config.enum_type: python_enums`, `fern generate --group
 python-sdk --local --preview`), exits 0 on each. The trees, comment-stripped,
 are committed as each document's `fern-expected/`.

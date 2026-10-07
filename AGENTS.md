@@ -251,7 +251,7 @@ Use the `just` recipes; do not hand-roll equivalents.
   failure fingerprint and has no golden until Fern can generate one.
 - A corpus document naming another document by absolute URL is reproducible only
   if that URL is immutable, so `tests/fixtures/corpus-remote-ref-pins.tsv` records
-  the substitution and `scripts/fetch-corpus.sh` applies it before publishing the
+  the substitution and `tools/corpus/fetch-corpus.sh` applies it before publishing the
   fetch — the row's inputs are upstream's bytes plus that one record. The fetch
   refuses ANY row whose document would carry a mutable absolute `$ref`, so a new
   row referencing one fails rather than inheriting the liability. Moving a pin:

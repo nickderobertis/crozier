@@ -46,7 +46,7 @@ get the same list:
    six functions of `src/ir.rs` the goldens are blind to, under
    [the index's enumeration rule](../openapi-surface-coverage.md#the-selector-grammar),
    and its members are exactly
-   `scripts/openapi-surface-census.py`'s `CONJUNCTIONS`. Every one of them anchors
+   `tools/surface-census/openapi-surface-census.py`'s `CONJUNCTIONS`. Every one of them anchors
    on a Schema Object, so all of them are this region's. Their rows sit at the end of
    the table, after the specification-order rows, and each names the generator
    function and the branch it distinguishes so a reader can see it is a live code
@@ -631,7 +631,7 @@ each a fixture problem rather than a probe one, and why this pass adds no row to
 **Seven of the sixteen `golden` rows are residual arms**, and their selectors are
 not written anywhere: the census composes each from
 [the case table](../openapi-surface-coverage.md#the-six-blind-regions-of-srcirrs-case-by-case)
-that `scripts/openapi-surface-census.py` declares. `property-residual` —
+that `tools/surface-census/openapi-surface-census.py` declares. `property-residual` —
 `prop_type_ref`'s own closing `base_type_ref` — is the widest row this region has
 ever carried at 16,159 declaration sites across 162 sources, 146 of them
 golden-bearing, which is what a most-travelled path should measure. Two of the
@@ -697,8 +697,8 @@ whole subtree — including every Schema Object under it. Four registered source
 this file's cells rest on write their status codes that way:
 `free5gc-namf-communication`, `free5gc-pdu-session`, `kytos-sdntrace-cp` and
 `query-parameters-openapi`. The repair is in
-`scripts/openapi-surface-census.py`, and `FreeMapKeyWalkTests` in
-`tests/surface_census_test.py` fails if it stops holding.
+`tools/surface-census/openapi-surface-census.py`, and `FreeMapKeyWalkTests` in
+`tools/surface-census/tests/surface_census_test.py` fails if it stops holding.
 
 Ten cells above carry the repaired numbers, applied as the difference the repair
 makes to each source rather than as a re-transcription of the whole walk, so a
@@ -723,7 +723,7 @@ splits them, and it does that by **subclassing the census's own `Census`** rathe
 than walking documents itself: `walk` and `descend` are overridden to observe the
 schema nodes the inherited traversal already reaches and then delegate to it, so
 `$ref` transparency, the alias guard, MAP/LIST descent and `x-` skipping keep
-their single definition in `scripts/openapi-surface-census.py`. It reads the same
+their single definition in `tools/surface-census/openapi-surface-census.py`. It reads the same
 sources through the same `registered_sources()` and `load_document`, and refuses
 an unfetched or non-mapping source the way the census does, so a source that
 reports nothing is never confused with one that declares nothing. Save it to a
@@ -737,13 +737,13 @@ recipes use, after `just surface-census` has fetched the `link-ok` half:
 
 Subclasses the census's own `Census`, so the traversal contract — `$ref`
 transparency, the alias guard, MAP/LIST descent, `x-` skipping — keeps its single
-definition in `scripts/openapi-surface-census.py` and this scan only observes the
+definition in `tools/surface-census/openapi-surface-census.py` and this scan only observes the
 nodes that walk already reaches. Run from the repo root under the interpreter
 `scripts/census-python.sh` names, after `just surface-census` has fetched the
 link-ok half.
 """
 import collections, importlib.util, sys
-spec = importlib.util.spec_from_file_location("c", "scripts/openapi-surface-census.py")
+spec = importlib.util.spec_from_file_location("c", "tools/surface-census/openapi-surface-census.py")
 c = importlib.util.module_from_spec(spec); sys.modules["c"] = c; spec.loader.exec_module(c)
 COMPOSITION = ("allOf", "anyOf", "oneOf", "not")
 facts, sources = collections.Counter(), collections.defaultdict(collections.Counter)
@@ -992,7 +992,7 @@ dropped as a value, which is why those rows say `none` *for this value*.
   source declares it.
 - The variant scan lives in this document rather than in `scripts/` because
   extending the instrument was out of this classification's scope. Teaching
-  `scripts/openapi-surface-census.py` to emit valued selectors for
+  `tools/surface-census/openapi-surface-census.py` to emit valued selectors for
   `schema.additionalProperties`, `schema.const`, `schema.enum` members and
   `schema.type` arity — and a selector for a boolean schema — would retire the
   scan and let those 25 rows quote `just surface-census` directly.
@@ -1114,7 +1114,7 @@ nothing, and among those that do contain the string, several carry it only insid
 an `example:` value, a backticked mention in a `description:`, or an enum of
 reserved keyword names — each is recorded as such below rather than counted.
 Surviving candidates were screened with `fern check` in a throwaway workspace
-wired the way `scripts/generate-fern-fixture.sh` wires one; the launcher on PATH
+wired the way `tools/fern-goldens/generate-fern-fixture.sh` wires one; the launcher on PATH
 is `fern` 5.113.1 and `fern.config.json` pins the CLI it actually runs at 5.67.1,
 the same `FERN_CLI_VERSION` that script defaults to.
 
@@ -1200,7 +1200,7 @@ same key — which is the whole of what separates it from `exclusive-maximum-boo
 **A witness had to survive both halves of the Fern screen, not just the first.** Every
 surviving candidate was run through `fern check` *and* a real
 `fern generate --group python-sdk --local --preview`, in a throwaway workspace wired the
-way `scripts/generate-fern-fixture.sh` wires one, at the pin this corpus's own provenance
+way `tools/fern-goldens/generate-fern-fixture.sh` wires one, at the pin this corpus's own provenance
 records — CLI **5.67.1** from `fern.config.json` and generator `fernapi/fern-python-sdk`
 **5.20.0**. Thirty-one candidates were screened that way and the split is the reason the
 second half is not optional: `jentic/jentic-public-apis`'s Volt.io copy passes

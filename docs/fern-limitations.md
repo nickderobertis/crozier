@@ -18,7 +18,7 @@ them rather than linked, so this file is readable with nothing but this checkout
 **Versions in force for every measurement below:** Fern CLI `5.67.1`
 (`fern.config.json`) and generator `fernapi/fern-python-sdk:5.20.0`
 (`generators.yml`) — the same pin the corpus goldens record. Runs set
-`CI=true`/`GITHUB_ACTIONS=true` to match `scripts/generate-fern-fixture.sh`, which
+`CI=true`/`GITHUB_ACTIONS=true` to match `tools/fern-goldens/generate-fern-fixture.sh`, which
 is why quoted logs carry doubled `::warning::` annotation lines.
 
 ## How to read a verdict
@@ -495,14 +495,14 @@ methods Fern emits, so the two already agree by construction.
 The blocker is the **Fern workspace**, not the fetcher. Three facts about this
 repository, unchanged by the screen:
 
-1. `scripts/fern-goldens` validates each `CORPUS.md` URL and refuses a path that
+1. `tools/fern-goldens/fern-goldens` validates each `CORPUS.md` URL and refuses a path that
    does not end in `.json`/`.yaml`/`.yml`; its `fetch_spec` then requires exactly
    one spec path pointing at an existing non-empty file.
-2. `scripts/corpus-lib.sh` does have a repository-clone shape
+2. `tools/corpus/corpus-lib.sh` does have a repository-clone shape
    (`corpus_fetch_repo`, a `git clone --filter=blob:none` at the pinned ref), but
    the suffix check in (1) makes it unreachable from the golden path — and every
    numbered `CORPUS.md` row is a direct spec URL anyway.
-3. `scripts/generate-fern-fixture.sh` copies the one spec file into the workspace,
+3. `tools/fern-goldens/generate-fern-fixture.sh` copies the one spec file into the workspace,
    leaving its siblings behind.
 
 Given the tree, **Fern resolves relative-file `$ref`s perfectly well**: the
@@ -697,7 +697,7 @@ absences. Round 4 closes them one family at a time, and each subsection below
 records the evidence for its own rows. Every Round 4 measurement was taken on
 2026-08-22 under the pins this file already declares — Fern CLI `5.67.1`,
 generator `fernapi/fern-python-sdk:5.20.0`, `CI=true`/`GITHUB_ACTIONS=true` —
-against a workspace scaffolded exactly as `scripts/generate-fern-fixture.sh`
+against a workspace scaffolded exactly as `tools/fern-goldens/generate-fern-fixture.sh`
 builds one.
 
 **Fourteen of the eighteen are documented limitations. Two are registrable, and
@@ -1063,7 +1063,7 @@ explicitly.** The two AWS Query-protocol rows are the corpus's XML documents,
 and they declare `text/xml`, never `application/xml`:
 
 ```console
-$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ tools/corpus/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
 $ ls -d .local/corpus/*/ | wc -l
 91
 $ grep -rl 'application/xml' .local/corpus | wc -l
@@ -1083,7 +1083,7 @@ $ grep -rhoE '[a-z]+/[a-z0-9.+-]*xml[a-z0-9.+-]*' .local/corpus \
 ```
 
 All 91 `link-ok` sources were fetched from their pinned `CORPUS.md` URLs with
-the repository's own `scripts/fetch-corpus.sh` and searched, together with all
+the repository's own `tools/corpus/fetch-corpus.sh` and searched, together with all
 31 vendored fixture specs: **zero** declare `application/xml`. The XML-ish media
 types that *are* present are `text/xml` (`amazonaws.com-cloudformation`,
 `amazonaws.com-cloudfront`), `image/svg+xml` (`atlassian.com-jira`,
@@ -1336,7 +1336,7 @@ and **two** declare an Encoding object, and between them they declare *none* of 
 five fields these six rows are about:
 
 ```console
-$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ tools/corpus/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
 $ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
 > import glob, os, yaml
 > def links(n):
@@ -2109,7 +2109,7 @@ densely, nullable-via-`type`-array densely, **and neither of the two `const` typ
 these rows are about, nor a single multi-type array with two non-null members**:
 
 ```console
-$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ tools/corpus/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
 $ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
 > import glob, os, yaml, collections
 > def walk(n):
@@ -2221,7 +2221,7 @@ real-world candidates, because the probe result was large enough to deserve a re
 document behind it.
 
 Every probe below was run through the workspace scaffold
-`scripts/generate-fern-fixture.sh` builds — Fern CLI `5.67.1`, generator
+`tools/fern-goldens/generate-fern-fixture.sh` builds — Fern CLI `5.67.1`, generator
 `fernapi/fern-python-sdk:5.20.0` under `pydantic_config.enum_type: python_enums`,
 `CI=true`/`GITHUB_ACTIONS=true`, `fern check` then
 `fern generate --group python-sdk --local --preview --output <ws>/preview --force`.
@@ -3309,7 +3309,7 @@ document anywhere declares one, so no corpus row can ever pin them and nothing
 had measured what Fern does with them either. Round 5 measures all seven, on
 2026-09-05, under the pins this file already declares — Fern CLI `5.67.1`,
 generator `fernapi/fern-python-sdk:5.20.0`, `CI=true`/`GITHUB_ACTIONS=true` —
-against a workspace scaffolded exactly as `scripts/generate-fern-fixture.sh`
+against a workspace scaffolded exactly as `tools/fern-goldens/generate-fern-fixture.sh`
 builds one, with the workspace itself under `mktemp -d` so Fern's `.fern/`
 provenance carries no `originGitCommit`.
 
@@ -3600,7 +3600,7 @@ blank.
 **The pins each measurement runs under** are the ones this file already declares —
 Fern CLI `5.67.1`, generator `fernapi/fern-python-sdk:5.20.0`,
 `CI=true`/`GITHUB_ACTIONS=true` — against a workspace scaffolded exactly as
-`scripts/generate-fern-fixture.sh` builds one, with the workspace itself under
+`tools/fern-goldens/generate-fern-fixture.sh` builds one, with the workspace itself under
 `mktemp -d` so Fern's `.fern/` provenance carries no `originGitCommit`. A
 measurement recorded under a different pin says so in its own subsection.
 
@@ -4318,7 +4318,7 @@ and then `fern generate --local --preview` on each, in a workspace built under
 `mktemp -d` the way [`probes/AGENTS.md`](openapi-surface/probes/AGENTS.md#re-running-one)
 prescribes. crozier's reach was measured with the instrumented build of commit
 `63c6be58754e`, the build `just handwritten-reach` uses, with one run per
-document scoped the way `scripts/handwritten-fixtures.py measure` scopes a
+document scoped the way `tools/surface-census/handwritten-fixtures.py measure` scopes a
 fixture. On every minimal document that run executes the arm (1 of its 1
 region). On every control it executes none of it.
 

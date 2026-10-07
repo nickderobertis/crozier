@@ -4609,7 +4609,7 @@ pub(crate) fn response_key_status(key: &str) -> Option<u16> {
 /// `ApiError`, exactly as Fern does — it never suppresses the whole method.
 ///
 /// The table was read off Fern's own generator output (running it across the full
-/// status range under Docker, `scripts/generate-fern-fixture.sh`). Its drift gates:
+/// status range under Docker, `tools/fern-goldens/generate-fern-fixture.sh`). Its drift gates:
 /// the `error-responses` corpus pins the shape byte-for-byte for the common statuses
 /// (400/404/422/500/503), and the exhaustive
 /// `every_error_status_fern_names_maps_to_its_exception` test
@@ -18533,7 +18533,7 @@ mod tests {
     }
 
     // The shapes `NodeLocalSelectorDiscriminationTests` of
-    // `tests/surface_census_test.py` drives the census over, written once here so
+    // `tools/surface-census/tests/surface_census_test.py` drives the census over, written once here so
     // that what the census counts and what the generator does are asserted over the
     // same nodes. Each pair is a node that selects one arm and the near miss that
     // satisfies every part of the selector's condition but one.
@@ -20110,7 +20110,7 @@ mod tests {
     // ---------------------------------------------------------------------
     //
     // `tests/resolving-arm-inputs.json` is the one place these documents are
-    // written. `tests/surface_census_test.py` drives the real census over the
+    // written. `tools/surface-census/tests/surface_census_test.py` drives the real census over the
     // same documents and asserts what each selector counts; this drives the real
     // generator over them and asserts which arm ran. The two compose onto the
     // same inputs rather than onto two hand-copied sets, which is the whole

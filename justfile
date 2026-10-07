@@ -124,7 +124,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e audience_filter_strict_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e exhaustive_package_name_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e overlay_goldens_match_fern_output
-    python3 scripts/corpus_sources.py check
+    python3 tools/corpus/corpus_sources.py check
     "$(./scripts/census-python.sh)" tests/corpus_surface_census_test.py
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e apideck_crm_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e bunq_matches_fern_output
@@ -369,43 +369,43 @@ upgrade:
 # that historical container-generated target too. Numbered corpus maintenance
 # uses the Fern goldens workflow; see docs/fern-goldens.md.
 fixtures-refresh *args:
-    ./scripts/fixtures-refresh.sh {{args}}
+    ./tools/fern-goldens/fixtures-refresh.sh {{args}}
 
 
 # Rebuild-only: fetch pinned corpus sources into .local/corpus or a supplied
 # destination. Routine checks use committed copies; this is Fern maintenance.
 fetch-corpus *args:
-    ./scripts/fetch-corpus.sh {{args}}
+    ./tools/corpus/fetch-corpus.sh {{args}}
 
 
 # Legacy local reproduction for issue #77 goldens. Routine generation and safe
 # publication belong to the Fern goldens workflow. Needs Docker + fern.
 fixtures-generate-corpus *args:
-    ./scripts/generate-corpus-fixtures.sh {{args}}
+    ./tools/fern-goldens/generate-corpus-fixtures.sh {{args}}
 
 # Local diagnostic for the workflow lifecycle: resolve an exact generator tag,
 # generate every selected corpus independently, then aggregate all Crozier byte
 # diffs. `--fixture NAME` may be repeated; omitting it selects existing goldens.
 fern-goldens *args:
-    ./scripts/fern-goldens run "$@"
+    ./tools/fern-goldens/fern-goldens run "$@"
 
 # Phase recipes used by the workflow so successful goldens can be published
 # before generation/diff failures determine the final status.
 fern-goldens-generate *args:
-    ./scripts/fern-goldens generate "$@"
+    ./tools/fern-goldens/fern-goldens generate "$@"
 
 fern-goldens-compare:
-    ./scripts/fern-goldens compare
+    ./tools/fern-goldens/fern-goldens compare
 
 fern-goldens-publish branch:
-    ./scripts/fern-goldens publish --branch "$1"
+    ./tools/fern-goldens/fern-goldens publish --branch "$1"
 
 fern-goldens-result *args:
-    ./scripts/fern-goldens result "$@"
+    ./tools/fern-goldens/fern-goldens result "$@"
 
 # Process/filesystem/workflow-boundary coverage for the automation itself.
 test-fern-goldens:
-    python3 tests/fern_goldens_test.py
+    python3 tools/fern-goldens/tests/fern_goldens_test.py
 
 # Live Fern measurement for the witness-supply probe Fern refuses. Separate
 # from `check`: Fern's pinned Python generator runs in Docker and needs network.
@@ -421,25 +421,25 @@ test-fern-probe-refusal:
 # The golden-reach suite runs twice: the second time without `fcntl` and the
 # other POSIX-only modules, as on Windows, on every host.
 test-fixtures-coverage:
-    python3 tests/fixtures_coverage_test.py
-    python3 tests/handwritten_reach_test.py
-    python3 tests/golden_reach_test.py
-    PYTHONPATH=tests/without-posix-modules python3 tests/golden_reach_test.py
+    python3 tools/surface-census/tests/fixtures_coverage_test.py
+    python3 tools/surface-census/tests/handwritten_reach_test.py
+    python3 tools/surface-census/tests/golden_reach_test.py
+    PYTHONPATH=tools/surface-census/tests/without-posix-modules python3 tools/surface-census/tests/golden_reach_test.py
 
 # The arm search's YAML fallback against the census's stdlib loader: identical
 # counts on every registered YAML source, and each refused form's committed sample
-# (`tests/data/census-fallback-sample/`) read as what it declares. Fetches no
+# (`tools/surface-census/tests/data/census-fallback-sample/`) read as what it declares. Fetches no
 # specification; `test-corpus-offline` runs it with sockets denied.
 test-census-fallback-samples:
-    python3 scripts/corpus_sources.py check
-    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_census_fallback_test.py
+    python3 tools/corpus/corpus_sources.py check
+    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' tools/surface-census/golden-reach-search.py)" python3 tests/golden_reach_census_fallback_test.py
 
 # The samples above, then the arm search and the witness-search re-census CLI
 # over temporary ledgers, a loopback GitHub and Sourcegraph, and the same pinned
 # parser. Outside `check` — it needs the pinned ruamel.yaml (read from each
 # script's own inline metadata); CI's live-e2e leg runs it.
 test-census-fallback: test-census-fallback-samples
-    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_test.py
+    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' tools/surface-census/golden-reach-search.py)" python3 tools/surface-census/tests/golden_reach_test.py
     uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' tools/witness-search/witness-search-recensus.py)" python3 tools/witness-search/tests/witness_search_recensus_test.py
 
 # Census aid: report the exact expected files crozier still does not reproduce.
@@ -538,7 +538,7 @@ departures-ledger:
 # optional cargo-nextest filter expression to scope it. Reading the split:
 # tests/fixtures/AGENTS.md.
 fixtures-coverage *args:
-    ./scripts/fixtures-coverage.sh "$@"
+    ./tools/surface-census/fixtures-coverage.sh "$@"
 
 # Per `golden` census row: which of crozier's declared handling sites for it
 # (docs/openapi-surface/golden-reach-sites.tsv) the row's own witnesses execute
@@ -546,14 +546,14 @@ fixtures-coverage *args:
 # ranked ledger (docs/openapi-surface/golden-reach.tsv) and every golden row's
 # reach cell. Outside `check`: runs the corpus instrumented.
 golden-reach:
-    python3 scripts/corpus_sources.py check
-    python3 scripts/golden-reach.py measure
-    "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py --json > .local/golden-reach/census.json
-    python3 scripts/golden-reach.py report --write
+    python3 tools/corpus/corpus_sources.py check
+    python3 tools/surface-census/golden-reach.py measure
+    "$(./scripts/census-python.sh)" ./tools/surface-census/openapi-surface-census.py --json > .local/golden-reach/census.json
+    python3 tools/surface-census/golden-reach.py report --write
 
 # Re-join the last `just golden-reach` measurement after the site table changes.
 golden-reach-report:
-    python3 scripts/golden-reach.py report --write
+    python3 tools/surface-census/golden-reach.py report --write
 
 # Which generated files each `golden` row resting only on a residual golden
 # (komga, short-io, webflow-v2) lands in, split by whether that golden test
@@ -562,7 +562,7 @@ golden-reach-report:
 # `check`: it needs a built crozier and ruff.
 residual-attribution:
     cargo build --locked -q
-    python3 scripts/residual-attribution.py
+    python3 tools/surface-census/residual-attribution.py
 
 # Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md):
 # how many regions of its arm an instrumented crozier run over that fixture's
@@ -573,7 +573,7 @@ residual-attribution:
 # and runs crozier instrumented. `--handwritten-dir DIR --ledger PATH --gates
 # PATH` measure another tree into other files.
 handwritten-reach *args:
-    python3 scripts/handwritten-fixtures.py measure "$@"
+    python3 tools/surface-census/handwritten-fixtures.py measure "$@"
 
 # Census which OpenAPI shapes the registered golden sources DECLARE — the input
 # to docs/openapi-surface-coverage.md, and the only measurement of what the
@@ -582,19 +582,19 @@ handwritten-reach *args:
 # (selector, fixture, count). Reads the committed source copies. The script's own flags pass straight through, e.g.
 # `just surface-census --selector pathItem.trace --json`.
 surface-census *args:
-    "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"
+    "$(./scripts/census-python.sh)" ./tools/surface-census/openapi-surface-census.py "$@"
 
 # Boundary coverage for `surface-census`: drives the REAL script over the REAL
 # vendored source documents, offline, so the gate keeps the instrument honest
 # without the network the unscoped recipe needs. Part of `check` (the recipe
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
 test-surface-census:
-    "$(./scripts/census-python.sh)" tests/surface_census_test.py
-    "$(./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py
+    "$(./scripts/census-python.sh)" tools/surface-census/tests/surface_census_test.py
+    "$(./scripts/census-python.sh)" tools/surface-census/tests/apis_guru_gap_screen_test.py
 
 # Screen every APIs.guru catalogue version for the owned surface-gap selectors.
 apis-guru-gap-screen *args:
-    "$(./scripts/census-python.sh)" ./scripts/apis-guru-gap-screen.py {{args}}
+    "$(./scripts/census-python.sh)" ./tools/surface-census/apis-guru-gap-screen.py {{args}}
 
 # The corpus's admissible-licence rule is stated in ONE file,
 # docs/corpus-licensing.md. This fails when any other tracked Markdown document
@@ -602,14 +602,14 @@ apis-guru-gap-screen *args:
 # of the old set and no source. Prose that REFERS to the rule is fine; a second
 # list of licence names is not. Part of `check`.
 lint-corpus-licensing:
-    python3 scripts/corpus-licensing-drift.py
+    python3 tools/corpus/corpus-licensing-drift.py
 
 # Boundary coverage for that gate: drives the REAL script over the REAL tree,
 # and over the real tree with a second enumeration planted in it, so a check
 # that had stopped discriminating fails here instead of passing silently.
 # Part of `check`.
 test-corpus-licensing:
-    python3 tests/corpus_licensing_test.py
+    python3 tools/corpus/tests/corpus_licensing_test.py
 
 # A corpus row whose document names another document by absolute URL is only
 # reproducible if that URL is immutable. tests/fixtures/corpus-remote-ref-pins.tsv
@@ -617,15 +617,15 @@ test-corpus-licensing:
 # manifest itself — well-formed records, real corpus names, immutable pinned URLs,
 # no duplicates, sorted. No network. Part of `check`.
 lint-corpus-remote-ref-pins:
-    python3 scripts/corpus_remote_ref_pins.py check
+    python3 tools/corpus/corpus_remote_ref_pins.py check
 
 # Boundary coverage for the pin MECHANISM, which the manifest cannot prove: drives
-# the REAL scripts/fetch-corpus.sh against a loopback HTTP server the suite starts
+# the REAL tools/corpus/fetch-corpus.sh against a loopback HTTP server the suite starts
 # itself, so real curl and the real filesystem publish a real document. Also holds
 # the offline lint's malformed-manifest cases. No test reaches GitHub, so `check`
 # takes a loopback socket and no external host. Part of `check`.
 test-corpus-remote-ref-pins:
-    python3 tests/corpus_remote_ref_pins_test.py
+    python3 tools/corpus/tests/corpus_remote_ref_pins_test.py
 
 # Every registered corpus row's source document is committed under
 # tests/fixtures/corpus-sources/, recorded with the SHA-256 of the bytes fetched
@@ -634,13 +634,13 @@ test-corpus-remote-ref-pins:
 # recorded, every byte at its digest, every multi-document file present, no
 # stray file. No network. Part of `check`.
 lint-corpus-sources:
-    python3 scripts/corpus_sources.py check
+    python3 tools/corpus/corpus_sources.py check
 
 # Boundary coverage for that gate and for the rebuild tooling below: the real
 # tree, a synthetic root broken one demand at a time, and `vendor`/`audit`
 # through the real fetch against a loopback server. Part of `check`.
 test-corpus-sources:
-    python3 tests/corpus_sources_test.py
+    python3 tools/corpus/tests/corpus_sources_test.py
 
 # Linux CI proof: run the real byte-match, census, refusal and census-fallback
 # sample recipes with sockets denied and the ignored corpus caches absent. Does
@@ -653,7 +653,7 @@ test-corpus-offline:
 # commits its source (run it when a row is added or its pin moves); `audit`
 # re-fetches and compares without writing. Needs network; never part of a gate.
 corpus-sources *args:
-    python3 scripts/corpus_sources.py "$@"
+    python3 tools/corpus/corpus_sources.py "$@"
 
 # The screening record for the widened admissible-licence rule,
 # docs/licence-rescreening.md: one line per candidate the six region files
@@ -661,13 +661,13 @@ corpus-sources *args:
 # verdict, the reason behind it, the ref it was screened at, either half of the
 # Fern screen, or names a coverage row no region file carries. Part of `check`.
 lint-licence-rescreening:
-    python3 scripts/licence-rescreening-check.py
+    python3 tools/corpus/licence-rescreening-check.py
 
 # Boundary coverage for that gate: drives the REAL script over the REAL record,
 # then over a record breaking each demand in turn, so a gate that had stopped
 # discriminating fails here instead of passing silently. Part of `check`.
 test-licence-rescreening:
-    python3 tests/licence_rescreening_test.py
+    python3 tools/corpus/tests/licence_rescreening_test.py
 
 # The Fern refusal registry's population tables (docs/fern-refusals/) against
 # the committed records they are built from: tools/fern-refusals/fern-refusals.py `check`

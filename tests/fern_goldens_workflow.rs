@@ -50,7 +50,7 @@ fn assert_optional_string_input(inputs: &Mapping, name: &str) {
 fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
     let source = include_str!("../.github/workflows/fern-goldens.yml");
     let justfile = include_str!("../justfile");
-    let tool = include_str!("../scripts/fern-goldens");
+    let tool = include_str!("../tools/fern-goldens/fern-goldens");
     let workflow: Value = serde_yaml_ng::from_str(source).expect("workflow is valid YAML");
 
     let triggers = mapping(&workflow, "on");
@@ -435,8 +435,8 @@ fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
     assert!(!source.contains("--force") && !tool.contains("--force"));
     assert!(!source.contains("pull-requests: write"));
     assert!(justfile.contains("set positional-arguments := true"));
-    assert!(justfile.contains("./scripts/fern-goldens generate \"$@\""));
-    assert!(justfile.contains("./scripts/fern-goldens publish --branch \"$1\""));
+    assert!(justfile.contains("./tools/fern-goldens/fern-goldens generate \"$@\""));
+    assert!(justfile.contains("./tools/fern-goldens/fern-goldens publish --branch \"$1\""));
     assert!(justfile.contains("crozier-fixtures-diff.XXXXXX"));
     assert!(!justfile.contains("out=$(CROZIER_DIFF_CORPUS"));
 }

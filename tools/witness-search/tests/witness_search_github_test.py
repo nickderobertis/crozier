@@ -25,7 +25,7 @@ from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "witness-search"))
-sys.path.insert(0, str(REPO / "tests"))
+sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
 import rate_limit_guard as guard_module  # noqa: E402 - its directory must enter sys.path first
 
 SPEC = importlib.util.spec_from_file_location(

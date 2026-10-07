@@ -1689,7 +1689,7 @@ and crozier's flat output reproduces each:
 One further difference is an artifact of where Fern runs rather than of the
 layout. Fern stamps `originGitCommit` and `originGitCommitIsDirty` into
 `.fern/metadata.json` when its workspace sits inside a git repository.
-`scripts/generate-fern-fixture.sh` runs Fern in a temporary directory outside
+`tools/fern-goldens/generate-fern-fixture.sh` runs Fern in a temporary directory outside
 any repository in both modes, so no golden carries either key.
 
 **Names.** Fern names the module, the `{Organization}Api` client class and the
@@ -1729,7 +1729,7 @@ goldens keep the `fern` organization.
 
 **The flat goldens.** A fixture's flat golden sits beside its packaged one as
 `tests/fixtures/<fixture>/expected-flat/`. It is produced by
-`scripts/generate-fern-fixture.sh --layout flat` (or by the Fern goldens
+`tools/fern-goldens/generate-fern-fixture.sh --layout flat` (or by the Fern goldens
 workflow for a `CORPUS.md` row), comment-stripped and provenance-stamped exactly
 as `expected/` is, with `"layout": "flat"` added to its
 `.crozier-fern-golden.json`. [`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt)
@@ -1840,7 +1840,7 @@ are not the same document.
 [`tests/fixtures/corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv)
 records, per corpus row, one `mutable_url -> pinned_url` substitution per
 reference plus the SHA-256 of the bytes the pinned URL serves, and
-`scripts/fetch-corpus.sh` applies the row's records to the fetched document
+`tools/corpus/fetch-corpus.sh` applies the row's records to the fetched document
 *before* publishing it into `.local/corpus/`. So the document every consumer sees
 — crozier's byte-match and Fern's own generation alike — is **upstream's bytes
 plus exactly that one recorded substitution**, not upstream's bytes. What the row
@@ -1848,7 +1848,7 @@ now depends on is the seven `ethereum/execution-apis` blobs at
 `80d0a6ee6c129a29c507c35b0245a16c5a81b9d3`, which cannot change.
 
 Two guards keep that true rather than aspirational.
-[`scripts/corpus_remote_ref_pins.py`](../scripts/corpus_remote_ref_pins.py) is the
+[`tools/corpus/corpus_remote_ref_pins.py`](../tools/corpus/corpus_remote_ref_pins.py) is the
 manifest's one reader, and it refuses to publish *any* row's document — pinned or
 not — that carries an absolute-URL `$ref` naming something other than a
 40-character commit on `raw.githubusercontent.com`, so the next row to reference a
@@ -1992,7 +1992,7 @@ Torrentarr's six `image/*` responses over `{type: string, format: binary}` reach
 crozier already matched. AGCO's enums cost one naming rule: Fern safe-names the
 `visit` parameter of a `FLOAT` member to `float_`, so `float` joins
 `naming::is_reserved`'s builtin set beside `bool`, `int`, `list` and the rest.
-`scripts/openapi-surface-census.py` mirrors that set for its normalized-path
+`tools/surface-census/openapi-surface-census.py` mirrors that set for its normalized-path
 predicate and gains the same word.
 
 **A body whose referenced schema survives the public type layer sends no explicit

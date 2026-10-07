@@ -1,0 +1,737 @@
+#!/usr/bin/env python3
+"""End-to-end boundary tests for the APIs.guru gap screening command."""
+
+from __future__ import annotations
+
+import csv
+import gzip
+import json
+import re
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import subprocess
+import sys
+import tempfile
+import threading
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from region_flip import flipped_regions  # noqa: E402 - the tests directory must enter sys.path first
+
+REPO = Path(__file__).resolve().parents[3]
+SCRIPT = REPO / "tools/surface-census/apis-guru-gap-screen.py"
+REPORT = REPO / "docs/openapi-surface/apis-guru-gap-witnesses.tsv"
+STAMP = "2026-09-08T12:00:00Z"
+REGIONS = tuple((REPO / "docs/openapi-surface" / name) for name in (
+    "document-paths.md", "parameters.md", "bodies-media.md", "schemas.md",
+    "security.md", "oas31-extensions.md",
+))
+CASE_11_SELECTOR = (
+    "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&"
+    "!schema.example:schema-shaped&!schema.properties:non-empty&"
+    "schema.example=object&schema.type:primary=object"
+)
+
+
+class GapScreenTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def spec(self, name: str, contents: str) -> str:
+        path = self.root / name
+        path.write_text(contents, encoding="utf-8")
+        return path.as_uri()
+
+    def index(self, versions: list[tuple[str, str, str]]) -> str:
+        catalogue: dict[str, dict] = {}
+        for api_id, version, url in versions:
+            catalogue.setdefault(api_id, {"versions": {}})["versions"][version] = {
+                "swaggerUrl": url
+            }
+        path = self.root / "list.json"
+        path.write_text(json.dumps(catalogue, sort_keys=True), encoding="utf-8")
+        return path.as_uri()
+
+    def invoke(
+        self,
+        index: str,
+        output: Path | None = None,
+        provenance: Path | None = None,
+        *extra_args: str,
+    ):
+        output = output or self.root / "report.tsv"
+        provenance = provenance or REPO / "docs/openapi-surface/apis-guru-publisher-provenance.tsv"
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", index, "--output", str(output),
+             "--provenance-map", str(provenance), "--snapshot-utc", STAMP,
+             "--workers", "2", "--attempts", "2", *extra_args],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        return completed, output
+
+    def test_real_command_writes_complete_deterministic_snapshot(self) -> None:
+        # One real JSON document hits two owned selectors; two versions of the
+        # same API prove versions are independent catalogue declarations.
+        publisher_source = (
+            "https://github.com/example/publisher/blob/"
+            "0123456789abcdef0123456789abcdef01234567/openapi.json"
+        )
+        admitted = self.spec("admitted.json", json.dumps({
+            "openapi": "3.0.0", "info": {
+                "title": "A", "version": "1", "license": {"name": "MIT"},
+                "x-origin": [{"url": publisher_source}],
+            },
+            "paths": {}, "components": {"schemas": {"Hit": {"anyOf": [{
+                "type": "array", "items": {"type": "object", "properties": {"x": {"type": "string"}}}
+            }]}}},
+        }))
+        untrusted = self.spec("untrusted.json", json.dumps({
+            "openapi": "3.0.0", "info": {
+                "title": "U", "version": "1", "license": {"name": "MIT"},
+                "x-origin": [{"url": publisher_source}],
+            },
+            "paths": {}, "components": {"schemas": {"Hit": {"anyOf": [{
+                "type": "array", "items": {"type": "object", "properties": {"x": {"type": "string"}}}
+            }]}}},
+        }))
+        unknown = self.spec("unknown.yaml", """openapi: 3.0.0
+info:
+  title: B
+  version: '1'
+  license:
+    name: Custom Public Terms
+paths: {}
+components:
+  schemas:
+    Hit:
+      anyOf:
+        - type: object
+          properties:
+            x:
+              type: string
+""")
+        refused = self.spec("refused.json", json.dumps({
+            "openapi": "3.0.0", "info": {"title": "C", "version": "1"}, "paths": {},
+            "components": {"schemas": {"Hit": {"anyOf": [{"type": "string"}]}}},
+        }))
+        index = self.index([
+            ("z.example", "2", admitted), ("z.example", "1", admitted),
+            ("asana.com", "1.0", admitted), ("untrusted.example", "1", untrusted),
+            ("a.example", "1", unknown), ("m.example", "1", refused),
+        ])
+        provenance = self.root / "provenance.tsv"
+        provenance.write_text(
+            "api_id\tversion\tsource_url\timmutable_ref\n"
+            f"asana.com\t1.0\t{publisher_source}\t0123456789abcdef0123456789abcdef01234567\n",
+            encoding="utf-8",
+        )
+        first, output = self.invoke(index, provenance=provenance)
+        self.assertEqual(first.returncode, 0, first.stderr)
+        original = output.read_bytes()
+        second, _ = self.invoke(index, output, provenance)
+        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assertEqual(output.read_bytes(), original)
+        with output.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, dialect="excel-tab"))
+        self.assertEqual(len({row["gap_key"] for row in rows}), 30)
+        self.assertTrue(all(row["snapshot_utc"] == STAMP for row in rows))
+        ordering = [(r["gap_key"], r["api_id"], r["version"], r["spec_url"]) for r in rows]
+        self.assertEqual(ordering, sorted(ordering))
+        hits = [r for r in rows if r["outcome"] == "candidate"]
+        self.assertIn("admitted", {r["license_screen"] for r in hits})
+        self.assertIn("unknown", {r["license_screen"] for r in hits})
+        self.assertIn("refused", {r["license_screen"] for r in hits})
+        self.assertEqual({r["version"] for r in hits if r["api_id"] == "z.example"}, {"1", "2"})
+        self.assertTrue(all(int(r["declaration_count"]) > 0 for r in hits))
+        traced = [r for r in hits if r["api_id"] == "asana.com"]
+        self.assertTrue(traced)
+        self.assertTrue(all(r["source_url"] == publisher_source for r in traced))
+        self.assertTrue(all(
+            r["immutable_ref"] == "0123456789abcdef0123456789abcdef01234567"
+            for r in traced
+        ))
+        self.assertTrue(all("ownership evidenced by provenance mapping" in r["notes"] for r in traced))
+        self.assertTrue(all("repeats the rejected-spec table" in r["notes"] for r in traced))
+        untrusted_rows = [r for r in hits if r["api_id"] == "untrusted.example"]
+        self.assertTrue(untrusted_rows)
+        self.assertTrue(all(not r["source_url"] and not r["immutable_ref"] for r in untrusted_rows))
+        self.assertTrue(all("not evidenced" in r["notes"] for r in untrusted_rows))
+        none = [r for r in rows if r["outcome"] == "none-found"]
+        self.assertTrue(none)
+        self.assertTrue(all(not r["api_id"] and not r["declaration_count"] for r in none))
+
+    def test_unread_versions_record_http_refusal_and_real_selector_result(self) -> None:
+        document = json.dumps({
+            "openapi": "3.0.0", "info": {"title": "A", "version": "1"},
+            "paths": {}, "components": {"schemas": {"Hit": {"oneOf": [
+                {"type": "array", "items": {"anyOf": [{"type": "string"}]}}
+            ]}}},
+        }).encode()
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path == "/list.json":
+                    payload = json.dumps({"a.example": {"versions": {"1": {
+                        "swaggerUrl": f"http://127.0.0.1:{self.server.server_port}/ok.json",
+                    }}}, "b.example": {"versions": {"1": {
+                        "swaggerUrl": f"http://127.0.0.1:{self.server.server_port}/refused.json",
+                    }}}}).encode()
+                    self.send_response(200)
+                elif self.path == "/ok.json":
+                    payload = document
+                    self.send_response(200)
+                else:
+                    payload = b"Forbidden"
+                    self.send_response(403)
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+        manifest = self.root / "historical.tsv.gz"
+        manifest.write_bytes(gzip.compress((
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"a.example\t1\t{base}/ok.json\t\tinaccessible\n"
+            f"b.example\t1\t{base}/refused.json\t\tinaccessible\n"
+        ).encode()))
+        evidence = self.root / "evidence"
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", f"{base}/list.json",
+             "--redo-unread", str(manifest), "--evidence-dir", str(evidence)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        records = [json.loads(line) for line in
+                   (evidence / "unread-responses.jsonl").read_text().splitlines()]
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0]["classification"], "openapi-3")
+        self.assertEqual(records[0]["selectors"]["oneof-array-variant-anyof-item"], 1)
+        self.assertEqual(records[1]["classification"], "source-refused")
+        self.assertEqual(records[1]["status"], 403)
+        self.assertEqual((evidence / "index.json").exists(), True)
+
+    def test_redo_reuses_tree_read_versions_without_refetching_them(self) -> None:
+        requested: list[str] = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                requested.append(self.path)
+                port = self.server.server_port
+                if self.path == "/list.json":
+                    payload = json.dumps({
+                        "read.example": {"versions": {"1": {
+                            "swaggerUrl": f"http://127.0.0.1:{port}/read.json"}}},
+                        "unread.example": {"versions": {"1": {
+                            "swaggerUrl": f"http://127.0.0.1:{port}/unread.json"}}},
+                    }).encode()
+                    self.send_response(200)
+                else:
+                    payload = b"Forbidden"
+                    self.send_response(403)
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+        manifest = self.root / "historical.tsv"
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"read.example\t1\t{base}/read.json\tAPIs/read.example/1/openapi.yaml\tread\n"
+            f"unread.example\t1\t{base}/unread.json\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        evidence = self.root / "evidence"
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", f"{base}/list.json",
+             "--redo-unread", str(manifest), "--evidence-dir", str(evidence)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("/read.json", requested)
+        records = [json.loads(line) for line in
+                   (evidence / "unread-responses.jsonl").read_text().splitlines()]
+        self.assertEqual([r["api_id"] for r in records], ["unread.example"])
+        self.assertEqual(records[0]["classification"], "source-refused")
+        index = json.loads((evidence / "index.json").read_text())
+        self.assertEqual((index["versions"], index["unread"]), (2, 1))
+        self.assertIn("recorded 1 unread versions", result.stdout)
+
+    def test_redo_refuses_historical_manifest_changed_from_served_index(self) -> None:
+        served = self.spec("served.json", '{"openapi":"3.0.0","paths":{}}')
+        stale = self.spec("stale.json", '{"openapi":"3.0.0","paths":{}}')
+        index = self.index([("a.example", "1", served)])
+        manifest = self.root / "historical.tsv"
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"a.example\t1\t{stale}\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        evidence = self.root / "evidence"
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", index,
+             "--redo-unread", str(manifest), "--evidence-dir", str(evidence)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(completed.returncode, 1)
+        self.assertIn("historical URL changed", completed.stderr)
+        self.assertFalse((evidence / "unread-responses.jsonl").exists())
+
+    def test_redo_classifies_non_openapi_and_unparseable_responses(self) -> None:
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'{"swagger":"2.0","paths":{}}' if self.path == "/old.json"
+                                 else b'{"openapi":')
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+        old, broken = f"{base}/old.json", f"{base}/broken.json"
+        index = self.index([("a.example", "1", old), ("b.example", "1", broken)])
+        manifest = self.root / "historical.tsv"
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"a.example\t1\t{old}\t\tinaccessible\n"
+            f"b.example\t1\t{broken}\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        missing_evidence = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", index,
+             "--redo-unread", str(manifest)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(missing_evidence.returncode, 2)
+        self.assertIn("--redo-unread requires --evidence-dir", missing_evidence.stderr)
+        evidence = self.root / "evidence"
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", index,
+             "--redo-unread", str(manifest), "--evidence-dir", str(evidence)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        rows = [json.loads(line) for line in
+                (evidence / "unread-responses.jsonl").read_text().splitlines()]
+        self.assertEqual([row["classification"] for row in rows],
+                         ["not-openapi-3", "source-error"])
+        self.assertTrue(rows[1]["error"])
+
+    def test_redo_refuses_incomplete_and_different_historical_entries(self) -> None:
+        served = self.spec("served.json", '{"openapi":"3.0.0","paths":{}}')
+        index = self.index([("a.example", "1", served)])
+        manifest = self.root / "historical.tsv"
+        evidence = self.root / "evidence"
+        command = [sys.executable, str(SCRIPT), "--index-url", index,
+                   "--redo-unread", str(manifest), "--evidence-dir", str(evidence)]
+        manifest.write_text("api_id\tversion\na.example\t1\n", encoding="utf-8")
+        incomplete = subprocess.run(command, cwd=REPO, capture_output=True,
+                                    text=True, timeout=30)
+        self.assertEqual(incomplete.returncode, 1)
+        self.assertIn("missing catalogue entry columns", incomplete.stderr)
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"b.example\t1\t{served}\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        different = subprocess.run(command, cwd=REPO, capture_output=True,
+                                   text=True, timeout=30)
+        self.assertEqual(different.returncode, 1)
+        self.assertIn("historical entries differ from served index", different.stderr)
+        self.assertFalse((evidence / "unread-responses.jsonl").exists())
+
+    def test_tracked_snapshot_obeys_the_consumer_contract(self) -> None:
+        with REPORT.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, dialect="excel-tab")
+            self.assertEqual(tuple(reader.fieldnames or ()), (
+                "snapshot_utc", "catalogue_digest", "gap_key", "selector", "outcome",
+                "api_id", "version", "spec_url", "source_url", "immutable_ref", "license",
+                "license_screen", "declaration_count", "notes",
+            ))
+            rows = list(reader)
+        keys = {row["gap_key"] for row in rows}
+        self.assertEqual(len(keys), 30)
+        self.assertIn("oneof-bare-object-example-variant", keys)
+        self.assertFalse(any(word in REPORT.read_text(encoding="utf-8") for word in ("TODO", "placeholder")))
+        for key in keys:
+            owned = [row for row in rows if row["gap_key"] == key]
+            outcomes = {row["outcome"] for row in owned}
+            self.assertIn(outcomes, ({"candidate"}, {"none-found"}))
+            if outcomes == {"none-found"}:
+                self.assertEqual(len(owned), 1)
+                self.assertTrue(all(not owned[0][field] for field in (
+                    "api_id", "version", "spec_url", "source_url", "immutable_ref",
+                    "license", "license_screen", "declaration_count",
+                )))
+            else:
+                for row in owned:
+                    self.assertTrue(row["api_id"] and row["version"] and row["spec_url"])
+                    self.assertGreater(int(row["declaration_count"]), 0)
+                    self.assertIn(row["license_screen"], {"admitted", "refused", "unknown"})
+                    self.assertEqual(bool(row["source_url"]), bool(row["immutable_ref"]))
+
+    def test_tracked_snapshot_is_reconciled_with_finished_evidence(self) -> None:
+        """The one-source snapshot supplies candidates, never absence settlement."""
+        with REPORT.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, dialect="excel-tab"))
+        owned = {row["gap_key"] for row in rows}
+        self.assertEqual(30, len(owned))
+        self.assertIn("HISTORICAL ONE-SOURCE INPUT", REPORT.read_text(encoding="utf-8"))
+        entries = {}
+        for region in REGIONS:
+            for line in region.read_text(encoding="utf-8").splitlines():
+                if not line.startswith("|"):
+                    continue
+                cells = [cell.strip() for cell in line.split("|")[1:-1]]
+                if len(cells) == 8:
+                    entries[cells[0].strip("`")] = cells
+        # A snapshot key leaves `gap` only through a registered corpus witness,
+        # whose fixture name its evidence cell has to carry.
+        settled = {
+            "anyof-sole-member": ("paypal-catalog-products",),
+            "annotated-ref-target-composed": ("paloalto-cspm-alerts", "groupe-psa"),
+            "annotated-ref-target-oneof": ("paloalto-cspm-alerts",),
+            "annotated-ref-target-closed-object": ("truefoundry-trueforge-5adde28",),
+            "anyof-array-variant-struct-item": ("fergus", "timelyapp"),
+            "anyof-array-variant-closed-object-item": ("cradl",),
+            "oneof-array-variant-closed-object-item": ("zulip",),
+            "ref-pointer-undeclared-component-head": ("thrivecart", "nextgen", "skool"),
+            "ref-pointer-unnamed-segment": ("auto-agent-protocol",),
+            "anyof-array-variant-anyof-nullable-item": ("viskit-studio",),
+            "anyof-array-variant-empty-object-item": ("milvus-restful-v2-3", "milvus-restful-v2-4"),
+            "anyof-array-variant-oneof-nullable-item": ("ramu-shogi",),
+            "array-item-pointer-walk-anyof": ("embedpdf-cloudpdf",),
+            "oneof-array-variant-anyof-item": ("langchain-agent-protocol",),
+            "oneof-array-variant-composed-item": ("hse",),
+            "oneof-array-variant-empty-object-item": ("milvus-vector-operations",),
+            "property-sole-anyof-closed-object-member": ("npq-registration",),
+            "property-sole-anyof-struct-member": ("npq-registration",),
+            "property-sole-oneof-closed-object-member": ("mistle-control-plane",),
+        }
+        # Keys whose exhausted search a hand-written fixture answered instead;
+        # they stay screening targets, since no real specification witnesses them.
+        handwritten = {
+            "annotated-ref-target-string-const": "inline-property-unions",
+            "oneof-array-variant-annotated-ref-item": "inline-oneof-variants",
+            "oneof-array-variant-anyof-discriminated-union-item": "inline-oneof-variants",
+            "oneof-array-variant-anyof-nullable-item": "inline-oneof-variants",
+            "oneof-bare-object-example-variant": "inline-oneof-variants",
+            # Search-incomplete keys the renewed search found `none-registrable`.
+            "array-item-inheritance-union": "array-item-inheritance-union",
+            "array-item-pointer-walk-oneof": "array-item-pointer-walk-oneof",
+            "property-sole-anyof-composed-member": "property-sole-anyof-composed-member",
+            "property-sole-anyof-empty-object-member": "property-sole-anyof-empty-object-member",
+            "property-sole-oneof-composed-member": "property-sole-oneof-composed-member",
+            "property-sole-oneof-empty-object-member": "property-sole-oneof-empty-object-member",
+        }
+        self.assertLessEqual(set(settled) | set(handwritten), owned)
+        self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])
+        for key in owned:
+            if key in settled:
+                self.assertEqual("golden", entries[key][3].strip("`"), key)
+                for fixture in settled[key]:
+                    self.assertIn(f"`{fixture}`", entries[key][4], key)
+                self.assertEqual("", entries[key][7])
+            elif key in handwritten:
+                self.assertEqual("handwritten", entries[key][3].strip("`"), key)
+                self.assertIn(f"handwritten: {handwritten[key]};", entries[key][4], key)
+                self.assertEqual("", entries[key][7])
+            else:
+                self.assertEqual("gap", entries[key][3].strip("`"), key)
+                self.assertTrue(entries[key][7].lstrip("`*").startswith("FIXTURE"), key)
+        limitations = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
+        self.assertNotIn("### Round 7 — APIs.guru witness-supply probes", limitations)
+
+    def assert_finished_evidence_reconciles(
+        self,
+        report: Path,
+        regions: tuple[Path, ...],
+        limitations: Path,
+        screening_paths: tuple[Path, ...],
+    ) -> None:
+        with report.open(encoding="utf-8", newline="") as handle:
+            report_rows = list(csv.DictReader(handle, dialect="excel-tab"))
+
+        selectors_by_key: dict[str, str] = {}
+        for row in report_rows:
+            prior = selectors_by_key.setdefault(row["gap_key"], row["selector"])
+            self.assertEqual(prior, row["selector"], row["gap_key"])
+
+        # Case 11 was introduced after the original gap list. Derive its key
+        # from the tracked selector instead of trusting a copied key list.
+        case_11_keys = {
+            row["gap_key"] for row in report_rows if row["selector"] == CASE_11_SELECTOR
+        }
+        self.assertEqual(case_11_keys, {"oneof-bare-object-example-variant"})
+        owned = set(selectors_by_key) | case_11_keys
+
+        region_rows: dict[str, list[list[str]]] = {key: [] for key in owned}
+        for path in regions:
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.startswith("|"):
+                    continue
+                cells = [cell.strip().strip("`") for cell in line.split("|")[1:-1]]
+                if cells and cells[0] in region_rows:
+                    region_rows[cells[0]].append(cells)
+
+        limitations_text = limitations.read_text(encoding="utf-8")
+        round_7 = limitations_text.split(
+            "### Round 7 — APIs.guru witness-supply probes", 1
+        )[1].split("\n## ", 1)[0]
+        limitation_rows: dict[str, list[list[str]]] = {key: [] for key in owned}
+        for line in round_7.splitlines():
+            if not line.startswith("| `"):
+                continue
+            cells = [cell.strip().strip("`") for cell in line.split("|")[1:-1]]
+            if cells and cells[0] in limitation_rows:
+                limitation_rows[cells[0]].append(cells)
+
+        for key in sorted(owned):
+            with self.subTest(key=key):
+                self.assertEqual(len(region_rows[key]), 1, "owned key must have one region row")
+                row = region_rows[key][0]
+                self.assertGreaterEqual(len(row), 5)
+                category, evidence = row[3], row[4]
+                self.assertIn(category, {"golden", "limitations"})
+                self.assertNotIn(category, {"gap", "FIXTURE"})
+                self.assertNotIn("FIXTURE", row)
+                self.assertNotIn("H-example-value", " ".join(row))
+                self.assertIn(selectors_by_key[key], evidence)
+
+                if category == "golden":
+                    self.assertIn("committed golden", evidence)
+                    self.assertNotIn("none of which carries a committed golden", evidence)
+                    continue
+
+                self.assertEqual(
+                    len(limitation_rows[key]), 1,
+                    "limitations settlement must have one exact Round 7 probe verdict",
+                )
+                probe = limitation_rows[key][0]
+                self.assertGreaterEqual(len(probe), 5)
+                verdict, outcome = probe[3], probe[4]
+                self.assertRegex(verdict, r"^(implements|discards|refuses)$")
+                self.assertIn(f"`{key}.yml`", outcome)
+                self.assertIn(f"`{key}` records Fern `{verdict}`", evidence)
+                matching = [r for r in report_rows if r["gap_key"] == key]
+                candidates = [r for r in matching if r["outcome"] == "candidate"]
+                immutable = [
+                    r for r in candidates
+                    if r["license_screen"] == "admitted"
+                    and r["source_url"] and r["immutable_ref"]
+                ]
+                self.assertEqual(int(probe[1]), len(immutable))
+                self.assertEqual(int(probe[2]), len(candidates))
+                if candidates:
+                    screens = ", ".join(sorted({r["license_screen"] for r in candidates}))
+                    search_outcome = (
+                        f"APIs.guru found {len(candidates)} candidate row(s), but none has a "
+                        "publisher-owned immutable reference; licence screens: " + screens
+                    )
+                else:
+                    search_outcome = "APIs.guru found no catalogue declaration"
+                self.assertIn(search_outcome, outcome)
+                self.assertIn(search_outcome, evidence)
+                self.assertIn("A later registrable witness promotes this row to `golden`", outcome)
+
+        admitted_immutable = [
+            row for row in report_rows
+            if row["outcome"] == "candidate"
+            and row["license_screen"] == "admitted"
+            and row["source_url"] and row["immutable_ref"]
+        ]
+        screening_rows: list[dict[str, str]] = []
+        required = {
+            "gap_key", "candidate_order", "api_id", "version", "spec_url",
+            "source_url", "immutable_ref", "fern_check", "generation",
+            "retained_shape", "outcome", "evidence_verdict",
+        }
+        for path in screening_paths:
+            if path == report:
+                continue
+            with path.open(encoding="utf-8", newline="") as handle:
+                reader = csv.DictReader(handle, dialect="excel-tab")
+                if required <= set(reader.fieldnames or ()):
+                    screening_rows.extend(reader)
+        expected_candidates = [
+            tuple(row[field] for field in (
+                "gap_key", "api_id", "version", "spec_url", "source_url", "immutable_ref",
+            ))
+            for row in admitted_immutable
+        ]
+        actual_candidates = [
+            tuple(row[field] for field in (
+                "gap_key", "api_id", "version", "spec_url", "source_url", "immutable_ref",
+            ))
+            for row in screening_rows if row["gap_key"] in owned
+        ]
+        self.assertEqual(sorted(actual_candidates), sorted(expected_candidates))
+        self.assertEqual(len(actual_candidates), len(set(actual_candidates)))
+        for key in owned:
+            orders = [
+                int(row["candidate_order"]) for row in screening_rows
+                if row["gap_key"] == key
+            ]
+            self.assertEqual(sorted(orders), list(range(1, len(orders) + 1)))
+        for row in screening_rows:
+            if row["gap_key"] in owned:
+                for field in required - {"gap_key", "api_id", "version", "candidate_order"}:
+                    self.assertTrue(row[field], f"{row['gap_key']} screening lacks {field}")
+
+    def test_reconciliation_rejects_duplicate_order_and_wrong_identity(self) -> None:
+        report = self.root / "report.tsv"
+        report.write_text(
+            "gap_key\tselector\toutcome\tapi_id\tversion\tspec_url\tsource_url\t"
+            "immutable_ref\tlicense_screen\n"
+            "oneof-bare-object-example-variant\t" + CASE_11_SELECTOR
+            + "\tcandidate\texample.test\t1\thttps://catalogue.test/a\t"
+            "https://publisher.test/a\taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\tadmitted\n"
+            "oneof-bare-object-example-variant\t" + CASE_11_SELECTOR
+            + "\tcandidate\texample.test\t1\thttps://catalogue.test/b\t"
+            "https://publisher.test/b\tbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\tadmitted\n",
+            encoding="utf-8",
+        )
+        region = self.root / "schemas.md"
+        region.write_text(
+            "| key | oas | location | category | evidence | sites | bytes | settlement |\n"
+            "|---|---|---|---|---|---|---|---|\n"
+            "| oneof-bare-object-example-variant | both | Schema Object.oneOf | golden | "
+            f"census `{CASE_11_SELECTOR}`: 2 declarations; committed golden | | | |\n",
+            encoding="utf-8",
+        )
+        limitations = self.root / "fern-limitations.md"
+        limitations.write_text(
+            "### Round 7 — APIs.guru witness-supply probes\n\n## Next\n",
+            encoding="utf-8",
+        )
+        screening = self.root / "candidate-screening.tsv"
+        header = (
+            "gap_key\tcandidate_order\tapi_id\tversion\tspec_url\tsource_url\t"
+            "immutable_ref\tfern_check\tgeneration\tretained_shape\toutcome\t"
+            "evidence_verdict\n"
+        )
+        screening.write_text(
+            header
+            + "oneof-bare-object-example-variant\t1\texample.test\t1\t"
+            "https://catalogue.test/a\thttps://publisher.test/a\t"
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\tpass\tpass\tretained\t"
+            "discarded\tlimitations\n"
+            + "oneof-bare-object-example-variant\t1\texample.test\t1\t"
+            "https://catalogue.test/b\thttps://publisher.test/b\t"
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\tpass\tpass\tretained\t"
+            "discarded\tlimitations\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(AssertionError, r"\[1, 1\] != \[1, 2\]"):
+            self.assert_finished_evidence_reconciles(
+                report, (region,), limitations, (screening,)
+            )
+
+        screening.write_text(
+            screening.read_text(encoding="utf-8")
+            .replace(
+                "oneof-bare-object-example-variant\t1\texample.test\t1\t"
+                "https://catalogue.test/b",
+                "oneof-bare-object-example-variant\t2\texample.test\t1\t"
+                "https://catalogue.test/wrong-document",
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(AssertionError, "wrong-document"):
+            self.assert_finished_evidence_reconciles(
+                report, (region,), limitations, (screening,)
+            )
+
+    def test_malformed_document_refuses_to_publish(self) -> None:
+        malformed = self.spec("bad.json", "{not json")
+        output = self.root / "must-not-exist.tsv"
+        completed, _ = self.invoke(self.index([("bad.example", "1", malformed)]), output)
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("malformed JSON", completed.stderr)
+        self.assertFalse(output.exists())
+
+    def test_fetch_failure_refuses_to_publish_after_bounded_retries(self) -> None:
+        missing = (self.root / "missing.yaml").as_uri()
+        output = self.root / "must-not-exist.tsv"
+        completed, _ = self.invoke(self.index([("missing.example", "1", missing)]), output)
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("unanswered after 2 bounded attempts", completed.stderr)
+        self.assertFalse(output.exists())
+
+    def test_nonpositive_numeric_arguments_are_rejected(self) -> None:
+        index = self.index([])
+        expected = "apis-guru-gap-screen: attempts, workers, and timeout must be positive\n"
+        for option, value in (
+            ("--attempts", "0"),
+            ("--workers", "0"),
+            ("--timeout", "0"),
+        ):
+            with self.subTest(option=option):
+                completed, output = self.invoke(index, None, None, option, value)
+                self.assertEqual(completed.returncode, 2)
+                self.assertEqual(completed.stderr, expected)
+                self.assertEqual(completed.stdout, "")
+                self.assertFalse(output.exists())
+
+    def test_a_handwritten_row_stays_a_screening_target(self) -> None:
+        """A row a hand-written fixture covers still has no real-specification
+        witness, so the screen keeps its key, with the selector its search ran on."""
+        key = "annotated-ref-target-string-const"
+        regions = flipped_regions(self.root / "regions", key)
+        document = self.spec("hit.json", json.dumps({
+            "openapi": "3.0.0", "info": {"title": "A", "version": "1"},
+            "paths": {}, "components": {"schemas": {"Hit": {"anyOf": [{
+                "type": "array", "items": {"type": "object", "properties": {"x": {"type": "string"}}}
+            }]}}},
+        }))
+        index = self.index([("hit.example", "1", document)])
+        before, before_output = self.invoke(index, self.root / "before.tsv")
+        after, after_output = self.invoke(
+            index, self.root / "after.tsv", None, "--regions-dir", str(regions)
+        )
+        self.assertEqual(0, before.returncode, before.stderr)
+        self.assertEqual(0, after.returncode, after.stderr)
+        self.assertEqual(before_output.read_bytes(), after_output.read_bytes())
+
+        (regions / "witness-search-keys.tsv").unlink()
+        refused, output = self.invoke(
+            index, self.root / "refused.tsv", None, "--regions-dir", str(regions)
+        )
+        self.assertEqual(1, refused.returncode)
+        # The committed regions hold other `handwritten` rows too, and the
+        # refusal names whichever comes first; each lost its selector.
+        named = re.search(r"handwritten row '([a-z0-9-]+)' has no selector in witness-search-keys\.tsv",
+                          refused.stderr)
+        self.assertIsNotNone(named, refused.stderr)
+        self.assertTrue(any(
+            line.startswith(f"| {named[1]} |") and "| handwritten |" in line
+            for line in (regions / "schemas.md").read_text(encoding="utf-8").splitlines()), named[1])
+        self.assertFalse(output.exists())
+
+
+if __name__ == "__main__":
+    unittest.main()

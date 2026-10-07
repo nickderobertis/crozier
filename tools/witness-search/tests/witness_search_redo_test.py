@@ -580,7 +580,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         keys = dict(self.contract_keys())
         self.assertEqual(30, len(keys))
         result = subprocess.run(
-            [sys.executable, str(REPO / "scripts/openapi-surface-census.py"),
+            [sys.executable, str(REPO / "tools/surface-census/openapi-surface-census.py"),
              "--fixture", "paypal-catalog-products", "--json",
              *(arg for selector in keys.values() for arg in ("--selector", selector))],
             cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8",
@@ -662,7 +662,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         """The amendment to the frozen contract: a row a hand-written fixture
         covers keeps no inline history; its `search:` link must resolve to the
         key's Contract B record and state that record's verdict."""
-        sys.path.insert(0, str(REPO / "tests"))
+        sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
         from region_flip import flipped_regions
 
         supplement = REPO / "docs/openapi-surface/witness-scrape-wide/candidates.md"
@@ -893,7 +893,7 @@ class WideWitnessTests(unittest.TestCase):
         # so a witness recorded for one would drop it; screen `gap` keys only.
         # The tree no longer holds a frozen search-incomplete `gap` row, so three
         # are restored in a copy of the region files the derivations read.
-        sys.path.insert(0, str(REPO / "tests"))
+        sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
         from region_flip import restore_gap_row
 
         regions = self.work / 'regions'
@@ -1553,7 +1553,7 @@ class PostFreezeGapRowTests(unittest.TestCase):
             key = line.split('|')[1].strip().strip('`') if line.startswith('| ') else ''
             if key in self.frozen and 'search outcome `search-incomplete`' in line and ' gap ' in line:
                 return key, line
-        sys.path.insert(0, str(REPO / "tests"))
+        sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
         from region_flip import restore_gap_row
 
         key = 'property-sole-oneof-composed-member'
@@ -1582,7 +1582,7 @@ class PostFreezeGapRowTests(unittest.TestCase):
         wide report still validates over the flipped regions, which it can only
         do by reading the flipped row's selector from the tracked file.
         """
-        sys.path.insert(0, str(REPO / "tests"))
+        sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
         from region_flip import flipped_regions
 
         before = self.derive()

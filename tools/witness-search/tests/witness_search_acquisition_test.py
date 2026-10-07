@@ -25,7 +25,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools/witness-search/witness-search-local-census.py"
 GITHUB_ACQUIRE = REPO / "tools/witness-search/witness-acquire-github.py"
-KEYS = REPO / "scripts/witness-search-region-keys.py"
+KEYS = REPO / "tools/surface-census/witness-search-region-keys.py"
 TRACKED_KEYS = REPO / "docs/openapi-surface/witness-search-keys.tsv"
 POSTMAN = REPO / "tools/witness-search/witness-search-postman.py"
 PORTAL_TREES = REPO / "tools/witness-search/witness-search-portal-trees.py"

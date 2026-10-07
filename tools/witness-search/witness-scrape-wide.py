@@ -60,9 +60,9 @@ def load(name: str, path: Path):
 REDO = load("wide_redo", REPO / "tools/witness-search/witness-search-redo.py")
 LOCAL = load("wide_local", REPO / "tools/witness-search/witness-search-local-census.py")
 ROWS = load(
-    "wide_rows", REPO / "tests/surface_census_test.py"
+    "wide_rows", REPO / "tools/surface-census/tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows
-REGION_KEYS = load("wide_region_keys", REPO / "scripts/witness-search-region-keys.py")
+REGION_KEYS = load("wide_region_keys", REPO / "tools/surface-census/witness-search-region-keys.py")
 
 
 def shard_outcomes(contract: Path) -> dict[str, str]:
@@ -655,7 +655,7 @@ def index_tree(args) -> None:
             _mode, kind, object_id = metadata.split()
             if kind == "blob":
                 tracked[path] = object_id
-    guru = load("wide_guru", REPO / "scripts/apis-guru-gap-screen.py")
+    guru = load("wide_guru", REPO / "tools/surface-census/apis-guru-gap-screen.py")
     index = json.loads(args.index.read_text(encoding="utf-8"))
     sources = []
     for api, version, primary in guru.versions(index):

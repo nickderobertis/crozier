@@ -26,8 +26,8 @@ are recorded in tests/fixtures/corpus-sources.tsv. The per-document licence
 attributions below apply to these sources as well as their generated fixtures.
 
 Census-fallback sample documents are committed under
-tests/data/census-fallback-sample/, one file per row of
-tests/data/census-fallback-sample.tsv, which records each file's pinned source
+tools/surface-census/tests/data/census-fallback-sample/, one file per row of
+tools/surface-census/tests/data/census-fallback-sample.tsv, which records each file's pinned source
 URL, SHA-256 and repository licence. They are used unmodified, only to hold the
 census's YAML fallback reader to the stdlib loader:
 
@@ -57,7 +57,7 @@ Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(
   * The exhaustive fixture's expected output (tests/fixtures/exhaustive/expected/)
     was produced by running Fern's published Python generator image
     fernapi/fern-python-sdk:4.35.0 locally over the vendored exhaustive OpenAPI
-    document (see scripts/generate-fern-fixture.sh), rather than copied from the
+    document (see tools/fern-goldens/generate-fern-fixture.sh), rather than copied from the
     fern repository. It is otherwise treated identically to the vendored output.
   * Change made to the vendored Python output: source-code comments were removed
     (a string-safe strip of `#` comments) so that generator-identifying comment

@@ -75,7 +75,7 @@ def _load(name: str, path: Path) -> ModuleType:
     return module
 
 
-REACH = _load("golden_reach_search", REPO / "scripts" / "golden-reach-search.py")
+REACH = _load("golden_reach_search", REPO / "tools" / "surface-census" / "golden-reach-search.py")
 CENSUS = REACH.CENSUS
 GITHUB = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
 INDEX = GITHUB.INDEX

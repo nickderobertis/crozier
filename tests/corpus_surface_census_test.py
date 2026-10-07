@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-SCRIPT = REPO / "scripts" / "openapi-surface-census.py"
+SCRIPT = REPO / "tools" / "surface-census" / "openapi-surface-census.py"
 _INDEX_SPEC = importlib.util.spec_from_file_location(
     "witness_search_github_index_corpus", REPO / "tools" / "witness-search" / "witness-search-github-index.py"
 )
@@ -107,7 +107,7 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
                         self.assertNotEqual(url, candidate["candidate"], "is the row's own source")
                         self.assertEqual(candidate["digest"], digest)
                         source = sources[name]
-                        self.assertIsNotNone(source.path, f"{name} is unfetched; run scripts/fetch-corpus.sh")
+                        self.assertIsNotNone(source.path, f"{name} is unfetched; run tools/corpus/fetch-corpus.sh")
                         self.assertEqual(
                             digest, hashlib.sha256(source.path.read_bytes()).hexdigest()
                         )

@@ -5,7 +5,7 @@
 A candidate owes three screens before it can stand as a witness: its licence
 (the corpus licence rule, `docs/corpus-licensing.md`), its ref (bytes read at an
 immutable commit) and Fern (the pinned CLI and generator accepting it). Both
-witness-search families take them here — `scripts/golden-reach-search.py
+witness-search families take them here — `tools/surface-census/golden-reach-search.py
 screen` for an arm search and this script's own `screen` for the legacy
 `witness-search-<source>/` ledgers — and nowhere else, so every outcome comes
 from a run rather than from a caller's sentence:
@@ -22,7 +22,7 @@ from a run rather than from a caller's sentence:
   third-party copy, say) with ``--licence-refusal``, which is recorded as that
   judgement beside the reading, and may never pass one the reading refuses.
 * **fern** — `fern check` at the corpus's pinned CLI, then the generation
-  `scripts/generate-fern-fixture.sh` runs where that exits 0. It runs only once
+  `tools/fern-goldens/generate-fern-fixture.sh` runs where that exits 0. It runs only once
   the licence and ref screens pass: an earlier refusal records it ``not-run``.
 
 Each screen is filed as ``{outcome, exit, pins, log, log_sha256}``: the exit
@@ -135,7 +135,7 @@ def fern_workspace_files() -> tuple[str, str]:
     """`fern.config.json` and `generators.yml` as generate-fern-fixture.sh scaffolds them for a document.
 
     Its install into `tests/fixtures/` is left out: a screen reads Fern's verdict
-    and never writes a golden. `tests/golden_reach_test.py` holds the YAML to
+    and never writes a golden. `tools/surface-census/tests/golden_reach_test.py` holds the YAML to
     that script's own heredoc.
     """
     cli, name, version, config = corpus_fern_pins()
@@ -321,7 +321,7 @@ def document_licence(data: bytes, scratch: Path) -> str | None:
     path = scratch / "licence-read" / f"{hashlib.sha256(data).hexdigest()}.yaml"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
-    census = _load("openapi_surface_census_screen", REPO / "scripts" / "openapi-surface-census.py")
+    census = _load("openapi_surface_census_screen", REPO / "tools" / "surface-census" / "openapi-surface-census.py")
     try:
         document = census.load_document(path)
     except Exception:  # the census's own parse refusal, whatever its type
