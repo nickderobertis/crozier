@@ -15088,6 +15088,23 @@ fn head_request_body_refuses_then_recovers() {
         assert_eq!(run.code, Some(0), "{}", run.stderr);
         assert!(!run.files.is_empty());
     }
+    // An ignored HEAD generates nothing for its body, so it is not refused,
+    // under either spelling of the ignore extension.
+    for extension in ["x-crozier-ignore", "x-fern-ignore"] {
+        let ignored = temp.path().join(format!("{extension}.yml"));
+        let marked = text.replacen(
+            "      operationId: inspect_patina\n",
+            &format!("      operationId: inspect_patina\n      {extension}: true\n"),
+            1,
+        );
+        assert_ne!(marked, text, "the probe's HEAD operation moved");
+        std::fs::write(&ignored, marked).unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &ignored, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{extension}: {}", run.stderr);
+            assert!(!run.files.is_empty(), "{extension}: wrote nothing");
+        }
+    }
 }
 
 /// crozier#358's one refused use site: a required property whose pointer,
