@@ -189,11 +189,21 @@ class StrictMeasurement(ScratchCheckout):
         self.assertEqual(self.built_row()[11], "1")
 
 
+class _Host(ThreadingHTTPServer):
+    """A loopback host serving `documents`, by request path."""
+
+    def __init__(self) -> None:
+        super().__init__(("127.0.0.1", 0), _Served)
+        self.documents: dict[str, bytes] = {}
+
+
 class _Served(BaseHTTPRequestHandler):
-    """Serves `self.server.documents[path]`, or 404 for any other path."""
+    """Serves the host's document at the request path, or 404 for any other path."""
+
+    server: _Host
 
     def do_GET(self) -> None:  # noqa: N802 - the name http.server dispatches to
-        body = self.server.documents.get(self.path)  # type: ignore[attr-defined]
+        body = self.server.documents.get(self.path)
         self.send_response(200 if body is not None else 404)
         self.end_headers()
         self.wfile.write(body or b"")
@@ -213,9 +223,8 @@ class FetchedAndMeasured(ScratchCheckout):
 
     def setUp(self) -> None:
         super().setUp()
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), _Served)
+        self.server = _Host()
         self.addCleanup(self.server.server_close)
-        self.server.documents = {}  # type: ignore[attr-defined]
         thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         thread.start()
         self.addCleanup(thread.join)
@@ -244,7 +253,7 @@ class FetchedAndMeasured(ScratchCheckout):
         return {row["key"]: row for row in map(json.loads, self.measurements.read_text(encoding="utf-8").splitlines())}
 
     def test_a_fetched_document_is_checked_generated_and_run_through_crozier(self) -> None:
-        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served  # type: ignore[attr-defined]
+        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served
         row = self.measured()[self.served_digest]
         self.assertEqual(row["unretrievable"], "")
         self.assertEqual((row["check_exit"], row["generate_exit"], row["generate_files"]), ("0", "0", "4"))
@@ -261,14 +270,14 @@ class FetchedAndMeasured(ScratchCheckout):
         self.assertEqual(row["unretrievable"], "fetch failed: HTTP Error 404: Not Found")
         self.assertFalse(self.calls.exists(), "Fern ran over a document that was never fetched")
         # Recovery: once the host serves it, `--again` takes it.
-        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served  # type: ignore[attr-defined]
+        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served
         row = self.measured("--again")[self.served_digest]
         self.assertEqual((row["unretrievable"], row["check_exit"]), ("", "0"))
 
     def test_a_host_serving_other_bytes_is_recorded_unretrievable(self) -> None:
         recorded = "f" * 64
         self.record(recorded)
-        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served  # type: ignore[attr-defined]
+        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served
         row = self.measured()[recorded]
         self.assertEqual(row["unretrievable"], f"{self.locator} now serves bytes hashing to {self.served_digest}, "
                                                f"not the recorded {recorded}")

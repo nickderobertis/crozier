@@ -292,10 +292,11 @@ def utc_instant(text: str) -> bool:
     """Whether `text` is what `--snapshot-utc` stamps into every report row: a real
     instant in UTC, to the second, spelled `YYYY-MM-DDTHH:MM:SSZ`."""
     try:
-        datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ")
+        instant = datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError:
         return False
-    return True
+    # strptime also reads unpadded fields (`2026-1-7T2:3:4Z`); only the fixed width is the stamp.
+    return instant.strftime("%Y-%m-%dT%H:%M:%SZ") == text
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

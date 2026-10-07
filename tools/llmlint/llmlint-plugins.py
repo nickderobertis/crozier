@@ -51,7 +51,7 @@ VERSION_LINE = re.compile(r"^version:[ \t]*(?P<version>[^\s#]+)", re.MULTILINE)
 #: It never changes the URL the lock records, and any value that is not a
 #: loopback origin is refused, so it cannot redirect a fetch off this machine.
 ORIGIN_ENV = "CROZIER_LLMLINT_PLUGINS_ORIGIN"
-LOOPBACK_ORIGIN = re.compile(r"http://(?:127\.0\.0\.1|localhost):[0-9]{1,5}")
+LOOPBACK_ORIGIN = re.compile(r"http://(?:127\.0\.0\.1|localhost):([0-9]{1,5})")
 
 
 def fail(message: str, remedy: str) -> None:
@@ -109,7 +109,8 @@ def fetch_url(url: str) -> str:
     origin = os.environ.get(ORIGIN_ENV)
     if origin is None:
         return url
-    if not LOOPBACK_ORIGIN.fullmatch(origin):
+    port = LOOPBACK_ORIGIN.fullmatch(origin)
+    if not port or not 1 <= int(port.group(1)) <= 65535:
         fail(f"{ORIGIN_ENV}={origin!r} is not a loopback origin",
              f"unset {ORIGIN_ENV}; it exists only for the boundary suite's own server")
     return origin + urllib.parse.urlsplit(url).path

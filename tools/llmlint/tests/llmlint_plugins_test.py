@@ -391,6 +391,10 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
              {"CROZIER_LLMLINT_PLUGINS_ORIGIN": "http://example.test:80"},
              "CROZIER_LLMLINT_PLUGINS_ORIGIN='http://example.test:80' is not a loopback origin",
              "unset CROZIER_LLMLINT_PLUGINS_ORIGIN"),
+            ("a loopback origin on no TCP port", {"/rules/base.llmlint.yml": self.DOCUMENT},
+             {"CROZIER_LLMLINT_PLUGINS_ORIGIN": "http://127.0.0.1:99999"},
+             "CROZIER_LLMLINT_PLUGINS_ORIGIN='http://127.0.0.1:99999' is not a loopback origin",
+             "unset CROZIER_LLMLINT_PLUGINS_ORIGIN"),
             ("an llmlint with no version", {"/rules/base.llmlint.yml": self.DOCUMENT}, {"STUB_VERSION": ""},
              "`llmlint --version` exited 0 and printed '', no version", "reinstall llmlint"),
         ]
