@@ -234,20 +234,18 @@ fn every_class_probe_is_refused_as_its_registry_row_states() {
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
-#[test]
-fn every_registry_document_obeys_the_strict_mode_contract() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
-    let registry = classes(&root);
-    let documents = documents(&root);
-    // Each class directory holds its probe; most hold measured side probes
-    // and controls besides, which is what reaches the detectors' branches.
-    assert!(
-        documents.len() > registry.len(),
-        "{} documents",
-        documents.len()
-    );
+fn document_contract_failures(root: &Path) -> Vec<String> {
+    let registry = classes(root);
+    let documents = documents(root);
     let mut failures = Vec::new();
     for (dir, spec) in &documents {
+        if registry
+            .get(dir)
+            .is_some_and(|class| class.status == "unevaluated")
+        {
+            failures.extend(unevaluated_files(root, dir));
+            continue;
+        }
         let name = format!("{dir}/{}", spec.file_name().unwrap().to_string_lossy());
         let default = render(spec, false);
         let strict = render(spec, true);
@@ -299,5 +297,50 @@ fn every_registry_document_obeys_the_strict_mode_contract() {
             (Ok(_), Ok(_)) => {}
         }
     }
+    failures
+}
+
+#[test]
+fn unevaluated_documents_are_checked_without_rendering() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("pending-shape");
+    std::fs::create_dir(&dir).unwrap();
+    let header = "class\tstatus\tcrozier_diagnostic\n";
+    let row = "pending-shape\tunevaluated\t—\n";
+    std::fs::write(root.path().join("classes.tsv"), format!("{header}{row}")).unwrap();
+    std::fs::write(dir.join("probe.yml"), "not yet evaluated\n").unwrap();
+    std::fs::copy(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/head-request-body/fern-refusal.txt"),
+        dir.join("fern-refusal.txt"),
+    )
+    .unwrap();
+    assert!(document_contract_failures(root.path()).is_empty());
+    std::fs::write(
+        root.path().join("classes.tsv"),
+        format!("{header}{}", row.replace("unevaluated", "refuse")),
+    )
+    .unwrap();
+    assert!(!document_contract_failures(root.path()).is_empty());
+    std::fs::write(root.path().join("classes.tsv"), format!("{header}{row}")).unwrap();
+    std::fs::remove_file(dir.join("probe.yml")).unwrap();
+    assert_eq!(
+        unevaluated_files(root.path(), "pending-shape"),
+        ["pending-shape: probe.yml is missing"]
+    );
+}
+
+#[test]
+fn every_registry_document_obeys_the_strict_mode_contract() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
+    let registry = classes(&root);
+    let documents = documents(&root);
+    // Side probes and controls measure the detectors beyond their main probes.
+    assert!(
+        documents.len() > registry.len(),
+        "{} documents",
+        documents.len()
+    );
+    let failures = document_contract_failures(&root);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }

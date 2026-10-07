@@ -4,8 +4,13 @@ The minimal probe declares a required JSON string body on `HEAD /patina`.
 Before this detector, crozier's default SDK imported and its public client
 completed the request through `httpx.MockTransport`, but sent an empty body.
 The [wire assertion](evaluation-logs/default-wire.log) fails because the
-required JSON body is omitted. This invalid wire behavior establishes `refuse`;
-no generated SDK was repaired to qualify it.
+required JSON body is omitted. Under its emitted `pyproject.toml` configuration,
+[mypy 1.13.0](evaluation-logs/default-mypy.log) reports zero errors across 29
+source files with the project's declared runtime and development dependencies
+and HTTP adapter extra installed. Omitting that optional adapter initially
+produced a missing-import error; installing the declared extra resolved it.
+This invalid wire behavior establishes `refuse`; no generated SDK was repaired
+to qualify it.
 
 The detector refuses non-ignored HEAD operations with a request body in both
 modes. Its diagnostic names `head-request-body` and the operation's method and
