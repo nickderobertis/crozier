@@ -208,7 +208,7 @@ fn the_action_reports_one_of_each_status_over_the_fixture_layout() {
     for row in [
         format!("| ✅ matched | {config} | <code>matched</code> | <code>./reference/copy-golden.sh</code> | 40 file(s) compared, layout <code>packaged</code> |"),
         format!("| ❌ mismatched | {config} | <code>mismatched</code> | <code>./reference/copy-golden.sh --alter</code> | differ: <code>README.md</code> |"),
-        format!("| ⚠️ could not check | {config} | <code>could-not-check</code> | <code>./reference/refuse.sh</code> | the reference command exited with status 7:<br>reference tool: this document is not supported |"),
+        format!("| ⚠️ could not check | {config} | <code>could-not-check</code> | <code>./reference/refuse.sh</code> | the reference command exited with status 7:<br>reference tool: this document is not supported — point the generator at a document the reference tool accepts, or remove its reference from crozier.yml |"),
     ] {
         assert!(summary.contains(&row), "missing row {row}\n{summary}");
     }
