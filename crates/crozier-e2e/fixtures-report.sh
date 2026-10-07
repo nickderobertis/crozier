@@ -33,7 +33,7 @@ if cargo test --locked -p crozier-e2e --test e2e -- --ignored --nocapture "$repo
   && grep -qF "$summary" "$out"; then
   # Only the report, from the first corpus header through the summary, never
   # cargo's build/test scaffolding.
-  # llmlint: ignore[tool_output_is_signal] This report is the output the command exists to print (`just fixtures-gaps` / `just fixtures-diff`); everything else cargo printed is dropped, and a failure prints the whole log plus the fix.
+  # llmlint: ignore[tool_output_is_signal] Printing this report is the documented behaviour of `just fixtures-gaps` / `just fixtures-diff` (tests/fixtures/AGENTS.md, "prints the normalized diff"); everything else cargo printed is dropped, and a failure prints the whole log plus the fix.
   awk -v summary="$summary" '/^=== /{p=1} p; index($0, summary){p=0}' "$out" \
     || fail "could not print the report from $out" "check that ${TMPDIR:-/tmp} is readable, then rerun"
 else
