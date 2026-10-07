@@ -48,15 +48,17 @@ def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
     # The fallback samples need the pinned parser: install that package so
     # the denied run resolves it from uv's cache alone.
     # The pin is read, and held to its one exact `package==version`, by the
-    # fallback's own runner, the one place that parses it.
-    pin = subprocess.run(["bash", "tests/census_fallback/run.sh", "pin", "tools/surface-census/golden-reach-search.py"],
-                         cwd=REPO, env=env, capture_output=True, text=True)
-    case.assertEqual(0, pin.returncode, pin.stderr)
-    warm = subprocess.run(
-        ["uv", "run", "--no-project", "--with", pin.stdout.strip(), "python3", "-c", ""],
-        cwd=REPO, env=env, capture_output=True, text=True,
-    )
-    case.assertEqual(0, warm.returncode, warm.stderr)
+    # fallback's own runner, the one place that parses it. A checkout without
+    # the fallback (the recovery suite's synthetic root) has no parser to warm.
+    if (REPO / "tools/surface-census/golden-reach-search.py").is_file():
+        pin = subprocess.run(["bash", "tests/census_fallback/run.sh", "pin", "tools/surface-census/golden-reach-search.py"],
+                             cwd=REPO, env=env, capture_output=True, text=True)
+        case.assertEqual(0, pin.returncode, pin.stderr)
+        warm = subprocess.run(
+            ["uv", "run", "--no-project", "--with", pin.stdout.strip(), "python3", "-c", ""],
+            cwd=REPO, env=env, capture_output=True, text=True,
+        )
+        case.assertEqual(0, warm.returncode, warm.stderr)
 
 
 @unittest.skipUnless(sys.platform == "linux" and platform.machine() in {"x86_64", "aarch64"},
