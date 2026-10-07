@@ -36,9 +36,10 @@ done
 foreign=""
 while IFS= read -r candidate; do
   [ -x "$candidate" ] || continue
-  prefix="$("$candidate" -c 'import sys; print(sys.prefix)' 2>/dev/null)" || continue
+  prefix="$("$candidate" -c 'import sys; assert sys.version_info.major == 3; print(sys.prefix)' 2>/dev/null)" || continue
   base="$("$candidate" -c 'import sys; print(sys.base_prefix)' 2>/dev/null)" || continue
-  if [ -n "$prefix" ] && [ "$prefix" = "$base" ]; then
+  [ -n "$prefix" ] && [ -n "$base" ] || continue
+  if [ "$prefix" = "$base" ]; then
     printf '%s\n' "$candidate"
     exit 0
   fi
