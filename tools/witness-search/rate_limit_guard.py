@@ -294,6 +294,10 @@ class _Reservation:
 
 @dataclasses.dataclass
 class _Backoff:
+    # Both instants are on the monotonic clock: a wall clock the host steps
+    # (time sync moves it by a tenth of a second at a time) would otherwise
+    # shorten a wait. A `Retry-After` date or a reset epoch is turned into a
+    # delay when it arrives, so it never enters these.
     until: float = 0.0
     refusals: int = 0
     exhausted: bool = False
@@ -421,7 +425,7 @@ class RateLimitGuard:
             )
 
     def _wait_backoff(self, bucket: str, state: _Backoff) -> None:
-        duration = state.until - time.time()
+        duration = state.until - time.monotonic()
         if duration > 0:
             self._sleep(
                 duration,
@@ -458,7 +462,7 @@ class RateLimitGuard:
         if not refused:
             state.refusals = 0
             if retry_after:
-                state.until = max(state.until, time.time() + retry_after)
+                state.until = max(state.until, time.monotonic() + retry_after)
             return False
         live = self._read(bucket)
         primary = live["used"] >= live["limit"]
@@ -470,13 +474,13 @@ class RateLimitGuard:
             # The bucket really is spent (by another holder of the token): the
             # next acquire's live reading waits for its reset.
             if retry_after:
-                state.until = max(state.until, time.time() + retry_after)
+                state.until = max(state.until, time.monotonic() + retry_after)
             return False
         return self._refused(state, retry_after, SECONDARY_BACKOFF_BASE_S, SECONDARY_ATTEMPT_BUDGET)
 
     def _wait_lane(self, lane: str, state: _Backoff) -> None:
         pacing = PACED_LANES[lane]
-        now = time.time()
+        now = time.monotonic()
         if state.until > now:
             self._sleep(
                 state.until - now,
@@ -484,7 +488,7 @@ class RateLimitGuard:
                  "refusals": state.refusals},
             )
         if state.last_request is not None:
-            duration = state.last_request + pacing.spacing_s - time.time()
+            duration = state.last_request + pacing.spacing_s - time.monotonic()
             if duration > 0:
                 self._sleep(
                     duration,
@@ -496,21 +500,21 @@ class RateLimitGuard:
         lane = reservation.bucket
         pacing = PACED_LANES[lane]
         state = self._state[lane]
-        state.last_request = time.time()
+        state.last_request = time.monotonic()
         status = _status(response)
         retry_after = _retry_after(response)
         self._log_call({"host": lane, "lane": lane, "at": _now_iso(), "status": status})
         if status not in REFUSAL_STATUSES:
             state.refusals = 0
             if retry_after:
-                state.until = max(state.until, time.time() + retry_after)
+                state.until = max(state.until, time.monotonic() + retry_after)
             return False
         return self._refused(state, retry_after, pacing.backoff_base_s, pacing.attempt_budget)
 
     def _refused(self, state: _Backoff, retry_after: float | None, base: float, budget: int) -> bool:
         state.refusals += 1
         backoff = max(retry_after or 0.0, base * 2 ** (state.refusals - 1))
-        state.until = time.time() + backoff
+        state.until = time.monotonic() + backoff
         if state.refusals >= budget:
             state.exhausted = True
         return state.exhausted

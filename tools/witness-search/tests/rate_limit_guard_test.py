@@ -138,6 +138,7 @@ class Fixture:
 class GuardTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.fixture = Fixture()
+        self.admissions: list[float] = []
         fixture = self.fixture
 
         class Handler(http.server.BaseHTTPRequestHandler):
@@ -195,9 +196,18 @@ class GuardTestCase(unittest.TestCase):
 
     def call(self, guard: RateLimitGuard, bucket: str, path: str, *, cost: int = 1,
              hold: float = 0.0) -> tuple[float, int]:
-        """One guarded call exactly as a consumer makes it; returns (admitted_at, status)."""
+        """One guarded call exactly as a consumer makes it; returns (admitted_at, status).
+
+        `admitted_at` is the wall-clock moment the guard released the call, to
+        compare with a bucket's reset epoch. The same moment on the monotonic
+        clock the guard waits on is appended to `self.admissions`: a wait it
+        imposes is measured there, never by wall-clock stamps, which carry any
+        step the host makes to its clock (time sync moves it by a tenth of a
+        second at a time) and, server-side, the reading thread's scheduling.
+        """
         guard.acquire(bucket, cost=cost)
         admitted_at = time.time()
+        self.admissions.append(time.monotonic())
         time.sleep(hold)
         request = urllib.request.Request(f"{self.url}{path}", headers={"Authorization": f"Bearer {SECRET}"})
         try:
@@ -424,8 +434,8 @@ class GitHubCapTests(GuardTestCase):
         self.call(guard, "code_search", "/search/code")
         del self.fixture.header_override["/search/code"]
         self.call(guard, "code_search", "/search/code")
-        calls = self.fixture.requests("/search/code")
-        self.assertGreaterEqual(calls[1].at - calls[0].at, 1.0)
+        self.assertEqual(len(self.fixture.requests("/search/code")), 2)
+        self.assertGreaterEqual(self.admissions[1] - self.admissions[0], 1.0)
         self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["backoff"])
 
     def test_a_call_that_produced_no_response_still_closes_its_reservation(self) -> None:
@@ -484,8 +494,9 @@ class GitHubSecondaryTests(GuardTestCase):
 
         calls = self.fixture.requests("/search/code")
         self.assertEqual(len(calls), 3)
-        self.assertGreaterEqual(calls[1].at - calls[0].at, 1.0)  # Retry-After over the 0.3 s base
-        self.assertGreaterEqual(calls[2].at - calls[1].at, 0.6)  # base doubled
+        at = self.admissions
+        self.assertGreaterEqual(at[1] - at[0], 1.0)  # Retry-After over the 0.3 s base
+        self.assertGreaterEqual(at[2] - at[1], 0.6)  # base doubled
         backoffs = [w for w in self.kinds(guard, "wait") if w["cause"] == "backoff"]
         self.assertEqual([w["refusals"] for w in backoffs], [1, 2])
         self.assertTrue(all(p["classifying"] == "secondary" for p in self.kinds(guard, "probe")))
@@ -522,6 +533,7 @@ class PacedLaneTests(GuardTestCase):
                     (200, {}),
                     (429, {}), (503, {}), (429, {}), (429, {}),
                 ]
+                self.admissions.clear()
                 statuses = [self.call(guard, lane, path)[1] for _ in range(9)]
                 self.assertEqual(statuses, [200, 200, 429, 429, 429, 200, 429, 503, 429])
                 with self.assertRaises(SecondaryLimit):
@@ -531,7 +543,7 @@ class PacedLaneTests(GuardTestCase):
                     guard.acquire(lane)
                 self.assertEqual(len(self.fixture.requests(path)), served)
 
-                at = [entry.at for entry in self.fixture.requests(path)]
+                at = self.admissions[:9]
                 gaps = [later - earlier for earlier, later in zip(at, at[1:])]
                 self.assertTrue(all(gap >= 0.4 for gap in gaps), gaps)  # declared spacing
                 self.assertGreaterEqual(gaps[2], 1.0)  # Retry-After waited out, not retried into
@@ -557,7 +569,7 @@ class PacedLaneTests(GuardTestCase):
         ]
         for _ in range(3):
             self.call(guard, "sourcegraph", path)
-        at = [entry.at for entry in self.fixture.requests(path)]
+        at = self.admissions
         self.assertGreaterEqual(at[1] - at[0], 0.9)  # an HTTP date has whole-second resolution
         self.assertGreaterEqual(at[2] - at[1], 1.0)
         self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["backoff", "backoff"])
@@ -578,12 +590,14 @@ class PacedLaneTests(GuardTestCase):
 
     def test_concurrent_callers_cannot_collapse_one_interval(self) -> None:
         guard = self.guard("postman")
-        threads = [threading.Thread(target=self.call, args=(guard, "postman", "/postman/_api/ws/proxy")) for _ in range(3)]
+        threads = [threading.Thread(target=self.call, args=(guard, "postman", "/postman/_api/ws/proxy"))
+                   for _ in range(3)]
         for thread in threads:
             thread.start()
         for thread in threads:
             thread.join(timeout=30)
-        at = [entry.at for entry in self.fixture.requests("/postman/_api/ws/proxy")]
+        self.assertEqual(len(self.fixture.requests("/postman/_api/ws/proxy")), 3)
+        at = sorted(self.admissions)
         self.assertEqual(len(at), 3)
         self.assertTrue(all(b - a >= 0.4 for a, b in zip(at, at[1:])), at)
 
