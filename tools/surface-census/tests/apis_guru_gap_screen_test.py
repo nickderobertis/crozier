@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import csv
 import gzip
+import importlib.util
 import json
 import re
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -163,6 +164,48 @@ components:
         none = [r for r in rows if r["outcome"] == "none-found"]
         self.assertTrue(none)
         self.assertTrue(all(not r["api_id"] and not r["declaration_count"] for r in none))
+
+    def test_the_licence_screen_reads_the_corpus_rule(self) -> None:
+        """A licence is screened as `docs/corpus-licensing.md` states the rule, through the
+        witness screening stage's reading of it: a family the rule admits is admitted however
+        it is spelled, and a grant the rule withholds is refused even when it names a family."""
+        def document(name: str, licence: str | None) -> str:
+            info: dict = {"title": name, "version": "1"}
+            if licence is not None:
+                info["license"] = {"name": licence}
+            return self.spec(f"{name}.json", json.dumps({
+                "openapi": "3.0.0", "info": info, "paths": {},
+                "components": {"schemas": {"Hit": {"anyOf": [{"type": "string"}]}}},
+            }))
+        cases = {
+            "eclipse.example": ("Eclipse Public License 2.0", "admitted"),
+            "mozilla.example": ("Mozilla Public License 2.0", "admitted"),
+            "noncommercial.example": ("CC-BY-NC-4.0", "refused"),
+            "reserved.example": ("Example Inc. All rights reserved", "refused"),
+            "custom.example": ("Custom Public Terms", "unknown"),
+            "none.example": (None, "refused"),
+        }
+        index = self.index([(api_id, "1", document(api_id, licence)) for api_id, (licence, _) in cases.items()])
+        completed, output = self.invoke(index)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        with output.open(encoding="utf-8", newline="") as handle:
+            screens = {row["api_id"]: row["license_screen"] for row in csv.DictReader(handle, dialect="excel-tab")
+                       if row["outcome"] == "candidate"}
+        self.assertEqual({api_id: screen for api_id, (_, screen) in cases.items()}, screens)
+
+    def test_the_tracked_snapshot_s_licence_screens_are_the_corpus_rule_s(self) -> None:
+        """The committed snapshot was screened with the rule this script reads today."""
+        spec = importlib.util.spec_from_file_location("gap_screen_under_test", SCRIPT)
+        assert spec and spec.loader
+        screen = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = screen
+        spec.loader.exec_module(screen)
+        with REPORT.open(encoding="utf-8", newline="") as handle:
+            rows = [row for row in csv.DictReader(handle, dialect="excel-tab") if row["outcome"] == "candidate"]
+        self.assertTrue(rows)
+        for row in rows:
+            document = {"info": {"license": {"name": row["license"]}}} if row["license"] else {}
+            self.assertEqual((row["license"], row["license_screen"]), screen.licence(document), row["api_id"])
 
     def test_unread_versions_record_http_refusal_and_real_selector_result(self) -> None:
         document = json.dumps({

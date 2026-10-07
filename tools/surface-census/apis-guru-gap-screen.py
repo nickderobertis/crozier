@@ -50,8 +50,6 @@ OWNED_KEYS = (
 )
 CASE_11_KEY = "oneof-bare-object-example-variant"
 SHA_REF = re.compile(r"(?:github\.com/[^/]+/[^/]+/(?:blob|raw)/|raw\.githubusercontent\.com/[^/]+/[^/]+/)([0-9a-f]{40})(?:/|$)", re.I)
-GRANTS = re.compile(r"(?:apache|\bmit\b|bsd|cc0|gpl|agpl|lgpl|mpl|epl|cc[- ]by)", re.I)
-REFUSED = re.compile(r"(?:noassertion|proprietary|unlicensed|all rights reserved)", re.I)
 
 
 def load_census():
@@ -65,6 +63,20 @@ def load_census():
 
 
 CENSUS = load_census()
+
+
+def load_screen():
+    """The witness screening stage, whose reading of `docs/corpus-licensing.md` this screen shares."""
+    path = REPO / "tools/witness-search/witness_screen.py"
+    spec = importlib.util.spec_from_file_location("gap_screen_witness_screen", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+SCREEN = load_screen()
 
 
 def load_region_keys():
@@ -188,9 +200,12 @@ def licence(document: Any) -> tuple[str, str]:
             value = str(license_object.get("name") or license_object.get("identifier") or "").strip()
         elif isinstance(license_object, str):
             value = license_object.strip()
-    if not value or REFUSED.search(value):
+    # The corpus rule, as the witness screening stage reads it: a licence it
+    # withholds (or none at all) is refused, one naming a family it admits is
+    # admitted, and anything else is left for a reader.
+    if not value or SCREEN.WITHHELD.search(" ".join(value.upper().split())):
         return value, "refused"
-    if GRANTS.search(value):
+    if SCREEN.recognise(value) in SCREEN.admissible_families():
         return value, "admitted"
     return value, "unknown"
 
