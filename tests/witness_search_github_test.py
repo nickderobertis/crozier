@@ -2471,6 +2471,66 @@ components:
         self.assertEqual(matched["sha256"], recovered["sha256"])
         self.assertEqual(3, self.server.state["raw_hits"])
 
+    def test_cli_searches_and_evaluates_a_plain_string_map_body(self) -> None:
+        """The string-map selector through the acquisition CLI: its fields reach every
+        query, a declaring document is counted, and a refused read is resumed."""
+        script = REPO / "scripts/witness-search-github.py"
+        evidence = self.root / "cli-string-map"
+        evidence.mkdir()
+        key, selector = "request-body-string-map", "operation.requestBody:plain-string-map"
+        (evidence / "keys.json").write_text(json.dumps({
+            "source_commit": "a" * 40, "derivation": "string-map journey",
+            "keys": {key: {"region": "bodies-media", "selector": selector}},
+        }), encoding="utf-8")
+        (evidence / "queries.jsonl").write_text("", encoding="utf-8")
+        document = (
+            b"openapi: 3.0.3\n"
+            b"info:\n"
+            b"  title: Meter labels\n"
+            b"  version: '1'\n"
+            b"paths:\n"
+            b"  /labels:\n"
+            b"    put:\n"
+            b"      requestBody:\n"
+            b"        required: true\n"
+            b"        content:\n"
+            b"          application/json:\n"
+            b"            schema:\n"
+            b"              type: object\n"
+            b"              additionalProperties:\n"
+            b"                type: string\n"
+            b"      responses:\n"
+            b"        '204':\n"
+            b"          description: saved\n"
+        )
+        self.server.state["contents_payload"] = {"encoding": "base64", "content": base64.b64encode(document).decode()}
+        env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token",
+               "CROZIER_TEST_CODE_SEARCH_SPACING_S": "0.01"}
+        run = lambda stage: subprocess.run(
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence),
+             "--cache", str(self.root / "cli-string-map-cache"), "--source", "github-code-search",
+             "--stage", stage, "--key", key],
+            env=env, capture_output=True, text=True)
+
+        searched = run("search")
+        self.assertEqual(0, searched.returncode, searched.stderr)
+        queries = [json.loads(line) for line in (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertTrue(queries)
+        self.assertTrue(all("requestBody" in row["query"] and "additionalProperties" in row["query"]
+                            for row in queries), queries)
+
+        self.server.state["contents_status"] = 403
+        stopped = run("evaluate")
+        self.assertEqual(1, stopped.returncode)
+        self.assertIn("--stage evaluate", stopped.stderr)
+
+        self.server.state["contents_status"] = 0
+        evaluated = run("evaluate")
+        self.assertEqual(0, evaluated.returncode, evaluated.stderr)
+        rows = [json.loads(line) for line in (evidence / "candidates.jsonl").read_text(encoding="utf-8").splitlines()]
+        declared = [row for row in rows if row["key"] == key and row["disposition"] == "declares"]
+        self.assertEqual([1], [row["selector_count"] for row in declared], rows)
+
     def test_newer_openapi_three_document_is_censused(self) -> None:
         self.server.state["raw_document"] = DOCUMENT.replace(
             b"openapi: 3.0.3", b"openapi: 3.2.0"
