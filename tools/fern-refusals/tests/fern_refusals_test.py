@@ -283,6 +283,31 @@ class Drift(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn(f"{table[1][0]}: Fern generates from {table[1][1]}", result.stderr)
 
+    def test_a_generation_that_wrote_nothing_or_printed_the_phrase_confirms(self) -> None:
+        confirmations = Path(self.scratch.name) / "confirmations.tsv"
+        table = rows(CONFIRMATIONS)
+        patterns = load_script("fern_refusals_confirming")
+        classes = {row["class"]: row for row in patterns.read_tsv(REGISTRY / "classes.tsv", patterns.CLASSES_HEADER)}
+        generated = rows(REGISTRY / "generated.tsv")[1]
+        silent = f"docs/openapi-surface/fern-refusals/logs/{generated[4]}.generate.log"
+        # A refused row whose own log carries its class's phrase, made to exit 0 with a tree.
+        phrased = next(number for number, row in enumerate(table[1:], 1) if row[3] == "1" and any(
+            patterns.template_pattern(classes[row[0]]["diagnostic"]).match(message)
+            for message in patterns.diagnostics(patterns.read_log(row[5]))))
+        for name, number, outcome in (("exit 0, no files", 1, ["0", "0", silent]),
+                                      ("exit 0, a tree, the phrase", phrased, ["0", "40", table[phrased][5]])):
+            with self.subTest(name):
+                edited = [list(row) for row in table]
+                edited[number][3:6] = outcome
+                write_rows(confirmations, edited)
+                result = run("check", confirmations=confirmations)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        # The same tree with neither is the contradiction `check` exists for.
+        edited = [list(row) for row in table]
+        edited[1][3:6] = ["0", "40", silent]
+        write_rows(confirmations, edited)
+        self.assertEqual(run("check", confirmations=confirmations).returncode, 1)
+
     def test_a_timed_out_or_malformed_confirmation_fails(self) -> None:
         confirmations = Path(self.scratch.name) / "confirmations.tsv"
         for outcome, phrase_ in ((["timeout", "0"], "timed out, which confirms nothing; rerun `confirm` with a "
@@ -343,21 +368,43 @@ class MissingInputs(unittest.TestCase):
         self.assert_select_names_missing(
             "docs/openapi-surface/golden-reach-witnesses/jentic/enumeration.tsv.gz")
 
-    def test_an_enumeration_without_its_columns_names_them(self) -> None:
+    def select_over_enumeration(self, source: str, text: str) -> subprocess.CompletedProcess[str]:
+        """`select` from a scratch checkout whose `source` enumeration is `text`."""
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
             for relative in ("tools/fern-refusals/fern-refusals.py", *self.INPUTS):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(REPO / relative, root / relative)
-            broken = "docs/openapi-surface/golden-reach-witnesses/jentic/enumeration.tsv.gz"
-            with gzip.open(root / broken, "wt", encoding="utf-8") as handle:
-                handle.write("walk\tdocument\trevision\n")
+            with gzip.open(root / self.enumeration(source), "wt", encoding="utf-8") as handle:
+                handle.write(text)
             env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
             result = subprocess.run([sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
                                     capture_output=True, text=True, env=env, cwd=root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
-        self.assertIn(f"{broken}: the header lacks sha256", result.stderr)
+        return result
+
+    @staticmethod
+    def enumeration(source: str) -> str:
+        return f"docs/openapi-surface/golden-reach-witnesses/{source}/enumeration.tsv.gz"
+
+    def test_an_enumeration_without_its_columns_names_them(self) -> None:
+        result = self.select_over_enumeration("jentic", "walk\tdocument\trevision\n")
+        self.assertIn(f"{self.enumeration('jentic')}: the header lacks sha256", result.stderr)
+
+    def test_an_enumeration_row_short_or_long_of_its_header_names_the_line(self) -> None:
+        header = "walk\tdocument\trevision\tsha256\n"
+        for row in ("o/r\ta.yml\tc\n", "o/r\ta.yml\tc\td\tsurplus\n"):
+            with self.subTest(row=row):
+                result = self.select_over_enumeration("jentic", header + "o/r\tb.yml\tc\td\n" + row)
+                self.assertIn(f"{self.enumeration('jentic')} line 3 is not one cell per column of its header",
+                              result.stderr)
+
+    def test_a_vendor_portal_document_outside_its_clone_names_the_line(self) -> None:
+        result = self.select_over_enumeration("vendor-portals", "walk\tdocument\trevision\tsha256\n"
+                                                                "o/r\topenapi.yml\tc\td\n")
+        self.assertIn(f"{self.enumeration('vendor-portals')} line 2: vendor-portals document 'openapi.yml' is not "
+                      "`<owner>--<repo>/<path>`", result.stderr)
 
     def test_missing_search_candidates_name_them(self) -> None:
         # Every input before it is present, so `select` reaches the first search.
@@ -419,6 +466,12 @@ class MalformedInputs(unittest.TestCase):
             with self.subTest(field=field):
                 result = self.select_over(edit)
                 self.assertIn(f"has {field}, not a non-empty string; restore it from git", result.stderr)
+
+    def test_a_failed_screens_digest_must_be_text(self) -> None:
+        result = self.select_over((self.SCREENS, '{"fern": "failed: check", "source": "scratch", '
+                                                 '"repository": "o/r", "commit": "c", "path": "a.yml", '
+                                                 '"sha256": 7}'))
+        self.assertIn("has sha256 7, not a digest string; restore it from git", result.stderr)
 
     def test_a_failed_screens_logs_must_be_a_list_of_paths(self) -> None:
         result = self.select_over((self.SCREENS, '{"fern": "failed: check", "source": "scratch", '
