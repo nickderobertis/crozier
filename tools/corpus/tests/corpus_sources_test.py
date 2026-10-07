@@ -17,13 +17,11 @@ from __future__ import annotations
 
 import ast
 import hashlib
-import http.server
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
-import threading
 import unittest
 from pathlib import Path
 
@@ -110,16 +108,6 @@ class TheCommittedTreeHolds(unittest.TestCase):
             self.assertTrue(list((staged / "remote").rglob("*.yaml")))
             self.assertEqual(0, run(REPO, "check").returncode)
 
-    def test_both_manifest_readers_select_the_same_registered_sources(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            result = subprocess.run(
-                [corpus_sources.bash(), str(REPO / "tools/corpus/fetch-corpus.sh"), "--dry-run", directory],
-                cwd=REPO, capture_output=True, text=True,
-            )
-            self.assertEqual(0, result.returncode, result.stderr)
-            fetched_rows = [tuple(line.split("\t")[:2]) for line in result.stdout.splitlines()]
-            self.assertEqual([(row.name, row.url) for row in corpus_sources.corpus_rows(REPO)], fetched_rows)
-
     def test_prepare_rejects_unsafe_names(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             completed = run(REPO, "prepare", "--fixture", "../exhaustive", "--output", directory)
@@ -134,24 +122,15 @@ class TheCommittedTreeHolds(unittest.TestCase):
             self.assertIn("just lint-corpus-sources", completed.stderr)
 
 
-class Handler(http.server.BaseHTTPRequestHandler):
-    def do_GET(self) -> None:  # noqa: N802 - http.server's spelling
-        self.server.requests.append(self.path)
-        body = self.server.documents.get(self.path)
-        if body is None:
-            self.send_error(404)
-            return
-        self.send_response(200)
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def log_message(self, *args: object) -> None:
-        """Quiet: the request log is the assertion surface."""
-
-
 class SyntheticRoot(unittest.TestCase):
-    """A repository root with two rows: one plain document, one with a remote-ref pin."""
+    """A repository root with two rows: one plain document, one with a remote-ref pin.
+
+    Its sources name a loopback port nothing listens on: the offline commands
+    here never fetch. The fetching suites (`tools/corpus-fetch/`) serve the
+    same documents from a real loopback server on top of this root.
+    """
+
+    ORIGIN = "http://127.0.0.1:9"
 
     def setUp(self) -> None:
         temporary = tempfile.TemporaryDirectory()
@@ -165,19 +144,7 @@ class SyntheticRoot(unittest.TestCase):
             shutil.copy2(REPO / script, self.root / script)
         shutil.copy2(REPO / "tests/fixtures/corpus-aliases.tsv", self.fixtures / "corpus-aliases.tsv")
 
-        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-        self.server.requests = []
-        self.server.documents = {
-            "/specs/plain.json": PLAIN,
-            "/specs/remote.yaml": REMOTE_ROOT,
-            f"/example/schemas/{PINNED_SHA}/block.yaml": BLOCK,
-        }
-        self.origin = "http://{}:{}".format(*self.server.server_address[:2])
-        thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-        thread.start()
-        self.addCleanup(thread.join)
-        self.addCleanup(self.server.server_close)
-        self.addCleanup(self.server.shutdown)
+        self.origin = self.ORIGIN
         self.write_corpus("committed")
         (self.fixtures / "corpus-remote-ref-pins.tsv").write_text(
             "# Synthetic pins.\n"
@@ -241,27 +208,12 @@ class TheOfflineCommandsRunEverywhere(SyntheticRoot):
         self.assertIn("just lint-corpus-sources", completed.stderr)
         self.assertNotIn("Traceback", completed.stderr)
 
-    @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "file modes do not deny this reader")
-    def test_fetch_refuses_an_unreadable_manifest_rather_than_fetching_nothing(self) -> None:
-        manifest = self.fixtures / "CORPUS.md"
-        manifest.chmod(0)
-        self.addCleanup(manifest.chmod, 0o644)
-        completed = subprocess.run(
-            [corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), "--dry-run"],
-            cwd=self.root, capture_output=True, text=True, check=False,
-        )
-        self.assert_refused(completed, f"could not read the numbered rows of {manifest}",
-                            "git checkout -- tests/fixtures/CORPUS.md")
-        self.assertEqual("", completed.stdout)
-        self.assertEqual([], self.server.requests)
-
     def test_vendor_without_bash_on_path_names_it(self) -> None:
         empty = self.root / "no-bash"
         empty.mkdir()
         completed = run(self.root, "vendor", "--fixture", "plain", PATH=str(empty))
         self.assert_refused(completed, "no bash on PATH", "Git Bash on Windows")
         self.assertNotIn("Traceback", completed.stderr)
-        self.assertEqual([], self.server.requests)
 
     def test_no_subprocess_runs_a_bare_bash(self) -> None:
         """A bare `bash` argv is WSL's launcher on Windows; resolve it with `corpus_sources.bash()`."""

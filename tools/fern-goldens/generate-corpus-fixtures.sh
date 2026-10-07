@@ -78,7 +78,8 @@ discover_openapi() {
 # `set -e` nor pipefail, and the loop would run over a partial plan.
 rows="$(corpus_rows "$manifest")" || {
   echo "generate-corpus-fixtures: could not read the numbered rows of $manifest — make it readable" \
-       "(restore it with git checkout -- tests/fixtures/CORPUS.md), then re-run" >&2
+       "(restore it with git checkout -- tests/fixtures/CORPUS.md) or fix the row named" \
+       "above, then re-run" >&2
   exit 1
 }
 plan=()

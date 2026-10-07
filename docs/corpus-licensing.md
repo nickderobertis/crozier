@@ -89,7 +89,7 @@ Fern must accept the document, and the reference must be immutable — are in
 
 ## The drift gate
 
-`tools/corpus/corpus-licensing-drift.py` reads every tracked Markdown document in the
+`tools/corpus-licensing/corpus-licensing-drift.py` reads every tracked Markdown document in the
 repository (the vendored Fern goldens and the generated `CHANGELOG.md` aside)
 and fails when one outside this file enumerates the admissible licences again.
 `just lint-corpus-licensing` runs it; `just test-corpus-licensing` proves it

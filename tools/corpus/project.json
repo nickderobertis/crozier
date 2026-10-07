@@ -19,17 +19,6 @@
         "{workspaceRoot}/tests/fixtures/**/*"
       ]
     },
-    "lint-licensing": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "python3 tools/corpus/corpus-licensing-drift.py"
-      },
-      "cache": true,
-      "inputs": [
-        "{projectRoot}/corpus-licensing-drift.py",
-        "{workspaceRoot}/**/*.md"
-      ]
-    },
     "lint-remote-ref-pins": {
       "executor": "nx:run-commands",
       "options": {
@@ -67,7 +56,6 @@
       "executor": "nx:noop",
       "dependsOn": [
         "lint-sources",
-        "lint-licensing",
         "lint-remote-ref-pins",
         "lint-licence-rescreening",
         "lint-boundaries"
@@ -84,21 +72,6 @@
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
         "{workspaceRoot}/tests/fixtures/**/*"
-      ]
-    },
-    "test-licensing": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "python3 tools/corpus/tests/corpus_licensing_test.py"
-      },
-      "cache": true,
-      "inputs": [
-        "default",
-        "{workspaceRoot}/scripts/lib.sh",
-        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
-        "{workspaceRoot}/tests/fixtures/**/*",
-        "{workspaceRoot}/justfile",
-        "{workspaceRoot}/**/*.md"
       ]
     },
     "test-remote-ref-pins": {
@@ -134,7 +107,6 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test-sources",
-        "test-licensing",
         "test-remote-ref-pins",
         "test-licence-rescreening"
       ]

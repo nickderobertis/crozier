@@ -303,14 +303,14 @@ apis-guru-gap-screen *args:
 # of the old set and no source. Prose that REFERS to the rule is fine; a second
 # list of licence names is not. Part of `check`.
 lint-corpus-licensing:
-    @just nx run corpus:lint-licensing
+    @just nx run corpus-licensing:lint-licensing
 
 # Boundary coverage for that gate: drives the REAL script over the REAL tree,
 # and over the real tree with a second enumeration planted in it, so a check
 # that had stopped discriminating fails here instead of passing silently.
 # Part of `check`.
 test-corpus-licensing:
-    @just nx run corpus:test-licensing
+    @just nx run corpus-licensing:test
 
 # A corpus row whose document names another document by absolute URL is only
 # reproducible if that URL is immutable. tests/fixtures/corpus-remote-ref-pins.tsv

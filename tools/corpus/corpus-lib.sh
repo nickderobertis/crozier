@@ -1,20 +1,38 @@
 #!/usr/bin/env bash
 # Shared helpers for the issue #77 fixture corpus manifest.
 
+# corpus_rows MANIFEST — each fetchable row as `name<TAB>url<TAB>ref<TAB>decision`.
+# A row whose name, source or ref is not one the fetch can use safely (a name
+# becomes a path, the source a fetch, the ref a checkout) fails the whole read,
+# naming the row, rather than reaching those commands.
 corpus_rows() {
   local manifest="$1"
-  awk -F '|' '
+  awk -F '|' -v manifest="$manifest" '
+    function refuse(problem) {
+      printf "corpus-lib: %s row %s (%s): %s — fix the row in tests/fixtures/CORPUS.md, then re-run\n", manifest, number, name, problem > "/dev/stderr"
+      failed = 1
+      exit 1
+    }
     # CORPUS.md contains status tables after the canonical numbered manifest.
     # Accept only numbered rows from that first table; otherwise prose/status
     # cells are misread as fixture names and URLs.
     $2 ~ /^[[:space:]]*[0-9]+[[:space:]]*$/ {
-      name=$3; url=$5; ref=$6; decision=$8;
+      number=$2; name=$3; url=$5; ref=$6; decision=$8;
+      gsub(/[[:space:]]/, "", number);
       gsub(/^[ `]+|[ `]+$/, "", name);
       gsub(/^[ ]+|[ ]+$/, "", url);
       gsub(/^[ `]+|[ `]+$/, "", ref);
       gsub(/^[ ]+|[ ]+$/, "", decision);
-      if (name != "" && (decision == "link-ok" || decision == "committed"))
-        print name "\t" url "\t" ref "\t" decision;
+      if (name == "" || (decision != "link-ok" && decision != "committed")) next;
+      if (name !~ /^[A-Za-z0-9][A-Za-z0-9._-]*$/ || name ~ /\.\./)
+        refuse("the name is not a fixture name (letters, digits, `.`, `_`, `-`; no `..`)");
+      # https for a published source; loopback http and an absolute local path
+      # are how the offline suites stand in for one.
+      if (url !~ /^https:\/\/[^[:space:]`]+$/ && url !~ /^http:\/\/(127\.0\.0\.1|localhost)(:[0-9]+)?\/[^[:space:]`]*$/ && url !~ /^\/[^[:space:]`]+$/)
+        refuse("the source is not an https URL");
+      if (ref !~ /^[A-Za-z0-9._\/-]+$/)
+        refuse("the pinned ref is not a commit, tag or branch name");
+      print name "\t" url "\t" ref "\t" decision;
     }
   ' "$manifest"
 }

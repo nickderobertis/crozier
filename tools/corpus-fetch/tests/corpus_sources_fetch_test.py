@@ -14,10 +14,13 @@ Run: `just test-corpus-sources` (part of `just check`).
 from __future__ import annotations
 
 import hashlib
+import http.server
 import os
 import shutil
 import subprocess
 import sys
+import tempfile
+import threading
 import unittest
 from pathlib import Path
 
@@ -29,14 +32,104 @@ from corpus_sources_test import (  # noqa: E402 - the offline suite's directory 
     PINNED_SHA,
     PINNED_URL,
     PLAIN,
+    REMOTE_ROOT,
     SyntheticRoot,
     corpus_sources,
     run,
 )
 
 
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self) -> None:  # noqa: N802 - http.server's spelling
+        self.server.requests.append(self.path)
+        body = self.server.documents.get(self.path)
+        if body is None:
+            self.send_error(404)
+            return
+        self.send_response(200)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args: object) -> None:
+        """Quiet: the request log is the assertion surface."""
+
+
+class LoopbackRoot(SyntheticRoot):
+    """The offline suite's synthetic root, its sources served by a real loopback server."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.server.requests = []
+        self.server.documents = {
+            "/specs/plain.json": PLAIN,
+            "/specs/remote.yaml": REMOTE_ROOT,
+            f"/example/schemas/{PINNED_SHA}/block.yaml": BLOCK,
+        }
+        self.origin = "http://{}:{}".format(*self.server.server_address[:2])
+        thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(thread.join)
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+        self.write_corpus("committed")
+
+
 @unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
-class TheRebuildToolingFetches(SyntheticRoot):
+class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
+    """`fetch-corpus.sh` itself, through real bash, reading the manifest rows."""
+
+    def fetch(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), *args],
+                              cwd=self.root, capture_output=True, text=True, check=False)
+
+    def test_both_manifest_readers_select_the_same_registered_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run(
+                [corpus_sources.bash(), str(REPO / "tools/corpus/fetch-corpus.sh"), "--dry-run", directory],
+                cwd=REPO, capture_output=True, text=True,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            fetched_rows = [tuple(line.split("\t")[:2]) for line in result.stdout.splitlines()]
+            self.assertEqual([(row.name, row.url) for row in corpus_sources.corpus_rows(REPO)], fetched_rows)
+
+    @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "file modes do not deny this reader")
+    def test_fetch_refuses_an_unreadable_manifest_rather_than_fetching_nothing(self) -> None:
+        manifest = self.fixtures / "CORPUS.md"
+        manifest.chmod(0)
+        self.addCleanup(manifest.chmod, 0o644)
+        completed = subprocess.run(
+            [corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), "--dry-run"],
+            cwd=self.root, capture_output=True, text=True, check=False,
+        )
+        self.assert_refused(completed, f"could not read the numbered rows of {manifest}",
+                            "git checkout -- tests/fixtures/CORPUS.md")
+        self.assertEqual("", completed.stdout)
+        self.assertEqual([], self.server.requests)
+
+    def test_a_row_the_fetch_cannot_use_safely_fails_the_read_naming_it(self) -> None:
+        for label, row, problem in (
+            ("traversing name", "| 3 | `../escape` | test | https://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",
+             "the name is not a fixture name"),
+            ("plain http source", "| 3 | `third` | test | http://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",
+             "the source is not an https URL"),
+            ("option-like ref", "| 3 | `third` | test | https://example.test/a.yaml | `--upload-pack=x` | MIT | link-ok | x |\n",
+             "the pinned ref is not a commit, tag or branch name"),
+        ):
+            with self.subTest(label):
+                self.write_corpus("committed", extra=row)
+                completed = self.fetch("--dry-run")
+                self.assert_refused(completed, f"{self.fixtures / 'CORPUS.md'} row 3", problem,
+                                    "fix the row in tests/fixtures/CORPUS.md, then re-run")
+                self.assertEqual("", completed.stdout)
+        self.assertEqual([], self.server.requests)
+
+
+
+
+@unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
+class TheRebuildToolingFetches(LoopbackRoot):
     """`vendor` and `audit` through the real fetch, real curl and a loopback server."""
 
     def test_vendor_commits_every_resolved_file_with_its_fetched_digest(self) -> None:
@@ -90,7 +183,7 @@ class TheRebuildToolingFetches(SyntheticRoot):
 
 
 @unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
-class TheCheckStillDiscriminates(SyntheticRoot):
+class TheCheckStillDiscriminates(LoopbackRoot):
     """The offline `check` over a vendored synthetic root, broken one demand at a time."""
 
     def setUp(self) -> None:

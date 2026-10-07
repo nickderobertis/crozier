@@ -3,7 +3,7 @@
 The corpus's admissible-licence rule used to live nowhere: the four names were
 restated in prose across a dozen documents and stated authoritatively in none,
 so the set drifted out of date without anything noticing. The repair states it
-once, in `docs/corpus-licensing.md`, and `tools/corpus/corpus-licensing-drift.py`
+once, in `docs/corpus-licensing.md`, and `tools/corpus-licensing/corpus-licensing-drift.py`
 keeps the statement single.
 
 These tests drive the REAL script over the REAL repository — the same
@@ -29,7 +29,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-SCRIPT = REPO / "tools" / "corpus" / "corpus-licensing-drift.py"
+SCRIPT = REPO / "tools" / "corpus-licensing" / "corpus-licensing-drift.py"
 RULE = "docs/corpus-licensing.md"
 
 
@@ -267,19 +267,18 @@ class TheGateSpellsPathsTheWayGitDoes(unittest.TestCase):
 class TheGateAndItsTestsAreBothInTheDeterministicTier(unittest.TestCase):
     def test_check_runs_both(self) -> None:
         # `just check` runs every affected project's `lint` and `test`; the
-        # corpus project's aggregates name these two targets, the targets run
-        # these two files, and the project is not promoted out of that tier.
-        project = json.loads((REPO / "tools" / "corpus" / "project.json").read_text(encoding="utf-8"))
+        # corpus-licensing project's `lint` aggregate names the gate, its `test`
+        # runs this file, and the project is not promoted out of that tier.
+        project = json.loads((REPO / "tools" / "corpus-licensing" / "project.json").read_text(encoding="utf-8"))
         targets = project["targets"]
         self.assertNotIn("tier:promoted", project["tags"])
         self.assertIn("lint-licensing", targets["lint"]["dependsOn"])
-        self.assertIn("test-licensing", targets["test"]["dependsOn"])
         self.assertEqual(
             targets["lint-licensing"]["options"]["command"],
             f"python3 {SCRIPT.relative_to(REPO).as_posix()}",
         )
         self.assertEqual(
-            targets["test-licensing"]["options"]["command"],
+            targets["test"]["options"]["command"],
             f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
         )
 
