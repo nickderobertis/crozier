@@ -756,7 +756,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             (root / "witness-search-portal-plan.tsv").write_text(
                 "repository\tpinned_ref\tprior_path\tderivation\tacquisition\n"
                 "gone/docs\tno-immutable-ref: HTTP 404\tapi.json\tprior\tsource-refused\n"
-                "kept/docs\tabc\tapi.json\tprior\tacquired at pinned commit\n", encoding="utf-8")
+                "kept/docs\tabc\tapi.json\tprior\tacquired\n", encoding="utf-8")
             portals = root / "witness-search-vendor-portals"
             portals.mkdir()
             (portals / "records.tsv").write_text(
@@ -841,7 +841,10 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                  "enumeration.tsv:2 has status 'skipped', not readable or unreadable: <reason>"),
                 ("acquisition", root / "witness-search-portal-plan.tsv",
                  "repository\tpinned_ref\tprior_path\tderivation\tacquisition\nkept/docs\tabc\ta\tp\tpending\n",
-                 "witness-search-portal-plan.tsv:2 has acquisition 'pending', not source-refused or acquired"),
+                 "witness-search-portal-plan.tsv:2 has acquisition 'pending', not source-refused, acquired"),
+                ("acquired spelled otherwise", root / "witness-search-portal-plan.tsv",
+                 "repository\tpinned_ref\tprior_path\tderivation\tacquisition\nkept/docs\tabc\ta\tp\tacquired-invalid\n",
+                 "witness-search-portal-plan.tsv:2 has acquisition 'acquired-invalid', not source-refused"),
             ):
                 with self.subTest(label):
                     kept = path.read_text(encoding="utf-8")

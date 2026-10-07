@@ -86,6 +86,9 @@ class _Raw(BaseHTTPRequestHandler):
             f"/acme/declared/{COMMIT}/openapi.yaml": DECLARED,
             f"/acme/declared/{COMMIT}/LICENSE": b"All rights reserved.\n",
             f"/acme/garbled/{COMMIT}/openapi.yaml": b"openapi: [3.0.3\ninfo: {title\n",
+            # Declares a grant, but not as a License Object; the MIT file must not stand in for it.
+            f"/acme/malformed/{COMMIT}/openapi.yaml": b"openapi: 3.0.3\ninfo: {title: shop, version: '1', license: MIT}\npaths: {}\n",
+            f"/acme/malformed/{COMMIT}/LICENSE": b"MIT License\n",
             f"/acme/custom/{COMMIT}/openapi.yaml": DOCUMENT,
             f"/acme/custom/{COMMIT}/LICENSE": b"The Acme Community Licence\n\nUse it as Acme says.\n",
             f"/acme/bare/{COMMIT}/openapi.yaml": DOCUMENT,
@@ -393,6 +396,8 @@ class LegacyScreenCliTests(unittest.TestCase):
              ["openapi.yaml", "LICENSE"]),
             ("acme/garbled", (), "failed: the document could not be read for its info.license",
              ["openapi.yaml", *tried]),
+            ("acme/malformed", (), "failed: info.license is there but is no License Object (a mapping naming "
+                                   "the grant in a string identifier, name or url)", ["openapi.yaml", "LICENSE"]),
             ("acme/custom", (), "failed: no info.license, and LICENSE at the pinned commit names no grant the "
                                 "corpus rule admits", ["openapi.yaml", "LICENSE"]),
             ("acme/bare", (), "failed: grants nothing — no info.license and no licence file at the pinned commit",
@@ -442,6 +447,36 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertEqual([], self.rows())
         self.assertEqual([], self.raw_calls())
 
+    def test_a_whole_record_of_another_document_is_refused(self) -> None:
+        self.assertEqual(0, self.screen("--disposition", "witness-found").returncode)
+        record = self.rows()[0]["measured"]
+        (self.evidence / "screens.jsonl").unlink()
+        path = self.scratch / "measured.json"
+        path.write_text(json.dumps(record), encoding="utf-8")
+        refused = self.screen("--measured", str(path), "--disposition", "witness-found", repository="acme/eula")
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("the measured record names another document than --repository/--commit/--path",
+                      refused.stderr)
+        self.assertEqual([], self.rows())
+        self.assertEqual(0, self.screen("--measured", str(path), "--disposition", "witness-found").returncode)
+
+    def test_a_keys_file_that_is_not_the_derivation_is_refused(self) -> None:
+        keys = self.root / "witness-search-keys.tsv"
+        for text, message in (
+            ("selector\tregion\nschema:x\ts.md\n", "has no header naming a `key` column once"),
+            ("key\tkey\nsample-shape\tother\n", "has no header naming a `key` column once"),
+            ("key\tselector\nsample-shape\n", "witness-search-keys.tsv:2 is not 2 cells with a key"),
+            ("key\tselector\n\tschema:x\n", "witness-search-keys.tsv:2 is not 2 cells with a key"),
+        ):
+            with self.subTest(text=text):
+                keys.write_text(text, encoding="utf-8")
+                refused = self.screen("--disposition", "witness-found")
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(message, refused.stderr)
+                self.assertIn("witness-search-region-keys.py", refused.stderr)
+        self.assertEqual([], self.rows())
+        self.assertEqual([], self.raw_calls())
+
     def test_a_measured_record_whose_parts_disagree_is_refused_naming_the_part(self) -> None:
         self.assertEqual(0, self.screen("--disposition", "witness-found").returncode)
         record = self.rows()[0]["measured"]
@@ -464,6 +499,15 @@ class LegacyScreenCliTests(unittest.TestCase):
             (licence_pins(rule="docs/elsewhere.md"), "the licence screen's rule (docs/corpus-licensing.md"),
             (lambda r: r["fern"]["run"].update(generate_python_files="3"), "`run.generate_python_files` as a count"),
             (lambda r: r["fern"]["run"].update(check_diagnostic=7), "`run.check_diagnostic` as a string"),
+            (licence_pins(document_licence=None), "a pass needs `document_licence` read"),
+            (licence_pins(document_licence="Apache 2.0", document_family="MIT"),
+             "family for info.license 'Apache 2.0' as the reading gives it ('Apache-2.0', not 'MIT')"),
+            (lambda r: r["fern"]["run"].update(sha256="0" * 64), "run over the document the record names"),
+            (lambda r: r["fern"].update(exit="check 0"), "exit as its run records it ('check 0, generate 0'"),
+            (lambda r: r["fern"]["run"].update(check_exit="maybe"), "`run.check_exit` as an exit status or `timeout`"),
+            (lambda r: r["fern"]["run"].update(check_exit="1"), "a generation exactly when `fern check` exited 0"),
+            (lambda r: r["licence"].update(outcome="failed: a third-party copy"),
+             "it runs only after the ref and licence screens pass"),
         ):
             broken = json.loads(json.dumps(record))
             mutate(broken)
@@ -476,6 +520,61 @@ class LegacyScreenCliTests(unittest.TestCase):
                 self.assertIn(missing, refused.stderr)
                 self.assertNotIn("Traceback", refused.stderr)
         self.assertEqual([], self.rows())
+
+
+class GoldenFernPinsTests(unittest.TestCase):
+    """The Fern pins a screen runs at come off the goldens' own metadata; a golden
+    whose record is not one stops the stage, naming the file, before anything is
+    filed. Driven through the real CLI over a synthetic root holding the stage."""
+
+    def test_a_golden_metadata_record_that_is_no_pin_set_is_refused(self) -> None:
+        good = {"cliVersion": "5.20.0", "generatorName": "fernapi/fern-python-sdk",
+                "generatorVersion": "4.3.17", "generatorConfig": {"enum_type": "python_enums"}}
+        for label, text, message in (
+            ("not JSON", "{not json", "is not JSON"),
+            ("not an object", "[]", "is not a JSON object"),
+            ("no CLI version", json.dumps({**good, "cliVersion": ""}), "lacks a non-empty cliVersion"),
+            ("config no mapping", json.dumps({**good, "generatorConfig": "python_enums"}),
+             "carries a generatorConfig that is no mapping"),
+            ("no golden at all", None, "no golden records its Fern pins"),
+        ):
+            with self.subTest(label), tempfile.TemporaryDirectory(prefix="witness-screen-pins-") as scratch:
+                root = Path(scratch)
+                for relative in ("tools/witness-search/witness_screen.py",
+                                 "tools/witness-search/witness-search-github-index.py",
+                                 "docs/corpus-licensing.md"):
+                    (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                    (root / relative).write_bytes((REPO / relative).read_bytes())
+                if text is not None:
+                    metadata = root / "tests/fixtures/alpha/expected/.fern/metadata.json"
+                    metadata.parent.mkdir(parents=True)
+                    metadata.write_text(text, encoding="utf-8")
+                surface = root / "docs/openapi-surface"
+                (surface / "witness-search-sourcegraph").mkdir(parents=True)
+                (surface / "witness-search-keys.tsv").write_text("key\tselector\nsample-shape\tschema:x\n",
+                                                                 encoding="utf-8")
+                # Whole enough for the stage to reach the Fern screen, which is what reads the pins.
+                section = {"exit": "200", "pins": {}, "log": "screens/x.log", "log_sha256": "0" * 64}
+                record = {"stage": SCREEN.STAGE, "screened_at": "2026-10-05T10:00:00+00:00",
+                          "document": {"repository": "acme/shop", "commit": COMMIT, "path": "openapi.yaml",
+                                       "sha256": "a" * 64},
+                          "ref": {**section, "outcome": "failed: HTTP 404"},
+                          "licence": {"outcome": "not-run: the ref screen failed"},
+                          "fern": {**section, "outcome": "passed", "exit": "check 0, generate 0"}}
+                measured = root / "record.json"
+                measured.write_text(json.dumps(record), encoding="utf-8")
+                refused = subprocess.run(
+                    [sys.executable, str(root / "tools/witness-search/witness_screen.py"), "screen",
+                     "--source", "sourcegraph", "--key", "sample-shape", "--repository", "acme/shop",
+                     "--commit", COMMIT, "--path", "openapi.yaml", "--evidence-root", str(surface),
+                     "--measured", str(measured), "--disposition", "witness-found"],
+                    capture_output=True, text=True, timeout=120)
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(message, refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+                if text is not None:
+                    self.assertIn("tests/fixtures/alpha/expected/.fern/metadata.json", refused.stderr)
+                self.assertFalse((surface / "witness-search-sourcegraph" / "screens.jsonl").exists())
 
 
 class WindowsNewlineTests(unittest.TestCase):

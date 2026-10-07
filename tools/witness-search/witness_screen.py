@@ -34,6 +34,12 @@ its own recorded run yields is refused as unmeasured.
 A screen row filed before this stage landed carries no such record. It stays
 readable and is **historical**: no live completeness decision reads it as a
 measurement. A row dated at or after [`MEASURED_SINCE`] without one is refused.
+
+`screen` exits 0 when it filed the row — a rejected candidate is filed too, so
+0 says the screens were taken and recorded, not that they passed; 1 when it
+refused to file (an unknown key, a path outside the repository, a record that
+is not whole, a success claim the outcomes do not support, a Fern timeout); 2
+on a usage error.
 """
 
 from __future__ import annotations
@@ -325,8 +331,15 @@ def recognise(text: str) -> str | None:
     return None
 
 
-def document_licence(data: bytes, scratch: Path) -> str | None:
-    """The document's own `info.license` as one line, `""` when it declares none, None when unreadable."""
+# What `document_licence` answers for an `info.license` that is there but is no
+# License Object: a refusal of its own, never a fallback to the licence file.
+MALFORMED = object()
+LICENCE_FIELDS = ("identifier", "name", "url")
+
+
+def document_licence(data: bytes, scratch: Path) -> str | None | object:
+    """The document's own `info.license` as one line, `""` when it declares none, None when
+    unreadable, and `MALFORMED` when it declares one that is no License Object."""
     path = scratch / "licence-read" / f"{hashlib.sha256(data).hexdigest()}.yaml"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
@@ -336,23 +349,33 @@ def document_licence(data: bytes, scratch: Path) -> str | None:
     except Exception:  # the census's own parse refusal, whatever its type
         return None
     info = document.get("info") if isinstance(document, dict) else None
-    licence = info.get("license") if isinstance(info, dict) else None
-    if not isinstance(licence, dict):
+    if not isinstance(info, dict) or "license" not in info:
         return ""
-    return " / ".join(str(licence[field]) for field in ("identifier", "name", "url")
+    licence = info["license"]
+    if (not isinstance(licence, dict)
+            or any(field in licence and not isinstance(licence[field], str) for field in LICENCE_FIELDS)
+            or not any(isinstance(licence.get(field), str) and licence[field].strip() for field in LICENCE_FIELDS)):
+        return MALFORMED
+    return " / ".join(licence[field] for field in LICENCE_FIELDS
                       if isinstance(licence.get(field), str) and licence[field].strip())
 
 
-def licence_screen(document_text: str | None, files: list[tuple[str, int, bytes]],
+def licence_screen(document_text: str | None | object, files: list[tuple[str, int, bytes]],
                    refusal: str = "") -> tuple[str, dict[str, Any], str]:
     """The licence outcome, its pins and its log, from the two readings the rule names."""
+    malformed = document_text is MALFORMED
+    if malformed:
+        document_text = None
     families = admissible_families()
     file_name, file_status, file_bytes = next(((n, s, b) for n, s, b in files if s == 200), ("", 0, b""))
     head = "\n".join(line for line in file_bytes.decode("utf-8", "replace").splitlines() if line.strip())
     head = "\n".join(head.splitlines()[:LICENCE_HEAD_LINES])
     doc_family = recognise(document_text) if document_text else None
     file_family = recognise(head) if file_name else None
-    if document_text is None:
+    if malformed:
+        outcome = ("failed: info.license is there but is no License Object (a mapping naming the grant "
+                   "in a string identifier, name or url)")
+    elif document_text is None:
         outcome = "failed: the document could not be read for its info.license"
     elif document_text:
         outcome = (f"passed: info.license '{document_text}' reads as {doc_family}, which the corpus rule admits"
@@ -384,7 +407,7 @@ def licence_screen(document_text: str | None, files: list[tuple[str, int, bytes]
         pins["judgement"] = judgement
     log = "\n".join([
         f"rule {pins['rule']} sha256 {pins['rule_sha256']}: admits {', '.join(families)}",
-        f"info.license: {document_text!r} -> {doc_family}",
+        f"info.license: {'(malformed)' if malformed else repr(document_text)} -> {doc_family}",
         *(f"GET {name}: HTTP {status}" for name, status, _data in files),
         f"licence file {file_name or '(none)'} -> {file_family}",
         *([f"--- {file_name} (first {LICENCE_HEAD_LINES} non-blank lines) ---", head] if file_name else []),
@@ -595,9 +618,17 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
                 missing.append(f"the fern screen's run at the corpus pins ({cli}, {generator} {version})")
             if run is None or "check_exit" not in run:
                 missing.append("the fern screen's measured run (`run.check_exit` and what followed)")
-            elif wrong := fern_run_failures(run):
+            elif wrong := fern_run_failures(run, document):
                 missing += wrong
             else:
+                if not all(isinstance(record.get(e), dict) and passed(str(record[e].get("outcome", "")))
+                           for e in ("ref", "licence")):
+                    missing.append("the fern screen's turn: it runs only after the ref and licence screens pass")
+                expected = f"check {run['check_exit']}" + (
+                    f", generate {run['generate_exit']}" if "generate_exit" in run else "")
+                if section.get("exit") != expected:
+                    missing.append(f"the fern screen's exit as its run records it ({expected!r}, not "
+                                   f"{section.get('exit')!r})")
                 try:
                     measured = fern_verdict(run)
                 except KeyError as error:
@@ -623,8 +654,14 @@ def licence_pass_failures(pins: dict[str, Any]) -> list[str]:
     if not isinstance(families, list) or not all(isinstance(family, str) for family in families):
         return [*wrong, "the licence screen's admissible set as the rule it read listed it"]
     declared = pins.get("document_licence")
+    if not isinstance(declared, str):
+        return [*wrong, "the licence screen's reading of the document (a pass needs `document_licence` read, "
+                        "if only as empty)"]
     if declared:
         family, source = pins.get("document_family"), "its document's info.license"
+        if family != recognise(declared):
+            wrong.append(f"the licence screen's family for info.license {declared!r} as the reading gives it "
+                         f"({recognise(declared)!r}, not {family!r})")
     else:
         family, source = pins.get("licence_file_family"), "its licence file"
         if not pins.get("licence_file") or not SHA.fullmatch(str(pins.get("licence_file_sha256", ""))):
@@ -637,16 +674,26 @@ def licence_pass_failures(pins: dict[str, Any]) -> list[str]:
     return wrong
 
 
-def fern_run_failures(run: dict[str, Any]) -> list[str]:
-    """Why a recorded Fern run is not one `fern_screen_document` could have written, or nothing."""
+EXIT = re.compile(r"\d+|timeout")
+
+
+def fern_run_failures(run: dict[str, Any], document: dict[str, Any]) -> list[str]:
+    """Why a recorded Fern run is not one `fern_screen_document` could have written over
+    `document`, or nothing: its digest, exit statuses and the step order it ran in."""
     wrong = []
-    for field in ("check_exit", "check_diagnostic"):
-        if not isinstance(run.get(field), str):
-            wrong.append(f"the fern screen's `run.{field}` as a string")
+    if run.get("sha256") != document.get("sha256") or not SHA.fullmatch(str(run.get("sha256", ""))):
+        wrong.append("the fern screen's run over the document the record names (`run.sha256`)")
+    if not isinstance(run.get("check_exit"), str) or not EXIT.fullmatch(run["check_exit"]):
+        wrong.append("the fern screen's `run.check_exit` as an exit status or `timeout`")
+    if not isinstance(run.get("check_diagnostic"), str):
+        wrong.append("the fern screen's `run.check_diagnostic` as a string")
+    if ("generate_exit" in run) != (run.get("check_exit") == "0"):
+        wrong.append("the fern screen's step order: a generation exactly when `fern check` exited 0")
     if "generate_exit" in run:
-        for field in ("generate_exit", "generate_diagnostic"):
-            if not isinstance(run.get(field), str):
-                wrong.append(f"the fern screen's `run.{field}` as a string")
+        if not isinstance(run.get("generate_exit"), str) or not EXIT.fullmatch(run["generate_exit"]):
+            wrong.append("the fern screen's `run.generate_exit` as an exit status or `timeout`")
+        if not isinstance(run.get("generate_diagnostic"), str):
+            wrong.append("the fern screen's `run.generate_diagnostic` as a string")
         files = run.get("generate_python_files")
         if type(files) is not int or files < 0:
             wrong.append("the fern screen's `run.generate_python_files` as a count")
@@ -690,16 +737,22 @@ KEYS_FILE = "witness-search-keys.tsv"
 def witness_keys(root: Path) -> set[str]:
     """The keys the region tables' derived key set names, read from `root`'s keys file."""
     path = root / KEYS_FILE
+    remedy = "regenerate it with `tools/surface-census/witness-search-region-keys.py`"
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except OSError as error:
-        fail(f"cannot read {path}: {error.strerror}; regenerate it with "
-             "`tools/surface-census/witness-search-region-keys.py`")
+        fail(f"cannot read {path}: {error.strerror}; {remedy}")
     header = lines[0].split("\t") if lines else []
-    if "key" not in header:
-        fail(f"{path} has no `key` column; regenerate it with `tools/surface-census/witness-search-region-keys.py`")
+    if "key" not in header or len(set(header)) != len(header):
+        fail(f"{path} has no header naming a `key` column once; {remedy}")
     column = header.index("key")
-    return {cells[column] for cells in (line.split("\t") for line in lines[1:]) if len(cells) > column and cells[column]}
+    keys = set()
+    for number, line in enumerate(lines[1:], 2):
+        cells = line.split("\t")
+        if len(cells) != len(header) or not cells[column]:
+            fail(f"{path}:{number} is not {len(header)} cells with a key; {remedy}")
+        keys.add(cells[column])
+    return keys
 
 
 def nonempty(text: str) -> str:

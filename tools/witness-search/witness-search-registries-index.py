@@ -7,6 +7,10 @@ key's search open for that source: an inconclusive screen, a document that
 could not be read, a portal the source refused, or a key the census cannot
 evaluate.
 Nothing here decides an outcome; a key with any row cannot read `exhausted`.
+
+Exit status: 0 when the ledgers were written (or, with `--check`, are
+current); 1 when a ledger it reads is missing or malformed, or `--check` finds
+one stale, with the ledger named on stderr; 2 on a usage error.
 """
 
 from __future__ import annotations
@@ -16,6 +20,7 @@ import csv
 import importlib.util
 import io
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -39,9 +44,11 @@ GITHUB_INDEX = _load("registries_github_index", "witness-search-github-index.py"
 RECORD_FIELDS = GITHUB_INDEX.FIELDS
 # What the region-key derivation writes in `census_status`.
 CENSUS_STATUSES = ("supported", "unsupported-by-census")
-# A portal-plan row's `acquisition`: refused by its source, or acquired (with a
-# note saying how). Only a refusal keeps a key's search open.
+# A portal-plan row's `acquisition`: refused by its source, acquired at a
+# mutable ref, or acquired (at the pinned commit, saying where its digest is).
+# Only a refusal keeps a key's search open.
 SOURCE_REFUSED = "source-refused"
+ACQUISITION = re.compile(r"source-refused|acquired|acquired-mutable|acquired at pinned commit; \S.*")
 # The registries are the catalogue and portal sources, as the redo contract's
 # `catalogue-portals` shard names them; the code platforms have their own index.
 SOURCES = _load("registries_redo", "witness-search-redo.py").SOURCES["catalogue-portals"]
@@ -146,9 +153,10 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
     plan = read_tsv(root / "witness-search-portal-plan.tsv",
                     ("repository", "pinned_ref", "acquisition"))
     for number, row in enumerate(plan, 2):
-        if row["acquisition"] != SOURCE_REFUSED and not row["acquisition"].startswith("acquired"):
+        if not ACQUISITION.fullmatch(row["acquisition"]):
             raise ValueError(f"{root / 'witness-search-portal-plan.tsv'}:{number} has acquisition "
-                             f"{row['acquisition']!r}, not {SOURCE_REFUSED} or acquired[ <how>]")
+                             f"{row['acquisition']!r}, not {SOURCE_REFUSED}, acquired, acquired-mutable "
+                             "or acquired at pinned commit; <where its digest is>")
         if row["acquisition"] == SOURCE_REFUSED:
             for key in supported:
                 add(key, "vendor-portals", "portal-unanswered", row["pinned_ref"],

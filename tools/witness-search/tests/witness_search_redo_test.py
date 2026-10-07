@@ -403,6 +403,33 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 )
                 self.assertIn(message, self.run_validator(bad).stderr)
 
+    def test_each_shard_and_record_refusal_names_the_record(self) -> None:
+        separator = "|---|---|---|---|---|---|---|---|---|\n"
+        row = "| `anyof-sole-member` | `schema.anyOf:sole-member` | `{source}` | `query` | {result} | {rest} |\n"
+        header = "| key | selector | source | query | result | candidates | provenance | licence-screen | fern-screen |"
+        for old, new, message in (
+            ("shard: `catalogue-portals`", "shard: `everything`", "missing or unknown shard declaration"),
+            ("shard: `catalogue-portals`", "", "missing or unknown shard declaration"),
+            (header, header.replace("| fern-screen |", "| fern |"), "records header is not the shared record shape"),
+            (separator, separator + "| `anyof-sole-member` | `apis.guru` | unanswered |\n",
+             "record 1 has 3 fields, expected 9"),
+            (separator, separator + row.format(source="apis.guru", result="unanswered", rest="— | — | — | —")
+             .replace("anyof-sole-member` | `schema", "no-such-key` | `schema"), "unknown key no-such-key"),
+            (separator, separator + row.format(source="apis.guru", result="unanswered", rest="— | — | — | —")
+             .replace("schema.anyOf:sole-member", "schema.oneOf:sole-member"), "anyof-sole-member has the wrong selector"),
+            (separator, separator + row.format(source="postman", result="unanswered", rest="— | — | — | —"),
+             "source postman is not owned by catalogue-portals"),
+            (separator, separator + row.format(source="apis.guru", result="unanswered",
+                                               rest="candidate | — | — | —"),
+             "apis.guru/anyof-sole-member unanswered result has supporting fields"),
+            (separator, separator + row.format(source="apis.guru", result="0", rest="— | commit `abc` | — | —"),
+             "apis.guru/anyof-sole-member zero result has candidate evidence"),
+        ):
+            with self.subTest(message=message, new=new[:40]):
+                refused = self.run_validator(self.changed(SHARDS[0], old, new))
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(message, refused.stderr)
+
     def test_enabled_reconciliation_refuses_incomplete_source_key_coverage(
         self,
     ) -> None:
