@@ -106,11 +106,19 @@ def require(path: Path) -> Path:
     return path
 
 
-def require_fields(path: Path, number: int, row: dict[str, Any], fields: tuple[str, ...]) -> None:
-    """Exit naming line `number` of `path` when its record does not carry every one of `fields`."""
+def require_fields(path: Path, number: int, row: dict[str, Any], fields: tuple[str, ...],
+                   may_be_empty: tuple[str, ...] = ()) -> None:
+    """Exit naming line `number` of `path` when its record does not carry every one of
+    `fields` as a string — a non-empty one unless the field is in `may_be_empty` — since
+    each is read as text, joined into keys and compared."""
     missing = [field for field in fields if field not in row]
     if missing:
         fail(f"{rel(path)} line {number} lacks {', '.join(missing)}; restore it from git")
+    wrong = [field for field in fields
+             if not isinstance(row[field], str) or (not row[field] and field not in may_be_empty)]
+    if wrong:
+        fail(f"{rel(path)} line {number} has {wrong[0]} {row[wrong[0]]!r}, not a non-empty string; "
+             "restore it from git")
 
 
 def read_jsonl(path: Path, fields: tuple[str, ...]) -> list[tuple[int, dict[str, Any]]]:
@@ -487,7 +495,7 @@ def read_measurements() -> dict[str, dict[str, str]]:
     rows = read_jsonl(path, ("key",))
     for number, row in rows:
         if "fern_stage" in row:
-            require_fields(path, number, row, ("fern_exit", "fern_log"))
+            require_fields(path, number, row, ("fern_stage", "fern_exit", "fern_log"), may_be_empty=("fern_log",))
     return {row["key"]: upgraded(row) for _number, row in rows}
 
 

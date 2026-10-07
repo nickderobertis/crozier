@@ -21,6 +21,28 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 COVERAGE = REPO / "docs/openapi-surface-coverage.md"
+CATEGORIES = ("golden", "limitations", "handwritten", "gap")
+
+
+def region_rows(text: str) -> list[list[str]]:
+    """Every entry-table row of one region file, as its eight cells.
+
+    The one parse of these rows: golden-reach, `RankedBacklogTests` and the
+    witness-search tools read this function. `\\|` inside a cell is an escaped
+    pipe, not a column break — one row's `crozier sites` cell holds a Rust
+    `match` pattern that uses it.
+    """
+    rows = []
+    for line in text.splitlines():
+        if not line.startswith("| "):
+            continue
+        cells = [
+            cell.replace("\x00", "\\|").strip()
+            for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
+        ]
+        if len(cells) == 8 and cells[3].strip("`") in CATEGORIES:
+            rows.append(cells)
+    return rows
 
 
 def region_files(coverage: Path = COVERAGE) -> list[str]:
@@ -68,12 +90,8 @@ def keys(regions: Path) -> list[tuple[str, str, str, str]]:
     found: dict[str, tuple[str, str, str, str]] = {}
     for name in region_files():
         path = regions / name
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if not line.startswith("|"):
-                continue
-            cells = [cell.strip() for cell in line.replace("\\|", "\0").strip().strip("|").split("|")]
-            if len(cells) != 8:
-                continue
+        for cells in region_rows(path.read_text(encoding="utf-8")):
+            line = " | ".join(cells)
             category = cells[3].strip("` ")
             key = cells[0].strip("` ")
             if category == "handwritten":

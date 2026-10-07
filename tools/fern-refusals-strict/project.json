@@ -1,0 +1,50 @@
+{
+  "name": "fern-refusals-strict",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "implicitDependencies": [
+    "crozier"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-refusals-strict/tests/fern_refusals_strict_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "generator",
+        "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
+        "{workspaceRoot}/tools/fern-refusals/tests/fern_refusals_test.py",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/docs/openapi-surface/fern-refusals/**/*",
+        "{workspaceRoot}/tools/witness-search/witness-search-github.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-github-index.py",
+        "{workspaceRoot}/tools/witness-search/witness_screen.py",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs fern-refusals-strict"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

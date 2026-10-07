@@ -7753,7 +7753,7 @@ class RankedBacklogTests(unittest.TestCase):
 
     # The one parse of a region file's entry rows; the witness-search tools
     # read the same function, so the ranked backlog and the searches agree.
-    region_rows = staticmethod(load_script("tools/surface-census/golden-reach.py").region_rows)
+    region_rows = staticmethod(load_script("tools/surface-census/witness-search-region-keys.py").region_rows)
 
     def section(self, start: str, end: str | None = None) -> str:
         self.assertIn(start, self.doc, f"the index no longer carries {start!r}")
@@ -7879,7 +7879,8 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(documented, tuple(rules), "the category rules' precedence is not the entry table's order")
         for name, categories in (
             ("RankedBacklogTests", self.CATEGORIES),
-            ("tools/surface-census/golden-reach.py", self.golden_reach().CATEGORIES),
+            ("tools/surface-census/witness-search-region-keys.py (golden-reach and the witness-search tools "
+             "parse through it)", load_script("tools/surface-census/witness-search-region-keys.py").CATEGORIES),
             ("tools/surface-census/handwritten-fixtures.py", load_script("tools/surface-census/handwritten-fixtures.py").CATEGORIES),
             ("tools/witness-search/witness-search-redo.py", load_script("tools/witness-search/witness-search-redo.py").CATEGORIES),
         ):

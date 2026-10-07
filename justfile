@@ -374,9 +374,10 @@ test-licence-rescreening:
 
 # The Fern refusal registry's population tables (docs/fern-refusals/) against
 # the committed records they are built from: tools/fern-refusals/fern-refusals.py `check`
-# over the real tree, `build` reproducing it, and drift cases that must fail.
+# over the real tree, `build` reproducing it, and drift cases that must fail, plus
+# `measure` with the freshly built crozier (fern-refusals-strict).
 test-fern-refusals:
-    @just nx run fern-refusals:test
+    @just nx run-many --targets=test --projects=fern-refusals,fern-refusals-strict
 
 # Measure the Fern refusal population (docs/fern-refusals/): fetch each document,
 # run Fern and crozier over it. Rebuilds the release binary first, so crozier's

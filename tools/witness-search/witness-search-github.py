@@ -162,10 +162,8 @@ def load(name: str, path: Path) -> Any:
 
 CENSUS = load("witness_github_census", REPO / "tools/surface-census/openapi-surface-census.py")
 INDEX = load("witness_github_index", REPO / "tools/witness-search/witness-search-github-index.py")
-REGION_ROWS = load(
-    "witness_github_rows", REPO / "tools/surface-census/golden-reach.py"
-).region_rows
 REGION_KEYS = load("witness_github_region_keys", REPO / "tools/surface-census/witness-search-region-keys.py")
+REGION_ROWS = REGION_KEYS.region_rows
 
 
 def derive_keys(regions: Path) -> dict[str, dict[str, str]]:

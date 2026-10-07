@@ -62,7 +62,6 @@ LEDGER = REGIONS_DIR / "golden-reach.tsv"
 DEFAULT_OUT = REPO / ".local" / "golden-reach"
 # What a native binary's file name ends in: the llvm tools and cargo's outputs carry it.
 EXE = ".exe" if os.name == "nt" else ""
-CATEGORIES = ("golden", "limitations", "handwritten", "gap")
 CELL_PREFIX = "reach:"
 # A site spec may hold a comma inside its `[regex]`, so the ledger separates
 # sites with a string no spec may contain.
@@ -86,27 +85,18 @@ def fail(message: str) -> None:
     raise SystemExit(f"golden-reach: {message}")
 
 
+def _region_keys_module():
+    spec = importlib.util.spec_from_file_location(
+        "golden_reach_region_keys", REPO / "tools" / "surface-census" / "witness-search-region-keys.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
-def region_rows(text: str) -> list[list[str]]:
-    """Every entry-table row of one region file, as its eight cells.
-
-    The one parse of these rows: `RankedBacklogTests` and the witness-search
-    tools read this function. `\\|` inside a cell is an escaped pipe, not a
-    column break — one row's `crozier sites` cell holds a Rust `match` pattern
-    that uses it.
-    """
-    rows = []
-    for line in text.splitlines():
-        if not line.startswith("| "):
-            continue
-        cells = [
-            cell.replace("\x00", "\\|").strip()
-            for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
-        ]
-        if len(cells) == 8 and cells[3].strip("`") in CATEGORIES:
-            rows.append(cells)
-    return rows
+# The one parse of a region file's entry rows, and the categories it admits.
+region_rows = _region_keys_module().region_rows
 
 
 def golden_rows(regions_dir: Path = REGIONS_DIR) -> dict[str, str]:
