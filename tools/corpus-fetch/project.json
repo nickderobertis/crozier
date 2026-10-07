@@ -6,9 +6,6 @@
     "type:tooling",
     "lang:python"
   ],
-  "implicitDependencies": [
-    "corpus"
-  ],
   "targets": {
     "test-sources": {
       "executor": "nx:run-commands",
