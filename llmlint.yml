@@ -103,7 +103,7 @@ files:
     - "assets/scaffolding/conftest.py"
     - "assets/scaffolding/default_clients.py.tmpl"
     - "assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
-    # The Fern refusal population's evidence, written by scripts/fern-refusals.py
+    # The Fern refusal population's evidence, written by tools/fern-refusals/fern-refusals.py
     # `measure`/`probe`/`confirm`/`build`: Fern's own logs, the per-document
     # measurements, the sampled confirmations and the three machine-written
     # tables. None is authored source and the logs alone overflow the judge; the

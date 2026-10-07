@@ -1,5 +1,5 @@
 # llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this boundary test sits in tests/ beside the other script tests and runs under `just test-fern-refusals`, part of `check`.
-"""Coverage for `scripts/fern-refusals.py`, which builds `docs/fern-refusals/`.
+"""Coverage for `tools/fern-refusals/fern-refusals.py`, which builds `docs/fern-refusals/`.
 
 The script derives the refused-document population from committed records and
 writes `documents.tsv`, `unretrievable.tsv` and `classes.tsv`'s `documents`
@@ -30,8 +30,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
-SCRIPT = REPO / "scripts" / "fern-refusals.py"
+REPO = Path(__file__).resolve().parents[3]
+SCRIPT = REPO / "tools" / "fern-refusals" / "fern-refusals.py"
 REGISTRY = REPO / "docs" / "fern-refusals"
 CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmations.tsv"
 TABLES = ("classes.tsv", "documents.tsv", "generated.tsv", "unretrievable.tsv")
@@ -253,7 +253,10 @@ class StrictMeasurement(unittest.TestCase):
     def setUp(self) -> None:
         self.scratch = tempfile.TemporaryDirectory()
         self.root = root = Path(self.scratch.name)
-        shutil.copytree(REPO / "scripts", root / "scripts")
+        # `measure` loads the witness-search and census modules beside it, by their
+        # repository paths, so the scratch checkout carries every tooling tree.
+        for tree in ("scripts", "tools"):
+            shutil.copytree(REPO / tree, root / tree, ignore=shutil.ignore_patterns("__pycache__", "target"))
         binary = root / "target" / "release" / "crozier"
         binary.parent.mkdir(parents=True)
         shutil.copy(self.binary, binary)
@@ -302,7 +305,7 @@ class StrictMeasurement(unittest.TestCase):
 
     def script(self, *args: str) -> subprocess.CompletedProcess[str]:
         env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER")}
-        return subprocess.run([sys.executable, str(self.root / "scripts" / "fern-refusals.py"), *args],
+        return subprocess.run([sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"), *args],
                               capture_output=True, text=True, env=env, cwd=self.root)
 
     def measure(self) -> dict[str, str]:
@@ -379,12 +382,12 @@ class MissingInputs(unittest.TestCase):
     def assert_select_names_missing(self, missing: str) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("scripts/fern-refusals.py", *self.INPUTS):
+            for relative in ("tools/fern-refusals/fern-refusals.py", *self.INPUTS):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 if relative != missing:
                     shutil.copy(REPO / relative, root / relative)
             env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
-            result = subprocess.run([sys.executable, str(root / "scripts" / "fern-refusals.py"), "select"],
+            result = subprocess.run([sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
                                     capture_output=True, text=True, env=env, cwd=root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
@@ -400,14 +403,14 @@ class MissingInputs(unittest.TestCase):
     def test_an_enumeration_without_its_columns_names_them(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("scripts/fern-refusals.py", *self.INPUTS):
+            for relative in ("tools/fern-refusals/fern-refusals.py", *self.INPUTS):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(REPO / relative, root / relative)
             broken = "docs/openapi-surface/golden-reach-witnesses/jentic/enumeration.tsv.gz"
             with gzip.open(root / broken, "wt", encoding="utf-8") as handle:
                 handle.write("walk\tdocument\trevision\n")
             env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
-            result = subprocess.run([sys.executable, str(root / "scripts" / "fern-refusals.py"), "select"],
+            result = subprocess.run([sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
                                     capture_output=True, text=True, env=env, cwd=root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
@@ -431,7 +434,7 @@ class MalformedInputs(unittest.TestCase):
     def select_over(self, edit: tuple[str, str]) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("scripts/fern-refusals.py", *MissingInputs.INPUTS, *self.CANDIDATES):
+            for relative in ("tools/fern-refusals/fern-refusals.py", *MissingInputs.INPUTS, *self.CANDIDATES):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(REPO / relative, root / relative)
             relative, line = edit
@@ -441,7 +444,7 @@ class MalformedInputs(unittest.TestCase):
             target.write_text(existing + line + "\n", encoding="utf-8")
             numbered = len((existing + line).splitlines())
             env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
-            result = subprocess.run([sys.executable, str(root / "scripts" / "fern-refusals.py"), "select"],
+            result = subprocess.run([sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
                                     capture_output=True, text=True, env=env, cwd=root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)

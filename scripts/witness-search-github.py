@@ -36,7 +36,10 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from rate_limit_guard import (
+# The guard sits beside this module; callers in other projects load this file by
+# path, so its directory is not otherwise on sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from rate_limit_guard import (  # noqa: E402 - importable only once this directory is on sys.path
     CALLS_FILE,
     REFUSAL_STATUSES,
     WAITS_FILE,

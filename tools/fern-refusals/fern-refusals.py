@@ -60,7 +60,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Iterable, NamedTuple, TypedDict
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 # The tests point this at a scratch copy to show `check` failing on drift.
 REGISTRY = Path(os.environ.get("CROZIER_FERN_REFUSALS_REGISTRY") or REPO / "docs" / "fern-refusals")
 EVIDENCE = REPO / "docs" / "openapi-surface" / "fern-refusals"
@@ -929,7 +929,7 @@ def confirmation_problems() -> list[str]:
     """Every class carried by a document has a sampled real generation, and each reproduces the refusal."""
     path = confirmations_path()
     if not path.is_file():
-        return [f"{rel(path)} is missing; run `scripts/fern-refusals.py confirm`"]
+        return [f"{rel(path)} is missing; run `tools/fern-refusals/fern-refusals.py confirm`"]
     confirmations = read_tsv(path, CONFIRMATIONS_HEADER)
     classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
     documents = {row["digest"]: row for row in read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)}
@@ -949,7 +949,7 @@ def confirmation_problems() -> list[str]:
     for row in classes:
         if row["documents"] != "0" and not any(confirmed["class"] == row["class"] for confirmed in confirmations):
             problems.append(f"{row['class']}: no real document's generation confirms it; run "
-                            "`scripts/fern-refusals.py confirm`")
+                            "`tools/fern-refusals/fern-refusals.py confirm`")
     return problems
 
 
@@ -967,13 +967,13 @@ def check(_args: argparse.Namespace) -> int:
     problems = cross_reference_problems() + confirmation_problems()
     if problems:
         fail("\n  ".join(["the registry's tables disagree with each other "
-                          "(run `scripts/fern-refusals.py build`, or restore the hand-edited one from git):",
+                          "(run `tools/fern-refusals/fern-refusals.py build`, or restore the hand-edited one from git):",
                           *problems]))
     written, problems = tables()
     for name, text in written.items():
         if (REGISTRY / name).read_text(encoding="utf-8") != text:
             problems.append(f"docs/fern-refusals/{name} differs from what `build` writes; "
-                            "run `scripts/fern-refusals.py build` and commit the result")
+                            "run `tools/fern-refusals/fern-refusals.py build` and commit the result")
     if problems:
         fail("\n  ".join(["the registry drifted from its inputs:", *problems]))
     return 0
