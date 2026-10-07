@@ -9,9 +9,10 @@ cases copy the registry to a scratch directory (`CROZIER_FERN_REFUSALS_REGISTRY`
 and break one thing at a time — a header column, a class id a document carries,
 a class count, a row order, a class template the population needs — requiring
 the failure to name it: without that half, "check passes" would be
-indistinguishable from "check reads nothing". `measure` with the compiled
-crozier binary is `tools/fern-refusals-strict/`'s suite, which imports the
-helpers defined here.
+indistinguishable from "check reads nothing". `FernRuns` drives `probe`,
+`finding` and `confirm` with a stand-in `fern` on PATH. `measure` with the
+compiled crozier binary is `tools/fern-refusals-strict/`'s suite, which imports
+the helpers defined here.
 
 Run: `just test-fern-refusals` (part of `just check`).
 """
@@ -20,16 +21,19 @@ from __future__ import annotations
 
 import contextlib
 import gzip
+import hashlib
 import io
 import importlib.util
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import ModuleType
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "fern-refusals" / "fern-refusals.py"
@@ -49,6 +53,58 @@ def run(*args: str, registry: Path | None = None,
         env["CROZIER_FERN_REFUSALS_CONFIRMATIONS"] = str(confirmations)
     return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True, env=env,
                           cwd=REPO)
+
+
+# A stand-in for the Fern CLI, which these suites never run: it answers
+# `fern check` and `fern generate` as the FERN_STUB_* variables say, writing
+# FERN_STUB_GENERATE_FILES files under `--output`, and appends what it was run
+# with (its arguments, the workspace's pinned CLI and generator versions, and
+# the environment `fern_run` sets) to FERN_STUB_CALLS.
+FERN_STUB = """\
+import json, os, sys
+from pathlib import Path
+stage = sys.argv[1]
+calls = os.environ.get("FERN_STUB_CALLS")
+if calls:
+    with open(calls, "a", encoding="utf-8") as handle:
+        handle.write(json.dumps({"argv": sys.argv[1:],
+                                 "cli": json.loads(Path("fern.config.json").read_text())["version"],
+                                 "generators": Path("generators.yml").read_text(),
+                                 "spec": Path("openapi/openapi.yml").read_text(),
+                                 "node_options": os.environ.get("NODE_OPTIONS")}) + "\\n")
+prefix = "FERN_STUB_" + stage.upper()
+print(os.environ.get(prefix + "_OUTPUT", ""))
+if stage == "generate":
+    output = Path(sys.argv[sys.argv.index("--output") + 1])
+    for number in range(int(os.environ.get("FERN_STUB_GENERATE_FILES", "0"))):
+        (output / "src").mkdir(parents=True, exist_ok=True)
+        (output / "src" / f"module_{number}.py").write_text("", encoding="utf-8")
+sys.exit(int(os.environ.get(prefix + "_EXIT", "0")))
+"""
+
+
+def stub_fern(directory: Path) -> Path:
+    """`directory` holding an executable `fern` that runs FERN_STUB under this interpreter."""
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "fern-stub.py").write_text(FERN_STUB, encoding="utf-8")
+    fern = directory / "fern"
+    fern.write_text(f"#!/bin/sh\nexec {shlex.quote(sys.executable)} {shlex.quote(str(directory / 'fern-stub.py'))} \"$@\"\n",
+                    encoding="utf-8")
+    fern.chmod(0o755)
+    return directory
+
+
+def load_script(name: str) -> ModuleType:
+    """The REAL script as a module, for the readers its subcommands share."""
+    spec = importlib.util.spec_from_file_location(name, SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def phrase(template: str) -> str:
+    """A message a class's or finding's `diagnostic` template matches."""
+    return template.replace("<…>", "widget")
 
 
 def rows(path: Path) -> list[list[str]]:
@@ -227,6 +283,21 @@ class Drift(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn(f"{table[1][0]}: Fern generates from {table[1][1]}", result.stderr)
 
+    def test_a_timed_out_or_malformed_confirmation_fails(self) -> None:
+        confirmations = Path(self.scratch.name) / "confirmations.tsv"
+        for outcome, phrase_ in ((["timeout", "0"], "timed out, which confirms nothing; rerun `confirm` with a "
+                                                    "longer `--timeout`"),
+                                 (["1", "many"], "generate_exit '1' and generate_files 'many' must be an exit "
+                                                 "status or `timeout`, and a file count"),
+                                 (["", "0"], "must be an exit status")):
+            with self.subTest(outcome=outcome):
+                table = rows(CONFIRMATIONS)
+                table[1][3:5] = outcome
+                write_rows(confirmations, table)
+                result = run("check", confirmations=confirmations)
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn(phrase_, result.stderr)
+
     def test_a_class_no_sampled_generation_confirms_fails(self) -> None:
         confirmations = Path(self.scratch.name) / "confirmations.tsv"
         table = rows(CONFIRMATIONS)
@@ -385,6 +456,44 @@ class MeasurementsAndArguments(unittest.TestCase):
             path.write_text(json.dumps({"key": "k", "check_exit": "1", "check_log": ""}) + "\n", encoding="utf-8")
             self.assertEqual("1", module.read_measurements()["k"]["check_exit"])
 
+    def test_a_measured_value_outside_its_grammar_is_refused_naming_its_line(self) -> None:
+        module = load_script("fern_refusals_grammar")
+        with tempfile.TemporaryDirectory() as scratch:
+            module.EVIDENCE = Path(scratch)
+            path = Path(scratch) / "measurements.jsonl"
+            for row, message in (({"check_exit": "failed"}, "has check_exit 'failed', not an exit status or `timeout`"),
+                                 ({"generate_files": "-1"}, "has generate_files '-1', not a file count"),
+                                 ({"crozier_files": "3 files"}, "has crozier_files '3 files', not a file count"),
+                                 ({"digest": "abc"}, "has digest 'abc', not a SHA-256 digest"),
+                                 ({"fern_stage": "lint", "fern_exit": "1", "fern_log": ""},
+                                  "has fern_stage 'lint', not check or generate"),
+                                 ({"fern_stage": "check", "fern_exit": "x", "fern_log": ""},
+                                  "has fern_exit 'x', not an exit status")):
+                with self.subTest(row=row):
+                    path.write_text(json.dumps({"key": "k", **row}) + "\n", encoding="utf-8")
+                    stderr = io.StringIO()
+                    with self.assertRaises(SystemExit), contextlib.redirect_stderr(stderr):
+                        module.read_measurements()
+                    self.assertIn(f"measurements.jsonl line 1 {message}", stderr.getvalue())
+            # What `measure` writes is read back: a signal's negative status, a
+            # timeout, and a legacy single-stage record.
+            path.write_text("".join(json.dumps(row) + "\n" for row in (
+                {"key": "a", "digest": "0" * 64, "check_exit": "-9", "crozier_exit": "timeout", "crozier_files": "0"},
+                {"key": "b", "fern_stage": "generate", "fern_exit": "1", "fern_log": "", "generate_files": "12"})),
+                encoding="utf-8")
+            read = module.read_measurements()
+            self.assertEqual((read["a"]["check_exit"], read["a"]["crozier_exit"]), ("-9", "timeout"))
+            self.assertEqual((read["b"]["check_exit"], read["b"]["generate_exit"]), ("0", "1"))
+
+    def test_a_log_a_record_names_that_is_gone_is_refused(self) -> None:
+        module = load_script("fern_refusals_logs")
+        stderr = io.StringIO()
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(stderr):
+            module.read_log("docs/openapi-surface/fern-refusals/logs/gone.check.log")
+        self.assertIn("docs/openapi-surface/fern-refusals/logs/gone.check.log is missing; restore it from git, "
+                      "or rerun `measure --again` to retake it", stderr.getvalue())
+        self.assertEqual("", module.read_log(""))
+
     def test_a_count_or_timeout_out_of_range_is_refused_before_anything_runs(self) -> None:
         for args, message in ((("measure", "--jobs", "0"), "0 is not a positive integer"),
                               (("measure", "--timeout", "-5"), "-5 is not a positive integer"),
@@ -395,6 +504,168 @@ class MeasurementsAndArguments(unittest.TestCase):
                 refused = run(*args)
                 self.assertEqual(2, refused.returncode, refused.stderr)
                 self.assertIn(message, refused.stderr)
+
+
+@unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
+class FernRuns(unittest.TestCase):
+    """`probe`, `finding` and `confirm` run Fern and record what it said. Each
+    case runs the REAL script from a scratch checkout with a stand-in `fern`
+    first on PATH (`FERN_STUB`), so no Fern, Docker or network is reached, and
+    reads back the tables and logs the script wrote there."""
+
+    CLASS = "request-property-name-collision"
+    FINDING = "exploded-property-not-list"
+
+    def setUp(self) -> None:
+        self.scratch = tempfile.TemporaryDirectory()
+        self.root = root = Path(self.scratch.name)
+        (root / "tools" / "fern-refusals").mkdir(parents=True)
+        shutil.copy(SCRIPT, root / "tools" / "fern-refusals" / "fern-refusals.py")
+        self.registry = root / "docs" / "fern-refusals"
+        self.evidence = root / "docs" / "openapi-surface" / "fern-refusals"
+        (self.registry / self.CLASS).mkdir(parents=True)
+        self.evidence.mkdir(parents=True)
+        shutil.copy(REGISTRY / self.CLASS / "probe.yml", self.registry / self.CLASS / "probe.yml")
+        classes = rows(REGISTRY / "classes.tsv")
+        self.class_row = next(row for row in classes[1:] if row[0] == self.CLASS)
+        write_rows(self.registry / "classes.tsv", [classes[0], self.class_row])
+        findings = rows(REGISTRY / "findings.tsv")
+        self.finding_row = next(row for row in findings[1:] if row[0] == self.FINDING)
+        write_rows(self.registry / "findings.tsv", [findings[0], self.finding_row])
+        probe = root / self.finding_row[5]
+        probe.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(REPO / self.finding_row[5], probe)
+        self.calls = root / "fern-calls.jsonl"
+        self.env = {key: value for key, value in os.environ.items()
+                    if not key.startswith(("CROZIER", "FERN_STUB"))}
+        self.env.update(PATH=f"{stub_fern(root / 'bin')}{os.pathsep}{self.env.get('PATH', '')}",
+                        FERN_STUB_CALLS=str(self.calls))
+
+    def tearDown(self) -> None:
+        self.scratch.cleanup()
+
+    def script(self, *args: str, **fern: str) -> subprocess.CompletedProcess[str]:
+        env = dict(self.env, **{f"FERN_STUB_{key.upper()}": value for key, value in fern.items()})
+        return subprocess.run([sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"),
+                               *args], capture_output=True, text=True, env=env, cwd=self.root)
+
+    def calls_made(self) -> list[dict[str, str]]:
+        if not self.calls.exists():
+            return []
+        return [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines()]
+
+    def test_probe_records_the_stage_whose_output_carries_the_phrase(self) -> None:
+        said = phrase(self.class_row[4])
+        result = self.script("probe", self.CLASS, check_exit="1", check_output=f"issue: {said}",
+                             generate_exit="1", generate_output=f"[error] {said}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 probe(s) recorded\n", result.stdout)
+        [row] = rows(self.registry / "classes.tsv")[1:]
+        self.assertEqual(row[2:4], ["check", "1"])
+        refusal = (self.registry / self.CLASS / "fern-refusal.txt").read_text(encoding="utf-8")
+        self.assertIn("generate_exit: 1\n", refusal)
+        self.assertIn(f"diagnostic: {said}\n", refusal)
+        self.assertIn("output_tree: none\n", refusal)
+        self.assertIn(said, (self.evidence / "probe-logs" / f"{self.CLASS}.check.log").read_text(encoding="utf-8"))
+        # Both stages ran, in a workspace pinning the CLI and generator, over the probe.
+        calls = self.calls_made()
+        self.assertEqual([call["argv"][0] for call in calls], ["check", "generate"])
+        self.assertTrue(all(call["cli"] == "5.67.1" and "version: 5.20.0" in call["generators"]
+                            and call["node_options"] == "--max-old-space-size=16384" for call in calls))
+        self.assertEqual(calls[0]["spec"], (REGISTRY / self.CLASS / "probe.yml").read_text(encoding="utf-8"))
+
+    def test_a_probe_fern_generates_past_is_refused_as_a_finding(self) -> None:
+        said = phrase(self.class_row[4])
+        result = self.script("probe", self.CLASS, check_exit="1", check_output=f"issue: {said}",
+                             generate_exit="0", generate_files="3")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn(f"{self.CLASS}: the check stage exits 1 but the generation 0, writing 3 files; a phrase "
+                      "Fern still generates past is a finding", result.stderr)
+        self.assertIn("1 probe(s) not recorded, each explained above", result.stderr)
+        self.assertFalse((self.registry / self.CLASS / "fern-refusal.txt").exists())
+        self.assertEqual(rows(self.registry / "classes.tsv")[1], self.class_row)
+
+    def test_a_probe_without_the_class_phrase_names_its_logs(self) -> None:
+        result = self.script("probe", self.CLASS, check_exit="1", check_output="issue: something else",
+                             generate_exit="1")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(f"{self.CLASS}: Fern printed no diagnostic matching its template over the probe "
+                      "(check exit 1, generate exit 1); see docs/openapi-surface/fern-refusals/probe-logs/"
+                      f"{self.CLASS}.*.log", result.stderr)
+
+    def test_without_fern_on_path_the_setup_recipe_is_named(self) -> None:
+        self.env["PATH"] = str(self.root / "no-fern")
+        result = self.script("probe", self.CLASS)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("`fern` is not on PATH; run `just setup-fern`", result.stderr)
+
+    def test_finding_records_the_exits_of_a_check_only_phrase(self) -> None:
+        self.finding_row[2:4] = ["7", "7"]
+        write_rows(self.registry / "findings.tsv", [rows(self.registry / "findings.tsv")[0], self.finding_row])
+        result = self.script("finding", self.FINDING, check_exit="1",
+                             check_output=f"issue: {phrase(self.finding_row[4])}", generate_files="4")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 finding(s) recorded\n", result.stdout)
+        [row] = rows(self.registry / "findings.tsv")[1:]
+        self.assertEqual(row[2:4], ["1", "0"])
+
+    def test_a_finding_fern_refuses_is_refused_as_a_class(self) -> None:
+        result = self.script("finding", self.FINDING, check_exit="1", generate_exit="1")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(f"{self.FINDING}: the generation exits 1 with 0 files, so Fern refuses the probe; "
+                      "a refusal is a class, not a finding", result.stderr)
+        self.assertEqual(rows(self.registry / "findings.tsv")[1], self.finding_row)
+
+    def test_a_check_only_finding_whose_check_is_silent_names_its_log(self) -> None:
+        result = self.script("finding", self.FINDING, check_exit="1", generate_files="2")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(f"{self.FINDING}: `fern check` printed no diagnostic matching its template; correct the "
+                      f"template or the probe, reading docs/openapi-surface/fern-refusals/probe-logs/"
+                      f"{self.FINDING}.check.log", result.stderr)
+
+    def carrying_document(self) -> str:
+        """A documents.tsv row carrying the class, its bytes in the cache `confirm` samples from."""
+        document = (REGISTRY / self.CLASS / "probe.yml").read_bytes()
+        digest = hashlib.sha256(document).hexdigest()
+        cache = self.root / ".local" / "fern-refusals" / "documents"
+        cache.mkdir(parents=True)
+        (cache / f"{digest}.yml").write_bytes(document)
+        header = rows(REGISTRY / "documents.tsv")[0]
+        row = dict.fromkeys(header, "—")
+        row.update(digest=digest, source="scratch", classes=self.CLASS,
+                   locator="https://raw.githubusercontent.com/acme/api/0/openapi.yml")
+        write_rows(self.registry / "documents.tsv", [header, [row[column] for column in header]])
+        return digest
+
+    def test_confirm_runs_a_carrying_documents_generation_and_records_it(self) -> None:
+        digest = self.carrying_document()
+        result = self.script("confirm", check_output="unused", generate_exit="1",
+                             generate_output=f"[error] {phrase(self.class_row[4])}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 confirmation(s) taken, 1 on record\n", result.stdout)
+        log = f"docs/openapi-surface/fern-refusals/logs/{digest}.generate.log"
+        self.assertEqual(rows(self.evidence / "confirmations.tsv"),
+                         [["class", "digest", "publisher", "generate_exit", "generate_files", "generate_log"],
+                          [self.CLASS, digest, "acme", "1", "0", log]])
+        self.assertIn(phrase(self.class_row[4]), (self.root / log).read_text(encoding="utf-8"))
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["generate"])
+        # A class already sampled `--per-class` times is not run again.
+        again = self.script("confirm", "--per-class", "1")
+        self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
+        self.assertEqual("fern-refusals: 0 confirmation(s) taken, 1 on record\n", again.stdout)
+        self.assertEqual(len(self.calls_made()), 1)
+
+    def test_confirm_reuses_a_generation_measure_took(self) -> None:
+        digest = self.carrying_document()
+        log = f"docs/openapi-surface/fern-refusals/logs/{digest}.generate.log"
+        (self.evidence / "measurements.jsonl").write_text(json.dumps(
+            {"key": digest, "digest": digest, "check_exit": "0", "generate_exit": "1", "generate_files": "0",
+             "generate_log": log}) + "\n", encoding="utf-8")
+        result = self.script("confirm")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.calls_made(), [])
+        self.assertEqual(rows(self.evidence / "confirmations.tsv")[1], [self.CLASS, digest, "acme", "1", "0", log])
 
 
 if __name__ == "__main__":

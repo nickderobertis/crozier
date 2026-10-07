@@ -6,5 +6,6 @@
   dependency and the offline `fern-refusals` project does not.
 - It runs `measure` from a scratch checkout holding exactly the modules it loads
   (`MEASURE_LOADS`); a module `measure` starts loading goes there and into
-  `test`'s inputs together. No case runs Fern or reaches the network: the
-  probe is screened by its committed `fern check` log.
+  `test`'s inputs together. No case runs Fern or leaves the host: the probe is
+  screened by its committed `fern check` log, and the fetched document comes
+  from a loopback server and runs through the stand-in `fern` (`FERN_STUB`).

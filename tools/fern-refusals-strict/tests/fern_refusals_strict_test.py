@@ -2,7 +2,8 @@
 
 `measure` records crozier's `--fern-strict` exit beside its default one, so
 this suite builds crozier and drives the script with that binary from a
-scratch checkout. It is the fern-refusals project's one suite that needs the
+scratch checkout: over a document screened by a committed check, and over one
+it fetches from a loopback server and runs through a stand-in `fern`. It is the fern-refusals project's one suite that needs the
 crate, so it is a project of its own that declares crozier as a dependency;
 the offline suites, and the helpers both use, are
 `tools/fern-refusals/tests/fern_refusals_test.py`'s.
@@ -18,12 +19,14 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "fern-refusals" / "tests"))
 
-from fern_refusals_test import REGISTRY, REPO, rows, write_rows  # noqa: E402 - the shared helpers' directory must be on sys.path first
+from fern_refusals_test import REGISTRY, REPO, rows, stub_fern, write_rows  # noqa: E402 - the shared helpers' directory must be on sys.path first
 
 
 MEASURE_LOADS = (
@@ -40,12 +43,10 @@ MEASURE_LOADS = (
 
 
 @unittest.skipIf(os.name == "nt", "`measure` runs `target/release/crozier`, a path with no `.exe`")
-class StrictMeasurement(unittest.TestCase):
-    """`measure` records crozier's `--fern-strict` exit and `build` writes it
-    into `documents.tsv` for a document carrying an evaluated class. Each case
-    runs the REAL script from a scratch checkout whose whole population is one
-    class's committed probe, screened by its committed `fern check` log (so no
-    Fern runs), with the compiled crozier binary where `measure` looks for it."""
+class ScratchCheckout(unittest.TestCase):
+    """A scratch checkout whose population is one class's committed probe,
+    screened by its committed `fern check` log, with the compiled crozier binary
+    where `measure` looks for it. The suites below run the REAL script in it."""
 
     CLASS = "request-property-name-collision"
 
@@ -117,8 +118,9 @@ class StrictMeasurement(unittest.TestCase):
     def tearDown(self) -> None:
         self.scratch.cleanup()
 
-    def script(self, *args: str) -> subprocess.CompletedProcess[str]:
+    def script(self, *args: str, **extra: str) -> subprocess.CompletedProcess[str]:
         env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER")}
+        env.update(extra)
         return subprocess.run([sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"), *args],
                               capture_output=True, text=True, env=env, cwd=self.root)
 
@@ -136,6 +138,13 @@ class StrictMeasurement(unittest.TestCase):
         [row] = table[1:]
         self.assertEqual((row[0], row[8]), (self.digest, self.CLASS))
         return row
+
+
+
+class StrictMeasurement(ScratchCheckout):
+    """`measure` records crozier's `--fern-strict` exit and `build` writes it
+    into `documents.tsv` for a document carrying an evaluated class. The probe's
+    check is committed, so no Fern runs."""
 
     def test_measure_records_the_strict_exit_and_build_writes_it(self) -> None:
         measured = self.measure()
@@ -178,6 +187,92 @@ class StrictMeasurement(unittest.TestCase):
         remeasured = self.measure()
         self.assertEqual(remeasured, dict(measured, crozier_strict_exit="1"))
         self.assertEqual(self.built_row()[11], "1")
+
+
+class _Served(BaseHTTPRequestHandler):
+    """Serves `self.server.documents[path]`, or 404 for any other path."""
+
+    def do_GET(self) -> None:  # noqa: N802 - the name http.server dispatches to
+        body = self.server.documents.get(self.path)  # type: ignore[attr-defined]
+        self.send_response(200 if body is not None else 404)
+        self.end_headers()
+        self.wfile.write(body or b"")
+
+    def log_message(self, *_args: object) -> None:
+        pass
+
+
+class FetchedAndMeasured(ScratchCheckout):
+    """A document no committed screen holds and no committed log covers:
+    `measure` fetches it from its locator — a loopback server standing in for
+    the host — then runs `fern check` and `fern generate` (a stand-in `fern` on
+    PATH, `FERN_STUB`) and the real crozier over it, recording every outcome.
+    A fetch that fails or serves other bytes records why it is unretrievable."""
+
+    NAME = "served-api"
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), _Served)
+        self.addCleanup(self.server.server_close)
+        self.server.documents = {}  # type: ignore[attr-defined]
+        thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(thread.join)
+        self.addCleanup(self.server.shutdown)
+        self.served = (REGISTRY / self.CLASS / "probe.yml").read_bytes() + b"\n# served over loopback\n"
+        self.served_digest = hashlib.sha256(self.served).hexdigest()
+        self.locator = f"http://127.0.0.1:{self.server.server_address[1]}/{self.NAME}/openapi.yml"
+        (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
+            f"| `{self.NAME}` | a document Fern refused | **DROPPED** — Fern golden generation failed |\n",
+            encoding="utf-8")
+        self.record(self.served_digest)
+        self.calls = self.root / "fern-calls.jsonl"
+        self.fern = dict(PATH=f"{stub_fern(self.root / 'bin')}{os.pathsep}{os.environ.get('PATH', '')}",
+                         FERN_STUB_CALLS=str(self.calls), no_proxy="127.0.0.1", NO_PROXY="127.0.0.1",
+                         FERN_STUB_GENERATE_FILES="4")
+
+    def record(self, digest: str) -> None:
+        """The CORPUS.md row's committed location: the loopback locator and `digest`."""
+        write_rows(self.root / "docs" / "openapi-surface" / "fern-refusals" / "dropped-sources.tsv", [
+            ["name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason"],
+            [self.NAME, "1", "scratch", self.locator, "0" * 40, digest, "CORPUS.md:1", "Fern failed"]])
+
+    def measured(self, *args: str) -> dict[str, str]:
+        result = self.script("measure", "--jobs", "1", "--root", str(self.root / "documents"), *args, **self.fern)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return {row["key"]: row for row in map(json.loads, self.measurements.read_text(encoding="utf-8").splitlines())}
+
+    def test_a_fetched_document_is_checked_generated_and_run_through_crozier(self) -> None:
+        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served  # type: ignore[attr-defined]
+        row = self.measured()[self.served_digest]
+        self.assertEqual(row["unretrievable"], "")
+        self.assertEqual((row["check_exit"], row["generate_exit"], row["generate_files"]), ("0", "0", "4"))
+        # crozier refuses the probe's colliding `name`, as it does the committed one.
+        self.assertEqual((row["crozier_exit"], row["crozier_files"], row["crozier_strict_exit"]), ("1", "0", "1"))
+        for log in (row["check_log"], row["generate_log"]):
+            self.assertTrue((self.root / log).is_file(), log)
+        calls = [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual([call["argv"][0] for call in calls], ["check", "generate"])
+        self.assertTrue(all(call["spec"].encode() == self.served for call in calls))
+
+    def test_a_failed_fetch_is_recorded_unretrievable_and_retaken_with_again(self) -> None:
+        row = self.measured()[self.served_digest]
+        self.assertEqual(row["unretrievable"], "fetch failed: HTTP Error 404: Not Found")
+        self.assertFalse(self.calls.exists(), "Fern ran over a document that was never fetched")
+        # Recovery: once the host serves it, `--again` takes it.
+        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served  # type: ignore[attr-defined]
+        row = self.measured("--again")[self.served_digest]
+        self.assertEqual((row["unretrievable"], row["check_exit"]), ("", "0"))
+
+    def test_a_host_serving_other_bytes_is_recorded_unretrievable(self) -> None:
+        recorded = "f" * 64
+        self.record(recorded)
+        self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served  # type: ignore[attr-defined]
+        row = self.measured()[recorded]
+        self.assertEqual(row["unretrievable"], f"{self.locator} now serves bytes hashing to {self.served_digest}, "
+                                               f"not the recorded {recorded}")
+        self.assertFalse(self.calls.exists(), "Fern ran over bytes other than the recorded document")
 
 
 if __name__ == "__main__":

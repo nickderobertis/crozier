@@ -78,6 +78,14 @@ FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = ("key", "digest", "unretrievable", "check_exit", "check_log", "generate_exit",
                       "generate_files", "generate_log", "crozier_exit", "crozier_files", "crozier_strict_exit")
+# What a measured value may be, when it is not empty (not yet taken): an exit
+# is the run's status (negative when a signal ended it) or `timeout`.
+_EXIT = (re.compile(r"-?\d+|timeout"), "an exit status or `timeout`")
+_COUNT = (re.compile(r"\d+"), "a file count")
+MEASUREMENT_GRAMMAR = {"digest": (re.compile(r"[0-9a-f]{64}"), "a SHA-256 digest"),
+                       "check_exit": _EXIT, "generate_exit": _EXIT, "crozier_exit": _EXIT,
+                       "crozier_strict_exit": _EXIT, "fern_exit": _EXIT,
+                       "generate_files": _COUNT, "crozier_files": _COUNT}
 FERN_CLI = "5.67.1"
 FERN_PYTHON_SDK = "5.20.0"
 EMPTY = "—"
@@ -518,9 +526,17 @@ def read_measurements() -> dict[str, dict[str, str]]:
     for number, row in rows:
         if "fern_stage" in row:
             require_fields(path, number, row, ("fern_stage", "fern_exit", "fern_log"), may_be_empty=("fern_log",))
+            if row["fern_stage"] not in ("check", "generate"):
+                fail(f"{rel(path)} line {number} has fern_stage {row['fern_stage']!r}, not check or generate; "
+                     "restore it from git")
         # Every other field `measure` writes is text; `upgraded` fills a missing one.
         present = tuple(field for field in MEASUREMENT_FIELDS if field in row)
         require_fields(path, number, row, present, may_be_empty=present)
+        for field in (*present, *(("fern_exit",) if "fern_stage" in row else ())):
+            grammar = MEASUREMENT_GRAMMAR.get(field)
+            if grammar and row[field] and not grammar[0].fullmatch(row[field]):
+                fail(f"{rel(path)} line {number} has {field} {row[field]!r}, not {grammar[1]}; "
+                     "restore it from git, or rerun `measure --again` to retake it")
     return {row["key"]: upgraded(row) for _number, row in rows}
 
 
@@ -734,7 +750,13 @@ def classify(messages: list[str], patterns: list[Template],
 
 
 def read_log(path: str) -> str:
-    return (REPO / path).read_text(encoding="utf-8", errors="replace") if path else ""
+    """The Fern log a record names, or nothing when it names none; one it names
+    that is gone fails, since reading it as empty would drop its diagnostics."""
+    if not path:
+        return ""
+    if not (REPO / path).is_file():
+        fail(f"{path} is missing; restore it from git, or rerun `measure --again` to retake it")
+    return (REPO / path).read_text(encoding="utf-8", errors="replace")
 
 
 def verdict(result: dict[str, str], patterns: list[Template],
@@ -895,8 +917,12 @@ def _publisher(locator: str) -> str:
         else parts[0]
 
 
-def confirmation_holds(row: dict[str, str], pattern: re.Pattern[str]) -> bool:
-    """Whether a real document's generation reproduces the refusal its class's probe measured."""
+def generation_refused(row: dict[str, str], pattern: re.Pattern[str]) -> bool:
+    """Whether Fern refused a sampled document's generation: it failed, wrote
+    nothing, or printed the class's phrase. That is what the derivation claims of
+    a document carrying the class, so it is what a confirmation shows; a refusal
+    the document's other classes caused counts too. Its caller has refused a
+    timeout, which is no verdict."""
     return row["generate_exit"] != "0" or row["generate_files"] == "0" or any(
         pattern.match(message) for message in diagnostics(read_log(row["generate_log"])))
 
@@ -972,9 +998,16 @@ def confirmation_problems() -> list[str]:
         if row["class"] not in patterns or doc is None or row["class"] not in doc["classes"].split(","):
             problems.append(f"confirmations.tsv {row['class']} {row['digest']}: names no documents.tsv row "
                             "carrying that class; rerun `confirm` after `build`")
+        elif not _EXIT[0].fullmatch(row["generate_exit"]) or not _COUNT[0].fullmatch(row["generate_files"]):
+            problems.append(f"confirmations.tsv {row['digest']}: generate_exit {row['generate_exit']!r} and "
+                            f"generate_files {row['generate_files']!r} must be an exit status or `timeout`, and "
+                            "a file count; restore it from git, or rerun `confirm`")
         elif not (REPO / row["generate_log"]).is_file():
             problems.append(f"confirmations.tsv {row['digest']}: its log {row['generate_log']} is not committed")
-        elif not confirmation_holds(row, patterns[row["class"]]):
+        elif row["generate_exit"] == "timeout":
+            problems.append(f"{row['class']}: the generation of {row['digest']} timed out, which confirms "
+                            "nothing; rerun `confirm` with a longer `--timeout`")
+        elif not generation_refused(row, patterns[row["class"]]):
             problems.append(f"{row['class']}: Fern generates from {row['digest']} (exit 0, "
                             f"{row['generate_files']} files), contradicting the class's probe; measure the "
                             "class again, or make the phrase a finding")
