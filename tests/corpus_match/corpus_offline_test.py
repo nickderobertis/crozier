@@ -104,8 +104,11 @@ class OfflineCorpusRecipes(unittest.TestCase):
                             # A user-level sccache daemon needs a socket; the repo
                             # build contract has no wrapper and works offline.
                             # A replayed cache entry would prove nothing about the
-                            # network, so each recipe's target really runs.
-                            env={**os.environ, "RUSTC_WRAPPER": "", "UV_OFFLINE": "1", "NX_SKIP_NX_CACHE": "true"},
+                            # network, so each recipe's target really runs; and Nx
+                            # loads its plugins in-process, since an isolated plugin
+                            # worker reaches Nx over a socket the filter denies.
+                            env={**os.environ, "RUSTC_WRAPPER": "", "UV_OFFLINE": "1", "NX_SKIP_NX_CACHE": "true",
+                                 "NX_ISOLATE_PLUGINS": "false"},
                         )
                         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
                         for cache in caches:
