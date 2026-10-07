@@ -83,9 +83,7 @@
         "default",
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
-        "{workspaceRoot}/tests/fixtures/**/*",
-        "{workspaceRoot}/justfile",
-        "{workspaceRoot}/**/*.md"
+        "{workspaceRoot}/tests/fixtures/**/*"
       ]
     },
     "test-licensing": {
@@ -111,11 +109,9 @@
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
         "{workspaceRoot}/tests/fixtures/**/*",
-        "{workspaceRoot}/justfile",
-        "{workspaceRoot}/**/*.md"
+        "{workspaceRoot}/docs/openapi-surface/witness-search-github-publisher-trees/pinned-members.tsv"
       ]
     },
     "test-licence-rescreening": {

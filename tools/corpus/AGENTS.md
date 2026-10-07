@@ -8,4 +8,5 @@
   (`tools/surface-census/openapi-surface-census.py`), which in turn imports this
   module: the two are one contract across both projects.
 - `corpus-sources vendor|audit` and `fetch-corpus.sh` reach the network and are
-  never a gate target.
+  never a gate target. Their suites drive real `curl` against a loopback server,
+  so they live in the `corpus-fetch` project; the tests here run no fetch.

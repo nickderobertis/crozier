@@ -319,13 +319,14 @@ test-corpus-licensing:
 lint-corpus-remote-ref-pins:
     @just nx run corpus:lint-remote-ref-pins
 
-# Boundary coverage for the pin MECHANISM, which the manifest cannot prove: drives
-# the REAL tools/corpus/fetch-corpus.sh against a loopback HTTP server the suite starts
-# itself, so real curl and the real filesystem publish a real document. Also holds
-# the offline lint's malformed-manifest cases. No test reaches GitHub, so `check`
-# takes a loopback socket and no external host. Part of `check`.
+# Boundary coverage for the pin MECHANISM, which the manifest cannot prove: the
+# corpus-fetch project drives the REAL tools/corpus/fetch-corpus.sh against a
+# loopback HTTP server the suite starts itself, so real curl and the real
+# filesystem publish a real document; the corpus project holds the offline
+# lint's malformed-manifest cases. No test reaches GitHub, so `check` takes a
+# loopback socket and no external host. Part of `check`.
 test-corpus-remote-ref-pins:
-    @just nx run corpus:test-remote-ref-pins
+    @just nx run-many --targets=test-remote-ref-pins --projects=corpus,corpus-fetch
 
 # Every registered corpus row's source document is committed under
 # tests/fixtures/corpus-sources/, recorded with the SHA-256 of the bytes fetched
@@ -338,9 +339,10 @@ lint-corpus-sources:
 
 # Boundary coverage for that gate and for the rebuild tooling below: the real
 # tree, a synthetic root broken one demand at a time, and `vendor`/`audit`
-# through the real fetch against a loopback server. Part of `check`.
+# through the real fetch against a loopback server (the corpus-fetch project's
+# half, since it runs real curl). Part of `check`.
 test-corpus-sources:
-    @just nx run corpus:test-sources
+    @just nx run-many --targets=test-sources --projects=corpus,corpus-fetch
 
 # Linux CI proof: run the real byte-match, census, refusal and census-fallback
 # sample recipes with sockets denied and the ignored corpus caches absent. Does
