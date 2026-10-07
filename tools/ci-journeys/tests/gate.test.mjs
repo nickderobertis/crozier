@@ -106,6 +106,14 @@ test("an unknown argument or project is refused before anything runs", (t) => {
     assert.notEqual(run.status, 0, `${args}: ${run.output}`);
   }
   assert.ok(!ran(root, "a") && !ran(root, "b"));
+  // A switch given a value is refused, not read as set: `--plan=false` would
+  // otherwise run nothing, and `--sweep=false` would sweep.
+  for (const flag of ["--plan", "--sweep"]) {
+    const run = just(root, ["check", `${flag}=false`]);
+    assert.equal(run.status, 2, run.output);
+    assert.match(run.output, new RegExp(`${flag} takes no value, not 'false'`));
+  }
+  assert.ok(!ran(root, "a") && !ran(root, "b"));
 });
 
 test("--plan prints the selection and the command, and runs nothing", (t) => {

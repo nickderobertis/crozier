@@ -80,6 +80,9 @@ function parseArgs(argv) {
       }
       return v.split(",");
     };
+    if ((flag === "--sweep" || flag === "--plan") && inline !== undefined) {
+      die(`${flag} takes no value, not '${inline}'`, USAGE);
+    }
     switch (flag) {
       case "--sweep":
         options.sweep = true;

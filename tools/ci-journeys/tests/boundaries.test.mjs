@@ -203,7 +203,7 @@ test("a project graph of the wrong shape is refused with the fix, not a TypeErro
     assert.equal(named.status, 1, named.stderr);
     assert.match(named.stderr, /"namedInputs" is not a map of input names to input lists/);
   }
-  for (const targetDefaults of [[], { test: "x" }, { test: { inputs: "default" } }, { test: { inputs: [1] } }]) {
+  for (const targetDefaults of [[], { test: null }, { test: "x" }, { test: { inputs: "default" } }, { test: { inputs: [1] } }]) {
     const defaults = check(standInGraph(t, node({}), { targetDefaults, boundaries: BOUNDARIES }), "a");
     assert.equal(defaults.status, 1, defaults.stderr);
     assert.match(defaults.stderr, /"targetDefaults" is not a map of target names to settings with input lists/);
