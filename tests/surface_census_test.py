@@ -7528,6 +7528,7 @@ class CensusInterpreterTests(unittest.TestCase):
         first, second = prefixes.stdout.split()
         self.assertEqual(first, second, "the resolver chose a virtualenv")
 
+    # llmlint: ignore[shell_test_tiers_stay_split] Bash and Python are the census suite's required execution runtimes, not an additional host-tool tier; this offline resolver boundary test copies the installed runtime, installs nothing and opens no sockets, like the adjacent interpreter-provenance journeys.
     def test_a_system_python_without_the_python3_spelling_is_usable(self) -> None:
         """Windows Python installations need not install a python3 executable."""
         with tempfile.TemporaryDirectory() as directory:
