@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Which generated files a feature resting only on residual goldens lands in.
 
-Three registered rows — `komga`, `short-io` and `webflow-v2` — are golden tests
-with a measured `unmatched` residual: every file of their goldens is
-byte-compared except the ones `crates/crozier-e2e/tests/e2e.rs` names. A `golden` row whose only
+Some registered rows are golden tests with a measured `unmatched` residual:
+every file of their goldens is byte-compared except the ones
+`crates/crozier-e2e/tests/e2e.rs` names. A `golden` row whose only
 real witnesses are those rows is proven only where the code it emits sits in a
 byte-matched file, so this answers that per row, from crozier itself rather than
 from a reading of its source: render the witness document as committed and
@@ -18,8 +18,9 @@ resting only on residual goldens* restates the result, and
 `tools/surface-census/tests/surface_census_test.py` holds that table to the reach ledger and to each
 residual's `unmatched` list.
 
-Needs a built `crozier` (`cargo build`) and `ruff` on PATH, so it is outside
-`just check`, like `just golden-reach`.
+Needs a built `crozier` (`cargo build`) and `ruff` on PATH, so the suite that
+runs it is surface-reach's `test-residual-attribution`, after `crozier:build`,
+and not the offline census suite.
 """
 
 from __future__ import annotations

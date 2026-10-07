@@ -59,7 +59,18 @@ def main(argv: list[str]) -> int:
     if len(argv) != 4 or argv[0] != "reduce":
         print("usage: golden_overlay.py reduce BASE TREE PROVENANCE_JSON", file=sys.stderr)
         return 2
-    reduce(Path(argv[1]), Path(argv[2]), json.loads(argv[3]))
+    tree = Path(argv[2])
+    if not tree.is_dir():
+        raise SystemExit(f"golden_overlay: no generated tree at {tree}; pass the directory Fern generated into")
+    try:
+        provenance = json.loads(argv[3])
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"golden_overlay: PROVENANCE_JSON is not JSON ({error.msg}); pass the overlay's "
+                         "provenance as one JSON object") from None
+    if not isinstance(provenance, dict) or "removed" in provenance:
+        raise SystemExit("golden_overlay: PROVENANCE_JSON must be a JSON object without a `removed` key "
+                         "(the reduction writes that one)")
+    reduce(Path(argv[1]), tree, provenance)
     return 0
 
 

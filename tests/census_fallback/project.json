@@ -66,11 +66,22 @@
         "{workspaceRoot}/docs/corpus-licensing.md"
       ]
     },
+    "test-runner": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/census_fallback/run_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
     "test": {
       "executor": "nx:noop",
       "dependsOn": [
         "test-samples",
-        "test-parsers"
+        "test-parsers",
+        "test-runner"
       ]
     },
     "lint": {

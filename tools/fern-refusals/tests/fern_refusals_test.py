@@ -9,9 +9,9 @@ cases copy the registry to a scratch directory (`CROZIER_FERN_REFUSALS_REGISTRY`
 and break one thing at a time — a header column, a class id a document carries,
 a class count, a row order, a class template the population needs — requiring
 the failure to name it: without that half, "check passes" would be
-indistinguishable from "check reads nothing". `StrictMeasurement` drives
-`measure` and `build` from a scratch checkout over one local document with the
-compiled crozier binary, the way `just fern-refusals-measure` runs them.
+indistinguishable from "check reads nothing". `measure` with the compiled
+crozier binary is `tools/fern-refusals-strict/`'s suite, which imports the
+helpers defined here.
 
 Run: `just test-fern-refusals` (part of `just check`).
 """

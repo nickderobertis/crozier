@@ -119,6 +119,50 @@ class CommittedGoldenStateTests(unittest.TestCase):
         self.assertGreater(checked, 100, "the committed corpus should be most of the rows")
 
 
+class GoldenOverlayReductionTests(unittest.TestCase):
+    """`golden_overlay.py reduce` over real directories: what it keeps of an
+    overlay tree, and each argument it refuses before touching the tree."""
+
+    SCRIPT = REPO / "tools" / "fern-goldens" / "golden_overlay.py"
+
+    def setUp(self) -> None:
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        self.base = Path(scratch.name) / "expected"
+        self.tree = Path(scratch.name) / "expected-literals"
+        for root, enum in ((self.base, "python_enums"), (self.tree, "literals")):
+            (root / "src" / "types").mkdir(parents=True)
+            (root / "src" / "client.py").write_text("class Client: ...\n", encoding="utf-8")
+            (root / "src" / "types" / "color.py").write_text(f"# {enum}\n", encoding="utf-8")
+        (self.base / "src" / "types" / "gone.py").write_text("x = 1\n", encoding="utf-8")
+
+    def reduce(self, tree: Path, provenance: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([sys.executable, str(self.SCRIPT), "reduce", str(self.base), str(tree), provenance],
+                              capture_output=True, text=True, check=False)
+
+    def test_the_overlay_keeps_only_what_differs_and_names_what_it_lacks(self) -> None:
+        done = self.reduce(self.tree, '{"enum_type": "literals", "base": "expected"}')
+        self.assertEqual(done.returncode, 0, done.stderr)
+        kept = sorted(p.relative_to(self.tree).as_posix() for p in self.tree.rglob("*") if p.is_file())
+        self.assertEqual(kept, [".crozier-overlay.json", "src/types/color.py"])
+        manifest = json.loads((self.tree / ".crozier-overlay.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest, {"enum_type": "literals", "base": "expected", "removed": ["src/types/gone.py"]})
+
+    def test_each_refused_argument_names_its_fix_and_leaves_the_tree(self) -> None:
+        for label, tree, provenance, message in (
+            ("no tree", self.tree.parent / "absent", "{}", "no generated tree at"),
+            ("not JSON", self.tree, "{enum_type: literals}", "PROVENANCE_JSON is not JSON"),
+            ("not an object", self.tree, '["literals"]', "must be a JSON object"),
+            ("a removed key", self.tree, '{"removed": []}', "without a `removed` key"),
+        ):
+            with self.subTest(label):
+                refused = self.reduce(tree, provenance)
+                self.assertEqual(refused.returncode, 1, refused.stderr)
+                self.assertIn(message, refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+                self.assertTrue((self.tree / "src" / "client.py").is_file(), "a refused run reduced the tree")
+
+
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
 class FernOverlayGoldensTests(unittest.TestCase):
     """`tools/fern-goldens/fern-overlay-goldens.sh` over a synthetic repository root: the

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Shared helpers for the issue #77 fixture corpus manifest.
+# Shared helpers for the issue #77 fixture corpus manifest. Sourced by scripts
+# that already run strict; set here too so a new caller cannot source it lax.
+set -euo pipefail
 
 # corpus_rows MANIFEST — each fetchable row as `name<TAB>url<TAB>ref<TAB>decision`.
 # A row whose name, source or ref is not one the fetch can use safely (a name
