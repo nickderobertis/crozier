@@ -233,6 +233,11 @@ def _validated_export(document: object, path: Path) -> dict:
     return data[0]
 
 
+def _is_count(value: object) -> bool:
+    """A region field as LLVM writes it: a coordinate, count, file id or kind, never negative."""
+    return type(value) is int and value >= 0
+
+
 def load_tier(path: Path, repo_root: Path) -> dict[str, dict[Region, int]]:
     """Region -> max execution count, per repo-relative `src/` file, for one tier.
 
@@ -251,13 +256,22 @@ def load_tier(path: Path, repo_root: Path) -> dict[str, dict[Region, int]]:
     export = _validated_export(document, path)
     files: dict[str, dict[Region, int]] = defaultdict(dict)
     for function in export["functions"]:
+        if not isinstance(function, dict):
+            _refuse_export(path, f"a function record is not an object: {function!r}")
         filenames = function.get("filenames")
         regions = function.get("regions")
         if not isinstance(filenames, list) or not isinstance(regions, list):
             _refuse_export(path, "a function record has no filenames/regions list")
+        if not all(isinstance(name, str) for name in filenames):
+            _refuse_export(path, f"a function record's filenames are not all strings: {filenames!r}")
         for raw in regions:
-            if len(raw) <= REGION_KIND_INDEX or not isinstance(raw[REGION_FILE_INDEX], int):
-                _refuse_export(path, f"a region row is not an 8-field record: {raw!r}")
+            if not isinstance(raw, list) or len(raw) <= REGION_KIND_INDEX or not all(
+                _is_count(field) for field in raw[: REGION_KIND_INDEX + 1]
+            ):
+                _refuse_export(
+                    path,
+                    f"a region row is not an 8-field record of non-negative integers: {raw!r}",
+                )
             if not 0 <= raw[REGION_FILE_INDEX] < len(filenames):
                 _refuse_export(path, f"a region names file {raw[REGION_FILE_INDEX]} of {len(filenames)}")
             if raw[REGION_KIND_INDEX] != REGION_CODE_KIND:

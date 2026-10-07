@@ -300,6 +300,39 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn("is not the llvm-cov export", completed.stderr)
 
+    def test_an_export_whose_records_are_not_llvm_values_is_refused_before_aggregation(self) -> None:
+        """Every field the report reads is checked before it is used, so a malformed
+        record ends in the export refusal rather than a traceback or a skewed count."""
+        source = str(REPO / "src" / "main.rs")
+        good = [1, 1, 1, 2, 3, 0, 0, 0]
+        cases = {
+            "function not an object": [7],
+            "filename not a string": [{"filenames": [7], "regions": [good]}],
+            "region not a list": [{"filenames": [source], "regions": [5]}],
+            "coordinate not an integer": [{"filenames": [source], "regions": [["1", 1, 1, 2, 3, 0, 0, 0]]}],
+            "coordinate a boolean": [{"filenames": [source], "regions": [[True, 1, 1, 2, 3, 0, 0, 0]]}],
+            "count not an integer": [{"filenames": [source], "regions": [[1, 1, 1, 2, "3", 0, 0, 0]]}],
+            "count negative": [{"filenames": [source], "regions": [[1, 1, 1, 2, -1, 0, 0, 0]]}],
+            "kind not an integer": [{"filenames": [source], "regions": [[1, 1, 1, 2, 3, 0, 0, None]]}],
+        }
+        with tempfile.TemporaryDirectory() as scratch:
+            for label, functions in cases.items():
+                with self.subTest(label):
+                    broken = Path(scratch) / "broken.json"
+                    broken.write_text(json.dumps({"data": [{"functions": functions}]}), encoding="utf-8")
+                    completed = self.run_reporter(
+                        "--tier",
+                        json.dumps({"name": "golden-only", "export": str(broken), "tests": 1, "selection": "s"}),
+                    )
+                    self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
+                    self.assertNotIn("Traceback", completed.stderr)
+                    self.assertIn("is not the llvm-cov export", completed.stderr)
+                    self.assertIn("update tools/surface-census/fixtures-coverage-report.py", completed.stderr)
+            readable = Path(scratch) / "readable.json"
+            readable.write_text(json.dumps({"data": [{"functions": [{"filenames": [source], "regions": [good]}]}]}),
+                                encoding="utf-8")
+            self.assertEqual({"src/main.rs": {reporter.Region(1, 1, 1, 2): 3}}, reporter.load_tier(readable, REPO))
+
     def test_a_malformed_tier_argument_is_refused(self) -> None:
         for spec, expected in (
             ("golden-only=x.json=1=s", "--tier is not JSON"),
