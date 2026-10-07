@@ -2266,5 +2266,110 @@ class FixturesRefreshTests(unittest.TestCase):
         self.assertIn("git checkout -- tests/fixtures/", result.stderr)
 
 
+@unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
+class GenerateCorpusFixturesTests(unittest.TestCase):
+    """`tools/fern-goldens/generate-corpus-fixtures.sh` and the real corpus-lib over
+    a synthetic root: a stand-in generator, and a real local git repository as a
+    repository-source row's upstream (no network)."""
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.base = Path(temporary.name)
+        self.root = self.base / "repo"
+        mirror(
+            self.root,
+            "tools/fern-goldens/generate-corpus-fixtures.sh",
+            "tools/corpus/corpus-lib.sh",
+            "tools/corpus/corpus_remote_ref_pins.py",
+            "tools/surface-census/openapi-surface-census.py",
+        )
+        fixtures = self.root / "tests" / "fixtures"
+        (fixtures / "alpha").mkdir(parents=True)
+        shutil.copy2(ALIASES, fixtures / ALIASES.name)
+        shutil.copy2(PIN_MANIFEST, fixtures / PIN_MANIFEST.name)
+        (fixtures / "alpha" / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+        generator = self.root / "tools" / "fern-goldens" / "generate-fern-fixture.sh"
+        generator.write_text(
+            "#!/usr/bin/env bash\n"
+            '[ -z "${FAIL_GENERATE:-}" ] || { echo "generate-fern-fixture: simulated failure" >&2; exit 9; }\n'
+            'echo "generate-fern-fixture: wrote 1 files to tests/fixtures/$1/expected" >&2\n',
+            encoding="utf-8",
+        )
+        generator.chmod(0o755)
+
+        # A repository-source row whose upstream holds no OpenAPI document.
+        upstream = self.base / "upstream"
+        upstream.mkdir()
+        (upstream / "README.md").write_text("no spec here\n", encoding="utf-8")
+        environment = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull}
+        for command in (
+            ["init", "-q"],
+            ["add", "-A"],
+            ["-c", "user.name=t", "-c", "user.email=t@example.test", "commit", "-qm", "upstream"],
+        ):
+            subprocess.run(["git", "-C", str(upstream), *command], env=environment, check=True)
+        (fixtures / "CORPUS.md").write_text(
+            "| # | name | method | source | pinned ref | license | decision | shapes |\n"
+            "|---:|---|---|---|---|---|---|---|\n"
+            "| 1 | `alpha` | test | https://example.test/alpha/openapi.yml | `1` | MIT | committed | a |\n"
+            "| 2 | `beta` | test | https://example.test/beta/openapi.yml | `1` | MIT | committed | b |\n"
+            f"| 3 | `gamma` | git | {upstream} | `HEAD` | MIT | link-ok | c |\n",
+            encoding="utf-8",
+        )
+
+    def run_script(self, *arguments: str, **extra: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [str(self.root / "tools" / "fern-goldens" / "generate-corpus-fixtures.sh"), *arguments],
+            cwd=self.root,
+            env={**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, **extra},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_each_fixture_reports_only_the_generators_own_line(self) -> None:
+        result = self.run_script("--only", "alpha")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            result.stderr.splitlines(),
+            ["generate-fern-fixture: wrote 1 files to tests/fixtures/alpha/expected"],
+        )
+        failed = self.run_script("--only", "alpha", FAIL_GENERATE="1")
+        self.assertEqual(failed.returncode, 9, failed.stderr)
+        self.assertIn(
+            f"generate-corpus-fixtures: generating alpha (spec source: "
+            f"{self.root / 'tests' / 'fixtures' / 'alpha' / 'openapi.yml'}) exited 9",
+            failed.stderr,
+        )
+        self.assertIn("then re-run with --only alpha", failed.stderr)
+
+    def test_each_refusal_names_how_to_supply_what_is_missing(self) -> None:
+        fixtures = self.root / "tests" / "fixtures"
+        with self.subTest("committed row without its spec"):
+            result = self.run_script("--only", "beta")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("git checkout -- tests/fixtures/beta/openapi.yml", result.stderr)
+            self.assertIn("tools/corpus/fetch-corpus.sh --fixture beta", result.stderr)
+        with self.subTest("no discoverable spec"):
+            result = self.run_script("--only", "gamma", "--fetch-root", str(self.base / "cache"))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("could not discover exactly one OpenAPI spec for gamma", result.stderr)
+            self.assertIn(f"to {fixtures / 'gamma' / 'openapi.yml'}", result.stderr)
+            self.assertIn("then re-run", result.stderr)
+        with self.subTest("uncreatable fetch root"):
+            blocking = self.base / "a-file"
+            blocking.write_text("in the way\n", encoding="utf-8")
+            result = self.run_script("--only", "gamma", "--fetch-root", str(blocking / "cache"))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(f"cannot create the fetch root {blocking / 'cache'} for gamma", result.stderr)
+            self.assertNotIn("could not discover", result.stderr)
+        with self.subTest("missing manifest"):
+            (fixtures / "CORPUS.md").unlink()
+            result = self.run_script()
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("restore it with git checkout -- tests/fixtures/CORPUS.md", result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

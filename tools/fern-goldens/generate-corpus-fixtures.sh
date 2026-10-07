@@ -43,7 +43,11 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-[ -f "$manifest" ] || { echo "generate-corpus-fixtures: missing $manifest" >&2; exit 1; }
+[ -f "$manifest" ] || {
+  echo "generate-corpus-fixtures: missing $manifest — it is committed; restore it with" \
+       "git checkout -- tests/fixtures/CORPUS.md, then re-run" >&2
+  exit 1
+}
 
 
 discover_openapi() {
@@ -88,7 +92,10 @@ while IFS=$'\t' read -r name url ref decision; do
   source_desc="$spec"
   if [ ! -f "$spec" ]; then
     if [ "$decision" = committed ]; then
-      echo "generate-corpus-fixtures: committed row $name points at missing $spec" >&2
+      echo "generate-corpus-fixtures: committed row $name points at missing $spec — restore" \
+           "it (git checkout -- tests/fixtures/$fixture/openapi.yml), or stage the row's" \
+           "source there (tools/corpus/fetch-corpus.sh --fixture $fixture prints the fetched" \
+           "document's path; copy it to $spec), then re-run" >&2
       exit 1
     fi
     source_path="$(corpus_fetch_source "$fetch_root" "$name" "$url" "$ref")"
@@ -96,7 +103,9 @@ while IFS=$'\t' read -r name url ref decision; do
       discovered="$source_path"
     else
       discovered="$(discover_openapi "$source_path")" || {
-        echo "generate-corpus-fixtures: could not discover exactly one OpenAPI spec for $name from $url" >&2
+        echo "generate-corpus-fixtures: could not discover exactly one OpenAPI spec for $name" \
+             "from $url — copy the intended document under $source_path to $spec (this" \
+             "script then generates from it), then re-run" >&2
         exit 1
       }
     fi
@@ -117,7 +126,15 @@ for item in "${plan[@]}"; do
   if [ "$dry_run" -eq 1 ]; then
     printf '%s\t%s\n' "$fixture" "$source_desc"
   else
-    echo "generate-corpus-fixtures: generating $fixture (spec source: $source_desc)" >&2
-    "$repo_root/tools/fern-goldens/generate-fern-fixture.sh" "$fixture" "${FERN_PYTHON_VERSION-}" "$source_desc"
+    # The generator prints its own one-line summary; the fixture and its source
+    # are named here only when it fails.
+    status=0
+    "$repo_root/tools/fern-goldens/generate-fern-fixture.sh" "$fixture" "${FERN_PYTHON_VERSION-}" "$source_desc" ||
+      status=$?
+    if [ "$status" -ne 0 ]; then
+      echo "generate-corpus-fixtures: generating $fixture (spec source: $source_desc) exited" \
+           "$status — fix the error above, then re-run with --only $fixture" >&2
+      exit "$status"
+    fi
   fi
 done
