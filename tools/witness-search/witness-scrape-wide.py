@@ -20,14 +20,6 @@ import urllib.parse
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-REGIONS = (
-    "bodies-media",
-    "document-paths",
-    "oas31-extensions",
-    "parameters",
-    "schemas",
-    "security",
-)
 RANK_FIELDS = (
     "rank",
     "artifact_sha256",
@@ -64,6 +56,8 @@ ROWS = load(
     "wide_rows", REPO / "tools/surface-census/tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows
 REGION_KEYS = load("wide_region_keys", REPO / "tools/surface-census/witness-search-region-keys.py")
+# The region files the coverage document's region table declares, by stem.
+REGIONS = tuple(sorted(name.removesuffix(".md") for name in REGION_KEYS.region_files()))
 # What "an OpenAPI 3 document" means is the GitHub search's reading, so a
 # document one tier screens in the other does not screen out.
 OPENAPI_VERSION = load("wide_github", REPO / "tools/witness-search/witness-search-github.py").OPENAPI_VERSION

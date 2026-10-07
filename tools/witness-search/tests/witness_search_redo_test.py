@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import csv
+import importlib.util
 import json
 import os
 import re
@@ -1659,6 +1660,28 @@ class WideWitnessTests(unittest.TestCase):
         recovered = run()
         self.assertEqual(0, recovered.returncode, recovered.stderr)
 
+
+
+class WideRegionSetTests(unittest.TestCase):
+    """The wide search reads the region files the coverage document declares, and no other list."""
+
+    def test_the_wide_regions_are_the_coverage_table_s_region_files(self) -> None:
+        def load(name: str, path: Path):
+            spec = importlib.util.spec_from_file_location(name, path)
+            assert spec and spec.loader
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
+            return module
+
+        wide = load("wide_regions_under_test", REPO / "tools/witness-search/witness-scrape-wide.py")
+        keys = load("wide_regions_keys", REPO / "tools/surface-census/witness-search-region-keys.py")
+        declared = keys.region_files()
+        self.assertEqual(sorted(declared), [f"{name}.md" for name in wide.REGIONS])
+        for name in declared:
+            self.assertTrue((REPO / "docs/openapi-surface" / name).is_file(), name)
+        # The suite's own copy of the set, used to build scratch region trees below.
+        self.assertEqual(wide.REGIONS, PostFreezeGapRowTests.REGION_NAMES)
 
 
 class PostFreezeGapRowTests(unittest.TestCase):

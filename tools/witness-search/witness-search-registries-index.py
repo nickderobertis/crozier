@@ -20,14 +20,12 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SOURCES = ("apis.guru", "jentic", "vendor-portals")
 FIELDS = ("key", "source", "kind", "count", "blocker", "items", "evidence")
 KINDS = ("selector-unavailable", "inconclusive-screen", "unreadable-document", "portal-unanswered")
 
 
-def _load_github_index():
-    spec = importlib.util.spec_from_file_location(
-        "registries_github_index", Path(__file__).with_name("witness-search-github-index.py"))
+def _load(name: str, file: str):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(file))
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -37,7 +35,10 @@ def _load_github_index():
 
 # Every source's `records.tsv` shares one candidate-record shape, named once by
 # the GitHub index that also writes it.
-RECORD_FIELDS = _load_github_index().FIELDS
+RECORD_FIELDS = _load("registries_github_index", "witness-search-github-index.py").FIELDS
+# The registries are the catalogue and portal sources, as the redo contract's
+# `catalogue-portals` shard names them; the code platforms have their own index.
+SOURCES = _load("registries_redo", "witness-search-redo.py").SOURCES["catalogue-portals"]
 
 
 def read_tsv(path: Path, columns: tuple[str, ...], *, optional: bool = False) -> list[dict[str, str]]:

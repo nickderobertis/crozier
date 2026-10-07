@@ -878,6 +878,28 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertIn("run the search stage first", completed.stderr)
             self.assertFalse((root / "postman" / "hit-access.jsonl").exists())
 
+    def test_the_registries_are_the_declared_sources_the_github_index_does_not_hold(self) -> None:
+        """The two indexes partition the arm search's declared sources between them."""
+        def load(name: str, path: Path):
+            spec = importlib.util.spec_from_file_location(name, path)
+            assert spec and spec.loader
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
+            return module
+
+        registries = load("registries_index_sources", REPO / "tools/witness-search/witness-search-registries-index.py")
+        github = load("github_index_sources", REPO / "tools/witness-search/witness-search-github-index.py")
+        search = load("golden_reach_search_sources", REPO / "tools/surface-census/golden-reach-search.py")
+        self.assertEqual(
+            tuple(source for source in search.DECLARED_SOURCES if source not in github.SOURCES),
+            registries.SOURCES,
+        )
+        self.assertEqual(set(search.DECLARED_SOURCES), set(registries.SOURCES) | set(github.SOURCES))
+        self.assertFalse(set(registries.SOURCES) & set(github.SOURCES))
+        for source in registries.SOURCES:
+            self.assertTrue((REPO / f"docs/openapi-surface/witness-search-{source}/records.tsv").is_file(), source)
+
     def test_committed_outstanding_inventory_matches_its_ledgers(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(REPO / "tools/witness-search/witness-search-registries-index.py"), "--check"],
