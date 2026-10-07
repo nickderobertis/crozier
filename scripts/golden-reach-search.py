@@ -29,7 +29,7 @@ Each subcommand does one stage and writes its evidence under
   fetches each one with no local copy at its pinned commit.
 * ``query`` — a source that takes a text query (``github-code-search``,
   ``sourcegraph``), through the existing guarded acquirer in
-  `scripts/witness-search-github.py`: each phrasing in
+  `tools/witness-search/witness-search-github.py`: each phrasing in
   ``golden-reach-witnesses/queries.tsv`` is issued once, its reported count
   recorded, and its first page of results fetched at their indexed commits and
   censused. A fetched result is a ``document`` row, as a walked one is.
@@ -48,7 +48,7 @@ Each subcommand does one stage and writes its evidence under
   ``golden-reach-witnesses/outstanding.tsv``: the continuation's work list.
 
 Screens are taken by ``screen``, through the one measured screening stage both
-witness-search families share (`scripts/witness_screen.py`): the candidate's
+witness-search families share (`tools/witness-search/witness_screen.py`): the candidate's
 bytes read at its pinned commit, its licence read against the corpus rule, and
 pinned Fern run over it, each outcome filed with its pins, exit status and
 redacted log. The caller supplies only a passing candidate's disposition
@@ -56,7 +56,7 @@ redacted log. The caller supplies only a passing candidate's disposition
 an outcome stated as text is refused. A screen filed before that stage carries
 no measured record: it is historical, and settles no candidate.
 
-Every GitHub and Sourcegraph call goes through `scripts/rate_limit_guard.py`, by
+Every GitHub and Sourcegraph call goes through `tools/witness-search/rate_limit_guard.py`, by
 way of the acquirer; this script opens no socket of its own.
 """
 
@@ -149,7 +149,7 @@ def _load(name: str, path: Path) -> ModuleType:
 
 REACH = _load("golden_reach", REPO / "scripts" / "golden-reach.py")
 CENSUS = _load("openapi_surface_census", REPO / "scripts" / "openapi-surface-census.py")
-SCREEN = _load("witness_screen", REPO / "scripts" / "witness_screen.py")
+SCREEN = _load("witness_screen", REPO / "tools" / "witness-search" / "witness_screen.py")
 
 
 def fail(message: str) -> None:
@@ -376,7 +376,7 @@ def record_guard_logs(source: str) -> None:
     filed as a `wait` row under the pseudo-key `*` it answers for. The names are
     the acquirer's, which writes them.
     """
-    github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+    github = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
     directory = source_dir(source)
     rows = []
     for name in github.GUARD_LOGS:
@@ -690,7 +690,7 @@ def fetch_pins(args: argparse.Namespace) -> int:
     digest. The result is `pins.tsv`.
     """
     source = "github-publisher-trees"
-    github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+    github = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
     acquirer = github.Acquirer(source_dir(source), cache=CACHE / source, **ACQUIRER_OPTIONS)
     by_sha: dict[str, tuple[Path, bytes]] = {}
     by_blob: dict[str, tuple[Path, bytes]] = {}
@@ -771,7 +771,7 @@ def _fetch(read: Callable[..., dict[str, Any]], *args: Any) -> dict[str, Any]:
                 "path": item.get("path"), "commit": item.get("commit")}
 
 
-# `acquirer` is `scripts/witness-search-github.py`'s `Acquirer`, loaded from a
+# `acquirer` is `tools/witness-search/witness-search-github.py`'s `Acquirer`, loaded from a
 # hyphenated file by path, so there is no importable name to annotate it with.
 def _one_query(acquirer: Any, source: str, key: str, phrasing: str, selectors: tuple[str, ...],
                new: list[dict[str, str]]) -> tuple[list[dict[str, Any]] | None, int]:
@@ -820,7 +820,7 @@ def query(args: argparse.Namespace) -> int:
     source = args.source
     if source not in QUERY_SOURCES:
         fail(f"{source} takes no text query; `walk` it instead")
-    github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+    github = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
     directory = source_dir(source)
     acquirer = github.Acquirer(directory, cache=CACHE / source, **ACQUIRER_OPTIONS)
     new: list[dict[str, str]] = []
@@ -1259,7 +1259,7 @@ def candidate_ref(source: str, candidate: str) -> tuple[str, str, str, str]:
         if not found:
             fail(f"{candidate} names no `<owner>/<repo>:<path>@<commit>` a screen can read at its commit; "
                  f"check its spelling against {source}'s records.tsv, or pass --measured with a record "
-                 "scripts/witness_screen.py measured at the document's pinned commit")
+                 "tools/witness-search/witness_screen.py measured at the document's pinned commit")
         cached = candidate_index(source).get(candidate, "")
         digest = Path(cached).stem if re.fullmatch(r"[0-9a-f]{64}", Path(cached).stem) else ""
         return found.group(1), found.group(3), found.group(2), digest
@@ -1300,7 +1300,7 @@ def file_screen(source: str, key: str, candidate: str, row: dict[str, Any]) -> N
 def screen(args: argparse.Namespace) -> int:
     """Take one candidate's three screens through the measured stage and file them.
 
-    The licence, the ref and Fern are each measured by `scripts/witness_screen.py`
+    The licence, the ref and Fern are each measured by `tools/witness-search/witness_screen.py`
     — the document read at its pinned commit through the guarded acquirer, its
     licence read against the corpus rule, pinned Fern run over it — and filed with
     the exit status, pins and redacted log behind each. No outcome is taken from
@@ -1311,7 +1311,7 @@ def screen(args: argparse.Namespace) -> int:
               if value is not None]
     if stated:
         fail(f"{', '.join(stated)} free text is no longer a measurement: `screen` takes the licence, ref and "
-             "fern screens through the measured stage (scripts/witness_screen.py) and records each one's exit "
+             "fern screens through the measured stage (tools/witness-search/witness_screen.py) and records each one's exit "
              "status and redacted log — drop " + ", ".join(stated))
     if args.declined and args.registered:
         fail("a candidate is registered or declined, not both; pass one of --registered and --declined")
@@ -1334,7 +1334,7 @@ def screen(args: argparse.Namespace) -> int:
                  "measured for this candidate, or drop --measured to measure it now")
     else:
         repository, commit, path, expected = candidate_ref(args.source, args.candidate)
-        github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+        github = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
         acquirer = github.Acquirer(directory, cache=CACHE / args.source, **ACQUIRER_OPTIONS)
         record = SCREEN.measure(
             repository=repository, commit=commit, path=path, raw_base=acquirer.raw_github_url,
@@ -1779,7 +1779,7 @@ def _historical_note(tallies: dict[str, dict[str, int]]) -> list[str]:
     return [
         "",
         f"{historical} {HISTORICAL_NOTE}: one filed",
-        "before the measured screening stage (`scripts/witness_screen.py`), with no exit",
+        "before the measured screening stage (`tools/witness-search/witness_screen.py`), with no exit",
         "status, pins or redacted log behind its outcomes. A historical screen is kept as",
         "it was filed and settles nothing, so each such candidate is outstanding — counted",
         "in `outstanding` below and listed in `outstanding.tsv` — until it is re-screened.",
@@ -2127,7 +2127,7 @@ def local_copies(
         local = CACHE / source / "documents" / row["document"]
         if fetch and not local.is_file() and (row.get("blob") or row.get("sha256")):
             if acquirer is None:
-                github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+                github = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
                 acquirer = github.Acquirer(source_dir(source), cache=CACHE / source, **ACQUIRER_OPTIONS)
             repository = row["repository"].removeprefix("github.com/")
             url = f"{acquirer.raw_github_url}/{repository}/{row['commit']}/{urllib.parse.quote(row['path'])}"
@@ -2463,7 +2463,7 @@ def main(argv: list[str] | None = None) -> int:
     # Refused when given: an outcome is measured, never stated.
     for stated in ("--licence", "--ref", "--fern"):
         s.add_argument(stated, help=argparse.SUPPRESS)
-    s.add_argument("--measured", type=Path, help="a record scripts/witness_screen.py measured, filed as it stands")
+    s.add_argument("--measured", type=Path, help="a record tools/witness-search/witness_screen.py measured, filed as it stands")
     s.add_argument("--licence-refusal", default="", help="refuse a licence the measured reading would pass, and why")
     s.add_argument("--timeout", type=REACH.positive_int, default=1800)
     s.add_argument("--gap-keys", default="")

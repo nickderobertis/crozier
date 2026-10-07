@@ -17,7 +17,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "openapi-surface-census.py"
 _INDEX_SPEC = importlib.util.spec_from_file_location(
-    "witness_search_github_index_corpus", REPO / "scripts" / "witness-search-github-index.py"
+    "witness_search_github_index_corpus", REPO / "tools" / "witness-search" / "witness-search-github-index.py"
 )
 assert _INDEX_SPEC and _INDEX_SPEC.loader
 INDEX = importlib.util.module_from_spec(_INDEX_SPEC)

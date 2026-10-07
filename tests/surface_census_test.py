@@ -978,7 +978,7 @@ def entry_search_failures(key: str, cell: str) -> list[str]:
         )
     return failures
 _index_spec = importlib.util.spec_from_file_location(
-    "witness_search_github_index", REPO / "scripts/witness-search-github-index.py"
+    "witness_search_github_index", REPO / "tools/witness-search/witness-search-github-index.py"
 )
 assert _index_spec and _index_spec.loader
 _index_module = importlib.util.module_from_spec(_index_spec)
@@ -1236,7 +1236,7 @@ SEARCH_OUTCOMES = (
 # contract searched that the capability table does not declare (Postman and
 # SwaggerHub), read off that contract's own validator rather than re-listed.
 _redo_spec = importlib.util.spec_from_file_location(
-    "witness_search_redo", REPO / "scripts" / "witness-search-redo.py"
+    "witness_search_redo", REPO / "tools" / "witness-search" / "witness-search-redo.py"
 )
 assert _redo_spec and _redo_spec.loader
 _redo_module = importlib.util.module_from_spec(_redo_spec)
@@ -1883,7 +1883,7 @@ def exhaustive_line_failures(
               and screen_states(directory, key).get(candidate) == "historical"):
             failures.append(
                 f"{key}: an `exhausted` search settles `{candidate}` in `{source}` on a historical "
-                "screen — one filed before scripts/witness_screen.py, with no measured record — "
+                "screen — one filed before tools/witness-search/witness_screen.py, with no measured record — "
                 "which settles nothing; re-screen it, or read the search `search-incomplete`"
             )
 
@@ -7848,7 +7848,7 @@ class RankedBacklogTests(unittest.TestCase):
             ("RankedBacklogTests", self.CATEGORIES),
             ("scripts/golden-reach.py", self.golden_reach().CATEGORIES),
             ("scripts/handwritten-fixtures.py", load_script("handwritten-fixtures.py").CATEGORIES),
-            ("scripts/witness-search-redo.py", load_script("witness-search-redo.py").CATEGORIES),
+            ("tools/witness-search/witness-search-redo.py", load_script("witness-search-redo.py").CATEGORIES),
         ):
             with self.subTest(parser=name):
                 self.assertEqual(documented, tuple(categories))

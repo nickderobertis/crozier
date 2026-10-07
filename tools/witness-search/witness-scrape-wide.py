@@ -18,7 +18,7 @@ import urllib.request
 import urllib.parse
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 REGIONS = (
     "bodies-media",
     "document-paths",
@@ -57,8 +57,8 @@ def load(name: str, path: Path):
     return module
 
 
-REDO = load("wide_redo", REPO / "scripts/witness-search-redo.py")
-LOCAL = load("wide_local", REPO / "scripts/witness-search-local-census.py")
+REDO = load("wide_redo", REPO / "tools/witness-search/witness-search-redo.py")
+LOCAL = load("wide_local", REPO / "tools/witness-search/witness-search-local-census.py")
 ROWS = load(
     "wide_rows", REPO / "tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows

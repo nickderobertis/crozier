@@ -19,7 +19,7 @@ import json
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 SOURCES = ("apis.guru", "jentic", "vendor-portals")
 FIELDS = ("key", "source", "kind", "count", "blocker", "items", "evidence")
 KINDS = ("selector-unavailable", "inconclusive-screen", "unreadable-document", "portal-unanswered")

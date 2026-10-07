@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 INDICES = ("apinetwork.team", "runtime.collection", "adp.api")
 DEFAULT_URL = "https://www.postman.com/_api/ws/proxy"
 DEFAULT_WEB = "https://www.postman.com"
@@ -37,7 +37,7 @@ HIT_ROUTES = {
 
 
 def load_guard():
-    path = REPO / "scripts/rate_limit_guard.py"
+    path = REPO / "tools/witness-search/rate_limit_guard.py"
     spec = importlib.util.spec_from_file_location("witness_postman_guard", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

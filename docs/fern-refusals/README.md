@@ -134,7 +134,7 @@ tools/fern-refusals/fern-refusals.py confirm           # sample each class's rea
 tools/fern-refusals/fern-refusals.py check             # offline drift check; tools/fern-refusals/tests/fern_refusals_test.py runs it
 ```
 
-`measure` fetches through `scripts/rate_limit_guard.py`'s paced raw lane,
+`measure` fetches through `tools/witness-search/rate_limit_guard.py`'s paced raw lane,
 reuses a committed screen's `fern check` log where its record states the exit,
 and otherwise runs `fern check` — then `fern generate` unless the check named a
 class — in a scratch workspace outside any checkout, writing each log to

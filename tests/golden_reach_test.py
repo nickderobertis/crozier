@@ -1944,9 +1944,9 @@ PORTABLE_SCRIPTS = (
     "scripts/golden-reach-search.py",
     "tools/llmlint/llmlint-diff.py",
     "scripts/openapi-surface-census.py",
-    "scripts/witness-scrape-wide.py",
-    "scripts/witness-search-github.py",
-    "scripts/witness_screen.py",
+    "tools/witness-search/witness-scrape-wide.py",
+    "tools/witness-search/witness-search-github.py",
+    "tools/witness-search/witness_screen.py",
 )
 LOCK_HOLDER = """\
 import importlib.util, os, sys, time

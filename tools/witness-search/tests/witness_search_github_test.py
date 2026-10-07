@@ -23,13 +23,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
-REPO = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO / "scripts"))
+REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO / "tools" / "witness-search"))
 sys.path.insert(0, str(REPO / "tests"))
-import rate_limit_guard as guard_module  # noqa: E402 - scripts must enter sys.path first
+import rate_limit_guard as guard_module  # noqa: E402 - its directory must enter sys.path first
 
 SPEC = importlib.util.spec_from_file_location(
-    "witness_search_github", REPO / "scripts/witness-search-github.py"
+    "witness_search_github", REPO / "tools/witness-search/witness-search-github.py"
 )
 assert SPEC and SPEC.loader
 SEARCH = importlib.util.module_from_spec(SPEC)
@@ -179,7 +179,7 @@ class LedgerShardTests(unittest.TestCase):
             ),
             300,
         )
-        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
+        command = [sys.executable, str(REPO / "tools/witness-search/witness-search-github-index.py"),
                    "--evidence-root", str(root)]
         central = root / "witness-search-github/candidates.tsv"
         sharded = subprocess.run([*command, "--shard-bytes", "500"], capture_output=True, text=True)
@@ -698,7 +698,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             {"repository": "example/api", "commit": "c" * 40, "scope": "", "derivation": "local API publisher"}
         ]}), encoding="utf-8")
         return subprocess.run(
-            [sys.executable, str(REPO / "scripts/witness-search-github.py"), *SOURCE_COMMIT,
+            [sys.executable, str(REPO / "tools/witness-search/witness-search-github.py"), *SOURCE_COMMIT,
              "--evidence", str(evidence), "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(publisher_file), *extra],
             env={**os.environ, "CROZIER_GITHUB_API_URL": self.url, "CROZIER_RAW_GITHUB_URL": self.url,
@@ -889,7 +889,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(4, len(waits))
 
     def test_cli_search_evaluate_walk_resume_and_failure_exits(self) -> None:
-        script = REPO / "scripts/witness-search-github.py"
+        script = REPO / "tools/witness-search/witness-search-github.py"
         evidence = self.root / "cli"
         derived = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence), "--derive-only"],
@@ -1151,7 +1151,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
     def test_cli_evaluate_fetches_a_document_once_for_every_key_reaching_it(self) -> None:
         """Deduplication by repository, path and revision: one read, one row per key."""
-        script = REPO / "scripts/witness-search-github.py"
+        script = REPO / "tools/witness-search/witness-search-github.py"
         evaluation = self.root / "cli-shared"
         evaluation.mkdir()
         item = {
@@ -1190,7 +1190,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         serving other bytes there is refused, and no replacement digest is
         recorded or cached.
         """
-        script = REPO / "scripts/witness-search-github.py"
+        script = REPO / "tools/witness-search/witness-search-github.py"
         evaluation = self.root / "cli-later"
         evaluation.mkdir()
         cache = self.root / "cli-later-cache"
@@ -1268,7 +1268,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
     def test_cli_evaluate_raw_route_downloads_at_the_commit_off_the_rest_buckets(self) -> None:
         """Exact-commit raw download: no contents read, paced lane, sharded identities."""
-        script = REPO / "scripts/witness-search-github.py"
+        script = REPO / "tools/witness-search/witness-search-github.py"
         evaluation = self.root / "cli-raw"
         evaluation.mkdir()
         items = [
@@ -1331,7 +1331,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                          (record["key"], record["disposition"], record["status"], record["shared_with_key"]))
 
     def test_cli_split_truncated_splits_through_the_guard_and_refuses_bad_bounds(self) -> None:
-        script = REPO / "scripts/witness-search-github.py"
+        script = REPO / "tools/witness-search/witness-search-github.py"
         evidence = self.root / "cli-split"
         key = min(SEARCH.derive_keys(REPO / "docs/openapi-surface"))
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token",
@@ -1368,7 +1368,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
     def test_cli_keeps_the_recorded_key_set_until_derive_only(self) -> None:
         """A stage run searches the key set it recorded, not today's gap rows."""
-        script = REPO / "scripts/witness-search-github.py"
+        script = REPO / "tools/witness-search/witness-search-github.py"
         evidence = self.root / "recorded-keys"
         evidence.mkdir()
         recorded = {"source_commit": "a" * 40, "derivation": "earlier branch point",
@@ -1392,7 +1392,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                          set(json.loads((evidence / "keys.json").read_text(encoding="utf-8"))["keys"]))
 
     def test_cli_rejects_corrupt_acquisition_ledgers(self) -> None:
-        script = REPO / "scripts/witness-search-github.py"
+        script = REPO / "tools/witness-search/witness-search-github.py"
         evidence = self.root / "bad-ledger"
         evidence.mkdir()
         command = [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence),
@@ -1883,7 +1883,7 @@ components:
         (sourcegraph / "queries.jsonl").write_text(json.dumps(
             {"source": "sourcegraph", "key": "shape", "query": sg_first, "outcome": "answered",
              "result_count": 0, "results": []}) + "\n", encoding="utf-8")
-        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
+        command = [sys.executable, str(REPO / "tools/witness-search/witness-search-github-index.py"),
                    "--evidence-root", str(root)]
         subprocess.run(command, check=True, capture_output=True, text=True)
         with (root / "witness-search-github/outstanding.tsv").open(encoding="utf-8") as stream:
@@ -2017,7 +2017,7 @@ components:
         )
         command = [
             sys.executable,
-            str(REPO / "scripts/witness-search-github-index.py"),
+            str(REPO / "tools/witness-search/witness-search-github-index.py"),
             "--evidence-root",
             str(root),
         ]
@@ -2105,7 +2105,7 @@ components:
         self.assertEqual(1, failed.returncode)
         self.assertEqual("", failed.stdout)
         self.assertIn(
-            "rerun scripts/witness-search-github-index.py without --check",
+            "rerun tools/witness-search/witness-search-github-index.py without --check",
             failed.stderr,
         )
         (code / "keys.json").unlink()
@@ -2173,7 +2173,7 @@ components:
         refused = {"source": "github-code-search", "key": "shape", "query": high, "outcome": "refused",
                    "page": 1, "status": 403, "at": "2026-09-25T00:00:00+00:00", "diagnostic": "secondary"}
         ledger = root / "witness-search-github-code-search/queries.jsonl"
-        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"), "--evidence-root", str(root)]
+        command = [sys.executable, str(REPO / "tools/witness-search/witness-search-github-index.py"), "--evidence-root", str(root)]
 
         def row() -> dict[str, str]:
             subprocess.run(command, check=True, capture_output=True, text=True)
@@ -2220,7 +2220,7 @@ components:
             {**base, "query": plan[3], "outcome": "outstanding-incomplete-results"},
         ]
         (root / "witness-search-github-code-search/queries.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
-        subprocess.run([sys.executable, str(REPO / "scripts/witness-search-github-index.py"), "--evidence-root", str(root)],
+        subprocess.run([sys.executable, str(REPO / "tools/witness-search/witness-search-github-index.py"), "--evidence-root", str(root)],
                        check=True, capture_output=True, text=True)
         with (root / "witness-search-github/outstanding.tsv").open(encoding="utf-8") as stream:
             line = next(r for r in csv.DictReader(stream, delimiter="\t") if r["source"] == "github-code-search")
@@ -2251,7 +2251,7 @@ components:
              "result_count": 230, "retrieved_total": 228, "results": []},
         ]
         (root / "witness-search-github-code-search/queries.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
-        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"), "--evidence-root", str(root)]
+        command = [sys.executable, str(REPO / "tools/witness-search/witness-search-github-index.py"), "--evidence-root", str(root)]
 
         def reasons() -> dict[str, list[str]]:
             subprocess.run(command, check=True, capture_output=True, text=True)
@@ -2285,7 +2285,7 @@ components:
                                            {"bucket": "code_search", "cause": "refusal-cooldown", "duration_s": 2.5}])
         write("raw-github-calls.jsonl", [{"key": "shape", "status": 429, "subject": "s", "url": "u"}])
         write("raw-github-waits.jsonl", [{"key": "shape", "cause": "HTTP 429 backoff", "duration_s": 3.0, "subject": "s"}])
-        subprocess.run([sys.executable, str(REPO / "scripts/witness-search-github-index.py"), "--evidence-root", str(root)],
+        subprocess.run([sys.executable, str(REPO / "tools/witness-search/witness-search-github-index.py"), "--evidence-root", str(root)],
                        check=True, capture_output=True, text=True)
         waits = {line.split("\t")[2]: (line.split("\t")[3], line.split("\t")[4])
                  for line in (code / "search-index.tsv").read_text(encoding="utf-8").splitlines()[1:] if "\twait\t" in line}
@@ -2304,7 +2304,7 @@ components:
                 {"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}), encoding="utf-8")
         trees = root / "witness-search-github-publisher-trees"
         queries = root / "witness-search-github-code-search/queries.jsonl"
-        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
+        command = [sys.executable, str(REPO / "tools/witness-search/witness-search-github-index.py"),
                    "--evidence-root", str(root)]
         cases = {
             "partitioned query lacks its size windows": (
@@ -2350,7 +2350,7 @@ components:
 
     def test_every_written_query_outcome_is_on_one_side_of_the_split(self) -> None:
         """The index reads answered-versus-not from the writer; nothing written escapes it."""
-        source = (REPO / "scripts/witness-search-github.py").read_text(encoding="utf-8")
+        source = (REPO / "tools/witness-search/witness-search-github.py").read_text(encoding="utf-8")
         written = set(re.findall(r'"outcome": "([a-z-]+)"', source))
         written |= set(re.findall(r'"outcome": "answered" if [^\n]+ else "([a-z-]+)"', source))
         written -= {"waiting-on-guard"}  # a refusals.jsonl row, not a query outcome
@@ -2378,7 +2378,7 @@ components:
         self.assertIn("URLError", failed["diagnostic"])
 
     def test_cli_first_page_only_does_not_reissue_an_answered_or_partitioned_query(self) -> None:
-        script = REPO / "scripts/witness-search-github.py"
+        script = REPO / "tools/witness-search/witness-search-github.py"
         evidence = self.root / "cli-breadth"
         key = min(SEARCH.derive_keys(REPO / "docs/openapi-surface"))
         self.server.state["partition"] = True
@@ -2413,7 +2413,7 @@ components:
                 with self.subTest(source=source):
                     SEARCH.INDEX.search_index_failures(REPO / "docs/openapi-surface" / f"witness-search-{source}")
         self.assertLessEqual(SEARCH.INDEX.CSV_FIELD_SIZE_LIMIT, c_long_max)
-        for script in sorted((REPO / "scripts").glob("witness-search*.py")):
+        for script in sorted(REPO.glob("tools/*/witness-search*.py")):
             for line in script.read_text(encoding="utf-8").splitlines():
                 if "csv.field_size_limit(" in line:
                     with self.subTest(script=script.name, line=line.strip()):
@@ -2450,7 +2450,7 @@ components:
     def test_committed_index_matches_per_source_evidence(self) -> None:
         command = [
             sys.executable,
-            str(REPO / "scripts/witness-search-github-index.py"),
+            str(REPO / "tools/witness-search/witness-search-github-index.py"),
             "--evidence-root",
             str(REPO / "docs/openapi-surface"),
             "--check",
@@ -2469,7 +2469,7 @@ class HandwrittenKeyDerivationTest(unittest.TestCase):
     def derive(self, evidence: Path, *extra: str) -> subprocess.CompletedProcess[str]:
         evidence.mkdir()
         return subprocess.run(
-            [sys.executable, str(REPO / "scripts/witness-search-github.py"), *SOURCE_COMMIT,
+            [sys.executable, str(REPO / "tools/witness-search/witness-search-github.py"), *SOURCE_COMMIT,
              "--evidence", str(evidence), "--derive-only", *extra],
             capture_output=True, text=True,
         )

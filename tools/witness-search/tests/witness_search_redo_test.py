@@ -14,8 +14,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
-SCRIPT = REPO / "scripts" / "witness-search-redo.py"
+REPO = Path(__file__).resolve().parents[3]
+SCRIPT = REPO / "tools" / "witness-search" / "witness-search-redo.py"
 ROOT = REPO / "docs" / "openapi-surface" / "witness-search-redo"
 CONTRACT = ROOT / "contract.md"
 DECLARERS = ROOT / "catalogue-portals-declarers.tsv"
@@ -825,7 +825,7 @@ class WideWitnessTests(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.work = Path(self.directory.name)
-        self.wide = REPO / 'scripts/witness-scrape-wide.py'
+        self.wide = REPO / 'tools/witness-search/witness-scrape-wide.py'
         self.report = self.work / 'report'
         result = self.cli('derive', '--report', self.report)
         self.assertEqual(0, result.returncode, result.stderr)
@@ -1536,7 +1536,7 @@ class PostFreezeGapRowTests(unittest.TestCase):
         self.frozen = dict(WitnessSearchRedoTests.contract_keys(self))
 
     def cli(self, *args) -> subprocess.CompletedProcess[str]:
-        return subprocess.run([sys.executable, str(REPO / 'scripts/witness-scrape-wide.py'),
+        return subprocess.run([sys.executable, str(REPO / 'tools/witness-search/witness-scrape-wide.py'),
                                *(str(a) for a in args)], cwd=REPO, capture_output=True, encoding='utf-8')
 
     def derive(self) -> subprocess.CompletedProcess[str]:

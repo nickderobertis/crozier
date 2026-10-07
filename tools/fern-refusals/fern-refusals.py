@@ -20,7 +20,7 @@ Subcommands, in the order a refresh runs them:
 ``select``
     Print the population as TSV (offline).
 ``measure``
-    Fetch each document (through ``scripts/rate_limit_guard.py``'s paced raw
+    Fetch each document (through ``tools/witness-search/rate_limit_guard.py``'s paced raw
     lane for a GitHub host), run Fern at the pin where no committed log holds
     its complete diagnostic list, and run crozier's release build over it,
     appending one line per document to ``measurements.jsonl``. Needs network,
@@ -326,7 +326,7 @@ class Fetcher:
 
     def __init__(self, roots: list[Path]) -> None:
         self.index = local_index(roots)
-        github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+        github = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
         self.acquirer = github.Acquirer(CACHE / "evidence", cache=CACHE / "evidence")
 
     def get(self, entry: Entry) -> tuple[bytes | None, str]:

@@ -217,13 +217,13 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
 
 @functools.cache
 def load_screen() -> Any:
-    """`scripts/witness_screen.py`, the measured screening stage these screens come from."""
+    """`tools/witness-search/witness_screen.py`, the measured screening stage these screens come from."""
     spec = importlib.util.spec_from_file_location(
         "witness_screen_for_index", Path(__file__).with_name("witness_screen.py")
     )
     if spec is None or spec.loader is None:
-        raise ValueError("cannot load scripts/witness_screen.py; restore it from git "
-                         "(`git checkout -- scripts/witness_screen.py`)")
+        raise ValueError("cannot load tools/witness-search/witness_screen.py; restore it from git "
+                         "(`git checkout -- tools/witness-search/witness_screen.py`)")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
@@ -234,6 +234,7 @@ def load_screen() -> Any:
 SCREEN_FIELDS = {"licence": "license", "ref": "ref", "fern": "fern"}
 # Said on a candidate's `records.tsv` evidence when its screen predates the
 # measured stage: the row stays, and is read as history rather than measurement.
+# Recorded verbatim in committed screens, so it names the stage as they do.
 HISTORICAL_SCREEN = "historical screen: filed before scripts/witness_screen.py, with no measured record"
 
 
@@ -999,7 +1000,7 @@ def main() -> int:
             print(
                 "candidate records differ from evidence: "
                 + ", ".join(changed)
-                + "; rerun scripts/witness-search-github-index.py without --check",
+                + "; rerun tools/witness-search/witness-search-github-index.py without --check",
                 file=sys.stderr,
             )
             return 1

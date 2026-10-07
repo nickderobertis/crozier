@@ -102,7 +102,7 @@ The token is read from ``GITHUB_TOKEN`` (then ``GH_TOKEN``) and never
 written anywhere. ``CROZIER_GITHUB_API_URL`` overrides the API root, which is
 how the offline tests point the guard at a local server.
 
-``python3 scripts/rate_limit_guard.py status`` (``just quota-status``) prints
+``python3 tools/witness-search/rate_limit_guard.py status`` (``just quota-status``) prints
 each GitHub bucket's live figures from one free ``/rate_limit`` read and the
 pacing in force for Postman and Sourcegraph. It never waits. It exits 0 after
 printing, 1 when ``/rate_limit`` is unreadable or malformed, and 2 on a usage
@@ -327,7 +327,7 @@ class RateLimitGuard:
         if self.host == "github" and _is_graphql(response):
             raise UnsupportedBucket(
                 "a GitHub GraphQL response reached the guard: this repository makes no GraphQL "
-                "call (see scripts/rate_limit_guard.py); make the REST call instead"
+                "call (see tools/witness-search/rate_limit_guard.py); make the REST call instead"
             )
         with self._meta:
             reservation = self._pending.pop(threading.get_ident(), None)

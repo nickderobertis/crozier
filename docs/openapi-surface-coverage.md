@@ -253,7 +253,7 @@ the census cannot measure the population beyond its own reach.
 5. **Documents the census cannot read.** The census parses with a
    standard-library YAML subset. The witness searches recorded 4,380 candidate
    documents it refused for the thirteen keys searched as `FIXTURE` rows, and
-   [`witness-search-recensus.py`](../scripts/witness-search-recensus.py) read
+   [`witness-search-recensus.py`](../tools/witness-search/witness-search-recensus.py) read
    every one of them again with the arm search's pinned `ruamel.yaml`: each is
    censused, or recorded `census-refused` with the parser's error
    ([the escalation](#generated-shapes-with-no-registrable-witness)). The
@@ -3205,7 +3205,7 @@ It carries one segment per declared source, counted off that source's
 - **Every parse failure is decided.** The 4,380 candidates the census's
   standard-library YAML loader refused for the thirteen searched keys were read
   again by
-  [`witness-search-recensus.py`](../scripts/witness-search-recensus.py)
+  [`witness-search-recensus.py`](../tools/witness-search/witness-search-recensus.py)
   `full-yaml`, from the cached copy each ledger row pins, verified against its
   digest. It uses the arm search's pinned `ruamel.yaml` 0.19.1, relaxed on
   duplicate keys and unrecognised tags only where the strict reading refuses
@@ -3289,7 +3289,7 @@ and name every candidate the census confirmed.
 still owes it a walk or a query. Nothing a search can still do closes the six
 `search-incomplete` keys: their only open items are the 12 blobs GitHub and
 Sourcegraph's mirror both refuse. Each would be decided the moment either
-served one again, and `scripts/witness-search-recensus.py reacquire-head --again`
+served one again, and `tools/witness-search/witness-search-recensus.py reacquire-head --again`
 and `reacquire-namesake --again` re-request them. The renewed search decided
 five from the acquisition cache, and seven are still refused. A Fern that
 generates APWG's eCX document at any of its census-confirmed revisions, or
@@ -4671,7 +4671,7 @@ does — the authoritative issue #188 search found **no witness at all**, and th
 row's own region file records that search as a line of its `### Witness search
 (issue #188)` table naming every source put to it and the exact query used
 against each. Any search that calls GitHub, Postman or Sourcegraph goes through
-[`scripts/rate_limit_guard.py`](../scripts/rate_limit_guard.py), whose docstring is
+[`tools/witness-search/rate_limit_guard.py`](../tools/witness-search/rate_limit_guard.py), whose docstring is
 the one statement of the per-bucket wait rule it enforces. What becomes of a row when that search *does* find a witness is
 [the settlement rule](#the-settlement-rule-as-amended) below, which every region
 file follows rather than restating.

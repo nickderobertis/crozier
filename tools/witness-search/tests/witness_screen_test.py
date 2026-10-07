@@ -2,7 +2,7 @@
 # llmlint: ignore-file[new_code_lands_in_a_project] crozier's Python maintenance tests live in tests/ and run through just (`test-witness-screen`); no Nx workspace or project boundary exists for them.
 """The measured screening stage, driven through its real CLI and the legacy index that reads it.
 
-`scripts/witness_screen.py screen` runs as a subprocess over a temporary
+`tools/witness-search/witness_screen.py screen` runs as a subprocess over a temporary
 evidence root, reading the candidate's bytes and licence from a loopback
 server standing in for raw.githubusercontent.com (the acquirer's exact-commit
 raw route, `CROZIER_RAW_GITHUB_URL`) and running a stub `fern` on PATH, since
@@ -25,8 +25,8 @@ import unittest.mock
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
-SCRIPT = REPO / "scripts" / "witness_screen.py"
+REPO = Path(__file__).resolve().parents[3]
+SCRIPT = REPO / "tools" / "witness-search" / "witness_screen.py"
 COMMIT = "c" * 40
 DOCUMENT = b"openapi: 3.0.3\ninfo: {title: shop, version: '1'}\npaths: {}\n"
 PROPRIETARY = b"openapi: 3.0.3\ninfo: {title: shop, version: '1', license: {name: Shop EULA}}\npaths: {}\n"
@@ -57,7 +57,7 @@ def load(name: str, path: Path):
 
 
 SCREEN = load("witness_screen_under_test", SCRIPT)
-INDEX = load("witness_search_github_index_under_test", REPO / "scripts" / "witness-search-github-index.py")
+INDEX = load("witness_search_github_index_under_test", REPO / "tools" / "witness-search" / "witness-search-github-index.py")
 
 
 class _Raw(BaseHTTPRequestHandler):

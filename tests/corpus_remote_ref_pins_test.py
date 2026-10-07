@@ -40,12 +40,14 @@ MODULE = REPO / "scripts" / "corpus_remote_ref_pins.py"
 sys.path.insert(0, str(REPO / "scripts"))
 import corpus_remote_ref_pins as pin_owner
 MANIFEST_NAME = "corpus-remote-ref-pins.tsv"
+# Repository-relative, and copied to the same path under the synthetic root, so
+# each script finds its neighbours where the real tree keeps them.
 COPIED_SCRIPTS = (
-    "corpus-lib.sh",
-    "corpus_remote_ref_pins.py",
-    "fetch-corpus.sh",
-    "lib.sh",
-    "openapi-surface-census.py",
+    "scripts/corpus-lib.sh",
+    "scripts/corpus_remote_ref_pins.py",
+    "scripts/fetch-corpus.sh",
+    "scripts/lib.sh",
+    "scripts/openapi-surface-census.py",
 )
 
 RAW = "https://raw.githubusercontent.com"
@@ -135,7 +137,8 @@ class PinMechanismTests(unittest.TestCase):
         (self.root / "scripts").mkdir(parents=True)
         (self.root / "tests" / "fixtures").mkdir(parents=True)
         for script in COPIED_SCRIPTS:
-            shutil.copy2(REPO / "scripts" / script, self.root / "scripts" / script)
+            (self.root / script).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO / script, self.root / script)
         shutil.copy2(
             REPO / "tests" / "fixtures" / "corpus-aliases.tsv",
             self.root / "tests" / "fixtures" / "corpus-aliases.tsv",

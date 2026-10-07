@@ -1666,7 +1666,7 @@ that Contract B excludes, SwaggerHub and Postman, appear in no line below.
 **The redo contract, as amended by the `handwritten-evidence` node.** A row of a
 key that contract owns may become `handwritten`, and its evidence cell then
 carries no inline history. For such a row the reconciler,
-`scripts/witness-search-redo.py --reconcile`, still requires exactly one row for
+`tools/witness-search/witness-search-redo.py --reconcile`, still requires exactly one row for
 the key. It reads the row's `search:` link in place of the history, and requires
 that link to resolve to the key's line below and that line to state the verdict
 the cell states. The shard records stay reconciled as for every other key, and
@@ -1684,7 +1684,7 @@ Every candidate the six sources returned for them is decided.
 The 4,380 documents the census's standard-library YAML loader refused, across
 every key searched here, were read again by the full YAML parser (`just
 test-census-fallback` covers the
-[re-census script](../../scripts/witness-search-recensus.py)), and each is
+[re-census script](../../tools/witness-search/witness-search-recensus.py)), and each is
 censused or recorded `census-refused` with the parser's error. Of the
 candidates whose pinned blob GitHub answered 404 for, six in two deleted forks
 were read from the fork's parent, which still holds the same blob. Six keys still

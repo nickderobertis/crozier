@@ -35,13 +35,15 @@ SCRIPT = REPO / "scripts" / "corpus_sources.py"
 sys.path.insert(0, str(REPO / "scripts"))
 import corpus_sources  # noqa: E402 - the production scripts directory must be on sys.path first
 
+# Repository-relative, and copied to the same path under the synthetic root, so
+# each script finds its neighbours where the real tree keeps them.
 COPIED_SCRIPTS = (
-    "corpus-lib.sh",
-    "corpus_remote_ref_pins.py",
-    "corpus_sources.py",
-    "fetch-corpus.sh",
-    "lib.sh",
-    "openapi-surface-census.py",
+    "scripts/corpus-lib.sh",
+    "scripts/corpus_remote_ref_pins.py",
+    "scripts/corpus_sources.py",
+    "scripts/fetch-corpus.sh",
+    "scripts/lib.sh",
+    "scripts/openapi-surface-census.py",
 )
 RAW = "https://raw.githubusercontent.com"
 PINNED_SHA = "80d0a6ee6c129a29c507c35b0245a16c5a81b9d3"
@@ -200,7 +202,8 @@ class SyntheticRoot(unittest.TestCase):
         self.fixtures = self.root / "tests" / "fixtures"
         self.fixtures.mkdir(parents=True)
         for script in COPIED_SCRIPTS:
-            shutil.copy2(REPO / "scripts" / script, self.root / "scripts" / script)
+            (self.root / script).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO / script, self.root / script)
         shutil.copy2(REPO / "tests/fixtures/corpus-aliases.tsv", self.fixtures / "corpus-aliases.tsv")
 
         self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)

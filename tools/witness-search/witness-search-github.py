@@ -48,7 +48,7 @@ from rate_limit_guard import (  # noqa: E402 - importable only once this directo
     github_api_url,
 )
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 SOURCEGRAPH_URL = "https://sourcegraph.com"
 RAW_GITHUB_URL = "https://raw.githubusercontent.com"
 RAW_SPACING_S = 2.0
@@ -161,7 +161,7 @@ def load(name: str, path: Path) -> Any:
 
 
 CENSUS = load("witness_github_census", REPO / "scripts/openapi-surface-census.py")
-INDEX = load("witness_github_index", REPO / "scripts/witness-search-github-index.py")
+INDEX = load("witness_github_index", REPO / "tools/witness-search/witness-search-github-index.py")
 REGION_ROWS = load(
     "witness_github_rows", REPO / "tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows

@@ -58,7 +58,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "scripts"))
 REFUSED = "census-refused"
 # A document the full parser and the census walk together take longer than this
@@ -77,7 +77,7 @@ def _load(name: str, path: Path) -> ModuleType:
 
 REACH = _load("golden_reach_search", REPO / "scripts" / "golden-reach-search.py")
 CENSUS = REACH.CENSUS
-GITHUB = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+GITHUB = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
 INDEX = GITHUB.INDEX
 
 

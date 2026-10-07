@@ -18,6 +18,14 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 TOOL = REPO / "scripts" / "fern-goldens"
+
+
+def mirror(root: Path, *paths: str) -> None:
+    """Copy each repository-relative path to the same place under `root`, so the
+    copied scripts find their neighbours where the real tree keeps them."""
+    for path in paths:
+        (root / path).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / path, root / path)
 STATE = ".crozier-fern-golden.json"
 ALIASES = REPO / "tests" / "fixtures" / "corpus-aliases.tsv"
 PIN_MANIFEST = REPO / "tests" / "fixtures" / "corpus-remote-ref-pins.tsv"
@@ -51,15 +59,15 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         (self.root / "scripts").mkdir(parents=True)
         (self.root / "tests" / "fixtures").mkdir(parents=True)
         (self.root / "fake-bin").mkdir()
-        shutil.copy2(TOOL, self.root / "scripts" / "fern-goldens")
-        for script in (
-            "corpus-lib.sh",
-            "corpus_remote_ref_pins.py",
-            "fetch-corpus.sh",
-            "lib.sh",
-            "openapi-surface-census.py",
-        ):
-            shutil.copy2(REPO / "scripts" / script, self.root / "scripts" / script)
+        mirror(
+            self.root,
+            "scripts/fern-goldens",
+            "scripts/corpus-lib.sh",
+            "scripts/corpus_remote_ref_pins.py",
+            "scripts/fetch-corpus.sh",
+            "scripts/lib.sh",
+            "scripts/openapi-surface-census.py",
+        )
         shutil.copy2(ALIASES, self.root / "tests" / "fixtures" / ALIASES.name)
         shutil.copy2(PIN_MANIFEST, self.root / "tests" / "fixtures" / PIN_MANIFEST.name)
         (self.root / "justfile").write_text("default:\n    @true\n", encoding="utf-8")
@@ -1265,10 +1273,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         target = root / "target" / "release"
         for directory in (scripts, expected / "src" / "fern", fake_bin, target):
             directory.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
-        shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
-        for script in ("corpus_remote_ref_pins.py", "openapi-surface-census.py"):
-            shutil.copy2(REPO / "scripts" / script, scripts / script)
+        mirror(root, "scripts/generate-fern-fixture.sh", "scripts/lib.sh",
+               "scripts/corpus_remote_ref_pins.py", "scripts/openapi-surface-census.py")
         spec_dir = root / "source specs"
         spec_dir.mkdir()
         spec = spec_dir / "open api.json"
@@ -1318,7 +1324,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             """,
         )
         command = self.script_command(
-            scripts / "generate-fern-fixture.sh",
+            root / "scripts/generate-fern-fixture.sh",
             "alpha",
             "4.35.0",
             str(spec),
@@ -1367,7 +1373,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             + f"tree\talpha\tspec/schemas/item.yaml\t{base}/schemas/item.yaml\t{hashlib.sha256(sibling_bytes).hexdigest()}\n"
         )
         tree_result = subprocess.run(
-            self.script_command(scripts / "generate-fern-fixture.sh", "alpha", "4.35.0", str(tree / "openapi.yaml")),
+            self.script_command(root / "scripts/generate-fern-fixture.sh", "alpha", "4.35.0", str(tree / "openapi.yaml")),
             cwd=root,
             env={**environment, "EXPECT_TREE": "1"},
             text=True,
@@ -1377,7 +1383,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(tree_result.returncode, 0, tree_result.stderr)
         wrong_root = subprocess.run(
             self.script_command(
-                scripts / "generate-fern-fixture.sh", "alpha", "4.35.0",
+                root / "scripts/generate-fern-fixture.sh", "alpha", "4.35.0",
                 str(tree / "schemas" / "item.yaml"),
             ),
             cwd=root,
@@ -1405,8 +1411,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         target = root / "target" / "release"
         for directory in (scripts, fixture, fake_bin, target):
             directory.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
-        shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
+        mirror(root, "scripts/generate-fern-fixture.sh", "scripts/lib.sh")
         (fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
         (root / "tests" / "fixtures" / "fern-generator-config.txt").write_text(
             "beta|public|true|AcmeClient|ignore\n", encoding="utf-8"
@@ -1449,7 +1454,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         invocation_record = root / "invocation.json"
         generator_config_record = root / "generators.yml"
         result = subprocess.run(
-            self.script_command(scripts / "generate-fern-fixture.sh", "beta", "5.20.0"),
+            self.script_command(root / "scripts/generate-fern-fixture.sh", "beta", "5.20.0"),
             cwd=root,
             env=self.environment(
                 CROZIER_FERN_NO_DOCKER_SHIM="1",
@@ -1507,8 +1512,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         (fixtures / "corpus-sources" / "zeta" / "openapi.yaml").write_text(
             "openapi: 3.0.3 # zeta\n", encoding="utf-8"
         )
-        shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
-        shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
+        mirror(root, "scripts/generate-fern-fixture.sh", "scripts/lib.sh")
         for fixture in ("beta", "delta"):
             (fixtures / fixture / "openapi.yml").write_text(f"openapi: 3.0.3 # {fixture}\n", encoding="utf-8")
         (fixtures / "fern-generator-config.txt").write_text(
@@ -1573,7 +1577,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
 
         def run(*arguments: str, **extra: str) -> subprocess.CompletedProcess[str]:
             return subprocess.run(
-                self.script_command(scripts / "generate-fern-fixture.sh", *arguments),
+                self.script_command(root / "scripts/generate-fern-fixture.sh", *arguments),
                 cwd=root,
                 env={**environment, **extra},
                 text=True,
@@ -1900,15 +1904,14 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.root = Path(temporary.name) / "repo"
         scripts = self.root / "scripts"
         scripts.mkdir(parents=True)
-        for script in ("fern-overlay-goldens.sh", "lib.sh"):
-            shutil.copy2(REPO / "scripts" / script, scripts / script)
+        mirror(self.root, "scripts/fern-overlay-goldens.sh", "scripts/lib.sh")
         pin = {"fern_python_sdk_version": "4.3.17"}
         for fixture in ("eos.local", "alpha", "beta"):
             expected = self.root / "tests" / "fixtures" / fixture / "expected"
             expected.mkdir(parents=True)
             (expected / STATE).write_text(json.dumps(pin), encoding="utf-8")
             (expected.parent / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
-        generator = scripts / "generate-fern-fixture.sh"
+        generator = self.root / "scripts/generate-fern-fixture.sh"
         generator.write_text(
             textwrap.dedent(
                 r"""

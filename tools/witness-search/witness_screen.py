@@ -11,8 +11,8 @@ screen` for an arm search and this script's own `screen` for the legacy
 from a run rather than from a caller's sentence:
 
 * **ref** — the document is fetched at ``<repository>@<commit>`` through the
-  guarded acquirer's exact-commit raw route (`scripts/witness-search-github.py`,
-  under `scripts/rate_limit_guard.py`'s pacing); it passes when the commit is a
+  guarded acquirer's exact-commit raw route (`tools/witness-search/witness-search-github.py`,
+  under `tools/witness-search/rate_limit_guard.py`'s pacing); it passes when the commit is a
   full 40-hex SHA, the fetch answers 200, and, where the caller's pin names one,
   the bytes carry that SHA-256.
 * **licence** — the fetched document's own ``info.license`` and the repository's
@@ -57,9 +57,12 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 RULE = REPO / "docs" / "corpus-licensing.md"
 RULE_MARKER = "corpus-licence-set:"
+# The stage's identity as every committed screen records it: the path it was
+# run from when those screens were measured. It names the stage; the file now
+# lives in tools/witness-search/.
 STAGE = "scripts/witness_screen.py"
 SCREENS = ("licence", "ref", "fern")
 # A screen row dated at or after this instant was filed after the measured stage
@@ -75,7 +78,7 @@ COMMIT = re.compile(r"[0-9a-f]{40}")
 REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 # The legacy witness-search ledgers this stage files screens into: every
 # `witness-search-<source>/` that carries a `screens.jsonl`, which
-# `tests/witness_screen_test.py` reconciles against the committed tree.
+# `tools/witness-search/tests/witness_screen_test.py` reconciles against the committed tree.
 LEGACY_SOURCES = ("apis.guru", "jentic", "github-code-search", "github-publisher-trees", "sourcegraph")
 
 Fetch = Callable[[str, str], tuple[int, bytes]]
@@ -647,7 +650,7 @@ def legacy_screen(args: argparse.Namespace) -> int:
     if args.measured:
         record = read_measured(args.measured)
     else:
-        github = _load("witness_search_github_screen", REPO / "scripts" / "witness-search-github.py")
+        github = _load("witness_search_github_screen", REPO / "tools" / "witness-search" / "witness-search-github.py")
         acquirer = github.Acquirer(directory, cache=REPO / ".local" / "witness-screen" / args.source,
                                    raw_github_url=github.checked_service_url(
                                        os.environ.get("CROZIER_RAW_GITHUB_URL", github.RAW_GITHUB_URL),

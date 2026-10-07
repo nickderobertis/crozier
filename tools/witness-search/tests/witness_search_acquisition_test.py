@@ -22,13 +22,13 @@ import time
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
-SCRIPT = REPO / "scripts/witness-search-local-census.py"
-GITHUB_ACQUIRE = REPO / "scripts/witness-acquire-github.py"
+REPO = Path(__file__).resolve().parents[3]
+SCRIPT = REPO / "tools/witness-search/witness-search-local-census.py"
+GITHUB_ACQUIRE = REPO / "tools/witness-search/witness-acquire-github.py"
 KEYS = REPO / "scripts/witness-search-region-keys.py"
 TRACKED_KEYS = REPO / "docs/openapi-surface/witness-search-keys.tsv"
-POSTMAN = REPO / "scripts/witness-search-postman.py"
-PORTAL_TREES = REPO / "scripts/witness-search-portal-trees.py"
+POSTMAN = REPO / "tools/witness-search/witness-search-postman.py"
+PORTAL_TREES = REPO / "tools/witness-search/witness-search-portal-trees.py"
 
 
 def run_explicit_key_census(interpreter_flags: list[str]) -> tuple[int, dict]:
@@ -569,7 +569,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 (root / f"witness-search-{source}").mkdir(exist_ok=True)
                 (root / f"witness-search-{source}/records.tsv").write_text(header, encoding="utf-8")
             (root / "witness-search-registries").mkdir()
-            command = [sys.executable, str(REPO / "scripts/witness-search-registries-index.py"),
+            command = [sys.executable, str(REPO / "tools/witness-search/witness-search-registries-index.py"),
                        "--root", str(root)]
             stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30)
             self.assertEqual(stale.returncode, 1)
@@ -673,12 +673,12 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
 
     def test_committed_outstanding_inventory_matches_its_ledgers(self) -> None:
         completed = subprocess.run(
-            [sys.executable, str(REPO / "scripts/witness-search-registries-index.py"), "--check"],
+            [sys.executable, str(REPO / "tools/witness-search/witness-search-registries-index.py"), "--check"],
             cwd=REPO, capture_output=True, text=True, timeout=120,
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         spec = importlib.util.spec_from_file_location(
-            "registries_index", REPO / "scripts/witness-search-registries-index.py")
+            "registries_index", REPO / "tools/witness-search/witness-search-registries-index.py")
         index = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(index)
         readme = (REPO / "docs/openapi-surface/witness-search-registries/README.md").read_text()

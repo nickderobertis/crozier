@@ -440,7 +440,7 @@ test-census-fallback-samples:
 # script's own inline metadata); CI's live-e2e leg runs it.
 test-census-fallback: test-census-fallback-samples
     CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_test.py
-    uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/witness-search-recensus.py)" python3 tests/witness_search_recensus_test.py
+    uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' tools/witness-search/witness-search-recensus.py)" python3 tools/witness-search/tests/witness_search_recensus_test.py
 
 # Census aid: report the exact expected files crozier still does not reproduce.
 # The output is the ready-to-paste `unmatched` task list. Not part of `check`.
@@ -774,38 +774,38 @@ screenshots-bless: screenshots
 
 # Validate the witness ledger and its CLI against real temporary documents.
 test-witness-search-redo:
-    "$(./scripts/census-python.sh)" tests/witness_search_redo_test.py
+    "$(./scripts/census-python.sh)" tools/witness-search/tests/witness_search_redo_test.py
 
 # Drive witness-search acquisition, census and ledger derivation through the real CLIs.
 test-witness-search-acquisition:
-    "$(./scripts/census-python.sh)" tests/witness_search_acquisition_test.py
+    "$(./scripts/census-python.sh)" tools/witness-search/tests/witness_search_acquisition_test.py
 
 # Offline HTTP journey for the GitHub/Sourcegraph witness acquisition path.
 test-witness-search-github:
-    "$(./scripts/census-python.sh)" tests/witness_search_github_test.py
+    "$(./scripts/census-python.sh)" tools/witness-search/tests/witness_search_github_test.py
 
 # The measured screening stage both witness-search families file screens through:
 # its CLI over a loopback raw-GitHub server and a stub `fern`, and the legacy
 # index reading what it files.
 test-witness-screen:
-    "$(./scripts/census-python.sh)" tests/witness_screen_test.py
+    "$(./scripts/census-python.sh)" tools/witness-search/tests/witness_screen_test.py
 
 # Take one legacy witness-search candidate's licence, ref and Fern screens, measured.
 # Network (the guarded raw route) and Fern (`just setup-fern`).
 witness-screen *args:
-    @"$(./scripts/census-python.sh)" ./scripts/witness_screen.py "$@"
+    @"$(./scripts/census-python.sh)" ./tools/witness-search/witness_screen.py "$@"
 
 # Canonical reproduction entry point; archived evidence retains original commands.
 witness-search-local-census *args:
-    @"$(./scripts/census-python.sh)" ./scripts/witness-search-local-census.py "$@"
+    @"$(./scripts/census-python.sh)" ./tools/witness-search/witness-search-local-census.py "$@"
 
 # Drives the real module against a local HTTP server serving authored responses.
 # Offline tier for the GitHub/Postman/Sourcegraph rate-limit guard.
 test-rate-limit-guard:
-    "$(./scripts/census-python.sh)" tests/rate_limit_guard_test.py
+    "$(./scripts/census-python.sh)" tools/witness-search/tests/rate_limit_guard_test.py
 
 # Needs network (and GITHUB_TOKEN for the token's own buckets); never waits, so
-# it stays out of `check`. Rule and interface: scripts/rate_limit_guard.py.
+# it stays out of `check`. Rule and interface: tools/witness-search/rate_limit_guard.py.
 # Live GitHub REST bucket figures from one free /rate_limit read, plus paced-host spacing.
 quota-status:
-    @"$(./scripts/census-python.sh)" scripts/rate_limit_guard.py status
+    @"$(./scripts/census-python.sh)" tools/witness-search/rate_limit_guard.py status

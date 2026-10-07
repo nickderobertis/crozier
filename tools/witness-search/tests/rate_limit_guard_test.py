@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline tests for scripts/rate_limit_guard.py against a real local HTTP server.
+"""Offline tests for tools/witness-search/rate_limit_guard.py against a real local HTTP server.
 
 The server stands in for GitHub's REST API (``/rate_limit`` plus guarded
 endpoints that charge a bucket), for Postman's proxy and for Sourcegraph's
@@ -29,12 +29,12 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-REPO = Path(__file__).resolve().parent.parent
-SCRIPT = REPO / "scripts" / "rate_limit_guard.py"
+REPO = Path(__file__).resolve().parents[3]
+SCRIPT = REPO / "tools" / "witness-search" / "rate_limit_guard.py"
 sys.path.insert(0, str(SCRIPT.parent))
 
-import rate_limit_guard as guard_module  # noqa: E402 -- importable only once sys.path names scripts/
-from rate_limit_guard import (  # noqa: E402 -- importable only once sys.path names scripts/
+import rate_limit_guard as guard_module  # noqa: E402 -- importable only once sys.path names its directory
+from rate_limit_guard import (  # noqa: E402 -- importable only once sys.path names its directory
     PacedLane,
     RateLimitGuard,
     SecondaryLimit,

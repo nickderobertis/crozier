@@ -234,7 +234,7 @@ def frozen_outcomes(
 
 def handwritten_module():
     """The hand-written fixture gate, whose record reading a `handwritten` row is held to."""
-    path = Path(__file__).resolve().parent / "handwritten-fixtures.py"
+    path = Path(__file__).resolve().parents[2] / "scripts" / "handwritten-fixtures.py"
     spec = importlib.util.spec_from_file_location("redo_handwritten_fixtures", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

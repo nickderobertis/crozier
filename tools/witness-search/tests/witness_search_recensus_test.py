@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this test sits in tests/ beside the other witness-search suites and runs under `just test-census-fallback`, which CI's live-e2e leg runs.
-"""`scripts/witness-search-recensus.py`, driven through its real CLI.
+"""`tools/witness-search/witness-search-recensus.py`, driven through its real CLI.
 
 `full-yaml` over a temporary ledger whose parse failures name real documents in
 a temporary cache: one only the full YAML parser reads, one only its lenient
@@ -35,8 +35,8 @@ import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
-SCRIPT = REPO / "scripts" / "witness-search-recensus.py"
+REPO = Path(__file__).resolve().parents[3]
+SCRIPT = REPO / "tools" / "witness-search" / "witness-search-recensus.py"
 KEY = "property-sole-anyof-composed-member"
 SELECTOR = "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf"
 
@@ -85,7 +85,7 @@ def _load(name: str, path: Path):
     return module
 
 
-INDEX = _load("witness_search_github_index", REPO / "scripts" / "witness-search-github-index.py")
+INDEX = _load("witness_search_github_index", REPO / "tools" / "witness-search" / "witness-search-github-index.py")
 
 
 def git_blob(data: bytes) -> str:
