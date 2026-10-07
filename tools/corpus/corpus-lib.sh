@@ -220,8 +220,13 @@ corpus_fetch_source() {
            "is writable and has free space, then re-run" >&2
       return 1
     }
+    # A failed fetch's partial download is removed; one that cannot be is named.
+    _corpus_discard_temporary() {
+      rm -f "$temporary" || echo "corpus: could not remove the partial download $temporary for $name —" \
+                                 "delete it (rm -f $temporary) before re-running" >&2
+    }
     if ! curl -fsSL -A crozier-fixture-builder "$url" -o "$temporary"; then
-      rm -f "$temporary"
+      _corpus_discard_temporary
       echo "corpus: could not download the spec for $name from $url — check network access" \
            "and the row's source URL in tests/fixtures/CORPUS.md, then re-run" >&2
       return 1
@@ -229,18 +234,18 @@ corpus_fetch_source() {
     if [ ! -s "$temporary" ]; then
       echo "corpus: fetched an empty spec for $name from $url — check that the row's source" \
            "URL in tests/fixtures/CORPUS.md serves the OpenAPI document itself, then re-run" >&2
-      rm -f "$temporary"
+      _corpus_discard_temporary
       return 1
     fi
     # Pin before publishing, so a document carrying a mutable absolute `$ref`
     # never reaches a consumer: this is a gate, not a post-hoc repair.
     if ! corpus_pin_apply "$name" "$temporary" "${target##*/}"; then
-      rm -f "$temporary"
+      _corpus_discard_temporary
       return 1
     fi
     # Stale siblings are removed only once the new document is published.
     if ! mv "$temporary" "$target"; then
-      rm -f "$temporary"
+      _corpus_discard_temporary
       echo "corpus: could not publish the fetched spec for $name to $target — check that" \
            "$target_dir is writable and nothing there blocks the rename, then re-run" >&2
       return 1

@@ -109,6 +109,8 @@ class RecordingHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             return
         body = self.server.documents.get(self.path)
+        # A hook the request runs first, as a host changing under the fetch would.
+        self.server.on_request.pop(self.path, lambda: None)()
         if body is None:
             self.send_error(404, "no such document")
             return
@@ -147,6 +149,7 @@ class PinMechanismTests(unittest.TestCase):
         self.server.throttles = {}
         self.server.throttle_retry_after = {}
         self.server.success_retry_after = {}
+        self.server.on_request = {}
         self.origin = "http://{}:{}".format(*self.server.server_address[:2])
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -622,6 +625,21 @@ class PinMechanismTests(unittest.TestCase):
             "serves the OpenAPI document itself",
         )
         self.assert_no_leftovers("empty-row", expected=set())
+
+    def test_a_partial_download_it_cannot_remove_is_named_with_how_to_delete_it(self) -> None:
+        if os.geteuid() == 0:
+            self.skipTest("root removes files from a read-only directory")
+        self.server.documents["/specs/stuck-row.yaml"] = b""
+        self.add_repository_row("stuck-row", self.spec_url("stuck-row"), "HEAD")
+        cache = self.destination("stuck-row")
+        # The cache directory turns read-only once the fetch has made its temporary file.
+        self.server.on_request["/specs/stuck-row.yaml"] = lambda: cache.chmod(0o555)
+        self.addCleanup(lambda: cache.exists() and cache.chmod(0o755))
+        result = self.fetch("stuck-row")
+        self.assert_refused_without_a_path(result, "fetched an empty spec for stuck-row")
+        [temporary] = [path for path in cache.iterdir() if path.name.startswith(".openapi.")]
+        self.assertIn(f"could not remove the partial download {temporary} for stuck-row", result.stderr)
+        self.assertIn(f"delete it (rm -f {temporary}) before re-running", result.stderr)
 
     def test_an_unsupported_spec_suffix_names_the_supported_ones(self) -> None:
         result = subprocess.run(
