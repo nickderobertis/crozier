@@ -20,9 +20,7 @@
       },
       "cache": true,
       "inputs": [
-        "crateTests",
-        "crateTestReads",
-        "generator",
+        "crateTestRun",
         "{projectRoot}/project.json"
       ],
       "dependsOn": [

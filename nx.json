@@ -39,6 +39,11 @@
       "{workspaceRoot}/tests/fixtures/**/*",
       "{workspaceRoot}/tests/resolving-arm-inputs.json"
     ],
+    "crateTestRun": [
+      "crateTests",
+      "crateTestReads",
+      "generator"
+    ],
     "e2eSource": [
       "{workspaceRoot}/crates/crozier-e2e/**/*",
       "{workspaceRoot}/tests/support/**/*"
