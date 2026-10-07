@@ -174,14 +174,15 @@ jobs:
       # `live-e2e` project builds the release binary its suite drives; `corpus-match`
       # byte-compares against Fern from committed sources (and proves it with sockets
       # denied and no cache); `census-fallback` holds the parser fallback to the
-      # pinned ruamel.yaml. Each runs when the change reaches it, and on the release
-      # pull request always.
+      # pinned ruamel.yaml; `screenshots` tests the demo renderer with Pillow from
+      # PyPI. Each runs when the change reaches it, and on the release pull request
+      # always.
       # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
       # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] The census-fallback tier needs uv to install the pinned ruamel.yaml, so it runs in this separate leg rather than the check matrix; it reads only committed specifications and loopback servers.
       - name: Live e2e, corpus byte-match and census fallback
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --projects=live-e2e,corpus-match,census-fallback
+        run: just ci-check --projects=live-e2e,corpus-match,census-fallback,screenshots
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate
   # (honoring Cargo.toml's `include`) and compiles from that tarball. This is the

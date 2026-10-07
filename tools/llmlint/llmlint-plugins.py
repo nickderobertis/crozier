@@ -35,6 +35,8 @@ from typing import Any
 REPO = Path(__file__).resolve().parents[2]
 LOCK = REPO / "llmlint-plugins" / "lock.json"
 FETCH_TIMEOUT_SECONDS = 30
+# The hand-edited fields of a lock entry; refresh generates the rest.
+INPUT_FIELDS = ("name", "url", "pin", "file")
 # A plugin config declares its version on a top-level `version:` line; that
 # declared version is what a consumer's `@pin` ranges over and what identifies a
 # cache entry, so it is the version the lock records.
@@ -54,8 +56,14 @@ def load_lock() -> dict[str, Any]:
         fail(f"no lock at {LOCK.relative_to(REPO)}", "restore it from git history")
     except json.JSONDecodeError as error:
         fail(f"{LOCK.relative_to(REPO)} is not valid JSON: {error}", "fix the JSON")
-    if not isinstance(lock.get("plugins"), list) or not lock["plugins"]:
+    if not isinstance(lock, dict) or not isinstance(lock.get("plugins"), list) or not lock["plugins"]:
         fail(f"{LOCK.relative_to(REPO)} declares no plugins", "add a plugin entry")
+    for index, plugin in enumerate(lock["plugins"]):
+        missing = [key for key in INPUT_FIELDS
+                   if not isinstance(plugin, dict) or not isinstance(plugin.get(key), str) or not plugin[key]]
+        if missing:
+            fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} lacks {', '.join(missing)}",
+                 "give every plugin entry a non-empty name, url, pin and file (docs/llmlint-plugins.md)")
     return lock
 
 

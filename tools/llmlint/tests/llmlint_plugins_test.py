@@ -25,6 +25,7 @@ from __future__ import annotations
 import fnmatch
 import hashlib
 import json
+import sys
 import os
 import shutil
 import socket
@@ -164,6 +165,35 @@ class LockRecordsTheVendoredRuleSet(unittest.TestCase):
             "llmlint.yml resolves a plugin over the network at judge time; vendor it"
             " with `just llmlint-plugins-refresh` instead (docs/llmlint-plugins.md)",
         )
+
+
+class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
+    """`refresh` reads the lock's hand-edited fields first; a lock of the wrong
+    shape fails there with the fix, before any network or llmlint call."""
+
+    def refresh_over(self, lock: object) -> subprocess.CompletedProcess[str]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "tools" / "llmlint" / "llmlint-plugins.py"
+            script.parent.mkdir(parents=True)
+            shutil.copy2(REPO / "tools" / "llmlint" / "llmlint-plugins.py", script)
+            (root / "llmlint-plugins").mkdir()
+            (root / "llmlint-plugins" / "lock.json").write_text(json.dumps(lock), encoding="utf-8")
+            return subprocess.run([sys.executable, str(script), "refresh"], capture_output=True, text=True,
+                                  env={**os.environ, "PATH": ""}, timeout=60)
+
+    def test_a_lock_that_is_not_an_object_is_refused(self) -> None:
+        run = self.refresh_over([{"name": "base"}])
+        self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+        self.assertIn("declares no plugins", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
+
+    def test_an_entry_missing_its_hand_edited_fields_is_refused(self) -> None:
+        run = self.refresh_over({"schema": 1, "plugins": [{"name": "base", "url": "", "pin": 1}]})
+        self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+        self.assertIn("plugin #1 lacks url, pin, file", run.stderr)
+        self.assertIn("non-empty name, url, pin and file", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
 
 
 class TheGateAndTheRequiredCheckRunThisSuite(unittest.TestCase):

@@ -114,6 +114,14 @@ class LlmlintDiffTests(unittest.TestCase):
         self.assertIn("llmlint-diff: batch 1/3: 1 file(s)", run.stdout)
         self.assertIn("llmlint-diff: batch 3/3: 1 file(s)", run.stdout)
 
+    def test_a_name_git_would_quote_still_reaches_the_judge(self) -> None:
+        # git quotes "a b.md" and "café.md" in its line-per-path output.
+        self.commit({"a b.md": "a" * 400, "café.md": "c" * 400})
+        run = self.run_script("--budget", "500")
+        self.assertEqual(0, run.returncode, run.stderr)
+        base = ["--diff", "git", "--diff-base", "base"]
+        self.assertEqual([[*base, "a b.md"], [*base, "café.md"]], self.calls())
+
     def test_files_that_fit_together_share_a_batch_and_an_oversized_one_stands_alone(self) -> None:
         self.commit({"a.md": "a", "b.md": "b", "c.md": "c" * 3000})
         run = self.run_script("--budget", "1200")

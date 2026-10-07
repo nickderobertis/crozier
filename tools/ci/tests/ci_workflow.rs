@@ -140,7 +140,7 @@ fn every_gate_leg_routes_its_tier_through_ci_check() {
         [
             "--exclude=tag:tier:promoted",
             "--projects=sdk-env,runtime",
-            "--projects=live-e2e,corpus-match,census-fallback"
+            "--projects=live-e2e,corpus-match,census-fallback,screenshots"
         ]
     );
 }

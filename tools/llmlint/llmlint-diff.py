@@ -85,7 +85,9 @@ def changed(base: str, llmlint: str) -> dict[str, int]:
     merge_base = git("merge-base", base, "HEAD").strip()
     skip = excludes(llmlint)
     sizes: dict[str, int] = {}
-    for path in git("diff", "--name-only", "--diff-filter=d", merge_base).splitlines():
+    # NUL-delimited: git quotes a name holding a space, a quote or a non-ASCII
+    # byte in its line-per-path form, which no such file is literally called.
+    for path in git("diff", "--name-only", "-z", "--diff-filter=d", merge_base).split("\0"):
         if not path or any(pattern.match(path) for pattern in skip) or not Path(path).is_file():
             continue
         diff = subprocess.run(["git", "diff", merge_base, "--", path], capture_output=True).stdout

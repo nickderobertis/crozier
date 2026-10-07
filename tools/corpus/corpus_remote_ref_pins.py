@@ -149,9 +149,6 @@ def manifest_path(root: Path) -> Path:
     return root.joinpath(*MANIFEST_RELATIVE)
 
 
-# ---------------------------------------------------------------------------
-# The immutability predicate
-# ---------------------------------------------------------------------------
 
 
 def _path_segments(url: str) -> list[str]:
@@ -206,9 +203,6 @@ def is_absolute_reference(reference: str) -> bool:
     return bool(parsed.scheme) and bool(parsed.netloc)
 
 
-# ---------------------------------------------------------------------------
-# The manifest
-# ---------------------------------------------------------------------------
 
 
 def load_records(root: Path | None = None) -> list[PinRecord]:
@@ -419,9 +413,6 @@ def corpus_sources(root: Path) -> dict[str, tuple[str, str]]:
     return sources
 
 
-# ---------------------------------------------------------------------------
-# Reading the document
-# ---------------------------------------------------------------------------
 
 
 _CENSUS_CACHE: dict[Path, Any] = {}
@@ -492,9 +483,6 @@ def _iter_references(node: Any) -> Iterator[str]:
             yield from _iter_references(item)
 
 
-# ---------------------------------------------------------------------------
-# The predicate `verify` asserts and `apply` establishes
-# ---------------------------------------------------------------------------
 
 
 def post_condition_failure(root: Path, path: Path, manifest: Path) -> str | None:
@@ -554,9 +542,6 @@ def verification_failure(
     return None
 
 
-# ---------------------------------------------------------------------------
-# Fetching a pinned document's bytes
-# ---------------------------------------------------------------------------
 
 
 def origin_override(environ: Mapping[str, str] | None = None) -> str | None:
@@ -645,9 +630,6 @@ def fetch_bytes(url: str, override: str | None) -> bytes:
             return body.read_bytes()
 
 
-# ---------------------------------------------------------------------------
-# Commands
-# ---------------------------------------------------------------------------
 
 
 def check(root: Path) -> None:

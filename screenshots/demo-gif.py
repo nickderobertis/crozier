@@ -55,16 +55,29 @@ PY_KEYWORDS = {
 }
 
 
-def run_summary(binp: str, spec: str, work: str) -> str:
-    """The genuine one-line summary crozier prints (relative --output, so the
-    path in the message is the bare `sdk`, stable on every machine)."""
+class GenerateFailed(Exception):
+    """`crozier generate` did not produce the session the GIF replays."""
+
+
+def generate_sdk_summary(binp: str, spec: str, work: str) -> str:
+    """Generate the demo SDK into `work/sdk` and return the genuine one-line
+    summary crozier prints (relative --output, so the path in the message is the
+    bare `sdk`, stable on every machine)."""
     env = dict(os.environ)
     proc = subprocess.run(
         [binp, "generate", "python", "--no-config", "--spec", spec, "--output", "sdk",
          "--package-name", "petstore", "--project-name", "petstore"],
         cwd=work, env=env, capture_output=True, text=True,
     )
-    return (proc.stderr or proc.stdout).strip().splitlines()[-1]
+    lines = (proc.stderr or proc.stdout).strip().splitlines()
+    if proc.returncode != 0 or not lines:
+        said = f": {lines[-1]}" if lines else " and printed nothing"
+        raise GenerateFailed(
+            f"`{binp} generate` exited {proc.returncode}{said} — rebuild it with "
+            "`cargo build --release --locked --bin crozier` (or point CROZIER_BIN at a "
+            "working binary), then rerun `just screenshots-gif`"
+        )
+    return lines[-1]
 
 
 def colorize(text: str) -> list[tuple[str, tuple[int, int, int]]]:
@@ -95,7 +108,7 @@ def prompt_line(shown: str, done: bool) -> list:
     cursor while still typing."""
     line = [("$ ", GREEN), (shown, FG)]
     if not done:
-        line.append(("█", DIM))   # block cursor
+        line.append(("█", DIM))
     return line
 
 
@@ -107,28 +120,26 @@ def type_frames(frames: list, base: list, command: str) -> None:
 
 
 def build_frames(binp: str, spec: str, work: str, model: list[str]) -> list:
-    summary = run_summary(binp, spec, work)
+    summary = generate_sdk_summary(binp, spec, work)
     gen_cmd = "crozier generate python --spec petstore.yml --output sdk"
     cat_cmd = "cat sdk/src/petstore/types/pet_status.py"
 
     frames: list = []
     base: list = []
 
-    # 1. Type the generate command, then reveal the summary.
     type_frames(frames, base, gen_cmd)
     base = base + [prompt_line(gen_cmd, True)]
     base = base + [[(summary, FG)]]
     frames.append((base, BEAT_MS))
-    base = base + [[("", FG)]]        # spacer line
+    base = base + [[("", FG)]]
 
-    # 2. Type the cat command, then stream the generated file in line by line.
     type_frames(frames, base, cat_cmd)
     base = base + [prompt_line(cat_cmd, True)]
     for line in model:
         base = base + [colorize(line)]
         frames.append((base, LINE_MS))
 
-    frames.append((base, HOLD_MS))    # hold on the finished session
+    frames.append((base, HOLD_MS))
     return frames
 
 
@@ -180,13 +191,17 @@ def main() -> int:
             return 1
 
     with tempfile.TemporaryDirectory(prefix="crozier-gif-") as work:
-        summary_ok = run_summary(binp, spec, work)
-        model_path = Path(work) / "sdk/src/petstore/types/pet_status.py"
-        if not model_path.exists() or not summary_ok:
-            print("demo-gif: crozier did not produce the expected output", file=sys.stderr)
+        try:
+            summary_ok = generate_sdk_summary(binp, spec, work)
+            model_path = Path(work) / "sdk/src/petstore/types/pet_status.py"
+            if not model_path.exists() or not summary_ok:
+                print("demo-gif: crozier did not produce the expected output", file=sys.stderr)
+                return 1
+            model = model_path.read_text().rstrip("\n").splitlines()
+            frames = build_frames(binp, spec, work, model)
+        except GenerateFailed as error:
+            print(f"demo-gif: {error}", file=sys.stderr)
             return 1
-        model = model_path.read_text().rstrip("\n").splitlines()
-        frames = build_frames(binp, spec, work, model)
 
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     render_gif(frames, font_path, out)

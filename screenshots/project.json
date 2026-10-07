@@ -45,6 +45,16 @@
         "{workspaceRoot}/.freeze-version"
       ]
     },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --no-project --with Pillow python3 screenshots/tests/demo_gif_test.py"
+      },
+      "cache": false,
+      "inputs": [
+        "default"
+      ]
+    },
     "lint": {
       "executor": "nx:run-commands",
       "options": {

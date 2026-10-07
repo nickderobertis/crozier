@@ -8,7 +8,9 @@ with it. This folder holds the inputs; the mechanics live in
 `scripts/` because the pre-push guard and the Visual-docs workflow run it by that
 path) and [`demo-gif.py`](demo-gif.py) (the animated hero). The Nx project
 `screenshots` (`project.json` here) carries them as `capture` and `demo-gif`,
-which neither gate tier runs: screencomp owns the comparison.
+which neither gate tier runs: screencomp owns the comparison. Its one gate
+target, `test`, holds the demo renderer's failure handling (`tests/`); it
+installs Pillow from PyPI, so it is promoted and CI's live-e2e leg runs it.
 
 ## What's here
 
