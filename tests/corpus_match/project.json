@@ -8,9 +8,6 @@
     "tier:promoted",
     "lang:rust"
   ],
-  "implicitDependencies": [
-    "crozier-e2e"
-  ],
   "targets": {
     "test-match": {
       "executor": "nx:run-commands",
@@ -21,7 +18,7 @@
       "inputs": [
         "crateSource",
         "e2eSource",
-        "e2eReads",
+        "goldenReads",
         "generator",
         "default",
         "{workspaceRoot}/scripts/census-python.sh",
@@ -45,7 +42,7 @@
       "inputs": [
         "crateSource",
         "e2eSource",
-        "e2eReads",
+        "goldenReads",
         "generator",
         "default",
         "{workspaceRoot}/scripts/census-python.sh",
@@ -73,7 +70,7 @@
       "inputs": [
         "crateSource",
         "e2eSource",
-        "e2eReads",
+        "goldenReads",
         "generator",
         "default",
         "{workspaceRoot}/justfile",
@@ -82,7 +79,6 @@
         "{workspaceRoot}/tools/corpus/corpus_sources.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
-        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
         "{workspaceRoot}/tools/surface-census/**/*",
         "{workspaceRoot}/tools/fern-refusals/**/*",

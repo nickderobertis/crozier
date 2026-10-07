@@ -76,6 +76,14 @@
       "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
       "{workspaceRoot}/tools/github-action/*.sh"
     ],
+    "goldenReads": [
+      "{workspaceRoot}/tests/fixtures/**/*",
+      "{workspaceRoot}/docs/departures/**/*",
+      "{workspaceRoot}/tools/corpus/corpus_sources.py",
+      "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+      "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+      "{workspaceRoot}/tools/fern-goldens/golden_overlay.py"
+    ],
     "generator": [
       "{workspaceRoot}/.ruff-version",
       {

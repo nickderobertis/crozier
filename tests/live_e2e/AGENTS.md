@@ -21,7 +21,9 @@ affected tier and runs in CI's own required `live-e2e` leg.
   `servers` made the snippet omit it). Endpoints are keyed by the full
   `sub_client.method` path, since a real API reuses a method name (`add`, `all_`)
   across sub-clients. Coverage tracks the spec, and the suite extends to another
-  corpus by adding one line to `conftest.FIXTURES` — no per-endpoint code.
+  corpus by adding one line to `conftest.FIXTURES` — no per-endpoint code — and
+  that fixture's directories to the `test` target's inputs in `project.json`,
+  which name only the fixtures this suite runs.
 - **The mock is Prism** (`@stoplight/prism-cli`, pinned in `conftest.PRISM_PKG`),
   booted per fixture on an ephemeral port in **dynamic, seeded** mode (`-d --seed`):
   it generates each response *from the schema* rather than echoing the spec's

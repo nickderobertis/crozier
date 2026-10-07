@@ -22,7 +22,12 @@
         "default",
         "crateSource",
         "generator",
-        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tests/fixtures/*.*",
+        "{workspaceRoot}/tests/fixtures/exhaustive/**/*",
+        "{workspaceRoot}/tests/fixtures/apideck.com-crm/**/*",
+        "{workspaceRoot}/tests/fixtures/bunq.com/**/*",
+        "{workspaceRoot}/tests/fixtures/corpus-sources/apideck.com-crm/**/*",
+        "{workspaceRoot}/tests/fixtures/corpus-sources/bunq.com/**/*",
         "{workspaceRoot}/tools/corpus/corpus_sources.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py"
       ]

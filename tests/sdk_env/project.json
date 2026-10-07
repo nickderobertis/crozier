@@ -8,9 +8,6 @@
     "tier:promoted",
     "lang:rust"
   ],
-  "implicitDependencies": [
-    "crozier-e2e"
-  ],
   "targets": {
     "test": {
       "executor": "nx:run-commands",
@@ -21,7 +18,9 @@
       "inputs": [
         "crateSource",
         "e2eSource",
-        "e2eReads",
+        "goldenReads",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/tests/runtime/**/*",
         "generator",
         "default"
       ],

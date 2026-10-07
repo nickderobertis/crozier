@@ -8,9 +8,6 @@
     "tier:promoted",
     "lang:python"
   ],
-  "implicitDependencies": [
-    "crozier-e2e"
-  ],
   "targets": {
     "test": {
       "executor": "nx:run-commands",
@@ -21,7 +18,8 @@
       "inputs": [
         "crateSource",
         "e2eSource",
-        "e2eReads",
+        "{workspaceRoot}/tests/runtime/**/*",
+        "{workspaceRoot}/tests/fixtures/exhaustive/**/*",
         "generator",
         "default"
       ],
