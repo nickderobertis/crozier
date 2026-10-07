@@ -3173,6 +3173,23 @@ class LocatorAuditTests(unittest.TestCase):
                 record.write_text(json.dumps({"repository": repository, "path": token}) + "\n")
                 self.assertEqual(0, self.run_audit(root).returncode)
 
+    def test_quoted_input_notes_reject_then_recover(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            note = root / "docs/openapi-surface/note.md"
+            note.parent.mkdir(parents=True)
+            for repository in SEARCH.INDEX.EXCLUDED_REPOSITORIES:
+                with self.subTest(repository=repository):
+                    note.write_text(f"`{repository}`'s own `description.json`")
+                    subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                    refused = self.run_audit(root)
+                    self.assertNotEqual(0, refused.returncode)
+                    self.assertIn("public locator", refused.stderr)
+                    note.write_text("one anonymous synthetic input")
+                    recovered = self.run_audit(root)
+                    self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_generic_repository_links_are_exact_exceptions(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

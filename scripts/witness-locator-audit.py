@@ -35,6 +35,12 @@ QUALIFIED_REVISION = re.compile(
     rf"(?:{REPOSITORIES})[`\"']?\s+(?:at\s+)?[`\"']?[0-9a-f]{{40}}", re.IGNORECASE
 )
 
+PROSE_LOCATOR = re.compile(
+    rf"(?:{REPOSITORIES})[`\"']?(?:'s)?\s+(?:(?:own|input|document|fixture|test|file)\s+)*"
+    r"[`\"'][^`\"'\n]+\.(?:yaml|yml|json)(?:\.source)?[`\"']",
+    re.IGNORECASE,
+)
+
 
 def findings(text: str) -> list[str]:
     errors = []
@@ -49,6 +55,8 @@ def findings(text: str) -> list[str]:
         parts = value.split('@', 1)
         if not all(TOKEN.fullmatch(part) for part in parts):
             errors.append('excluded repository retains a public locator')
+    if PROSE_LOCATOR.search(text):
+        errors.append('excluded repository retains a public locator in prose')
     if QUALIFIED_REVISION.search(text):
         errors.append('excluded repository retains a public revision')
     return errors

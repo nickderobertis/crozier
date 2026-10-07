@@ -114,7 +114,8 @@ def continuation_rows(evidence: Path, source: str) -> tuple[list[tuple[int, dict
 
 
 def opaque_summary(count: int) -> str:
-    return f"; {count} opaque v2 record(s) screened by repository rule" if count else ""
+    version = INDEX.OPAQUE_PREFIX.split(":")[1]
+    return f"; {count} opaque {version} record(s) screened by repository rule" if count else ""
 
 
 def status_of(row: dict[str, Any]) -> str:
