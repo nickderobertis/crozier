@@ -73,6 +73,7 @@ import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
 from typing import Any, Iterator, Mapping
 from urllib.parse import urlsplit
 
@@ -413,12 +414,10 @@ def corpus_sources(root: Path) -> dict[str, tuple[str, str]]:
     return sources
 
 
+_CENSUS_CACHE: dict[Path, ModuleType] = {}
 
 
-_CENSUS_CACHE: dict[Path, Any] = {}
-
-
-def _census(root: Path):
+def _census(root: Path) -> ModuleType:
     """The repository's one OpenAPI document reader, imported lazily.
 
     `check` never opens a document, so it must not need this module present.

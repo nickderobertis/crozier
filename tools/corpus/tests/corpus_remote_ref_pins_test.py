@@ -162,8 +162,6 @@ class PinMechanismTests(unittest.TestCase):
         self.write_corpus()
         self.write_manifest()
 
-    # -- the served world ---------------------------------------------------
-
     def publish_documents(self) -> None:
         """Serve the pinned schema documents and each row's root document."""
         self.digests: dict[str, str] = {}
@@ -255,8 +253,6 @@ class PinMechanismTests(unittest.TestCase):
     def manifest(self) -> Path:
         return self.root / "tests" / "fixtures" / MANIFEST_NAME
 
-    # -- driving the real fetch ---------------------------------------------
-
     def destination(self, name: str) -> Path:
         return self.root / ".local" / "corpus" / name
 
@@ -297,8 +293,6 @@ class PinMechanismTests(unittest.TestCase):
             return
         self.assertEqual({path.name for path in directory.iterdir()}, expected)
 
-    # -- 1. rewriting happens, and it is exact ------------------------------
-
     def test_a_pinned_row_publishes_the_served_bytes_with_exactly_the_records_applied(
         self,
     ) -> None:
@@ -324,8 +318,6 @@ class PinMechanismTests(unittest.TestCase):
         self.assertEqual(self.server.requests.count(path), 2)
         self.assertEqual(self.published("pinned-row").read_bytes(), self.expected_pinned_bytes())
 
-    # -- 2. rewriting happens BEFORE publication ----------------------------
-
     def test_a_refused_document_is_never_published_over_an_empty_cache(self) -> None:
         for name in ("mutable-row", "digest-row", "stale-row", "mixed-row"):
             with self.subTest(name):
@@ -342,15 +334,11 @@ class PinMechanismTests(unittest.TestCase):
                 self.assertEqual(self.published(name).read_bytes(), prior)
                 self.assert_no_leftovers(name, expected={"openapi.yaml"})
 
-    # -- 3. a mutable absolute `$ref` is rejected for an unpinned row -------
-
     def test_a_row_with_no_records_may_not_publish_a_mutable_absolute_ref(self) -> None:
         result = self.fetch("mutable-row")
         self.assert_actionable(
             result, mutable_url("block"), str(self.manifest), "add a record"
         )
-
-    # -- 4. ...and is inert when there is nothing to guard ------------------
 
     def test_a_row_with_no_records_and_no_absolute_ref_publishes_the_served_bytes(
         self,
@@ -359,8 +347,6 @@ class PinMechanismTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.published("plain-row").read_bytes(), self.roots["plain-row"])
         self.assertEqual(result.stderr, "")
-
-    # -- 5. a digest mismatch fails -----------------------------------------
 
     def test_a_record_whose_digest_disagrees_with_the_served_bytes_fails(self) -> None:
         result = self.fetch("digest-row")
@@ -372,8 +358,6 @@ class PinMechanismTests(unittest.TestCase):
             str(self.manifest),
             "re-measure the record",
         )
-
-    # -- 6. a stale manifest record fails -----------------------------------
 
     def test_a_record_the_served_document_does_not_reference_fails(self) -> None:
         result = self.fetch("stale-row")
@@ -396,8 +380,6 @@ class PinMechanismTests(unittest.TestCase):
             str(self.manifest),
             "re-run the fetch",
         )
-
-    # -- 7. `--if-missing` hands back only a matching cache -----------------
 
     def plant(self, name: str, body: bytes) -> None:
         self.destination(name).mkdir(parents=True, exist_ok=True)
@@ -570,8 +552,6 @@ class PinMechanismTests(unittest.TestCase):
             f"`{PINNED_SHA}` | MIT | link-ok | relative ref", f"`{SUPERSEDED_SHA}` | MIT | link-ok | relative ref"
         ))
 
-    # -- the test-only fetch-origin override --------------------------------
-
     def test_the_fetch_origin_override_refuses_a_non_loopback_value(self) -> None:
         result = self.fetch("pinned-row", CROZIER_CORPUS_PIN_ORIGIN="https://example.test")
         self.assert_actionable(
@@ -583,7 +563,6 @@ class PinMechanismTests(unittest.TestCase):
         )
         self.assert_no_leftovers("pinned-row", expected=set())
 
-    # -- a failed fetch step fails the fetch, never prints a path -----------
     # The fetchers run inside the caller's command substitution, where errexit
     # does not reach, so each step's failure must be returned explicitly.
 
