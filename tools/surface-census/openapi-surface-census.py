@@ -65,10 +65,6 @@ from urllib.parse import unquote
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "corpus"))
 import corpus_remote_ref_pins as corpus_pins  # noqa: E402 - importable only once tools/corpus is on sys.path
 
-# ---------------------------------------------------------------------------
-# Reading a source document
-# ---------------------------------------------------------------------------
-#
 # The corpus is half JSON and half YAML, and this script has to run inside
 # `just check` on the Linux/macOS/Windows matrix with nothing but the standard
 # library — the gate installs no Python packages, so PyYAML is not available.
@@ -744,10 +740,6 @@ def load_document(path: Path) -> Any:
             raise DocumentError(path, error.lineno, f"is not valid JSON: {error.msg}") from error
     return _YamlReader(path, text).load()
 
-
-# ---------------------------------------------------------------------------
-# The OpenAPI object model
-# ---------------------------------------------------------------------------
 
 ONE, LIST, MAP = "one", "list", "map"
 
@@ -1556,10 +1548,6 @@ CONJUNCTIONS = {
 }
 
 
-# ---------------------------------------------------------------------------
-# The case table: the six blind functions of `src/ir.rs`, branch by branch
-# ---------------------------------------------------------------------------
-#
 # The one machine-readable statement of the derivation
 # `docs/openapi-surface-coverage.md`'s
 # `### The six blind regions of src/ir.rs, case by case` restates for a reader.
@@ -1861,7 +1849,6 @@ NEGATION = "!"
 _DESCENT = re.compile(f"({re.escape(RESOLVING_DESCENT)}|{re.escape(DESCENT)})")
 
 
-
 # The pointer-walk family: readings that are a conjunction **member** and never a
 # selector on their own.
 #
@@ -2148,10 +2135,6 @@ def is_reference_node(node: dict[Any, Any], kind_name: str) -> bool:
     return "$ref" in node and kind_name not in REF_TRANSPARENT
 
 
-# ---------------------------------------------------------------------------
-# crozier's own name normalization
-# ---------------------------------------------------------------------------
-#
 # Two predicates ask which *names* crozier would render as one Python identifier,
 # so the normalizations below are not invented here.
 #
@@ -2575,10 +2558,6 @@ def numeric_enum_name(value: int) -> str:
     return small[value // divisor] + "_" + label + ("_" + numeric_enum_name(value % divisor) if value % divisor else "")
 
 
-# ---------------------------------------------------------------------------
-# The operationId method-name port
-# ---------------------------------------------------------------------------
-#
 # `operation.operationId:digit-leading-method` asks whether the Python method
 # name crozier derives from an operation's `operationId` takes
 # `sanitize_identifier`'s leading-digit `_` prefix. That name is
@@ -3115,10 +3094,6 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
     return found
 
 
-# ---------------------------------------------------------------------------
-# The discriminated-union reading
-# ---------------------------------------------------------------------------
-#
 # Three predicates ask whether `discriminated_union` of `src/ir.rs` would build a
 # union out of one Schema Object, which is a comparison *across* the members of
 # one union rather than a property of the node in front of the walk: every member
@@ -5196,10 +5171,6 @@ def census_document(
     census.finish()
     return dict(census.counts)
 
-
-# ---------------------------------------------------------------------------
-# The registered golden sources
-# ---------------------------------------------------------------------------
 
 SPEC_NAMES = ("openapi.yml", "openapi.yaml", "openapi.json")
 _ROW = re.compile(r"^\s*\|\s*\d+\s*\|")

@@ -1234,8 +1234,8 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
 
 # The measured reason a candidate passing every screen is still no witness: a
 # document written to exercise a tool is hand-written, and only a real
-# specification is evidence that Fern generates from a shape (the manager's
-# ruling on thin-goldens-continue-2). What follows it names what makes it one.
+# specification is evidence that Fern generates from a shape. What follows it
+# names what makes it one.
 FIXTURE_DECLINE = "not a real-world specification: a test fixture written to exercise a tool"
 
 
