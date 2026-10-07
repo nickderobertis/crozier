@@ -583,6 +583,126 @@ class PinMechanismTests(unittest.TestCase):
         )
         self.assert_no_leftovers("pinned-row", expected=set())
 
+    # -- a failed fetch step fails the fetch, never prints a path -----------
+    # The fetchers run inside the caller's command substitution, where errexit
+    # does not reach, so each step's failure must be returned explicitly.
+
+    def assert_refused_without_a_path(
+        self, result: subprocess.CompletedProcess[str], *names: str
+    ) -> None:
+        self.assert_actionable(result, *names, "then re-run")
+        self.assertEqual(result.stdout, "", "a failed fetch must not print a source path")
+
+    def test_a_missing_manifest_names_how_to_restore_it(self) -> None:
+        (self.root / "tests" / "fixtures" / "CORPUS.md").unlink()
+        self.assert_actionable(
+            self.fetch("plain-row"), "git checkout -- tests/fixtures/CORPUS.md", "then re-run"
+        )
+
+    def test_an_uncreatable_cache_directory_fails_the_fetch(self) -> None:
+        self.destination("plain-row").parent.mkdir(parents=True)
+        self.destination("plain-row").write_text("in the way\n", encoding="utf-8")
+        self.assert_refused_without_a_path(
+            self.fetch("plain-row"), "cannot create the cache directory", "plain-row"
+        )
+
+    def test_an_unwritable_cache_directory_fails_before_fetching(self) -> None:
+        if os.geteuid() == 0:
+            self.skipTest("root writes into a read-only directory")
+        directory = self.destination("plain-row")
+        directory.mkdir(parents=True)
+        directory.chmod(0o555)
+        self.addCleanup(directory.chmod, 0o755)
+        self.assert_refused_without_a_path(
+            self.fetch("plain-row"), "cannot create a temporary file in", "writable"
+        )
+        self.assertEqual(self.server.requests, [])
+
+    def test_a_failed_publication_keeps_the_prior_cache_and_prints_no_path(self) -> None:
+        directory = self.destination("plain-row")
+        directory.mkdir(parents=True)
+        (directory / "openapi.json").write_text("{}\n", encoding="utf-8")
+        real_mv = shutil.which("mv")
+        self.assertIsNotNone(real_mv)
+        stubs = Path(self.temporary.name) / "failing-mv"
+        stubs.mkdir()
+        (stubs / "mv").write_text(
+            "#!/usr/bin/env bash\n"
+            'case "${@: -1}" in */openapi.yaml) echo "mv: simulated rename failure" >&2; exit 1 ;; esac\n'
+            f'exec "{real_mv}" "$@"\n',
+            encoding="utf-8",
+        )
+        (stubs / "mv").chmod(0o755)
+        result = self.fetch("plain-row", PATH=f"{stubs}{os.pathsep}{os.environ['PATH']}")
+        self.assert_refused_without_a_path(
+            result, "mv: simulated rename failure", "could not publish the fetched spec for plain-row"
+        )
+        # The stale sibling is removed only after a successful publication.
+        self.assert_no_leftovers("plain-row", expected={"openapi.json"})
+
+    def test_a_stale_sibling_that_cannot_be_removed_fails_the_fetch(self) -> None:
+        blocking = self.destination("plain-row") / "openapi.json"
+        blocking.mkdir(parents=True)
+        (blocking / "keep").write_text("a directory rm -f cannot remove\n", encoding="utf-8")
+        self.assert_refused_without_a_path(
+            self.fetch("plain-row"), "could not remove the stale cached spec", f"rm -rf {blocking}"
+        )
+
+    def upstream_repository(self) -> tuple[Path, str]:
+        """A real local git repository standing in for a repository-source row."""
+        upstream = Path(self.temporary.name) / "upstream"
+        upstream.mkdir()
+        (upstream / "openapi.yaml").write_bytes(self.roots["plain-row"])
+        environment = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull}
+        for command in (
+            ["init", "-q"],
+            ["add", "-A"],
+            ["-c", "user.name=t", "-c", "user.email=t@example.test", "commit", "-qm", "upstream"],
+        ):
+            subprocess.run(["git", "-C", str(upstream), *command], env=environment, check=True)
+        head = subprocess.run(
+            ["git", "-C", str(upstream), "rev-parse", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        return upstream, head
+
+    def add_repository_row(self, name: str, source: str, ref: str) -> None:
+        corpus = self.root / "tests" / "fixtures" / "CORPUS.md"
+        corpus.write_text(
+            corpus.read_text(encoding="utf-8")
+            + f"| 99 | `{name}` | git | {source} | `{ref}` | MIT | link-ok | repository row |\n",
+            encoding="utf-8",
+        )
+
+    def test_a_repository_row_prints_its_clone_only_once_every_git_step_succeeded(self) -> None:
+        upstream, head = self.upstream_repository()
+        self.add_repository_row("repo-row", str(upstream), head)
+        self.add_repository_row("bad-ref-row", str(upstream), "0" * 40)
+        self.add_repository_row("missing-repo-row", str(upstream.with_name("no-such-repo")), "HEAD")
+
+        fetched = self.fetch("repo-row")
+        self.assertEqual(fetched.returncode, 0, fetched.stderr)
+        self.assertEqual(fetched.stdout.strip(), str(self.destination("repo-row")))
+        self.assertTrue((self.destination("repo-row") / "openapi.yaml").is_file())
+
+        with self.subTest("clone"):
+            self.assert_refused_without_a_path(
+                self.fetch("missing-repo-row"), "could not clone", "source URL in tests/fixtures/CORPUS.md"
+            )
+        with self.subTest("checkout"):
+            self.assert_refused_without_a_path(
+                self.fetch("bad-ref-row"), f"could not check out {'0' * 40} for bad-ref-row", "pinned ref"
+            )
+        with self.subTest("update"):
+            upstream.rename(upstream.with_name("upstream-gone"))
+            self.assert_refused_without_a_path(
+                self.fetch("repo-row"),
+                "could not update the cached clone of repo-row",
+                f"rm -rf {self.destination('repo-row')}",
+            )
+
 
 class TheLintHoldsTheFinishedTree(unittest.TestCase):
     def run_check(self, *args: str) -> subprocess.CompletedProcess[str]:

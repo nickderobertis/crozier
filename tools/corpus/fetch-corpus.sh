@@ -55,7 +55,11 @@ done
   exit 1
 }
 
-[ -f "$manifest" ] || { echo "fetch-corpus: missing $manifest" >&2; exit 1; }
+[ -f "$manifest" ] || {
+  echo "fetch-corpus: missing $manifest — it is committed; restore it with" \
+       "git checkout -- tests/fixtures/CORPUS.md, then re-run" >&2
+  exit 1
+}
 mkdir -p "$dest_root"
 
 found=0

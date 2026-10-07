@@ -115,17 +115,38 @@ corpus_github_clone_url() {
   esac
 }
 
+# Callers run these fetchers inside a command substitution, where errexit does
+# not apply, so every step returns its failure explicitly: a path is printed
+# only once the source behind it is really there.
 corpus_fetch_repo() {
-  local fetch_root="$1" name="$2" url="$3" ref="$4" target
+  local fetch_root="$1" name="$2" url="$3" ref="$4" target clone_url
   target="$fetch_root/$name"
-  mkdir -p "$fetch_root"
+  mkdir -p "$fetch_root" || {
+    echo "corpus: cannot create the fetch root $fetch_root for $name — choose a writable" \
+         "fetch root, then re-run" >&2
+    return 1
+  }
   if [ -d "$target/.git" ]; then
-    git -C "$target" fetch --quiet --tags origin
+    git -C "$target" fetch --quiet --tags origin || {
+      echo "corpus: could not update the cached clone of $name in $target — check network" \
+           "access, or remove the clone (rm -rf $target) to re-clone it, then re-run" >&2
+      return 1
+    }
   else
-    git clone --quiet --filter=blob:none "$(corpus_github_clone_url "$url")" "$target"
+    clone_url="$(corpus_github_clone_url "$url")"
+    git clone --quiet --filter=blob:none "$clone_url" "$target" || {
+      echo "corpus: could not clone $clone_url for $name — check network access and the" \
+           "row's source URL in tests/fixtures/CORPUS.md, then re-run" >&2
+      return 1
+    }
   fi
   if [ "$ref" != HEAD ]; then
-    git -C "$target" checkout --quiet "$ref"
+    git -C "$target" checkout --quiet "$ref" || {
+      echo "corpus: could not check out $ref for $name in $target — check the row's pinned" \
+           "ref in tests/fixtures/CORPUS.md, or remove the clone (rm -rf $target) to" \
+           "re-clone it, then re-run" >&2
+      return 1
+    }
   fi
   printf '%s\n' "$target"
 }
@@ -159,12 +180,21 @@ corpus_fetch_source() {
     return
   fi
   if corpus_is_direct_spec_url "$url"; then
-    local target_dir="$fetch_root/$name" target temporary stale
-    mkdir -p "$target_dir"
+    local target_dir="$fetch_root/$name" target filename temporary stale
+    mkdir -p "$target_dir" || {
+      echo "corpus: cannot create the cache directory $target_dir for $name — remove" \
+           "whatever is in its way or choose a writable fetch root, then re-run" >&2
+      return 1
+    }
     # Crozier deliberately dispatches JSON/YAML parsing by extension. Preserve the
     # raw source suffix while keeping one canonical basename for every consumer.
-    target="$target_dir/$(corpus_spec_cache_filename "$url")"
-    temporary="$(mktemp "$target_dir/.openapi.XXXXXX")"
+    filename="$(corpus_spec_cache_filename "$url")" || return 1
+    target="$target_dir/$filename"
+    temporary="$(mktemp "$target_dir/.openapi.XXXXXX")" || {
+      echo "corpus: cannot create a temporary file in $target_dir for $name — check that it" \
+           "is writable and has free space, then re-run" >&2
+      return 1
+    }
     if ! curl -fsSL -A crozier-fixture-builder "$url" -o "$temporary"; then
       rm -f "$temporary"
       return 1
@@ -180,9 +210,19 @@ corpus_fetch_source() {
       rm -f "$temporary"
       return 1
     fi
-    mv "$temporary" "$target"
+    # Stale siblings are removed only once the new document is published.
+    if ! mv "$temporary" "$target"; then
+      rm -f "$temporary"
+      echo "corpus: could not publish the fetched spec for $name to $target — check that" \
+           "$target_dir is writable and nothing there blocks the rename, then re-run" >&2
+      return 1
+    fi
     for stale in "$target_dir/openapi.json" "$target_dir/openapi.yaml" "$target_dir/openapi.yml"; do
-      [ "$stale" = "$target" ] || rm -f "$stale"
+      [ "$stale" = "$target" ] || rm -f "$stale" || {
+        echo "corpus: could not remove the stale cached spec $stale for $name — delete it" \
+             "(rm -rf $stale), then re-run" >&2
+        return 1
+      }
     done
     printf '%s\n' "$target"
   else
