@@ -164,7 +164,17 @@ def read_tsv(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[st
         missing = [column for column in required if column not in (reader.fieldnames or ())]
         if missing:
             fail(f"{path} has no {missing} column(s) (header {reader.fieldnames}); {remedy}")
-        return list(reader)
+        rows = []
+        for row in reader:
+            # A short row leaves its trailing columns None and a long one files its
+            # extra cells under None: either is a row the header does not describe.
+            if None in row or None in row.values():
+                cells = sum(1 for column, cell in row.items() if column is not None and cell is not None)
+                cells += len(row.get(None) or ())
+                fail(f"{path}:{reader.line_num} has {cells} cell(s) where its header names "
+                     f"{len(reader.fieldnames or ())} — {remedy}")
+            rows.append(row)
+        return rows
 
 
 def read_jsonl(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[str, Any]]:
@@ -535,9 +545,12 @@ def _precomputed(
 ) -> list[dict[str, str]]:
     """Results from a census already taken over this listing's pinned bytes.
 
-    Each line is `{document, sha256_ok, status, census}` as the walk census writes
-    it: `sha256_ok` is the local copy's digest checked against the listing, and
-    `census` the engine's nonzero selector counts over the parsed document.
+    Each line is `{document, sha256, sha256_ok, status, census}` as the walk census
+    writes it: `sha256_ok` is the local copy's digest checked against the listing,
+    `sha256` the digest it was checked against, and `census` the engine's nonzero
+    selector counts over the parsed document. A row is bound to the listing's
+    pinned bytes: one taken over other bytes is no reading of them, so its
+    document is censused again here.
     """
     taken = {}
     with gzip.open(path, "rt", encoding="utf-8") as handle:
@@ -554,15 +567,26 @@ def _precomputed(
                 or not isinstance(census, dict)
                 or not all(isinstance(n, int) for n in census.values())
             ):
-                fail(f"{path}:{number} is not `{{document, sha256_ok, status, census}}` with a string `error` "
+                fail(f"{path}:{number} is not `{{document, sha256, sha256_ok, status, census}}` with a string `error` "
                      "and a selector-count `census`; take the walk census again, or walk without --census")
+            if row.get("local") != "missing" and (
+                not isinstance(row.get("sha256_ok"), bool)
+                or not isinstance(row.get("sha256"), str)
+                or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"])
+            ):
+                fail(f"{path}:{number} states no boolean `sha256_ok` and SHA-256 `sha256` for the copy it read — "
+                     "take the walk census again, or walk without --census")
             taken[row["document"]] = row
     out = []
     for row in listing:
         found = taken.get(row["document"])
         if found is None or found.get("local") == "missing":
             out.append({"status": "unreadable: no local copy", "matched_keys": ""})
-        elif found.get("sha256_ok") is False:
+        elif found["sha256"] != row["sha256"]:
+            # Taken over other bytes than this listing pins: read the document again.
+            out.append({"status": "unreadable: precomputed census was taken over other bytes", "matched_keys": "",
+                        "census_error": "1"})
+        elif found["sha256_ok"] is not True:
             out.append({"status": "unreadable: local bytes differ from the pinned SHA-256", "matched_keys": ""})
         elif "error" in found:
             # A parse refusal (`DocumentError: …`) is worth reading again for its
@@ -1127,18 +1151,32 @@ def probe_cache_path(build: str) -> Path:
 
 
 def load_probe_cache(build: str) -> dict[str, dict[str, Any]]:
-    """One build's runs so far, by document digest; a torn last line is dropped."""
+    """One build's runs so far, by document digest; a torn last line is dropped.
+
+    A whole line is a run as `append_probe_cache` filed it, so one that is not —
+    a digest that is no SHA-256, a status that is no string, reached sites that
+    are not a list of site names — is refused rather than read as a run.
+    """
     path = probe_cache_path(build)
     if not path.is_file():
         return {}
     out: dict[str, dict[str, Any]] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         try:
             row = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if isinstance(row, dict) and isinstance(row.get("digest"), str):
-            out[row["digest"]] = {"status": row.get("status", ""), "reached": list(row.get("reached", []))}
+        if (
+            not isinstance(row, dict)
+            or not isinstance(row.get("digest"), str)
+            or not re.fullmatch(r"[0-9a-f]{64}", row["digest"])
+            or not isinstance(row.get("status"), str)
+            or not isinstance(row.get("reached"), list)
+            or not all(isinstance(site, str) for site in row["reached"])
+        ):
+            fail(f"{path}:{number} is not a probe run (`digest` SHA-256, string `status`, `reached` site "
+                 f"names) — delete {path}; the next `probe` generates its documents again")
+        out[row["digest"]] = {"status": row["status"], "reached": list(row["reached"])}
     return out
 
 

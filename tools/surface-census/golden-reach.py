@@ -822,12 +822,20 @@ def load_census(path: Path) -> dict[str, Any]:
     shaped = (
         isinstance(census, dict)
         and isinstance(census.get("sources"), list)
-        and all(isinstance(s, dict) and "fixture" in s for s in census["sources"])
+        and all(isinstance(s, dict) and isinstance(s.get("fixture"), str) for s in census["sources"])
         and isinstance(census.get("rows"), list)
-        and all(isinstance(r, dict) and {"selector", "fixture", "count"} <= r.keys() for r in census["rows"])
+        and all(
+            isinstance(r, dict)
+            and isinstance(r.get("selector"), str)
+            and isinstance(r.get("fixture"), str)
+            and type(r.get("count")) is int
+            and r["count"] >= 0
+            for r in census["rows"]
+        )
     )
     if not shaped:
-        fail(f"{path} is not the census's `--json` output (`sources` and `rows`); "
+        fail(f"{path} is not the census's `--json` output (`sources` naming string fixtures, and `rows` of "
+             "string `selector` and `fixture` with a non-negative integer `count`); "
              "re-run `just golden-reach` to write it again")
     return census
 
