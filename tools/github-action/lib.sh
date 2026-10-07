@@ -33,15 +33,18 @@ REPORT_SCHEMA="$action_root/assets/compare-report.schema.json"
 [ -r "$REPORT_SCHEMA" ] || die "the report contract $REPORT_SCHEMA is missing" \
   "restore it (git checkout -- assets/compare-report.schema.json) or pin the action to a release, then re-run"
 
-# `report_is_whole FILE`: FILE is a `crozier compare` report carrying every
-# field the Action reads, typed as the schema types it — statuses, exit codes
-# and layouts read off the schema's own enums, each timing figure null only
-# where the schema allows null — so no count, figure or path reaches an output
-# or the summary unchecked.
+# `report_is_whole FILE`: FILE is one `crozier compare` report — one JSON
+# document — carrying every field the schema requires, each the Action reads
+# typed as the schema types it — statuses, exit codes and layouts read off the
+# schema's own enums, each timing figure null only where the schema allows null
+# — so no count, figure or path reaches an output or the summary unchecked. A
+# required field that is absent is refused, not read as null.
 report_is_whole() {
-  jq -e --slurpfile schema "$REPORT_SCHEMA" '
+  jq -n -e --slurpfile schema "$REPORT_SCHEMA" '
     $schema[0] as $s
-    | ($s["$defs"].Status.oneOf | map(.const)) as $statuses
+    | [inputs] as $documents
+    | ($documents | length == 1) and ($documents[0] |
+    ($s["$defs"].Status.oneOf | map(.const)) as $statuses
     | ($s.properties.exit_code.enum) as $exits
     | ($s["$defs"].ComparedLayout.oneOf | map(.const)) as $layouts
     | def count: type == "number" and . >= 0 and . == floor;
@@ -51,24 +54,26 @@ report_is_whole() {
         | all($definitions | to_entries[] | select(.value.format == "double");
               (.value) as $definition | $value[.key] | figure($definition));
       def paths: type == "array" and all(.[]; type == "string");
-    (.schema_version == 1 or .schema_version == 2)
+      def carries($definition): type == "object" and (. as $value | all($definition.required[]; . as $field | $value | has($field)));
+    carries($s)
+    and (.schema_version == 1 or .schema_version == 2)
     and (.exit_code as $code | $exits | index($code) != null)
-    and (.counts | type == "object"
+    and (.counts | carries($s["$defs"].Counts)
          and (.matched | count) and (.mismatched | count) and (.could_not_check | count))
-    and (.timing_totals | type == "object" and (.generators_timed | count)
+    and (.timing_totals | carries($s["$defs"].TimingTotals) and (.generators_timed | count)
          and figures($s["$defs"].TimingTotals.properties))
     and (.results | type == "array" and all(.[];
-      type == "object"
+      carries($s["$defs"].GeneratorResult)
       and (.status as $status | $statuses | index($status) != null)
       and (.config_file | type == "string")
       and (.generator | . == null or type == "string")
       and (.reason | . == null or type == "string")
       and (.reference | . == null or (type == "object" and (.command | type == "string")))
-      and (.timing | . == null or (type == "object"
+      and (.timing | . == null or (carries($s["$defs"].GeneratorResult.properties.timing)
            and figures($s["$defs"].GeneratorResult.properties.timing.properties)))
-      and (.comparison | . == null or (type == "object"
+      and (.comparison | . == null or (carries($s["$defs"].GeneratorResult.properties.comparison)
            and (.files_compared | count) and (.layout as $layout | $layouts | index($layout) != null)
-           and all(.differing, .only_in_reference, .only_in_crozier; paths)))))
+           and all(.differing, .only_in_reference, .only_in_crozier; paths))))))
   ' "$1" >/dev/null 2>&1
 }
 

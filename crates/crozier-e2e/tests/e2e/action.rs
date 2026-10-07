@@ -717,6 +717,20 @@ fn a_report_of_the_wrong_shape_is_refused_by_compare_and_summary() {
             "null total the schema requires",
             ".timing_totals.reference_seconds = null",
         ),
+        // A field the schema requires, absent, is not a null one.
+        ("absent nullable total", "del(.timing_totals.speedup)"),
+        ("absent nullable result field", "del(.results[0].reason)"),
+        (
+            "absent nullable figure",
+            "(.results[] | select(.timing != null) | .timing) |= del(.speedup)",
+        ),
+        (
+            "absent field the Action does not read",
+            "del(.crozier_version)",
+        ),
+        // A second document after the report is no longer one report.
+        ("a second document", ". , {}"),
+        ("an invalid document then the report", "1, ."),
     ] {
         let scratch = tempfile::tempdir().unwrap();
         let cli = scratch.path().join("crozier");
