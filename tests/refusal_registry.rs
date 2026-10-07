@@ -134,6 +134,55 @@ fn refusing_class<'a>(
     }
 }
 
+/// Unevaluated classes promise only a pinned, measured input record.
+fn unevaluated_files(root: &Path, id: &str) -> Vec<String> {
+    let dir = root.join(id);
+    let mut failures = Vec::new();
+    if !dir.join("probe.yml").is_file() {
+        failures.push(format!("{id}: probe.yml is missing"));
+    }
+    match std::fs::read_to_string(dir.join("fern-refusal.txt")) {
+        Ok(record) => {
+            for field in [
+                "fern_cli_version: 5.67.1",
+                "fern_python_sdk_version: 5.20.0",
+            ] {
+                if !record.lines().any(|line| line == field) {
+                    failures.push(format!("{id}: fern-refusal.txt lacks `{field}`"));
+                }
+            }
+            if !record.lines().any(|line| {
+                line.strip_prefix("diagnostic:")
+                    .is_some_and(|value| !value.trim().is_empty())
+            }) {
+                failures.push(format!("{id}: fern-refusal.txt has no diagnostic"));
+            }
+        }
+        Err(error) => failures.push(format!("{id}: fern-refusal.txt: {error}")),
+    }
+    failures
+}
+
+#[test]
+fn unevaluated_records_require_the_probe_and_pinned_diagnostic() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("pending-shape");
+    std::fs::create_dir(&dir).unwrap();
+    std::fs::write(
+        dir.join("fern-refusal.txt"),
+        "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ndiagnostic: measured refusal\n",
+    )
+    .unwrap();
+    assert_eq!(
+        unevaluated_files(root.path(), "pending-shape"),
+        ["pending-shape: probe.yml is missing"]
+    );
+    std::fs::write(dir.join("probe.yml"), "not yet evaluated").unwrap();
+    assert!(unevaluated_files(root.path(), "pending-shape").is_empty());
+    std::fs::write(dir.join("fern-refusal.txt"), "diagnostic: \n").unwrap();
+    assert_eq!(unevaluated_files(root.path(), "pending-shape").len(), 3);
+}
+
 #[test]
 fn every_class_probe_is_refused_as_its_registry_row_states() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
@@ -142,6 +191,14 @@ fn every_class_probe_is_refused_as_its_registry_row_states() {
     let mut failures = Vec::new();
     for (id, class) in &registry {
         let probe = root.join(id).join("probe.yml");
+        if class.status == "unevaluated" {
+            failures.extend(unevaluated_files(&root, id));
+            continue;
+        }
+        if !matches!(class.status.as_str(), "generate" | "refuse") {
+            failures.push(format!("{id}: unknown status `{}`", class.status));
+            continue;
+        }
         for strict in [false, true] {
             let mode = if strict { "strict" } else { "default" };
             match (class.status.as_str(), render(&probe, strict)) {
