@@ -165,6 +165,9 @@ def load_manifest(root: Path) -> list[Record]:
         record = Record(*cells)
         if not DIGEST_RE.fullmatch(record.sha256):
             raise SourcesError(f"{site}: sha256 {record.sha256!r} is not 64 lowercase hexadecimal characters")
+        if not safe_name(record.corpus_name):
+            raise SourcesError(f"{site}: corpus name {record.corpus_name!r} is not one path segment; "
+                               "rewrite the manifest with `vendor`")
         relative = PurePosixPath(record.path)
         prefix = ROOT_RELATIVE / record.corpus_name
         if ".." in relative.parts or not relative.is_relative_to(prefix) or relative == prefix:
@@ -350,9 +353,14 @@ def refetch(root: Path, fixtures: list[str], source: Path | None, *, write: bool
         return drifted
 
 
+def safe_name(name: str) -> bool:
+    """A corpus row's name as a single path segment: what joins it under the corpus root."""
+    return re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", name) is not None and ".." not in name
+
+
 def prepare(root: Path, fixture: str, output: Path) -> Path:
     """Stage immutable copies with remote refs pointing at their committed files."""
-    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", fixture) or ".." in fixture:
+    if not safe_name(fixture):
         raise SourcesError("unsafe fixture name; use a registered CORPUS.md name")
     aliases: dict[str, str] = {}
     alias_file = root / "tests/fixtures/corpus-aliases.tsv"

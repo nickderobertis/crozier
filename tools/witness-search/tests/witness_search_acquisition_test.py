@@ -833,6 +833,9 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     self.assertIn("repair the ledger it names", refused.stderr)
             (root / "witness-search-jentic/records.tsv").write_text(header, encoding="utf-8")
             for label, path, text, message in (
+                ("repeated column", root / "witness-search-keys.tsv",
+                 "key\tselector\tregion\tcensus_status\tkey\nshape-a\tx\ts.md\tsupported\tother\n",
+                 "witness-search-keys.tsv names column(s) key twice"),
                 ("census status", root / "witness-search-keys.tsv",
                  "key\tselector\tregion\tcensus_status\nshape-a\tx\ts.md\tmaybe\n",
                  "witness-search-keys.tsv:2 has census_status 'maybe', not one of supported, unsupported-by-census"),

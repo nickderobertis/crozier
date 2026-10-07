@@ -62,7 +62,11 @@ def read_tsv(path: Path, columns: tuple[str, ...], *, optional: bool = False) ->
         raise ValueError(f"{path} is missing")
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, dialect="excel-tab")
-        missing = sorted(set(columns) - set(reader.fieldnames or ()))
+        header = list(reader.fieldnames or ())
+        repeated = sorted({column for column in header if header.count(column) > 1})
+        if repeated:
+            raise ValueError(f"{path} names column(s) {', '.join(repeated)} twice; one would overwrite the other")
+        missing = sorted(set(columns) - set(header))
         if missing:
             raise ValueError(f"{path} lacks column(s) {', '.join(missing)}")
         rows = []

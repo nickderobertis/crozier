@@ -411,6 +411,8 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ("shard: `catalogue-portals`", "shard: `everything`", "missing or unknown shard declaration"),
             ("shard: `catalogue-portals`", "", "missing or unknown shard declaration"),
             (header, header.replace("| fern-screen |", "| fern |"), "records header is not the shared record shape"),
+            ("| `anyof-sole-member` |\n", "| `anyof-sole-member` |\n| `extra` | `cell` |\n",
+             "owned key row ['`extra`', '`cell`'] is not one key cell"),
             (separator, separator + "| `anyof-sole-member` | `apis.guru` | unanswered |\n",
              "record 1 has 3 fields, expected 9"),
             (separator, separator + row.format(source="apis.guru", result="unanswered", rest="— | — | — | —")

@@ -26,7 +26,12 @@ is_exit_status() {
 
 # The report contract (assets/compare-report.schema.json, in the Action's own
 # checkout): the one statement of the enums and nullability checked below.
-REPORT_SCHEMA="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/assets/compare-report.schema.json"
+action_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)" \
+  || die "could not resolve the action's own checkout from ${BASH_SOURCE[0]}" \
+    "run the scripts from the action's checkout (GitHub Actions does), then re-run"
+REPORT_SCHEMA="$action_root/assets/compare-report.schema.json"
+[ -r "$REPORT_SCHEMA" ] || die "the report contract $REPORT_SCHEMA is missing" \
+  "restore it (git checkout -- assets/compare-report.schema.json) or pin the action to a release, then re-run"
 
 # `report_is_whole FILE`: FILE is a `crozier compare` report carrying every
 # field the Action reads, typed as the schema types it — statuses, exit codes

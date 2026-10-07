@@ -119,6 +119,42 @@ class CommittedGoldenStateTests(unittest.TestCase):
         self.assertGreater(checked, 100, "the committed corpus should be most of the rows")
 
 
+@unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
+class FixtureNewTests(unittest.TestCase):
+    """`fixture-new.sh` over a synthetic root: the placeholder and the wiring steps it
+    prints, and a fixture directory it cannot complete left absent, not half-made."""
+
+    def setUp(self) -> None:
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        self.root = Path(scratch.name)
+        mirror(self.root, "tools/fern-goldens/fixture-new.sh", "scripts/lib.sh")
+        self.fixtures = self.root / "tests" / "fixtures"
+        self.fixtures.mkdir(parents=True)
+
+    def scaffold(self, name: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([str(self.root / "tools" / "fern-goldens" / "fixture-new.sh"), name],
+                              capture_output=True, text=True, check=False)
+
+    def test_a_fixture_is_scaffolded_with_its_wiring_steps(self) -> None:
+        done = self.scaffold("shapes")
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertIn("openapi: 3.0.0", (self.fixtures / "shapes" / "openapi.yml").read_text(encoding="utf-8"))
+        self.assertIn("copy an existing FEATURE_TARGETS entry", done.stderr)
+        self.assertIn("tools/fern-goldens/generate-fern-fixture.sh shapes", done.stderr)
+
+    def test_a_fixture_it_cannot_write_is_left_absent_with_the_fix(self) -> None:
+        if os.geteuid() == 0:
+            self.skipTest("root writes through a read-only directory")
+        self.fixtures.chmod(0o555)
+        self.addCleanup(self.fixtures.chmod, 0o755)
+        refused = self.scaffold("shapes")
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("could not create", refused.stderr)
+        self.assertIn("check that tests/fixtures/ is writable and the disk has free space", refused.stderr)
+        self.assertFalse((self.fixtures / "shapes").exists())
+
+
 class GoldenOverlayReductionTests(unittest.TestCase):
     """`golden_overlay.py reduce` over real directories: what it keeps of an
     overlay tree, and each argument it refuses before touching the tree."""

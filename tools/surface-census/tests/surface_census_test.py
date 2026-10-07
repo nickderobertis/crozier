@@ -7512,6 +7512,28 @@ class CensusInterpreterTests(unittest.TestCase):
                 f"{expected!r} and {completed.stdout.strip()!r} are not the same file",
             )
 
+    @unittest.skipIf(os.name == "nt", "a shebang names the interpreter that cannot start only on POSIX")
+    def test_an_interpreter_that_cannot_start_names_itself_and_the_fix(self) -> None:
+        """A repo-local interpreter the kernel cannot execute is reported, not left to the shell."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "scripts").mkdir()
+            local = root / ".venv" / "bin"
+            local.mkdir(parents=True)
+            broken = local / "python3"
+            broken.write_text("#!/no/such/interpreter\n", encoding="utf-8")
+            broken.chmod(0o755)
+            copied = root / "scripts" / self.RESOLVER.name
+            shutil.copy2(self.RESOLVER, copied)
+            completed = subprocess.run(
+                [self.shell(), str(copied), "-c", "print('ran')"], capture_output=True, text=True,
+                timeout=CENSUS_TIMEOUT,
+            )
+            self.assertEqual(126, completed.returncode, completed.stderr)
+            self.assertNotIn("ran", completed.stdout)
+            self.assertIn("census-python: could not run", completed.stderr)
+            self.assertIn("repair or reinstall that Python", completed.stderr)
+
     def test_a_foreign_virtualenv_is_refused_by_name_rather_than_used(self) -> None:
         """Driven against a real virtualenv, because that is the case that happened."""
         with tempfile.TemporaryDirectory() as directory:

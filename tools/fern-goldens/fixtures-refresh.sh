@@ -34,7 +34,11 @@ repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
 crozier_bin="$repo_root/target/release/crozier"
 [ -x "$crozier_bin" ] || { echo "fixtures-refresh: build crozier first (cargo build --release)" >&2; exit 1; }
 
-workdir="$(mktemp -d)"
+workdir="$(mktemp -d)" || {
+  echo "fixtures-refresh: could not create a scratch directory — point TMPDIR at a writable" \
+       "directory with free space, then re-run" >&2
+  exit 1
+}
 # Quiet on success (one summary line); the step that failed is named on exit.
 step=""
 on_exit() {

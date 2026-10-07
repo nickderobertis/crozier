@@ -14,14 +14,15 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 # The parser pin, read from a script's PEP 723 `dependencies` line: exactly one
-# non-empty pin, or the run stops naming the script, since an empty `--with`
-# would run the fallback against whatever parser uv happens to hold.
+# `package==version`, or the run stops naming the script, since an empty or
+# floating `--with` would run the fallback against whatever parser uv holds.
+# `run.sh pin SCRIPT` prints it, for the other callers that install the same pin.
 pinned() {
   local pin
   pin="$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' "$1")"
-  if [ -z "$pin" ] || [ "$(printf '%s\n' "$pin" | wc -l)" -ne 1 ]; then
+  if [ "$(printf '%s\n' "$pin" | wc -l)" -ne 1 ] || ! [[ "$pin" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*==[0-9][A-Za-z0-9.]*$ ]]; then
     echo "census-fallback: $1 declares no single pinned dependency in its PEP 723 header —" \
-         "restore its '# dependencies = [\"<package>==<version>\"]' line (git checkout -- $1), then re-run" >&2
+         "restore its one exact '# dependencies = [\"<package>==<version>\"]' line (git checkout -- $1), then re-run" >&2
     return 1
   fi
   printf '%s\n' "$pin"
@@ -42,8 +43,11 @@ case "${1:-}" in
     uv run --no-project --with "$recensus_pin" \
       python3 tools/witness-search/tests/witness_search_recensus_test.py
     ;;
+  pin)
+    pinned "${2:?usage: tests/census_fallback/run.sh pin SCRIPT}"
+    ;;
   *)
-    echo "usage: tests/census_fallback/run.sh samples|parsers" >&2
+    echo "usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2
     exit 2
     ;;
 esac

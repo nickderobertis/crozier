@@ -2183,6 +2183,12 @@ class FixturesRefreshTests(unittest.TestCase):
             check=False,
         )
 
+    def test_a_scratch_directory_that_cannot_be_made_names_the_fix(self) -> None:
+        refused = self.refresh(TMPDIR=str(self.root / "no-such-tmp"))
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("fixtures-refresh: could not create a scratch directory — point TMPDIR at a writable",
+                      refused.stderr)
+
     def test_a_successful_refresh_prints_one_summary_line(self) -> None:
         result = self.refresh()
         self.assertEqual(result.returncode, 0, result.stderr)

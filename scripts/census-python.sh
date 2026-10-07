@@ -18,14 +18,29 @@
 # is honoured only if someone has deliberately made one here.
 # Started as `sh` (a POSIX shell, or bash in POSIX mode — macOS's /bin/sh), the
 # selection below needs bash proper.
-if [ -z "${BASH_VERSION:-}" ]; then exec bash "$0" "$@"; fi
-case ":${SHELLOPTS:-}:" in *:posix:*) exec bash "$0" "$@" ;; esac
+needs_bash() {
+  command -v bash >/dev/null 2>&1 || {
+    echo "census-python: bash is not on PATH — it selects the interpreter; install bash (Git Bash on Windows), then re-run" >&2
+    exit 127
+  }
+  exec bash "$0" "$@"
+}
+if [ -z "${BASH_VERSION:-}" ]; then needs_bash "$@"; fi
+case ":${SHELLOPTS:-}:" in *:posix:*) needs_bash "$@" ;; esac
 set -euo pipefail
+# A failed `exec` returns, so `found` can say why rather than leave the shell's words alone.
+shopt -s execfail
 
 found() { # found INTERPRETER [ARGS...]: print it, or run ARGS under it
   local interpreter="$1"
   shift
-  if [ "$#" -gt 0 ]; then exec "$interpreter" "$@"; fi
+  if [ "$#" -gt 0 ]; then
+    exec "$interpreter" "$@" || {
+      echo "census-python: could not run $interpreter — repair or reinstall that Python (remove" \
+           "$repo_root/.venv if it is that one, to fall back to the system python3), then re-run" >&2
+      exit 126
+    }
+  fi
   printf '%s\n' "$interpreter"
   exit 0
 }

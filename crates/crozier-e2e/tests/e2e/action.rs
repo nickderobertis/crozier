@@ -1237,6 +1237,33 @@ fn local_builds_the_action_source_with_cargo() {
     );
 }
 
+/// A `local` build that fails stops the step naming the action's checkout and
+/// both ways forward, rather than leaving cargo's error alone.
+#[test]
+fn a_local_build_that_fails_names_the_fix() {
+    let source = local_source("crozier");
+    write(
+        source.path(),
+        "src/main.rs",
+        "fn main() { this is not rust }\n",
+    );
+    let run = install(source.path(), "local", None, &[]);
+    assert_eq!(run.status, 1, "{}", run.stderr);
+    assert!(
+        run.stderr
+            .contains("cargo could not build the action's own source"),
+        "{}",
+        run.stderr
+    );
+    assert!(
+        run.stderr
+            .contains("set the version input to a published tag"),
+        "{}",
+        run.stderr
+    );
+    assert!(!run.outputs.contains_key("bin"));
+}
+
 /// An install that leaves no `crozier` binary fails the step rather than hand
 /// the compare step a path to nothing.
 #[test]
@@ -1333,8 +1360,30 @@ fn ruff_is_installed_at_its_pinned_version_only_when_absent() {
         format!("install\nruff=={}\n", pinned.trim())
     );
 
-    // With `ruff` on PATH, nothing is installed for it.
+    // An install of ruff that fails stops the step with how to supply it.
     std::fs::remove_file(&record).unwrap();
+    write_executable(
+        stubs.path(),
+        "pipx",
+        "#!/bin/sh\necho 'pipx: no network' >&2\nexit 1\n",
+    );
+    let failed = install(repo_root(), "v0.0.80", Some(&mirror), &env);
+    assert_eq!(failed.status, 1, "{}", failed.stderr);
+    assert!(
+        failed.stderr.contains("could not install ruff"),
+        "{}",
+        failed.stderr
+    );
+    assert!(
+        failed
+            .stderr
+            .contains(&format!("pip install ruff=={}", pinned.trim())),
+        "{}",
+        failed.stderr
+    );
+    assert!(!failed.outputs.contains_key("bin"));
+
+    // With `ruff` on PATH, nothing is installed for it.
     write_executable(stubs.path(), "ruff", "#!/bin/sh\n");
     let run = install(repo_root(), "v0.0.80", Some(&mirror), &env);
     assert_eq!(run.status, 0, "{}", run.stderr);

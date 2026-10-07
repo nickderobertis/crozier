@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Scaffold a new feature-coverage fixture: create tests/fixtures/<name>/ with a
-# minimal placeholder openapi.yml and print the Corpus snippet to paste into
+# minimal placeholder openapi.yml and print the steps that wire it into
 # crates/crozier-e2e/tests/e2e.rs. It does NOT author the spec or touch e2e.rs — those are judgment
 # (which shapes to exercise) and a source edit, kept in your hands on purpose.
 #
 # After this: replace openapi.yml with the spec you want to match, generate Fern's
 # golden output with tools/fern-goldens/generate-fern-fixture.sh <name> (Docker + fern CLI),
-# add the printed Corpus to FEATURE_TARGETS, then grow `matched` with
-# `just fixtures-candidates`. See tests/fixtures/AGENTS.md.
+# copy an existing FEATURE_TARGETS entry for it as the printed steps say, then
+# grow `matched` with `just fixtures-candidates`. See tests/fixtures/AGENTS.md.
 #
 # Usage:  tools/fern-goldens/fixture-new.sh <name>
 #
@@ -33,8 +33,15 @@ repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
 dir="$repo_root/tests/fixtures/$name"
 [ -e "$dir" ] && { echo "fixture-new: $dir already exists — refusing to overwrite" >&2; exit 1; }
 
-mkdir -p "$dir"
-cat > "$dir/openapi.yml" <<'YAML'
+# A fixture directory is created whole or not at all.
+undo_partial_fixture() {
+  rm -rf "$dir"
+  echo "fixture-new: could not create $dir/openapi.yml — check that tests/fixtures/ is writable and" \
+       "the disk has free space, then re-run" >&2
+  exit 1
+}
+mkdir -p "$dir" || undo_partial_fixture
+cat > "$dir/openapi.yml" <<'YAML' || undo_partial_fixture
 # PLACEHOLDER — replace with the OpenAPI document this fixture should match.
 # crozier consumes only this file; author the shapes you want to exercise, then
 # regenerate Fern's golden output with tools/fern-goldens/generate-fern-fixture.sh <name>.

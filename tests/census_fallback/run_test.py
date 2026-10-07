@@ -40,8 +40,10 @@ class ThePinIsRequired(unittest.TestCase):
             self.assertFalse((bin_dir / "uv-ran").exists(), f"{stage} ran a suite: {result.stderr}")
             return result
 
-    def test_a_script_without_a_pin_or_with_two_stops_the_stage_naming_it(self) -> None:
-        for header in ("", '# dependencies = ["ruamel.yaml==0.19.1"]\n# dependencies = ["ruamel.yaml==0.18"]\n'):
+    def test_a_script_without_one_exact_pin_stops_the_stage_naming_it(self) -> None:
+        for header in ("", '# dependencies = ["ruamel.yaml==0.19.1"]\n# dependencies = ["ruamel.yaml==0.18"]\n',
+                       '# dependencies = ["ruamel.yaml"]\n', '# dependencies = ["ruamel.yaml>=0.18"]\n',
+                       '# dependencies = ["ruamel.yaml==0.19.1", "pyyaml==6.0"]\n'):
             for stage in ("samples", "parsers"):
                 with self.subTest(header=header, stage=stage):
                     result = self.run_over(header, stage)
@@ -49,6 +51,12 @@ class ThePinIsRequired(unittest.TestCase):
                     self.assertIn("tools/surface-census/golden-reach-search.py declares no single pinned dependency",
                                   result.stderr)
                     self.assertIn("then re-run", result.stderr)
+
+    def test_pin_prints_the_one_exact_pin_the_stages_install(self) -> None:
+        printed = subprocess.run(["bash", str(RUNNER), "pin", "tools/surface-census/golden-reach-search.py"],
+                                 cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(0, printed.returncode, printed.stderr)
+        self.assertRegex(printed.stdout, r"^ruamel\.yaml==\d[\w.]*\n$")
 
 
 if __name__ == "__main__":

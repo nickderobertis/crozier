@@ -126,6 +126,8 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
              "the source is not an https URL"),
             ("option-like ref", "| 3 | `third` | test | https://example.test/a.yaml | `--upload-pack=x` | MIT | link-ok | x |\n",
              "the pinned ref is not a commit, tag or branch name"),
+            ("option ref", "| 3 | `third` | test | https://example.test/a.yaml | `--detach` | MIT | link-ok | x |\n",
+             "the pinned ref is not a commit, tag or branch name"),
         ):
             with self.subTest(label):
                 self.write_corpus("committed", extra=row)
@@ -264,6 +266,8 @@ class TheCheckStillDiscriminates(LoopbackRoot):
             ("\n".join(sorted(rows + [rows[0]])) + "\n", "recorded twice"),
             (original.replace(self.origin + "/specs/plain.json", self.origin + "/other.json"),
              "records source"),
+            ("\t".join(["/abs", "/abs/openapi.json", *rows[0].split("\t")[2:]]) + "\n",
+             "corpus name '/abs' is not one path segment"),
         )
         for body, diagnostic in cases:
             with self.subTest(diagnostic=diagnostic):

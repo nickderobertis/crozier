@@ -50,7 +50,8 @@ while [ "$#" -gt 0 ]; do
     --*) echo "fixtures-coverage: unknown argument '$1'" >&2; usage; exit 1 ;;
     *)
       [ -z "$scope" ] || {
-        echo "fixtures-coverage: more than one SCOPE expression was provided" >&2
+        echo "fixtures-coverage: more than one SCOPE expression was provided — combine them into one" \
+             "nextest filter (for example 'test(=a) or test(=b)'), then re-run" >&2
         exit 1
       }
       scope="$1"

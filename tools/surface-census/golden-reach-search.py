@@ -578,13 +578,17 @@ def _precomputed(
                 row = json.loads(line)
             except json.JSONDecodeError as error:
                 fail(f"{path}:{number} is not JSON ({error.msg}); take the walk census again, or walk without --census")
-            census = (row.get("census") or {}) if isinstance(row, dict) else None
+            # An absent census is an empty one; any census that is there is a
+            # map of selector names to non-negative counts.
+            census = row.get("census", {}) if isinstance(row, dict) else None
+            if census is None:
+                census = {}
             if (
                 not isinstance(row, dict)
                 or not isinstance(row.get("document"), str)
                 or not isinstance(row.get("error", ""), str)
                 or not isinstance(census, dict)
-                or not all(isinstance(n, int) for n in census.values())
+                or not all(isinstance(key, str) and type(n) is int and n >= 0 for key, n in census.items())
             ):
                 fail(f"{path}:{number} is not `{{document, sha256, sha256_ok, status, census}}` with a string `error` "
                      "and a selector-count `census`; take the walk census again, or walk without --census")
@@ -1490,12 +1494,7 @@ def read_refused(source: str) -> dict[str, dict[str, str]]:
     path = source_dir(source) / REFUSED_FILE
     if not path.is_file():
         return {}
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-        if tuple(reader.fieldnames or ()) != REFUSED_FIELDS:
-            fail(f"{path} has header {reader.fieldnames}, not {list(REFUSED_FIELDS)}; restore it from git "
-                 f"or re-run `refuse --source {source}`")
-        rows = list(reader)
+    rows = read_exact_tsv(path, REFUSED_FIELDS, f"restore it from git or re-run `refuse --source {source}`")
     for row in rows:
         if row["verdict"] not in REFUSED_VERDICTS or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
             fail(f"{path}: `{row['document']}` is not a {'/'.join(REFUSED_VERDICTS)} verdict over a SHA-256; "

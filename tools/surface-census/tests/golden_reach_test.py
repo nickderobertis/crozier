@@ -1181,12 +1181,17 @@ class ArmSearchStageTests(_StageScratch):
             self.assertEqual(0, golden_reach_search.main(argv))
         records = {(r["kind"], r["subject"]): r["result"] for r in golden_reach_search.read_records("jentic")}
         self.assertEqual("census 2", records[("document", "a.yaml")])
-        with gzip.open(census, "wt", encoding="utf-8") as handle:
-            handle.write(json.dumps({"document": "a.yaml", "census": {"schema.anyOf>schema.oneOf": "two"}}) + "\n")
-        with self.assertRaises(SystemExit) as refused:
-            golden_reach_search.main(argv)
-        self.assertIn(f"{census}:1", str(refused.exception))
-        self.assertIn("take the walk census again", str(refused.exception))
+        for label, value in (("string count", {"schema.anyOf>schema.oneOf": "two"}),
+                             ("boolean count", {"schema.anyOf>schema.oneOf": True}),
+                             ("negative count", {"schema.anyOf>schema.oneOf": -1}),
+                             ("a list", []), ("false", False)):
+            with self.subTest(label):
+                with gzip.open(census, "wt", encoding="utf-8") as handle:
+                    handle.write(json.dumps({"document": "a.yaml", "census": value}) + "\n")
+                with self.assertRaises(SystemExit) as refused:
+                    golden_reach_search.main(argv)
+                self.assertIn(f"{census}:1", str(refused.exception))
+                self.assertIn("take the walk census again", str(refused.exception))
 
     def test_a_precomputed_census_counts_only_for_the_pinned_bytes_it_affirms_it_read(self) -> None:
         """A row stating no affirmative check of the listing's own bytes is no reading of them.
@@ -1331,6 +1336,12 @@ class ArmSearchStageTests(_StageScratch):
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.read_refused("jentic")
         self.assertIn("re-run `refuse --source jentic`", str(refused.exception))
+        header = path.read_text(encoding="utf-8").splitlines()[0]
+        path.write_text(header + "\nd.json\n", encoding="utf-8")
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.read_refused("jentic")
+        self.assertIn("refused.tsv:2 has 1 cell(s) where its header names", str(refused.exception).replace(
+            golden_reach_search.REFUSED_FILE, "refused.tsv"))
 
     def test_recensus_counts_what_only_the_full_parser_reads_and_names_its_loader(self) -> None:
         """A declarer written with a YAML tag leaves the unread list once counted."""

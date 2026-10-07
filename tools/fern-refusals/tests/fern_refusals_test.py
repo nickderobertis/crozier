@@ -102,13 +102,20 @@ class CommittedTables(unittest.TestCase):
         unretrievable = rows(REGISTRY / "unretrievable.tsv")[1:]
         listed = {row[1] for row in unretrievable}
         self.assertFalse({row[0] for row in refused} & generated, "a document is both refused and generated")
+        for name, table in (("documents.tsv", [row[0] for row in refused]),
+                            ("generated.tsv", [row[4] for row in rows(REGISTRY / "generated.tsv")[1:]]),
+                            ("unretrievable.tsv", [row[1] for row in unretrievable])):
+            with self.subTest(table=name):
+                self.assertEqual(len(table), len(set(table)), f"{name} lists a document twice")
         for key, _source, locator, *_ in selected:
             with self.subTest(key=key):
                 # A document is named by its digest, or by its locator where no
                 # record gave a digest; one no record located is named by its key.
-                self.assertTrue(key in documents | generated or locator in documents | generated | listed
-                                or key in listed,
-                                f"{key} is in none of documents.tsv, generated.tsv and unretrievable.tsv")
+                homes = [name for name, names in (("documents.tsv", documents), ("generated.tsv", generated),
+                                                  ("unretrievable.tsv", listed))
+                         if key in names or locator in names]
+                self.assertEqual(1, len(homes), f"{key} is accounted for in {homes or 'none'} of documents.tsv, "
+                                                "generated.tsv and unretrievable.tsv, not exactly one")
 
 
 class Drift(unittest.TestCase):

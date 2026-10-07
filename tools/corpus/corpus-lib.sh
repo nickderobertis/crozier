@@ -32,7 +32,7 @@ corpus_rows() {
       # are how the offline suites stand in for one.
       if (url !~ /^https:\/\/[^[:space:]`]+$/ && url !~ /^http:\/\/(127\.0\.0\.1|localhost)(:[0-9]+)?\/[^[:space:]`]*$/ && url !~ /^\/[^[:space:]`]+$/)
         refuse("the source is not an https URL");
-      if (ref !~ /^[A-Za-z0-9._\/-]+$/)
+      if (ref !~ /^[A-Za-z0-9._][A-Za-z0-9._\/-]*$/)
         refuse("the pinned ref is not a commit, tag or branch name");
       print name "\t" url "\t" ref "\t" decision;
     }

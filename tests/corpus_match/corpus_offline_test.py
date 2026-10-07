@@ -6,7 +6,6 @@ import ctypes
 import errno
 import os
 import platform
-import re
 from pathlib import Path
 import subprocess
 import sys
@@ -48,15 +47,16 @@ def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
     case.assertEqual(0, fetch.returncode, fetch.stderr)
     # The fallback samples need the pinned parser: install that package so
     # the denied run resolves it from uv's cache alone.
-    pin = REPO / "tools/surface-census/golden-reach-search.py"
-    if pin.is_file():
-        dependency = re.search(r'^# dependencies = \["(.*)"\]$', pin.read_text(encoding="utf-8"), re.M)
-        case.assertIsNotNone(dependency, f"{pin.relative_to(REPO)} lost its '# dependencies = [\"...\"]' pin; restore it")
-        warm = subprocess.run(
-            ["uv", "run", "--no-project", "--with", dependency.group(1), "python3", "-c", ""],
-            cwd=REPO, env=env, capture_output=True, text=True,
-        )
-        case.assertEqual(0, warm.returncode, warm.stderr)
+    # The pin is read, and held to its one exact `package==version`, by the
+    # fallback's own runner, the one place that parses it.
+    pin = subprocess.run(["bash", "tests/census_fallback/run.sh", "pin", "tools/surface-census/golden-reach-search.py"],
+                         cwd=REPO, env=env, capture_output=True, text=True)
+    case.assertEqual(0, pin.returncode, pin.stderr)
+    warm = subprocess.run(
+        ["uv", "run", "--no-project", "--with", pin.stdout.strip(), "python3", "-c", ""],
+        cwd=REPO, env=env, capture_output=True, text=True,
+    )
+    case.assertEqual(0, warm.returncode, warm.stderr)
 
 
 @unittest.skipUnless(sys.platform == "linux" and platform.machine() in {"x86_64", "aarch64"},

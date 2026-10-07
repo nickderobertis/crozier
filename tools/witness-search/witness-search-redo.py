@@ -110,9 +110,14 @@ def validate_shard(path: Path, contract: Path) -> list[str]:
     if shard not in SOURCES:
         return [f"{path}: missing or unknown shard declaration"]
     keys = contract_keys(contract)
-    declared = {
-        row[0].strip("`") for row in table(text, "## Owned keys")[1:] if len(row) == 1
-    }
+    # The section alone: `table` reads to the end of the document, and the
+    # records table below it is no owned-key row.
+    section = text.split("## Owned keys", 1)[1].split("\n## ", 1)[0] if "## Owned keys" in text else ""
+    owned = table("## Owned keys" + section, "## Owned keys")[1:]
+    malformed = [row for row in owned if len(row) != 1 or not value(row[0])]
+    if malformed:
+        failures.append(f"{path}: owned key row {malformed[0]} is not one key cell")
+    declared = {row[0].strip("`") for row in owned if len(row) == 1}
     if declared != set(keys):
         failures.append(f"{path}: owned keys omitted {sorted(set(keys) - declared)}")
     rows = table(text, "## Records")

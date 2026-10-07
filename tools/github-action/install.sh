@@ -40,7 +40,9 @@ version="${VERSION:-}"
 
 case "$version" in
   local)
-    cargo install --path "$GITHUB_ACTION_PATH" --locked --root "$root" --quiet
+    cargo install --path "$GITHUB_ACTION_PATH" --locked --root "$root" --quiet \
+      || die "cargo could not build the action's own source ($GITHUB_ACTION_PATH)" \
+        "install a Rust toolchain on the runner (dtolnay/rust-toolchain) and fix the build error above, or set the version input to a published tag"
     ;;
   latest)
     sh "$installer" --to "$root/bin"
@@ -77,7 +79,9 @@ bin="$root/bin/crozier"
   "check the install output above; set the version input to a published tag"
 
 if ! command -v ruff >/dev/null 2>&1; then
-  bash "$GITHUB_ACTION_PATH/scripts/install-ruff.sh"
+  bash "$GITHUB_ACTION_PATH/scripts/install-ruff.sh" \
+    || die "could not install ruff, which crozier generate shells out to" \
+      "install ruff on the runner before this step (pip install ruff==$(cat "$GITHUB_ACTION_PATH/.ruff-version" 2>/dev/null || echo '<.ruff-version>')), then re-run"
 fi
 
 echo "bin=$bin" >>"$GITHUB_OUTPUT" || die "could not write the bin output to GITHUB_OUTPUT ($GITHUB_OUTPUT)" \

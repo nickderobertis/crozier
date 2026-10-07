@@ -87,4 +87,5 @@ jq -r --argjson cli_exit "$exit_code" '
     end),
     "",
     "_Reference time_ is the wall time of that generator'"'"'s one reference-command invocation; a first invocation may include one-time costs such as an image pull. _crozier time_ is its generation only. _Speed-up_ is reference ÷ crozier and _time saved_ is reference − crozier; the totals sum the generators where both sides ran."
-' "$REPORT"
+' "$REPORT" || die "could not render the step summary from $REPORT" \
+  "check that jq is the one GitHub's runners ship (jq --version) and the report is readable, then re-run"
