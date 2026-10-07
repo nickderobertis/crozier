@@ -2822,19 +2822,35 @@ fn handwritten_documents(
             )
         }
     };
-    let parsed: serde_json::Value = match serde_json::from_slice(&output.stdout) {
-        Ok(parsed) if output.status.success() => parsed,
-        _ => {
-            return (
-                Default::default(),
-                vec![format!(
-                    "the hand-written fixture check failed ({}): {}",
-                    output.status,
-                    String::from_utf8_lossy(&output.stderr)
-                )],
-            )
-        }
-    };
+    // Exit 0 is a gate with no failure and 1 one with failures, the JSON
+    // printed either way; any other status, or a status that disagrees with
+    // the list it printed, is the check itself failing.
+    let parsed: serde_json::Value =
+        match serde_json::from_slice::<serde_json::Value>(&output.stdout) {
+            Ok(parsed)
+                if matches!(
+                    (
+                        output.status.code(),
+                        parsed["failures"]
+                            .as_array()
+                            .map(|failures| failures.is_empty())
+                    ),
+                    (Some(0), Some(true)) | (Some(1), Some(false))
+                ) =>
+            {
+                parsed
+            }
+            _ => {
+                return (
+                    Default::default(),
+                    vec![format!(
+                        "the hand-written fixture check failed ({}): {}",
+                        output.status,
+                        String::from_utf8_lossy(&output.stderr)
+                    )],
+                )
+            }
+        };
     let failures = parsed["failures"]
         .as_array()
         .map(|failures| {

@@ -725,6 +725,22 @@ components:
         self.assertIn("unanswered after 2 bounded attempts", completed.stderr)
         self.assertFalse(output.exists())
 
+    def test_a_provenance_row_of_the_wrong_width_refuses_to_publish(self) -> None:
+        header = "api_id\tversion\tsource_url\timmutable_ref\n"
+        ref = "0123456789abcdef0123456789abcdef01234567"
+        source = f"https://raw.githubusercontent.com/o/r/{ref}/openapi.json"
+        for label, row in (("short", "asana.com\t1.0\n"),
+                           ("long", f"asana.com\t1.0\t{source}\t{ref}\tsurplus\n")):
+            with self.subTest(label):
+                provenance = self.root / f"provenance-{label}.tsv"
+                provenance.write_text(header + row, encoding="utf-8")
+                output = self.root / "must-not-exist.tsv"
+                completed, _ = self.invoke(self.index([]), output, provenance)
+                self.assertEqual(1, completed.returncode, completed.stderr)
+                self.assertIn(f"{provenance}:2: expected 4 tab-separated provenance cells", completed.stderr)
+                self.assertNotIn("Traceback", completed.stderr)
+                self.assertFalse(output.exists())
+
     def test_nonpositive_numeric_arguments_are_rejected(self) -> None:
         index = self.index([])
         expected = "apis-guru-gap-screen: attempts, workers, and timeout must be positive\n"

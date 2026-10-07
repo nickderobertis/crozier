@@ -219,6 +219,10 @@ def publisher_provenance(path: Path) -> dict[tuple[str, str], tuple[str, str]]:
         if tuple(reader.fieldnames or ()) != expected:
             raise ValueError(f"{path}: expected provenance columns: {', '.join(expected)}")
         for line, row in enumerate(reader, 2):
+            # A short row leaves trailing columns None; a long one files its
+            # surplus cells under None. Neither is a row this header describes.
+            if None in row or None in row.values():
+                raise ValueError(f"{path}:{line}: expected {len(expected)} tab-separated provenance cells")
             key = (row["api_id"], row["version"])
             source_url = row["source_url"]
             immutable_ref = row["immutable_ref"]

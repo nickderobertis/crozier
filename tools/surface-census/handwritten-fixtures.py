@@ -17,7 +17,9 @@ category and its ledger — is stated once, in
   and digest of each fixture and every failure, for
   `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`, which adds the
   checks only Rust can make: Contract A's digest, the pin, and crozier's
-  byte-match against `fern-expected/`.
+  byte-match against `fern-expected/`. It exits 0 when that list is empty and
+  1 when it is not (the JSON is printed either way), so the exit status alone
+  says whether the gate passed.
 * ``measure`` runs an instrumented crozier over each fixture's `openapi.yml`
   alone — one run per fixture, the way `golden-reach.py measure` scopes one
   golden test — and writes `docs/openapi-surface/handwritten-reach.tsv`, one row
@@ -769,9 +771,10 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--gates", type=Path, help="configuration-gate ledger to write (default: the committed one)")
     args = parser.parse_args(argv)
     if args.command == "gate":
-        json.dump(gate(args.repo_root), sys.stdout, indent=1)
+        result = gate(args.repo_root)
+        json.dump(result, sys.stdout, indent=1)
         sys.stdout.write("\n")
-        return 0
+        return 1 if result["failures"] else 0
     return measure(args)
 
 

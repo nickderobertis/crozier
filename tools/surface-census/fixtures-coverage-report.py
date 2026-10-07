@@ -167,9 +167,8 @@ def _item_end_line(lines: list[str], attribute_index: int) -> int | None:
                 if opened and depth == 0:
                     return index + 1
             position += 1
-        if in_string:
-            # An unterminated non-raw string cannot span lines in valid Rust.
-            in_string = False
+        # A string still open here continues on the next line: an ordinary Rust
+        # string literal may span lines, exactly as a raw one may.
     return None
 
 
@@ -486,10 +485,13 @@ def main(argv: list[str] | None = None) -> int:
     order: list[str] = []
     tiers: dict[str, dict[str, dict[Region, int]]] = {}
     selections: dict[str, tuple[str, int]] = {}
-    for spec in args.tier:
-        tier = _validated_tier_spec(spec, parser)
+    declared = [_validated_tier_spec(spec, parser) for spec in args.tier]
+    for tier in declared:
+        if tier["name"] in order:
+            parser.error(f"--tier {tier['name']!r} is declared twice; give each tier one --tier")
+        order.append(tier["name"])
+    for tier in declared:
         name = tier["name"]
-        order.append(name)
         tiers[name] = load_tier(Path(tier["export"]), repo_root)
         selections[name] = (tier["selection"], tier["tests"])
 

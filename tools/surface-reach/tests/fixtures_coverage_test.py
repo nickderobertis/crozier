@@ -350,6 +350,10 @@ class RecipeEndToEndTests(unittest.TestCase):
                 completed = self.run_reporter("--tier", spec)
                 self.assertEqual(2, completed.returncode, completed.stdout)
                 self.assertIn(expected, completed.stderr)
+        twice = json.dumps({"name": "golden-only", "export": "x", "tests": 1, "selection": "s"})
+        completed = self.run_reporter("--tier", twice, "--tier", twice)
+        self.assertEqual(2, completed.returncode, completed.stdout)
+        self.assertIn("--tier 'golden-only' is declared twice", completed.stderr)
 
     def test_a_tier_name_that_matches_no_tier_is_refused(self) -> None:
         """A typo'd --subprocess-tier would retire the proof without saying so."""
@@ -518,6 +522,25 @@ class CfgTestSpanTests(unittest.TestCase):
             [reporter.Span(3, 13)],
             reporter.cfg_test_spans(source),
             "the scanner closed the test module on a brace it should have skipped",
+        )
+
+    def test_a_brace_inside_a_string_spanning_lines_does_not_close_the_span(self) -> None:
+        source = textwrap.dedent(
+            '''\
+            #[cfg(test)]
+            mod tests {
+                const MESSAGE: &str = "first line
+            } still inside the string \\" and its escaped quote
+            last line";
+            }
+
+            fn after() {}
+            '''
+        )
+        self.assertEqual(
+            [reporter.Span(1, 6)],
+            reporter.cfg_test_spans(source),
+            "the scanner closed the test module on a brace inside a multi-line string",
         )
 
     def test_an_unbounded_test_item_is_refused(self) -> None:

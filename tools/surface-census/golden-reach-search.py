@@ -177,8 +177,16 @@ def read_tsv(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[st
         return rows
 
 
-def read_jsonl(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[str, Any]]:
-    """A JSON-lines file's objects, refused at the first line that is not one carrying `required`."""
+def read_jsonl(
+    path: Path, required: tuple[str, ...], remedy: str, kinds: dict[str, type] | None = None
+) -> list[dict[str, Any]]:
+    """A JSON-lines file's objects, refused at the first line that is not one carrying `required`.
+
+    Each required field is a string unless `kinds` names another type for it; a
+    `list` one is a list of strings (site names, for a probe's `reached`), so a
+    consumer never meets a value of a shape its reader did not check.
+    """
+    kinds = kinds or {}
     rows = []
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         if not line.strip():
@@ -189,6 +197,12 @@ def read_jsonl(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[
             fail(f"{path}:{number} is not JSON ({error.msg}); {remedy}")
         if not isinstance(row, dict) or any(field not in row for field in required):
             fail(f"{path}:{number} lacks one of {list(required)}; {remedy}")
+        for field in required:
+            kind = kinds.get(field, str)
+            value = row[field]
+            if not isinstance(value, kind) or (kind is list and not all(isinstance(v, str) for v in value)):
+                shape = "a list of strings" if kind is list else f"a {kind.__name__}"
+                fail(f"{path}:{number} has `{field}` {value!r}, not {shape}; {remedy}")
         rows.append(row)
     return rows
 
@@ -343,16 +357,21 @@ def source_dir(source: str) -> Path:
     return path
 
 
+def read_exact_tsv(path: Path, fields: tuple[str, ...], remedy: str) -> list[dict[str, str]]:
+    """A tab-separated file whose header is exactly `fields`, every row as wide as it."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if tuple(reader.fieldnames or ()) != fields:
+            fail(f"{path} has header {reader.fieldnames}, not {list(fields)}; {remedy}")
+    return read_tsv(path, fields, remedy)
+
+
 def read_records(source: str) -> list[dict[str, str]]:
     path = source_dir(source) / "records.tsv"
     if not path.is_file():
         return []
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-        if tuple(reader.fieldnames or ()) != RECORD_FIELDS:
-            fail(f"{path} has header {reader.fieldnames}, not {list(RECORD_FIELDS)}; restore it from git "
-                 f"(`git checkout -- {path}`) or re-file the source's stages")
-        return list(reader)
+    return read_exact_tsv(path, RECORD_FIELDS, f"restore it from git (`git checkout -- {path}`) "
+                          "or re-file the source's stages")
 
 
 def write_records(source: str, keys: set[str], rows: list[dict[str, str]]) -> None:
@@ -1159,19 +1178,25 @@ def probe_cache_path(build: str) -> Path:
 def load_probe_cache(build: str) -> dict[str, dict[str, Any]]:
     """One build's runs so far, by document digest; a torn last line is dropped.
 
-    A whole line is a run as `append_probe_cache` filed it, so one that is not —
-    a digest that is no SHA-256, a status that is no string, reached sites that
+    `append_probe_cache` ends every run with a newline, so only a final line
+    without one can be an interrupted append, and only that line is skipped.
+    Any other line is a run as it was filed, so one that is not — no JSON, a
+    digest that is no SHA-256, a status that is no string, reached sites that
     are not a list of site names — is refused rather than read as a run.
     """
     path = probe_cache_path(build)
     if not path.is_file():
         return {}
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
     out: dict[str, dict[str, Any]] = {}
-    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    for number, line in enumerate(lines, start=1):
         try:
             row = json.loads(line)
         except json.JSONDecodeError:
-            continue
+            if number == len(lines) and not text.endswith("\n"):
+                continue
+            row = None
         if (
             not isinstance(row, dict)
             or not isinstance(row.get("digest"), str)
@@ -1199,7 +1224,7 @@ def read_probes(source: str) -> list[dict[str, Any]]:
     if not path.is_file():
         return []
     return read_jsonl(path, ("key", "candidate", "status", "reached"),
-                      "restore it from git, or re-run `probe` for the source")
+                      "restore it from git, or re-run `probe` for the source", kinds={"reached": list})
 
 
 @contextlib.contextmanager
@@ -2197,12 +2222,17 @@ def read_fallback(source: str) -> dict[str, dict[str, str]]:
     path = source_dir(source) / FALLBACK_FILE
     if not path.is_file():
         return {}
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-        if tuple(reader.fieldnames or ()) != FALLBACK_FIELDS:
-            fail(f"{path} has header {reader.fieldnames}, not {list(FALLBACK_FIELDS)}; restore it from git "
-                 f"or re-run `recensus --source {source}`")
-        return {row["document"]: row for row in reader}
+    remedy = f"restore it from git or re-run `recensus --source {source}`"
+    out: dict[str, dict[str, str]] = {}
+    for number, row in enumerate(read_exact_tsv(path, FALLBACK_FIELDS, remedy), start=2):
+        if not all(row.values()):
+            fail(f"{path}:{number} has an empty cell; {remedy}")
+        if not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+            fail(f"{path}:{number} has `sha256` {row['sha256']!r}, not a SHA-256 digest; {remedy}")
+        if row["document"] in out:
+            fail(f"{path}:{number} names {row['document']} a second time; {remedy}")
+        out[row["document"]] = row
+    return out
 
 
 def recensus(args: argparse.Namespace) -> int:

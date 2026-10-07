@@ -611,6 +611,62 @@ class MeasurementInputTests(unittest.TestCase):
                 golden_reach_search.read_records("jentic")
             self.assertIn("not ['key', 'kind', 'subject', 'result', 'file']", str(refused.exception))
 
+    def scratch_evidence(self) -> Path:
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        evidence = golden_reach_search.EVIDENCE
+        golden_reach_search.EVIDENCE = Path(scratch.name)
+        self.addCleanup(setattr, golden_reach_search, "EVIDENCE", evidence)
+        (Path(scratch.name) / "jentic").mkdir()
+        return Path(scratch.name) / "jentic"
+
+    def test_a_records_row_of_the_wrong_width_is_refused(self) -> None:
+        source = self.scratch_evidence()
+        header = "key\tkind\tsubject\tresult\tfile\n"
+        for label, row in (("short", "k\tdocument\ta.yaml\tread\n"),
+                           ("long", "k\tdocument\ta.yaml\tread\tf\textra\n")):
+            with self.subTest(label):
+                (source / "records.tsv").write_text(header + row, encoding="utf-8")
+                with self.assertRaises(SystemExit) as refused:
+                    golden_reach_search.read_records("jentic")
+                self.assertIn("records.tsv:2 has", str(refused.exception))
+                self.assertIn("where its header names 5", str(refused.exception))
+
+    def test_a_fallback_row_that_is_not_a_complete_distinct_digest_is_refused(self) -> None:
+        source = self.scratch_evidence()
+        header = "\t".join(golden_reach_search.FALLBACK_FIELDS) + "\n"
+        digest = "a" * 64
+        for label, rows, message in (
+            ("short", f"a.yaml\t{digest}\n", "has 2 cell(s) where its header names 3"),
+            ("empty", f"a.yaml\t{digest}\t\n", ":2 has an empty cell"),
+            ("digest", "a.yaml\tnot-a-digest\truamel\n", "`sha256` 'not-a-digest', not a SHA-256 digest"),
+            ("duplicate", f"a.yaml\t{digest}\truamel\na.yaml\t{digest}\truamel\n", ":3 names a.yaml a second time"),
+        ):
+            with self.subTest(label):
+                (source / golden_reach_search.FALLBACK_FILE).write_text(header + rows, encoding="utf-8")
+                with self.assertRaises(SystemExit) as refused:
+                    golden_reach_search.read_fallback("jentic")
+                self.assertIn(message, str(refused.exception))
+                self.assertIn("recensus --source jentic", str(refused.exception))
+
+    def test_a_probe_row_of_the_wrong_shape_is_refused(self) -> None:
+        source = self.scratch_evidence()
+        good = {"key": "k", "candidate": "a.yaml", "status": "generated", "reached": ["src/ir.rs::f"]}
+        for label, row, message in (
+            ("string reached", {**good, "reached": "src/ir.rs::f"}, "`reached` 'src/ir.rs::f', not a list of strings"),
+            ("non-string site", {**good, "reached": [1]}, "`reached` [1], not a list of strings"),
+            ("numeric status", {**good, "status": 0}, "`status` 0, not a str"),
+            ("numeric candidate", {**good, "candidate": 7}, "`candidate` 7, not a str"),
+        ):
+            with self.subTest(label):
+                (source / "probe.jsonl").write_text(json.dumps(good) + "\n" + json.dumps(row) + "\n",
+                                                   encoding="utf-8")
+                with self.assertRaises(SystemExit) as refused:
+                    golden_reach_search.read_probes("jentic")
+                self.assertIn(f"probe.jsonl:2 has {message}", str(refused.exception))
+        (source / "probe.jsonl").write_text(json.dumps(good) + "\n", encoding="utf-8")
+        self.assertEqual([good], golden_reach_search.read_probes("jentic"))
+
 
     def test_a_ledger_row_with_a_field_missing_or_a_count_garbled_is_refused(self) -> None:
         committed = golden_reach.LEDGER.read_text(encoding="utf-8").splitlines()
@@ -1858,6 +1914,14 @@ class ArmSearchStageTests(_StageScratch):
                     golden_reach_search.load_probe_cache("build")
                 self.assertIn(f"{path}:2 is not a probe run", str(refused.exception))
                 self.assertIn(f"delete {path}", str(refused.exception))
+        with self.subTest("a complete line that is not JSON"):
+            # Only an unterminated final line can be a torn append; a malformed
+            # line anywhere else is no run, wherever it sits.
+            for text in (good + "\n" + '{"digest": "b\n' + good + "\n", good + "\n" + '{"digest": "b\n'):
+                path.write_text(text, encoding="utf-8")
+                with self.assertRaises(SystemExit) as refused:
+                    golden_reach_search.load_probe_cache("build")
+                self.assertIn(f"{path}:2 is not a probe run", str(refused.exception))
 
     def test_a_probe_refuses_a_build_src_has_moved_from(self) -> None:
         touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", *golden_reach_search.SRC_PATHSPEC], cwd=REPO,
