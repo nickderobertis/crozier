@@ -958,6 +958,12 @@ def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]
     return out
 
 
+#: What "`src/`" means wherever a build's freshness is judged: the crate's source,
+#: not the Nx project metadata that sits beside it (`src/project.json`,
+#: `src/AGENTS.md`), which no instrumented build compiles.
+SRC_PATHSPEC = ("src/", ":(exclude)src/AGENTS.md", ":(exclude)src/project.json")
+
+
 def _current_build() -> str:
     """The measured build's short commit, as a probe row records it."""
     return REACH.measured_commit(REACH.DEFAULT_OUT)[:12]
@@ -972,7 +978,7 @@ def measured_build() -> str:
     Refused unless `src/` is exactly the measured commit's.
     """
     commit = REACH.measured_commit(REACH.DEFAULT_OUT)
-    clean = subprocess.run(["git", "diff", "--quiet", commit, "--", "src/"], cwd=REPO)
+    clean = subprocess.run(["git", "diff", "--quiet", commit, "--", *SRC_PATHSPEC], cwd=REPO)
     if clean.returncode != 0:
         fail(f"src/ differs from {commit[:12]}, the commit the instrumented build was measured at; "
              "re-run `just golden-reach` (or `golden-reach.py measure`) before probing")
@@ -1618,7 +1624,7 @@ def src_commits_since(build: str) -> list[str]:
     Not `%h`: git lengthens that abbreviation as the object store grows, so the
     same history would render differently in a clone that has fetched more.
     """
-    run = subprocess.run(["git", "log", "--format=%H", f"{build}..HEAD", "--", "src/"],
+    run = subprocess.run(["git", "log", "--format=%H", f"{build}..HEAD", "--", *SRC_PATHSPEC],
                          cwd=REPO, capture_output=True, text=True)
     if run.returncode != 0:
         fail(f"cannot read src/'s history since {build}: {run.stderr.strip()} — "

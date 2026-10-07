@@ -53,8 +53,8 @@ def load(name: str, path: Path):
 REDO = load("wide_redo", REPO / "tools/witness-search/witness-search-redo.py")
 LOCAL = load("wide_local", REPO / "tools/witness-search/witness-search-local-census.py")
 ROWS = load(
-    "wide_rows", REPO / "tools/surface-census/tests/surface_census_test.py"
-).RankedBacklogTests.region_rows
+    "wide_rows", REPO / "tools/surface-census/golden-reach.py"
+).region_rows
 REGION_KEYS = load("wide_region_keys", REPO / "tools/surface-census/witness-search-region-keys.py")
 # The region files the coverage document's region table declares, by stem.
 REGIONS = tuple(sorted(name.removesuffix(".md") for name in REGION_KEYS.region_files()))

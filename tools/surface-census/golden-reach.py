@@ -91,8 +91,10 @@ def fail(message: str) -> None:
 def region_rows(text: str) -> list[list[str]]:
     """Every entry-table row of one region file, as its eight cells.
 
-    The same parse `RankedBacklogTests.region_rows` performs: `\\|` inside a cell
-    is an escaped pipe, not a column break.
+    The one parse of these rows: `RankedBacklogTests` and the witness-search
+    tools read this function. `\\|` inside a cell is an escaped pipe, not a
+    column break — one row's `crozier sites` cell holds a Rust `match` pattern
+    that uses it.
     """
     rows = []
     for line in text.splitlines():

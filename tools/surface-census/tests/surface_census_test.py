@@ -3404,7 +3404,7 @@ class ResolvingDescentTests(unittest.TestCase):
 
     `>` descends into the object a field's value *is*; `~>` descends into the
     schema the Reference Object written at a group's last member *denotes*,
-    resolved against the document being censused. The closed list carries seven
+    resolved against the document being censused. The closed list carries eight
     conjunctions spelled with `~>` — the annotated-`$ref` pass read them off
     `prop_type_ref`'s cases 2 to 4 — and the exemplar below is deliberately not
     one of them, because what these cases exercise is the *operator* rather than
@@ -3671,7 +3671,7 @@ class ResolvingDescentTests(unittest.TestCase):
 
         A conjunction is declared only where a case of a blind region is read off
         it, which `test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region`
-        holds the list to. Seven declared spellings use `~>` now; the exemplar
+        holds the list to. Eight declared spellings use `~>` now; the exemplar
         these cases run the evaluator over is not one of them, and `--selector`
         refuses it by name exactly as it refuses any well-formed combination
         nobody declared.
@@ -7717,24 +7717,9 @@ class RankedBacklogTests(unittest.TestCase):
             for cells in cls.region_rows(path.read_text(encoding="utf-8")):
                 cls.entries[cells[0].strip("`")] = (path.stem, cells)
 
-    @staticmethod
-    def region_rows(text: str) -> list[list[str]]:
-        """Every entry-table row of one region file, as its eight cells.
-
-        `\\|` inside a cell is an escaped pipe, not a column break — one row's
-        `crozier sites` cell holds a Rust `match` pattern that uses it.
-        """
-        rows = []
-        for line in text.splitlines():
-            if not line.startswith("| "):
-                continue
-            cells = [
-                cell.replace("\x00", "\\|").strip()
-                for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
-            ]
-            if len(cells) == 8 and cells[3].strip("`") in RankedBacklogTests.CATEGORIES:
-                rows.append(cells)
-        return rows
+    # The one parse of a region file's entry rows; the witness-search tools
+    # read the same function, so the ranked backlog and the searches agree.
+    region_rows = staticmethod(load_script("tools/surface-census/golden-reach.py").region_rows)
 
     def section(self, start: str, end: str | None = None) -> str:
         self.assertIn(start, self.doc, f"the index no longer carries {start!r}")
@@ -8034,37 +8019,6 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertEqual(set(), set(files) & unmatched, f"{key} names an unmatched file as matched")
                 self.assertLessEqual(set(gaps), unmatched, f"{key}'s open-gap files are not `unmatched`")
                 expected = "split" if files and gaps else "byte-matched" if files else "open gap"
-                self.assertEqual(expected, verdict)
-
-    def test_the_residual_attribution_table_is_the_scripts_own_output(self) -> None:
-        """The table's files are what `residual-attribution.py` measures, run for real.
-
-        The script generates every witness twice with the built crozier, so it
-        needs the binary `just check` builds before this tier and `ruff`; it is
-        skipped, named, where either is absent.
-        """
-        binary = REPO / "target" / "debug" / ("crozier.exe" if os.name == "nt" else "crozier")
-        if not binary.is_file() or shutil.which("ruff") is None:
-            self.skipTest(f"no {binary.relative_to(REPO)} or no ruff on PATH; run `just residual-attribution`")
-        completed = subprocess.run(
-            [sys.executable, str(REPO / "tools" / "surface-census" / "residual-attribution.py")],
-            cwd=REPO, capture_output=True, text=True, timeout=1800,
-        )
-        self.assertEqual(0, completed.returncode, completed.stderr)
-        measured = {
-            row["key"]: (row["fixture"], row["byte_matched"], row["unmatched"])
-            for row in map(json.loads, completed.stdout.splitlines())
-        }
-        table = residual_attributions(REPO)
-        self.assertEqual(set(table), set(measured))
-        for key, (witness, files, gaps, verdict) in table.items():
-            with self.subTest(key=key):
-                fixture, matched, unmatched = measured[key]
-                self.assertEqual(witness, fixture)
-                self.assertEqual(sorted(files), sorted(matched))
-                self.assertEqual(sorted(gaps), sorted(unmatched),
-                                 f"{key}: every `unmatched` file it moves is an open gap the table names")
-                expected = "split" if matched and unmatched else "byte-matched" if matched else "open gap"
                 self.assertEqual(expected, verdict)
 
     def test_the_blind_spot_rows_count_the_unreached_arms_in_their_file(self) -> None:

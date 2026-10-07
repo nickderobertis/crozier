@@ -357,19 +357,24 @@ class ReportTests(unittest.TestCase):
         self.assertNotEqual(0, run.returncode)
         self.assertIn("just golden-reach", run.stderr)
 
+    @unittest.skipIf(os.name == "nt", "a stand-in script cannot carry `.exe` there; "
+                     "tools/surface-reach/tests/golden_reach_llvm_test.py runs the real tool")
     def test_a_tool_is_named_without_the_windows_exe_suffix(self) -> None:
-        """Windows' tool path ends `.exe`; the message names the tool as POSIX does."""
+        """Windows' tool path ends `.exe`; the message names the tool as POSIX does.
+
+        A stand-in `llvm-profdata.exe` plays the Windows tool here; on Windows
+        itself the real tool's run is `golden_reach_llvm_test.py`'s, in the
+        surface-reach project that owns the host-tool suites.
+        """
         with tempfile.TemporaryDirectory() as scratch:
-            if os.name == "nt":
-                tool = golden_reach._llvm_tool("llvm-profdata")
-            else:
-                tool = str(Path(scratch) / "llvm-profdata.exe")
-                Path(tool).write_text('#!/bin/sh\necho "$3: truncated profile data" >&2\nexit 1\n', encoding="utf-8")
-                os.chmod(tool, 0o755)
-            self.assertTrue(tool.lower().endswith(".exe"), tool)
+            tool = str(Path(scratch) / "llvm-profdata.exe")
+            Path(tool).write_text('#!/bin/sh\necho "$3: truncated profile data" >&2\nexit 1\n', encoding="utf-8")
+            os.chmod(tool, 0o755)
             with self.assertRaises(SystemExit) as refused:
                 golden_reach.run_llvm([tool, "merge", "-sparse", str(Path(scratch) / "stale.profraw")])
         self.assertIn("`llvm-profdata merge` exited 1", str(refused.exception))
+
+    def test_tool_name_drops_the_directory_and_any_exe_suffix(self) -> None:
         self.assertEqual("llvm-profdata", golden_reach.tool_name(r"C:\rustlib\bin\llvm-profdata.EXE"))
         self.assertEqual("llvm-cov", golden_reach.tool_name("/rustlib/bin/llvm-cov"))
 
@@ -1765,7 +1770,7 @@ class ArmSearchStageTests(_StageScratch):
                       str(refused.exception))
 
     def test_render_as_of_an_earlier_build_keeps_the_searched_arm_and_counts_that_builds_probes(self) -> None:
-        touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,
+        touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", *golden_reach_search.SRC_PATHSPEC], cwd=REPO,
                                  capture_output=True, text=True, check=True).stdout.strip()
         before = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{touched}^"], cwd=REPO,
                                 capture_output=True, text=True)
@@ -1855,7 +1860,7 @@ class ArmSearchStageTests(_StageScratch):
                 self.assertIn(f"delete {path}", str(refused.exception))
 
     def test_a_probe_refuses_a_build_src_has_moved_from(self) -> None:
-        touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,
+        touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", *golden_reach_search.SRC_PATHSPEC], cwd=REPO,
                                  capture_output=True, text=True, check=True).stdout.strip()
         before = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{touched}^"], cwd=REPO,
                                 capture_output=True, text=True)

@@ -36,6 +36,8 @@ class RealLlvmToolTests(unittest.TestCase):
                     [profdata, "merge", "-sparse", str(raw), "-o", str(Path(scratch) / "m.profdata")]
                 )
         message = str(refused.exception)
+        # On Windows the real tool is `llvm-profdata.exe`, so this also proves
+        # the message names it without the suffix.
         self.assertIn("`llvm-profdata merge` exited", message)
         self.assertIn("stale.profraw", message)
         self.assertIn("just golden-reach", message)
