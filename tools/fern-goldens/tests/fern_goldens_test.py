@@ -2149,5 +2149,122 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertIn("generated beta/expected-literals at", result.stdout)
 
 
+@unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
+class FixturesRefreshTests(unittest.TestCase):
+    """`tools/fern-goldens/fixtures-refresh.sh` over a synthetic root with real git:
+    a `git` wrapper on PATH serves the pinned-commit fetch from a local stand-in
+    for Fern's repository (no network), and can refuse `sparse-checkout`."""
+
+    SPEC = "test-definitions/fern/apis/query-parameters-openapi/openapi.yml"
+    SEED = "seed/python-sdk/query-parameters-openapi/no-custom-config"
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        base = Path(temporary.name)
+        git_config = base / "gitconfig"
+        git_config.write_text("[maintenance]\n\tauto = false\n", encoding="utf-8")
+        self.root = base / "repo"
+        mirror(self.root, "tools/fern-goldens/fixtures-refresh.sh")
+        target = self.root / "target" / "release"
+        target.mkdir(parents=True)
+        (target / "crozier").write_text(
+            "#!/usr/bin/env bash\n"
+            '[ -z "${FAIL_STRIP:-}" ] || { echo "crozier: simulated strip failure" >&2; exit 3; }\n'
+            'cat "$2"\n',
+            encoding="utf-8",
+        )
+        (target / "crozier").chmod(0o755)
+
+        fern = base / "fern"
+        (fern / Path(self.SPEC).parent).mkdir(parents=True)
+        (fern / self.SPEC).write_text("openapi: 3.0.3\n", encoding="utf-8")
+        (fern / self.SEED / "src").mkdir(parents=True)
+        (fern / self.SEED / "src" / "client.py").write_text("client = 1\n", encoding="utf-8")
+        (fern / "elsewhere").mkdir()
+        (fern / "elsewhere" / "unrelated.txt").write_text("outside the cone\n", encoding="utf-8")
+        environment = {**os.environ, "GIT_CONFIG_GLOBAL": str(git_config)}
+        for command in (
+            ["init", "-q"],
+            ["add", "-A"],
+            ["-c", "user.name=t", "-c", "user.email=t@example.test", "commit", "-qm", "fern"],
+        ):
+            subprocess.run(["git", "-C", str(fern), *command], env=environment, check=True)
+
+        real_git = shutil.which("git")
+        self.assertIsNotNone(real_git)
+        fake_bin = base / "fake bin"
+        fake_bin.mkdir()
+        (fake_bin / "git").write_text(
+            textwrap.dedent(
+                f"""\
+                #!/usr/bin/env bash
+                set -euo pipefail
+                case " $* " in
+                  *" sparse-checkout ${{FAIL_SPARSE:-unset}} "*)
+                    echo "git: 'sparse-checkout' is not a git command. See 'git --help'." >&2
+                    exit 1 ;;
+                  *" fetch "*) exec "{real_git}" -C "$2" fetch -q "{fern}" HEAD ;;
+                esac
+                exec "{real_git}" "$@"
+                """
+            ),
+            encoding="utf-8",
+        )
+        (fake_bin / "git").chmod(0o755)
+        self.environment = {**environment, "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}"}
+        self.fixture = self.root / "tests" / "fixtures" / "query-parameters-openapi"
+
+    def refresh(self, **extra: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [str(self.root / "tools" / "fern-goldens" / "fixtures-refresh.sh")],
+            cwd=self.root,
+            env={**self.environment, **extra},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_a_successful_refresh_prints_one_summary_line(self) -> None:
+        result = self.refresh()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(
+            result.stderr.splitlines(),
+            [
+                "fixtures-refresh: refreshed 1 fixture(s) from Fern @ 4d07e6aee — review the diff;"
+                " update the e2e manifest for any new matched files."
+            ],
+        )
+        self.assertEqual((self.fixture / "openapi.yml").read_text(encoding="utf-8"), "openapi: 3.0.3\n")
+        self.assertEqual(
+            (self.fixture / "expected" / "src" / "client.py").read_text(encoding="utf-8"), "client = 1\n"
+        )
+
+    def test_a_failed_sparse_checkout_setup_stops_with_its_cause_and_fix(self) -> None:
+        for subcommand in ("init", "add"):
+            with self.subTest(subcommand=subcommand):
+                result = self.refresh(FAIL_SPARSE=subcommand)
+                self.assertNotEqual(result.returncode, 0, result.stderr)
+                self.assertIn(
+                    f"fixtures-refresh: git sparse-checkout {subcommand} failed: git: 'sparse-checkout'"
+                    " is not a git command",
+                    result.stderr,
+                )
+                self.assertIn("git 2.26 or newer (git --version); upgrade git, then re-run", result.stderr)
+                self.assertEqual(len(result.stderr.splitlines()), 1, result.stderr)
+                self.assertFalse(self.fixture.exists())
+
+    def test_a_failed_step_is_named_on_exit(self) -> None:
+        result = self.refresh(FAIL_STRIP="1")
+        self.assertEqual(result.returncode, 3, result.stderr)
+        self.assertIn("crozier: simulated strip failure", result.stderr)
+        self.assertIn(
+            "fixtures-refresh: stopped while refreshing tests/fixtures/query-parameters-openapi (exit 3)",
+            result.stderr,
+        )
+        self.assertIn("git checkout -- tests/fixtures/", result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

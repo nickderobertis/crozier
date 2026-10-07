@@ -35,23 +35,45 @@ crozier_bin="$repo_root/target/release/crozier"
 [ -x "$crozier_bin" ] || { echo "fixtures-refresh: build crozier first (cargo build --release)" >&2; exit 1; }
 
 workdir="$(mktemp -d)"
-trap 'rm -rf "$workdir"' EXIT
+# Quiet on success (one summary line); the step that failed is named on exit.
+step=""
+on_exit() {
+  local status=$?
+  rm -rf "$workdir"
+  [ "$status" -eq 0 ] || [ -z "$step" ] ||
+    echo "fixtures-refresh: stopped while $step (exit $status) — fix the error above, then" \
+         "re-run; restore any partly refreshed fixture with git checkout -- tests/fixtures/" >&2
+}
+trap on_exit EXIT
 
-echo "fixtures-refresh: fetching Fern @ ${FERN_COMMIT:0:9}..." >&2
+# A failed sparse-checkout setup is fatal: the checkout below would otherwise
+# write nothing (or the whole Fern tree) instead of the corpus paths.
+sparse_checkout() {
+  local output
+  output="$(git -C "$workdir" sparse-checkout "$@" 2>&1)" || {
+    echo "fixtures-refresh: git sparse-checkout $1 failed: ${output:-no output} — it needs" \
+         "git 2.26 or newer (git --version); upgrade git, then re-run" >&2
+    step=""
+    exit 1
+  }
+}
+
+step="fetching Fern @ ${FERN_COMMIT:0:9} from $FERN_REPO"
 git -C "$workdir" init -q
 git -C "$workdir" remote add origin "$FERN_REPO"
 git -C "$workdir" config core.sparseCheckout true
-git -C "$workdir" sparse-checkout init --cone >/dev/null 2>&1 || true
+sparse_checkout init --cone
 for entry in "${CORPUS[@]}"; do
   IFS=':' read -r _ spec seed <<<"$entry"
-  git -C "$workdir" sparse-checkout add "$(dirname "$spec")" "$seed" >/dev/null 2>&1 || true
+  sparse_checkout add "$(dirname "$spec")" "$seed"
 done
 git -C "$workdir" fetch -q --depth 1 origin "$FERN_COMMIT"
 git -C "$workdir" checkout -q FETCH_HEAD
 
+refreshed=0
 for entry in "${CORPUS[@]}"; do
   IFS=':' read -r name spec seed <<<"$entry"
-  echo "fixtures-refresh: $name" >&2
+  step="refreshing tests/fixtures/$name"
   api_dir="$repo_root/tests/fixtures/$name"
   rm -rf "$api_dir/expected"
   mkdir -p "$api_dir/expected"
@@ -64,16 +86,21 @@ for entry in "${CORPUS[@]}"; do
       *)    cp "$workdir/$seed/$rel" "$api_dir/expected/$rel" ;;
     esac
   done
+  refreshed=$((refreshed + 1))
 done
 
 # The exhaustive fixture is not committed by Fern as OpenAPI-derived output, so
 # it is regenerated on demand behind an explicit arg (it needs Docker + fern,
 # which the offline corpus does not).
+also=""
 for arg in "$@"; do
   if [ "$arg" = "exhaustive" ]; then
-    echo "fixtures-refresh: exhaustive (container generator)..." >&2
+    step="regenerating tests/fixtures/exhaustive with Fern's container generator"
     "$repo_root/tools/fern-goldens/generate-fern-fixture.sh"
+    also=" and exhaustive"
   fi
 done
+step=""
 
-echo "fixtures-refresh: done. Review the diff; update the e2e manifest for any new matched files." >&2
+echo "fixtures-refresh: refreshed $refreshed fixture(s) from Fern @ ${FERN_COMMIT:0:9}$also —" \
+     "review the diff; update the e2e manifest for any new matched files." >&2
