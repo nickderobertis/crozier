@@ -100,7 +100,12 @@ also=""
 for arg in "$@"; do
   if [ "$arg" = "exhaustive" ]; then
     step="regenerating tests/fixtures/exhaustive with Fern's container generator"
-    "$repo_root/tools/fern-goldens/generate-fern-fixture.sh"
+    # Its output is shown only when it fails; this script's line is the summary.
+    "$repo_root/tools/fern-goldens/generate-fern-fixture.sh" >"$workdir/exhaustive.log" 2>&1 || {
+      status=$?
+      cat "$workdir/exhaustive.log" >&2 || echo "fixtures-refresh: could not read the generator's log" >&2
+      exit "$status"
+    }
     also=" and exhaustive"
   fi
 done

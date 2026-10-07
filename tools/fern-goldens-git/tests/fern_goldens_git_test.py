@@ -2176,9 +2176,9 @@ class FixturesRefreshTests(unittest.TestCase):
         self.environment = {**environment, "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}"}
         self.fixture = self.root / "tests" / "fixtures" / "query-parameters-openapi"
 
-    def refresh(self, **extra: str) -> subprocess.CompletedProcess[str]:
+    def refresh(self, *arguments: str, **extra: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
-            [str(self.root / "tools" / "fern-goldens" / "fixtures-refresh.sh")],
+            [str(self.root / "tools" / "fern-goldens" / "fixtures-refresh.sh"), *arguments],
             cwd=self.root,
             env={**self.environment, **extra},
             capture_output=True,
@@ -2221,6 +2221,32 @@ class FixturesRefreshTests(unittest.TestCase):
                 self.assertIn("git 2.26 or newer (git --version); upgrade git, then re-run", result.stderr)
                 self.assertEqual(len(result.stderr.splitlines()), 1, result.stderr)
                 self.assertFalse(self.fixture.exists())
+
+    def stand_in_generator(self) -> None:
+        """A `generate-fern-fixture.sh` that prints its own summary, or fails as FAIL_GENERATE says."""
+        generator = self.root / "tools" / "fern-goldens" / "generate-fern-fixture.sh"
+        generator.write_text(
+            "#!/usr/bin/env bash\n"
+            '[ -z "${FAIL_GENERATE:-}" ] || { echo "generate-fern-fixture: docker is not running" >&2; exit 4; }\n'
+            'echo "generate-fern-fixture: wrote 9 files to tests/fixtures/exhaustive/expected" >&2\n',
+            encoding="utf-8")
+        generator.chmod(0o755)
+
+    def test_an_exhaustive_refresh_prints_one_summary_line_for_both(self) -> None:
+        self.stand_in_generator()
+        result = self.refresh("exhaustive")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stderr.splitlines(), [
+            "fixtures-refresh: refreshed 1 fixture(s) from Fern @ 4d07e6aee and exhaustive — review the diff;"
+            " update the e2e manifest for any new matched files."])
+
+    def test_a_failed_exhaustive_generation_shows_its_output_and_the_step(self) -> None:
+        self.stand_in_generator()
+        result = self.refresh("exhaustive", FAIL_GENERATE="1")
+        self.assertEqual(result.returncode, 4, result.stderr)
+        self.assertIn("generate-fern-fixture: docker is not running", result.stderr)
+        self.assertIn("fixtures-refresh: stopped while regenerating tests/fixtures/exhaustive with Fern's "
+                      "container generator (exit 4)", result.stderr)
 
     def test_a_failed_step_is_named_on_exit(self) -> None:
         result = self.refresh(FAIL_STRIP="1")
