@@ -174,7 +174,7 @@ fern-goldens-result *args:
 
 # Process/filesystem/workflow-boundary coverage for the automation itself.
 test-fern-goldens:
-    @just nx run fern-goldens:test
+    @just nx run-many --targets=test --projects=fern-goldens,fern-goldens-git
 
 # Live Fern measurement for the witness-supply probe Fern refuses. Separate
 # from `check`: Fern's pinned Python generator runs in Docker and needs network.
