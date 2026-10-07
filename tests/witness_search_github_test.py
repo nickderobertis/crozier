@@ -486,6 +486,8 @@ class LedgerShardTests(unittest.TestCase):
         self.assertEqual("rejected", distinct[other_token]["disposition"])
 
         for invalid, message in (
+            ({**historical, "path": token.replace(":v2:", ":v1:")},
+             "unsupported opaque identity version v1"),
             ({**historical, "path": token.replace(":v2:", ":v3:")},
              "unsupported opaque identity version v3"),
             ({**historical, "path": "openapi.yaml"},
