@@ -30,6 +30,7 @@ do
   fi
 done
 
+# Windows installations may expose only `python`, so inspect both spellings.
 # Ask each candidate whether it is a virtualenv, rather than guessing from its
 # path: `sys.prefix` parting from `sys.base_prefix` is what a virtualenv IS.
 foreign=""
@@ -37,12 +38,12 @@ while IFS= read -r candidate; do
   [ -x "$candidate" ] || continue
   prefix="$("$candidate" -c 'import sys; print(sys.prefix)' 2>/dev/null)" || continue
   base="$("$candidate" -c 'import sys; print(sys.base_prefix)' 2>/dev/null)" || continue
-  if [ "$prefix" = "$base" ]; then
+  if [ -n "$prefix" ] && [ "$prefix" = "$base" ]; then
     printf '%s\n' "$candidate"
     exit 0
   fi
   [ -n "$foreign" ] || foreign="$candidate"
-done < <(type -a -p python3 2>/dev/null || true)
+done < <(type -a -p python3 python 2>/dev/null || true)
 
 if [ -n "$foreign" ]; then
   echo "census-python: the only python3 on PATH is another project's virtualenv" >&2

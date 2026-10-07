@@ -2223,7 +2223,7 @@ class RecipeWiringTests(unittest.TestCase):
     def test_the_unscoped_recipe_censuses_committed_sources(self) -> None:
         self.assertEqual(
             [
-                '"$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"',
+                '"$(bash ./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"',
             ],
             recipe_body("surface-census"),
         )
@@ -2232,8 +2232,8 @@ class RecipeWiringTests(unittest.TestCase):
     def test_the_gate_runs_this_file_offline(self) -> None:
         self.assertEqual(
             [
-                f'"$(./scripts/census-python.sh)" tests/{Path(__file__).name}',
-                '"$(./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py',
+                f'"$(bash ./scripts/census-python.sh)" tests/{Path(__file__).name}',
+                '"$(bash ./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py',
             ],
             recipe_body("test-surface-census"),
         )
@@ -7499,7 +7499,7 @@ class CensusInterpreterTests(unittest.TestCase):
         for recipe in ("surface-census", "test-surface-census"):
             with self.subTest(recipe=recipe):
                 body = " ".join(recipe_body(recipe))
-                self.assertIn('"$(./scripts/census-python.sh)"', body)
+                self.assertIn('"$(bash ./scripts/census-python.sh)"', body)
                 self.assertNotRegex(body, r"(?<!census-)\bpython3 ")
 
     def test_the_resolver_names_a_real_interpreter_that_is_not_a_virtualenv(self) -> None:
@@ -7527,6 +7527,21 @@ class CensusInterpreterTests(unittest.TestCase):
         self.assertFalse((REPO / ".venv").exists(), "this case assumes no local .venv")
         first, second = prefixes.stdout.split()
         self.assertEqual(first, second, "the resolver chose a virtualenv")
+
+    def test_a_system_python_without_the_python3_spelling_is_usable(self) -> None:
+        """Windows Python installations need not install a python3 executable."""
+        with tempfile.TemporaryDirectory() as directory:
+            interpreter = Path(directory) / ("python.exe" if os.name == "nt" else "python")
+            shutil.copy2(Path(sys.executable).resolve(), interpreter)
+            completed = self.resolve(path=self.shell_path(Path(directory)))
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            invoked = subprocess.run(
+                [self.shell(), "-c", '"$1" -c "$2"', "census-python",
+                 completed.stdout.strip(), "import sys; print(sys.version_info.major)"],
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
+            )
+            self.assertEqual(0, invoked.returncode, invoked.stderr)
+            self.assertEqual("3", invoked.stdout.strip())
 
     def test_a_repo_local_venv_is_preferred_over_anything_on_path(self) -> None:
         """The first branch, driven rather than tolerated.
