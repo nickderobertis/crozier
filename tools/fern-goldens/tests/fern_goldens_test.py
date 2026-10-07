@@ -2130,11 +2130,15 @@ class FernOverlayGoldensTests(unittest.TestCase):
             stage.chmod(0o755)
         return result
 
-    def test_each_fixture_gets_its_overlay_golden(self) -> None:
+    def test_each_fixture_gets_its_overlay_golden_under_one_summary_line(self) -> None:
         result = self.run_overlay("alpha", "beta")
         self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            result.stdout,
+            "generated alpha/expected-literals, beta/expected-literals"
+            " at fernapi/fern-python-sdk:4.3.17\n",
+        )
         for fixture in ("alpha", "beta"):
-            self.assertIn(f"generated {fixture}/expected-literals at", result.stdout)
             golden = self.root / "tests" / "fixtures" / fixture / "expected-literals"
             self.assertEqual((golden / "version.py").read_text(encoding="utf-8"), "--enum-type literals\n")
 
@@ -2145,8 +2149,26 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertNotIn("generated alpha/", result.stdout)
         self.assertIn("alpha: could not install expected-literals", result.stderr)
+        self.assertIn("make tests/fixtures/alpha writable, then move it into place", result.stderr)
+        stage = next((self.root / "tests" / "fixtures" / "alpha").glob(".fern-overlay-stage.*"))
+        self.assertIn(f"(mv {stage}/expected-literals ", result.stderr)
+        self.assertIn(f"discard it (rm -rf {stage})", result.stderr)
         self.assertFalse((self.root / "tests" / "fixtures" / "alpha" / "expected-literals").exists())
-        self.assertIn("generated beta/expected-literals at", result.stdout)
+        self.assertEqual(
+            result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
+        )
+
+    def test_fixtures_at_different_fern_pins_name_each_pin_in_the_summary(self) -> None:
+        (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).write_text(
+            json.dumps({"fern_python_sdk_version": "4.4.0"}), encoding="utf-8"
+        )
+        result = self.run_overlay("alpha", "beta")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            result.stdout,
+            "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17,"
+            " beta/expected-literals at fernapi/fern-python-sdk:4.4.0\n",
+        )
 
     def test_each_refused_fixture_names_its_fix_and_the_rest_still_generate(self) -> None:
         fixtures = self.root / "tests" / "fixtures"
@@ -2166,8 +2188,9 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertIn(
             "git checkout -- tests/fixtures/beta/expected/.crozier-fern-golden.json", result.stderr
         )
-        self.assertNotIn("generated beta/", result.stdout)
-        self.assertIn("generated alpha/expected-literals at", result.stdout)
+        self.assertEqual(
+            result.stdout, "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
+        )
 
 
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
@@ -2385,6 +2408,22 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(f"cannot create the fetch root {blocking / 'cache'} for gamma", result.stderr)
             self.assertNotIn("could not discover", result.stderr)
+        with self.subTest("an --only matching no row"):
+            result = self.run_script("--only", "delta", "--dry-run")
+            self.assertEqual(result.returncode, 1, result.stderr)
+            self.assertEqual(result.stdout, "")
+            self.assertIn("no corpus rows selected — --only 'delta' names no", result.stderr)
+            self.assertIn("pass one of its row names or fixture directories", result.stderr)
+            self.assertIn("--dry-run without --only lists them", result.stderr)
+        with self.subTest("no committed row"):
+            corpus = fixtures / "CORPUS.md"
+            original = corpus.read_text(encoding="utf-8")
+            corpus.write_text(original.replace("| committed |", "| link-ok |"), encoding="utf-8")
+            result = self.run_script("--committed", "--dry-run")
+            corpus.write_text(original, encoding="utf-8")
+            self.assertEqual(result.returncode, 1, result.stderr)
+            self.assertIn("no numbered row that committed mode selects", result.stderr)
+            self.assertIn("use --all when none is marked committed", result.stderr)
         with self.subTest("missing manifest"):
             (fixtures / "CORPUS.md").unlink()
             result = self.run_script()

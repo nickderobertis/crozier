@@ -116,7 +116,17 @@ while IFS=$'\t' read -r name url ref decision; do
 done < <(corpus_rows "$manifest")
 
 if [ "${#plan[@]}" -eq 0 ]; then
-  echo "generate-corpus-fixtures: no corpus rows selected" >&2
+  if [ -n "$only" ]; then
+    echo "generate-corpus-fixtures: no corpus rows selected — --only '$only' names no" \
+         "numbered link-ok or committed row ($mode mode) of tests/fixtures/CORPUS.md; pass" \
+         "one of its row names or fixture directories (--dry-run without --only lists" \
+         "them), then re-run" >&2
+  else
+    echo "generate-corpus-fixtures: no corpus rows selected — tests/fixtures/CORPUS.md has" \
+         "no numbered row that $mode mode selects (--committed takes committed rows, --all" \
+         "link-ok or committed ones); register a row there, or use --all when none is" \
+         "marked committed, then re-run" >&2
+  fi
   exit 1
 fi
 

@@ -20,7 +20,7 @@
 #
 # Needs what generate-fern-fixture.sh needs (Docker, fern, a release crozier).
 # Usage: tools/fern-goldens/fern-overlay-goldens.sh [--jobs N] (--enum-type literals | --default-max-retries N) FIXTURE...
-# One line per fixture on success; logs under .local/fern-overlay/<fixture>.log.
+# One summary line on success; logs under .local/fern-overlay/<fixture>.log.
 set -euo pipefail
 
 . "$(cd "$(dirname "$0")/../../scripts" && pwd)/lib.sh"
@@ -70,6 +70,10 @@ pin_of() {
 corpus_pin="$(pin_of "$repo_root/tests/fixtures/eos.local/expected/.crozier-fern-golden.json")"
 logs="$repo_root/.local/fern-overlay"
 mkdir -p "$logs"
+# Each worker records the version it generated at here, so the run reports one
+# summary line rather than one line per parallel worker.
+results="$(mktemp -d)"
+trap 'rm -rf "$results"' EXIT
 
 # one FIXTURE SETTING... — generate FIXTURE's overlay golden under SETTING.
 one() {
@@ -120,11 +124,14 @@ one() {
     "$spec" "$staging/$golden" >>"$log" 2>&1; then
     rm -rf "${dir:?}/$golden"
     mv "$staging/$golden" "$dir/$golden" || {
-      echo "$fixture: could not install $golden; the overlay is left in $staging" >&2
+      echo "$fixture: could not install $golden; the overlay is left in $staging — make" \
+           "tests/fixtures/$fixture writable, then move it into place" \
+           "(mv $staging/$golden $dir/$golden) or discard it (rm -rf $staging) and re-run" \
+           "this script for $fixture" >&2
       return 1
     }
     rm -rf "$staging"
-    echo "generated $fixture/$golden at fernapi/fern-python-sdk:$version"
+    printf '%s\n' "$version" >"$results/$fixture"
   else
     rm -rf "$staging"
     echo "$fixture: Fern generation failed; see $log" >&2
@@ -132,9 +139,31 @@ one() {
   fi
 }
 export -f one pin_of valid_fixture_name
-export repo_root corpus_pin logs golden
+export repo_root corpus_pin logs golden results
 
 # The worker shell xargs starts does not inherit this script's `set -euo
 # pipefail`, so it sets its own: a failed step fails that fixture's worker. The
 # setting reaches it as separate arguments, never re-split from a string.
-printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'set -euo pipefail; one "$@"' _ {} "${setting[@]}"
+status=0
+printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'set -euo pipefail; one "$@"' _ {} "${setting[@]}" ||
+  status=$?
+
+# One line naming every installed overlay, in argument order, with its Fern pin
+# (stated once when every fixture shares it). A failed fixture is absent here and
+# has already named its own fix on stderr.
+names="" pinned="" versions=""
+for fixture in "$@"; do
+  [ -f "$results/$fixture" ] || continue
+  version="$(cat "$results/$fixture")"
+  names+="${names:+, }$fixture/$golden"
+  pinned+="${pinned:+, }$fixture/$golden at fernapi/fern-python-sdk:$version"
+  versions+="$version"$'\n'
+done
+if [ -n "$names" ]; then
+  if [ "$(printf '%s' "$versions" | sort -u | wc -l)" -eq 1 ]; then
+    echo "generated $names at fernapi/fern-python-sdk:${versions%%$'\n'*}"
+  else
+    echo "generated $pinned"
+  fi
+fi
+exit "$status"
