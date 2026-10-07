@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace (no nx.json or project.json anywhere); this audit sits in scripts/ beside witness-search-github.py, whose committed evidence and notes it reads, and tests/witness_search_github_test.py drives it.
 """Reject public locators for excluded inputs in committed evidence and notes."""
 from __future__ import annotations
 

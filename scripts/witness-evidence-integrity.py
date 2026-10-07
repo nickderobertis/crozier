@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace (no nx.json or project.json anywhere); this checker sits in scripts/ beside witness-search-github.py, whose committed evidence it verifies, and tests/witness_search_github_test.py drives it.
 """Verify that the retained historical evidence preserves its records and joins.
 
 The baseline records anonymous group memberships by ledger position, never by

@@ -9867,7 +9867,7 @@ fn corpus_fixture_for<'a>(name: &'a str, aliases: &[(&'a str, &'a str)]) -> &'a 
         .unwrap_or(name)
 }
 
-// llmlint: ignore[e2e_not_mocked] The readers under test are the real scripts/fern-goldens and scripts/fetch-corpus.sh, copied unmodified into a temp repo by FernGoldensBoundaryTests, the harness `just test-fern-goldens` drives them through; its stand-in `curl`/`just` replace only the network fetch and the Fern run, which an offline gate cannot reach and which act after the alias registry is read and validated.
+// llmlint: ignore-block[e2e_not_mocked, tests_mirror_real_usage] The readers under test are the real scripts/fern-goldens and scripts/fetch-corpus.sh, copied unmodified into a temp repo by FernGoldensBoundaryTests, the harness `just test-fern-goldens` drives them through; its stand-in `curl`/`just` replace only the network fetch and the Fern run, external processes an offline gate cannot reach that act after the alias registry is read and validated. The third reader, `parse_corpus_fixture_aliases`/`corpus_fixture_for`, is this e2e binary's own fixture locator with no public entry point, so the test calls it directly to hold it to the two scripts.
 #[cfg(not(windows))]
 #[test]
 fn fixture_alias_readers_agree_on_validation_and_resolution() {
@@ -9938,6 +9938,7 @@ finally:
         }
     }
 }
+// llmlint: ignore-end[e2e_not_mocked, tests_mirror_real_usage]
 
 #[test]
 fn corpus_fixture_aliases_resolve_to_registered_goldens() {
@@ -10292,6 +10293,7 @@ fn runtime_python_env() -> Result<PathBuf, String> {
 /// `X-Fern-*`), which the recorder folds to a common prefix on both sides. It
 /// drives the compiled binary and the compiled client, so it lives in the e2e
 /// binary, in its SDK Python-environment tier. See docs/matching.md.
+// llmlint: ignore-block[e2e_not_mocked] The double is `httpx.MockTransport` at the HTTP transport, the boundary tests/runtime and the refusal registry's wire tests double by convention: it records the real generated clients, crozier's and Fern's, through one transport so their requests and outcomes can be compared; crossing a real network is the live Prism tier's job (`just test-live-e2e`).
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_crozier_matches_fern_runtime_behavior() {
@@ -10334,6 +10336,7 @@ fn sdk_env_crozier_matches_fern_runtime_behavior() {
         String::from_utf8_lossy(&output.stderr),
     );
 }
+// llmlint: ignore-end[e2e_not_mocked]
 
 #[test]
 fn arbitrary_spec_generates_valid_python() {

@@ -277,6 +277,7 @@ fn overlay_goldens_are_exactly_the_targeted_sets() {
     }
 }
 
+// llmlint: ignore-block[tests_mirror_real_usage] `read_overlay` and `materialize` are this e2e binary's overlay-golden gate, not crozier code: the CLI and src/ expose no entry point to them, so the test calls them directly to hold the rebuilt tree to its rule.
 /// An overlay golden is `expected/` minus the manifest's removed files, with the
 /// overlay laid over it: Fern's literal enum modules replace the classes, and
 /// every file the overlay does not carry is `expected/`'s own.
@@ -307,6 +308,7 @@ fn the_literals_golden_is_expected_minus_removed_plus_overlay() {
         std::fs::read(fixture_dir(api).join("expected/pyproject.toml")).unwrap()
     );
 }
+// llmlint: ignore-end[tests_mirror_real_usage]
 
 /// Fern's `default_max_retries: 0` changes only the root client's fallback and
 /// documented default and the client wrappers' parameter default (plus the

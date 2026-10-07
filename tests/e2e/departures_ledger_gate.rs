@@ -217,6 +217,7 @@ fn an_unrecorded_departure_fails_naming_it() {
     );
 }
 
+// llmlint: ignore-block[tests_mirror_real_usage] The departure-ledger gate is code of this e2e binary, not of crozier: `load_departure_ledger`, `corpus_golden_ledger` and the tree comparisons are the entry points the golden gates themselves call, and neither the CLI nor src/ exposes one, so this test drives them directly over a scratch repository it authors.
 #[test]
 fn rows_naming_an_unknown_departure_golden_or_file_are_refused() {
     let unknown_id = format!("{GOLDEN}\t{WRAPPER}\t3\tno-such-departure");
@@ -273,6 +274,7 @@ fn rows_naming_an_unknown_departure_golden_or_file_are_refused() {
     );
     assert!(load_failures(root.path())[0].contains("which no comparison of golden"));
 }
+// llmlint: ignore-end[tests_mirror_real_usage]
 
 #[test]
 fn duplicate_or_unsorted_rows_are_refused() {
@@ -332,6 +334,7 @@ fn carve_out_failures(ledger: &Ledger, golden: &str, c: &Corpus) -> Vec<String> 
     corpus_golden_ledger(ledger, golden, c).expect_err("the carve-out must be refused")
 }
 
+// llmlint: ignore-block[tests_mirror_real_usage] The departure-ledger gate is code of this e2e binary, not of crozier: `load_departure_ledger`, `corpus_golden_ledger` and the tree comparisons are the entry points the golden gates themselves call, and neither the CLI nor src/ exposes one, so this test drives them directly over a scratch repository it authors.
 #[test]
 fn a_file_also_carved_out_at_file_level_is_refused() {
     // An `unmatched` entry.
@@ -358,7 +361,9 @@ fn a_file_also_carved_out_at_file_level_is_refused() {
     // The same row over a corpus that carves nothing out is admitted.
     assert!(corpus_golden_ledger(&ledger, &golden, &OPENFIGI).is_ok());
 }
+// llmlint: ignore-end[tests_mirror_real_usage]
 
+// llmlint: ignore-block[tests_mirror_real_usage] The departure-ledger gate is code of this e2e binary, not of crozier: `load_departure_ledger`, `corpus_golden_ledger` and the tree comparisons are the entry points the golden gates themselves call, and neither the CLI nor src/ exposes one, so this test drives them directly over a scratch repository it authors.
 #[test]
 fn a_carve_out_the_inventory_records_is_refused_at_load() {
     let (root, golden) = corpus_repository(OPENFIGI.api, "README.md");
@@ -379,7 +384,9 @@ fn a_carve_out_the_inventory_records_is_refused_at_load() {
     );
     assert!(load_failures(root.path())[0].contains("unknown carve-out kind `vendored`"));
 }
+// llmlint: ignore-end[tests_mirror_real_usage]
 
+// llmlint: ignore-block[tests_mirror_real_usage] The departure-ledger gate is code of this e2e binary, not of crozier: `load_departure_ledger`, `corpus_golden_ledger` and the tree comparisons are the entry points the golden gates themselves call, and neither the CLI nor src/ exposes one, so this test drives them directly over a scratch repository it authors.
 #[test]
 fn the_corpus_gate_holds_its_golden_to_the_ledger() {
     let (root, golden) = corpus_repository(OPENFIGI.api, WRAPPER);
@@ -418,6 +425,7 @@ fn the_corpus_gate_holds_its_golden_to_the_ledger() {
     let message = gate(output(CROZIER_WRAPPER).path(), &bare);
     assert!(message.contains("is unrecorded"), "{message}");
 }
+// llmlint: ignore-end[tests_mirror_real_usage]
 
 #[test]
 fn the_flat_and_reporter_comparison_holds_the_ledger() {
@@ -461,6 +469,7 @@ fn the_flat_and_reporter_comparison_holds_the_ledger() {
     assert_eq!(refused, Err("no ledger".to_string()));
 }
 
+// llmlint: ignore-block[tests_mirror_real_usage] The departure-ledger gate is code of this e2e binary, not of crozier: `load_departure_ledger`, `corpus_golden_ledger` and the tree comparisons are the entry points the golden gates themselves call, and neither the CLI nor src/ exposes one, so this test drives them directly over a scratch repository it authors.
 #[test]
 fn an_overlay_takes_base_rows_only_for_the_files_it_inherits() {
     let base = format!("tests/fixtures/{}/expected", OPENFIGI.api);
@@ -502,7 +511,9 @@ fn an_overlay_takes_base_rows_only_for_the_files_it_inherits() {
     let failures = tree.check(&[], &|rel| rel != "client.py");
     assert!(failures.is_empty(), "{failures:#?}");
 }
+// llmlint: ignore-end[tests_mirror_real_usage]
 
+// llmlint: ignore-block[tests_mirror_real_usage] The departure-ledger gate is code of this e2e binary, not of crozier: `load_departure_ledger`, `corpus_golden_ledger` and the tree comparisons are the entry points the golden gates themselves call, and neither the CLI nor src/ exposes one, so this test drives them directly over a scratch repository it authors.
 #[test]
 fn recorded_departures_merge_into_the_ledger_golden_by_golden() {
     let base = format!("tests/fixtures/{}/expected", OPENFIGI.api);
@@ -557,6 +568,7 @@ fn recorded_departures_merge_into_the_ledger_golden_by_golden() {
         .unwrap_err()
         .contains("is not a record"));
 }
+// llmlint: ignore-end[tests_mirror_real_usage]
 
 /// `just departures-ledger`'s second half: merge what its first half recorded
 /// under [`departures_ledger::RECORD_ENV`] into the committed ledger, then
