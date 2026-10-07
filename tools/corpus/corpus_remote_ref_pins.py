@@ -74,7 +74,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Iterator, Mapping
+from typing import Iterator, Mapping
 from urllib.parse import urlsplit
 
 MANIFEST_RELATIVE = ("tests", "fixtures", "corpus-remote-ref-pins.tsv")
@@ -478,7 +478,7 @@ def document_references(root: Path, path: Path) -> list[str]:
     return list(_iter_references(document))
 
 
-def _iter_references(node: Any) -> Iterator[str]:
+def _iter_references(node: object) -> Iterator[str]:
     if isinstance(node, dict):
         for key, value in node.items():
             if key == "$ref" and isinstance(value, str):

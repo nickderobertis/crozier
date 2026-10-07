@@ -112,7 +112,12 @@ one() {
     if cut -f1 "$repo_root/tests/fixtures/corpus-remote-ref-pins.tsv" | grep -qx -- "$fixture" \
       || cut -f2 "$repo_root/tests/fixtures/corpus-remote-ref-pins.tsv" | grep -qx -- "$fixture"; then
       spec="$(just --justfile "$repo_root/justfile" fetch-corpus --fixture "$fixture" 2>>"$log" | tail -1)" \
-        || { echo "$fixture: just fetch-corpus failed; see $log" >&2; return 1; }
+        || {
+          echo "$fixture: just fetch-corpus failed: $(tail -n 1 "$log" 2>/dev/null || echo 'no output')" >&2
+          echo "$fixture: fix what it reports (the whole run is in $log), then re-run" \
+               "tools/fern-goldens/fern-overlay-goldens.sh $* $fixture" >&2
+          return 1
+        }
     else
       for name in openapi.json openapi.yaml openapi.yml; do
         [ ! -f "$repo_root/tests/fixtures/corpus-sources/$fixture/$name" ] \

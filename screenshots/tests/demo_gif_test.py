@@ -72,7 +72,7 @@ class AFailedGenerateStopsTheRender(unittest.TestCase):
 
 
 class TheRealBinaryRendersTheSession(unittest.TestCase):
-    def test_a_successful_generate_renders_an_animated_gif_of_every_frame(self) -> None:
+    def test_a_successful_generate_renders_an_animated_gif(self) -> None:
         from PIL import Image
 
         binary = REPO / "target" / "debug" / ("crozier.exe" if os.name == "nt" else "crozier")

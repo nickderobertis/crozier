@@ -314,6 +314,8 @@ class RecipeEndToEndTests(unittest.TestCase):
             "count not an integer": [{"filenames": [source], "regions": [[1, 1, 1, 2, "3", 0, 0, 0]]}],
             "count negative": [{"filenames": [source], "regions": [[1, 1, 1, 2, -1, 0, 0, 0]]}],
             "kind not an integer": [{"filenames": [source], "regions": [[1, 1, 1, 2, 3, 0, 0, None]]}],
+            "zero line": [{"filenames": [source], "regions": [[0, 1, 1, 2, 3, 0, 0, 0]]}],
+            "reversed span": [{"filenames": [source], "regions": [[5, 1, 2, 9, 3, 0, 0, 0]]}],
         }
         with tempfile.TemporaryDirectory() as scratch:
             for label, functions in cases.items():

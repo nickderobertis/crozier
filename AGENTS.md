@@ -101,23 +101,16 @@ Use the `just` recipes; do not hand-roll equivalents.
   `target/` (never shared across worktrees) and `profile.dev.debug = 1`. It
   configures no `sccache`; a compile cache is a user-level `~/.cargo/config.toml`
   `[build] rustc-wrapper`, which cargo merges with this one.
-- `just check` — the gate, through the Nx project graph: the **affected tier**
-  by default, `--sweep` for the **broader tier** (the recipe says which base and
-  which targets). Must pass before any commit/PR.
+- `just check` — the gate (`--sweep` for the broader tier). Must pass before any
+  commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
 - A target's `inputs` are both its cache key and its affected trigger: code that
   starts reading a new path adds it there, or a change to that path never reruns
   it. Where an edge may go is `nx.json`'s `boundaries`, enforced by every
   project's `lint`.
-- `just test-live-e2e` — live runtime e2e: boot a Prism OpenAPI mock server per
-  fixture and drive the generated SDK through every documented endpoint, asserting
-  typed responses come back. Spec-driven; promoted out of the affected tier, a
-  required CI leg. Needs Node/Prism + uv. See
-  [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
-- `just test-sdk-env` — the e2e journeys that build a generated SDK's venv from
-  PyPI and run mypy/pytest in it: the runtime wire suite and the fern-refusals
-  gate's `wire_test.py` among them. Promoted; CI's `sdk-env` matrix job runs it,
-  gated.
+- `just test-live-e2e` / `just test-sdk-env` — the generated SDK driven against
+  a Prism mock / inside its own PyPI venv. Promoted out of the affected tier; each
+  is a required CI leg. See [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
 - `just test-corpus-match` — byte-compare every registered corpus against Fern
   using committed sources. `just test-corpus-offline` proves it, its strict form,
   the census, the refusal-class gate and the census-fallback samples with sockets

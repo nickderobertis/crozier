@@ -275,6 +275,9 @@ def load_tier(path: Path, repo_root: Path) -> dict[str, dict[Region, int]]:
                 _refuse_export(path, f"a region names file {raw[REGION_FILE_INDEX]} of {len(filenames)}")
             if raw[REGION_KIND_INDEX] != REGION_CODE_KIND:
                 continue
+            # A code region is a span of the source: 1-based, its end not before its start.
+            if min(raw[:4]) < 1 or (raw[0], raw[1]) > (raw[2], raw[3]):
+                _refuse_export(path, f"a code region is not a 1-based span ending after it starts: {raw!r}")
             absolute = Path(filenames[raw[REGION_FILE_INDEX]])
             try:
                 relative = absolute.relative_to(repo_root).as_posix()

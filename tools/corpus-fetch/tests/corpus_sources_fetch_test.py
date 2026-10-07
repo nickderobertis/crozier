@@ -268,6 +268,8 @@ class TheCheckStillDiscriminates(LoopbackRoot):
              "records source"),
             ("\t".join(["/abs", "/abs/openapi.json", *rows[0].split("\t")[2:]]) + "\n",
              "corpus name '/abs' is not one path segment"),
+            ("\t".join([rows[0].split("\t")[0], rows[0].split("\t")[1].replace("/", "\\", 3),
+                        *rows[0].split("\t")[2:]]) + "\n", "holds a backslash"),
         )
         for body, diagnostic in cases:
             with self.subTest(diagnostic=diagnostic):

@@ -208,6 +208,16 @@ class TheOfflineCommandsRunEverywhere(SyntheticRoot):
         self.assertIn("just lint-corpus-sources", completed.stderr)
         self.assertNotIn("Traceback", completed.stderr)
 
+    def test_a_remote_url_that_decodes_out_of_its_row_is_refused(self) -> None:
+        for url in (f"{RAW}/example/schemas/{PINNED_SHA}/%2e%2e/%2e%2e/escape.yaml",
+                    f"{RAW}/example/schemas/{PINNED_SHA}/a%5cb.yaml",
+                    f"{RAW}/example//schemas.yaml"):
+            with self.subTest(url=url), self.assertRaises(corpus_sources.SourcesError) as refused:
+                corpus_sources.remote_path(url)
+            self.assertIn("which is no path inside its row's directory", str(refused.exception))
+        self.assertEqual(f"remote/raw.githubusercontent.com/example/schemas/{PINNED_SHA}/block.yaml",
+                         corpus_sources.remote_path(PINNED_URL))
+
     def test_vendor_without_bash_on_path_names_it(self) -> None:
         empty = self.root / "no-bash"
         empty.mkdir()

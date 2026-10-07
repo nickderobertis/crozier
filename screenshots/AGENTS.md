@@ -7,9 +7,8 @@ with it. This folder holds the inputs; the mechanics live in
 [`scripts/screenshots.sh`](../scripts/screenshots.sh) (static SVGs; it stays in
 `scripts/` because the pre-push guard and the Visual-docs workflow run it by that
 path) and [`demo-gif.py`](demo-gif.py) (the animated hero). `capture` and
-`demo-gif` build crozier but run outside both gate tiers (screencomp owns the
-comparison). Its gate target, `test`, renders the session from the freshly
-built crozier (it runs after `crozier:build`) and refuses a broken binary.
+`demo-gif` build crozier but run outside both gate tiers: screencomp owns the
+comparison.
 
 ## What's here
 

@@ -49,7 +49,9 @@ LINE_MS = 70        # per revealed output line
 BEAT_MS = 500       # pause after a command's output
 HOLD_MS = 3200      # hold on the final frame
 
-PY_KEYWORDS = {
+# The words the model's listing colours as keywords: Python's own, and the
+# names (`self`, `enum`, `str`, `typing`, ...) a generated model leans on.
+HIGHLIGHTED_WORDS = {
     "import", "from", "class", "def", "if", "return", "self", "enum", "str",
     "typing",
 }
@@ -98,7 +100,7 @@ def colorize(text: str) -> list[tuple[str, tuple[int, int, int]]]:
             continue
         if tok.startswith('"') or tok.endswith('"'):
             color = YELLOW
-        elif tok in PY_KEYWORDS:
+        elif tok in HIGHLIGHTED_WORDS:
             color = PURPLE
         elif tok.isupper() and tok.isalpha():
             color = CYAN            # enum members (AVAILABLE, PENDING, SOLD)

@@ -318,6 +318,27 @@ class FernOverlayGoldensTests(unittest.TestCase):
             result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
         )
 
+    def test_a_pinned_rows_fetch_that_fails_reports_its_cause_and_the_retry(self) -> None:
+        fixtures = self.root / "tests" / "fixtures"
+        pinned = fixtures / "pinned" / "expected"
+        pinned.mkdir(parents=True)
+        (pinned / STATE).write_text(json.dumps({"fern_python_sdk_version": "4.3.17"}), encoding="utf-8")
+        (fixtures / "corpus-remote-ref-pins.tsv").write_text("pinned\tpinned\n", encoding="utf-8")
+        stubs = self.root / "stub-bin"
+        stubs.mkdir()
+        (stubs / "just").write_text("#!/bin/sh\necho 'fetch-corpus: the pinned commit is gone' >&2\nexit 1\n",
+                                    encoding="utf-8")
+        (stubs / "just").chmod(0o755)
+        result = subprocess.run(
+            [str(self.root / "tools" / "fern-goldens" / "fern-overlay-goldens.sh"), "--enum-type", "literals", "pinned"],
+            env={**os.environ, "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}"},
+            capture_output=True, text=True, check=False,
+        )
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("pinned: just fetch-corpus failed: fetch-corpus: the pinned commit is gone", result.stderr)
+        self.assertIn("then re-run tools/fern-goldens/fern-overlay-goldens.sh --enum-type literals pinned",
+                      result.stderr)
+
     def test_fixtures_at_different_fern_pins_name_each_pin_in_the_summary(self) -> None:
         (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).write_text(
             json.dumps({"fern_python_sdk_version": "4.4.0"}), encoding="utf-8"

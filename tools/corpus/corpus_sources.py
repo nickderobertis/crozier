@@ -132,9 +132,14 @@ def spec_filename(url: str) -> str:
 
 
 def remote_path(url: str) -> str:
-    """Where a pinned remote document lives under its row's directory."""
+    """Where a pinned remote document lives under its row's directory: a relative,
+    `/`-separated path with no `.`/`..` part or backslash, whatever the URL decodes to."""
     parts = urlsplit(url)
-    return f"{REMOTE_DIR}/{parts.netloc}{unquote(parts.path)}"
+    path = f"{REMOTE_DIR}/{parts.netloc}{unquote(parts.path)}"
+    if "\\" in path or any(part in ("", ".", "..") for part in path.split("/")):
+        raise SourcesError(f"{url} decodes to {path!r}, which is no path inside its row's directory; "
+                           "pin the reference to a plain file URL")
+    return path
 
 
 def expected_files(root: Path, row: Row) -> dict[str, tuple[str, str | None]]:
@@ -168,6 +173,9 @@ def load_manifest(root: Path) -> list[Record]:
         if not safe_name(record.corpus_name):
             raise SourcesError(f"{site}: corpus name {record.corpus_name!r} is not one path segment; "
                                "rewrite the manifest with `vendor`")
+        if "\\" in record.path:
+            raise SourcesError(f"{site}: path {record.path!r} holds a backslash, which would read as a "
+                               "separator on Windows; rewrite the manifest with `vendor`")
         relative = PurePosixPath(record.path)
         prefix = ROOT_RELATIVE / record.corpus_name
         if ".." in relative.parts or not relative.is_relative_to(prefix) or relative == prefix:
