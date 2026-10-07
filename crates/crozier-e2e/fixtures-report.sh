@@ -29,6 +29,7 @@ out=$(mktemp "${TMPDIR:-/tmp}/crozier-fixtures-$1.XXXXXX") \
   || fail "cannot create a temporary file under ${TMPDIR:-/tmp}" "point TMPDIR at a writable directory and rerun"
 trap 'rm -f "$out" || echo "fixtures-report: could not remove $out; delete it by hand" >&2' EXIT
 
+# llmlint: ignore[changed_behavior_has_e2e] this path runs the ignored whole-corpus reporters, so running it inside crozier-e2e's own tests would rebuild and rerun that suite inside itself; crates/crozier-e2e/tests/e2e/report_scripts.rs runs this real script with only the `cargo` boundary stood in, covering extraction, a missing summary, a failing reporter and temp-file cleanup. The real path is `just fixtures-gaps` / `just fixtures-diff`.
 if cargo test --locked -p crozier-e2e --test e2e -- --ignored --nocapture "$reporter" >"$out" 2>&1 \
   && grep -qF "$summary" "$out"; then
   # Only the report, from the first corpus header through the summary, never

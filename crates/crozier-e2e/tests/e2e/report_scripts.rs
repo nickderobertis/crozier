@@ -36,6 +36,7 @@ fn run_script(script: &str, args: &[&str], cargo_body: &str, setup: impl FnOnce(
     let bin = root.path().join("bin");
     std::fs::create_dir(&bin).unwrap();
     let cargo = bin.join("cargo");
+    // llmlint: ignore[e2e_not_mocked] the scripts' real path runs the ignored whole-corpus reporters or the entire crozier-e2e suite (departures-ledger.sh also rewrites tests/fixtures/departures-ledger.tsv), so running it here would rebuild and rerun this suite inside itself; these cases run the real scripts with only the `cargo` boundary stood in, covering extraction, a missing summary, a failing reporter, a refused merge and temp-file cleanup. The real path is `just fixtures-gaps` / `just fixtures-diff` / `just departures-ledger`.
     std::fs::write(
         &cargo,
         format!("#!/bin/sh\necho \"$*\" >> \"$CALLS\"\n{cargo_body}"),
