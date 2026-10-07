@@ -7116,15 +7116,15 @@ class YamlSubsetTests(unittest.TestCase):
     def test_the_census_refuses_a_malformed_source_naming_it_and_its_line(self) -> None:
         """The same refusals through the real CLI, over a source it would otherwise count."""
         base = "openapi: 3.0.3\ninfo:\n  title: t\n  version: '1'\npaths: {}\n"
-        for label, document, expected in (
+        for label, document, expected, line in (
             ("a second document after the end marker", base + "...\nopenapi: 3.1.0\n",
-             "more than one YAML document"),
-            ("a repeated block key", base + "paths: {}\n", "the mapping key 'paths' appears twice"),
+             "more than one YAML document", 7),
+            ("a repeated block key", base + "paths: {}\n", "the mapping key 'paths' appears twice", 6),
             ("a repeated flow key", base.replace("paths: {}", "paths: {/a: {}, /a: {}}"),
-             "the mapping key '/a' appears twice"),
+             "the mapping key '/a' appears twice", 5),
             ("no comma between flow entries",
              base.replace("info:\n  title: t\n  version: '1'", 'info: {title: "first" version: "1"}'),
-             "flow entries need a `,` between them"),
+             "flow entries need a `,` between them", 2),
         ):
             with self.subTest(label), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
@@ -7133,6 +7133,7 @@ class YamlSubsetTests(unittest.TestCase):
                 completed = run("--vendored-only", "--fixtures-root", str(root))
                 self.assertNotEqual(0, completed.returncode, completed.stdout)
                 self.assertIn("malformed", completed.stderr)
+                self.assertIn(f"malformed/openapi.yml:{line}: ", completed.stderr)
                 self.assertIn(expected, completed.stderr)
                 self.assertNotIn("Traceback", completed.stderr)
 

@@ -125,7 +125,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 CAP = 0.70
 """The share of any GitHub REST bucket this repository's calls may reach."""
@@ -211,7 +211,7 @@ class _CheckedRedirects(urllib.request.HTTPRedirectHandler):
     request's `Authorization` to another host: urllib's own handler follows any
     redirect and copies every header but the body's."""
 
-    def __init__(self, allowed: Any) -> None:
+    def __init__(self, allowed: Callable[[str], bool]) -> None:
         super().__init__()
         self.allowed = allowed
 
@@ -224,7 +224,7 @@ class _CheckedRedirects(urllib.request.HTTPRedirectHandler):
         return followed
 
 
-def open_checked(request: urllib.request.Request, allowed: Any, timeout: float):
+def open_checked(request: urllib.request.Request, allowed: Callable[[str], bool], timeout: float):
     """`urlopen(request)`, following only redirects to URLs `allowed(url)` accepts."""
     return urllib.request.build_opener(_CheckedRedirects(allowed)).open(request, timeout=timeout)
 
