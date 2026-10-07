@@ -1829,6 +1829,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             (("beta", "5.20.0"), {"EXTRA_FIELDS": "sometimes"}, "use allow, ignore, forbid, or leave it empty"),
             (("beta", "5.20.0"), {"FERN_AUDIENCES": "public: [x]"}, "invalid audiences 'public: [x]'"),
             (("beta", "5.20.0"), {"FERN_AUDIENCES": "public,,internal"}, "use comma-separated labels"),
+            # Only the first line would reach `read`; the rest would reach the provenance.
+            (("beta", "5.20.0"), {"FERN_AUDIENCES": "public\nbad: [x]"}, "use comma-separated labels"),
             (("beta", "5.20.0"), {"FERN_AUDIENCES": "public,"}, "each starting with a letter"),
             (("beta", "5.20.0"), {"FERN_AUDIENCES": "Off"}, "not true/false/yes/no/on/off/y/n/null"),
             (("beta", "5.20.0"), {"CLIENT_CLASS_NAME": "Acme\n          timeout: 1"}, "invalid client_class_name"),
@@ -2257,6 +2259,7 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         generator = self.root / "tools" / "fern-goldens" / "generate-fern-fixture.sh"
         generator.write_text(
             "#!/usr/bin/env bash\n"
+            '[ -z "${GENERATOR_CALLS:-}" ] || printf \'%s\\n\' "$*" >> "$GENERATOR_CALLS"\n'
             '[ -z "${FAIL_GENERATE:-}" ] || { echo "generate-fern-fixture: simulated failure" >&2; exit 9; }\n'
             'echo "generate-fern-fixture: wrote 1 files to tests/fixtures/$1/expected" >&2\n',
             encoding="utf-8",
@@ -2284,6 +2287,45 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             f"| 3 | `gamma` | git | {upstream} | `HEAD` | MIT | link-ok | c |\n",
             encoding="utf-8",
         )
+
+    def upstream_row(self, name: str, files: dict[str, str]) -> Path:
+        """A local git repository holding `files`, registered as the link-ok row `name`."""
+        upstream = self.base / f"upstream-{name}"
+        for relative, text in files.items():
+            (upstream / relative).parent.mkdir(parents=True, exist_ok=True)
+            (upstream / relative).write_text(text, encoding="utf-8")
+        environment = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull}
+        for command in (["init", "-q"], ["add", "-A"],
+                        ["-c", "user.name=t", "-c", "user.email=t@example.test", "commit", "-qm", "upstream"]):
+            subprocess.run(["git", "-C", str(upstream), *command], env=environment, check=True)
+        with (self.root / "tests" / "fixtures" / "CORPUS.md").open("a", encoding="utf-8") as handle:
+            handle.write(f"| 9 | `{name}` | git | {upstream} | `HEAD` | MIT | link-ok | d |\n")
+        return upstream
+
+    def test_a_fetched_repositorys_one_openapi_document_is_what_the_generator_reads(self) -> None:
+        self.upstream_row("delta", {"README.md": "docs\n", "settings.yml": "theme: dark\n",
+                                    "spec/api/openapi.yaml": "openapi: 3.0.3\ninfo: {title: d, version: '1'}\n"})
+        calls = self.base / "calls"
+        result = self.run_script("--only", "delta", "--fetch-root", str(self.base / "cache"),
+                                 GENERATOR_CALLS=str(calls))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        [call] = calls.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(call.split(" ")[0], "delta")
+        self.assertTrue(call.endswith("/delta/spec/api/openapi.yaml"), call)
+        # (git's own note that a local clone ignores --filter precedes it.)
+        self.assertEqual(result.stderr.splitlines()[-1], "generate-fern-fixture: wrote 1 files to tests/fixtures/delta/expected")
+
+    def test_a_fetched_repository_with_several_openapi_documents_generates_nothing(self) -> None:
+        self.upstream_row("epsilon", {"v1/openapi.yml": "openapi: 3.0.3\n", "v2/openapi.json": '{"openapi": "3.1.0"}\n'})
+        calls = self.base / "calls"
+        result = self.run_script("--only", "epsilon", "--fetch-root", str(self.base / "cache"),
+                                 GENERATOR_CALLS=str(calls))
+        self.assertNotEqual(result.returncode, 0, result.stderr)
+        self.assertIn("found multiple OpenAPI candidates under", result.stderr)
+        self.assertIn("/epsilon/v1/openapi.yml", result.stderr)
+        self.assertIn("/epsilon/v2/openapi.json", result.stderr)
+        self.assertIn("could not discover exactly one OpenAPI spec for epsilon", result.stderr)
+        self.assertFalse(calls.exists(), "the generator ran over an ambiguous repository")
 
     def run_script(self, *arguments: str, **extra: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(

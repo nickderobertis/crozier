@@ -32,7 +32,9 @@ corpus_rows() {
       # are how the offline suites stand in for one.
       if (url !~ /^https:\/\/[^[:space:]`]+$/ && url !~ /^http:\/\/(127\.0\.0\.1|localhost)(:[0-9]+)?\/[^[:space:]`]*$/ && url !~ /^\/[^[:space:]`]+$/)
         refuse("the source is not an https URL");
-      if (ref !~ /^[A-Za-z0-9._][A-Za-z0-9._\/-]*$/)
+      # A ref is a revision name, never a path: `.`, `..`, a trailing `/` or a
+      # leading `-` would make `git checkout` read it as something else.
+      if (ref !~ /^[A-Za-z0-9_][A-Za-z0-9._\/-]*$/ || ref ~ /\.\./ || ref ~ /\/$/)
         refuse("the pinned ref is not a commit, tag or branch name");
       print name "\t" url "\t" ref "\t" decision;
     }
@@ -44,7 +46,12 @@ corpus_scripts_dir() {
 }
 
 corpus_aliases_file() {
-  printf '%s\n' "$(corpus_scripts_dir)/../../tests/fixtures/corpus-aliases.tsv"
+  local scripts
+  scripts="$(corpus_scripts_dir)" || {
+    echo "corpus: cannot resolve tools/corpus/ from ${BASH_SOURCE[0]} — run it from a readable checkout" >&2
+    return 1
+  }
+  printf '%s\n' "$scripts/../../tests/fixtures/corpus-aliases.tsv"
 }
 
 # Substitute a row's recorded remote-`$ref` pins into a freshly fetched document,
@@ -77,7 +84,7 @@ corpus_tree_verify() {
 
 corpus_fixture_for() {
   local aliases
-  aliases="$(corpus_aliases_file)"
+  aliases="$(corpus_aliases_file)" || return 1
   [ -f "$aliases" ] || {
     echo "corpus: missing fixture alias file $aliases — it is committed; restore it with" \
          "git checkout -- tests/fixtures/corpus-aliases.tsv, then re-run" >&2
@@ -164,7 +171,11 @@ corpus_fetch_repo() {
     }
   fi
   if [ "$ref" != HEAD ]; then
-    git -C "$target" checkout --quiet "$ref" || {
+    # Resolved to a commit first, so the checkout can only select a revision.
+    local commit
+    { commit="$(git -C "$target" rev-parse --verify --quiet "$ref^{commit}" ||
+                git -C "$target" rev-parse --verify --quiet "origin/$ref^{commit}")" &&
+      git -C "$target" checkout --quiet --detach "$commit"; } || {
       echo "corpus: could not check out $ref for $name in $target — check the row's pinned" \
            "ref in tests/fixtures/CORPUS.md, or remove the clone (rm -rf $target) to" \
            "re-clone it, then re-run" >&2

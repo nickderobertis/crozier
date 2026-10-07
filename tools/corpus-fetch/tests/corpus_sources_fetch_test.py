@@ -128,6 +128,14 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
              "the pinned ref is not a commit, tag or branch name"),
             ("option ref", "| 3 | `third` | test | https://example.test/a.yaml | `--detach` | MIT | link-ok | x |\n",
              "the pinned ref is not a commit, tag or branch name"),
+            ("a path ref", "| 3 | `third` | test | https://example.test/a.yaml | `.` | MIT | link-ok | x |\n",
+             "the pinned ref is not a commit, tag or branch name"),
+            ("a parent ref", "| 3 | `third` | test | https://example.test/a.yaml | `../x` | MIT | link-ok | x |\n",
+             "the pinned ref is not a commit, tag or branch name"),
+            ("a range ref", "| 3 | `third` | test | https://example.test/a.yaml | `main..x` | MIT | link-ok | x |\n",
+             "the pinned ref is not a commit, tag or branch name"),
+            ("a directory ref", "| 3 | `third` | test | https://example.test/a.yaml | `spec/` | MIT | link-ok | x |\n",
+             "the pinned ref is not a commit, tag or branch name"),
         ):
             with self.subTest(label):
                 self.write_corpus("committed", extra=row)

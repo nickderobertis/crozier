@@ -257,6 +257,8 @@ yaml_keyword() {
 if [ -n "$FERN_AUDIENCES" ]; then
   _audiences_valid=1
   [[ ",$FERN_AUDIENCES," != *,,* ]] || _audiences_valid=0
+  # `read` takes one line; a value spanning more is refused whole.
+  [[ "$FERN_AUDIENCES" != *$'\n'* && "$FERN_AUDIENCES" != *$'\r'* ]] || _audiences_valid=0
   IFS=',' read -ra _auds <<<"$FERN_AUDIENCES"
   for _a in "${_auds[@]}"; do
     [[ "$_a" =~ ^[A-Za-z][A-Za-z0-9._-]*$ ]] && ! yaml_keyword "$_a" || _audiences_valid=0
