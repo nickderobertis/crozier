@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import importlib.util
 import io
 import json
 import sys
@@ -22,8 +23,21 @@ REPO = Path(__file__).resolve().parents[2]
 SOURCES = ("apis.guru", "jentic", "vendor-portals")
 FIELDS = ("key", "source", "kind", "count", "blocker", "items", "evidence")
 KINDS = ("selector-unavailable", "inconclusive-screen", "unreadable-document", "portal-unanswered")
-RECORD_FIELDS = ("source", "key", "candidate", "revision", "digest", "census", "licence_screen",
-                 "revision_screen", "fern_screen", "disposition", "evidence")
+
+
+def _load_github_index():
+    spec = importlib.util.spec_from_file_location(
+        "registries_github_index", Path(__file__).with_name("witness-search-github-index.py"))
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+# Every source's `records.tsv` shares one candidate-record shape, named once by
+# the GitHub index that also writes it.
+RECORD_FIELDS = _load_github_index().FIELDS
 
 
 def read_tsv(path: Path, columns: tuple[str, ...], *, optional: bool = False) -> list[dict[str, str]]:
