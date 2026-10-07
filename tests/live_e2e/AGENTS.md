@@ -80,11 +80,12 @@ required leg (`live-e2e`, aggregated into `gate`).
 
 ## Committed publisher sources
 
-The live sweep uses Qakka, Apideck CRM and bunq, registered in
-`tests/fixtures/CORPUS.md`. Their sources and Fern goldens are committed.
-The harness reads the committed source at run time; the source registry retains
-publisher provenance. bunq is the at-scale target and the fixture that sets
-`strict_coverage=False`.
+Every live fixture is a publisher source registered in `tests/fixtures/CORPUS.md`,
+never an authored seed, so the sweep proves crozier on real documents; the harness
+reads the committed source and Fern golden at run time, and `conftest.FIXTURES` is
+the roster. `strict_coverage=False` is for a fixture whose sub-client grouping
+crozier does not yet match: it is swept in aggregate, and its structural parity is
+left to the byte-diff gate.
 
 How big a fixture is isn't written down here. `conftest.reference_methods()` reads
 the endpoint and sub-client catalog out of that fixture's committed

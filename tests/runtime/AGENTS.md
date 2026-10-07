@@ -19,11 +19,10 @@ test-sdk-env` (CI's `sdk-env` job, required by `gate`), never the offline `check
   subprocess, since both packages are named `fern` and can't coexist in one
   process — and a parametrized test asserts the recordings match **per journey**.
   So the expected behavior is *derived from Fern*, not authored here.
-- **How it drives the wire.** Journeys call the registered API's workspace
-  operations through the real generated clients with an injected transport.
-  They cover bearer auth + SDK headers, an absent optional token, snake-case
-  body-field aliases + `OMIT` filtering, query options, typed responses and
-  typed errors, and `.with_raw_response` — sync + async.
+- **How it drives the wire.** Journeys call the real generated clients with an
+  injected `httpx.MockTransport`; `_recorder.JOURNEYS` is the inventory. Every
+  request-shaping path the generator emits needs a journey, sync and async alike,
+  so a generator change that alters what goes on the wire cannot go unrecorded.
 - **The only allowed difference** is the deliberate SDK-identity branding
   (`X-Crozier-*` vs `X-Fern-*`). `_recorder._canonical_headers` folds either
   vendor prefix to a common `x-sdk-*` via one prefix rule. Every SDK-identity
