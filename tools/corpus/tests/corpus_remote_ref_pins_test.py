@@ -578,6 +578,96 @@ class PinMechanismTests(unittest.TestCase):
             self.fetch("plain-row"), "git checkout -- tests/fixtures/CORPUS.md", "then re-run"
         )
 
+    def test_a_missing_alias_file_names_how_to_restore_it(self) -> None:
+        (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").unlink()
+        self.assert_refused_without_a_path(
+            self.fetch("plain-row"),
+            "missing fixture alias file",
+            "git checkout -- tests/fixtures/corpus-aliases.tsv",
+        )
+
+    def test_an_invalid_alias_file_names_the_line_and_how_to_repair_it(self) -> None:
+        (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").write_text(
+            "# aliases\nbroken-row\n", encoding="utf-8"
+        )
+        self.assert_refused_without_a_path(
+            self.fetch("plain-row"),
+            "line 2: expected two safe fixture names",
+            "fix that line",
+            "git checkout -- tests/fixtures/corpus-aliases.tsv",
+        )
+
+    def test_an_empty_alias_file_names_how_to_restore_it(self) -> None:
+        (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").write_text(
+            "# no aliases left\n", encoding="utf-8"
+        )
+        self.assert_refused_without_a_path(
+            self.fetch("plain-row"),
+            "has no aliases",
+            "git checkout -- tests/fixtures/corpus-aliases.tsv",
+        )
+
+    def test_a_failed_download_names_the_row_and_what_to_check(self) -> None:
+        self.add_repository_row("absent-row", self.spec_url("absent-row"), "HEAD")
+        self.assert_refused_without_a_path(
+            self.fetch("absent-row"),
+            f"could not download the spec for absent-row from {self.spec_url('absent-row')}",
+            "source URL in tests/fixtures/CORPUS.md",
+        )
+        self.assert_no_leftovers("absent-row", expected=set())
+
+    def test_an_empty_download_names_the_row_and_what_to_check(self) -> None:
+        self.server.documents["/specs/empty-row.yaml"] = b""
+        self.add_repository_row("empty-row", self.spec_url("empty-row"), "HEAD")
+        self.assert_refused_without_a_path(
+            self.fetch("empty-row"),
+            "fetched an empty spec for empty-row",
+            "serves the OpenAPI document itself",
+        )
+        self.assert_no_leftovers("empty-row", expected=set())
+
+    def test_an_unsupported_spec_suffix_names_the_supported_ones(self) -> None:
+        result = subprocess.run(
+            [
+                "bash",
+                "-c",
+                '. "$1" && corpus_spec_cache_filename "$2"',
+                "bash",
+                str(self.root / "tools" / "corpus" / "corpus-lib.sh"),
+                "https://example.test/openapi.txt",
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assert_refused_without_a_path(
+            result, "https://example.test/openapi.txt", ".json, .yaml or .yml", "CORPUS.md"
+        )
+
+    def test_a_second_destination_root_asks_for_exactly_one(self) -> None:
+        result = self.fetch("plain-row", str(self.root / "one"), str(self.root / "two"))
+        self.assert_refused_without_a_path(
+            result, "more than one destination root", "supply exactly one DEST_ROOT"
+        )
+        self.assertEqual(self.server.requests, [])
+
+    def test_an_invalid_fixture_name_states_the_accepted_shape(self) -> None:
+        self.assert_refused_without_a_path(
+            self.fetch("../plain-row"),
+            "invalid fixture name '../plain-row'",
+            "letters, digits, '.', '_' and '-'",
+        )
+        self.assertEqual(self.server.requests, [])
+
+    def test_an_unknown_row_says_where_the_valid_rows_are_listed(self) -> None:
+        self.assert_refused_without_a_path(
+            self.fetch("no-such-row"),
+            "'no-such-row' is not a canonical CORPUS.md row",
+            "tests/fixtures/CORPUS.md",
+            "--dry-run",
+        )
+        self.assertEqual(self.server.requests, [])
+
     def test_an_uncreatable_cache_directory_fails_the_fetch(self) -> None:
         self.destination("plain-row").parent.mkdir(parents=True)
         self.destination("plain-row").write_text("in the way\n", encoding="utf-8")

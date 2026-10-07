@@ -37,7 +37,8 @@ while [ "$#" -gt 0 ]; do
     --*) echo "fetch-corpus: unknown argument '$1'" >&2; usage; exit 1 ;;
     *)
       [ "$dest_root" = "$repo_root/.local/corpus" ] || {
-        echo "fetch-corpus: more than one destination root was provided" >&2
+        echo "fetch-corpus: more than one destination root was provided — supply exactly one" \
+             "DEST_ROOT (or none, for .local/corpus), then re-run" >&2
         exit 1
       }
       dest_root="$1"
@@ -47,7 +48,9 @@ while [ "$#" -gt 0 ]; do
 done
 
 [ -z "$selector" ] || valid_fixture_name "$selector" || {
-  echo "fetch-corpus: invalid fixture name '$selector'" >&2
+  echo "fetch-corpus: invalid fixture name '$selector' — pass one CORPUS.md row name or" \
+       "fixture directory (letters, digits, '.', '_' and '-'; not starting with '.' or '-';" \
+       "no '..'), then re-run" >&2
   exit 1
 }
 [ "$if_missing" -eq 0 ] || [ -n "$selector" ] || {
@@ -101,7 +104,9 @@ while IFS=$'\t' read -r name url ref _; do
 done < <(corpus_rows "$manifest")
 
 [ "$found" -eq 1 ] || {
-  echo "fetch-corpus: fixture '$selector' is not a canonical CORPUS.md row" >&2
+  echo "fetch-corpus: fixture '$selector' is not a canonical CORPUS.md row — choose a" \
+       "numbered link-ok or committed row of tests/fixtures/CORPUS.md (list them with" \
+       "tools/corpus/fetch-corpus.sh --dry-run), then re-run" >&2
   exit 1
 }
 

@@ -59,7 +59,8 @@ corpus_fixture_for() {
   local aliases
   aliases="$(corpus_aliases_file)"
   [ -f "$aliases" ] || {
-    echo "corpus: missing fixture alias file $aliases" >&2
+    echo "corpus: missing fixture alias file $aliases — it is committed; restore it with" \
+         "git checkout -- tests/fixtures/corpus-aliases.tsv, then re-run" >&2
     return 1
   }
   awk -F '\t' -v requested="$1" '
@@ -68,7 +69,8 @@ corpus_fixture_for() {
         && value !~ /^[.-]/ && index(value, "..") == 0;
     }
     function fail(reason) {
-      printf "corpus: invalid fixture alias file %s line %d: %s\n", \
+      printf "corpus: invalid fixture alias file %s line %d: %s — fix that line, or restore" \
+        " the file with git checkout -- tests/fixtures/corpus-aliases.tsv, then re-run\n", \
         FILENAME, NR, reason > "/dev/stderr";
       invalid=1;
       exit 2;
@@ -92,7 +94,8 @@ corpus_fixture_for() {
     }
     END {
       if (!invalid && count == 0) {
-        printf "corpus: fixture alias file %s has no aliases\n", FILENAME > "/dev/stderr";
+        printf "corpus: fixture alias file %s has no aliases — restore it with git checkout" \
+          " -- tests/fixtures/corpus-aliases.tsv, then re-run\n", FILENAME > "/dev/stderr";
         exit 2;
       }
       if (!invalid)
@@ -164,7 +167,9 @@ corpus_spec_cache_filename() {
     *.yaml) printf '%s\n' openapi.yaml ;;
     *.yml) printf '%s\n' openapi.yml ;;
     *)
-      echo "corpus: direct spec URL has no supported OpenAPI suffix: $1" >&2
+      echo "corpus: direct spec URL has no supported OpenAPI suffix: $1 — point the row's" \
+           "source URL in tests/fixtures/CORPUS.md at a document ending in .json, .yaml or" \
+           ".yml, then re-run" >&2
       return 1
       ;;
   esac
@@ -197,10 +202,13 @@ corpus_fetch_source() {
     }
     if ! curl -fsSL -A crozier-fixture-builder "$url" -o "$temporary"; then
       rm -f "$temporary"
+      echo "corpus: could not download the spec for $name from $url — check network access" \
+           "and the row's source URL in tests/fixtures/CORPUS.md, then re-run" >&2
       return 1
     fi
     if [ ! -s "$temporary" ]; then
-      echo "corpus: fetched an empty spec for $name from $url" >&2
+      echo "corpus: fetched an empty spec for $name from $url — check that the row's source" \
+           "URL in tests/fixtures/CORPUS.md serves the OpenAPI document itself, then re-run" >&2
       rm -f "$temporary"
       return 1
     fi
