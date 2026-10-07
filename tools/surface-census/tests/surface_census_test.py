@@ -206,17 +206,19 @@ OPEN_SEARCH_ROUTE = "open-search probe"
 BLOCKED_OUTCOMES = ("witness-blocked", "fern-rejected")
 SEARCH_INCOMPLETE = "search-incomplete"
 UNANSWERED = "unanswered"
-# `fern-limitations.md`'s own `How to read a verdict` vocabulary, which is what
-# "a row with a verdict" in that file means.
-LEDGER_VERDICTS = (
-    "implements",
-    "discards",
-    "ignores",
-    "refuses",
-    "crashes",
-    "coincidence",
-    "unmeasured",
-)
+
+
+def ledger_verdicts(ledger: Path) -> tuple[str, ...]:
+    """`fern-limitations.md`'s own `How to read a verdict` vocabulary, read off its
+    table, which is what "a row with a verdict" in that file means."""
+    section = ledger.read_text(encoding="utf-8").partition("\n## How to read a verdict\n")[2]
+    verdicts = tuple(re.findall(r"^\| \*\*([a-z]+)\*\* \|", section.partition("\n## ")[0], re.MULTILINE))
+    if not verdicts:
+        raise AssertionError(f"{ledger} has no `## How to read a verdict` table of **verdict** rows")
+    return verdicts
+
+
+LEDGER_VERDICTS = ledger_verdicts(REPO / "docs" / "fern-limitations.md")
 
 
 def table_cells(line: str, width: int) -> list[str] | None:
@@ -7095,9 +7097,41 @@ class YamlSubsetTests(unittest.TestCase):
             (": 1\n", "an empty mapping key"),
             ("info:\n  : 1\n", "an empty mapping key"),
             ("a: 1\nb\n", "expected a `key: value` mapping entry"),
+            ("a: 1\n...\nb: 2\n", "more than one YAML document"),
+            ("a: 1\n...\n---\nb: 2\n", "more than one YAML document"),
+            ("a: 1\nb: 2\na: 3\n", "the mapping key 'a' appears twice"),
+            ("a: {x: 1, x: 2}\n", "the mapping key 'x' appears twice"),
+            ("a: {x, x: 2}\n", "the mapping key 'x' appears twice"),
+            ('a: {title: "first" version: "1"}\n', "flow entries need a `,` between them"),
         ):
             with self.subTest(document=document):
                 self.assertIn(expected, self.refusal(document))
+        # The end marker alone, with nothing after it, still closes one document.
+        self.assertEqual({"a": 1}, self.load("a: 1\n...\n"))
+        self.assertEqual({"a": [1, 2], "b": ["1 2"]}, self.load("a: [1 , 2]\nb: [1 2]\n"))
+
+    def test_the_census_refuses_a_malformed_source_naming_it_and_its_line(self) -> None:
+        """The same refusals through the real CLI, over a source it would otherwise count."""
+        base = "openapi: 3.0.3\ninfo:\n  title: t\n  version: '1'\npaths: {}\n"
+        for label, document, expected in (
+            ("a second document after the end marker", base + "...\nopenapi: 3.1.0\n",
+             "more than one YAML document"),
+            ("a repeated block key", base + "paths: {}\n", "the mapping key 'paths' appears twice"),
+            ("a repeated flow key", base.replace("paths: {}", "paths: {/a: {}, /a: {}}"),
+             "the mapping key '/a' appears twice"),
+            ("no comma between flow entries",
+             base.replace("info:\n  title: t\n  version: '1'", 'info: {title: "first" version: "1"}'),
+             "flow entries need a `,` between them"),
+        ):
+            with self.subTest(label), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "malformed").mkdir()
+                (root / "malformed" / "openapi.yml").write_text(document, encoding="utf-8")
+                completed = run("--vendored-only", "--fixtures-root", str(root))
+                self.assertNotEqual(0, completed.returncode, completed.stdout)
+                self.assertIn("malformed", completed.stderr)
+                self.assertIn(expected, completed.stderr)
+                self.assertNotIn("Traceback", completed.stderr)
 
     # Explicit `? ` keys, read as ruamel.yaml 0.19.1 (the full parser
     # `tools/surface-census/golden-reach-search.py` pins) reads them; each expectation was

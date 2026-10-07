@@ -316,6 +316,14 @@ def redo_unread(args: argparse.Namespace) -> int:
     expected = {"api_id", "version", "indexed_json_url", "tree_path", "tree_outcome"}
     if not rows or not expected <= rows[0].keys():
         raise ValueError(f"{args.redo_unread}: missing catalogue entry columns")
+    for line, row in enumerate(rows, 2):
+        # A short row leaves trailing columns None, a long one files its surplus
+        # under None; a row needs its identity and URL to be compared at all.
+        if None in row or None in row.values():
+            raise ValueError(f"{args.redo_unread}:{line}: a catalogue entry row of another width than its header")
+        if not all(row[column] for column in ("api_id", "version", "indexed_json_url")):
+            raise ValueError(f"{args.redo_unread}:{line}: a catalogue entry row with no api_id, version or "
+                             "indexed_json_url")
     if len(rows) != len(index) or {(r['api_id'], r['version']) for r in rows} != set(index):
         raise ValueError("historical entries differ from served index; do not reuse their census")
     for row in rows:

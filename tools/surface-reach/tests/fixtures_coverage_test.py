@@ -450,6 +450,27 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertIn("ruff is not on PATH", completed.stderr)
         self.assertIn("just bootstrap", completed.stderr)
 
+    @unittest.skipIf(os.name == "nt", "the failing cargo stand-in is a POSIX shell script")
+    def test_a_coverage_tool_that_fails_reports_its_own_error_and_both_remedies(self) -> None:
+        real = shutil.which("cargo")
+        self.assertIsNotNone(real)
+        with tempfile.TemporaryDirectory() as scratch:
+            stand_in = Path(scratch) / "cargo"
+            stand_in.write_text(
+                "#!/bin/sh\n"
+                'if [ "$1" = llvm-cov ]; then echo "error: the llvm-tools component is broken" >&2; exit 101; fi\n'
+                f'exec "{real}" "$@"\n',
+                encoding="utf-8",
+            )
+            stand_in.chmod(0o755)
+            env = {**os.environ, "PATH": f"{scratch}{os.pathsep}{os.environ['PATH']}"}
+            completed, _ = self.run_recipe(OFFLINE_SCOPE, env=env)
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn("cargo-llvm-cov did not answer --version", completed.stderr)
+        self.assertIn("run 'just bootstrap' if it is not installed", completed.stderr)
+        self.assertIn("'cargo llvm-cov --version' said:\nerror: the llvm-tools component is broken",
+                      completed.stderr)
+
     def test_a_missing_committed_corpus_is_a_hard_failure(self) -> None:
         """The committed-source preflight refuses missing inputs before measurement."""
         committed = REPO / "tests/fixtures/corpus-sources/frankfurter"

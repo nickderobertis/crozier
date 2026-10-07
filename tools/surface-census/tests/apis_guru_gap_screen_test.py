@@ -395,6 +395,20 @@ components:
                                     text=True, timeout=30)
         self.assertEqual(incomplete.returncode, 1)
         self.assertIn("missing catalogue entry columns", incomplete.stderr)
+        header = "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+        for label, row, message in (
+            ("short", "a.example\t1\n", "historical.tsv:2: a catalogue entry row of another width"),
+            ("long", f"a.example\t1\t{served}\t\tinaccessible\tsurplus\n",
+             "historical.tsv:2: a catalogue entry row of another width"),
+            ("no URL", "a.example\t1\t\t\tinaccessible\n", "historical.tsv:2: a catalogue entry row with no"),
+        ):
+            with self.subTest(label):
+                manifest.write_text(header + row, encoding="utf-8")
+                refused = subprocess.run(command, cwd=REPO, capture_output=True, text=True, timeout=30)
+                self.assertEqual(refused.returncode, 1, refused.stderr)
+                self.assertIn(message, refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+                self.assertFalse((evidence / "unread-responses.jsonl").exists())
         manifest.write_text(
             "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
             f"b.example\t1\t{served}\t\tinaccessible\n",

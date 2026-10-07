@@ -687,6 +687,11 @@ class MeasurementInputTests(unittest.TestCase):
             for path, text, load in (
                 (regions, '{"src/ir.rs": [[1, 2, 3]]}', golden_reach.load_regions),
                 (regions, "[]", golden_reach.load_regions),
+                (regions, '{"src/ir.rs": [[true, 2, 3, 4]]}', golden_reach.load_regions),
+                (regions, '{"src/ir.rs": [[1, -2, 3, 4]]}', golden_reach.load_regions),
+                (regions, '{"src/ir.rs": [[0, 2, 3, 4]]}', golden_reach.load_regions),
+                (regions, '{"src/ir.rs": [[5, 2, 3, 4]]}', golden_reach.load_regions),
+                (regions, '{"src/ir.rs": [[3, 9, 3, 4]]}', golden_reach.load_regions),
                 (census, '{"sources": []}', golden_reach.load_census),
                 (census, '{"sources": [], "rows": [{"selector": "schema.oneOf"}]}', golden_reach.load_census),
                 (census, '{"sources": [{"fixture": 7}], "rows": []}', golden_reach.load_census),
@@ -1705,7 +1710,12 @@ class ArmSearchStageTests(_StageScratch):
         self.assertIn("the fern screen's pins ['fern_cli', 'generator', 'generator_version']", refusal(no_pins))
         # A Fern pass the recorded run does not yield is a pass nobody measured.
         unmeasured = json.loads(json.dumps(good))
+        # A run that is itself whole — `fern check` failing, so no generation —
+        # but whose verdict is not the recorded pass.
         unmeasured["fern"]["run"]["check_exit"] = "1"
+        for field in ("generate_exit", "generate_diagnostic", "generate_log_sha256", "generate_python_files"):
+            unmeasured["fern"]["run"].pop(field, None)
+        unmeasured["fern"]["exit"] = "check 1"
         self.assertIn("a fern outcome its run measured: it reads 'passed'", refusal(unmeasured))
         # A log edited after the run no longer carries the digest the record holds.
         log = golden_reach_search.EVIDENCE / "jentic" / good["licence"]["log"]

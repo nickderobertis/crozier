@@ -59,18 +59,23 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-need() { # need MESSAGE COMMAND...
-  local message="$1"
+need() { # need MESSAGE COMMAND... — the command's own words follow the message
+  local message="$1" output
   shift
-  if ! "$@" >/dev/null 2>&1; then
+  if ! output="$("$@" 2>&1)"; then
     echo "fixtures-coverage: $message" >&2
+    if [ -n "$output" ]; then
+      printf "fixtures-coverage: '%s' said:\n%s\n" "$*" "$output" >&2
+    fi
     exit 1
   fi
 }
 
-need "cargo-llvm-cov is not installed — run 'just bootstrap'" \
+need "cargo-llvm-cov did not answer --version — run 'just bootstrap' if it is not installed, \
+otherwise fix the error it reports below" \
   cargo llvm-cov --version
-need "cargo-nextest is not installed — run 'just bootstrap'" \
+need "cargo-nextest did not answer --version — run 'just bootstrap' if it is not installed, \
+otherwise fix the error it reports below" \
   cargo nextest --version
 need "python3 is not on PATH — it renders the report (tools/surface-census/fixtures-coverage-report.py). \
 Install Python 3 (apt install python3, brew install python, or uv python install) and put python3 on \

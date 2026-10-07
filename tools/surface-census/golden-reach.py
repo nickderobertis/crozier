@@ -803,12 +803,15 @@ def load_regions(path: Path) -> dict[str, set[tuple[int, ...]]]:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         fail(f"{path} is unreadable ({error}); re-run `just golden-reach` to measure again")
+    def region(r: Any) -> bool:
+        # llvm-cov's spans: 1-based line and column pairs, the end not before the start.
+        return (isinstance(r, list) and len(r) == 4 and all(type(n) is int and n >= 1 for n in r)
+                and (r[0], r[1]) <= (r[2], r[3]))
+
     if not isinstance(raw, dict) or not all(
-        isinstance(regions, list)
-        and all(isinstance(r, list) and len(r) == 4 and all(isinstance(n, int) for n in r) for r in regions)
-        for regions in raw.values()
+        isinstance(regions, list) and all(region(r) for r in regions) for regions in raw.values()
     ):
-        fail(f"{path} is not a map of files to [line, col, line, col] regions; "
+        fail(f"{path} is not a map of files to [line, col, line, col] regions (1-based, end after start); "
              "re-run `just golden-reach` to measure again")
     return {f: {tuple(r) for r in regions} for f, regions in raw.items()}
 

@@ -173,7 +173,12 @@ class _YamlReader:
         trailing = self.peek()
         if trailing is not None and trailing.text not in {"...", "---"}:
             self.fail(trailing.index, f"unexpected content after the document: {trailing.text!r}")
-        if trailing is not None and trailing.text == "---":
+        if trailing is not None and trailing.text == "...":
+            # The end marker closes the one document; anything after it, another
+            # document included, is a second document this reader would drop.
+            self.pos = trailing.index + 1
+            trailing = self.peek()
+        if trailing is not None:
             self.fail(
                 trailing.index,
                 "the file holds more than one YAML document; an OpenAPI source is one document",
@@ -225,6 +230,10 @@ class _YamlReader:
                 value = self.parse_value(rest, indent, line.index)
             if key == "<<":
                 merges.append(value)
+            elif key in mapping:
+                # The pinned fallback (ruamel.yaml) refuses a repeated key too:
+                # keeping either value would silently drop the other declaration.
+                self.fail(line.index, f"the mapping key {key!r} appears twice; YAML keys are unique")
             else:
                 mapping[key] = value
         for merged in merges:
@@ -681,6 +690,8 @@ class _YamlReader:
                 # YAML, but no JSON object model holds it: the document is no
                 # description this census can read.
                 self.fail(index, "a flow collection is used as a mapping key")
+            if closer == "}" and value in mapping:
+                self.fail(index, f"the mapping key {value!r} appears twice; YAML keys are unique")
             if keyed:
                 entry, cursor = self.flow_node(text, cursor + 1, index)
                 if closer == "]":
@@ -695,6 +706,10 @@ class _YamlReader:
             cursor = self.skip_space(text, cursor)
             if cursor < len(text) and text[cursor] == ",":
                 cursor += 1
+            elif cursor < len(text) and text[cursor] not in ",]}":
+                # Another node right after this one (a stray closer is the stall
+                # guard's below).
+                self.fail(index, f"flow entries need a `,` between them, not {text[cursor:cursor + 12]!r}")
             if cursor <= entered:
                 # `flow_node` stops at `,]}:` and so returns without consuming a
                 # delimiter it does not recognise here. Looping again from the
