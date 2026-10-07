@@ -33,5 +33,9 @@ name = "crozier-ci"
 release = false
 
 [[package]]
+name = "crozier-ci-journeys"
+release = false
+
+[[package]]
 name = "crozier-github-action"
 release = false

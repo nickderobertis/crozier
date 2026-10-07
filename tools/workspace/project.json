@@ -53,7 +53,7 @@
         "{workspaceRoot}/tests/*.rs",
         "{workspaceRoot}/tests/support/**/*.rs",
         "{workspaceRoot}/crates/**/*.rs",
-        "{workspaceRoot}/tools/*/tests/*.rs"
+        "{workspaceRoot}/tools/*/tests/**/*.rs"
       ]
     },
     "doc": {

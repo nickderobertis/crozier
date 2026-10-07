@@ -176,6 +176,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "crozier-ci-journeys"
+version = "0.0.0"
+dependencies = [
+ "serde_yaml_ng",
+ "tempfile",
+]
+
+[[package]]
 name = "crozier-e2e"
 version = "0.0.0"
 dependencies = [

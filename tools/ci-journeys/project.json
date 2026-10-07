@@ -1,0 +1,68 @@
+{
+  "name": "ci-journeys",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:rust"
+  ],
+  "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt -p crozier-ci-journeys -- --check"
+      },
+      "configurations": {
+        "write": {
+          "command": "cargo fmt -p crozier-ci-journeys"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cargo clippy -p crozier-ci-journeys --all-targets --all-features --locked -- -D warnings",
+          "node scripts/check-project-boundaries.mjs ci-journeys"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "boundaries",
+        "{workspaceRoot}/tools/ci/tests/support/release.rs"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cargo nextest run --locked -p crozier-ci-journeys",
+          "node --test tools/ci-journeys/tests/gate.test.mjs tools/ci-journeys/tests/ci-tier.test.mjs tools/ci-journeys/tests/boundaries.test.mjs"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "{workspaceRoot}/.github/workflows/release.yml",
+        "{workspaceRoot}/tools/ci/tests/support/release.rs",
+        "{workspaceRoot}/tools/ci/gate.mjs",
+        "{workspaceRoot}/tools/ci/ci-tier.mjs",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/nx.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/bun.lock",
+        "{workspaceRoot}/scripts/check-project-boundaries.mjs",
+        "{workspaceRoot}/tests/fixtures/openbanking.org.uk-account-info-openapi/**/*"
+      ]
+    }
+  }
+}

@@ -41,11 +41,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "cargo nextest run --locked -p crozier-ci",
-          "node --test tools/ci/tests/gate.test.mjs tools/ci/tests/ci-tier.test.mjs tools/ci/tests/boundaries.test.mjs"
-        ],
-        "parallel": false
+        "command": "cargo nextest run --locked -p crozier-ci"
       },
       "cache": true,
       "inputs": [
@@ -53,10 +49,6 @@
         "cargo",
         "{workspaceRoot}/.github/**/*",
         "{workspaceRoot}/justfile",
-        "{workspaceRoot}/nx.json",
-        "{workspaceRoot}/package.json",
-        "{workspaceRoot}/bun.lock",
-        "{workspaceRoot}/scripts/check-project-boundaries.mjs",
         "{workspaceRoot}/scripts/update-major-tag.sh",
         "{workspaceRoot}/scripts/install.sh",
         "{workspaceRoot}/tools/fern-goldens/fern-goldens",

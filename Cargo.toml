@@ -5,7 +5,7 @@
 # `cargo install --path .`, maturin's root `pyproject.toml`, `action.yml` and the
 # release archives all build this manifest by that path. See src/AGENTS.md.
 [workspace]
-members = [".", "crates/crozier-e2e", "tools/ci", "tools/github-action"]
+members = [".", "crates/crozier-e2e", "tools/ci", "tools/ci-journeys", "tools/github-action"]
 resolver = "2"
 
 [workspace.package]
