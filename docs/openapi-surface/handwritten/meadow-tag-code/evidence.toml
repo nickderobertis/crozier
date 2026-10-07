@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "115d31be83b1dc590015ae4c5bcdcb423526d3794715303ad8acf5e1644c0862"
+
+[[covers]]
+key = "format-uuid"
+arm = 'src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]'
+search = "docs/openapi-surface/witness-search-scalar-body-format/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-scalar-body-format/README.md"

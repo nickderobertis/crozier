@@ -1,13 +1,13 @@
 # Arm search: `x-fern-or-crozier-ignore`
 
-The unreached handling site(s) searched for: `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]`, `src/openapi.rs::filter_ignored[if ignored_schemas\.contains\(key\) \{]`.
+The unreached handling site(s) searched for: `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]`.
 Read with: `operation.x-fern-ignore`, `schema.x-fern-ignore`, `operation.x-crozier-ignore`, `schema.x-crozier-ignore`.
 
 A walked or fetched document declaring the row is a `document` row of the
 source's `records.tsv`; one whose instrumented `crozier generate` executes
 an unreached site above is a `candidate`, and only a candidate owes the
 licence, ref and fern screens. A probe counts only if it ran the instrumented
-build of commit `4828cc2b93f0`, the one the reach ledger is measured on,
+build of commit `4828cc2b93f0`, the one the reach ledger was measured on when these probes ran,
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
@@ -41,36 +41,32 @@ error, its version and the document's digest in the source's
 `census-refused.tsv`, it is not outstanding, and it never settles a
 search on its own.
 
-2 candidate(s) reaching the arm carry only a historical screen: one filed
-before the measured screening stage (`scripts/witness_screen.py`), with no exit
-status, pins or redacted log behind its outcomes. A historical screen is kept as
-it was filed and settles nothing, so each such candidate is outstanding — counted
-in `outstanding` below and listed in `outstanding.tsv` — until it is re-screened.
+When this record was rendered, `src/` had moved since that build (`9c05f962`, `71636945`, `b85447c4`, `7616752c`, `7d75f369`, `5dd7cc5a`, `3681b9b0`, `53e5d94b`, `b9d5ae85`, `807f38ce`, `f6214cf8`, `92d9e4b1`, `ae77805b`, `3608fb5c`, `7a762004`, `ad3d0781`, `98efc152`, `fe12c05e`, `eb672a01`, `f6981b70`, `88d0b773`, `2b046a72`, `a13b88c7`, `ffe331be`, `bf52fdf8`, `162d2815`, `f238780f`, `4aa5fa7a`), so every probe counted here must be
+re-taken on a fresh `just golden-reach` measurement before it is reused.
 
 | source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `apis.guru` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `jentic` | 10 | 0 | 0 | 10 | 0 | 0 | 0 | 5 | 5 | 0 |
 | `github-code-search` | 10 | 0 | 0 | 10 | 0 | 0 | 0 | 2 | 2 | 0 |
-| `github-publisher-trees` | 2 | 0 | 46 | 2 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `sourcegraph` | 17 | 0 | 0 | 17 | 0 | 0 | 0 | 7 | 5 | 2 |
-| `vendor-portals` | 2 | 0 | 161 | 2 | 0 | 0 | 0 | 2 | 2 | 0 |
+| `github-publisher-trees` | 2 | 0 | 48 | 2 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `sourcegraph` | 17 | 0 | 0 | 17 | 0 | 0 | 0 | 7 | 7 | 0 |
+| `vendor-portals` | 2 | 0 | 168 | 2 | 0 | 0 | 0 | 2 | 2 | 0 |
 
 #### Candidates passing every screen
 
-- **Declined** (`sourcegraph`): `screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:118@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2` — not a real-world specification: excluded synthetic input with no published API
-- **Declined** (`sourcegraph`): `screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:120@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2` — not a real-world specification: excluded synthetic input with no published API
+- **Declined** (`sourcegraph`): `screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:118@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2` — not a real-world specification: a test fixture written to exercise a tool
+- **Declined** (`sourcegraph`): `screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:120@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2` — not a real-world specification: a test fixture written to exercise a tool
 
-### Successor arm
+## Renewed bounded screen
 
-Commit `63c6be587` repaired a divergence the hand-written fixture
-[`x-fern-ignore-schema`](../../handwritten/x-fern-ignore-schema/) found:
-ignoring a component schema also pruned the schemas only it referenced, where
-Fern 5.20.0 keeps them. `filter_ignored` now removes the ignored schemas alone.
-The searched arm `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]`
-keeps its spelling, and its body still runs exactly when a component schema is
-ignored, on `63c6be587` as on build `4828cc2b93f0`, which every probe above ran.
-So the verdict above stands for it unchanged. The second searched arm,
-`src/openapi.rs::filter_ignored[if ignored_schemas\.contains\(key\) \{]`, was
-the prune's own test, and the repair removed it with the prune. It is no longer a
-handling site of this row.
+The retained seven reaching candidates contain two terminal synthetic declines
+and five AssemblyAI documents refused by the redistribution screen. None is
+registrable. This renewal reviews those existing decisions without fetching
+new documents or changing their historical outcomes. The arm remains
+`search-incomplete` because source has moved since the pinned probe build;
+this bounded review does not establish absence in the current public corpus.
+
+| key | bounded result | verdict |
+| --- | --- | --- |
+| `x-fern-or-crozier-ignore` | `none-registrable` | `search-incomplete` |

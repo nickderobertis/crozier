@@ -134,6 +134,51 @@ class StringMapSearchRecordTests(unittest.TestCase):
             self.assertEqual("5.20.0", pins["generator_version"])
 
 
+class ReplacementArmSearchRecordTests(unittest.TestCase):
+    def test_bounded_summaries_match_actual_queries_and_whole_document_acquisitions(self):
+        records = (
+            ("scalar-body-format", 3, 6),
+            ("typed-form-query", 1, 2),
+        )
+        for name, query_budget, document_budget in records:
+            with self.subTest(record=name):
+                root = REPO / "docs/openapi-surface" / ("witness-search-" + name)
+                queries = [json.loads(line) for line in (root / "sourcegraph/queries.jsonl").read_text().splitlines()]
+                with (root / "queries.tsv").open(newline="") as handle:
+                    summary = list(csv.DictReader(handle, delimiter="\t"))
+                self.assertEqual(query_budget, len(queries))
+                self.assertEqual(len(queries), len(summary))
+                for measured, stated in zip(queries, summary):
+                    self.assertEqual(measured["key"], stated["key"])
+                    self.assertEqual(measured["query"], stated["query"])
+                    self.assertIn("count:100", measured["query"])
+                    self.assertEqual("answered", measured["outcome"])
+                    self.assertEqual(measured["outcome"], stated["outcome"])
+                    self.assertEqual(len(measured["results"]), int(stated["result_count"]))
+                    self.assertEqual(measured["result_count"], int(stated["result_count"]))
+                    self.assertLessEqual(len(measured["results"]), 100)
+                    self.assertEqual(100, measured["progress"]["matchCount"])
+                    self.assertTrue(any(item["reason"] == "shard-match-limit" for item in measured["progress"]["skipped"]))
+                acquisitions = [json.loads(line) for line in (root / "sourcegraph/candidates.jsonl").read_text().splitlines()]
+                with (root / "shape-screen.tsv").open(newline="") as handle:
+                    screens = list(csv.DictReader(handle, delimiter="\t"))
+                identity = lambda row: (row["key"], row["repository"], row["path"], row["commit"])
+                acquired = {identity(row): row for row in acquisitions}
+                self.assertEqual(document_budget, len(acquired))
+                self.assertEqual(set(acquired), {identity(row) for row in screens})
+                record = (root / "README.md").read_text()
+                for row in screens:
+                    measured = acquired[identity(row)]
+                    self.assertEqual(measured["sha256"], row["sha256"])
+                    self.assertRegex(row["commit"], r"^[0-9a-f]{40}$")
+                    self.assertRegex(row["sha256"], r"^[0-9a-f]{64}$")
+                    self.assertEqual(measured["selector_count"], int(row["selector_count"]))
+                    self.assertEqual(0, int(row["shape_count"]))
+                    self.assertEqual("does-not-declare-request-shape", row["disposition"])
+                    self.assertIn("| `" + row["key"] + "` | `search-incomplete` |", record)
+                    self.assertIn("| `" + row["key"] + "` | `none-registrable` |", record)
+
+
 class IntegerFormatSearchRecordTests(unittest.TestCase):
     """The bounded format search agrees with its real acquisitions and refusal."""
 

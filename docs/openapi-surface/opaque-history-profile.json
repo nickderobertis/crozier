@@ -264,7 +264,7 @@
   },
   "subject_verdicts": {
     "count": 20,
-    "multiset": "754ed225170f7ae94b33b853fdd44f37f37ed6a4c7403db96ea48a0aa2a6fabc"
+    "multiset": "a599bfa928dedec608bb773184ee7f33d4b689d9137a876180ec433644696aca"
   },
   "verdicts": {
     "docs/openapi-surface/golden-reach-witnesses/github-code-search/candidates.jsonl": {
