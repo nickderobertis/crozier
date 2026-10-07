@@ -79,10 +79,18 @@
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/scripts/**/*",
         "{workspaceRoot}/tests/census_fallback/**/*",
-        "{workspaceRoot}/tools/corpus/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
         "{workspaceRoot}/tools/surface-census/**/*",
         "{workspaceRoot}/tools/fern-refusals/**/*",
-        "{workspaceRoot}/tools/witness-search/**/*"
+        "{workspaceRoot}/tools/witness-search/witness-search-github.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-github-index.py",
+        "{workspaceRoot}/tools/witness-search/witness_screen.py",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py"
       ],
       "parallelism": false
     },

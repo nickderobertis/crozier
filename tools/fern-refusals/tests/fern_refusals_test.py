@@ -229,6 +229,19 @@ class Drift(unittest.TestCase):
 
 
 
+MEASURE_LOADS = (
+    "tools/fern-refusals/fern-refusals.py",
+    "tools/witness-search/witness-search-github.py",
+    "tools/witness-search/witness-search-github-index.py",
+    "tools/witness-search/witness_screen.py",
+    "tools/witness-search/rate_limit_guard.py",
+    "tools/witness-search/witness-search-redo.py",
+    "tools/surface-census/openapi-surface-census.py",
+    "tools/surface-census/witness-search-region-keys.py",
+    "tools/corpus/corpus_remote_ref_pins.py",
+)
+
+
 @unittest.skipIf(os.name == "nt", "`measure` runs `target/release/crozier`, a path with no `.exe`")
 class StrictMeasurement(unittest.TestCase):
     """`measure` records crozier's `--fern-strict` exit and `build` writes it
@@ -252,10 +265,15 @@ class StrictMeasurement(unittest.TestCase):
     def setUp(self) -> None:
         self.scratch = tempfile.TemporaryDirectory()
         self.root = root = Path(self.scratch.name)
-        # `measure` loads the witness-search and census modules beside it, by their
-        # repository paths, so the scratch checkout carries every tooling tree.
-        for tree in ("scripts", "tools"):
-            shutil.copytree(REPO / tree, root / tree, ignore=shutil.ignore_patterns("__pycache__", "target"))
+        # `measure` loads, by their repository paths, the witness-search GitHub
+        # acquirer (with the index, screen stage, rate-limit guard and the redo
+        # ledger reader it pulls in), the census reader and region keys it reads
+        # documents through, and the pin reader the census imports; the scratch
+        # checkout carries exactly those (the fern-refusals project's inputs).
+        shutil.copytree(REPO / "scripts", root / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
+        for relative in MEASURE_LOADS:
+            (root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO / relative, root / relative)
         binary = root / "target" / "release" / "crozier"
         binary.parent.mkdir(parents=True)
         shutil.copy(self.binary, binary)
@@ -264,6 +282,7 @@ class StrictMeasurement(unittest.TestCase):
         (root / "tests" / "fixtures" / "CORPUS.md").write_text("", encoding="utf-8")
         # The fetcher's GitHub module reads the census's region rows from this test at import.
         for relative in ("tools/surface-census/tests/surface_census_test.py", "justfile"):
+            (root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(REPO / relative, root / relative)
         (surface / "fern-refusals").mkdir(parents=True)
         (surface / "fern-refusals" / "dropped-sources.tsv").write_text(
