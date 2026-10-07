@@ -29,8 +29,10 @@ crozier="${CROZIER:-crozier}"
 work="$RUNNER_TEMP/crozier-compare"
 report="$work/report.json"
 diffs="$work/diffs"
-rm -rf "$work"
-mkdir -p "$work"
+if ! { rm -rf "$work" && mkdir -p "$work"; }; then
+  die "could not reset the comparison workspace $work" \
+    "check that RUNNER_TEMP ($RUNNER_TEMP) is a writable directory on a disk with free space, then re-run"
+fi
 
 # `-d ''` reads to the end rather than the first line, so a YAML block scalar
 # (`paths: |`, one path per line) names every path it lists; read returns 1 at
@@ -51,8 +53,11 @@ status=0
 # Exit 1 before any reference ran (a path that does not exist, an unwritable
 # --json target) leaves no report, and then no counts or figures either.
 report_path=""
-if jq -e '.schema_version == 1 or .schema_version == 2' "$report" >/dev/null 2>&1; then
+if report_is_whole "$report"; then
   report_path="$report"
+elif [ -e "$report" ]; then
+  die "crozier compare wrote a report this Action cannot read: $report" \
+    "pin the action to the release matching your crozier (assets/compare-report.schema.json is the contract), then re-run"
 fi
 
 field() {

@@ -31,7 +31,8 @@ case "${RUNNER_OS:-}" in
 esac
 
 root="$RUNNER_TEMP/crozier-action"
-mkdir -p "$root/bin"
+mkdir -p "$root/bin" || die "could not create the install directory $root/bin" \
+  "check that RUNNER_TEMP ($RUNNER_TEMP) is a writable directory on a disk with free space, then re-run"
 installer="$GITHUB_ACTION_PATH/scripts/install.sh"
 version="${VERSION:-}"
 

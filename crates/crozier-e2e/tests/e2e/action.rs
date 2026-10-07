@@ -687,6 +687,141 @@ fn a_diff_the_cli_could_not_write_fails_the_action_with_its_own_status() {
     );
 }
 
+/// A report the Action cannot read — a count that is a string, a path list that
+/// is not a list — stops the compare step naming the report, and the summary
+/// script refuses it too, rather than writing garbage outputs or a table.
+#[test]
+fn a_report_of_the_wrong_shape_is_refused_by_compare_and_summary() {
+    let whole = serde_json::json!({
+        "schema_version": 2, "crozier_version": "0.0.0", "searched_paths": ["."], "exit_code": 0,
+        "counts": {"matched": 1, "mismatched": 0, "could_not_check": 0},
+        "timing_totals": {"generators_timed": 0, "reference_seconds": 0.0, "crozier_seconds": 0.0,
+                          "speedup": null, "saved_seconds": 0.0},
+        "results": [{"status": "matched", "config_file": "crozier.yml", "generator": "python", "spec": null,
+                     "reference": {"command": "./ref.sh", "exit_code": 0, "diagnostic": null},
+                     "comparison": {"layout": "packaged", "files_compared": 3, "differing": [],
+                                    "only_in_reference": [], "only_in_crozier": [], "departures": [],
+                                    "diff_file": null},
+                     "timing": null, "reason": null}]
+    });
+    let mut broken_count = whole.clone();
+    broken_count["counts"]["matched"] = serde_json::json!("1");
+    let mut broken_paths = whole.clone();
+    broken_paths["results"][0]["comparison"]["differing"] = serde_json::json!("a.py");
+    let mut broken_status = whole.clone();
+    broken_status["results"][0]["status"] = serde_json::json!("passed");
+    let runner_temp = tempfile::tempdir().unwrap();
+    for (label, report) in [
+        ("count", broken_count),
+        ("paths", broken_paths),
+        ("status", broken_status),
+    ] {
+        let scratch = tempfile::tempdir().unwrap();
+        let file = scratch.path().join("report.json");
+        std::fs::write(&file, report.to_string()).unwrap();
+        // A stand-in CLI that writes this report where `--json` points and exits 0.
+        let cli = scratch.path().join("crozier");
+        write_executable(
+            scratch.path(),
+            "crozier",
+            &format!(
+                "#!/bin/sh\nwhile [ \"$1\" != --json ]; do shift; done\ncp '{}' \"$2\"\n",
+                file.display()
+            ),
+        );
+        let output_file = runner_temp.path().join("github-output");
+        std::fs::write(&output_file, "").unwrap();
+        let compare = step("compare.sh", scratch.path(), runner_temp.path(), &[])
+            .env("CROZIER", &cli)
+            .env("GITHUB_OUTPUT", &output_file)
+            .output()
+            .unwrap();
+        let log = String::from_utf8_lossy(&compare.stderr);
+        assert_eq!(compare.status.code(), Some(1), "{label}: {log}");
+        assert!(
+            log.contains("crozier compare wrote a report this Action cannot read"),
+            "{label}: {log}"
+        );
+        assert!(
+            log.contains("assets/compare-report.schema.json"),
+            "{label}: {log}"
+        );
+        assert_eq!(
+            std::fs::read_to_string(&output_file).unwrap(),
+            "",
+            "{label}: outputs were written"
+        );
+
+        let summary = step(
+            "summary.sh",
+            scratch.path(),
+            runner_temp.path(),
+            &[("EXIT_CODE", "0")],
+        )
+        .env("REPORT", &file)
+        .output()
+        .unwrap();
+        let log = String::from_utf8_lossy(&summary.stderr);
+        assert_eq!(summary.status.code(), Some(1), "{label}: {log}");
+        assert!(
+            log.contains("is not a crozier compare report this Action reads"),
+            "{label}: {log}"
+        );
+        assert!(summary.stdout.is_empty(), "{label}: a summary was rendered");
+    }
+    // The whole report renders.
+    let scratch = tempfile::tempdir().unwrap();
+    let file = scratch.path().join("report.json");
+    std::fs::write(&file, whole.to_string()).unwrap();
+    let summary = step(
+        "summary.sh",
+        scratch.path(),
+        runner_temp.path(),
+        &[("EXIT_CODE", "0")],
+    )
+    .env("REPORT", &file)
+    .output()
+    .unwrap();
+    assert_eq!(
+        summary.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&summary.stderr)
+    );
+    assert!(String::from_utf8_lossy(&summary.stdout).contains("Every checked generator matched"));
+}
+
+/// A RUNNER_TEMP the steps cannot write under stops each one naming its
+/// directory and the fix, instead of a bare `mkdir` error.
+#[test]
+fn an_unwritable_runner_temp_names_the_directory_and_the_fix() {
+    let scratch = tempfile::tempdir().unwrap();
+    let blocked = scratch.path().join("not-a-directory");
+    std::fs::write(&blocked, "").unwrap();
+    let output_file = scratch.path().join("github-output");
+    std::fs::write(&output_file, "").unwrap();
+    for (script, named) in [
+        ("compare.sh", "could not reset the comparison workspace"),
+        ("install.sh", "could not create the install directory"),
+    ] {
+        let out = step(script, repo_root(), scratch.path(), &[])
+            .env("RUNNER_TEMP", &blocked)
+            .env("GITHUB_OUTPUT", &output_file)
+            .env("GITHUB_ACTION_PATH", repo_root())
+            .env("CROZIER", crate::crozier_bin())
+            .env("RUNNER_OS", "Linux")
+            .output()
+            .unwrap();
+        let log = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(out.status.code(), Some(1), "{script}: {log}");
+        assert!(log.contains(named), "{script}: {log}");
+        assert!(
+            log.contains("is a writable directory on a disk with free space, then re-run"),
+            "{script}: {log}"
+        );
+    }
+}
+
 /// The compare step refuses to run outside a runner rather than write its
 /// outputs nowhere, and says what is missing.
 #[test]

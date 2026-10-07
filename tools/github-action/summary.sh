@@ -17,7 +17,11 @@ exit_code="${EXIT_CODE:-}"
 is_exit_status "$exit_code" || die "EXIT_CODE '$exit_code' is not an exit status (0-255, no leading zero)" \
   "pass the status crozier compare exited with"
 
-if [ -z "${REPORT:-}" ] || ! jq -e '.schema_version == 1 or .schema_version == 2' "$REPORT" >/dev/null 2>&1; then
+if [ -n "${REPORT:-}" ] && [ -e "$REPORT" ] && ! report_is_whole "$REPORT"; then
+  die "REPORT $REPORT is not a crozier compare report this Action reads" \
+    "pass the report compare.sh accepted (assets/compare-report.schema.json is the contract)"
+fi
+if [ -z "${REPORT:-}" ] || [ ! -e "$REPORT" ]; then
   # Exit 1 before any reference ran (a path that does not exist, an unwritable
   # --json target) leaves no report; anything else without one is a broken run.
   printf '## crozier compare\n\n'
