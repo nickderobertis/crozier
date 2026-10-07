@@ -241,6 +241,20 @@ class TheOfflineCommandsRunEverywhere(SyntheticRoot):
         self.assertIn("just lint-corpus-sources", completed.stderr)
         self.assertNotIn("Traceback", completed.stderr)
 
+    @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "file modes do not deny this reader")
+    def test_fetch_refuses_an_unreadable_manifest_rather_than_fetching_nothing(self) -> None:
+        manifest = self.fixtures / "CORPUS.md"
+        manifest.chmod(0)
+        self.addCleanup(manifest.chmod, 0o644)
+        completed = subprocess.run(
+            [corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), "--dry-run"],
+            cwd=self.root, capture_output=True, text=True, check=False,
+        )
+        self.assert_refused(completed, f"could not read the numbered rows of {manifest}",
+                            "git checkout -- tests/fixtures/CORPUS.md")
+        self.assertEqual("", completed.stdout)
+        self.assertEqual([], self.server.requests)
+
     def test_vendor_without_bash_on_path_names_it(self) -> None:
         empty = self.root / "no-bash"
         empty.mkdir()

@@ -1873,7 +1873,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             for leftover in (fixtures / "beta").glob(".expected.backup.*"):
                 leftover.rmdir()
             self.assertNotEqual(stale.returncode, 0)
-            self.assertIn("stale backup blocks atomic install", stale.stderr)
+            self.assertIn("stale backup blocks the install", stale.stderr)
             self.assertIn("diff -r", stale.stderr)
             self.assertIn("otherwise remove it (rm -rf), then re-run", stale.stderr)
             self.assertEqual(self.tree(expected), before)
@@ -1893,8 +1893,28 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             )
             install = run("beta", "5.20.0", PATH=f"{failing_bin}{os.pathsep}{environment['PATH']}")
             self.assertNotEqual(install.returncode, 0)
-            self.assertIn("could not atomically install the staged golden", install.stderr)
+            self.assertIn("could not install the staged golden", install.stderr)
             self.assertIn("is writable and has free space, then re-run", install.stderr)
+            self.assertEqual(self.tree(expected), before)
+
+        with self.subTest("failed install whose rollback fails too"):
+            # Both renames fail: the prior golden stays under its backup path,
+            # and the diagnostic names that path and the move that restores it.
+            self.write_executable(
+                failing_bin / "mv",
+                "#!/usr/bin/env bash\n"
+                'case "${1:-}" in */.fern-output.*/expected|*/.expected.backup.*)'
+                ' echo "mv: simulated failure" >&2; exit 1 ;; esac\n'
+                f'exec "{real_mv}" "$@"\n',
+            )
+            stranded = run("beta", "5.20.0", PATH=f"{failing_bin}{os.pathsep}{environment['PATH']}")
+            self.assertEqual(stranded.returncode, 1, stranded.stderr)
+            backups = list((fixtures / "beta").glob(".expected.backup.*"))
+            self.assertEqual(len(backups), 1, stranded.stderr)
+            self.assertFalse(expected.exists())
+            self.assertIn(f"nor restore the prior golden from {backups[0]}", stranded.stderr)
+            self.assertIn(f"(mv {backups[0]} {expected})", stranded.stderr)
+            backups[0].rename(expected)
             self.assertEqual(self.tree(expected), before)
 
         with self.subTest("symlinked destination"):
@@ -2171,6 +2191,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
                 setting="$1 $2"
                 shift 2
                 fixture="$1" destination="$4"
+                [ "$fixture" != "${FAIL_GENERATE:-}" ] || { echo "simulated Fern failure" >&2; exit 3; }
                 mkdir -p "$destination"
                 echo "$setting" >"$destination/version.py"
                 # A stage the worker cannot move the overlay out of.
@@ -2181,7 +2202,9 @@ class FernOverlayGoldensTests(unittest.TestCase):
         )
         generator.chmod(0o755)
 
-    def run_overlay(self, *fixtures: str, fail_install: str = "") -> subprocess.CompletedProcess[str]:
+    def run_overlay(
+        self, *fixtures: str, fail_install: str = "", fail_generate: str = ""
+    ) -> subprocess.CompletedProcess[str]:
         result = subprocess.run(
             [
                 str(self.root / "tools" / "fern-goldens" / "fern-overlay-goldens.sh"),
@@ -2191,7 +2214,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
                 "literals",
                 *fixtures,
             ],
-            env={**os.environ, "FAIL_INSTALL": fail_install},
+            env={**os.environ, "FAIL_INSTALL": fail_install, "FAIL_GENERATE": fail_generate},
             capture_output=True,
             text=True,
             check=False,
@@ -2224,6 +2247,21 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertIn(f"(mv {stage}/expected-literals ", result.stderr)
         self.assertIn(f"discard it (rm -rf {stage})", result.stderr)
         self.assertFalse((self.root / "tests" / "fixtures" / "alpha" / "expected-literals").exists())
+        self.assertEqual(
+            result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
+        )
+
+    def test_a_failed_generation_names_its_log_and_the_command_that_retries_it(self) -> None:
+        result = self.run_overlay("alpha", "beta", fail_generate="alpha")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        log = self.root / ".local" / "fern-overlay" / "alpha.log"
+        self.assertIn(f"alpha: Fern generation failed; see {log}", result.stderr)
+        self.assertIn("simulated Fern failure", log.read_text(encoding="utf-8"))
+        self.assertIn(
+            "then re-run tools/fern-goldens/fern-overlay-goldens.sh --enum-type literals alpha",
+            result.stderr,
+        )
+        self.assertFalse(list((self.root / "tests" / "fixtures" / "alpha").glob(".fern-overlay-stage.*")))
         self.assertEqual(
             result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
         )
@@ -2457,6 +2495,17 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             failed.stderr,
         )
         self.assertIn("then re-run with --only alpha", failed.stderr)
+
+    @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "file modes do not deny this reader")
+    def test_an_unreadable_manifest_generates_nothing(self) -> None:
+        manifest = self.root / "tests" / "fixtures" / "CORPUS.md"
+        manifest.chmod(0)
+        self.addCleanup(manifest.chmod, 0o644)
+        result = self.run_script("--all")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn(f"could not read the numbered rows of {manifest}", result.stderr)
+        self.assertIn("git checkout -- tests/fixtures/CORPUS.md", result.stderr)
+        self.assertNotIn("generate-fern-fixture:", result.stderr)
 
     def test_each_refusal_names_how_to_supply_what_is_missing(self) -> None:
         fixtures = self.root / "tests" / "fixtures"

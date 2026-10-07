@@ -581,7 +581,7 @@ fi
 
 backup="$(dirname "$dest")/.$golden_name.backup.$$"
 [ ! -e "$backup" ] || {
-  echo "generate-fern-fixture: stale backup blocks atomic install: $backup — an interrupted" \
+  echo "generate-fern-fixture: stale backup blocks the install: $backup — an interrupted" \
        "earlier install left it; compare it with $dest (diff -r), move it back over $dest" \
        "if that golden is missing or damaged, otherwise remove it (rm -rf), then re-run" >&2
   exit 1
@@ -598,8 +598,13 @@ if [ -e "$dest" ]; then
   had_dest=1
 fi
 if ! mv "$staged_dest" "$dest"; then
-  [ "$had_dest" -eq 0 ] || mv "$backup" "$dest"
-  echo "generate-fern-fixture: could not atomically install the staged golden at $dest" \
+  if [ "$had_dest" -eq 1 ] && ! mv "$backup" "$dest"; then
+    echo "generate-fern-fixture: could not install the staged golden at $dest, nor restore" \
+         "the prior golden from $backup — move it back (mv $backup $dest), check that" \
+         "$(dirname "$dest") is writable and has free space, then re-run" >&2
+    exit 1
+  fi
+  echo "generate-fern-fixture: could not install the staged golden at $dest" \
        "(the prior golden is left in place) — check that $(dirname "$dest") is writable" \
        "and has free space, then re-run" >&2
   exit 1

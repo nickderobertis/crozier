@@ -74,6 +74,13 @@ discover_openapi() {
   esac
 }
 
+# Read the rows before the loop: a failure inside `< <(...)` would reach neither
+# `set -e` nor pipefail, and the loop would run over a partial plan.
+rows="$(corpus_rows "$manifest")" || {
+  echo "generate-corpus-fixtures: could not read the numbered rows of $manifest — make it readable" \
+       "(restore it with git checkout -- tests/fixtures/CORPUS.md), then re-run" >&2
+  exit 1
+}
 plan=()
 while IFS=$'\t' read -r name url ref decision; do
   [ -n "$name" ] || continue
@@ -113,7 +120,7 @@ while IFS=$'\t' read -r name url ref decision; do
   fi
 
   plan+=("$fixture|$source_desc")
-done < <(corpus_rows "$manifest")
+done <<<"$rows"
 
 if [ "${#plan[@]}" -eq 0 ]; then
   if [ -n "$only" ]; then

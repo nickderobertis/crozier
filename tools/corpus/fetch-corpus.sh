@@ -65,6 +65,13 @@ done
 }
 mkdir -p "$dest_root"
 
+# Read the rows before the loop: a failure inside `< <(...)` would reach neither
+# `set -e` nor pipefail, and the loop would run over a partial plan.
+rows="$(corpus_rows "$manifest")" || {
+  echo "fetch-corpus: could not read the numbered rows of $manifest — make it readable" \
+       "(restore it with git checkout -- tests/fixtures/CORPUS.md), then re-run" >&2
+  exit 1
+}
 found=0
 while IFS=$'\t' read -r name url ref _; do
   [ -n "$name" ] || continue
@@ -101,7 +108,7 @@ while IFS=$'\t' read -r name url ref _; do
     printf '%s\n' "$source_path"
     break
   fi
-done < <(corpus_rows "$manifest")
+done <<<"$rows"
 
 [ "$found" -eq 1 ] || {
   echo "fetch-corpus: fixture '$selector' is not a canonical CORPUS.md row — choose a" \

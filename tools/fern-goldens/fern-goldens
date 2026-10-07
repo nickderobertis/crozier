@@ -631,7 +631,10 @@ def fetch_spec(root: Path, row: CorpusRow, *, force: bool) -> Path:
     return destination
 
 
-def atomic_replace_directory(staged: Path, destination: Path) -> None:
+def replace_directory_with_rollback(staged: Path, destination: Path) -> None:
+    """Move `staged` over `destination` in two renames, restoring the prior tree
+    from its backup if the second fails. Not atomic: between the renames
+    `destination` is absent, so no reader may run concurrently."""
     if not staged.is_dir():
         raise GoldensError(f"staged golden is not a directory: {staged}")
     if destination.is_symlink():
@@ -722,7 +725,7 @@ def generate_flat(
                 f"generator returned success without a flat module tree; see {log_path}"
             )
         (staged / STATE_FILE).write_bytes(expected_state(root, row, version, FLAT))
-        atomic_replace_directory(staged, fixture_dir / GOLDEN_DIRS[FLAT])
+        replace_directory_with_rollback(staged, fixture_dir / GOLDEN_DIRS[FLAT])
     finally:
         shutil.rmtree(stage, ignore_errors=True)
 
@@ -811,7 +814,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                             f"generator returned success without a packaged src/ tree; see {log_path}"
                         )
                     (staged_expected / STATE_FILE).write_bytes(expected_state(root, row, version))
-                    atomic_replace_directory(staged_expected, fixture_dir / "expected")
+                    replace_directory_with_rollback(staged_expected, fixture_dir / "expected")
                     packaged_generated = True
                     generated.append(row.fixture)
                     print(f"fern-goldens: generated {row.fixture} at {GENERATOR}:{version}")

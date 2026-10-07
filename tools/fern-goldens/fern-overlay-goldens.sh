@@ -134,7 +134,9 @@ one() {
     printf '%s\n' "$version" >"$results/$fixture"
   else
     rm -rf "$staging"
-    echo "$fixture: Fern generation failed; see $log" >&2
+    echo "$fixture: Fern generation failed; see $log — fix the cause its last lines" \
+         "record (generate-fern-fixture.sh names its own next action there), then re-run" \
+         "tools/fern-goldens/fern-overlay-goldens.sh $* $fixture" >&2
     return 1
   fi
 }
