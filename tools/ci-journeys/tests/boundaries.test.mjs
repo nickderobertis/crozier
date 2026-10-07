@@ -221,3 +221,13 @@ test("Cargo metadata of the wrong shape is refused with the fix, not a TypeError
     assert.doesNotMatch(run.stderr, /TypeError/);
   }
 });
+
+test("a temporary directory the check cannot write to names itself and the fix", (t) => {
+  const root = standInGraph(t, { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: {} });
+  const missing = join(root, "no-such-tmp");
+  const run = check(root, "a", { TMPDIR: missing, TMP: missing, TEMP: missing });
+  assert.equal(run.status, 1, run.stderr);
+  assert.match(run.stderr, /creating a scratch directory for the project graph failed/);
+  assert.match(run.stderr, /check that the temporary directory \(.*no-such-tmp\) is writable and has free space/);
+  assert.doesNotMatch(run.stderr, /at mkdtempSync/);
+});

@@ -57,7 +57,16 @@ function failedRun(what, error, action) {
 
 /** The project graph exactly as Nx computes it for this checkout. */
 function nxGraph() {
-  const scratch = mkdtempSync(join(tmpdir(), "crozier-graph-"));
+  let scratch;
+  try {
+    scratch = mkdtempSync(join(tmpdir(), "crozier-graph-"));
+  } catch (error) {
+    return failedRun(
+      "creating a scratch directory for the project graph",
+      error,
+      `check that the temporary directory (${tmpdir()}) is writable and has free space, then rerun`,
+    );
+  }
   try {
     const manifest = require.resolve("nx/package.json");
     const nx = join(dirname(manifest), require(manifest).bin.nx);
@@ -115,7 +124,13 @@ function nxGraph() {
       "run `just bootstrap` to install the pinned Nx, then fix the project.json the message names",
     );
   } finally {
-    rmSync(scratch, { recursive: true, force: true });
+    try {
+      rmSync(scratch, { recursive: true, force: true });
+    } catch (error) {
+      // The graph is already read; a scratch directory left behind costs only
+      // disk, so say where it is rather than failing the check over it.
+      console.error(`${NAME}: could not remove ${scratch} (${error.message}); delete it by hand`);
+    }
   }
 }
 

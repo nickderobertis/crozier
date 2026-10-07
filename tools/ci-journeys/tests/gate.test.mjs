@@ -5,9 +5,9 @@
 // which projects the tier selected and ran.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mkdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { commitChange, git, just, ran, scratchWorkspace } from "./support.mjs";
+import { commitChange, git, just, project, ran, scratchWorkspace, write } from "./support.mjs";
 
 test("with NX_BASE unset the affected tier keys off the merge base with origin/main", (t) => {
   const root = scratchWorkspace(t);
@@ -153,4 +153,62 @@ test("an Nx answer of the wrong shape stops the gate before any target runs", { 
     assert.doesNotMatch(run.stderr, /TypeError/);
     assert.ok(!ran(root, "a") && !ran(root, "b"));
   }
+});
+
+test("--projects=tag:<tag> selects that tag's carriers and --exclude drops one, in either tier", (t) => {
+  const root = scratchWorkspace(t);
+  write(root, {
+    "a/project.json": project("a", { tags: ["type:tooling", "lang:rust"] }),
+    "b/project.json": project("b", { tags: ["type:tooling", "lang:python"] }),
+  });
+  git(root, "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "--quiet", "-am", "tag a and b");
+
+  const tagged = just(root, ["check", "--sweep", "--projects=tag:lang:python"]);
+  assert.equal(tagged.status, 0, tagged.output);
+  assert.match(tagged.stdout, /gate: projects: b\n/);
+  assert.ok(ran(root, "b") && !ran(root, "a"), tagged.output);
+
+  const excluded = just(root, ["check", "--sweep", "--exclude=b"]);
+  assert.equal(excluded.status, 0, excluded.output);
+  assert.match(excluded.stdout, /gate: projects: a\n/);
+  assert.ok(ran(root, "a"), excluded.output);
+
+  const none = just(root, ["check", "--sweep", "--projects=tag:lang:go"]);
+  assert.notEqual(none.status, 0, none.output);
+  assert.match(none.stderr, /no project carries the tag 'lang:go'/);
+});
+
+test("--sweep reruns a target the affected tier replays from cache, nested Nx included", (t) => {
+  const root = scratchWorkspace(t);
+  const marker = (name) => `node -e "require('fs').writeFileSync('ran-${name}', '')"`;
+  write(root, {
+    // `a`'s test is cached; `n`'s runs `a`'s through a nested Nx, as a target can.
+    "a/project.json": JSON.stringify({ name: "a", tags: ["type:tooling"],
+      targets: { test: { command: marker("a"), cache: true, inputs: ["default"] } } }),
+    "n/project.json": JSON.stringify({ name: "n", tags: ["type:tooling"],
+      targets: { test: { command: "node node_modules/nx/dist/bin/nx.js run a:test --outputStyle=static", cache: false } } }),
+  });
+  git(root, "-c", "user.name=t", "-c", "user.email=t@example.com", "add", "-A");
+  git(root, "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "--quiet", "-m", "cache a");
+
+  const warm = just(root, ["check", "--projects=a"], { NX_BASE: undefined });
+  assert.equal(warm.status, 0, warm.output);
+  assert.ok(ran(root, "a"), warm.output);
+  rmSync(join(root, "ran-a"));
+  const replayed = just(root, ["check", "--projects=a"], { NX_BASE: undefined });
+  assert.equal(replayed.status, 0, replayed.output);
+  assert.ok(!ran(root, "a"), "the affected tier was meant to replay a from cache, not rerun it");
+
+  const swept = just(root, ["check", "--sweep", "--projects=a"]);
+  assert.equal(swept.status, 0, swept.output);
+  assert.ok(ran(root, "a"), `the sweep replayed a from cache: ${swept.output}`);
+  rmSync(join(root, "ran-a"));
+  // Outside the sweep the nested Nx replays a from cache, so the rerun below
+  // is the sweep's doing.
+  const nestedReplay = just(root, ["check", "--projects=n"], { NX_BASE: undefined });
+  assert.equal(nestedReplay.status, 0, nestedReplay.output);
+  assert.ok(!ran(root, "a"), `the nested Nx was meant to replay a from cache: ${nestedReplay.output}`);
+  const nested = just(root, ["check", "--sweep", "--projects=n"]);
+  assert.equal(nested.status, 0, nested.output);
+  assert.ok(ran(root, "a"), `the nested Nx under --sweep replayed a from cache: ${nested.output}`);
 });
