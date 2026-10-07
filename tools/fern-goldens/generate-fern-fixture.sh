@@ -273,7 +273,9 @@ fi
 if [ -z "$FERN_PYTHON_VERSION" ]; then
   FERN_PYTHON_VERSION="$("$repo_root/tools/fern-goldens/fern-goldens" latest-version)"
   valid_fern_version "$FERN_PYTHON_VERSION" || {
-    echo "generate-fern-fixture: latest-version returned invalid Fern version '$FERN_PYTHON_VERSION'" >&2
+    echo "generate-fern-fixture: latest-version returned invalid Fern version '$FERN_PYTHON_VERSION' —" \
+         "pass the version to generate at as FERN_PYTHON_VERSION (the corpus pin is in" \
+         "tests/fixtures/eos.local/expected/.crozier-fern-golden.json), then re-run" >&2
     exit 1
   }
 fi
@@ -291,6 +293,9 @@ need docker "start Docker; Fern runs its generator as a local container"
 crozier_bin="$repo_root/target/release/crozier"
 [ -x "$crozier_bin" ] || { echo "generate-fern-fixture: build crozier first (cargo build --release)" >&2; exit 1; }
 
+report_failures generate-fern-fixture "check that the temporary directory and $(dirname "$dest") are \
+writable on a disk with free space, then re-run; the prior golden at $dest is kept unless a line above \
+names its backup"
 workdir="$(mktemp -d)"
 publish_stage=""
 cleanup() {

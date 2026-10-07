@@ -64,6 +64,10 @@ done
   exit 1
 }
 
+report_failures fern-overlay-goldens "check that tests/fixtures/ and .local/fern-overlay/ are \
+writable on a disk with free space and that the expected/ provenance it read is intact, then re-run \
+this script for the fixtures that failed"
+
 pin_of() {
   python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["fern_python_sdk_version"])' "$1"
 }
@@ -140,14 +144,14 @@ one() {
     return 1
   fi
 }
-export -f one pin_of valid_fixture_name
-export repo_root corpus_pin logs golden results
+export -f one pin_of valid_fixture_name arm_failure_report _report_failure
+export repo_root corpus_pin logs golden results _failure_tool _failure_action
 
 # The worker shell xargs starts does not inherit this script's `set -euo
 # pipefail`, so it sets its own: a failed step fails that fixture's worker. The
 # setting reaches it as separate arguments, never re-split from a string.
 status=0
-printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'set -euo pipefail; one "$@"' _ {} "${setting[@]}" ||
+printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'set -euo pipefail; arm_failure_report; one "$@"' _ {} "${setting[@]}" ||
   status=$?
 
 # One line naming every installed overlay, in argument order, with its Fern pin

@@ -108,6 +108,16 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
         self.assertEqual("", completed.stdout)
         self.assertEqual([], self.server.requests)
 
+    def test_a_destination_that_cannot_be_made_names_the_step_and_the_fix(self) -> None:
+        blocked = self.root / "a-file"
+        blocked.write_text("", encoding="utf-8")
+        completed = self.fetch("--dry-run", str(blocked / "cache"))
+        self.assertNotEqual(0, completed.returncode)
+        self.assertRegex(completed.stderr, r"fetch-corpus: line \d+: 'mkdir -p [^']*' failed \(exit 1\)")
+        self.assertIn("is a writable directory on a disk with free space (or pass another DEST_ROOT)",
+                      completed.stderr)
+        self.assertEqual([], self.server.requests)
+
     def test_a_row_the_fetch_cannot_use_safely_fails_the_read_naming_it(self) -> None:
         for label, row, problem in (
             ("traversing name", "| 3 | `../escape` | test | https://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",

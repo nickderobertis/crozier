@@ -63,6 +63,8 @@ done
        "git checkout -- tests/fixtures/CORPUS.md, then re-run" >&2
   exit 1
 }
+report_failures fetch-corpus "check that $dest_root is a writable directory on a disk with free \
+space (or pass another DEST_ROOT), then re-run"
 mkdir -p "$dest_root"
 
 # Read the rows before the loop: a failure inside `< <(...)` would reach neither

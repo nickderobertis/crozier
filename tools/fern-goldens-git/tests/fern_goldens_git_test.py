@@ -1924,6 +1924,30 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             self.assertIn("pass a real directory path as DEST_PATH", symlinked.stderr)
             self.assertTrue(expected.is_symlink())
 
+        with self.subTest("an invalid latest version names the override"):
+            self.write_executable(root / "tools" / "fern-goldens" / "fern-goldens",
+                                  "#!/usr/bin/env bash\necho latest\n")
+            invalid = run("beta", "")
+            self.assertNotEqual(invalid.returncode, 0, invalid.stderr)
+            self.assertIn("latest-version returned invalid Fern version 'latest'", invalid.stderr)
+            self.assertIn("pass the version to generate at as FERN_PYTHON_VERSION", invalid.stderr)
+
+        with self.subTest("an unwritable fixture directory names the failed step and the fix"):
+            if os.geteuid() == 0:
+                self.skipTest("root writes through a read-only directory")
+            expected = fixtures / "beta" / "expected"
+            before = self.tree(expected) if expected.exists() else None
+            (fixtures / "beta").chmod(0o555)
+            try:
+                blocked = run("beta", "5.20.0")
+            finally:
+                (fixtures / "beta").chmod(0o755)
+            self.assertNotEqual(blocked.returncode, 0, blocked.stderr)
+            self.assertRegex(blocked.stderr, r"generate-fern-fixture: line \d+: 'mktemp -d [^']*' failed \(exit 1\)")
+            self.assertIn("are writable on a disk with free space, then re-run", blocked.stderr)
+            if before is not None:
+                self.assertEqual(before, self.tree(expected))
+
     def test_numbered_status_rows_below_the_manifest_are_skipped(self) -> None:
         """CORPUS.md's per-batch STATUS tables are numbered too, and are not rows.
 

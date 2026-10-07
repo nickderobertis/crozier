@@ -222,6 +222,22 @@ class FernOverlayGoldensTests(unittest.TestCase):
             result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
         )
 
+    def test_a_stage_that_cannot_be_made_names_the_step_and_the_fix(self) -> None:
+        if os.geteuid() == 0:
+            self.skipTest("root writes through a read-only directory")
+        alpha = self.root / "tests" / "fixtures" / "alpha"
+        alpha.chmod(0o555)
+        try:
+            result = self.run_overlay("alpha", "beta")
+        finally:
+            alpha.chmod(0o755)
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertRegex(result.stderr, r"fern-overlay-goldens: line \d+: 'mktemp -d [^']*' failed \(exit 1\)")
+        self.assertIn("then re-run this script for the fixtures that failed", result.stderr)
+        self.assertEqual(
+            result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
+        )
+
     def test_fixtures_at_different_fern_pins_name_each_pin_in_the_summary(self) -> None:
         (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).write_text(
             json.dumps({"fern_python_sdk_version": "4.4.0"}), encoding="utf-8"
