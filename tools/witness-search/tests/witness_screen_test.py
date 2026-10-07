@@ -71,7 +71,7 @@ INDEX = load("witness_search_github_index_under_test", REPO / "tools" / "witness
 
 
 class _Raw(BaseHTTPRequestHandler):
-    """raw.githubusercontent.com's exact-commit route for two repositories."""
+    """raw.githubusercontent.com's exact-commit route, serving each candidate repository's file below."""
 
     def log_message(self, *args: object) -> None:
         pass

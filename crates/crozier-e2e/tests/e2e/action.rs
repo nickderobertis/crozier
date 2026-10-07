@@ -734,6 +734,7 @@ fn a_report_of_the_wrong_shape_is_refused_by_compare_and_summary() {
     ] {
         let scratch = tempfile::tempdir().unwrap();
         let cli = scratch.path().join("crozier");
+        // llmlint: ignore[e2e_not_mocked] the real crozier compare writes the report; this wrapper corrupts one field of it at the report boundary, because the real CLI never writes a malformed report, and that is how compare.sh and summary.sh are proven to refuse a report drifting from assets/compare-report.schema.json.
         write_executable(
             scratch.path(),
             "crozier",

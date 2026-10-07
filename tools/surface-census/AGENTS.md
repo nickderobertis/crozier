@@ -11,6 +11,3 @@
   pays for an instrumented build.
 - The census suites run under `scripts/census-python.sh`, never a bare
   `python3`, so a foreign virtualenv cannot answer for this repository.
-- The measurement recipes (`just fixtures-coverage`, `golden-reach`,
-  `handwritten-reach`, `surface-census`, `apis-guru-gap-screen`) are scripts,
-  not gate targets.
