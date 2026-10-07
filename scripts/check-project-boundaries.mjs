@@ -74,10 +74,17 @@ function nxGraph() {
       typeof graph.nodes === "object" &&
       graph.dependencies &&
       typeof graph.dependencies === "object" &&
+      !Array.isArray(graph.dependencies) &&
       Object.values(graph.nodes).every(
         (node) =>
           typeof node?.data?.root === "string" &&
-          (node.data.tags === undefined || Array.isArray(node.data.tags)),
+          (node.data.tags === undefined ||
+            (Array.isArray(node.data.tags) && node.data.tags.every((tag) => typeof tag === "string"))) &&
+          (node.data.targets === undefined ||
+            (typeof node.data.targets === "object" && !Array.isArray(node.data.targets))),
+      ) &&
+      Object.values(graph.dependencies).every(
+        (deps) => Array.isArray(deps) && deps.every((dep) => typeof dep?.target === "string"),
       );
     if (!shaped) throw new Error("its `nodes` / `dependencies` are not the shape this check reads");
     return graph;

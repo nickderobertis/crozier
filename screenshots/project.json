@@ -7,9 +7,6 @@
     "cost:expensive",
     "tier:promoted"
   ],
-  "implicitDependencies": [
-    "crozier"
-  ],
   "targets": {
     "capture": {
       "executor": "nx:run-commands",
@@ -18,12 +15,7 @@
       },
       "cache": false,
       "inputs": [
-        "default",
-        "crateSource",
-        "generator",
-        "{workspaceRoot}/scripts/screenshots.sh",
-        "{workspaceRoot}/screencomp.toml",
-        "{workspaceRoot}/.freeze-version"
+        "default"
       ]
     },
     "demo-gif": {
@@ -37,12 +29,7 @@
       },
       "cache": false,
       "inputs": [
-        "default",
-        "crateSource",
-        "generator",
-        "{workspaceRoot}/scripts/screenshots.sh",
-        "{workspaceRoot}/screencomp.toml",
-        "{workspaceRoot}/.freeze-version"
+        "default"
       ]
     },
     "test": {

@@ -86,15 +86,9 @@
       },
       "cache": true,
       "inputs": [
-        "default",
-        "{workspaceRoot}/docs/**/*",
-        "{workspaceRoot}/tests/fixtures/**/*",
-        "{workspaceRoot}/tools/surface-census/*.py",
-        "{workspaceRoot}/tools/surface-census/tests/surface_census_test.py",
-        "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
-        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
-        "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile"
+        "{projectRoot}/rate_limit_guard.py",
+        "{projectRoot}/tests/rate_limit_guard_test.py",
+        "{workspaceRoot}/scripts/census-python.sh"
       ],
       "parallelism": false
     },

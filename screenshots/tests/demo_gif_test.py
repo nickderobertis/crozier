@@ -46,6 +46,20 @@ class AFailedGenerateStopsTheRender(unittest.TestCase):
         self.assertNotIn("Traceback", run.stderr)
         self.assertFalse(out.exists())
 
+    def test_a_binary_that_cannot_be_launched_is_refused_with_the_fix(self) -> None:
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        out = Path(scratch.name) / "demo.gif"
+        run = subprocess.run(
+            [sys.executable, str(SCRIPT)],
+            env={**os.environ, "CROZIER_BIN": scratch.name, "DEMO_GIF_OUT": str(out)},
+            capture_output=True, text=True, timeout=120,
+        )
+        self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+        self.assertIn(f"demo-gif: cannot run {scratch.name}", run.stderr)
+        self.assertIn("point CROZIER_BIN at the crozier binary", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
+
     def test_a_generate_that_prints_nothing_is_refused_rather_than_indexed(self) -> None:
         run, out = self.render_with("exit 0\n")
         self.assertEqual(1, run.returncode, run.stdout + run.stderr)

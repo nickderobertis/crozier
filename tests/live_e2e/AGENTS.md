@@ -8,10 +8,8 @@ e2e proves the generated *source*, and the wire tests (`tests/runtime/`) prove t
 client's request/response *shaping* matches Fern — this proves the compiled client
 actually talks to a server.
 
-Run it with `just test-live-e2e` — the Nx project `live-e2e` (`project.json`
-here), whose `test` runs `run.sh`. It is **promoted out of the affected tier**
-(Prism comes from npm, the venv from PyPI): `just check --sweep` runs it, and CI
-runs it in its own required leg (`live-e2e`, aggregated into `gate`).
+It reaches npm (Prism) and PyPI (the venv), so it is promoted out of the
+affected tier and runs in CI's own required `live-e2e` leg.
 
 ## How it works
 

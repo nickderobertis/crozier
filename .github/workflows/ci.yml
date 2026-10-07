@@ -162,7 +162,7 @@ jobs:
         with:
           bun-version-file: package.json
       - name: Install Nx (bun.lock)
-        run: bun install --frozen-lockfile
+        run: just install-nx
       - run: npm install -g "$(grep -oP '^PRISM_PKG = "\K[^"]+' tests/live_e2e/conftest.py)"
       # uv backs the test venv (httpx/pydantic/pytest/pyyaml) and the ruff install.
       - uses: astral-sh/setup-uv@v8.3.2
@@ -179,7 +179,7 @@ jobs:
       # always.
       # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
       # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] The census-fallback tier needs uv to install the pinned ruamel.yaml, so it runs in this separate leg rather than the check matrix; it reads only committed specifications and loopback servers.
-      - name: Live e2e, corpus byte-match and census fallback
+      - name: Live e2e, corpus byte-match, census fallback and screenshot renderer
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
         run: just ci-check --projects=live-e2e,corpus-match,census-fallback,screenshots
@@ -273,7 +273,7 @@ jobs:
         with:
           bun-version-file: package.json
       - name: Install Nx (bun.lock)
-        run: bun install --frozen-lockfile
+        run: just install-nx
       # Prove the rule set still resolves with its origin unreachable — the exact
       # failure that used to fail this required check on a flaked connection.
       # CROZIER_REQUIRE_LLMLINT turns the "llmlint absent" skip into a failure,

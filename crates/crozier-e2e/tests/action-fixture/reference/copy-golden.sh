@@ -3,7 +3,11 @@
 # what crozier generates for it. With `--alter`, one file of it is changed, so
 # the comparison finds one differing file.
 set -euo pipefail
-here="$(cd "$(dirname "$0")" && pwd)" || { echo "copy-golden: cannot resolve this script's directory" >&2; exit 1; }
+here="$(cd "$(dirname "$0")" && pwd)" || { echo "copy-golden: cannot resolve this script's directory; run it by its path from a readable checkout" >&2; exit 1; }
+if [ -z "${CROZIER_REFERENCE_OUTPUT:-}" ]; then
+  echo "copy-golden: CROZIER_REFERENCE_OUTPUT is unset; crozier compare sets it — run this as the generator's reference command (crozier compare)" >&2
+  exit 1
+fi
 golden="$here/../../../../../tests/fixtures/client-class-name/expected"
 cp -R "$golden/." "$CROZIER_REFERENCE_OUTPUT" || {
   echo "copy-golden: cannot copy $golden into \$CROZIER_REFERENCE_OUTPUT; restore the golden with git checkout -- tests/fixtures/client-class-name" >&2

@@ -64,11 +64,17 @@ def generate_sdk_summary(binp: str, spec: str, work: str) -> str:
     summary crozier prints (relative --output, so the path in the message is the
     bare `sdk`, stable on every machine)."""
     env = dict(os.environ)
-    proc = subprocess.run(
-        [binp, "generate", "python", "--no-config", "--spec", spec, "--output", "sdk",
-         "--package-name", "petstore", "--project-name", "petstore"],
-        cwd=work, env=env, capture_output=True, text=True,
-    )
+    try:
+        proc = subprocess.run(
+            [binp, "generate", "python", "--no-config", "--spec", spec, "--output", "sdk",
+             "--package-name", "petstore", "--project-name", "petstore"],
+            cwd=work, env=env, capture_output=True, text=True,
+        )
+    except OSError as error:
+        raise GenerateFailed(
+            f"cannot run {binp}: {error.strerror} — point CROZIER_BIN at the crozier binary "
+            "(`cargo build --release --locked --bin crozier` builds it), then rerun `just screenshots-gif`"
+        ) from error
     lines = (proc.stderr or proc.stdout).strip().splitlines()
     if proc.returncode != 0 or not lines:
         said = f": {lines[-1]}" if lines else " and printed nothing"

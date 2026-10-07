@@ -169,7 +169,12 @@ fn the_migration_guide_workflow_runs_as_written() {
     // A recipe that cannot write its reference says what to fix: could not check.
     let missing = golden_dir.path().join("no-such-golden");
     let uncopied = run(repo, &compare, &missing);
-    assert_eq!(uncopied.status.code(), Some(4), "{}", text(&uncopied.stderr));
+    assert_eq!(
+        uncopied.status.code(),
+        Some(4),
+        "{}",
+        text(&uncopied.stderr)
+    );
     let report = text(&uncopied.stderr);
     assert!(report.contains("python: could_not_check"), "{report}");
     assert!(
@@ -179,7 +184,10 @@ fn the_migration_guide_workflow_runs_as_written() {
         )),
         "{report}"
     );
-    assert!(report.contains("output directory is writable, then re-run"), "{report}");
+    assert!(
+        report.contains("output directory is writable, then re-run"),
+        "{report}"
+    );
 
     // Tracking what remains: the Python generator still in generators.yml is
     // listed, and the TypeScript one is not.

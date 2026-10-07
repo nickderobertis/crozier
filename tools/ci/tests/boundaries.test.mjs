@@ -3,9 +3,11 @@
 // an edge can take, and the same graph without the edge passes.
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
+import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { scratchWorkspace, write } from "./support.mjs";
+import { REPO, scratchWorkspace, write } from "./support.mjs";
 
 const BOUNDARIES = {
   allow: { "type:tooling": ["type:tooling", "type:e2e"], "type:e2e": ["type:tooling"] },
@@ -157,5 +159,31 @@ test("a malformed boundaries table is refused rather than enforcing less", (t) =
     const run = check(root, "a");
     assert.equal(run.status, 1, JSON.stringify(unreachable));
     assert.match(run.stderr, /no well-formed "boundaries" table/);
+  }
+});
+
+test("a project graph of the wrong shape is refused with the fix, not a TypeError", (t) => {
+  for (const graph of [
+    { nodes: { a: { data: { root: "a", tags: [1] } } }, dependencies: {} },
+    { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: { a: "b" } },
+    { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: { a: [{ source: "a" }] } },
+  ]) {
+    // A stand-in `nx` whose `graph --file` writes `graph`; the real one never would.
+    const root = mkdtempSync(join(tmpdir(), "crozier-graph-shape-"));
+    t.after(() => rmSync(root, { recursive: true, force: true }));
+    mkdirSync(join(root, "scripts"));
+    mkdirSync(join(root, "node_modules", "nx"), { recursive: true });
+    writeFileSync(join(root, "package.json"), "{}");
+    writeFileSync(join(root, "nx.json"), JSON.stringify({ boundaries: BOUNDARIES }));
+    writeFileSync(join(root, "node_modules", "nx", "package.json"), JSON.stringify({ name: "nx", bin: { nx: "./nx.js" } }));
+    writeFileSync(join(root, "node_modules", "nx", "nx.js"),
+      `const fs = require("fs");
+       const file = process.argv.find((arg) => arg.startsWith("--file=")).slice("--file=".length);
+       fs.writeFileSync(file, ${JSON.stringify(JSON.stringify({ graph }))});`);
+    copyFileSync(join(REPO, "scripts", "check-project-boundaries.mjs"), join(root, "scripts", "check-project-boundaries.mjs"));
+    const run = check(root, "a");
+    assert.equal(run.status, 1, JSON.stringify(graph));
+    assert.match(run.stderr, /not the shape this check reads/);
+    assert.doesNotMatch(run.stderr, /TypeError/);
   }
 });

@@ -17,18 +17,18 @@ cd "$(dirname "$0")/../.." || fail "cannot enter the repository root above $0" "
 
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/crozier-departures.XXXXXX") \
   || fail "cannot create a temporary directory under ${TMPDIR:-/tmp}" "point TMPDIR at a writable directory and rerun"
-trap 'rm -rf "$scratch"' EXIT
+trap 'rm -rf "$scratch" || echo "departures-ledger: could not remove $scratch; delete it by hand" >&2' EXIT
 records="$scratch/records" log="$scratch/log"
 mkdir "$records" || fail "cannot create $records" "point TMPDIR at a writable directory and rerun"
 
 if ! CROZIER_REQUIRE_CORPUS=1 CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked -p crozier-e2e \
   --no-fail-fast -E 'not test(/^departures_ledger_gate::/)' >"$log" 2>&1; then
-  cat "$log" >&2
+  cat "$log" >&2 || echo "departures-ledger: could not read the run log $log" >&2
   fail "a comparison failed while recording (above)" "fix it, then rerun just departures-ledger"
 fi
 if ! CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked -p crozier-e2e --run-ignored only \
   -E 'test(=departures_ledger_gate::write_departures_ledger)' >"$log" 2>&1; then
-  cat "$log" >&2
+  cat "$log" >&2 || echo "departures-ledger: could not read the run log $log" >&2
   fail "the merged ledger was refused (above)" "fix the cause, then rerun just departures-ledger"
 fi
 ledger=tests/fixtures/departures-ledger.tsv

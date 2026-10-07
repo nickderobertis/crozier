@@ -6,11 +6,10 @@ change to what a command prints can't land without the committed image changing
 with it. This folder holds the inputs; the mechanics live in
 [`scripts/screenshots.sh`](../scripts/screenshots.sh) (static SVGs; it stays in
 `scripts/` because the pre-push guard and the Visual-docs workflow run it by that
-path) and [`demo-gif.py`](demo-gif.py) (the animated hero). The Nx project
-`screenshots` (`project.json` here) carries them as `capture` and `demo-gif`,
-which neither gate tier runs: screencomp owns the comparison. Its one gate
-target, `test`, holds the demo renderer's failure handling (`tests/`); it
-installs Pillow from PyPI, so it is promoted and CI's live-e2e leg runs it.
+path) and [`demo-gif.py`](demo-gif.py) (the animated hero). `capture` and
+`demo-gif` build crozier but run outside both gate tiers (screencomp owns the
+comparison), so the project declares no edge to the crate: a CLI change does not
+pull in its one gate target, which tests the renderer against a stub binary.
 
 ## What's here
 

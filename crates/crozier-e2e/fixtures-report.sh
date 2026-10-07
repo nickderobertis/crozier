@@ -27,15 +27,16 @@ esac
 
 out=$(mktemp "${TMPDIR:-/tmp}/crozier-fixtures-$1.XXXXXX") \
   || fail "cannot create a temporary file under ${TMPDIR:-/tmp}" "point TMPDIR at a writable directory and rerun"
-trap 'rm -f "$out"' EXIT
+trap 'rm -f "$out" || echo "fixtures-report: could not remove $out; delete it by hand" >&2' EXIT
 
 if cargo test --locked -p crozier-e2e --test e2e -- --ignored --nocapture "$reporter" >"$out" 2>&1 \
   && grep -qF "$summary" "$out"; then
   # Only the report, from the first corpus header through the summary, never
   # cargo's build/test scaffolding.
   # llmlint: ignore[tool_output_is_signal] This report is the output the command exists to print (`just fixtures-gaps` / `just fixtures-diff`); everything else cargo printed is dropped, and a failure prints the whole log plus the fix.
-  awk -v summary="$summary" '/^=== /{p=1} p; index($0, summary){p=0}' "$out"
+  awk -v summary="$summary" '/^=== /{p=1} p; index($0, summary){p=0}' "$out" \
+    || fail "could not print the report from $out" "check that ${TMPDIR:-/tmp} is readable, then rerun"
 else
-  cat "$out" >&2
+  cat "$out" >&2 || echo "fixtures-report: could not read the run log $out" >&2
   fail "no report from $reporter (output above)" "$restore"
 fi

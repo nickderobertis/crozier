@@ -15,12 +15,17 @@ bootstrap:
     @rustup show active-toolchain >/dev/null 2>&1 || rustup toolchain install
     @rustup component add rustfmt clippy llvm-tools-preview >/dev/null 2>&1 || true
     cargo fetch --locked
-    @command -v bun >/dev/null 2>&1 || { echo "bootstrap: bun not found — install it (https://bun.sh) to get the pinned Nx the gate runs through" >&2; exit 1; }
-    bun install --frozen-lockfile
+    @just install-nx
     @./scripts/install-dev-tools.sh
     @./scripts/install-ruff.sh
     @git config core.hooksPath .githooks
     @echo "enabled .githooks (visual-regression pre-push guard)"
+
+# Install the pinned Nx the gate runs through (bun.lock). Part of `bootstrap`;
+# CI jobs that need Nx but not the rest of bootstrap call it alone.
+install-nx:
+    @command -v bun >/dev/null 2>&1 || { echo "install-nx: bun not found — install it (https://bun.sh), then rerun" >&2; exit 1; }
+    bun install --frozen-lockfile
 
 # The quality gate — one recipe, two tiers, the tier a flag on it. tools/ci/gate.mjs
 # validates the base and selects the projects; the Nx command below runs over them:
