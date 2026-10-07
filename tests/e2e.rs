@@ -9919,7 +9919,7 @@ finally:
         if let Some(expected) = expected {
             assert_eq!(corpus_fixture_for(requested, &rust.unwrap()), expected);
         }
-        let output = std::process::Command::new(&python)
+        let output = std::process::Command::new(python)
             .args(["-c", journey, input, requested])
             .output()
             .expect("public alias workflows");
