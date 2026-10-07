@@ -30,6 +30,7 @@ bootstrap:
 #                         commit SHA) or the merge base of HEAD with origin/main.
 #   just check --sweep    the broader tier: the same targets over every project,
 #                         promoted tiers included, uncached.
+#   just check --plan     either tier's selection and Nx command, without running it.
 # `--projects=` / `--exclude=` (names or tag:<tag>) scope either tier; CI uses them
 # to run each promoted tier on the runner that holds its toolchain. Fails on any
 # issue (no warnings-only mode); e2e is part of the gate, not opt-in.

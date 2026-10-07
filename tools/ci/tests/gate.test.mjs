@@ -105,3 +105,15 @@ test("an unknown argument or project is refused before anything runs", (t) => {
   }
   assert.ok(!ran(root, "a") && !ran(root, "b"));
 });
+
+test("--plan prints the selection and the command, and runs nothing", (t) => {
+  const root = scratchWorkspace(t);
+  commitChange(root, "a/src.txt", "a changed\n");
+
+  const run = just(root, ["check", "--plan"], { NX_BASE: undefined });
+
+  assert.equal(run.status, 0, run.output);
+  assert.match(run.stdout, /gate: projects: a\n/);
+  assert.match(run.stdout, /gate: would run: nx run-many --targets=format,lint,test,build,coverage,supply-chain,doc --projects=a /);
+  assert.ok(!ran(root, "a") && !ran(root, "b"));
+});

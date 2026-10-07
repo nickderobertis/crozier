@@ -46,6 +46,7 @@ const USAGE = `usage: just check|test|lint [--sweep] [--projects=p,q] [--exclude
                the base is NX_BASE (a ref name or commit SHA) or the merge base
                of HEAD with ${DEFAULT_BASE_REF}
   --sweep      broader tier: every project, promoted tiers included, uncached
+  --plan       print the selection and the Nx command, and run nothing
   --projects   only these projects (promoted ones run only when named)
   --exclude    never these projects
   Each list takes project names and tag:<tag> patterns.`;
@@ -60,7 +61,7 @@ const NAME_LIST = new RegExp(`^${LIST_ITEM}(,${LIST_ITEM})*$`);
 const COMMAND = /^--targets=(.+)$/;
 
 function parseArgs(argv) {
-  const options = { sweep: false, targets: undefined, projects: undefined, exclude: [] };
+  const options = { sweep: false, plan: false, targets: undefined, projects: undefined, exclude: [] };
   const split = argv.indexOf("--");
   const command = split < 0 ? [] : argv.slice(split + 1);
   const targets = command.length === 3 && command[0] === "nx" && command[1] === "run-many" && COMMAND.exec(command[2]);
@@ -82,6 +83,9 @@ function parseArgs(argv) {
     switch (flag) {
       case "--sweep":
         options.sweep = true;
+        break;
+      case "--plan":
+        options.plan = true;
         break;
       case "--projects":
         options.projects = value();
@@ -237,6 +241,10 @@ function main() {
   if (options.sweep) {
     args.push("--skipNxCache");
     NX_ENV.NX_SKIP_NX_CACHE = "true";
+  }
+  if (options.plan) {
+    console.log(`${TOOL}: would run: nx ${args.join(" ")}`);
+    return;
   }
   const logDir = join(ROOT, ".nx", "logs");
   mkdirSync(logDir, { recursive: true });
