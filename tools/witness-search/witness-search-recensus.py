@@ -49,9 +49,12 @@ import hashlib
 import importlib.util
 import json
 import multiprocessing
+import multiprocessing.connection
 import os
+import re
 import signal
 import sys
+import time
 import urllib.parse
 from pathlib import Path
 from types import ModuleType
@@ -63,6 +66,10 @@ REFUSED = "census-refused"
 # A document the full parser and the census walk together take longer than this
 # over is recorded refused, with the bound, rather than holding the stage open.
 DEFAULT_TIMEOUT_S = 600
+# What a GitHub response must name before it joins a URL: a full commit SHA, and
+# an owner/name repository.
+FULL_COMMIT = re.compile(r"[0-9a-f]{40}")
+REPOSITORY = re.compile(r"[A-Za-z0-9-]+/[A-Za-z0-9._-]+")
 
 
 def _load(name: str, path: Path) -> ModuleType:
@@ -136,7 +143,10 @@ def lenient_stream(data: bytes) -> list[Any]:
     safe = ruamel_yaml.constructor.SafeConstructor
 
     class Lenient(safe):
-        pass
+        def check_mapping_key(self, node: Any, key_node: Any, mapping: Any, key: Any, value: Any) -> bool:
+            # The base check keeps a duplicate's first value; storing every
+            # one in order leaves the last, as LENIENT_LOADER records.
+            return True
 
     def untagged(constructor: Any, suffix: str, node: Any) -> Any:
         if isinstance(node, ruamel_yaml.nodes.MappingNode):
@@ -157,23 +167,29 @@ def _alarm(signum: int, frame: Any) -> None:
     raise TimeoutError("census bound reached")
 
 
-def read_document(path: str, timeout: int) -> dict[str, Any]:
+def read_document(path: str, timeout: int, phase: Any = None) -> dict[str, Any]:
     """One cached document through the full parser and the census: its verdict.
 
     `{"verdict": "counts", "counts": {...}}` for an OpenAPI 3 description,
     `{"verdict": "not-openapi-3", "reason": ...}` for a stream the parser reads
     but that holds no one OpenAPI 3 description, and `{"verdict": "refused",
     "reason": ...}` where the parser or the census walk refuses it.
+
+    Where SIGALRM exists the bound is an alarm here. Elsewhere `bounded_reads`
+    runs this in a child it ends at the bound, and `phase` hands it, before each
+    step, the refusal the alarm would record were the bound reached in it.
     """
     local = Path(path)
     data = local.read_bytes()
     if hasattr(signal, "SIGALRM"):
         signal.signal(signal.SIGALRM, _alarm)
         signal.alarm(timeout)
+    phase = phase or (lambda reason: None)
     try:
         loader = REACH.YAML_LOADER
         try:
             # YAML 1.2 is a superset of JSON, so one parser reads either spelling.
+            phase(f"{loader}: parse exceeded {timeout} s")
             stream = REACH.yaml_stream(data)
         except TimeoutError:
             return {"verdict": "refused", "reason": f"{loader}: parse exceeded {timeout} s"}
@@ -181,6 +197,7 @@ def read_document(path: str, timeout: int) -> dict[str, Any]:
             strict = f"{loader}: {one_line(f'{type(error).__name__}: {error}')}"
             loader = LENIENT_LOADER
             try:
+                phase(f"{strict}; {loader}: parse exceeded {timeout} s")
                 stream = lenient_stream(data)
             except TimeoutError:
                 return {"verdict": "refused", "reason": f"{strict}; {loader}: parse exceeded {timeout} s"}
@@ -197,6 +214,7 @@ def read_document(path: str, timeout: int) -> dict[str, Any]:
             return {"verdict": "not-openapi-3", "loader": loader,
                     "reason": f"names `openapi` {parsed.get('openapi')!r} / `swagger` {parsed.get('swagger')!r}"}
         try:
+            phase(f"census walk over the {loader} reading exceeded {timeout} s")
             counts = CENSUS.census_document(parsed, root_path=local)
         except TimeoutError:
             return {"verdict": "refused", "reason": f"census walk over the {loader} reading exceeded {timeout} s"}
@@ -207,6 +225,72 @@ def read_document(path: str, timeout: int) -> dict[str, Any]:
     finally:
         if hasattr(signal, "SIGALRM"):
             signal.alarm(0)
+
+
+def _bounded_child(path: str, timeout: int, connection: Any) -> None:
+    """A spawned reader: each phase's would-be refusal, then the verdict, over `connection`."""
+    connection.send(("verdict", read_document(path, timeout, lambda reason: connection.send(("phase", reason)))))
+    connection.close()
+
+
+def bounded_reads(paths: dict[str, str], timeout: int, jobs: int) -> dict[str, dict[str, Any]]:
+    """`read_document` over each path, `jobs` at a time, each ended at `timeout` seconds.
+
+    With SIGALRM each reading bounds itself, in forked workers. Without it (on
+    Windows) each runs in a spawned child of its own, and one still reading
+    when its bound passes is terminated and recorded as the alarm would have
+    recorded it. The bound is counted from the child's first phase, so the
+    child's own start-up does not spend it.
+    """
+    if hasattr(signal, "SIGALRM"):
+        context = multiprocessing.get_context("fork")
+        with concurrent.futures.ProcessPoolExecutor(jobs, mp_context=context) as pool:
+            futures = {pool.submit(read_document, path, timeout): digest for digest, path in paths.items()}
+            return {futures[future]: future.result() for future in concurrent.futures.as_completed(futures)}
+    context = multiprocessing.get_context("spawn")
+    queued = sorted(paths.items())
+    running: dict[Any, tuple[str, Any, float | None, str]] = {}
+    verdicts: dict[str, dict[str, Any]] = {}
+    while queued or running:
+        while queued and len(running) < jobs:
+            digest, path = queued.pop(0)
+            receive, send = context.Pipe(duplex=False)
+            child = context.Process(target=_bounded_child, args=(path, timeout, send), daemon=True)
+            child.start()
+            send.close()
+            running[receive] = (digest, child, None, "")
+        ready = multiprocessing.connection.wait(list(running), timeout=0.1)
+        now = time.monotonic()
+        for receive in list(running):
+            digest, child, started, reason = running[receive]
+            try:
+                while receive in ready and receive.poll():
+                    kind, value = receive.recv()
+                    if kind == "verdict":
+                        verdicts[digest] = value
+                        break
+                    started, reason = started or now, value
+            except EOFError:
+                raise ChildProcessError(f"the reader of sha256 {digest} exited {child.exitcode} without a verdict")
+            if digest in verdicts:
+                child.join()
+            elif started is not None and now - started >= timeout:
+                child.terminate()
+                child.join()
+                verdicts[digest] = {"verdict": "refused", "reason": reason}
+            else:
+                running[receive] = (digest, child, started, reason)
+                continue
+            receive.close()
+            del running[receive]
+    return verdicts
+
+
+def read_bounded(path: str, timeout: int) -> dict[str, Any]:
+    """One document's verdict at `timeout`: in this process where its alarm bounds it, else in a child."""
+    if hasattr(signal, "SIGALRM"):
+        return read_document(path, timeout)
+    return bounded_reads({"document": path}, timeout, 1)["document"]
 
 
 def verdict_record(source: str, row: dict[str, Any], verdict: dict[str, Any], digest: str,
@@ -300,13 +384,8 @@ def full_yaml(args: argparse.Namespace) -> int:
         if hashlib.sha256(local.read_bytes()).hexdigest() != digest:
             fail(f"{local} does not hash to the pinned sha256 {digest}; re-acquire it at its commit")
         copies[digest] = local
-    verdicts: dict[str, dict[str, Any]] = {}
-    context = multiprocessing.get_context("fork" if hasattr(signal, "SIGALRM") else "spawn")
-    with concurrent.futures.ProcessPoolExecutor(args.jobs, mp_context=context) as pool:
-        futures = {pool.submit(read_document, str(path), args.timeout): digest
-                   for digest, path in sorted(copies.items())}
-        for future in concurrent.futures.as_completed(futures):
-            verdicts[futures[future]] = future.result()
+    verdicts = bounded_reads({digest: str(path) for digest, path in sorted(copies.items())},
+                             args.timeout, args.jobs)
     tally: dict[str, int] = {}
     for row, digest in pending:
         record = verdict_record(args.source, row, verdicts[digest], digest, keys)
@@ -340,9 +419,11 @@ def from_history(acquirer: Any, row: dict[str, Any], base: dict[str, Any], head:
     at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
     if status != 200 or not isinstance(commits, list):
         return None, f"the path's history at {head} answered HTTP {status} at {at}"
+    unnamed = 0
     for commit in commits:
         sha = commit.get("sha") if isinstance(commit, dict) else None
-        if not isinstance(sha, str):
+        if not isinstance(sha, str) or not FULL_COMMIT.fullmatch(sha):
+            unnamed += 1
             continue
         raw_url = (acquirer.raw_github_url + "/" + urllib.parse.quote(row["repository"], safe="/") + "/" + sha
                    + "/" + urllib.parse.quote(row["path"], safe="/"))
@@ -353,7 +434,12 @@ def from_history(acquirer: Any, row: dict[str, Any], base: dict[str, Any], head:
                  "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB, "supersedes": row["commit"],
                  "reacquired_at_head": True, "github_refusal": refusal}, data), ""
     return None, (f"the path's history at {head} lists {len(commits)} commit(s), none serving blob "
-                  f"{row.get('blob')}, at {at}")
+                  f"{row.get('blob')}{unnamed_note(unnamed)}, at {at}")
+
+
+def unnamed_note(unnamed: int) -> str:
+    """What a history's entries naming no full commit SHA add to its refusal: they were not read."""
+    return f" ({unnamed} naming no full commit SHA, not read)" if unnamed else ""
 
 
 def mirrored(acquirer: Any, row: dict[str, Any], base: dict[str, Any], refusal: str,
@@ -399,18 +485,21 @@ def reacquire_head(args: argparse.Namespace) -> int:
         if repository not in heads:
             status, payload, _ = acquirer.github_json("core", f"/repos/{repository}")
             at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
-            if status != 200 or not isinstance(payload, dict) or not payload.get("default_branch"):
-                heads[repository] = (status, "", f"GET /repos/{repository} answered HTTP {status} at {at}")
+            branch = payload.get("default_branch") if isinstance(payload, dict) else None
+            if status != 200 or not isinstance(branch, str) or not branch:
+                malformed = " without a default branch name" if status == 200 else ""
+                heads[repository] = (status, "", f"GET /repos/{repository} answered HTTP {status}{malformed} at {at}")
             else:
-                branch = payload["default_branch"]
                 status, commit, _ = acquirer.github_json(
                     "core", f"/repos/{repository}/commits/{urllib.parse.quote(branch, safe='')}")
                 at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
                 sha = commit.get("sha") if isinstance(commit, dict) else None
+                malformed = " without a full commit SHA" if status == 200 else ""
                 heads[repository] = (
                     (status, sha, f"head of {branch}")
-                    if status == 200 and isinstance(sha, str)
-                    else (status, "", f"GET /repos/{repository}/commits/{branch} answered HTTP {status} at {at}"))
+                    if status == 200 and isinstance(sha, str) and FULL_COMMIT.fullmatch(sha)
+                    else (status, "", f"GET /repos/{repository}/commits/{branch} answered HTTP {status}{malformed} "
+                                      f"at {at}"))
         status, head, note = heads[repository]
         base = {field: row[field] for field in ("source", "key", "selector", "repository", "path")}
         if not head:
@@ -438,8 +527,8 @@ def reacquire_head(args: argparse.Namespace) -> int:
         if status_of(record) == "parse-failure":
             # A document the census's own loader refuses is read at once as `full-yaml` reads one.
             local = acquirer.cache / "documents" / record["document"]
-            record = verdict_record(source, record, read_document(str(local), DEFAULT_TIMEOUT_S),
-                                    record["sha256"], keys)
+            verdict = read_bounded(str(local), DEFAULT_TIMEOUT_S)
+            record = verdict_record(source, record, verdict, record["sha256"], keys)
             acquirer.write("candidates.jsonl", record)
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1
@@ -464,6 +553,7 @@ def namesakes(acquirer: Any, repository: str) -> tuple[list[str], str]:
         return [], f"the repository search for `{name}` answered HTTP {status} at {at}"
     found = [item["full_name"] for item in payload["items"]
              if isinstance(item, dict) and isinstance(item.get("full_name"), str)
+             and REPOSITORY.fullmatch(item["full_name"])
              and item["full_name"].split("/", 1)[1].lower() == name.lower()
              and item["full_name"].lower() != repository.lower()]
     return found, f"the repository search for `{name}` names {len(found)} namesake(s) ({', '.join(found) or 'none'}) at {at}"
@@ -508,9 +598,11 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
             if status != 200 or not isinstance(commits, list):
                 histories.append(f"{namesake}'s history of the path answered HTTP {status} at {at}")
                 continue
+            unnamed = 0
             for commit in commits:
                 sha = commit.get("sha") if isinstance(commit, dict) else None
-                if not isinstance(sha, str):
+                if not isinstance(sha, str) or not FULL_COMMIT.fullmatch(sha):
+                    unnamed += 1
                     continue
                 raw_url = (acquirer.raw_github_url + "/" + urllib.parse.quote(namesake, safe="/") + "/" + sha
                            + "/" + urllib.parse.quote(row["path"], safe="/"))
@@ -525,15 +617,15 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
             if record is not None:
                 break
             histories.append(f"{namesake}'s history of the path lists {len(commits)} commit(s), none serving "
-                             f"blob {row.get('blob')}, at {at}")
+                             f"blob {row.get('blob')}{unnamed_note(unnamed)}, at {at}")
         if record is None:
             record = {**{field: row[field] for field in row if field != "at"}, "namesakes_searched": True,
                       "diagnostic": "; ".join([str(row.get("diagnostic")), note, *histories])}
             acquirer.write("candidates.jsonl", record)
         elif status_of(record) == "parse-failure":
             local = acquirer.cache / "documents" / record["document"]
-            record = verdict_record(source, record, read_document(str(local), DEFAULT_TIMEOUT_S),
-                                    record["sha256"], keys)
+            verdict = read_bounded(str(local), DEFAULT_TIMEOUT_S)
+            record = verdict_record(source, record, verdict, record["sha256"], keys)
             acquirer.write("candidates.jsonl", record)
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1

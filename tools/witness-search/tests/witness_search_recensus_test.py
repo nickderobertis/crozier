@@ -473,6 +473,29 @@ class Upstream(BaseHTTPRequestHandler):
         if self.path == "/rate_limit":
             self.reply(200, {"resources": {"core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": reset},
                                            "search": {"limit": 30, "used": 0, "remaining": 30, "reset": reset}}})
+        # Answers whose fields are not what they must be before joining a URL.
+        elif self.path == "/repos/example/branchless":
+            self.reply(200, {"default_branch": 7})
+        elif self.path in ("/repos/example/shorthead", "/repos/example/tainted", "/repos/example/untold"):
+            self.reply(200, {"default_branch": "main"})
+        elif self.path == "/repos/example/shorthead/commits/main":
+            self.reply(200, {"sha": "abc123"})
+        elif self.path in ("/repos/example/tainted/commits/main", "/repos/example/untold/commits/main"):
+            self.reply(200, {"sha": HEAD})
+        elif self.path == f"/repos/example/tainted/commits?path=openapi.yaml&sha={HEAD}&per_page=100":
+            self.reply(200, [{"sha": "../../../evil"}, {"sha": OLDER.upper()}, {"sha": OLDER[:12]}, {"sha": 7},
+                             {"sha": OLDER}])
+        elif self.path == f"/repos/example/untold/commits?path=openapi.yaml&sha={HEAD}&per_page=100":
+            self.reply(200, [{"sha": "../../../evil"}, {"sha": OLDER[:12]}])
+        elif self.path == f"/example/tainted/{OLDER}/openapi.yaml":
+            self.reply(200, DECLARER)
+        elif self.path == "/search/repositories?q=malformed%20in%3Aname&per_page=100":
+            self.reply(200, {"items": [{"full_name": "malformed"}, {"full_name": "up stream/malformed"},
+                                       {"full_name": "upstream/malformed/extra"}, {"full_name": "upstream/malformed"}]})
+        elif self.path == "/repos/upstream/malformed/commits?path=openapi.yaml&per_page=100":
+            self.reply(200, [{"sha": "../../../evil"}, {"sha": OLDER[:12]}, {"sha": OLDER}])
+        elif self.path == f"/upstream/malformed/{OLDER}/openapi.yaml":
+            self.reply(200, DECLARER)
         elif self.path == "/search/repositories?q=forked%20in%3Aname&per_page=100":
             # The candidate itself, a parent and an unrelated partial match: only the parent is a namesake.
             self.reply(200, {"items": [{"full_name": "example/forked"}, {"full_name": "upstream/Forked"},
@@ -700,6 +723,199 @@ class ReacquireNamesakeTest(unittest.TestCase):
                         "--cache-dir", str(Path(tmp) / "cache"), env=env)
             self.assertIn("3 refused candidate(s) sought in namesake repositories: 3 acquisition-failure",
                           again.stdout)
+
+
+def serve_upstream(test: unittest.TestCase) -> tuple[ThreadingHTTPServer, str]:
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+    server.paths = []
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    test.addCleanup(server.server_close)
+    test.addCleanup(server.shutdown)
+    return server, f"http://127.0.0.1:{server.server_port}"
+
+
+def refused_rows(evidence: Path, names: tuple[str, ...], **extra: object) -> None:
+    keys_file(evidence)
+    rows = [{"source": "github-code-search", "key": KEY, "selector": SELECTOR, "repository": f"example/{name}",
+             "path": "openapi.yaml", "commit": PINNED, "blob": git_blob(DECLARER),
+             "disposition": "acquisition-failure", "status": 404, "diagnostic": "404: Not Found", **extra}
+            for name in names]
+    (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+
+class MalformedGitHubAnswerTest(unittest.TestCase):
+    """A field GitHub answers that is not the type and identity it must be never joins a URL."""
+
+    def test_a_head_or_history_naming_no_full_commit_is_refused_not_requested(self) -> None:
+        server, url = serve_upstream(self)
+        env = {"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url,
+               "CROZIER_SOURCEGRAPH_URL": url, "GITHUB_TOKEN": "offline-test-token"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            refused_rows(root / "witness-search-github-code-search", ("branchless", "shorthead", "tainted", "untold"))
+            completed = run("--evidence-root", str(root), "reacquire-head", "--cache-dir", str(Path(tmp) / "cache"),
+                            env=env)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertIn("4 404 candidate(s) requested at head: 3 acquisition-failure, 1 declares", completed.stdout)
+            records = {row["candidate"].split(":")[0].split("/")[1]: row
+                       for row in INDEX.source_rows(root, "github-code-search")}
+            self.assertIn("GET /repos/example/branchless answered HTTP 200 without a default branch name at",
+                          records["branchless"]["census"])
+            self.assertIn("GET /repos/example/shorthead/commits/main answered HTTP 200 without a full commit SHA at",
+                          records["shorthead"]["census"])
+            # The history's one full commit is read; the four entries naming none are not.
+            self.assertEqual(OLDER, records["tainted"]["revision"])
+            self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2)", records["tainted"]["census"])
+            self.assertIn(f"the path's history at {HEAD} lists 2 commit(s), none serving blob {git_blob(DECLARER)} "
+                          "(2 naming no full commit SHA, not read), at", records["untold"]["census"])
+            self.assertEqual({"outstanding"}, {records[name]["disposition"]
+                                               for name in ("branchless", "shorthead", "untold")})
+        requested = [path for path in server.paths if not path.startswith(("/repos/", "/rate_limit", "/github.com/"))]
+        self.assertEqual([f"/example/tainted/{HEAD}/openapi.yaml", f"/example/tainted/{OLDER}/openapi.yaml",
+                          f"/example/untold/{HEAD}/openapi.yaml"], sorted(requested))
+        self.assertFalse([path for path in server.paths if "evil" in path or "abc123" in path
+                          or OLDER.upper() in path or "/branchless/commits" in path])
+
+    def test_a_namesake_or_its_history_that_is_malformed_is_skipped_not_requested(self) -> None:
+        server, url = serve_upstream(self)
+        env = {"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url, "GITHUB_TOKEN": "offline-test-token"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            refused_rows(root / "witness-search-github-code-search", ("malformed",), reacquired_at_head=True)
+            completed = run("--evidence-root", str(root), "reacquire-namesake",
+                            "--cache-dir", str(Path(tmp) / "cache"), env=env)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertEqual("witness-search-recensus: 1 refused candidate(s) sought in namesake repositories: "
+                             "1 declares\n", completed.stdout)
+            (record,) = INDEX.source_rows(root, "github-code-search")
+            self.assertEqual(OLDER, record["revision"])
+            self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2); served by upstream/malformed",
+                             record["census"])
+        # Only the one owner/name full_name was asked for its history, and only
+        # its full commit was read.
+        self.assertEqual(["/repos/upstream/malformed/commits?path=openapi.yaml&per_page=100"],
+                         [path for path in server.paths if path.startswith("/repos/")])
+        self.assertEqual([f"/upstream/malformed/{OLDER}/openapi.yaml"],
+                         [path for path in server.paths if not path.startswith(("/repos/", "/search/", "/rate_limit"))])
+
+
+# Each duplicate `Pet` keeps one of two readings; only the anyOf-of-allOf one
+# declares KEY, so the count says which survived.
+PET_PLAIN = "    Pet: {type: object, properties: {owner: {type: string}}}\n"
+PET_DECLARING = "    Pet: {type: object, properties: {owner: {anyOf: [{allOf: [{$ref: '#/components/schemas/Base'}]}]}}}\n"
+DUPLICATE_HEAD = ("openapi: 3.0.3\ninfo: {title: t, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n"
+                  "    Base: {type: object, properties: {id: {type: string}}}\n")
+# Every construct KEY needs sits under a tag no constructor knows, on a
+# mapping, a sequence and a scalar: only the untagged reading of all three counts it.
+TAGGED = b"""openapi: 3.0.3
+info: {title: !vendor/title Pets, version: '1'}
+paths: {}
+components:
+  schemas:
+    Base: {type: object, properties: {id: {type: string}}}
+    Pet: !merge-objects
+      type: object
+      properties:
+        owner:
+          anyOf: !!python/tuple
+            - allOf:
+                - $ref: !vendor/ref '#/components/schemas/Base'
+"""
+
+
+class LenientReadingTest(unittest.TestCase):
+    """What the relaxed reading keeps where the strict construction refuses."""
+
+    def full_yaml(self, documents: dict[str, bytes]) -> dict[str, dict]:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-sourcegraph"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            (cache / "documents").mkdir(parents=True)
+            rows = []
+            for name, data in documents.items():
+                digest = hashlib.sha256(data).hexdigest()
+                (cache / "documents" / f"{digest}.yaml").write_bytes(data)
+                rows.append({"source": "sourcegraph", "key": KEY, "selector": SELECTOR,
+                             "repository": f"github.com/example/{name}", "path": "openapi.yaml",
+                             "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"})
+            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph", "--cache", str(cache))
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            return {row["repository"].rsplit("/", 1)[1]: row
+                    for _, row in INDEX.jsonl(evidence / "candidates.jsonl") if row.get("loader")}
+
+    def test_a_duplicate_key_keeps_its_last_value(self) -> None:
+        read = self.full_yaml({
+            "last-declares": (DUPLICATE_HEAD + PET_PLAIN + PET_DECLARING).encode(),
+            "first-declares": (DUPLICATE_HEAD + PET_DECLARING + PET_PLAIN).encode(),
+        })
+        self.assertEqual(("declares", 1), (read["last-declares"]["disposition"], read["last-declares"]["selector_count"]))
+        self.assertEqual(("does-not-declare", 0),
+                         (read["first-declares"]["disposition"], read["first-declares"]["selector_count"]))
+        for row in read.values():
+            self.assertEqual("ruamel.yaml 0.19.1 (YAML 1.2), duplicate keys last-wins, unrecognised tags read "
+                             "untagged", row["loader"])
+
+    def test_an_unknown_tag_reads_the_untagged_mapping_sequence_or_scalar(self) -> None:
+        read = self.full_yaml({"tagged": TAGGED})["tagged"]
+        self.assertEqual(("declares", 1), (read["disposition"], read["selector_count"]))
+        self.assertIn("unrecognised tags read untagged", read["loader"])
+
+
+class SpawnBoundTest(unittest.TestCase):
+    """The bound where SIGALRM does not exist, as on Windows: spawned readers ended at it.
+
+    A startup hook removes `signal.SIGALRM` from this run and from every child
+    it spawns, so the stage takes the branch it takes on Windows."""
+
+    def test_parse_and_census_end_at_the_requested_bound_without_sigalrm(self) -> None:
+        huge = b"openapi: 3.0.3\nx:\n" + b"".join(b"  k%d: [a, {b: c}]\n" % n for n in range(400_000))
+        bomb = ["openapi: 3.0.3", "info: {title: t, version: '1'}", "paths: {}", "components:", "  schemas:",
+                "    L0: &l0 {type: object, properties: {a: {type: string}}}"]
+        bomb += [f"    L{n}: &l{n} {{allOf: [{', '.join([f'*l{n - 1}'] * 8)}]}}" for n in range(1, 12)]
+        with tempfile.TemporaryDirectory() as tmp:
+            startup = Path(tmp) / "startup"
+            startup.mkdir()
+            (startup / "sitecustomize.py").write_text("import signal\ndel signal.SIGALRM\n", encoding="utf-8")
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-sourcegraph"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            (cache / "documents").mkdir(parents=True)
+            rows = []
+            for name, data in (("huge", huge), ("bomb", ("\n".join(bomb) + "\n").encode()), ("declarer", DECLARER)):
+                digest = hashlib.sha256(data).hexdigest()
+                (cache / "documents" / f"{digest}.yaml").write_bytes(data)
+                rows.append({"source": "sourcegraph", "key": KEY, "repository": f"github.com/example/{name}",
+                             "path": "a.yaml", "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"})
+            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            env = {**os.environ, "PYTHONPATH": os.pathsep.join(filter(None, (str(startup), os.environ.get("PYTHONPATH"))))}
+            probe = subprocess.run([sys.executable, "-c", "import signal; print(hasattr(signal, 'SIGALRM'))"],
+                                   capture_output=True, text=True, env=env, timeout=60)
+            self.assertEqual("False", probe.stdout.strip(), probe.stderr)
+            started = time.monotonic()
+            try:
+                completed = subprocess.run(
+                    [sys.executable, str(SCRIPT), "--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
+                     "--cache", str(cache), "--timeout", "1", "--jobs", "2"],
+                    capture_output=True, text=True, env=env, timeout=120)
+            except subprocess.TimeoutExpired:
+                self.fail("without SIGALRM the stage did not end its readers at the 1 s bound")
+            elapsed = time.monotonic() - started
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            read = {r["repository"].rsplit("/", 1)[1]: r
+                    for _, r in INDEX.jsonl(evidence / "candidates.jsonl") if r.get("loader")}
+            self.assertEqual("census-refused", read["huge"]["disposition"])
+            self.assertTrue(read["huge"]["diagnostic"].startswith("ruamel.yaml 0.19.1 (YAML 1.2): parse exceeded 1 s; "
+                                                                  "sha256 "), read["huge"]["diagnostic"])
+            self.assertEqual("census-refused", read["bomb"]["disposition"])
+            self.assertTrue(read["bomb"]["diagnostic"].startswith(
+                "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading exceeded 1 s; sha256 "), read["bomb"]["diagnostic"])
+            # A document inside the bound is read and counted on the same branch.
+            self.assertEqual(("declares", 1), (read["declarer"]["disposition"], read["declarer"]["selector_count"]))
+            self.assertLess(elapsed, 90)
 
 
 if __name__ == "__main__":
