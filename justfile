@@ -72,7 +72,7 @@ test-runtime:
 # Node-free; CI runs it as its own required leg. Needs Node/Prism + uv + ruff; see
 # tests/live_e2e/AGENTS.md.
 test-live-e2e *args:
-    ./scripts/live-e2e.sh {{args}}
+    ./tests/live_e2e/run.sh {{args}}
 
 # Enforce the real-world corpus byte-match: validate the committed corpus sources and byte-compare crozier's output for the
 # vendored Fern goldens and require every registered source to generate.
@@ -125,7 +125,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e exhaustive_package_name_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e overlay_goldens_match_fern_output
     python3 tools/corpus/corpus_sources.py check
-    "$(./scripts/census-python.sh)" tests/corpus_surface_census_test.py
+    "$(./scripts/census-python.sh)" tests/corpus_match/corpus_surface_census_test.py
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e apideck_crm_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e bunq_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e bungie_matches_fern_output
@@ -432,7 +432,7 @@ test-fixtures-coverage:
 # specification; `test-corpus-offline` runs it with sockets denied.
 test-census-fallback-samples:
     python3 tools/corpus/corpus_sources.py check
-    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' tools/surface-census/golden-reach-search.py)" python3 tests/golden_reach_census_fallback_test.py
+    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' tools/surface-census/golden-reach-search.py)" python3 tests/census_fallback/golden_reach_census_fallback_test.py
 
 # The samples above, then the arm search and the witness-search re-census CLI
 # over temporary ledgers, a loopback GitHub and Sourcegraph, and the same pinned
@@ -647,7 +647,7 @@ test-corpus-sources:
 # not fetch a specification (cargo fetches the locked crates and uv the pinned
 # parser first).
 test-corpus-offline:
-    python3 tests/corpus_offline_test.py
+    python3 tests/corpus_match/corpus_offline_test.py
 
 # Rebuild-only: `vendor --fixture NAME` fetches a row from its pinned URL and
 # commits its source (run it when a row is added or its pin moves); `audit`
@@ -763,7 +763,7 @@ screenshots-gif:
     @command -v python3 >/dev/null || { echo "python3 not found: needed to render the demo GIF" >&2; exit 1; }
     @python3 -c "import PIL" 2>/dev/null || { echo "Pillow not installed: pip install Pillow" >&2; exit 1; }
     cargo build --release --locked --bin crozier
-    python3 scripts/demo-gif.py
+    python3 screenshots/demo-gif.py
 
 # Refresh the committed baseline manifest from a fresh capture (after an intended
 # output change). Commit shots/baseline/*.json + docs/screenshots/ alongside.

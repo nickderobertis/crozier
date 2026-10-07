@@ -5,7 +5,7 @@ CLI**, gated by [screencomp](https://github.com/nickderobertis/screencomp) so a
 change to what a command prints can't land without the committed image changing
 with it. This folder holds the inputs; the mechanics live in
 [`scripts/screenshots.sh`](../scripts/screenshots.sh) (static SVGs) and
-[`scripts/demo-gif.py`](../scripts/demo-gif.py) (the animated hero).
+[`screenshots/demo-gif.py`](../screenshots/demo-gif.py) (the animated hero).
 
 ## What's here
 

@@ -22,7 +22,7 @@ mod compare;
 #[path = "e2e/migration.rs"]
 mod migration;
 
-/// The GitHub Action's scripts (`scripts/action/`) over a real `crozier`.
+/// The GitHub Action's scripts (`tools/github-action/`) over a real `crozier`.
 #[cfg(unix)]
 #[path = "e2e/action.rs"]
 mod action;
@@ -2969,7 +2969,10 @@ fn the_handwritten_gate_is_outside_the_golden_only_tier() {
             "tools/surface-census/openapi-surface-census.py",
             "GOLDEN_TEST = re.compile(r\"matches_fern_output\")",
         ),
-        ("tools/surface-census/golden-reach.py", "_census_module().GOLDEN_TEST"),
+        (
+            "tools/surface-census/golden-reach.py",
+            "_census_module().GOLDEN_TEST",
+        ),
     ] {
         let text = std::fs::read_to_string(root.join(script)).expect("tier selector script");
         assert!(

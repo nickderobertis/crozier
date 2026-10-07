@@ -48,9 +48,9 @@ fn assert_optional_string_input(inputs: &Mapping, name: &str) {
 
 #[test]
 fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
-    let source = include_str!("../.github/workflows/fern-goldens.yml");
-    let justfile = include_str!("../justfile");
-    let tool = include_str!("../tools/fern-goldens/fern-goldens");
+    let source = include_str!("../../../.github/workflows/fern-goldens.yml");
+    let justfile = include_str!("../../../justfile");
+    let tool = include_str!("../../../tools/fern-goldens/fern-goldens");
     let workflow: Value = serde_yaml_ng::from_str(source).expect("workflow is valid YAML");
 
     let triggers = mapping(&workflow, "on");
@@ -447,7 +447,7 @@ fn fern_goldens_event_guard_accepts_only_scheduled_main_or_a_dispatched_branch()
     use std::process::Command;
 
     let workflow: Value =
-        serde_yaml_ng::from_str(include_str!("../.github/workflows/fern-goldens.yml"))
+        serde_yaml_ng::from_str(include_str!("../../../.github/workflows/fern-goldens.yml"))
             .expect("workflow is valid YAML");
     let generate = nested_mapping(mapping(&workflow, "jobs"), "generate_publish");
     let steps = generate
@@ -496,7 +496,7 @@ fn fern_goldens_generation_step_preserves_blank_schedule_and_exact_manual_inputs
     use std::process::Command;
 
     let workflow: Value =
-        serde_yaml_ng::from_str(include_str!("../.github/workflows/fern-goldens.yml"))
+        serde_yaml_ng::from_str(include_str!("../../../.github/workflows/fern-goldens.yml"))
             .expect("workflow is valid YAML");
     let generate = nested_mapping(mapping(&workflow, "jobs"), "generate_publish");
     let steps = generate

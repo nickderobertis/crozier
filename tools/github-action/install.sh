@@ -18,7 +18,7 @@
 #   anything else    that exact release tag.
 set -euo pipefail
 
-# shellcheck source=scripts/action/lib.sh
+# shellcheck source=tools/github-action/lib.sh
 . "$(dirname "$0")/lib.sh"
 
 [ -n "${GITHUB_ACTION_PATH:-}" ] || die "GITHUB_ACTION_PATH is not set" \

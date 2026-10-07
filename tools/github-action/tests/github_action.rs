@@ -10,8 +10,12 @@ use std::path::Path;
 
 use serde_yaml_ng::{Mapping, Value};
 
+/// The repository root: this crate sits two levels below it.
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("tools/github-action sits two levels below the repository root")
 }
 
 fn read(rel: &str) -> String {
@@ -106,7 +110,7 @@ fn action_yml_carries_marketplace_metadata_and_the_contracted_inputs_and_outputs
 }
 
 /// Values reach the scripts only through `env`: no `run:` holds an
-/// expression, and each runs a script under `scripts/action/` that exists.
+/// expression, and each runs a script under `tools/github-action/` that exists.
 #[test]
 fn action_run_steps_take_every_value_through_env() {
     let action = yaml("action.yml");
@@ -121,7 +125,7 @@ fn action_run_steps_take_every_value_through_env() {
             .strip_prefix("bash \"$GITHUB_ACTION_PATH/")
             .and_then(|rest| rest.strip_suffix('"'))
             .unwrap_or_else(|| panic!("{run} is not one action script"));
-        assert!(script.starts_with("scripts/action/"), "{script}");
+        assert!(script.starts_with("tools/github-action/"), "{script}");
         assert!(root().join(script).is_file(), "{script} does not exist");
     }
 }
@@ -131,9 +135,12 @@ fn action_run_steps_take_every_value_through_env() {
 #[test]
 fn neither_action_yml_nor_its_scripts_name_a_reference_tool() {
     let mut files = vec!["action.yml".to_string()];
-    for entry in std::fs::read_dir(root().join("scripts/action")).unwrap() {
+    // The Action's scripts; this crate's own tests and manifests sit beside them.
+    for entry in std::fs::read_dir(root().join("tools/github-action")).unwrap() {
         let name = entry.unwrap().file_name().into_string().unwrap();
-        files.push(format!("scripts/action/{name}"));
+        if name.ends_with(".sh") {
+            files.push(format!("tools/github-action/{name}"));
+        }
     }
     assert!(files.len() >= 5, "{files:?}");
     for file in files {

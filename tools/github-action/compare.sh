@@ -15,7 +15,7 @@
 set -euo pipefail
 
 here="$(dirname "$0")"
-# shellcheck source=scripts/action/lib.sh
+# shellcheck source=tools/github-action/lib.sh
 . "$here/lib.sh"
 
 [ -n "${RUNNER_TEMP:-}" ] || die "RUNNER_TEMP is not set" \

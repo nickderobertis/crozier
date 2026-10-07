@@ -10,8 +10,8 @@
 
 use serde_yaml_ng::{Mapping, Value};
 
-const NOTIGNORED_WORKFLOW: &str = include_str!("../.github/workflows/notignored.yml");
-const CI_WORKFLOW: &str = include_str!("../.github/workflows/ci.yml");
+const NOTIGNORED_WORKFLOW: &str = include_str!("../../../.github/workflows/notignored.yml");
+const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
 const FORK_GUARD: &str = "github.event.pull_request.head.repo.full_name == github.repository";
 
 fn parse(source: &str) -> Value {

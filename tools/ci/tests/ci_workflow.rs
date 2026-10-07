@@ -6,7 +6,7 @@
 
 use serde_yaml_ng::Value;
 
-const CI_WORKFLOW: &str = include_str!("../.github/workflows/ci.yml");
+const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
 
 #[test]
 fn pull_requests_rerun_when_a_draft_is_marked_ready() {

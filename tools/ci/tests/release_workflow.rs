@@ -7,7 +7,7 @@ use serde_yaml_ng::{Mapping, Value};
 use std::path::Path;
 use std::process::Command;
 
-const RELEASE_WORKFLOW: &str = include_str!("../.github/workflows/release.yml");
+const RELEASE_WORKFLOW: &str = include_str!("../../../.github/workflows/release.yml");
 const LONG_PATHS: &str = "git config --global core.longpaths true";
 /// The committed fixture whose paths exceed Windows' 260-character limit.
 const LONG_FIXTURE: &str = "tests/fixtures/openbanking.org.uk-account-info-openapi";
@@ -185,7 +185,10 @@ fn file_url(path: &Path) -> String {
 /// fixture; on ci.yml's Windows leg the same checkout is the real exercise.
 #[test]
 fn windows_release_checkout_journey_has_long_paths_and_the_long_fixture() {
-    let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("this crate sits two levels below the repository root");
     let scratch = tempfile::tempdir().expect("temp dir");
     let committed_head = git(repo, scratch.path(), &["rev-parse", "HEAD"]);
     let committed: Vec<String> = git(

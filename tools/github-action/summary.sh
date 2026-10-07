@@ -10,7 +10,7 @@
 # differs from the report's `exit_code` only when the command itself failed).
 set -euo pipefail
 
-# shellcheck source=scripts/action/lib.sh
+# shellcheck source=tools/github-action/lib.sh
 . "$(dirname "$0")/lib.sh"
 
 exit_code="${EXIT_CODE:-}"

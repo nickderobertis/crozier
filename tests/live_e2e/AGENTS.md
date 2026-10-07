@@ -8,7 +8,7 @@ e2e proves the generated *source*, and the wire tests (`tests/runtime/`) prove t
 client's request/response *shaping* matches Fern — this proves the compiled client
 actually talks to a server.
 
-Run it with `just test-live-e2e` (or `./scripts/live-e2e.sh`). It is **separate
+Run it with `just test-live-e2e` (or `./tests/live_e2e/run.sh`). It is **separate
 from `just check`** so the core gate stays Node-free; CI runs it as its own
 required leg (`live-e2e`, aggregated into `gate`).
 
@@ -111,5 +111,5 @@ is runnable end to end.
 Missing tooling — the `crozier` binary, Node/Prism, or the Python deps — is a
 **skip** locally and a hard **failure** under `CI` (`conftest._require`), matching
 the wire suite's posture so the mock e2e can never silently no-op in the gate.
-`scripts/live-e2e.sh` additionally gates each tool with an actionable error when
+`tests/live_e2e/run.sh` additionally gates each tool with an actionable error when
 invoked directly.

@@ -7,7 +7,7 @@
 # Reads EXIT_CODE (compare.sh's `exit-code` output).
 set -euo pipefail
 
-# shellcheck source=scripts/action/lib.sh
+# shellcheck source=tools/github-action/lib.sh
 . "$(dirname "$0")/lib.sh"
 
 code="${EXIT_CODE:-}"

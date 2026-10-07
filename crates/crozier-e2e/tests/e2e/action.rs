@@ -1,5 +1,5 @@
 //! The GitHub Action's journeys, in-tree: `action.yml`'s steps are thin calls to
-//! the scripts under `scripts/action/`, so these tests run those scripts the way
+//! the scripts under `tools/github-action/`, so these tests run those scripts the way
 //! the composite action does — `bash <script>` with the step's `env` — against
 //! the real `crozier` binary and real repository layouts, with `RUNNER_TEMP`,
 //! `GITHUB_OUTPUT` and `GITHUB_STEP_SUMMARY` pointed at temporary files. Only the
@@ -93,7 +93,7 @@ fn step(script: &str, cwd: &Path, runner_temp: &Path, env: &[(&str, &str)]) -> C
     // Resolved here, so a step whose PATH a test narrows still starts.
     let mut command = Command::new(bash());
     command
-        .arg(repo_root().join("scripts/action").join(script))
+        .arg(repo_root().join("tools/github-action").join(script))
         .current_dir(cwd)
         .env("RUNNER_TEMP", runner_temp)
         .env_remove("NO_COLOR")
@@ -698,7 +698,7 @@ fn compare_refuses_a_missing_runner_environment() {
     assert_eq!(std::fs::read_to_string(&output_file).unwrap(), "");
 }
 
-// The install step, run by the real scripts/action/install.sh with the real
+// The install step, run by the real tools/github-action/install.sh with the real
 // scripts/install.sh it calls. A published release is out of an offline test's
 // reach, so the release is served from a local mirror laid out as the release
 // workflow publishes one (`CROZIER_RELEASE_BASE_URL`, with the checksum under a

@@ -125,7 +125,7 @@ class TheCommittedTreeHolds(unittest.TestCase):
 
     def test_offline_recipe_failure_restores_the_original_cache(self) -> None:
         import importlib.util
-        spec = importlib.util.spec_from_file_location("offline_cache_recovery", REPO / "tests/corpus_offline_test.py")
+        spec = importlib.util.spec_from_file_location("offline_cache_recovery", REPO / "tests/corpus_match/corpus_offline_test.py")
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         if getattr(module.OfflineCorpusRecipes, "__unittest_skip__", False):
@@ -150,7 +150,7 @@ class TheCommittedTreeHolds(unittest.TestCase):
             tests = root / "tests"
             tests.mkdir()
             script = tests / "corpus_offline_test.py"
-            shutil.copy2(REPO / "tests/corpus_offline_test.py", script)
+            shutil.copy2(REPO / "tests/corpus_match/corpus_offline_test.py", script)
             completed = subprocess.run(
                 [sys.executable, str(script), "OfflineCorpusRecipes.test_real_recipes_without_network_or_cache"],
                 cwd=root, capture_output=True, text=True,

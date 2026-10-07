@@ -14,7 +14,7 @@ import sys
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 SCRIPT = REPO / "tools" / "surface-census" / "openapi-surface-census.py"
 _INDEX_SPEC = importlib.util.spec_from_file_location(
     "witness_search_github_index_corpus", REPO / "tools" / "witness-search" / "witness-search-github-index.py"

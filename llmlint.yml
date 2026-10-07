@@ -43,7 +43,7 @@ files:
     # the animated GIF, the digest baseline, and the vendored binary font. They
     # are not authored source to judge, and feeding the megabytes of base64 to the
     # judge overflows it (it returns no parseable JSON). The scripts that PRODUCE
-    # them (scripts/screenshots.sh, scripts/demo-gif.py) are code and stay linted.
+    # them (scripts/screenshots.sh, screenshots/demo-gif.py) are code and stay linted.
     - "docs/screenshots/**"
     - "shots/**"
     - "screenshots/fonts/**"

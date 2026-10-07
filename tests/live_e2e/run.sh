@@ -16,7 +16,7 @@
 # can never silently no-op in the gate.
 set -euo pipefail
 
-root="$(cd "$(dirname "$0")/.." && pwd)"
+root="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$root"
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "live-e2e: $1 not found — $2" >&2; exit 1; }; }

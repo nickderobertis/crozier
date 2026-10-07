@@ -33,9 +33,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
-SAMPLE = REPO / "tests" / "data" / "census-fallback-sample.tsv"
-COMMITTED = REPO / "tests" / "data" / "census-fallback-sample"
+REPO = Path(__file__).resolve().parents[2]
+# The committed samples belong to the census they test (tools/surface-census).
+DATA = REPO / "tools" / "surface-census" / "tests" / "data"
+SAMPLE = DATA / "census-fallback-sample.tsv"
+COMMITTED = DATA / "census-fallback-sample"
 
 
 def _load(name: str, path: Path):
@@ -153,7 +155,7 @@ class FallbackAgreementTests(unittest.TestCase):
         data = b"openapi: 3.0.0\n"
         pinned = hashlib.sha256(data).hexdigest()
         original = COMMITTED
-        with tempfile.TemporaryDirectory(dir=REPO / "tests" / "data") as directory:
+        with tempfile.TemporaryDirectory(dir=DATA) as directory:
             COMMITTED = Path(directory)
             try:
                 with self.assertRaises(AssertionError) as missing:

@@ -15,7 +15,7 @@ import tempfile
 import unittest
 from collections.abc import Mapping
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 
 
 def deny_network() -> None:
