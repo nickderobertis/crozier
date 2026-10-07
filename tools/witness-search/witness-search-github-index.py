@@ -246,7 +246,7 @@ def candidate_name(row: dict[str, Any]) -> str:
 
 
 def screen_value(value: str) -> str:
-    if value.startswith("passed"):
+    if value == "passed" or value.startswith("passed: "):
         return "pass"
     if value.startswith("not-run:"):
         return value
@@ -299,7 +299,7 @@ def classify(
             ref = screen_value(screen["ref"])
             fern = screen_value(screen["fern"])
             settled = screen["disposition"]
-            if load_screen().is_historical(screen):
+            if load_screen().unmeasured(screen):
                 evidence = f"{evidence}; {HISTORICAL_SCREEN}"
             disposition = (
                 settled

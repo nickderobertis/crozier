@@ -33,9 +33,15 @@ def _load(name: str, file: str):
     return module
 
 
-# Every source's `records.tsv` shares one candidate-record shape, named once by
-# the GitHub index that also writes it.
-RECORD_FIELDS = _load("registries_github_index", "witness-search-github-index.py").FIELDS
+# Every source's `records.tsv` shares one candidate-record shape and one
+# disposition grammar, both named once by the GitHub index that also writes them.
+GITHUB_INDEX = _load("registries_github_index", "witness-search-github-index.py")
+RECORD_FIELDS = GITHUB_INDEX.FIELDS
+# What the region-key derivation writes in `census_status`.
+CENSUS_STATUSES = ("supported", "unsupported-by-census")
+# A portal-plan row's `acquisition`: refused by its source, or acquired (with a
+# note saying how). Only a refusal keeps a key's search open.
+SOURCE_REFUSED = "source-refused"
 # The registries are the catalogue and portal sources, as the redo contract's
 # `catalogue-portals` shard names them; the code platforms have their own index.
 SOURCES = _load("registries_redo", "witness-search-redo.py").SOURCES["catalogue-portals"]
@@ -52,11 +58,54 @@ def read_tsv(path: Path, columns: tuple[str, ...], *, optional: bool = False) ->
         missing = sorted(set(columns) - set(reader.fieldnames or ()))
         if missing:
             raise ValueError(f"{path} lacks column(s) {', '.join(missing)}")
-        return list(reader)
+        rows = []
+        for number, row in enumerate(reader, 2):
+            # A short row leaves its trailing columns None; a long one files the
+            # surplus under None. Neither is a row the header describes.
+            if None in row or None in row.values():
+                raise ValueError(f"{path}:{number} has another number of cells than its header names")
+            empty = [column for column in columns if not row[column]]
+            if empty:
+                raise ValueError(f"{path}:{number} has no {', '.join(empty)}")
+            rows.append(row)
+        return rows
+
+
+def screen_cell(value: str) -> bool:
+    """A records.tsv screen cell: `pass`, `failed: <reason>` or `not-run: <reason>`."""
+    return value == "pass" or value.startswith(("failed: ", "not-run: "))
+
+
+def records(root: Path, source: str) -> list[tuple[int, dict[str, str]]]:
+    """One registry's candidate records with their line numbers, each held to the shared grammar.
+
+    A record's key need not be in today's key set: a search that closed keeps
+    its records after its key leaves the region tables.
+    """
+    path = root / f"witness-search-{source}" / "records.tsv"
+    with path.open(encoding="utf-8", newline="") as handle:
+        if tuple(csv.DictReader(handle, dialect="excel-tab").fieldnames or ()) != RECORD_FIELDS:
+            raise ValueError(f"{path} does not have the candidate-record header")
+    out = []
+    for number, row in enumerate(read_tsv(path, RECORD_FIELDS[:4]), 2):
+        where = f"{path}:{number}"
+        if row["source"] != source:
+            raise ValueError(f"{where} is filed under {source} but names source {row['source']!r}")
+        bad = [field for field in ("licence_screen", "revision_screen", "fern_screen") if not screen_cell(row[field])]
+        if bad:
+            raise ValueError(f"{where} has {bad[0]} {row[bad[0]]!r}, not pass, failed: <reason> or not-run: <reason>")
+        if not GITHUB_INDEX.known_disposition(row["disposition"]):
+            raise ValueError(f"{where} has disposition {row['disposition']!r}, which the index grammar does not read")
+        out.append((number, row))
+    return out
 
 
 def outstanding_rows(root: Path) -> list[dict[str, str]]:
     keys = read_tsv(root / "witness-search-keys.tsv", ("key", "selector", "census_status"))
+    for number, row in enumerate(keys, 2):
+        if row["census_status"] not in CENSUS_STATUSES:
+            raise ValueError(f"{root / 'witness-search-keys.tsv'}:{number} has census_status "
+                             f"{row['census_status']!r}, not one of {', '.join(CENSUS_STATUSES)}")
     supported = [row["key"] for row in keys if row["census_status"] == "supported"]
     groups: dict[tuple[str, str, str, str], dict] = {}
 
@@ -73,7 +122,7 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
                     row["key"], "witness-search-keys.tsv")
     for source in SOURCES:
         directory = root / f"witness-search-{source}"
-        for number, row in enumerate(read_tsv(directory / "records.tsv", RECORD_FIELDS), 2):
+        for number, row in records(root, source):
             if row["disposition"] == "outstanding":
                 blocker = next((row[f] for f in ("licence_screen", "revision_screen", "fern_screen")
                                 if row[f] != "pass"), None)
@@ -84,8 +133,11 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
                     f"{row['candidate']}@{row['revision']}", f"witness-search-{source}/records.tsv")
         enumeration = read_tsv(directory / "enumeration.tsv",
                                ("document", "revision", "status"), optional=True)
-        unreadable = [row for row in enumeration
-                      if row["status"].startswith("unreadable")]
+        for number, row in enumerate(enumeration, 2):
+            if row["status"] != "readable" and not row["status"].startswith("unreadable: "):
+                raise ValueError(f"{directory / 'enumeration.tsv'}:{number} has status {row['status']!r}, "
+                                 "not readable or unreadable: <reason>")
+        unreadable = [row for row in enumeration if row["status"] != "readable"]
         for key in supported:
             for row in unreadable:
                 add(key, source, "unreadable-document",
@@ -93,8 +145,11 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
                     f"{row['document']}@{row['revision']}", f"witness-search-{source}/enumeration.tsv")
     plan = read_tsv(root / "witness-search-portal-plan.tsv",
                     ("repository", "pinned_ref", "acquisition"))
-    for row in plan:
-        if row["acquisition"] == "source-refused":
+    for number, row in enumerate(plan, 2):
+        if row["acquisition"] != SOURCE_REFUSED and not row["acquisition"].startswith("acquired"):
+            raise ValueError(f"{root / 'witness-search-portal-plan.tsv'}:{number} has acquisition "
+                             f"{row['acquisition']!r}, not {SOURCE_REFUSED} or acquired[ <how>]")
+        if row["acquisition"] == SOURCE_REFUSED:
             for key in supported:
                 add(key, "vendor-portals", "portal-unanswered", row["pinned_ref"],
                     row["repository"], "witness-search-portal-plan.tsv")
@@ -108,14 +163,9 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
 def candidates(root: Path) -> list[dict[str, str]]:
     rows = []
     for source in SOURCES:
-        path = root / f"witness-search-{source}/records.tsv"
-        with path.open(encoding="utf-8", newline="") as handle:
-            reader = csv.DictReader(handle, dialect="excel-tab")
-            if tuple(reader.fieldnames or ()) != RECORD_FIELDS:
-                raise ValueError(f"{path} does not have the candidate-record header")
-            for number, row in enumerate(reader, 2):
-                rows.append({**{field: row[field] for field in RECORD_FIELDS[:-1]},
-                             "record": f"witness-search-{source}/records.tsv:{number}"})
+        for number, row in records(root, source):
+            rows.append({**{field: row[field] for field in RECORD_FIELDS[:-1]},
+                         "record": f"witness-search-{source}/records.tsv:{number}"})
     return sorted(rows, key=lambda row: (row["key"], row["candidate"], row["revision"], row["source"]))
 
 

@@ -756,7 +756,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             (root / "witness-search-portal-plan.tsv").write_text(
                 "repository\tpinned_ref\tprior_path\tderivation\tacquisition\n"
                 "gone/docs\tno-immutable-ref: HTTP 404\tapi.json\tprior\tsource-refused\n"
-                "kept/docs\tabc\tapi.json\tprior\tarchive\n", encoding="utf-8")
+                "kept/docs\tabc\tapi.json\tprior\tacquired at pinned commit\n", encoding="utf-8")
             portals = root / "witness-search-vendor-portals"
             portals.mkdir()
             (portals / "records.tsv").write_text(
@@ -814,7 +814,42 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertEqual(passing.returncode, 1)
             self.assertIn("records.tsv:2 is outstanding but every screen reads pass", passing.stderr)
             self.assertIn("repair the ledger it names", passing.stderr)
+            good = "jentic\tshape-a\tc.json\tabc\td\t1\tpass\tpass\tpass\twitness-found\tx"
+            for label, row, message in (
+                ("short", "jentic\tshape-a\tc.json", "records.tsv:2 has another number of cells than its header names"),
+                ("long", good + "\tsurplus", "records.tsv:2 has another number of cells than its header names"),
+                ("no candidate", good.replace("c.json", ""), "records.tsv:2 has no candidate"),
+                ("another source", good.replace("jentic", "apis.guru", 1), "is filed under jentic but names source 'apis.guru'"),
+                ("unknown screen", good.replace("\tpass\tpass\tpass", "\tpass\tok\tpass"),
+                 "has revision_screen 'ok', not pass, failed: <reason> or not-run: <reason>"),
+                ("unknown disposition", good.replace("witness-found", "approved"),
+                 "has disposition 'approved', which the index grammar does not read"),
+            ):
+                with self.subTest(label):
+                    (root / "witness-search-jentic/records.tsv").write_text(header + row + "\n", encoding="utf-8")
+                    refused = subprocess.run(command, capture_output=True, text=True, timeout=30)
+                    self.assertEqual(refused.returncode, 1, refused.stderr)
+                    self.assertIn(message, refused.stderr)
+                    self.assertIn("repair the ledger it names", refused.stderr)
             (root / "witness-search-jentic/records.tsv").write_text(header, encoding="utf-8")
+            for label, path, text, message in (
+                ("census status", root / "witness-search-keys.tsv",
+                 "key\tselector\tregion\tcensus_status\nshape-a\tx\ts.md\tmaybe\n",
+                 "witness-search-keys.tsv:2 has census_status 'maybe', not one of supported, unsupported-by-census"),
+                ("enumeration status", portals / "enumeration.tsv",
+                 "walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\nk\tx.json\tabc\t-\t\tskipped\n",
+                 "enumeration.tsv:2 has status 'skipped', not readable or unreadable: <reason>"),
+                ("acquisition", root / "witness-search-portal-plan.tsv",
+                 "repository\tpinned_ref\tprior_path\tderivation\tacquisition\nkept/docs\tabc\ta\tp\tpending\n",
+                 "witness-search-portal-plan.tsv:2 has acquisition 'pending', not source-refused or acquired"),
+            ):
+                with self.subTest(label):
+                    kept = path.read_text(encoding="utf-8")
+                    path.write_text(text, encoding="utf-8")
+                    refused = subprocess.run(command, capture_output=True, text=True, timeout=30)
+                    path.write_text(kept, encoding="utf-8")
+                    self.assertEqual(refused.returncode, 1, refused.stderr)
+                    self.assertIn(message, refused.stderr)
             (root / "witness-search-keys.tsv").write_text("key\tselector\nshape-a\tx\n", encoding="utf-8")
             unnamed = subprocess.run(command, capture_output=True, text=True, timeout=30)
             self.assertEqual(unnamed.returncode, 1)

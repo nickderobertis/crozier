@@ -107,9 +107,21 @@ def corpus_fern_pins() -> tuple[str, str, str, dict[str, Any]]:
     """
     counts: Counter[str] = Counter()
     for path in sorted((REPO / "tests" / "fixtures").glob("*/expected/.fern/metadata.json")):
-        meta = json.loads(path.read_text(encoding="utf-8"))
-        counts[json.dumps([meta.get("cliVersion"), meta.get("generatorName"), meta.get("generatorVersion"),
-                           meta.get("generatorConfig")], sort_keys=True)] += 1
+        remedy = f"restore {path.relative_to(REPO)} from git (it is the golden's Fern provenance)"
+        try:
+            meta = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError as error:
+            fail(f"{path.relative_to(REPO)} is not JSON ({error}); {remedy}")
+        if not isinstance(meta, dict):
+            fail(f"{path.relative_to(REPO)} is not a JSON object; {remedy}")
+        pins = [meta.get("cliVersion"), meta.get("generatorName"), meta.get("generatorVersion")]
+        # A synthetic fixture's record may carry no generatorConfig; one that is
+        # there is the mapping generators.yml is written from.
+        config = meta.get("generatorConfig", {})
+        if not all(isinstance(pin, str) and pin for pin in pins) or not isinstance(config, dict):
+            fail(f"{path.relative_to(REPO)} lacks a non-empty cliVersion, generatorName and generatorVersion, "
+                 f"or carries a generatorConfig that is no mapping; {remedy}")
+        counts[json.dumps([*pins, config], sort_keys=True)] += 1
     if not counts:
         fail("no golden records its Fern pins in tests/fixtures/*/expected/.fern/metadata.json; "
              "restore the corpus goldens from git")
@@ -217,8 +229,9 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
     row: dict[str, Any] = {"sha256": digest, "fern_cli": cli, "generator": version}
     status, output = _fern_run(["fern", "check"], workspace, timeout)
     check_log = redact(output, scratch)
+    # Diagnostics are read off the redacted log: they are committed in the row too.
     row.update(check_exit=status, check_log_sha256=hashlib.sha256(check_log.encode()).hexdigest(),
-               check_diagnostic=fern_diagnostic(output))
+               check_diagnostic=fern_diagnostic(check_log))
     logs = {"check": check_log}
     if status == "0":
         preview = scratch / digest / "preview"
@@ -226,11 +239,12 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
                                     "--output", str(preview), "--force"], workspace, timeout)
         package = preview / "fern-python-sdk"
         files = sum(1 for path in package.rglob("*.py")) if package.is_dir() else 0
-        unparsed = next((line.strip() for line in output.splitlines() if UNPARSED.search(line)), "")
         logs["generate"] = redact(output, scratch)
+        unparsed = next((line.strip() for line in logs["generate"].splitlines() if UNPARSED.search(line)), "")
         row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(logs["generate"].encode()).hexdigest(),
                    generate_python_files=files,
-                   generate_diagnostic=(unparsed or fern_diagnostic(output)).replace("; ", ", ").replace("`", "'")[:400])
+                   generate_diagnostic=(unparsed or fern_diagnostic(logs["generate"])).replace("; ", ", ")
+                   .replace("`", "'")[:400])
     row["logs"] = logs
     return row
 
@@ -246,7 +260,7 @@ def fern_verdict(row: dict[str, Any]) -> str | None:
     if generated != "0":
         return f"failed: {fern_label()} fern generate exit {generated} after fern check exit 0: " \
                f"{row['generate_diagnostic']}"
-    if UNPARSED.search(row["generate_diagnostic"]) or not row["generate_python_files"]:
+    if UNPARSED.search(row["generate_diagnostic"]) or row["generate_python_files"] == 0:
         return (f"failed: {fern_label()} fern generate exit 0 over an unparsed document, "
                 f"{row['generate_python_files']} Python files: {row['generate_diagnostic']}")
     return "passed"
@@ -381,6 +395,29 @@ def licence_screen(document_text: str | None, files: list[tuple[str, int, bytes]
     return outcome, {"exit": exit_status, "pins": pins}, log
 
 
+def repository_path(path: str) -> bool:
+    """Whether `path` names a file inside a repository: relative, `/`-separated, no `..`."""
+    parts = PurePosixPath(path).parts
+    return bool(parts) and not PurePosixPath(path).is_absolute() and "\\" not in path \
+        and ".." not in parts and "." not in path.split("/")
+
+
+def passed(outcome: str) -> bool:
+    """Whether a screen outcome reads as a pass: exactly `passed`, or `passed: <reason>`."""
+    return outcome == "passed" or outcome.startswith("passed: ")
+
+
+def timestamp(value: Any) -> datetime.datetime | None:
+    """An ISO 8601 instant carrying its offset (`Z` included), or None when `value` is not one."""
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        stamp = datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return stamp if stamp.tzinfo is not None else None
+
+
 def raw_url(base: str, repository: str, commit: str, path: str) -> str:
     return f"{base.rstrip('/')}/{repository}/{commit}/{urllib.parse.quote(path)}"
 
@@ -407,8 +444,13 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     """
     if not REPOSITORY.fullmatch(repository):
         fail(f"{repository!r} is no `<owner>/<name>` repository; pass the one the candidate was acquired from")
+    if not repository_path(path):
+        fail(f"{path!r} is no path inside a repository (relative, `/`-separated, no `..`); pass the "
+             "document's path as the acquisition recorded it")
     url = raw_url(raw_base, repository, commit, path)
-    status, data = fetch(url, f"{repository}:{path}")
+    # A ref that is no full commit SHA is mutable: the screen fails on that alone,
+    # so nothing is fetched at it.
+    status, data = fetch(url, f"{repository}:{path}") if COMMIT.fullmatch(commit) else (0, b"")
     sha256 = hashlib.sha256(data).hexdigest() if status == 200 else ""
     record: dict[str, Any] = {
         "stage": STAGE,
@@ -425,11 +467,12 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     else:
         ref = f"passed: {len(data)} bytes read at the immutable commit {commit}, sha256 {sha256}"
     ref = clean(ref)
-    ref_log = redact(f"GET {url}\nHTTP {status}\n{len(data)} bytes, sha256 {sha256 or '-'}\n"
+    request = f"GET {url}\nHTTP {status}" if COMMIT.fullmatch(commit) else f"not fetched: {commit!r} is no commit SHA"
+    ref_log = redact(f"{request}\n{len(data)} bytes, sha256 {sha256 or '-'}\n"
                      f"pinned sha256 {expected_sha256 or '(none)'}\noutcome: {ref}\n")
     key = sha256 or hashlib.sha256(url.encode()).hexdigest()
     log, digest = write_log(logs, base, key, "ref", ref_log)
-    record["ref"] = {"outcome": ref, "exit": str(status),
+    record["ref"] = {"outcome": ref, "exit": str(status) if COMMIT.fullmatch(commit) else "not-fetched",
                      "pins": {"repository": repository, "commit": commit, "path": path, "url": url,
                               "sha256": sha256, "expected_sha256": expected_sha256},
                      "log": log, "log_sha256": digest}
@@ -493,10 +536,13 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
     missing = []
     if record.get("stage") != STAGE:
         missing.append(f"the stage that measured it (`stage: {STAGE}`)")
-    if not isinstance(record.get("screened_at"), str) or not record["screened_at"]:
-        missing.append("when it was measured (`screened_at`)")
+    if timestamp(record.get("screened_at")) is None:
+        missing.append("when it was measured (`screened_at`, an ISO 8601 instant with its offset)")
     document = record.get("document") if isinstance(record.get("document"), dict) else {}
-    absent = [field for field in ("repository", "commit", "path", "sha256") if not isinstance(document.get(field), str)]
+    absent = [field for field in ("repository", "commit", "path") if not isinstance(document.get(field), str)
+              or not document[field]]
+    if not isinstance(document.get("sha256"), str) or (document["sha256"] and not SHA.fullmatch(document["sha256"])):
+        absent.append("sha256")
     if absent:
         missing.append(f"the document it read ({absent} of `document`)")
     for name in SCREENS:
@@ -511,7 +557,7 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
                        and str(record[e].get("outcome", "")).startswith("failed: ") for e in earlier):
                 missing.append(f"the {name} screen's run: it reads `not-run` with no earlier screen failed")
             continue
-        if not outcome.startswith(("passed", "failed: ")):
+        if not (passed(outcome) or outcome.startswith("failed: ")):
             missing.append(f"a {name} outcome reading `passed` or `failed: <reason>`, not {outcome!r}")
         if not isinstance(section.get("exit"), str) or not section["exit"]:
             missing.append(f"the {name} screen's exit status")
@@ -530,15 +576,18 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
                 missing.append(f"the {name} screen's log {log}, which is not committed")
             elif hashlib.sha256(path.read_bytes()).hexdigest() != digest:
                 missing.append(f"the {name} screen's log {log} as recorded: its sha256 differs")
-        if name == "ref" and outcome.startswith("passed"):
+        if name == "ref" and passed(outcome):
             if section.get("exit") != "200" or not COMMIT.fullmatch(str(pins.get("commit", ""))):
                 missing.append("the ref screen's HTTP 200 read at a full commit SHA")
             if not SHA.fullmatch(str(pins.get("sha256", ""))) or pins.get("sha256") != document.get("sha256"):
                 missing.append("the ref screen's sha256 of the bytes it read")
-        if name == "licence" and outcome.startswith("passed"):
-            family = pins.get("document_family") or pins.get("licence_file_family")
-            if family not in admissible_families():
-                missing.append("the licence screen's reading of a grant the corpus rule admits")
+            if any(pins.get(field) != document.get(field) for field in ("repository", "commit", "path")):
+                missing.append("the ref screen's read of the document the record names (its repository, "
+                               "commit and path pins)")
+            if pins.get("expected_sha256") and pins.get("expected_sha256") != pins.get("sha256"):
+                missing.append("the ref screen's read of the bytes its pin names (`expected_sha256`)")
+        if name == "licence" and passed(outcome):
+            missing += licence_pass_failures(pins)
         if name == "fern":
             run = section.get("run") if isinstance(section.get("run"), dict) else None
             cli, generator, version, _config = corpus_fern_pins()
@@ -546,6 +595,8 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
                 missing.append(f"the fern screen's run at the corpus pins ({cli}, {generator} {version})")
             if run is None or "check_exit" not in run:
                 missing.append("the fern screen's measured run (`run.check_exit` and what followed)")
+            elif wrong := fern_run_failures(run):
+                missing += wrong
             else:
                 try:
                     measured = fern_verdict(run)
@@ -555,6 +606,51 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
                     missing.append(f"a fern outcome its run measured: it reads {outcome!r}, and its "
                                    f"recorded run yields {measured!r}")
     return missing
+
+
+def licence_pass_failures(pins: dict[str, Any]) -> list[str]:
+    """Why a `passed` licence screen's pins do not show the pass the rule gives, or nothing.
+
+    The document's own `info.license` decides where it says anything; the
+    licence file decides only where it says nothing; a caller's judgement can
+    only refuse. So a pass names the rule it read, a family that rule admits,
+    and that family where precedence puts it.
+    """
+    families = pins.get("admissible")
+    wrong = []
+    if pins.get("rule") != RULE.relative_to(REPO).as_posix() or not SHA.fullmatch(str(pins.get("rule_sha256", ""))):
+        wrong.append(f"the licence screen's rule ({RULE.relative_to(REPO).as_posix()} and its sha256)")
+    if not isinstance(families, list) or not all(isinstance(family, str) for family in families):
+        return [*wrong, "the licence screen's admissible set as the rule it read listed it"]
+    declared = pins.get("document_licence")
+    if declared:
+        family, source = pins.get("document_family"), "its document's info.license"
+    else:
+        family, source = pins.get("licence_file_family"), "its licence file"
+        if not pins.get("licence_file") or not SHA.fullmatch(str(pins.get("licence_file_sha256", ""))):
+            wrong.append("the licence screen's licence file and its sha256, which a pass without "
+                         "info.license rests on")
+    if family not in families or family not in admissible_families():
+        wrong.append(f"the licence screen's reading of {source} as a grant the corpus rule admits")
+    if pins.get("judgement"):
+        wrong.append("a licence pass with no caller refusal: a judgement can only refuse")
+    return wrong
+
+
+def fern_run_failures(run: dict[str, Any]) -> list[str]:
+    """Why a recorded Fern run is not one `fern_screen_document` could have written, or nothing."""
+    wrong = []
+    for field in ("check_exit", "check_diagnostic"):
+        if not isinstance(run.get(field), str):
+            wrong.append(f"the fern screen's `run.{field}` as a string")
+    if "generate_exit" in run:
+        for field in ("generate_exit", "generate_diagnostic"):
+            if not isinstance(run.get(field), str):
+                wrong.append(f"the fern screen's `run.{field}` as a string")
+        files = run.get("generate_python_files")
+        if type(files) is not int or files < 0:
+            wrong.append("the fern screen's `run.generate_python_files` as a count")
+    return wrong
 
 
 def inside(base: Path, log: str) -> bool:
@@ -588,6 +684,30 @@ def read_measured(path: Path) -> Any:
     raise AssertionError  # unreachable: `fail` exits
 
 
+KEYS_FILE = "witness-search-keys.tsv"
+
+
+def witness_keys(root: Path) -> set[str]:
+    """The keys the region tables' derived key set names, read from `root`'s keys file."""
+    path = root / KEYS_FILE
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        fail(f"cannot read {path}: {error.strerror}; regenerate it with "
+             "`tools/surface-census/witness-search-region-keys.py`")
+    header = lines[0].split("\t") if lines else []
+    if "key" not in header:
+        fail(f"{path} has no `key` column; regenerate it with `tools/surface-census/witness-search-region-keys.py`")
+    column = header.index("key")
+    return {cells[column] for cells in (line.split("\t") for line in lines[1:]) if len(cells) > column and cells[column]}
+
+
+def nonempty(text: str) -> str:
+    if not text.strip():
+        raise argparse.ArgumentTypeError("a key is a non-empty witness-search key")
+    return text
+
+
 def positive_int(text: str) -> int:
     value = int(text)
     if value <= 0:
@@ -599,22 +719,33 @@ def outcomes(record: dict[str, Any]) -> dict[str, str]:
     return {name: record[name]["outcome"] for name in SCREENS}
 
 
-def is_historical(row: dict[str, Any]) -> bool:
-    """A screen row filed before the stage landed, with no measured record: readable, never a measurement."""
+def unmeasured(row: dict[str, Any]) -> bool:
+    """A screen row carrying no measured record. Whether one may stand as historical is
+    `row_failures`'s decision, which reads its date."""
     return "measured" not in row
 
 
-def dated_after_cutover(row: dict[str, Any]) -> bool:
-    when = row.get("screened_at") or row.get("recorded_at")
-    if not isinstance(when, str) or not when:
-        return False
-    try:
-        stamp = datetime.datetime.fromisoformat(when.replace("Z", "+00:00"))
-    except ValueError:
-        return False
-    if stamp.tzinfo is None:
-        stamp = stamp.replace(tzinfo=datetime.timezone.utc)
-    return stamp >= datetime.datetime.fromisoformat(MEASURED_SINCE)
+def unmeasured_date_failure(row: dict[str, Any]) -> str | None:
+    """Why an unmeasured row cannot stand as historical, or None when it can.
+
+    `screen` dates every row it files, so a row with no date at all is one of
+    the shapes filed before the stage existed. A date that is there must be an
+    instant with its offset, and before [`MEASURED_SINCE`]: a malformed or
+    offset-less one says nothing about when the row was filed, and one at or
+    after the cutover owes the measured record.
+    """
+    field = next((name for name in ("screened_at", "recorded_at") if name in row), None)
+    if field is None:
+        return None
+    stamp = timestamp(row[field])
+    if stamp is None:
+        return (f"its `{field}` {row[field]!r} is no ISO 8601 instant with its offset, so nothing shows it "
+                f"predates the measured stage ({MEASURED_SINCE}) — restore the row from git, or file it "
+                f"through `{STAGE}`")
+    if stamp >= datetime.datetime.fromisoformat(MEASURED_SINCE):
+        return (f"it is dated {row[field]}, after the measured stage landed ({MEASURED_SINCE}), and carries "
+                f"no measured record — file it through `{STAGE}`")
+    return None
 
 
 def row_failures(row: dict[str, Any], base: Path, fields: dict[str, str]) -> list[str]:
@@ -622,14 +753,11 @@ def row_failures(row: dict[str, Any], base: Path, fields: dict[str, str]) -> lis
 
     `fields` maps each screen to the row field that states its outcome. A row
     carrying a record must state exactly the outcomes it records; one without
-    is historical only if it predates the stage.
+    is historical only if it predates the stage (`unmeasured_date_failure`).
     """
-    if is_historical(row):
-        if dated_after_cutover(row):
-            return [f"it is dated {row.get('screened_at') or row.get('recorded_at')}, after the measured "
-                    f"stage landed ({MEASURED_SINCE}), and carries no measured record — file it through "
-                    f"`{STAGE}`"]
-        return []
+    if unmeasured(row):
+        failure = unmeasured_date_failure(row)
+        return [failure] if failure else []
     failures = measured_failures(row["measured"], base)
     if not failures:
         for name, field in fields.items():
@@ -638,14 +766,25 @@ def row_failures(row: dict[str, Any], base: Path, fields: dict[str, str]) -> lis
     return failures
 
 
-SUCCESS_DISPOSITIONS = re.compile(r"witness-found|not-owed|pending-registration(?:; owner [a-z0-9-]+)?|"
-                                  r"byte-identical to CORPUS row \d+, sha256 [0-9a-f]{64}")
-# A filed screen is one of those, or `rejected`: the index reads no other.
+# A filed screen is `rejected` or a success the index reads: its own grammar,
+# `known_disposition`, less the two that settle nothing about a candidate.
 REJECTED = "rejected"
+UNSETTLED = (REJECTED, "outstanding")
+
+
+@functools.lru_cache(maxsize=1)
+def disposition_index() -> ModuleType:
+    """`witness-search-github-index.py`, the one statement of the disposition grammar."""
+    return _load("witness_screen_disposition_index", Path(__file__).with_name("witness-search-github-index.py"))
+
+
+def success_disposition(text: str) -> bool:
+    """Whether `text` is a disposition claiming a candidate, as the index reads one."""
+    return text not in UNSETTLED and disposition_index().known_disposition(text)
 
 
 def disposition_arg(text: str) -> str:
-    if text and text != REJECTED and not SUCCESS_DISPOSITIONS.fullmatch(text):
+    if text and text != REJECTED and not success_disposition(text):
         raise argparse.ArgumentTypeError(
             f"{text!r} is not a disposition: use {REJECTED}, witness-found, not-owed, "
             "pending-registration[; owner <node>], or byte-identical to CORPUS row <n>, sha256 <digest>")
@@ -660,6 +799,12 @@ def legacy_screen(args: argparse.Namespace) -> int:
     directory = args.evidence_root / f"witness-search-{args.source}"
     if not directory.is_dir():
         fail(f"{directory} does not exist; acquire {args.source} through its witness-search script first")
+    known = witness_keys(args.evidence_root)
+    unknown = [key for key in args.key if key not in known]
+    if unknown:
+        fail(f"--key {', '.join(map(repr, unknown))} is no witness-search key in "
+             f"{args.evidence_root / KEYS_FILE}; pass a key that file lists (regenerate it with "
+             "`tools/surface-census/witness-search-region-keys.py` if the regions moved)")
     if args.measured:
         record = read_measured(args.measured)
     else:
@@ -674,15 +819,14 @@ def legacy_screen(args: argparse.Namespace) -> int:
                          expected_sha256=args.sha256, licence_refusal=args.licence_refusal,
                          timeout=args.timeout)
     missing = measured_failures(record, directory)
-    passed = isinstance(record, dict) and all(
-        isinstance(record.get(name), dict) and str(record[name].get("outcome", "")).startswith("passed")
-        for name in SCREENS)
-    disposition = args.disposition or ("" if passed else REJECTED)
+    all_passed = isinstance(record, dict) and all(
+        isinstance(record.get(name), dict) and passed(str(record[name].get("outcome", ""))) for name in SCREENS)
+    disposition = args.disposition or ("" if all_passed else REJECTED)
     refusal = ""
     if missing:
         refusal = ("a screen is filed only with its measured record; it lacks " + "; ".join(missing)
                    + " — measure it again: run `screen` without --measured")
-    elif disposition and SUCCESS_DISPOSITIONS.fullmatch(disposition) and not passed:
+    elif disposition and success_disposition(disposition) and not all_passed:
         refusal = (f"`{disposition}` claims a candidate that passed every screen, and this one's measured "
                    f"outcomes read {outcomes(record)}; drop --disposition to file it `rejected`")
     elif not disposition:
@@ -714,7 +858,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     s = sub.add_parser("screen", help="screen one legacy witness-search candidate")
     s.add_argument("--source", required=True, choices=LEGACY_SOURCES)
-    s.add_argument("--key", action="append", required=True)
+    s.add_argument("--key", action="append", required=True, type=nonempty)
     s.add_argument("--repository", required=True, help="owner/name")
     s.add_argument("--commit", required=True)
     s.add_argument("--path", required=True)

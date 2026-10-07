@@ -1415,7 +1415,7 @@ def screen(args: argparse.Namespace) -> int:
     refusal = (f"{args.candidate}: a screen is filed only with its measured record, and this one lacks "
                + "; ".join(missing) + " — measure it again: run `screen` without --measured") if missing else ""
     if not refusal and args.registered and not all(
-            outcome.startswith("passed") for outcome in SCREEN.outcomes(record).values()):
+            SCREEN.passed(outcome) for outcome in SCREEN.outcomes(record).values()):
         refusal = (f"--registered claims {args.candidate} passed every screen, and its measured outcomes read "
                    f"{SCREEN.outcomes(record)}; drop --registered to file the refusal as measured")
     if refusal:
@@ -1563,7 +1563,7 @@ def screen_states_in(directory: Path, key: str) -> dict[str, str]:
     states = {}
     for candidate, row in latest.items():
         if "measured" in row and not SCREEN.measured_failures(row["measured"], directory):
-            passed = all(outcome.startswith("passed") for outcome in SCREEN.outcomes(row["measured"]).values())
+            passed = all(SCREEN.passed(outcome) for outcome in SCREEN.outcomes(row["measured"]).values())
             states[candidate] = "passing" if passed else "refused"
         elif candidate in measured_refusals and row["fern"].startswith("failed: "):
             states[candidate] = "refused"

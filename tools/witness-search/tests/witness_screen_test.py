@@ -29,17 +29,28 @@ SCRIPT = REPO / "tools" / "witness-search" / "witness_screen.py"
 COMMIT = "c" * 40
 DOCUMENT = b"openapi: 3.0.3\ninfo: {title: shop, version: '1'}\npaths: {}\n"
 PROPRIETARY = b"openapi: 3.0.3\ninfo: {title: shop, version: '1', license: {name: Shop EULA}}\npaths: {}\n"
+DECLARED = b"openapi: 3.0.3\ninfo: {title: shop, version: '1', license: {name: Apache 2.0}}\npaths: {}\n"
 SECRET = "ghp_offlinesecretvalue0123456789"
 FERN = """\
     import os, pathlib, sys, time
+    mode = os.environ["FERN_STUB"]
     print("token in use: " + os.environ.get("GITHUB_TOKEN", ""))
-    if os.environ["FERN_STUB"] == "hang":
+    print("\\x1b[31mcoloured\\x1b[0m in " + os.getcwd() + " under " + os.path.expanduser("~"))
+    if mode == "hang" or (mode == "generate-hang" and sys.argv[1] == "generate"):
         time.sleep(30)
-    if os.environ["FERN_STUB"] == "refuse":
+    if mode == "refuse":
         print("Found 1 error in 0.42 seconds.")
         print("issue: the `x-fern-enum` extension is missing; add it")
         sys.exit(1)
     if sys.argv[1] == "generate":
+        if mode == "generate-fail":
+            print("error: the generator container exited 3")
+            sys.exit(2)
+        if mode == "generate-unparsed":
+            print("Failed to parse the API definition; generated nothing")
+            sys.exit(0)
+        if mode == "generate-empty":
+            sys.exit(0)
         package = pathlib.Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk"
         package.mkdir(parents=True)
         (package / "client.py").write_text("class Client: ...\\n")
@@ -71,6 +82,16 @@ class _Raw(BaseHTTPRequestHandler):
             f"/acme/shop/{COMMIT}/LICENSE": b"MIT License\n\nCopyright (c) acme\n",
             f"/acme/eula/{COMMIT}/openapi.yaml": PROPRIETARY,
             f"/acme/eula/{COMMIT}/LICENSE": b"MIT License\n",
+            # Declares an admissible grant itself; its repository's licence file is never read for it.
+            f"/acme/declared/{COMMIT}/openapi.yaml": DECLARED,
+            f"/acme/declared/{COMMIT}/LICENSE": b"All rights reserved.\n",
+            f"/acme/garbled/{COMMIT}/openapi.yaml": b"openapi: [3.0.3\ninfo: {title\n",
+            f"/acme/custom/{COMMIT}/openapi.yaml": DOCUMENT,
+            f"/acme/custom/{COMMIT}/LICENSE": b"The Acme Community Licence\n\nUse it as Acme says.\n",
+            f"/acme/bare/{COMMIT}/openapi.yaml": DOCUMENT,
+            # Only the last spelling the stage tries is there.
+            f"/acme/copying/{COMMIT}/openapi.yaml": DOCUMENT,
+            f"/acme/copying/{COMMIT}/COPYING": b"Apache License\nVersion 2.0, January 2004\n",
         }
         body = files.get(self.path)
         self.send_response(200 if body is not None else 404)
@@ -89,6 +110,9 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.root = self.scratch / "surface"
         self.evidence = self.root / "witness-search-sourcegraph"
         self.evidence.mkdir(parents=True)
+        (self.root / "witness-search-keys.tsv").write_text(
+            "key\tselector\tregion\tcensus_status\nsample-shape\tschema:x\tschemas.md\tsupported\n",
+            encoding="utf-8")
         server = ThreadingHTTPServer(("127.0.0.1", 0), _Raw)
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
@@ -281,6 +305,7 @@ class LegacyScreenCliTests(unittest.TestCase):
 
     def test_a_disposition_the_index_cannot_read_is_refused_before_measuring(self) -> None:
         for disposition in ("approved", "witness-found-ish", "pending-registration; owner Bad Node",
+                            "pending-registration; owner -node", "outstanding",
                             "byte-identical to CORPUS row x, sha256 abc"):
             with self.subTest(disposition=disposition):
                 refused = self.screen("--disposition", disposition)
@@ -310,6 +335,146 @@ class LegacyScreenCliTests(unittest.TestCase):
                                "--timeout", "0"], capture_output=True, text=True, cwd=REPO)
         self.assertEqual(2, zero.returncode)
         self.assertIn("0 is not a positive number of seconds", zero.stderr)
+        self.assertEqual([], self.rows())
+
+    def raw_calls(self) -> list[str]:
+        path = self.evidence / "raw-github-calls.jsonl"
+        if not path.is_file():
+            return []
+        return [json.loads(line)["url"] for line in path.read_text(encoding="utf-8").splitlines()]
+
+    def test_the_committed_logs_and_diagnostics_hold_no_escape_scratch_path_or_home(self) -> None:
+        for mode, args in (("pass", ("--disposition", "witness-found")), ("generate-empty", ())):
+            with self.subTest(mode=mode):
+                (self.evidence / "screens.jsonl").unlink(missing_ok=True)
+                done = self.screen(*args, FERN_STUB=mode)
+                self.assertEqual(0, done.returncode, done.stderr)
+                record = self.rows()[-1]["measured"]
+                committed = [(self.evidence / record["fern"]["log"]).read_text(encoding="utf-8"),
+                             json.dumps(record["fern"]["run"])]
+                home = os.path.expanduser("~")
+                for text in committed:
+                    self.assertNotIn("\x1b[", text)
+                    self.assertNotIn("\\u001b", text)
+                    self.assertNotIn(tempfile.gettempdir() + os.sep + "witness-screen-", text)
+                    self.assertNotIn(home + os.sep, text)
+                self.assertIn("coloured in <scratch>/", committed[0])
+                self.assertIn(" under ~", committed[0])
+
+    def test_each_way_generation_can_fail_after_check_passes_is_filed_as_measured(self) -> None:
+        label = SCREEN.fern_label()
+        for mode, fern in (
+            ("generate-fail", f"failed: {label} fern generate exit 2 after fern check exit 0: "
+                              "error: the generator container exited 3"),
+            ("generate-unparsed", f"failed: {label} fern generate exit 0 over an unparsed document, 0 Python "
+                                  "files: Failed to parse the API definition, generated nothing"),
+            ("generate-empty", f"failed: {label} fern generate exit 0 over an unparsed document, 0 Python files: "),
+        ):
+            with self.subTest(mode=mode):
+                claimed = self.screen("--disposition", "witness-found", FERN_STUB=mode)
+                self.assertEqual(1, claimed.returncode, claimed.stderr)
+                self.assertIn("`witness-found` claims a candidate that passed every screen", claimed.stderr)
+                done = self.screen(FERN_STUB=mode)
+                self.assertEqual(0, done.returncode, done.stderr)
+                row = self.rows()[-1]
+                self.assertTrue(row["fern"].startswith(fern), row["fern"])
+                self.assertEqual("rejected", row["disposition"])
+                self.assertEqual([], SCREEN.measured_failures(row["measured"], self.evidence))
+        hung = self.screen("--disposition", "witness-found", "--timeout", "1", FERN_STUB="generate-hang")
+        self.assertEqual(1, hung.returncode)
+        self.assertIn("Fern timed out after 1s on acme/shop:openapi.yaml; nothing was filed", hung.stderr)
+        self.assertEqual(3, len(self.rows()), "a generation cut off by its timeout filed a row")
+
+    def test_each_licence_reading_is_the_one_the_rule_gives(self) -> None:
+        tried = [f"{name}" for name in SCREEN.LICENCE_FILES]
+        for repository, args, licence, reads in (
+            ("acme/declared", ("--disposition", "witness-found"),
+             "passed: info.license 'Apache 2.0' reads as Apache-2.0, which the corpus rule admits",
+             ["openapi.yaml", "LICENSE"]),
+            ("acme/garbled", (), "failed: the document could not be read for its info.license",
+             ["openapi.yaml", *tried]),
+            ("acme/custom", (), "failed: no info.license, and LICENSE at the pinned commit names no grant the "
+                                "corpus rule admits", ["openapi.yaml", "LICENSE"]),
+            ("acme/bare", (), "failed: grants nothing — no info.license and no licence file at the pinned commit",
+             ["openapi.yaml", *tried]),
+            ("acme/copying", ("--disposition", "witness-found"),
+             "passed: no info.license, COPYING at the pinned commit reads as Apache-2.0, which the corpus rule "
+             "admits", ["openapi.yaml", *tried]),
+        ):
+            with self.subTest(repository=repository):
+                (self.evidence / "raw-github-calls.jsonl").unlink(missing_ok=True)
+                done = self.screen(*args, repository=repository)
+                self.assertEqual(0, done.returncode, done.stderr)
+                row = self.rows()[-1]
+                self.assertEqual(licence, row["license"])
+                self.assertEqual(reads, [url.rsplit("/", 1)[1] for url in self.raw_calls()])
+                self.assertEqual([], SCREEN.measured_failures(row["measured"], self.evidence))
+                if licence.startswith("failed: "):
+                    self.assertEqual(("rejected", "not-run: the licence screen failed"),
+                                     (row["disposition"], row["fern"]))
+
+    def test_a_path_outside_the_repository_or_a_mutable_ref_is_never_fetched(self) -> None:
+        for path in ("../openapi.yaml", "/openapi.yaml", "specs/./openapi.yaml", "specs\\openapi.yaml", ""):
+            with self.subTest(path=path):
+                refused = subprocess.run(
+                    [sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "sample-shape",
+                     "--repository", "acme/shop", "--commit", COMMIT, "--path", path,
+                     "--evidence-root", str(self.root)], env=self.env, capture_output=True, text=True, cwd=REPO)
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(f"{path!r} is no path inside a repository", refused.stderr)
+        mutable = subprocess.run(
+            [sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "sample-shape",
+             "--repository", "acme/shop", "--commit", "main", "--path", "openapi.yaml",
+             "--evidence-root", str(self.root)], env=self.env, capture_output=True, text=True, cwd=REPO)
+        self.assertEqual(0, mutable.returncode, mutable.stderr)
+        self.assertEqual("failed: 'main' is no full commit SHA, so the ref is mutable", self.rows()[-1]["ref"])
+        self.assertEqual("not-fetched", self.rows()[-1]["measured"]["ref"]["exit"])
+        self.assertEqual([], self.raw_calls(), "a mutable ref or a refused path was fetched")
+        self.assertEqual(1, len(self.rows()))
+
+    def test_a_key_no_witness_search_names_is_refused_before_measuring(self) -> None:
+        unknown = self.screen("--key", "no-such-shape", "--disposition", "witness-found")
+        self.assertEqual(1, unknown.returncode, unknown.stderr)
+        self.assertIn("--key 'no-such-shape' is no witness-search key in", unknown.stderr)
+        empty = self.screen("--key", " ")
+        self.assertEqual(2, empty.returncode, empty.stderr)
+        self.assertIn("a key is a non-empty witness-search key", empty.stderr)
+        self.assertEqual([], self.rows())
+        self.assertEqual([], self.raw_calls())
+
+    def test_a_measured_record_whose_parts_disagree_is_refused_naming_the_part(self) -> None:
+        self.assertEqual(0, self.screen("--disposition", "witness-found").returncode)
+        record = self.rows()[0]["measured"]
+        (self.evidence / "screens.jsonl").unlink()
+
+        def licence_pins(**pins: object):
+            return lambda r: r["licence"]["pins"].update(pins)
+
+        for mutate, missing in (
+            (lambda r: r.update(screened_at="yesterday"), "when it was measured (`screened_at`"),
+            (lambda r: r.update(screened_at="2026-10-05T10:00:00"), "when it was measured (`screened_at`"),
+            (lambda r: r["document"].update(path=""), "the document it read (['path'] of `document`)"),
+            (lambda r: r["ref"].update(outcome="passed-invalid"), "a ref outcome reading `passed` or `failed: "),
+            (lambda r: r["ref"]["pins"].update(path="other.yaml"), "its repository, commit and path pins"),
+            (lambda r: r["ref"]["pins"].update(expected_sha256="0" * 64), "the bytes its pin names"),
+            (licence_pins(judgement="a third-party copy"), "a judgement can only refuse"),
+            (licence_pins(document_licence="Apache 2.0", document_family=None),
+             "the licence screen's reading of its document's info.license"),
+            (licence_pins(licence_file_sha256=""), "the licence screen's licence file and its sha256"),
+            (licence_pins(rule="docs/elsewhere.md"), "the licence screen's rule (docs/corpus-licensing.md"),
+            (lambda r: r["fern"]["run"].update(generate_python_files="3"), "`run.generate_python_files` as a count"),
+            (lambda r: r["fern"]["run"].update(check_diagnostic=7), "`run.check_diagnostic` as a string"),
+        ):
+            broken = json.loads(json.dumps(record))
+            mutate(broken)
+            path = self.scratch / "broken.json"
+            path.write_text(json.dumps(broken), encoding="utf-8")
+            with self.subTest(missing=missing):
+                refused = self.screen("--measured", str(path), "--disposition", "witness-found")
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn("a screen is filed only with its measured record; it lacks", refused.stderr)
+                self.assertIn(missing, refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
         self.assertEqual([], self.rows())
 
 
@@ -360,6 +525,28 @@ class HistoricalRowTests(unittest.TestCase):
             "disposition": "declares", "selector_count": 1}, "candidates.jsonl:7", INDEX.screens(path.parent))
         self.assertEqual(f"candidates.jsonl:7; {INDEX.HISTORICAL_SCREEN}", result["evidence"])
 
+    def test_an_unmeasured_row_stands_as_historical_only_when_its_date_predates_the_stage(self) -> None:
+        for label, dates, refusal in (
+            ("no date: the shape filed before the stage", {}, None),
+            ("Z offset, before", {"screened_at": "2026-09-30T23:59:59Z"}, None),
+            ("recorded_at, before", {"recorded_at": "2026-09-01T00:00:00+00:00"}, None),
+            ("another offset, before in UTC", {"screened_at": "2026-10-02T01:00:00+02:00"}, None),
+            ("exactly the cutover", {"screened_at": "2026-10-02T00:00:00Z"}, "after the measured stage landed"),
+            ("after", {"recorded_at": "2026-10-05T00:00:00+00:00"}, "after the measured stage landed"),
+            ("no offset", {"screened_at": "2026-09-01T00:00:00"}, "is no ISO 8601 instant with its offset"),
+            ("malformed", {"screened_at": "last week"}, "is no ISO 8601 instant with its offset"),
+            ("empty", {"screened_at": ""}, "is no ISO 8601 instant with its offset"),
+        ):
+            with self.subTest(label):
+                path = self.write({**self.ROW, "sha256": "a" * 64, **dates})
+                if refusal is None:
+                    self.assertEqual(1, len(INDEX.jsonl(path)))
+                    continue
+                with self.assertRaises(ValueError) as refused:
+                    INDEX.jsonl(path)
+                self.assertIn("a screen is filed only with its measured record", str(refused.exception))
+                self.assertIn(refusal, str(refused.exception))
+
     def test_a_row_filed_after_the_stage_without_its_record_is_refused(self) -> None:
         path = self.write({**self.ROW, "screened_at": "2026-10-03T09:00:00+00:00"})
         with self.assertRaises(ValueError) as refused:
@@ -388,7 +575,7 @@ class CommittedScreenTests(unittest.TestCase):
                 row = json.loads(line)
                 with self.subTest(screens=screens.relative_to(REPO).as_posix(), line=number):
                     self.assertEqual([], SCREEN.row_failures(row, screens.parent, fields))
-                if not SCREEN.is_historical(row):
+                if not SCREEN.unmeasured(row):
                     measured.append(row["measured"])
         # At least one real candidate's Fern outcome is one pinned Fern produced
         # when the stage ran: its run's exit statuses, at the corpus pins.
