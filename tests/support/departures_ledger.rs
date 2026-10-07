@@ -1,4 +1,3 @@
-// llmlint: ignore-file[new_code_lands_in_a_project] The crozier package is the repository root, its Nx project rooted at src/ with this directory among its declared crateTests inputs — the standing "virtual root manifest" exclusion AGENTS.md's Stack and composition records; tests/support/ is that package's own integration-test support.
 //! The per-golden ledger of intended departures,
 //! `tests/fixtures/departures-ledger.tsv`: for each committed Fern golden, every
 //! `(file, line, catalog id)` the comparison engine reports applying when it

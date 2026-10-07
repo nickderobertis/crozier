@@ -87,7 +87,9 @@
   "targetDefaults": {},
   "boundaries": {
     "allow": {
-      "type:crate": [],
+      "type:crate": [
+        "type:crate"
+      ],
       "type:e2e": [
         "type:crate",
         "type:tooling",
