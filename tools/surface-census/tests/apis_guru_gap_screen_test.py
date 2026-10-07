@@ -774,7 +774,7 @@ components:
 
     def test_a_snapshot_stamp_that_is_no_utc_instant_is_rejected(self) -> None:
         index = self.index([])
-        for value in ("yesterday", "2026-10-07T12:00:00+02:00", "2026-13-07T12:00:00Z"):
+        for value in ("yesterday", "2026-10-07T12:00:00+02:00", "2026-13-07T12:00:00Z", "2026-02-31T12:00:00Z"):
             with self.subTest(value=value):
                 completed, output = self.invoke(index, None, None, "--snapshot-utc", value)
                 self.assertEqual(completed.returncode, 2, completed.stderr)

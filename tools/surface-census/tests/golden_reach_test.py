@@ -680,6 +680,47 @@ class MeasurementInputTests(unittest.TestCase):
                 self.assertIn(f"{ledger}:3", str(refused.exception))
                 self.assertIn("just golden-reach-report", str(refused.exception))
 
+    def test_an_enumeration_of_another_shape_is_refused_by_every_reader(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            path = Path(scratch) / "enumeration.tsv.gz"
+            header = "\t".join(golden_reach_search.WALK_FIELDS)
+            for label, text, message in (
+                ("another header", "walk\tdocument\n", "has header ['walk', 'document']"),
+                ("a short row", header + "\nw\ta.yaml\tabc\n", ":2 has another number of cells"),
+                ("a long row", header + "\nw\ta.yaml\tabc\td\tk\treadable\textra\n", ":2 has another number of cells"),
+                ("no document", header + "\nw\t\tabc\td\tk\treadable\n", ":2 names no walk or no document"),
+            ):
+                with self.subTest(label):
+                    with gzip.open(path, "wt", encoding="utf-8") as handle:
+                        handle.write(text)
+                    with self.assertRaises(SystemExit) as refused:
+                        golden_reach_search.earlier_matches(path, set())
+                    self.assertIn(message, str(refused.exception))
+                    self.assertIn("restore it from git", str(refused.exception))
+
+    def test_a_probe_reads_only_a_coverage_export_of_the_reporters_shape(self) -> None:
+        """`executed_regions` keeps the executed code regions of the named files, and
+        refuses an export whose records are not llvm-cov's, as the reporter does."""
+        with tempfile.TemporaryDirectory() as scratch:
+            export = Path(scratch) / "export.json"
+            ir = str(REPO / "src" / "ir.rs")
+
+            def write(regions: list) -> None:
+                export.write_text(json.dumps({"type": "llvm.coverage.json.export", "version": "2.0.1", "data": [{
+                    "files": [], "functions": [{"filenames": [ir], "regions": regions}]}]}), encoding="utf-8")
+
+            write([[1, 1, 2, 2, 3, 0, 0, 0], [5, 1, 6, 2, 0, 0, 0, 0], [7, 1, 8, 2, 4, 0, 0, 2]])
+            self.assertEqual({"src/ir.rs": {(1, 1, 2, 2)}}, golden_reach_search.executed_regions(export, {"src/ir.rs"}))
+            self.assertEqual({}, golden_reach_search.executed_regions(export, {"src/emit.rs"}))
+            for label, regions in (("string count", [[1, 1, 2, 2, "3", 0, 0, 0]]),
+                                   ("short region", [[1, 1, 2, 2, 3]]),
+                                   ("file index out of range", [[1, 1, 2, 2, 3, 4, 0, 0]])):
+                with self.subTest(label):
+                    write(regions)
+                    with self.assertRaises(SystemExit) as refused:
+                        golden_reach_search.executed_regions(export, {"src/ir.rs"})
+                    self.assertIn(str(export), str(refused.exception))
+
     def test_a_measurement_or_census_of_another_shape_is_refused_with_the_recipe(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             regions = Path(scratch) / "universe.json"

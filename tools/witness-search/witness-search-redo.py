@@ -201,11 +201,16 @@ def validate_documents(paths: list[Path], contract: Path) -> list[str]:
 def screened_keys(path: Path, *, artifact: str | None = None) -> set[str]:
     """A declaration count is not proof that an artifact passed all four screens."""
     found: set[str] = set()
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if not line.startswith("| `"):
             continue
-        cells = [cell.strip() for cell in line.strip("|").split("|")]
-        if len(cells) != 8 or value(cells[6]) != "witness-found":
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        # An artifact row is eight cells; one of another width would otherwise be
+        # read as no witness at all, and the evidence would pass as empty.
+        if len(cells) != 8:
+            raise ValueError(f"{path}:{number}: a candidate row has {len(cells)} cells, not the 8 of "
+                             "artifact | keys | four screens | disposition | evidence")
+        if value(cells[6]) != "witness-found":
             continue
         if artifact is not None and value(cells[0]) != artifact:
             continue

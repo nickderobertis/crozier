@@ -154,11 +154,11 @@ class LlmlintDiffTests(unittest.TestCase):
     def test_a_non_positive_budget_and_an_unknown_base_are_refused_with_the_fix(self) -> None:
         self.commit({"a.md": "a"})
         run = self.run_script("--budget", "0")
-        self.assertNotEqual(0, run.returncode)
+        self.assertEqual(2, run.returncode)
         self.assertIn("--budget must be a positive byte count", run.stderr)
         run = subprocess.run([sys.executable, str(SCRIPT), "no-such-base"], cwd=self.repo, env=self.env,
                              capture_output=True, text=True)
-        self.assertNotEqual(0, run.returncode)
+        self.assertEqual(2, run.returncode, "a run that cannot be made is no rule failure")
         self.assertIn("git fetch origin main", run.stderr)
         self.assertEqual([], self.calls())
 
@@ -179,7 +179,7 @@ class LlmlintDiffTests(unittest.TestCase):
         env = {**self.env, "PATH": f"{wrapper}{os.pathsep}{self.env['PATH']}"}
         run = subprocess.run([sys.executable, str(SCRIPT), "base"], cwd=self.repo, env=env,
                              capture_output=True, text=True)
-        self.assertNotEqual(0, run.returncode)
+        self.assertEqual(2, run.returncode)
         self.assertIn("-- a.md` exited 128: fatal: simulated", run.stderr)
         self.assertIn("run from inside the checkout, then retry", run.stderr)
         self.assertEqual([], self.calls(), "a size it could not measure must not reach the judge")

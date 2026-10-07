@@ -12576,8 +12576,9 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
         )
 
 
-class ExampleAndEnumSelectorControls(unittest.TestCase):
-    """The real CLI must distinguish each new spelling from a nearby decoy."""
+class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
+    """The real CLI must distinguish each example, enum-member and schema-name
+    spelling from a nearby decoy."""
 
     ENUM_CASES = {
         "empty-member": ([""], ["a"]),
@@ -12660,6 +12661,50 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_new_value_rows_cite_the_offline_census_own_counts(self) -> None:
+        selectors = (
+            {name for name in census.PREDICATES if name.startswith("schema.enum:")
+             and name != "schema.enum:string-valued"}
+            | {"components.schemas:nonidentifier-name"}
+            | {"schema.example=" + kind for kind in census.EXAMPLE_KINDS if kind != "object"}
+        )
+        document = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
+        evidence = {}
+        for line in document.splitlines():
+            cells = table_cells(line, 8)
+            if cells is None:
+                continue
+            match = re.search(r"census `([^`]+)`:", cells[4])
+            if match and match.group(1) in selectors:
+                evidence[match.group(1)] = cells[4]
+        self.assertEqual(selectors, set(evidence))
+        completed = run("--vendored-only", "--json",
+                        *(arg for selector in sorted(selectors)
+                          for arg in ("--selector", selector)))
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        reported = {
+            (row["selector"], row["fixture"]): row["count"]
+            for row in json.loads(completed.stdout)["rows"]
+        }
+        vendored = {source.fixture for source in census.registered_sources(
+            FIXTURES, REPO / "tests/fixtures/corpus-sources", True
+        )}
+        checked = 0
+        for selector, cell in evidence.items():
+            for fixture, count in re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \((\d+)\)", cell):
+                if fixture not in vendored:
+                    continue
+                checked += 1
+                with self.subTest(selector=selector, fixture=fixture):
+                    self.assertEqual(int(count), reported.get((selector, fixture), 0))
+        self.assertGreater(checked, 0)
+
+
+class ShapePredicateSelectorControls(unittest.TestCase):
+    """The real CLI must count each shape predicate — cycles, closed empty objects,
+    misspelled scalars, unions, promotable headers, unrequired tags and security
+    scheme references — and not the near miss beside it."""
 
     def census_one(self, selector: str, documents: dict[str, dict]) -> dict:
         """Census each `(fixture, document)` pair for one selector, offline."""
@@ -12973,45 +13018,6 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
              ("reference.$ref", "elsewhere"): 2},
             rows(completed),
         )
-
-    def test_new_value_rows_cite_the_offline_census_own_counts(self) -> None:
-        selectors = (
-            {name for name in census.PREDICATES if name.startswith("schema.enum:")
-             and name != "schema.enum:string-valued"}
-            | {"components.schemas:nonidentifier-name"}
-            | {"schema.example=" + kind for kind in census.EXAMPLE_KINDS if kind != "object"}
-        )
-        document = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
-        evidence = {}
-        for line in document.splitlines():
-            cells = table_cells(line, 8)
-            if cells is None:
-                continue
-            match = re.search(r"census `([^`]+)`:", cells[4])
-            if match and match.group(1) in selectors:
-                evidence[match.group(1)] = cells[4]
-        self.assertEqual(selectors, set(evidence))
-        completed = run("--vendored-only", "--json",
-                        *(arg for selector in sorted(selectors)
-                          for arg in ("--selector", selector)))
-        self.assertEqual(0, completed.returncode, completed.stderr)
-        reported = {
-            (row["selector"], row["fixture"]): row["count"]
-            for row in json.loads(completed.stdout)["rows"]
-        }
-        vendored = {source.fixture for source in census.registered_sources(
-            FIXTURES, REPO / "tests/fixtures/corpus-sources", True
-        )}
-        checked = 0
-        for selector, cell in evidence.items():
-            for fixture, count in re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \((\d+)\)", cell):
-                if fixture not in vendored:
-                    continue
-                checked += 1
-                with self.subTest(selector=selector, fixture=fixture):
-                    self.assertEqual(int(count), reported.get((selector, fixture), 0))
-        self.assertGreater(checked, 0)
-
 
 
 class BodyAndResponseSelectorControls(unittest.TestCase):

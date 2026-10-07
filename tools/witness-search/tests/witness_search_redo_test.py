@@ -1281,6 +1281,11 @@ class WideWitnessTests(unittest.TestCase):
         self.assertIn('requires a candidate file', refused.stderr)
         missing.write_text(self.candidate.replace(self.key, key), encoding='utf-8')
         self.assertEqual(0, run(missing_args).returncode)
+        malformed = self.work / 'malformed.md'
+        malformed.write_text(f'| `artifact` | `{key}` | witness-found |\n', encoding='utf-8')
+        torn = run(['--supplement-candidates', str(malformed)])
+        self.assertEqual(1, torn.returncode, torn.stderr)
+        self.assertIn('malformed.md:1: a candidate row has 3 cells, not the 8', torn.stderr)
 
     def test_http_acquisition_records_success_refusal_and_interrupted_transfer(self) -> None:
         import hashlib

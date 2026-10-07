@@ -357,6 +357,23 @@ def source_dir(source: str) -> Path:
     return path
 
 
+def read_enumeration(path: Path, remedy: str, quoting: int = csv.QUOTE_NONE) -> list[dict[str, str]]:
+    """A walk's `enumeration.tsv.gz`: its header exactly `WALK_FIELDS`, every row as
+    wide as it, and each row naming its walk and document."""
+    with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t", quoting=quoting)
+        if tuple(reader.fieldnames or ()) != WALK_FIELDS:
+            fail(f"{path} has header {reader.fieldnames}, not {list(WALK_FIELDS)}; {remedy}")
+        rows = []
+        for number, row in enumerate(reader, start=2):
+            if None in row or None in row.values():
+                fail(f"{path}:{number} has another number of cells than its header names; {remedy}")
+            if not row["walk"] or not row["document"]:
+                fail(f"{path}:{number} names no walk or no document; {remedy}")
+            rows.append(row)
+    return rows
+
+
 def read_exact_tsv(path: Path, fields: tuple[str, ...], remedy: str) -> list[dict[str, str]]:
     """A tab-separated file whose header is exactly `fields`, every row as wide as it."""
     with path.open(encoding="utf-8", newline="") as handle:
@@ -716,12 +733,11 @@ def earlier_matches(path: Path, requested: set[str]) -> dict[tuple[str, str, str
     """
     if not path.is_file():
         return {}
-    with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
-        return {
-            (row["walk"], row["document"], row["sha256"]): kept
-            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-            if (kept := [key for key in filter(None, row["matched_keys"].split(",")) if key not in requested])
-        }
+    return {
+        (row["walk"], row["document"], row["sha256"]): kept
+        for row in read_enumeration(path, "restore it from git, or walk the source again from scratch")
+        if (kept := [key for key in filter(None, row["matched_keys"].split(",")) if key not in requested])
+    }
 
 
 def fetch_pins(args: argparse.Namespace) -> int:
@@ -1154,25 +1170,14 @@ def _probe_one(
 def executed_regions(export: Path, files: set[str]) -> dict[str, set[tuple[int, int, int, int]]]:
     """The code regions of `files` a coverage export counts as executed.
 
-    What `load_tier` reads, kept to the files a site sits in and to a positive
-    count: a region is executed when any object file's copy of it ran, so the
-    maximum `load_tier` takes is positive exactly when some copy's count is.
+    Read through the coverage reporter's own `load_tier`, which refuses an export
+    of any other shape and takes the maximum over every object file's copy of a
+    region: a region is executed exactly when that maximum is positive.
     """
-    report = REACH.REPORT
-    document = json.loads(export.read_text(encoding="utf-8"))
-    root = str(REPO) + "/"
-    hit: dict[str, set[tuple[int, int, int, int]]] = defaultdict(set)
-    for data in document.get("data", []):
-        for function in data.get("functions", []):
-            names = [name[len(root):] if name.startswith(root) else None
-                     for name in function.get("filenames", [])]
-            for raw in function.get("regions", []):
-                if raw[4] <= 0 or raw[report.REGION_KIND_INDEX] != report.REGION_CODE_KIND:
-                    continue
-                name = names[raw[report.REGION_FILE_INDEX]]
-                if name in files:
-                    hit[name].add((raw[0], raw[1], raw[2], raw[3]))
-    return dict(hit)
+    tier = REACH.REPORT.load_tier(export, REPO)
+    hit = {name: {tuple(region) for region, count in regions.items() if count > 0}
+           for name, regions in tier.items() if name in files}
+    return {name: regions for name, regions in hit.items() if regions}
 
 
 def probe_cache_path(build: str) -> Path:
@@ -1480,8 +1485,7 @@ def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
     if source in WALKS and enumeration.is_file():
         # A walked document the census could not read may declare the row; the
         # walk's enumeration, not a per-key row, is where that is recorded.
-        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        rows = read_enumeration(enumeration, f"restore it from git, or re-run `walk --source {source}`")
         repeated = repeated_documents(rows)
         return [(document_subject(row, repeated), row["status"], row["sha256"])
                 for row in rows if row["status"] != "readable"]
@@ -2163,8 +2167,7 @@ def local_copies(
                 if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
                     by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
         enumeration = source_dir(source) / "enumeration.tsv.gz"
-        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        rows = read_enumeration(enumeration, f"restore it from git, or re-run `walk --source {source}`")
         # A path two trees pin is two documents, each named `<walk>:<path>` as the
         # records name it, so neither copy's reading stands in for the other's.
         repeated = repeated_documents(rows)
@@ -2286,8 +2289,8 @@ def recensus(args: argparse.Namespace) -> int:
         repeated = repeated_documents(pinned_listing(source))
         enumeration = source_dir(source) / "enumeration.tsv.gz"
         # Read in the dialect `walk` writes, so a status the walk quoted round-trips.
-        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            rows = list(csv.DictReader(handle, delimiter="\t"))
+        rows = read_enumeration(enumeration, f"restore it from git, or re-run `walk --source {source}`",
+                                quoting=csv.QUOTE_MINIMAL)
         added: list[dict[str, str]] = []
         for row in rows:
             if document_subject(row, repeated) not in readings:

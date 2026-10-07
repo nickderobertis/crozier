@@ -16,7 +16,9 @@ A file larger than the budget on its own is a batch of one.
 
 Exit status is the worst batch's: 2 (a judge errored) over 1 (a rule failed)
 over 0. Any other nonzero status, a batch killed by a signal included, is read
-as 2: a batch that returned no verdict fails the run, never passes it.
+as 2: a batch that returned no verdict fails the run, never passes it. A run
+it cannot make at all (no llmlint, an invalid budget, a git or config failure)
+exits 2 as well, never 1, which only a failed rule earns.
 """
 
 from __future__ import annotations
@@ -36,7 +38,10 @@ DEFAULT_BUDGET = 3_000_000
 
 
 def fail(message: str) -> None:
-    raise SystemExit(f"llmlint-diff: {message}")
+    """Stop with exit 2, the status a judge error takes: the run could not be made,
+    which is never the same answer as a rule failing (exit 1)."""
+    print(f"llmlint-diff: {message}", file=sys.stderr)
+    raise SystemExit(2)
 
 
 def git(*args: str) -> str:

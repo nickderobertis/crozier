@@ -39,7 +39,8 @@ class OfflineCacheRecovery(unittest.TestCase):
                 "surface-census:\n    true\n"
             )
             # The warm step fetches locked crates: give the root a package with
-            # none, so it succeeds offline and the failing recipe is reached.
+            # none, so it succeeds offline and the failing recipe is reached. The
+            # root carries no census fallback, so there is no parser to warm.
             (root / "Cargo.toml").write_text('[package]\nname = "synthetic"\nversion = "0.0.0"\n')
             (root / "src").mkdir()
             (root / "src/lib.rs").write_text("")

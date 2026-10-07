@@ -288,8 +288,14 @@ def write_report(path: Path, rows: list[dict[str, str]]) -> None:
     path.write_text(output.getvalue(), encoding="utf-8")
 
 
-# What `--snapshot-utc` stamps into every report row: an instant in UTC, to the second.
-SNAPSHOT_UTC = re.compile(r"\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\dZ")
+def utc_instant(text: str) -> bool:
+    """Whether `text` is what `--snapshot-utc` stamps into every report row: a real
+    instant in UTC, to the second, spelled `YYYY-MM-DDTHH:MM:SSZ`."""
+    try:
+        datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return False
+    return True
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -381,7 +387,7 @@ def main(argv: list[str] | None = None) -> int:
         print("apis-guru-gap-screen: attempts, workers, and timeout must be positive (and the timeout finite)",
               file=sys.stderr)
         return 2
-    if args.snapshot_utc is not None and not SNAPSHOT_UTC.fullmatch(args.snapshot_utc):
+    if args.snapshot_utc is not None and not utc_instant(args.snapshot_utc):
         print(f"apis-guru-gap-screen: --snapshot-utc {args.snapshot_utc!r} is not a UTC instant such as "
               "2026-10-07T12:00:00Z; pass one, or omit it to stamp now", file=sys.stderr)
         return 2
