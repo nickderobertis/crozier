@@ -9867,6 +9867,7 @@ fn corpus_fixture_for<'a>(name: &'a str, aliases: &[(&'a str, &'a str)]) -> &'a 
         .unwrap_or(name)
 }
 
+// llmlint: ignore[e2e_not_mocked] The readers under test are the real scripts/fern-goldens and scripts/fetch-corpus.sh, copied unmodified into a temp repo by FernGoldensBoundaryTests, the harness `just test-fern-goldens` drives them through; its stand-in `curl`/`just` replace only the network fetch and the Fern run, which an offline gate cannot reach and which act after the alias registry is read and validated.
 #[cfg(not(windows))]
 #[test]
 fn fixture_alias_readers_agree_on_validation_and_resolution() {
