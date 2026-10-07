@@ -20,9 +20,9 @@ const BOUNDARIES = {
   },
 };
 
-function check(root, name) {
+function check(root, name, env = {}) {
   return spawnSync(process.execPath, [join(root, "scripts/check-project-boundaries.mjs"), name], {
-    cwd: root, encoding: "utf8", env: { ...process.env, NX_DAEMON: "false" },
+    cwd: root, encoding: "utf8", env: { ...process.env, NX_DAEMON: "false", ...env },
   });
 }
 
@@ -162,28 +162,62 @@ test("a malformed boundaries table is refused rather than enforcing less", (t) =
   }
 });
 
+/** A root whose `nx graph` is a stand-in writing `graph`, holding the real check. */
+function standInGraph(t, graph, nxJson = { boundaries: BOUNDARIES }) {
+  const root = mkdtempSync(join(tmpdir(), "crozier-graph-shape-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(join(root, "scripts"));
+  mkdirSync(join(root, "node_modules", "nx"), { recursive: true });
+  writeFileSync(join(root, "package.json"), "{}");
+  writeFileSync(join(root, "nx.json"), JSON.stringify(nxJson));
+  writeFileSync(join(root, "node_modules", "nx", "package.json"), JSON.stringify({ name: "nx", bin: { nx: "./nx.js" } }));
+  writeFileSync(join(root, "node_modules", "nx", "nx.js"),
+    `const fs = require("fs");
+     const file = process.argv.find((arg) => arg.startsWith("--file=")).slice("--file=".length);
+     fs.writeFileSync(file, ${JSON.stringify(JSON.stringify({ graph }))});`);
+  copyFileSync(join(REPO, "scripts", "check-project-boundaries.mjs"), join(root, "scripts", "check-project-boundaries.mjs"));
+  return root;
+}
+
 test("a project graph of the wrong shape is refused with the fix, not a TypeError", (t) => {
+  const node = (data) => ({ nodes: { a: { data: { root: "a", tags: ["type:tooling"], ...data } } }, dependencies: {} });
   for (const graph of [
     { nodes: { a: { data: { root: "a", tags: [1] } } }, dependencies: {} },
     { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: { a: "b" } },
     { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: { a: [{ source: "a" }] } },
+    node({ targets: { test: "true" } }),
+    node({ targets: { test: { dependsOn: "^build" } } }),
+    node({ targets: { test: { dependsOn: [{ projects: ["b"] }] } } }),
+    node({ targets: { test: { dependsOn: [{ target: "build", projects: [7] }] } } }),
+    node({ targets: { test: { inputs: "default" } } }),
+    node({ targets: { test: { inputs: [null] } } }),
+    node({ namedInputs: { default: "{projectRoot}/**/*" } }),
   ]) {
-    // A stand-in `nx` whose `graph --file` writes `graph`; the real one never would.
-    const root = mkdtempSync(join(tmpdir(), "crozier-graph-shape-"));
-    t.after(() => rmSync(root, { recursive: true, force: true }));
-    mkdirSync(join(root, "scripts"));
-    mkdirSync(join(root, "node_modules", "nx"), { recursive: true });
-    writeFileSync(join(root, "package.json"), "{}");
-    writeFileSync(join(root, "nx.json"), JSON.stringify({ boundaries: BOUNDARIES }));
-    writeFileSync(join(root, "node_modules", "nx", "package.json"), JSON.stringify({ name: "nx", bin: { nx: "./nx.js" } }));
-    writeFileSync(join(root, "node_modules", "nx", "nx.js"),
-      `const fs = require("fs");
-       const file = process.argv.find((arg) => arg.startsWith("--file=")).slice("--file=".length);
-       fs.writeFileSync(file, ${JSON.stringify(JSON.stringify({ graph }))});`);
-    copyFileSync(join(REPO, "scripts", "check-project-boundaries.mjs"), join(root, "scripts", "check-project-boundaries.mjs"));
-    const run = check(root, "a");
+    const run = check(standInGraph(t, graph), "a");
     assert.equal(run.status, 1, JSON.stringify(graph));
     assert.match(run.stderr, /not the shape this check reads/);
+    assert.doesNotMatch(run.stderr, /TypeError/);
+  }
+  const named = check(standInGraph(t, node({}), { namedInputs: { default: "x" }, boundaries: BOUNDARIES }), "a");
+  assert.equal(named.status, 1, named.stderr);
+  assert.match(named.stderr, /"namedInputs" is not a map of input names to lists/);
+});
+
+test("Cargo metadata of the wrong shape is refused with the fix, not a TypeError", { skip: process.platform === "win32" }, (t) => {
+  const root = standInGraph(t, { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: {} });
+  writeFileSync(join(root, "Cargo.toml"), "[workspace]\n");
+  const bin = join(root, "bin");
+  mkdirSync(bin);
+  for (const metadata of [
+    { packages: [{ name: "a" }] },
+    { packages: [{ name: "a", manifest_path: "/r/a/Cargo.toml", dependencies: "b" }] },
+    { packages: [{ name: "a", manifest_path: "/r/a/Cargo.toml", dependencies: [{ name: "b", path: 7 }] }] },
+  ]) {
+    writeFileSync(join(bin, "cargo"), `#!/bin/sh\nprintf '%s' '${JSON.stringify(metadata)}'\n`, { mode: 0o755 });
+    const run = check(root, "a", { PATH: `${bin}:${process.env.PATH}` });
+    assert.equal(run.status, 1, JSON.stringify(metadata));
+    assert.match(run.stderr, /reading the Cargo workspace failed: its `packages` are not a list/);
+    assert.match(run.stderr, /ACTION: check `cargo metadata/);
     assert.doesNotMatch(run.stderr, /TypeError/);
   }
 });

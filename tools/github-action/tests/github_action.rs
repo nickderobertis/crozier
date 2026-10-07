@@ -130,10 +130,10 @@ fn action_run_steps_take_every_value_through_env() {
     }
 }
 
-/// The Action's surface is neutral: it runs whatever reference command it is
-/// given, and nothing in it is specific to one reference tool.
+/// The Action runs whatever reference command it is given, so nothing in it
+/// names Fern, the one reference tool its documentation uses as an example.
 #[test]
-fn neither_action_yml_nor_its_scripts_name_a_reference_tool() {
+fn neither_action_yml_nor_its_scripts_name_fern() {
     let mut files = vec!["action.yml".to_string()];
     // The Action's scripts; this crate's own tests and manifests sit beside them.
     for entry in std::fs::read_dir(root().join("tools/github-action")).unwrap() {

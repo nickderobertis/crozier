@@ -69,6 +69,23 @@ function nxGraph() {
       maxBuffer: 64 * 1024 * 1024,
     });
     const graph = JSON.parse(readFileSync(file, "utf8")).graph;
+    const strings = (value) => Array.isArray(value) && value.every((item) => typeof item === "string");
+    // A `dependsOn` entry is `target`, `project:target`, or { target, projects? }.
+    const dependency = (dep) =>
+      typeof dep === "string" ||
+      (typeof dep?.target === "string" &&
+        (dep.projects === undefined || typeof dep.projects === "string" || strings(dep.projects)));
+    const input = (entry) => typeof entry === "string" || (entry !== null && typeof entry === "object" && !Array.isArray(entry));
+    const target = (value) =>
+      value !== null &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      (value.dependsOn === undefined || (Array.isArray(value.dependsOn) && value.dependsOn.every(dependency))) &&
+      (value.inputs === undefined || (Array.isArray(value.inputs) && value.inputs.every(input)));
+    const namedInputs = (value) =>
+      value === undefined ||
+      (value !== null && typeof value === "object" && !Array.isArray(value) &&
+        Object.values(value).every((entries) => Array.isArray(entries) && entries.every(input)));
     const shaped =
       graph?.nodes &&
       typeof graph.nodes === "object" &&
@@ -81,7 +98,10 @@ function nxGraph() {
           (node.data.tags === undefined ||
             (Array.isArray(node.data.tags) && node.data.tags.every((tag) => typeof tag === "string"))) &&
           (node.data.targets === undefined ||
-            (typeof node.data.targets === "object" && !Array.isArray(node.data.targets))),
+            (typeof node.data.targets === "object" &&
+              !Array.isArray(node.data.targets) &&
+              Object.values(node.data.targets).every(target))) &&
+          namedInputs(node.data.namedInputs),
       ) &&
       Object.values(graph.dependencies).every(
         (deps) => Array.isArray(deps) && deps.every((dep) => typeof dep?.target === "string"),
@@ -119,8 +139,24 @@ function cargoEdges() {
       "fix the Cargo.toml the message names (`cargo metadata --no-deps` reproduces it)",
     );
   }
-  if (!Array.isArray(metadata?.packages)) {
-    failedRun("reading the Cargo workspace", "no `packages` list", "check `cargo metadata --no-deps`");
+  const shaped =
+    Array.isArray(metadata?.packages) &&
+    metadata.packages.every(
+      (pkg) =>
+        typeof pkg?.name === "string" &&
+        typeof pkg.manifest_path === "string" &&
+        (pkg.dependencies === undefined ||
+          (Array.isArray(pkg.dependencies) &&
+            pkg.dependencies.every(
+              (dep) => typeof dep?.name === "string" && (dep.path === undefined || typeof dep.path === "string"),
+            ))),
+    );
+  if (!shaped) {
+    failedRun(
+      "reading the Cargo workspace",
+      "its `packages` are not a list of { name, manifest_path, dependencies: [{ name, path? }] }",
+      "check `cargo metadata --format-version 1 --no-deps` and the cargo on PATH",
+    );
   }
   const edges = [];
   for (const pkg of metadata.packages) {
@@ -165,6 +201,14 @@ const wellFormed =
       Array.isArray(entry.from) &&
       entry.from.every((from) => typeof from === "string" && /^[a-z][a-z0-9-]*:[a-z0-9:-]+$/.test(from)),
   );
+const named = nxJson?.namedInputs;
+if (
+  named !== undefined &&
+  (named === null || typeof named !== "object" || Array.isArray(named) ||
+    !Object.values(named).every((entries) => Array.isArray(entries)))
+) {
+  fail(['nx.json\'s "namedInputs" is not a map of input names to lists', "ACTION: restore nx.json's namedInputs from git"]);
+}
 if (!wellFormed) {
   fail([
     'nx.json has no well-formed "boundaries" table to enforce',
