@@ -135,7 +135,7 @@ fn refusing_class<'a>(
 }
 
 /// Unevaluated classes promise only a pinned, measured input record.
-fn unevaluated_files(root: &Path, id: &str) -> Vec<String> {
+fn unevaluated_record_failures(root: &Path, id: &str) -> Vec<String> {
     let dir = root.join(id);
     let mut failures = Vec::new();
     if !dir.join("probe.yml").is_file() {
@@ -174,13 +174,16 @@ fn unevaluated_records_require_the_probe_and_pinned_diagnostic() {
     )
     .unwrap();
     assert_eq!(
-        unevaluated_files(root.path(), "pending-shape"),
+        unevaluated_record_failures(root.path(), "pending-shape"),
         ["pending-shape: probe.yml is missing"]
     );
     std::fs::write(dir.join("probe.yml"), "not yet evaluated").unwrap();
-    assert!(unevaluated_files(root.path(), "pending-shape").is_empty());
+    assert!(unevaluated_record_failures(root.path(), "pending-shape").is_empty());
     std::fs::write(dir.join("fern-refusal.txt"), "diagnostic: \n").unwrap();
-    assert_eq!(unevaluated_files(root.path(), "pending-shape").len(), 3);
+    assert_eq!(
+        unevaluated_record_failures(root.path(), "pending-shape").len(),
+        3
+    );
 }
 
 #[test]
@@ -192,7 +195,7 @@ fn every_class_probe_is_refused_as_its_registry_row_states() {
     for (id, class) in &registry {
         let probe = root.join(id).join("probe.yml");
         if class.status == "unevaluated" {
-            failures.extend(unevaluated_files(&root, id));
+            failures.extend(unevaluated_record_failures(&root, id));
             continue;
         }
         if !matches!(class.status.as_str(), "generate" | "refuse") {
@@ -243,7 +246,7 @@ fn document_contract_failures(root: &Path) -> Vec<String> {
             .get(dir)
             .is_some_and(|class| class.status == "unevaluated")
         {
-            failures.extend(unevaluated_files(root, dir));
+            failures.extend(unevaluated_record_failures(root, dir));
             continue;
         }
         let name = format!("{dir}/{}", spec.file_name().unwrap().to_string_lossy());
@@ -325,7 +328,7 @@ fn unevaluated_documents_are_checked_without_rendering() {
     std::fs::write(root.path().join("classes.tsv"), format!("{header}{row}")).unwrap();
     std::fs::remove_file(dir.join("probe.yml")).unwrap();
     assert_eq!(
-        unevaluated_files(root.path(), "pending-shape"),
+        unevaluated_record_failures(root.path(), "pending-shape"),
         ["pending-shape: probe.yml is missing"]
     );
 }
