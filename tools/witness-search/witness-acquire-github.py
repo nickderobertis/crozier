@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Download a pinned public GitHub tree through the shared REST-bucket guard."""
+"""Download a pinned public GitHub tree through the shared REST-bucket guard.
+
+Exit status: 0 when the tree was saved; 1 when the acquisition failed or the
+rate-limit guard refused it (the attempt is still recorded in
+`acquisitions.jsonl`); 2 on a usage error, a URL or bucket it cannot use
+among them.
+"""
 
 from __future__ import annotations
 

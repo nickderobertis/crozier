@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Validate the two non-authoritative witness-search redo shards."""
+"""Validate the two non-authoritative witness-search redo shards.
+
+Exit status: 0 when the shards validate (or reconcile); 1 when any check
+fails, each failure on stderr, or the contract cannot be read; 2 on a usage
+error.
+"""
 
 from __future__ import annotations
 

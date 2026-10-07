@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Ask Postman's three public API-network indices for every current FIXTURE gap."""
+"""Ask Postman's three public API-network indices for every current FIXTURE gap.
+
+Exit status: 0 when the stage completed; 1 when its search ledger
+(`queries.jsonl`) is unreadable, with the stage to run first; 2 on a usage
+error, an unreadable or malformed `--keys` TSV among them.
+"""
 
 from __future__ import annotations
 

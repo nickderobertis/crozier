@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Census arbitrary pinned OpenAPI trees with the shared surface evaluator."""
+"""Census arbitrary pinned OpenAPI trees with the shared surface evaluator.
+
+Exit status: 0 when every document was read and censused; 1 when any was
+unreadable, each named on stderr; 2 on a usage error.
+"""
 
 from __future__ import annotations
 

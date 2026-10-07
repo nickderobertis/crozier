@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Derive, acquire and validate the finite wide witness-search evidence."""
+"""Derive, acquire and validate the finite wide witness-search evidence.
+
+Exit status: 0 when the subcommand completed; 1 when it refused its inputs
+(an unreadable file, a malformed ledger or tree, a failed validation), with
+the reason on stderr; 2 on a usage error.
+"""
 
 from __future__ import annotations
 

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Extract and inventory JSON/YAML files from pinned vendor portal archives."""
+"""Extract and inventory JSON/YAML files from pinned vendor portal archives.
+
+Exit status: 0 when every planned archive was extracted and inventoried; 1
+when the plan, an archive or the tree refused it, with the reason on stderr;
+2 on a usage error.
+"""
 
 from __future__ import annotations
 

@@ -5,6 +5,10 @@ The set is every `FIXTURE` `gap` row, plus every `handwritten` row: a hand-writt
 fixture is admitted only after that key's real-specification search failed, so
 the key keeps its tracked selector here, and the hand-written fixture gate reads
 it from this file (docs/openapi-surface/handwritten/AGENTS.md).
+
+Exit status: 0 with the key set on stdout; 1 when a region row needs repair
+(a gap with no selector, a duplicate key, a handwritten key with no tracked
+selector), named on stderr; 2 on a usage error.
 """
 
 from __future__ import annotations
