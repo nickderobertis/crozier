@@ -101,8 +101,8 @@ DIGEST_RE = re.compile(r"[0-9a-f]{64}")
 ORIGIN_ENV = "CROZIER_CORPUS_PIN_ORIGIN"
 LOOPBACK_ORIGIN_RE = re.compile(r"http://(?:127\.0\.0\.1|localhost):[0-9]{1,5}")
 
-#: Matches `tools/corpus/corpus-lib.sh`'s `--max-time` posture for a referenced
-#: document: long enough for a large schema, short enough to fail rather than hang.
+#: The bound on one referenced document's fetch: long enough for a large schema,
+#: short enough to fail rather than hang.
 FETCH_TIMEOUT_SECONDS = 30
 RAW_FETCH_SPACING_SECONDS = 0.25
 _last_raw_fetch = 0.0
@@ -158,12 +158,16 @@ def _path_segments(url: str) -> list[str]:
 
 def immutability_failure(url: str) -> str | None:
     """Why `url` is not immutably addressed, or `None` when it is."""
-    parsed = urlsplit(url)
+    try:
+        parsed = urlsplit(url)
+        port = parsed.port
+    except ValueError as error:
+        return f"{url!r} is not a well-formed URL ({error})"
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         return f"{url!r} is not an absolute http(s) URL"
     if (
         parsed.hostname != IMMUTABLE_HOST
-        or parsed.port is not None
+        or port is not None
         or parsed.username is not None
         or parsed.password is not None
         or parsed.scheme != "https"

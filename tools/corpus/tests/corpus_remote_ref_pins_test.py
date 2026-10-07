@@ -142,6 +142,16 @@ class TheLintStillDiscriminates(unittest.TestCase):
             "pin the reference to a commit URL",
         )
 
+    def test_a_pinned_url_with_a_malformed_port_or_host_is_rejected(self) -> None:
+        for malformed in (
+            f"https://raw.githubusercontent.com:notaport/{OWNER_REPO}/{PINNED_SHA}/b.yaml",
+            f"https://[raw.githubusercontent.com/{OWNER_REPO}/{PINNED_SHA}/b.yaml",
+        ):
+            with self.subTest(malformed=malformed):
+                result = self.check((*self.GOOD[:2], malformed, self.GOOD[3]))
+                self.assert_rejected(result, "is not a well-formed URL", "pin the reference")
+                self.assertNotIn("Traceback", result.stderr)
+
     def test_a_malformed_digest_is_rejected(self) -> None:
         self.assert_rejected(
             self.check((*self.GOOD[:3], "NOTADIGEST")), "NOTADIGEST", "sha256sum"
