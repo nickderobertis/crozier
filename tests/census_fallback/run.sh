@@ -19,7 +19,11 @@ cd "$(dirname "$0")/../.."
 # `run.sh pin SCRIPT` prints it, for the other callers that install the same pin.
 pinned() {
   local pin
-  pin="$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' "$1")"
+  # A command substitution does not inherit errexit, so a read that fails is caught here.
+  pin="$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' "$1")" || {
+    echo "census-fallback: cannot read $1 — restore it (git checkout -- $1) and make it readable, then re-run" >&2
+    return 1
+  }
   if [ "$(printf '%s\n' "$pin" | wc -l)" -ne 1 ] || ! [[ "$pin" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*==[0-9][A-Za-z0-9.]*$ ]]; then
     echo "census-fallback: $1 declares no single pinned dependency in its PEP 723 header —" \
          "restore its one exact '# dependencies = [\"<package>==<version>\"]' line (git checkout -- $1), then re-run" >&2

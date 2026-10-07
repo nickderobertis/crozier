@@ -19,15 +19,24 @@ RUNNER = REPO / "tests" / "census_fallback" / "run.sh"
 
 @unittest.skipIf(os.name == "nt", "run.sh runs on the Linux legs only")
 class ThePinIsRequired(unittest.TestCase):
-    def run_over(self, header: str, stage: str) -> subprocess.CompletedProcess[str]:
+    SEARCH = "tools/surface-census/golden-reach-search.py"
+    RECENSUS = "tools/witness-search/witness-search-recensus.py"
+    PIN = '# dependencies = ["ruamel.yaml==0.19.1"]\n'
+
+    def run_over(self, header: str, stage: str, **headers: str | None) -> subprocess.CompletedProcess[str]:
+        """`run.sh stage` over scripts whose headers carry `header`, or the
+        `headers` entry its key (`search`, `recensus`) names; `None` there leaves
+        the script unreadable."""
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
             (root / "tests" / "census_fallback").mkdir(parents=True)
             shutil.copy2(RUNNER, root / "tests" / "census_fallback" / "run.sh")
-            for script in ("tools/surface-census/golden-reach-search.py",
-                           "tools/witness-search/witness-search-recensus.py"):
+            for name, script in (("search", self.SEARCH), ("recensus", self.RECENSUS)):
                 (root / script).parent.mkdir(parents=True, exist_ok=True)
-                (root / script).write_text(f"# /// script\n{header}# ///\n", encoding="utf-8")
+                (root / script).write_text(f"# /// script\n{headers.get(name, header) or ''}# ///\n",
+                                           encoding="utf-8")
+                if name in headers and headers[name] is None:
+                    (root / script).chmod(0)
             # A stand-in `uv` that would record any run it was asked for.
             bin_dir = root / "bin"
             bin_dir.mkdir()
@@ -51,6 +60,19 @@ class ThePinIsRequired(unittest.TestCase):
                     self.assertIn("tools/surface-census/golden-reach-search.py declares no single pinned dependency",
                                   result.stderr)
                     self.assertIn("then re-run", result.stderr)
+
+    def test_the_recensus_pin_is_held_after_the_search_pin_is_taken(self) -> None:
+        result = self.run_over(self.PIN, "parsers", recensus='# dependencies = ["ruamel.yaml"]\n')
+        self.assertNotEqual(result.returncode, 0, result.stderr)
+        self.assertIn(f"{self.RECENSUS} declares no single pinned dependency", result.stderr)
+        self.assertNotIn(self.SEARCH, result.stderr)
+
+    @unittest.skipIf(hasattr(os, "geteuid") and os.geteuid() == 0, "root reads a file whatever its mode")
+    def test_a_script_it_cannot_read_is_named_not_mistaken_for_an_unpinned_one(self) -> None:
+        result = self.run_over(self.PIN, "parsers", recensus=None)
+        self.assertNotEqual(result.returncode, 0, result.stderr)
+        self.assertIn(f"census-fallback: cannot read {self.RECENSUS}", result.stderr)
+        self.assertNotIn("declares no single pinned dependency", result.stderr)
 
     def test_pin_prints_the_one_exact_pin_the_stages_install(self) -> None:
         printed = subprocess.run(["bash", str(RUNNER), "pin", "tools/surface-census/golden-reach-search.py"],
