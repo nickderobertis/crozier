@@ -889,6 +889,12 @@ def legacy_screen(args: argparse.Namespace) -> int:
             != (args.repository, args.commit, args.path):
         refusal = ("the measured record names another document than --repository/--commit/--path; pass "
                    "the record's own document, or drop --measured to measure this one")
+    elif args.measured and args.sha256 and record["document"]["sha256"] != args.sha256:
+        # A fresh measurement checks the pin itself, as its ref screen; an
+        # imported one was measured elsewhere, so the pin is checked here.
+        refusal = (f"the measured record read bytes with sha256 {record['document']['sha256'] or '(none)'}, "
+                   f"not the --sha256 {args.sha256} the acquisition pinned; pass the record measured over "
+                   "those bytes, or drop --measured to measure them now")
     if refusal:
         if not args.measured and isinstance(record, dict):
             discard_logs(record, directory)

@@ -125,6 +125,30 @@ LEDGER_REQUIRED_FIELDS = {
 }
 
 
+# What an acquisition ledger's identity fields must look like before they become
+# dictionary keys, glob patterns or GitHub request paths.
+LEDGER_REPOSITORY = re.compile(r"(?:github\.com/)?[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
+LEDGER_SHA1 = re.compile(r"[0-9a-f]{40}")
+LEDGER_SHA256 = re.compile(r"[0-9a-f]{64}")
+
+
+def identity_failure(row: dict[str, Any]) -> str | None:
+    """Why a candidate or document row's identity fields are malformed, or None."""
+    if not LEDGER_REPOSITORY.fullmatch(row["repository"]) or {".", ".."} & set(row["repository"].split("/")):
+        return f"repository {row['repository']!r} is no `owner/name`"
+    path = row["path"]
+    if path.startswith("/") or "\\" in path or ".." in path.split("/"):
+        return f"path {path!r} is not a path inside its repository"
+    if row.get("commit") is not None and not (isinstance(row["commit"], str) and LEDGER_SHA1.fullmatch(row["commit"])):
+        return f"commit {row['commit']!r} is no commit SHA"
+    for field in ("supersedes", "blob"):
+        if field in row and not (isinstance(row[field], str) and LEDGER_SHA1.fullmatch(row[field])):
+            return f"{field} {row[field]!r} is no 40-hex object id"
+    if "sha256" in row and not (isinstance(row["sha256"], str) and LEDGER_SHA256.fullmatch(row["sha256"])):
+        return f"sha256 {row['sha256']!r} is no SHA-256 digest"
+    return None
+
+
 def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
     if not path.is_file():
         return []
@@ -201,6 +225,10 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
                 for item in results
             ):
                 raise ValueError(f"{path}:{number}: invalid answered query results")
+        if path.name in ("candidates.jsonl", "documents.jsonl"):
+            failure = identity_failure(row)
+            if failure:
+                raise ValueError(f"{path}:{number}: {failure}")
         if path.name == "candidates.jsonl":
             if not isinstance(row.get("disposition"), str) or (
                 "selector_count" in row and not isinstance(row["selector_count"], int)

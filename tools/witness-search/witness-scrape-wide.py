@@ -219,6 +219,26 @@ def read_inventory(path: Path) -> dict:
                 or not re.fullmatch("[0-9a-f]{64}", row[field])
             ):
                 raise ValueError(f"{path}: malformed {field}")
+        # `index-tree --local-paths` writes the pinned tree's file for a row it
+        # also gives a tree `path` and a digest: a local read is that file,
+        # checked against that digest, and nothing else on this machine.
+        if "local_path" in row:
+            local, tree_path = row["local_path"], row.get("path")
+            if (
+                not isinstance(local, str)
+                or not isinstance(tree_path, str)
+                or not tree_path
+                or ".." in Path(tree_path).parts
+                or not Path(local).is_absolute()
+                or ".." in Path(local).parts
+                or Path(local).parts[-len(Path(tree_path).parts):] != Path(tree_path).parts
+                or "sha256" not in row
+            ):
+                raise ValueError(
+                    f"{path}: malformed local_path for {row['artifact']}: it must be the absolute path of the "
+                    "row's own tree `path`, on a row carrying the sha256 it is checked against; rebuild the "
+                    "inventory with `index-tree --local-paths`"
+                )
     return value
 
 

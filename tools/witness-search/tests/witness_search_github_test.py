@@ -2335,6 +2335,28 @@ components:
                 self.assertEqual(1, refused.returncode)
                 self.assertIn(expected, refused.stderr)
                 self.assertIn("inspect the source evidence and rerun", refused.stderr)
+        # A candidate row's identity becomes dictionary keys, glob patterns and
+        # request paths, so a malformed one is refused at the ledger.
+        queries.write_text(json.dumps({"source": "github-code-search", "key": "shape", "query": "q",
+                                       "outcome": "answered", "result_count": 0, "results": []}) + "\n",
+                           encoding="utf-8")
+        (trees / "publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8")
+        candidates = root / "witness-search-github-code-search/candidates.jsonl"
+        base = {"source": "github-code-search", "key": "shape", "repository": "example/api",
+                "path": "openapi.yaml", "disposition": "does-not-declare"}
+        for field, value, message in (
+            ("repository", "../escape", "repository '../escape' is no `owner/name`"),
+            ("path", "../../etc/passwd", "path '../../etc/passwd' is not a path inside its repository"),
+            ("commit", "main", "commit 'main' is no commit SHA"),
+            ("supersedes", 7, "supersedes 7 is no 40-hex object id"),
+            ("sha256", "abc", "sha256 'abc' is no SHA-256 digest"),
+        ):
+            with self.subTest(field=field):
+                candidates.write_text(json.dumps({**base, field: value}) + "\n", encoding="utf-8")
+                refused = subprocess.run(command, capture_output=True, text=True)
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(f"candidates.jsonl:1: {message}", refused.stderr)
+        candidates.unlink()
         queries.write_text("", encoding="utf-8")
         (trees / "publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8")
         waits = root / "witness-search-github-code-search/index-pacing-waits.jsonl"

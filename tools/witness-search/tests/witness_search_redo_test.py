@@ -1025,6 +1025,13 @@ class WideWitnessTests(unittest.TestCase):
         for field in ('sha256', 'prior_sha256'):
             for value in ('A' * 64, 'a' * 63, 42):
                 cases.append(({'schema_version': 1, 'sources': [dict(source, **{field: value})]}, f'malformed {field}'))
+        local = {'path': 'APIs/x/openapi.yaml', 'sha256': 'a' * 64}
+        for row in (dict(source, local_path='/etc/passwd', **local),
+                    dict(source, local_path='/tree/APIs/x/openapi.yaml', path='APIs/x/openapi.yaml'),
+                    dict(source, local_path='tree/APIs/x/openapi.yaml', **local),
+                    dict(source, local_path='/tree/../etc/APIs/x/openapi.yaml', **local),
+                    dict(source, local_path=7, **local)):
+            cases.append(({'schema_version': 1, 'sources': [row]}, 'malformed local_path'))
         args = ('acquire', '--inventory', inventory, '--cache', cache,
                 '--contract', self.report / 'keys.md', '--output', output)
         for invalid, message in cases:

@@ -458,6 +458,10 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertIn("the measured record names another document than --repository/--commit/--path",
                       refused.stderr)
         self.assertEqual([], self.rows())
+        pinned = self.screen("--measured", str(path), "--disposition", "witness-found", "--sha256", "0" * 64)
+        self.assertEqual(1, pinned.returncode, pinned.stderr)
+        self.assertIn(f"not the --sha256 {'0' * 64} the acquisition pinned", pinned.stderr)
+        self.assertEqual([], self.rows())
         self.assertEqual(0, self.screen("--measured", str(path), "--disposition", "witness-found").returncode)
 
     def test_a_keys_file_that_is_not_the_derivation_is_refused(self) -> None:

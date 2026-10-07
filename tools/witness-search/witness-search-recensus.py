@@ -5,7 +5,7 @@
 # ///
 """Decide the witness-search candidates the first acquisition left undecided.
 
-Two stages, each appending to a query or walk source's own ledger
+Three stages, each appending to a query or walk source's own ledger
 (`candidates.jsonl`, or `documents.jsonl` for the publisher trees) so that
 `witness-search-github-index.py` re-derives `records.tsv` from it:
 
@@ -57,6 +57,7 @@ import sys
 import time
 import urllib.parse
 from pathlib import Path
+from collections.abc import Callable
 from types import ModuleType
 from typing import Any
 
@@ -167,7 +168,7 @@ def _alarm(signum: int, frame: Any) -> None:
     raise TimeoutError("census bound reached")
 
 
-def read_document(path: str, timeout: int, phase: Any = None) -> dict[str, Any]:
+def read_document(path: str, timeout: int, phase: Callable[[str], None] | None = None) -> dict[str, Any]:
     """One cached document through the full parser and the census: its verdict.
 
     `{"verdict": "counts", "counts": {...}}` for an OpenAPI 3 description,
