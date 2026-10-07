@@ -22,8 +22,9 @@
 // promoted ones included, with the cache skipped: it exists to catch what
 // affected detection or a stale cache could miss.
 //
-// Quiet on success: the selection line, then one line. Nx's own output goes to
-// a log that is printed in full when a target fails.
+// Quiet on success: the tier and the selected projects (and any promoted ones
+// left to their own legs), then one completion line. Nx's own output goes to a
+// log that is printed in full when a target fails.
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

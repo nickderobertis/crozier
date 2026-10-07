@@ -32,7 +32,7 @@ export function project(name, extra = {}) {
 
 /**
  * A committed scratch workspace with projects `a` and `b`, `origin/main` at
- * the first commit; returns its root. `cleanup` removes it.
+ * the first commit; returns its root, removed once the test `t` ends.
  */
 export function scratchWorkspace(t) {
   const root = mkdtempSync(join(tmpdir(), "crozier-gate-"));

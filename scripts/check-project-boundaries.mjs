@@ -384,7 +384,8 @@ for (const { source, target, how } of edges.values()) {
   }
 }
 
-// Cycles through the subject in the implicit graph.
+// A cycle through the subject breaks Nx's ordering of its targets, and only
+// the edges into known projects can close one.
 const adjacency = {};
 for (const [source, deps] of Object.entries(graph.dependencies)) {
   adjacency[source] = deps.map((dep) => dep.target).filter((t) => Object.hasOwn(projects, t));
