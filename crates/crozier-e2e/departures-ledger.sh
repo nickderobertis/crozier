@@ -9,22 +9,28 @@
 # makes a missing committed source fail rather than skip, so no golden's rows
 # are lost. The ledger gate's own scratch tests expect ledger failures, so they
 # are not run.
-set -uo pipefail
-cd "$(dirname "$0")/../.."
+set -euo pipefail
 
-records=$(mktemp -d "${TMPDIR:-/tmp}/crozier-departures.XXXXXX")
-log=$(mktemp "${TMPDIR:-/tmp}/crozier-departures-log.XXXXXX")
-trap 'rm -rf "$records" "$log"' EXIT
+fail() { echo "departures-ledger: $1" >&2; echo "departures-ledger: $2" >&2; exit 1; }
+
+cd "$(dirname "$0")/../.." || fail "cannot enter the repository root above $0" "run it from a readable checkout"
+
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/crozier-departures.XXXXXX") \
+  || fail "cannot create a temporary directory under ${TMPDIR:-/tmp}" "point TMPDIR at a writable directory and rerun"
+trap 'rm -rf "$scratch"' EXIT
+records="$scratch/records" log="$scratch/log"
+mkdir "$records" || fail "cannot create $records" "point TMPDIR at a writable directory and rerun"
+
 if ! CROZIER_REQUIRE_CORPUS=1 CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked -p crozier-e2e \
   --no-fail-fast -E 'not test(/^departures_ledger_gate::/)' >"$log" 2>&1; then
   cat "$log" >&2
-  echo "departures-ledger: a comparison failed while recording (above); fix it, then rerun" >&2
-  exit 1
+  fail "a comparison failed while recording (above)" "fix it, then rerun just departures-ledger"
 fi
 if ! CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked -p crozier-e2e --run-ignored only \
   -E 'test(=departures_ledger_gate::write_departures_ledger)' >"$log" 2>&1; then
   cat "$log" >&2
-  echo "departures-ledger: the merged ledger was refused (above); fix the cause, then rerun" >&2
-  exit 1
+  fail "the merged ledger was refused (above)" "fix the cause, then rerun just departures-ledger"
 fi
-echo "departures-ledger: wrote tests/fixtures/departures-ledger.tsv ($(($(wc -l < tests/fixtures/departures-ledger.tsv) - 1)) rows)"
+ledger=tests/fixtures/departures-ledger.tsv
+rows=$(wc -l < "$ledger") || fail "cannot read $ledger after writing it" "restore it with git checkout -- $ledger and rerun"
+echo "departures-ledger: wrote $ledger ($((rows - 1)) rows)"

@@ -1,9 +1,5 @@
 # llmlint-tooling
 
-The judged tier's tooling: `llmlint-plugins.py` (refresh the vendored rule set in
-`llmlint-plugins/` and its lock) and `llmlint-diff.py` (the batching wrapper
-behind `just lint-llm-diff`), with their tests.
-
 - `test-plugins` skips where llmlint is absent unless
   `CROZIER_REQUIRE_LLMLINT=1` (CI's `llmlint` job sets it). Both the variable and
   `llmlint --version` are inputs, so a cached skip never replays where the binary

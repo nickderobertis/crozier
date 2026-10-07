@@ -14,8 +14,14 @@
 # NOT part of `just check`: runs the committed corpus instrumented.
 set -euo pipefail
 
-script_dir="$(cd "$(dirname "$0")" && pwd)"
-repo_root="$(cd "$script_dir/../.." && pwd)"
+script_dir="$(cd "$(dirname "$0")" && pwd)" || {
+  echo "fixtures-coverage: cannot enter the directory holding $0; run it from a readable checkout" >&2
+  exit 1
+}
+repo_root="$(cd "$script_dir/../.." && pwd)" || {
+  echo "fixtures-coverage: cannot enter the repository root above $script_dir; run it from a readable checkout" >&2
+  exit 1
+}
 
 scope=""
 out_dir="$repo_root/.local/fixtures-coverage"

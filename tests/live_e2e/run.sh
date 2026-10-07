@@ -6,8 +6,9 @@
 # tests (prove request/response shaping vs Fern): it proves the compiled client
 # round-trips against a spec-shaped server. See tests/live_e2e/AGENTS.md.
 #
-# Quiet on success. SEPARATE from `just check` so the core gate stays Node-free;
-# CI runs it as its own required leg. Linux/macOS (Unix venv layout).
+# Quiet on success. The `live-e2e` project's `test`: promoted out of the affected
+# tier (`just check --sweep` runs it); CI runs it as its own required leg.
+# Linux/macOS (Unix venv layout).
 #
 # Needs: cargo (build the binary under test), ruff (crozier's generation-time
 # dependency — it shells out to `ruff format`), Node/npx (Prism, the mock server),

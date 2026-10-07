@@ -85,6 +85,7 @@ jobs:
       - name: Bootstrap
         run: just bootstrap
       - name: Check
+        # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit, release_does_not_regate_an_already_swept_commit] The standing exception the job's own directive records: a Release cut by hand in the GitHub UI can tag any commit, release-PR or not, and this sweep is the only gate such a tag passes before an irreversible crates.io/PyPI publish.
         run: just check --sweep --exclude=tag:tier:promoted
 
   upload:

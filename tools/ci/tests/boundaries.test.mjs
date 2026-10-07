@@ -2,7 +2,7 @@
 // suite from an unrelated project fails the project that draws it, in each form
 // an edge can take, and the same graph without the edge passes.
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { test } from "node:test";
 import { scratchWorkspace, write } from "./support.mjs";
@@ -68,4 +68,94 @@ test("a project carrying no type tag is refused", (t) => {
   const run = check(root, "a");
   assert.equal(run.status, 1);
   assert.match(run.stderr, /a carries 0 type: tags/);
+});
+
+test("an edge through a named input or a glob that descends into the suite fails", (t) => {
+  for (const inputs of [["sharedReads"], ["{workspaceRoot}/b/**/*"]]) {
+    const root = graph(t, { targets: { test: { command: "true", inputs } } });
+    write(root, {
+      "nx.json": JSON.stringify({
+        namedInputs: { default: ["{projectRoot}/**/*"], sharedReads: ["{workspaceRoot}/b/src.txt"] },
+        boundaries: BOUNDARIES,
+      }),
+    });
+    const run = check(root, "a");
+    assert.equal(run.status, 1, `${inputs}: ${run.stdout}`);
+    assert.match(run.stderr, /expensive-suites-stay-unreachable: a may not depend on b/);
+  }
+});
+
+test("a glob that stays in one directory reads no project below it", (t) => {
+  const root = graph(t, { targets: { test: { command: "true", inputs: ["{workspaceRoot}/*.md", "{workspaceRoot}/*.txt"] } } });
+  assert.equal(check(root, "a").status, 0);
+});
+
+test("a dependency the type table does not allow fails, naming type-allow", (t) => {
+  const root = graph(t, {});
+  write(root, { "c/project.json": JSON.stringify({ name: "c", tags: ["type:e2e"], implicitDependencies: ["a"], targets: {} }) });
+  const allowed = check(root, "c");
+  assert.equal(allowed.status, 0, allowed.stderr);
+  write(root, { "a/project.json": JSON.stringify({ name: "a", tags: ["type:tooling"], implicitDependencies: ["c"], targets: {} }) });
+  write(root, { "nx.json": JSON.stringify({ namedInputs: {}, boundaries: { ...BOUNDARIES, allow: { "type:tooling": ["type:tooling"], "type:e2e": ["type:tooling"] } } }) });
+  const run = check(root, "a");
+  assert.equal(run.status, 1);
+  assert.match(run.stderr, /type-allow: a \(type:tooling\) may not depend on c \(type:e2e\)/);
+});
+
+test("the recorded exceptions admit an edge onto an expensive suite", (t) => {
+  // Another expensive suite, by its `from` tag.
+  let root = graph(t, { tags: ["type:tooling", "cost:expensive"], implicitDependencies: ["b"] });
+  assert.equal(check(root, "a").status, 0, check(root, "a").stderr);
+  // A project that measures the suite, by its `measures:` tag.
+  root = graph(t, { tags: ["type:tooling", "measures:b"], implicitDependencies: ["b"] });
+  assert.equal(check(root, "a").status, 0, check(root, "a").stderr);
+  // ...but measuring one suite admits no other.
+  root = graph(t, { tags: ["type:tooling", "measures:other"], implicitDependencies: ["b"] });
+  assert.equal(check(root, "a").status, 1);
+});
+
+test("a cycle in the implicit graph fails both projects on it; an acyclic chain passes", (t) => {
+  const root = graph(t, { implicitDependencies: ["c"] });
+  write(root, { "c/project.json": JSON.stringify({ name: "c", tags: ["type:tooling"], targets: {} }) });
+  assert.equal(check(root, "a").status, 0, check(root, "a").stderr);
+  write(root, { "c/project.json": JSON.stringify({ name: "c", tags: ["type:tooling"], implicitDependencies: ["a"], targets: {} }) });
+  for (const name of ["a", "c"]) {
+    const run = check(root, name);
+    assert.equal(run.status, 1, name);
+    assert.match(run.stderr, /acyclic-graph: .* is a cycle/);
+  }
+});
+
+test("a Cargo path dependency onto the suite's crate is an edge too", (t) => {
+  const root = graph(t, {});
+  write(root, {
+    "Cargo.toml": '[workspace]\nmembers = ["a", "b"]\nresolver = "2"\n',
+    "a/Cargo.toml": '[package]\nname = "a"\nversion = "0.0.0"\nedition = "2021"\npublish = false\n\n[dependencies]\nb = { path = "../b" }\n',
+    "a/src/lib.rs": "",
+    "b/Cargo.toml": '[package]\nname = "b"\nversion = "0.0.0"\nedition = "2021"\npublish = false\n',
+    "b/src/lib.rs": "",
+  });
+  execFileSync("cargo", ["generate-lockfile", "--offline"], { cwd: root, stdio: "pipe" });
+  const run = check(root, "a");
+  assert.equal(run.status, 1, run.stdout);
+  assert.match(run.stderr, /expensive-suites-stay-unreachable: a may not depend on b .*Cargo path dependency a -> b/);
+});
+
+test("a project with two type tags, or an undeclared one, is refused", (t) => {
+  for (const tags of [["type:tooling", "type:e2e"], ["type:unknown"]]) {
+    const root = graph(t, { tags });
+    const run = check(root, "a");
+    assert.equal(run.status, 1, JSON.stringify(tags));
+    assert.match(run.stderr, /a carries 2 type: tags|a is tagged type:unknown, which nx.json "boundaries.allow" does not declare/);
+  }
+});
+
+test("a malformed boundaries table is refused rather than enforcing less", (t) => {
+  for (const unreachable of [[], { "cost:expensive": { rule: "r", why: "w", from: [1] } }, { "cost:expensive": { from: [], why: "w" } }]) {
+    const root = graph(t, {});
+    write(root, { "nx.json": JSON.stringify({ namedInputs: {}, boundaries: { ...BOUNDARIES, unreachable } }) });
+    const run = check(root, "a");
+    assert.equal(run.status, 1, JSON.stringify(unreachable));
+    assert.match(run.stderr, /no well-formed "boundaries" table/);
+  }
 });

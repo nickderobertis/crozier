@@ -148,13 +148,20 @@ const wellFormed =
   ) &&
   unreachable !== null &&
   typeof unreachable === "object" &&
-  Object.values(unreachable).every(
-    (entry) => typeof entry?.rule === "string" && Array.isArray(entry.from) && typeof entry.why === "string",
+  !Array.isArray(unreachable) &&
+  Object.entries(unreachable).every(
+    ([tag, entry]) =>
+      /^[a-z][a-z0-9-]*:[a-z0-9:-]+$/.test(tag) &&
+      typeof entry?.rule === "string" &&
+      entry.rule.length > 0 &&
+      typeof entry.why === "string" &&
+      Array.isArray(entry.from) &&
+      entry.from.every((from) => typeof from === "string" && /^[a-z][a-z0-9-]*:[a-z0-9:-]+$/.test(from)),
   );
 if (!wellFormed) {
   fail([
     'nx.json has no well-formed "boundaries" table to enforce',
-    "ACTION: restore `boundaries.allow` (one `type:` tag per key, each listing the `type:` tags it may depend on) and `boundaries.unreachable` (tag -> { rule, from, why })",
+    "ACTION: restore `boundaries.allow` (one `type:` tag per key, each listing the `type:` tags it may depend on) and `boundaries.unreachable` (tag -> { rule, from: [tags], why })",
   ]);
 }
 
@@ -266,8 +273,8 @@ for (const [fromDir, toDir, how] of cargoEdges()) {
   const to = ownerOf(relative(root, toDir)) ?? cargoOwner(toDir);
   addEdge(from, to, how);
 }
-// The root package's manifest sits above every project root; the project that
-// declares `"cargoPackage"` in its metadata owns it.
+// The root package's manifest sits above every project root; the project whose
+// metadata names that directory as `cargoManifestDir` owns it.
 function cargoOwner(dir) {
   const rel = relative(root, dir);
   for (const [name, node] of Object.entries(projects)) {

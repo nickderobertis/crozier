@@ -11,27 +11,31 @@
 # The summary-line grep is a drift gate: `cargo test <name>` exits 0 even when
 # the exact-name filter matches nothing, so a renamed or removed reporter would
 # otherwise no-op silently.
-set -uo pipefail
-cd "$(dirname "$0")/../.."
+set -euo pipefail
+
+fail() { echo "fixtures-report: $1" >&2; echo "fixtures-report: $2" >&2; exit 1; }
+
+cd "$(dirname "$0")/../.." || fail "cannot enter the repository root above $0" "run it from a readable checkout"
 
 case "${1:-}" in
   gaps) reporter=report_fixture_gaps summary='file(s) still unmatched across all corpora'
-        drift="its self-check failed" ;;
+        restore="restore report_fixture_gaps in crates/crozier-e2e/tests/e2e.rs, or fix the self-check failure above" ;;
   diff) reporter=report_fixture_diffs summary='differing file(s) across the reported corpora'
-        drift="the corpus filter matched nothing" ;;
-  *) echo "usage: crates/crozier-e2e/fixtures-report.sh gaps|diff" >&2; exit 2 ;;
+        restore="restore report_fixture_diffs in crates/crozier-e2e/tests/e2e.rs, or pass a corpus that exists (just fixtures-diff <corpus>)" ;;
+  *) fail "unknown report '${1:-}'" "usage: crates/crozier-e2e/fixtures-report.sh gaps|diff" ;;
 esac
 
-out=$(mktemp "${TMPDIR:-/tmp}/crozier-fixtures-$1.XXXXXX")
+out=$(mktemp "${TMPDIR:-/tmp}/crozier-fixtures-$1.XXXXXX") \
+  || fail "cannot create a temporary file under ${TMPDIR:-/tmp}" "point TMPDIR at a writable directory and rerun"
 trap 'rm -f "$out"' EXIT
-status=0
-cargo test --locked -p crozier-e2e --test e2e -- --ignored --nocapture "$reporter" >"$out" 2>&1 || status=$?
-if [ "$status" -eq 0 ] && grep -qF "$summary" "$out"; then
-  # Quiet on success: only the report, from the first corpus header through the
-  # summary, not cargo's build/test scaffolding.
+
+if cargo test --locked -p crozier-e2e --test e2e -- --ignored --nocapture "$reporter" >"$out" 2>&1 \
+  && grep -qF "$summary" "$out"; then
+  # Only the report, from the first corpus header through the summary, never
+  # cargo's build/test scaffolding.
+  # llmlint: ignore[tool_output_is_signal] This report is the output the command exists to print (`just fixtures-gaps` / `just fixtures-diff`); everything else cargo printed is dropped, and a failure prints the whole log plus the fix.
   awk -v summary="$summary" '/^=== /{p=1} p; index($0, summary){p=0}' "$out"
 else
   cat "$out" >&2
-  echo "fixtures-$1: no report from $reporter — renamed/removed in crates/crozier-e2e/tests/e2e.rs, or $drift" >&2
-  exit 1
+  fail "no report from $reporter (output above)" "$restore"
 fi

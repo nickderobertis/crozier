@@ -42,7 +42,7 @@ pub const CARVE_OUT_KINDS: [(&str, &str); 4] = [
 ];
 
 /// Every committed Fern golden tree a comparison reads crozier's output
-/// against, keyed by its repository-relative path. `tests/e2e.rs` derives it
+/// against, keyed by its repository-relative path. `crates/crozier-e2e/tests/e2e.rs` derives it
 /// from the comparisons' own registrations and holds the committed copy,
 /// [`INVENTORY`], to them, so both test binaries validate against one list.
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]

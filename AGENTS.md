@@ -101,34 +101,23 @@ Use the `just` recipes; do not hand-roll equivalents.
   `target/` (never shared across worktrees) and `profile.dev.debug = 1`. It
   configures no `sccache`; a compile cache is a user-level `~/.cargo/config.toml`
   `[build] rustc-wrapper`, which cargo merges with this one.
-- `just check` — the gate, run through the Nx project graph (`nx.json` and a
-  `project.json` per project). By default the **affected tier**: every gate
-  target (format, lint, test, build, coverage, supply-chain, doc) of the projects
-  a change since the base can reach; the base is `NX_BASE` (a ref name or SHA),
-  else the merge base with `origin/main`. `just check --sweep` is the **broader
-  tier**: every project, promoted tiers included, uncached. Must pass before any
-  commit/PR.
-- `just test` / `just lint` — those targets alone (affected; `--sweep` for all);
-  `just test-e2e`, `just format`; the old per-check recipes stay as aliases of
-  their project targets, and `just nx …` runs Nx itself.
-- **Projects:** the crate `crozier` (rooted at `src/`), the binary suite
-  `crozier-e2e` (`crates/`), the promoted tiers under `tests/` (they leave the
-  affected tier for what they touch) plus `screenshots`, the tooling domains under
-  `tools/`, and the `workspace` aggregate. A target's `inputs` are both its cache
-  key and its affected trigger: code that starts reading a new path adds it there,
-  or a change to that path never reruns it. Every project's `lint` runs the
-  module-boundary rule (`scripts/check-project-boundaries.mjs`, rules in
-  `nx.json`'s `boundaries`).
+- `just check` — the gate, through the Nx project graph: the **affected tier**
+  by default, `--sweep` for the **broader tier** (the recipe says which base and
+  which targets). Must pass before any commit/PR.
+- `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
+- A target's `inputs` are both its cache key and its affected trigger: code that
+  starts reading a new path adds it there, or a change to that path never reruns
+  it. Where an edge may go is `nx.json`'s `boundaries`, enforced by every
+  project's `lint`.
 - `just test-live-e2e` — live runtime e2e: boot a Prism OpenAPI mock server per
   fixture and drive the generated SDK through every documented endpoint, asserting
-  typed responses come back. Spec-driven; promoted out of the affected tier
-  (`check --sweep` runs it) and a required CI leg. Needs Node/Prism + uv. See
+  typed responses come back. Spec-driven; promoted out of the affected tier, a
+  required CI leg. Needs Node/Prism + uv. See
   [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
-- `just test-sdk-env` — the e2e journeys (`sdk_env_*`, `#[ignore]`d out of
-  crozier-e2e's run) that build a generated SDK's venv from PyPI and run
-  mypy/pytest in it: the runtime wire suite and the fern-refusals gate's
-  `wire_test.py` among them. Promoted (`sdk-env`, `runtime`); CI's `sdk-env`
-  matrix job runs it, gated.
+- `just test-sdk-env` — the e2e journeys that build a generated SDK's venv from
+  PyPI and run mypy/pytest in it: the runtime wire suite and the fern-refusals
+  gate's `wire_test.py` among them. Promoted; CI's `sdk-env` matrix job runs it,
+  gated.
 - `just test-corpus-match` — byte-compare every registered corpus against Fern
   using committed sources. `just test-corpus-offline` proves it, its strict form,
   the census, the refusal-class gate and the census-fallback samples with sockets
@@ -140,7 +129,7 @@ Use the `just` recipes; do not hand-roll equivalents.
   so a refusal class that refuses a document Fern generates from fails it. The
   classes, their probes and the refused-document population live in
   [`docs/fern-refusals/`](docs/fern-refusals/README.md).
-- `just upgrade` — `cargo update`, then re-run `just check` over what it reaches.
+- `just upgrade` — `cargo update`, then re-run `just check`.
 - `just fern-goldens` / `just fern-goldens-generate` / `just
   fern-goldens-compare` — local diagnostics for the automated Fern lifecycle;
   normal maintenance uses the manually dispatched **Fern goldens** workflow. See
