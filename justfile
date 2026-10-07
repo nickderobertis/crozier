@@ -185,11 +185,12 @@ test-fern-probe-refusal:
 # Drives the real recipe under a SCOPE so it measures a handful of tests instead
 # of the whole corpus; the unmeasured thing would otherwise be the measurement.
 # Part of `check` (the recipe itself is not — it needs network and is slow).
-# The hand-written reach recipe is driven the same way, over temporary fixtures.
-# The golden-reach suite runs twice: the second time without `fcntl` and the
-# other POSIX-only modules, as on Windows, on every host.
+# The hand-written reach recipe is driven the same way, over temporary fixtures;
+# both build crozier instrumented, so they are the surface-reach project's. The
+# golden-reach suite runs twice: the second time without `fcntl` and the other
+# POSIX-only modules, as on Windows, on every host.
 test-fixtures-coverage:
-    @just nx run surface-census:test-fixtures-coverage
+    @just nx run-many --targets=test-fixtures-coverage --projects=surface-census,surface-reach
 
 # The arm search's YAML fallback against the census's stdlib loader: identical
 # counts on every registered YAML source, and each refused form's committed sample

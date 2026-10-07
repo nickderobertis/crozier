@@ -21,7 +21,9 @@ these cases drive instead is everything that decides what a cell *says*:
   and its `fern-rescreen` stage runs against an executable `fern` on PATH.
   Its `probe` stage runs the instrumented build `measure` makes, so it stays
   outside `just check` as `measure` does; only its refusal of a stale build is
-  driven here. What the stages commit is checked by `RankedBacklogTests`'
+  driven here. The one case that runs the real `llvm-profdata` is
+  `tools/surface-reach/tests/golden_reach_llvm_test.py`, beside the other suites
+  that drive the coverage toolchain. What the stages commit is checked by `RankedBacklogTests`'
   reconciliation of every arm-search record.
 """
 
@@ -354,20 +356,6 @@ class ReportTests(unittest.TestCase):
         run = self.run_report()
         self.assertNotEqual(0, run.returncode)
         self.assertIn("just golden-reach", run.stderr)
-
-    def test_a_profile_llvm_cannot_read_fails_with_its_stderr_and_the_rebuild(self) -> None:
-        profdata = golden_reach._llvm_tool("llvm-profdata")
-        with tempfile.TemporaryDirectory() as scratch:
-            raw = Path(scratch) / "stale.profraw"
-            raw.write_bytes(b"not a profile")
-            with self.assertRaises(SystemExit) as refused:
-                golden_reach.run_llvm(
-                    [profdata, "merge", "-sparse", str(raw), "-o", str(Path(scratch) / "m.profdata")]
-                )
-        message = str(refused.exception)
-        self.assertIn("`llvm-profdata merge` exited", message)
-        self.assertIn("stale.profraw", message)
-        self.assertIn("just golden-reach", message)
 
     def test_a_tool_is_named_without_the_windows_exe_suffix(self) -> None:
         """Windows' tool path ends `.exe`; the message names the tool as POSIX does."""
