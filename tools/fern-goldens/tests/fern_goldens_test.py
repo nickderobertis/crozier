@@ -2148,6 +2148,27 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertFalse((self.root / "tests" / "fixtures" / "alpha" / "expected-literals").exists())
         self.assertIn("generated beta/expected-literals at", result.stdout)
 
+    def test_each_refused_fixture_names_its_fix_and_the_rest_still_generate(self) -> None:
+        fixtures = self.root / "tests" / "fixtures"
+        (fixtures / "bare").mkdir()
+        (fixtures / "bare" / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+        (fixtures / "beta" / "expected" / STATE).write_text("{not json", encoding="utf-8")
+        result = self.run_overlay("..", "bare", "beta", "alpha")
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn(
+            "..: invalid fixture name — pass the name of one directory under tests/fixtures/",
+            result.stderr,
+        )
+        self.assertIn("[A-Za-z0-9][A-Za-z0-9._-]*", result.stderr)
+        self.assertIn("bare: no expected/ golden to overlay — restore it", result.stderr)
+        self.assertIn("tools/fern-goldens/generate-fern-fixture.sh bare", result.stderr)
+        self.assertIn("beta: unreadable expected/.crozier-fern-golden.json — restore it", result.stderr)
+        self.assertIn(
+            "git checkout -- tests/fixtures/beta/expected/.crozier-fern-golden.json", result.stderr
+        )
+        self.assertNotIn("generated beta/", result.stdout)
+        self.assertIn("generated alpha/expected-literals at", result.stdout)
+
 
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
 class FixturesRefreshTests(unittest.TestCase):

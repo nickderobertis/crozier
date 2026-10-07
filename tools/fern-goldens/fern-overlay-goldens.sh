@@ -75,15 +75,31 @@ mkdir -p "$logs"
 one() {
   local fixture="$1" dir spec="" version staging log
   shift
-  valid_fixture_name "$fixture" || { echo "$fixture: invalid fixture name" >&2; return 1; }
+  valid_fixture_name "$fixture" || {
+    echo "$fixture: invalid fixture name — pass the name of one directory under" \
+         "tests/fixtures/, matching [A-Za-z0-9][A-Za-z0-9._-]* with no '..'" >&2
+    return 1
+  }
   dir="$repo_root/tests/fixtures/$fixture"
   log="$logs/$fixture.log"
   : >"$log"
-  [ -d "$dir/expected" ] || { echo "$fixture: no expected/ golden to overlay" >&2; return 1; }
+  [ -d "$dir/expected" ] || {
+    echo "$fixture: no expected/ golden to overlay — restore it" \
+         "(git checkout -- tests/fixtures/$fixture/expected) or generate it first" \
+         "(tools/fern-goldens/generate-fern-fixture.sh $fixture; a CORPUS.md row via the" \
+         "Fern goldens workflow), then re-run" >&2
+    return 1
+  }
   version="$corpus_pin"
   [ ! -f "$dir/expected/.crozier-fern-golden.json" ] \
     || version="$(pin_of "$dir/expected/.crozier-fern-golden.json")" \
-    || { echo "$fixture: unreadable expected/.crozier-fern-golden.json" >&2; return 1; }
+    || {
+      echo "$fixture: unreadable expected/.crozier-fern-golden.json — restore it" \
+           "(git checkout -- tests/fixtures/$fixture/expected/.crozier-fern-golden.json) or" \
+           "regenerate expected/ with its record (tools/fern-goldens/generate-fern-fixture.sh" \
+           "$fixture; a CORPUS.md row via the Fern goldens workflow), then re-run" >&2
+      return 1
+    }
   if [ ! -f "$dir/openapi.yml" ]; then
     if cut -f1 "$repo_root/tests/fixtures/corpus-remote-ref-pins.tsv" | grep -qx -- "$fixture" \
       || cut -f2 "$repo_root/tests/fixtures/corpus-remote-ref-pins.tsv" | grep -qx -- "$fixture"; then
