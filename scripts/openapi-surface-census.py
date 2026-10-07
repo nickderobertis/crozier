@@ -2596,7 +2596,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "0c8fb4b28591803a",
+    "endpoint_method_name": "92a25efcc00ca5a9",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",

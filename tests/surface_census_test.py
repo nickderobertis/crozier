@@ -1307,6 +1307,7 @@ def completeness_failures(
     region_texts: dict[str, str],
     manifest: dict[str, list[str]],
     named: dict[str, str] | None = None,
+    root: Path = REPO,
 ) -> list[str]:
     """Every non-`golden` row: a committed proof, a searched `gap`, or a named one.
 
@@ -1345,6 +1346,21 @@ def completeness_failures(
             )
         elif record is None and category == "gap" and named.get(key, "").startswith(NOT_SEARCHED):
             continue
+        elif record is None and category == "handwritten":
+            gate = load_script("handwritten-fixtures.py")
+            validated = gate.gate(root)
+            covers = []
+            for name in validated["fixtures"]:
+                fixture, _found = gate.read_evidence(root / gate.HANDWRITTEN / name)
+                if fixture is not None:
+                    covers.extend(cover for cover in fixture.covers if cover.key == key and cover.arm is None)
+            if covers and not validated["failures"]:
+                continue
+            failures.extend(validated["failures"])
+            failures.append(
+                f"{key} ({region}.md, `{category}`): lacks both halves — no validated hand-written fixture "
+                "cover and its cited bounded search"
+            )
         elif record is None:
             failures.append(
                 f"{key} ({region}.md, `{category}`): lacks both halves — no MANIFEST.tsv row "
@@ -2970,7 +2986,7 @@ class CensusReportTests(unittest.TestCase):
         completed = run("--vendored-only", "--selector", "operation.callbacks")
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
-        self.assertIn("33 original fixtures", completed.stderr)
+        self.assertIn("31 original fixtures", completed.stderr)
 
     def test_a_valued_selector_reports_one_member_of_a_closed_set(self) -> None:
         completed = run("--vendored-only", "--selector", "parameter.in=cookie")
@@ -6878,7 +6894,7 @@ class SourceSelectionTests(unittest.TestCase):
             allowed = run("--corpus-root", directory, "--allow-unfetched", "--selector", "openapi.info")
             self.assertEqual(0, allowed.returncode, allowed.stderr)
             self.assertIn("is missing", allowed.stderr)
-            self.assertIn("33 original fixtures, 0 corpus sources", allowed.stderr)
+            self.assertIn("31 original fixtures, 0 corpus sources", allowed.stderr)
 
             payload = json.loads(
                 run("--corpus-root", directory, "--allow-unfetched", "--json").stdout
@@ -7269,7 +7285,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         """The unscoped vendored run — the exact invocation that never returned."""
         completed = run("--vendored-only")
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertIn("33 original fixtures", completed.stderr)
+        self.assertIn("31 original fixtures", completed.stderr)
         self.assertGreater(len(rows(completed)), 100)
 
     def test_a_flow_mapping_parses_to_its_entries_not_a_list_of_its_keys(self) -> None:
@@ -8033,18 +8049,27 @@ class RankedBacklogTests(unittest.TestCase):
         refused = set(refused_arm_records(REPO)) & unreached
         self.assertEqual(set(), covered & refused, "an arm is both hand-written and Fern-refused")
         searches = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
-        gated = {
-            key for key, _arm in covered
-            if is_config_gated((searches / f"{key}.md").read_text(encoding="utf-8"))
-        }
+        cover_verdicts: dict[tuple[str, str], set[str]] = {}
+        gate = load_script("handwritten-fixtures.py")
+        for directory in sorted(HANDWRITTEN.iterdir()):
+            if not directory.is_dir():
+                continue
+            fixture_record, failures = gate.read_evidence(directory)
+            self.assertEqual([], failures)
+            for cover in fixture_record.covers:
+                if cover.arm and (cover.key, cover.arm) in covered:
+                    cover_verdicts.setdefault((cover.key, cover.arm), set()).add(cover.verdict)
+        self.assertEqual(covered, set(cover_verdicts))
+        self.assertTrue(all(len(verdicts) == 1 for verdicts in cover_verdicts.values()))
+        verdict_counts = Counter(next(iter(verdicts)) for verdicts in cover_verdicts.values())
         with (REPO / "docs" / "fern-refusals" / "classes.tsv").open(encoding="utf-8", newline="") as handle:
             classes = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
         arms_stated = re.search(
             r"The (\d+) `golden` rows declare (\d+) handling sites.*?\*\*(\d+) are reached by a "
             r"registered real specification\.\*\*.*?\*\*(\d+) are reached only by a hand-written "
             r"fixture\.\*\*.*?each of the (\d+) is still one of the (\d+) \[unreached arms\].*?"
-            r"The six-source searches of (\d+) read `exhausted`\. The (\d+)th, `([a-z-]+)`'s, reads "
-            r"`config-gated`.*?\*\*(\d+) are reachable only by a document Fern refuses\*\*(.*?)"
+            r"The cited records of (\d+) read `exhausted`, (\d+) read `search-incomplete` "
+            r"and (\d+) read `config-gated`.*?\*\*(\d+) are reachable only by a document Fern refuses\*\*(.*?)"
             r"\*\*(\d+) (?:is a named gap|are named gaps)\*\*.*?"
             r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes is decided `refuse`",
             headline,
@@ -8054,7 +8079,8 @@ class RankedBacklogTests(unittest.TestCase):
         named = set(named_gap_arms(REPO)) & unreached
         self.assertEqual(
             [categories["golden"], len(arms), reached, len(covered), len(covered), len(unreached),
-             len(covered) - len(gated), len(covered), *sorted(gated), len(refused), len(named),
+             verdict_counts[EXHAUSTED], verdict_counts[SEARCH_INCOMPLETE], verdict_counts[CONFIG_GATED],
+             len(refused), len(named),
              reached, len(covered), len(refused), len(named), len(arms), len(classes)],
             [int(v) if v.isdigit() else v for i, v in enumerate(arms_stated.groups()) if i != 10],
         )
@@ -8628,27 +8654,31 @@ class RankedBacklogTests(unittest.TestCase):
     def test_every_conjunction_rows_evidence_is_the_census_own_output(self) -> None:
         """The counts a row publishes, against the census this gate can run.
 
-        The rows are classified off the whole 164-source walk, which needs the
-        network; what is checkable offline is every vendored source a row names —
-        its published count has to be that source's own, measured here by the real
-        script over the real documents. A transposed digit or a source named under
+        Every registered source is committed. Each named count has to be that
+        source's own, measured offline by the real census over its real document. A transposed digit or a source named under
         the wrong selector fails here rather than in a reader's head.
         """
         reported: dict[str, dict[str, int]] = {s: {} for s in census.CONJUNCTIONS}
-        payload = json.loads(run("--vendored-only", "--json").stdout)
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--json", *itertools.chain.from_iterable(
+                ("--selector", selector) for selector in census.CONJUNCTIONS)],
+            cwd=REPO, capture_output=True, text=True, timeout=180,
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        payload = json.loads(completed.stdout)
         for row in payload["rows"]:
             if row["selector"] in reported:
                 reported[row["selector"]][row["fixture"]] = row["count"]
-        vendored = {source["fixture"] for source in payload["sources"]}
+        registered = {source["fixture"] for source in payload["sources"]}
         checked = 0
         for selector, (_region, cells) in sorted(self.conjunction_rows().items()):
             for name, count in re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \((\d+)\)", cells[4]):
-                if name not in vendored:
+                if name not in registered:
                     continue
                 checked += 1
                 with self.subTest(selector=selector, fixture=name):
                     self.assertEqual(reported[selector].get(name, 0), int(count))
-        self.assertTrue(checked, "no conjunction row names a vendored source to check")
+        self.assertTrue(checked, "no conjunction row names a registered source to check")
 
     def test_every_conjunction_row_rests_on_a_source_carrying_a_golden(self) -> None:
         """A `golden` row names a witness whose golden really is committed."""
@@ -9619,11 +9649,13 @@ class RankedBacklogTests(unittest.TestCase):
             with path.open(encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
             with self.subTest(source=source):
+                # The shared reader holds both ordinary SHA-256 pins and paired,
+                # current-version opaque identities for excluded inputs.
+                golden_reach_search().read_refused(source)
                 names = [row["document"] for row in rows]
                 self.assertEqual(len(names), len(set(names)), "a document refused twice")
                 for row in rows:
                     self.assertIn(row["verdict"], ("syntax", "not-openapi"), row["document"])
-                    self.assertRegex(row["sha256"], r"^[0-9a-f]{64}$", row["document"])
                     self.assertRegex(row["parser"], r"^(python json|ruamel\.yaml) \d", row["document"])
                 self.assertEqual(set(), {(source, name) for name in names} & outstanding,
                                  "a census-refused document is still an outstanding item")
@@ -10704,6 +10736,44 @@ class CompletenessTierTests(unittest.TestCase):
     )
     CITED = "**Committed Fern measurement:** [`sample-shape`](probe-expected/sample-shape/)"
     OWING = "outstanding: " + ", ".join(f"`{source}`" for source in DECLARED_SOURCES) + " — parse failures"
+
+    def test_modern_handwritten_proof_requires_evidence_search_and_matching_cover(self) -> None:
+        """The report drives the existing fixture gate over real overlay files."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            def overlay(source: Path, target: Path) -> None:
+                target.mkdir()
+                for child in source.iterdir():
+                    (target / child.name).symlink_to(child, target_is_directory=child.is_dir())
+            overlay(REPO, root / "repo")
+            root = root / "repo"
+            for relative in ("docs", "docs/openapi-surface", "docs/openapi-surface/handwritten"):
+                target = root / relative
+                target.unlink()
+                overlay(REPO / relative, target)
+            fixture = root / "docs/openapi-surface/handwritten/turbine-pulse-counter"
+            fixture.unlink()
+            shutil.copytree(HANDWRITTEN / fixture.name, fixture)
+            text = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
+            cells = next(row for row in RankedBacklogTests.region_rows(text)
+                         if row[0].strip("`") == "integer-format-fallback")
+            def check() -> list[str]:
+                return completeness_failures({"integer-format-fallback": ("schemas", cells)},
+                                             {"schemas": text}, {}, root=root)
+            self.assertEqual([], check())
+            evidence = fixture / "evidence.toml"
+            original = evidence.read_text(encoding="utf-8")
+            evidence.unlink()
+            self.assertTrue(check(), "missing evidence accepted")
+            evidence.write_text(original.replace("integer-format-fallback", "uncovered-shape"), encoding="utf-8")
+            self.assertTrue(check(), "a cover naming another key accepted")
+            evidence.write_text(original.replace("witness-search-integer-format/README.md", "missing-search.md"), encoding="utf-8")
+            self.assertTrue(check(), "missing search accepted")
+            (root / "docs/openapi-surface/invalid-search.md").write_text("No search table.\n", encoding="utf-8")
+            evidence.write_text(original.replace("witness-search-integer-format/README.md", "invalid-search.md"), encoding="utf-8")
+            self.assertTrue(check(), "unparsable search accepted")
+            evidence.write_text(original, encoding="utf-8")
+            self.assertEqual([], check())
 
     def test_a_cited_proof_settles_a_limitations_row(self) -> None:
         self.assertEqual([], self.failures("limitations", f"verdict discards; {self.CITED}", self.PROOF))

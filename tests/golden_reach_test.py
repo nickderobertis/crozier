@@ -1242,6 +1242,12 @@ class ArmSearchStageTests(_StageScratch):
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.read_refused("jentic")
         self.assertIn("re-run `refuse --source jentic`", str(refused.exception))
+        # Redacting excluded identities does not admit a malformed ordinary pin.
+        path.write_text(path.read_text(encoding="utf-8").replace("\tbroken\t", "\tsyntax\t")
+                        .replace("0" * 64, "invalid-digest"), encoding="utf-8")
+        with self.assertRaises(SystemExit) as invalid_pin:
+            golden_reach_search.read_refused("jentic")
+        self.assertIn("SHA-256", str(invalid_pin.exception))
 
     def test_recensus_counts_what_only_the_full_parser_reads_and_names_its_loader(self) -> None:
         """A declarer written with a YAML tag leaves the unread list once counted."""
