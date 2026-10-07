@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -160,6 +161,28 @@ class LlmlintDiffTests(unittest.TestCase):
         self.assertNotEqual(0, run.returncode)
         self.assertIn("git fetch origin main", run.stderr)
         self.assertEqual([], self.calls())
+
+    @unittest.skipIf(os.name == "nt", "the failing git wrapper is a POSIX shell script")
+    def test_a_per_file_diff_git_refuses_fails_the_run_before_any_batch(self) -> None:
+        self.commit({"a.md": "a"})
+        real_git = shutil.which("git")
+        assert real_git
+        wrapper = self.root / "failing-git"
+        wrapper.mkdir()
+        (wrapper / "git").write_text(
+            "#!/bin/sh\n"
+            'if [ "$1" = diff ] && [ "$3" = -- ]; then echo "fatal: simulated" >&2; exit 128; fi\n'
+            f'exec "{real_git}" "$@"\n',
+            encoding="utf-8",
+        )
+        (wrapper / "git").chmod(0o755)
+        env = {**self.env, "PATH": f"{wrapper}{os.pathsep}{self.env['PATH']}"}
+        run = subprocess.run([sys.executable, str(SCRIPT), "base"], cwd=self.repo, env=env,
+                             capture_output=True, text=True)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("-- a.md` exited 128: fatal: simulated", run.stderr)
+        self.assertIn("run from inside the checkout, then retry", run.stderr)
+        self.assertEqual([], self.calls(), "a size it could not measure must not reach the judge")
 
     def test_the_recipe_runs_this_script(self) -> None:
         justfile = (REPO / "justfile").read_text(encoding="utf-8")

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import fnmatch
 import hashlib
+import http.server
 import json
 import sys
 import os
@@ -31,6 +32,7 @@ import shutil
 import socket
 import subprocess
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 
@@ -259,6 +261,154 @@ class AMalformedLlmlintAnswerIsRefused(unittest.TestCase):
                 self.assertIn(message, run.stderr)
                 self.assertIn("reinstall it with that recipe), then re-run", run.stderr)
                 self.assertNotIn("Traceback", run.stderr)
+
+
+class _Plugins(http.server.BaseHTTPRequestHandler):
+    def do_GET(self) -> None:  # noqa: N802 - the stdlib's handler name
+        body = self.server.documents.get(self.path)
+        self.server.requests.append(self.path)
+        self.send_response(200 if body is not None else 404)
+        self.end_headers()
+        if body is not None:
+            self.wfile.write(body)
+
+    def log_message(self, *_args: object) -> None:
+        pass
+
+
+@unittest.skipIf(os.name == "nt", "the stub llmlint is a POSIX shell script")
+class ARefreshFetchesScreensAndRecords(unittest.TestCase):
+    """A whole `refresh` over a synthetic root: the vendored plugin fetched from
+    a loopback server (`CROZIER_LLMLINT_PLUGINS_ORIGIN`), its version screened
+    against its pin, the copy and the lock rewritten, and the rules named by a
+    stub `llmlint` that answers as the real one does."""
+
+    URL = "https://plugins.example.test/rules/base.llmlint.yml"
+    BUNDLED = "https://plugins.example.test/rules/config_lint.yml"
+    DOCUMENT = b"version: 1.4.2\nrules:\n  - name: alpha\n"
+
+    def setUp(self) -> None:
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        self.root = Path(scratch.name)
+        self.script = self.root / "tools" / "llmlint" / "llmlint-plugins.py"
+        self.script.parent.mkdir(parents=True)
+        shutil.copy2(REPO / "tools" / "llmlint" / "llmlint-plugins.py", self.script)
+        (self.root / "llmlint-plugins").mkdir()
+        self.lock_path = self.root / "llmlint-plugins" / "lock.json"
+        self.vendored = self.root / "llmlint-plugins" / "base.llmlint.yml"
+        self.write_lock({"schema": 1, "plugins": [
+            {"name": "base", "url": self.URL, "pin": "1", "file": "llmlint-plugins/base.llmlint.yml"},
+            {"name": "config-lint", "url": self.BUNDLED, "pin": "1",
+             "file": "llmlint-plugins/config-lint.yml", "bundled": True},
+        ]})
+        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Plugins)
+        self.server.documents = {"/rules/base.llmlint.yml": self.DOCUMENT}
+        self.server.requests = []
+        thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(thread.join)
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+        self.origin = "http://127.0.0.1:{}".format(self.server.server_address[1])
+        stubs = self.root / "bin"
+        stubs.mkdir()
+        (stubs / "llmlint").write_text(
+            '#!/bin/sh\n'
+            'if [ "$1" = --version ]; then printf "%s\\n" "$STUB_VERSION"; exit 0; fi\n'
+            'cat "$STUB_SOURCES"\n',
+            encoding="utf-8",
+        )
+        (stubs / "llmlint").chmod(0o755)
+        self.sources = self.root / "sources.json"
+        self.answer({"alpha": str(self.vendored), "beta": str(self.vendored),
+                     "gamma": f"{self.BUNDLED}@1"})
+        self.env = {**os.environ, "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}",
+                    "STUB_SOURCES": str(self.sources), "STUB_VERSION": "llmlint 0.9.1",
+                    "CROZIER_LLMLINT_PLUGINS_ORIGIN": self.origin}
+
+    def write_lock(self, lock: dict) -> None:
+        self.lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+
+    def lock(self) -> dict:
+        return json.loads(self.lock_path.read_text(encoding="utf-8"))
+
+    def answer(self, rules: dict[str, str]) -> None:
+        self.sources.write_text(json.dumps(
+            {"sources": {"rules": {rule: {"source": source} for rule, source in rules.items()}}}),
+            encoding="utf-8")
+
+    def refresh(self, **env: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([sys.executable, str(self.script), "refresh"], capture_output=True,
+                              text=True, env={**self.env, **env}, timeout=60)
+
+    def test_a_refresh_vendors_the_document_and_records_what_llmlint_resolved(self) -> None:
+        run = self.refresh()
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertEqual(["/rules/base.llmlint.yml"], self.server.requests, "a bundled plugin is never fetched")
+        self.assertEqual(self.DOCUMENT, self.vendored.read_bytes())
+        base, bundled = self.lock()["plugins"]
+        self.assertEqual(self.URL, base["url"], "the lock keeps the recorded URL, not the test origin")
+        self.assertEqual("1.4.2", base["version"])
+        self.assertEqual(hashlib.sha256(self.DOCUMENT).hexdigest(), base["sha256"])
+        self.assertEqual(["alpha", "beta"], base["rules"])
+        self.assertEqual(["gamma"], bundled["rules"])
+        self.assertEqual("0.9.1", bundled["captured_with_llmlint"])
+        self.assertIn("llmlint-plugins: base 1.4.2 (2 rules)\n  + alpha\n  + beta\n", run.stdout)
+        self.assertIn("review the diff and commit llmlint-plugins/ together", run.stdout)
+        again = self.refresh()
+        self.assertEqual(0, again.returncode, again.stderr)
+        self.assertEqual("llmlint-plugins: unchanged (2 plugins)\n", again.stdout)
+
+    def test_a_moved_rule_set_is_listed_rule_by_rule(self) -> None:
+        self.assertEqual(0, self.refresh().returncode)
+        self.answer({"alpha": str(self.vendored), "delta": str(self.vendored), "gamma": f"{self.BUNDLED}@1"})
+        run = self.refresh()
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertIn("  + delta\n  - beta\n", run.stdout)
+        self.assertEqual(["alpha", "delta"], self.lock()["plugins"][0]["rules"])
+
+    def test_each_refusal_names_its_fix_and_leaves_the_lock_as_it_was(self) -> None:
+        before = self.lock_path.read_bytes()
+        cases = [
+            ("a version the pin rejects", {"/rules/base.llmlint.yml": b"version: 2.0.0\n"}, {},
+             "declares version 2.0.0, which its pin @1 rejects", "widen or bump `pin` for base"),
+            ("no version line", {"/rules/base.llmlint.yml": b"rules: []\n"}, {},
+             "declares no top-level `version:`", "report it upstream"),
+            ("a fetch the origin refuses", {}, {},
+             f"could not fetch {self.URL}: HTTP Error 404", "check the network and the recorded URL"),
+            ("an origin that is not loopback", {"/rules/base.llmlint.yml": self.DOCUMENT},
+             {"CROZIER_LLMLINT_PLUGINS_ORIGIN": "http://example.test:80"},
+             "CROZIER_LLMLINT_PLUGINS_ORIGIN='http://example.test:80' is not a loopback origin",
+             "unset CROZIER_LLMLINT_PLUGINS_ORIGIN"),
+            ("an llmlint with no version", {"/rules/base.llmlint.yml": self.DOCUMENT}, {"STUB_VERSION": ""},
+             "`llmlint --version` exited 0 and printed '', no version", "reinstall llmlint"),
+        ]
+        for name, documents, env, message, remedy in cases:
+            with self.subTest(name):
+                self.server.documents = documents
+                run = self.refresh(**env)
+                self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+                self.assertIn(message, run.stderr)
+                self.assertIn(remedy, run.stderr)
+                self.assertNotIn("Traceback", run.stderr)
+                self.assertEqual(before, self.lock_path.read_bytes())
+
+    def test_a_plugin_llmlint_resolves_no_rules_for_is_refused(self) -> None:
+        self.answer({"gamma": f"{self.BUNDLED}@1"})
+        run = self.refresh()
+        self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+        self.assertIn("base contributed no rules to the resolved config", run.stderr)
+        self.assertIn("check the plugin document, then re-run", run.stderr)
+
+    def test_a_bundled_flag_that_is_not_a_boolean_is_refused_before_any_fetch(self) -> None:
+        lock = self.lock()
+        lock["plugins"][1]["bundled"] = "false"
+        self.write_lock(lock)
+        run = self.refresh()
+        self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+        self.assertIn("plugin #2 has `bundled` 'false', not a boolean", run.stderr)
+        self.assertEqual([], self.server.requests)
 
 
 class TheGateAndTheRequiredCheckRunThisSuite(unittest.TestCase):

@@ -90,8 +90,11 @@ def changed(base: str, llmlint: str) -> dict[str, int]:
     for path in git("diff", "--name-only", "-z", "--diff-filter=d", merge_base).split("\0"):
         if not path or any(pattern.match(path) for pattern in skip) or not Path(path).is_file():
             continue
-        diff = subprocess.run(["git", "diff", merge_base, "--", path], capture_output=True).stdout
-        sizes[path] = Path(path).stat().st_size + len(diff)
+        diff = subprocess.run(["git", "diff", merge_base, "--", path], capture_output=True)
+        if diff.returncode != 0:
+            fail(f"`git diff {merge_base} -- {path}` exited {diff.returncode}: "
+                 f"{diff.stderr.decode(errors='replace').strip()} — run from inside the checkout, then retry")
+        sizes[path] = Path(path).stat().st_size + len(diff.stdout)
     return sizes
 
 

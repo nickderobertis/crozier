@@ -23,11 +23,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
 import tempfile
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -43,6 +45,13 @@ INPUT_FIELDS = ("name", "url", "pin", "file")
 # declared version is what a consumer's `@pin` ranges over and what identifies a
 # cache entry, so it is the version the lock records.
 VERSION_LINE = re.compile(r"^version:[ \t]*(?P<version>[^\s#]+)", re.MULTILINE)
+#: Test seam, as `CROZIER_CORPUS_PIN_ORIGIN` is for the corpus pins: when set,
+#: it replaces the scheme and host of each recorded URL FOR THE FETCH ONLY, so
+#: the boundary suite can drive a whole refresh against its own loopback server.
+#: It never changes the URL the lock records, and any value that is not a
+#: loopback origin is refused, so it cannot redirect a fetch off this machine.
+ORIGIN_ENV = "CROZIER_LLMLINT_PLUGINS_ORIGIN"
+LOOPBACK_ORIGIN = re.compile(r"http://(?:127\.0\.0\.1|localhost):[0-9]{1,5}")
 
 
 def fail(message: str, remedy: str) -> None:
@@ -66,6 +75,9 @@ def load_lock() -> dict[str, Any]:
         if missing:
             fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} lacks {', '.join(missing)}",
                  "give every plugin entry a non-empty name, url, pin and file (docs/llmlint-plugins.md)")
+        if not isinstance(plugin.get("bundled", False), bool):
+            fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} has `bundled` {plugin['bundled']!r}, not a boolean",
+                 "write `\"bundled\": true` for a plugin llmlint ships, or drop the field for a vendored one")
         file = PurePosixPath(plugin["file"])
         vendored = (REPO / VENDOR_DIR).resolve()
         # A relative path's first part is the vendor directory only when it is
@@ -88,15 +100,26 @@ def satisfies(pin: str, version: str) -> bool:
     return version.split(".")[: len(pinned)] == pinned
 
 
+def fetch_url(url: str) -> str:
+    """The URL a fetch of `url` reads: `url` itself, or its path on the test origin."""
+    origin = os.environ.get(ORIGIN_ENV)
+    if origin is None:
+        return url
+    if not LOOPBACK_ORIGIN.fullmatch(origin):
+        fail(f"{ORIGIN_ENV}={origin!r} is not a loopback origin",
+             f"unset {ORIGIN_ENV}; it exists only for the boundary suite's own server")
+    return origin + urllib.parse.urlsplit(url).path
+
+
 def fetch(url: str) -> str:
     if not url.startswith("https://"):
         fail(f"plugin URL is not https: {url}", "record an https:// URL in the lock")
-    request = urllib.request.Request(url, headers={"User-Agent": "crozier-llmlint-plugins"})
+    request = urllib.request.Request(fetch_url(url), headers={"User-Agent": "crozier-llmlint-plugins"})
     try:
         with urllib.request.urlopen(request, timeout=FETCH_TIMEOUT_SECONDS) as response:
             return response.read().decode("utf-8")
-    except (urllib.error.URLError, TimeoutError) as error:
-        fail(f"could not fetch {url}: {error}", "check the network, then re-run")
+    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError) as error:
+        fail(f"could not fetch {url}: {error}", "check the network and the recorded URL, then re-run")
     raise AssertionError("unreachable")
 
 
@@ -162,10 +185,16 @@ def rules_by_source(plugins: list[dict[str, Any]]) -> dict[str, list[str]]:
 
 
 def llmlint_version() -> str:
-    reported = subprocess.run(
-        ["llmlint", "--version"], capture_output=True, text=True, check=False
-    )
-    return reported.stdout.strip().split()[-1] if reported.returncode == 0 else "unknown"
+    """The installed llmlint's version, the last word of `llmlint --version`."""
+    try:
+        reported = subprocess.run(["llmlint", "--version"], capture_output=True, text=True, check=False)
+    except FileNotFoundError:
+        fail("llmlint is not on PATH", "install it with `just setup-llmlint`")
+    words = reported.stdout.split()
+    if reported.returncode != 0 or not words:
+        fail(f"`llmlint --version` exited {reported.returncode} and printed {reported.stdout.strip()!r}, no version",
+             "reinstall llmlint with `just setup-llmlint`, then re-run")
+    return words[-1]
 
 
 def describe(plugin: dict[str, Any]) -> str:
