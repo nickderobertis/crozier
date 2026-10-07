@@ -35,9 +35,12 @@ dir="$repo_root/tests/fixtures/$name"
 
 # A fixture directory is created whole or not at all.
 undo_partial_fixture() {
-  rm -rf "$dir"
   echo "fixture-new: could not create $dir/openapi.yml — check that tests/fixtures/ is writable and" \
        "the disk has free space, then re-run" >&2
+  if ! rm -rf "$dir"; then
+    echo "fixture-new: could not remove the partial $dir either — delete it by hand (rm -rf $dir)" \
+         "before re-running" >&2
+  fi
   exit 1
 }
 mkdir -p "$dir" || undo_partial_fixture

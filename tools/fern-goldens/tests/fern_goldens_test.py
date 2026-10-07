@@ -154,6 +154,19 @@ class FixtureNewTests(unittest.TestCase):
         self.assertIn("check that tests/fixtures/ is writable and the disk has free space", refused.stderr)
         self.assertFalse((self.fixtures / "shapes").exists())
 
+    def test_a_placeholder_it_cannot_write_removes_the_directory_it_made(self) -> None:
+        if os.geteuid() == 0:
+            self.skipTest("root writes through a read-only directory")
+        # Under this umask the new fixture directory is made unwritable, so
+        # creating it succeeds and writing its openapi.yml fails.
+        refused = subprocess.run(["sh", "-c", 'umask 0277 && exec "$0" shapes',
+                                  str(self.root / "tools" / "fern-goldens" / "fixture-new.sh")],
+                                 capture_output=True, text=True, check=False)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("could not create", refused.stderr)
+        self.assertNotIn("could not remove", refused.stderr)
+        self.assertFalse((self.fixtures / "shapes").exists())
+
 
 class GoldenOverlayReductionTests(unittest.TestCase):
     """`golden_overlay.py reduce` over real directories: what it keeps of an
@@ -291,7 +304,9 @@ class FernOverlayGoldensTests(unittest.TestCase):
         result = self.run_overlay("alpha", "beta", fail_generate="alpha")
         self.assertNotEqual(result.returncode, 0, result.stdout)
         log = self.root / ".local" / "fern-overlay" / "alpha.log"
-        self.assertIn(f"alpha: Fern generation failed; see {log}", result.stderr)
+        # The cause, from the log's last line, then where the whole run is.
+        self.assertIn("alpha: Fern generation failed: simulated Fern failure\n", result.stderr)
+        self.assertIn(f"alpha: the whole run is in {log}", result.stderr)
         self.assertIn("simulated Fern failure", log.read_text(encoding="utf-8"))
         self.assertIn(
             "then re-run tools/fern-goldens/fern-overlay-goldens.sh --enum-type literals alpha",
