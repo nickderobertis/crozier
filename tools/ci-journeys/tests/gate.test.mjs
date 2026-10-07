@@ -5,6 +5,8 @@
 // which projects the tier selected and ran.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { mkdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { commitChange, git, just, ran, scratchWorkspace } from "./support.mjs";
 
 test("with NX_BASE unset the affected tier keys off the merge base with origin/main", (t) => {
@@ -116,4 +118,39 @@ test("--plan prints the selection and the command, and runs nothing", (t) => {
   assert.match(run.stdout, /gate: projects: a\n/);
   assert.match(run.stdout, /gate: would run: nx run-many --targets=format,lint,test,build,coverage,supply-chain,doc --projects=a /);
   assert.ok(!ran(root, "a") && !ran(root, "b"));
+});
+
+// A stand-in `nx` in place of the scratch workspace's linked install: `graph
+// --file=` writes `graph`, and `show projects --affected` prints `affected`.
+function standInNx(root, graph, affected) {
+  // Unlink, never recurse: the link leads to this checkout's own install.
+  unlinkSync(join(root, "node_modules"));
+  mkdirSync(join(root, "node_modules", ".bin"), { recursive: true });
+  const script = join(root, "node_modules", ".bin", "nx");
+  writeFileSync(script, `#!/usr/bin/env node
+const fs = require("fs");
+const file = process.argv.find((arg) => arg.startsWith("--file="));
+if (file) fs.writeFileSync(file.slice("--file=".length), ${JSON.stringify(JSON.stringify({ graph }))});
+else process.stdout.write(${JSON.stringify(JSON.stringify(affected))});
+`, { mode: 0o755 });
+}
+
+test("an Nx answer of the wrong shape stops the gate before any target runs", { skip: process.platform === "win32" }, (t) => {
+  const good = { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: {} };
+  for (const [graph, affected, message] of [
+    [{ nodes: { a: { data: { tags: [1] } } } }, ["a"], /nodes are not projects with string tags/],
+    [{ nodes: "a" }, ["a"], /nodes are not projects with string tags/],
+    [good, { a: true }, /answered \{"a":true\}, not a list of this graph's projects/],
+    [good, ["a", "ghost"], /answered \["ghost"\], not a list of this graph's projects/],
+  ]) {
+    const root = scratchWorkspace(t);
+    commitChange(root, "a/src.txt", "a changed\n");
+    standInNx(root, graph, affected);
+    const run = just(root, ["check"], { NX_BASE: undefined });
+    assert.notEqual(run.status, 0, run.output);
+    assert.match(run.stderr, message);
+    assert.match(run.stderr, /just bootstrap/);
+    assert.doesNotMatch(run.stderr, /TypeError/);
+    assert.ok(!ran(root, "a") && !ran(root, "b"));
+  }
 });

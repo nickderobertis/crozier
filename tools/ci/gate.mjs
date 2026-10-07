@@ -183,8 +183,20 @@ function projectTags() {
   try {
     const file = join(scratch, "graph.json");
     nx(["graph", `--file=${file}`]);
-    const nodes = JSON.parse(readFileSync(file, "utf8")).graph.nodes;
-    return Object.fromEntries(Object.entries(nodes).map(([name, node]) => [name, node.data.tags ?? []]));
+    let nodes;
+    try {
+      nodes = JSON.parse(readFileSync(file, "utf8"))?.graph?.nodes;
+    } catch (error) {
+      die(`'nx graph' wrote no readable graph: ${error.message}`, "run 'just nx graph --file=graph.json' by hand to see why");
+    }
+    const tagsOf = (node) => node?.data?.tags ?? [];
+    if (
+      nodes === null || typeof nodes !== "object" || Array.isArray(nodes) ||
+      !Object.values(nodes).every((node) => Array.isArray(tagsOf(node)) && tagsOf(node).every((tag) => typeof tag === "string"))
+    ) {
+      die("'nx graph' wrote a graph whose nodes are not projects with string tags", "run 'just bootstrap' to reinstall the pinned Nx, then rerun");
+    }
+    return Object.fromEntries(Object.entries(nodes).map(([name, node]) => [name, tagsOf(node)]));
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
@@ -218,6 +230,13 @@ function main() {
     tierLine = "broader tier (--sweep): every project, cache skipped";
   } else {
     candidates = nxJson(["show", "projects", "--affected", `--base=${base.sha}`, "--json"]);
+    const unknown = Array.isArray(candidates) ? candidates.filter((name) => !Object.hasOwn(tags, name)) : [];
+    if (!Array.isArray(candidates) || unknown.length > 0) {
+      die(
+        `'nx show projects --affected' answered ${JSON.stringify(Array.isArray(candidates) ? unknown : candidates)}, not a list of this graph's projects`,
+        "run 'just bootstrap' to reinstall the pinned Nx, then rerun",
+      );
+    }
     tierLine = `affected tier against ${base.sha.slice(0, 12)} (${base.how})`;
   }
   const named = options.projects ? new Set(options.projects) : undefined;
