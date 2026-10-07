@@ -183,8 +183,9 @@ workflow to publish a provenanced golden so it rejoins byte comparison.
 answer *"what does no golden exercise at all?"* — and nothing else in the repo
 distinguishes "a committed Fern golden proves this" from "a crozier test asserts
 crozier agrees with its own expectation". `just fixtures-coverage` measures three
-tiers against one instrumented build and prints them side by side, per `src/`
-file, in counter regions and lines:
+tiers against one instrumented build and writes them side by side to
+`report.txt` in its `--out` directory (`.local/fixtures-coverage/` by default),
+per `src/` file, in counter regions and lines:
 
 | tier | what a covered region there means |
 |---|---|

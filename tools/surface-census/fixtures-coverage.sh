@@ -72,15 +72,25 @@ need "cargo-llvm-cov is not installed — run 'just bootstrap'" \
   cargo llvm-cov --version
 need "cargo-nextest is not installed — run 'just bootstrap'" \
   cargo nextest --version
-need "python3 is not on PATH — it renders the report (tools/surface-census/fixtures-coverage-report.py)" \
+need "python3 is not on PATH — it renders the report (tools/surface-census/fixtures-coverage-report.py). \
+Install Python 3 (apt install python3, brew install python, or uv python install) and put python3 on \
+PATH, then re-run" \
   command -v python3
 need "ruff is not on PATH — 'crozier generate' shells out to it, so every tier would \
 fail to generate. Run 'just bootstrap'" \
   command -v ruff
 
-mkdir -p "$out_dir"
+mkdir -p "$out_dir" || {
+  echo "fixtures-coverage: cannot create the output directory $out_dir — pass a writable" \
+       "--out DIR, then re-run" >&2
+  exit 1
+}
 log="$out_dir/run.log"
-: >"$log"
+: >"$log" || {
+  echo "fixtures-coverage: cannot write the run log $log — make $out_dir writable (and" \
+       "remove anything named run.log in the way), or pass another --out DIR, then re-run" >&2
+  exit 1
+}
 
 step() { # step DESCRIPTION NEXT-ACTION COMMAND...
   local description="$1" next_action="$2"
@@ -126,7 +136,10 @@ e2e_tests=$((golden_tests + journey_tests))
 
 python3 "$repo_root/tools/corpus/corpus_sources.py" check
 
-cd "$repo_root"
+cd "$repo_root" || {
+  echo "fixtures-coverage: cannot enter the repository root $repo_root; run it from a readable checkout" >&2
+  exit 1
+}
 
 # CROZIER_REQUIRE_CORPUS turns an unfetched corpus spec from a silent skip into a
 # hard failure, so the golden denominator can never quietly shrink.
@@ -169,6 +182,10 @@ tier() { # tier NAME EXPORT TESTS EXPRESSION
   python3 -c 'import json,sys; n,e,t,s=sys.argv[1:5]; print(json.dumps({"name":n,"export":e,"tests":int(t),"selection":s}))' "$@"
 }
 
+# The multi-line report goes to a file beside the exports, so a successful run
+# prints one line; the reporter's own refusals still reach stderr.
+report="$out_dir/report.txt"
+status=0
 python3 "$script_dir/fixtures-coverage-report.py" \
   --repo-root "$repo_root" \
   --golden-tier golden-only \
@@ -177,6 +194,12 @@ python3 "$script_dir/fixtures-coverage-report.py" \
   --subprocess-tier all-e2e \
   --tier "$(tier golden-only "$out_dir/golden-only.json" "$golden_tests" "$golden_expr")" \
   --tier "$(tier all-e2e "$out_dir/all-e2e.json" "$e2e_tests" "$(scoped 'binary(e2e)')")" \
-  --tier "$(tier non-e2e "$out_dir/non-e2e.json" "$unit_tests" "$unit_expr")"
+  --tier "$(tier non-e2e "$out_dir/non-e2e.json" "$unit_tests" "$unit_expr")" \
+  >"$report" || status=$?
+if [ "$status" -ne 0 ]; then
+  echo "fixtures-coverage: rendering the report into $report failed (the reason is above)." \
+       "The per-tier llvm-cov exports are in $out_dir; fix the cause, then re-run" >&2
+  exit "$status"
+fi
 
-echo "fixtures-coverage: per-tier llvm-cov exports in $out_dir" >&2
+echo "fixtures-coverage: wrote the report to $report (per-tier llvm-cov exports beside it)" >&2

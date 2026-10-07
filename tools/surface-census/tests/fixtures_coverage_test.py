@@ -168,6 +168,11 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
         return completed, out
 
+    def scoped_report(self) -> str:
+        """The report the shared scoped run wrote beside its exports."""
+        _completed, out = self.scoped_run()
+        return (out / "report.txt").read_text(encoding="utf-8")
+
     def tier_args(self, out: Path, *names: str, export: str | None = None) -> list[str]:
         return [
             arg
@@ -187,7 +192,7 @@ class RecipeEndToEndTests(unittest.TestCase):
 
     def test_scoped_run_reports_three_tiers_and_proves_subprocess_coverage(self) -> None:
         completed, out = self.scoped_run()
-        report = completed.stdout
+        report = self.scoped_report()
 
         for tier in ("golden-only", "all-e2e", "non-e2e"):
             self.assertIn(tier, report, f"the {tier} tier is missing from the report")
@@ -200,17 +205,22 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertGreater(proof["all-e2e"], proof["golden-only"], report)
         self.assertEqual(0, proof["non-e2e"], report)
 
-        # Quiet on success: the report is the only thing on stdout, and cargo's
-        # build/test scaffolding stays in the log file.
-        self.assertNotIn("Compiling", completed.stdout)
-        self.assertNotIn("Compiling", completed.stderr)
-        self.assertIn("exports in", completed.stderr)
+        # Quiet on success: one line naming the report, which is written beside
+        # the exports; cargo's build/test scaffolding stays in the log file.
+        self.assertEqual("", completed.stdout)
+        self.assertEqual(
+            [
+                f"fixtures-coverage: wrote the report to {out / 'report.txt'}"
+                " (per-tier llvm-cov exports beside it)"
+            ],
+            completed.stderr.splitlines(),
+        )
         self.assertTrue((out / "golden-only.json").is_file())
 
     def test_cfg_test_regions_are_excluded_from_the_denominator(self) -> None:
-        completed, out = self.scoped_run()
+        _completed, out = self.scoped_run()
 
-        reported = _reported_region_total(completed.stdout, "src/emit.rs")
+        reported = _reported_region_total(self.scoped_report(), "src/emit.rs")
         tiers = {
             name: reporter.load_tier(out / f"{name}.json", REPO)
             for name in ("golden-only", "all-e2e", "non-e2e")
@@ -228,8 +238,8 @@ class RecipeEndToEndTests(unittest.TestCase):
 
     def test_the_blind_spot_block_is_the_journeys_minus_the_goldens(self) -> None:
         """The block the recipe exists to produce, checked against the exports."""
-        completed, out = self.scoped_run()
-        block = completed.stdout.split("golden blind spots")[1]
+        _completed, out = self.scoped_run()
+        block = self.scoped_report().split("golden blind spots")[1]
         self.assertIn("src/main.rs", block)
 
         tiers = {
@@ -336,6 +346,45 @@ class RecipeEndToEndTests(unittest.TestCase):
         helped = self.run_script("--help")
         self.assertEqual(0, helped.returncode)
         self.assertIn("Usage: tools/surface-census/fixtures-coverage.sh", helped.stderr)
+
+    def test_an_unusable_output_directory_fails_with_a_next_action(self) -> None:
+        base = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        blocking = base / "a-file"
+        blocking.write_text("in the way\n", encoding="utf-8")
+        uncreatable = self.run_script("--out", str(blocking / "out"), OFFLINE_SCOPE)
+        self.assertEqual(1, uncreatable.returncode, uncreatable.stdout)
+        self.assertIn(f"cannot create the output directory {blocking / 'out'}", uncreatable.stderr)
+        self.assertIn("pass a writable --out DIR, then re-run", uncreatable.stderr)
+
+        out = base / "out"
+        (out / "run.log").mkdir(parents=True)
+        unwritable = self.run_script("--out", str(out), OFFLINE_SCOPE)
+        self.assertEqual(1, unwritable.returncode, unwritable.stdout)
+        self.assertIn(f"cannot write the run log {out / 'run.log'}", unwritable.stderr)
+        self.assertIn("or pass another --out DIR, then re-run", unwritable.stderr)
+
+    def test_a_missing_python3_fails_with_how_to_install_it(self) -> None:
+        # Every executable on PATH except python3, linked into one directory, so
+        # bash, cargo and its subcommands still resolve.
+        shadow = Path(self.enterContext(tempfile.TemporaryDirectory())) / "bin"
+        shadow.mkdir()
+        for entry in os.environ.get("PATH", "").split(os.pathsep):
+            directory = Path(entry)
+            if not directory.is_dir():
+                continue
+            for candidate in directory.iterdir():
+                if candidate.name.startswith("python3") or (shadow / candidate.name).exists():
+                    continue
+                if candidate.is_file() and os.access(candidate, os.X_OK):
+                    (shadow / candidate.name).symlink_to(candidate)
+        env = {**os.environ, "PATH": str(shadow)}
+        if shutil.which("python3", path=env["PATH"]):  # pragma: no cover - defensive
+            self.skipTest("python3 is still resolvable on the shadow PATH")
+        completed, _ = self.run_recipe(OFFLINE_SCOPE, env=env)
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn("python3 is not on PATH", completed.stderr)
+        self.assertIn("Install Python 3", completed.stderr)
+        self.assertIn("then re-run", completed.stderr)
 
     def test_an_unresolvable_filter_expression_names_the_tier(self) -> None:
         completed, _ = self.run_recipe("test(=unclosed")

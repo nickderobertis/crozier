@@ -3106,7 +3106,7 @@ all four, so the order can be checked rather than trusted.
 - **Criterion 1**, `crozier sites`: the integer in the row's own `crozier sites`
   cell, re-measured against `src/`.
 - **Criterion 2**, blind-spot reach: the `golden blind spots` count
-  `just fixtures-coverage` prints for each `src/` file that cell names, summed
+  `just fixtures-coverage` reports for each `src/` file that cell names, summed
   when it names more than one. A `none` cell scores **0**, as the rubric says.
 - **Criterion 3**, artifact breadth: a reading, made here and stated once. The
   region files name the artifacts at risk in prose and publish no count, so this
@@ -3322,8 +3322,8 @@ None of the three is in this section, and none rests on a probe.
 calls the `golden blind spots` block "the fixture backlog", and it is — the same
 backlog as the table above, expressed per `src/` file instead of per feature. The
 two are joined below, in the report's own columns: **printed** is the count
-`just fixtures-coverage` prints for the file and the one criterion 2 ranks on,
-and **by tier** is the breakdown it prints beside it. Printed sums the two
+`just fixtures-coverage` reports for the file and the one criterion 2 ranks on,
+and **by tier** is the breakdown it reports beside it. Printed sums the two
 non-golden tiers, so a region both tiers reach counts twice — the report's own
 `total 1686 region(s) across 12 file(s)` line is the de-duplicated union, and the
 functions named in each verdict are counted from that union.
