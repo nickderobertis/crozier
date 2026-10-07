@@ -206,6 +206,35 @@ def checked_service_url(value: str, name: str, expected_host: str) -> str:
     return value
 
 
+class _CheckedRedirects(urllib.request.HTTPRedirectHandler):
+    """Follow a redirect only to a URL `allowed` accepts, and never carry the
+    request's `Authorization` to another host: urllib's own handler follows any
+    redirect and copies every header but the body's."""
+
+    def __init__(self, allowed: Any) -> None:
+        super().__init__()
+        self.allowed = allowed
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not self.allowed(newurl):
+            raise urllib.error.URLError(f"redirect to {newurl} refused: it is not a URL this request may follow")
+        followed = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if followed is not None and urllib.parse.urlsplit(newurl).netloc != urllib.parse.urlsplit(req.full_url).netloc:
+            followed.remove_header("Authorization")
+        return followed
+
+
+def open_checked(request: urllib.request.Request, allowed: Any, timeout: float):
+    """`urlopen(request)`, following only redirects to URLs `allowed(url)` accepts."""
+    return urllib.request.build_opener(_CheckedRedirects(allowed)).open(request, timeout=timeout)
+
+
+def is_github_api_url(url: str) -> bool:
+    """Whether `url` is on the GitHub API root the guard calls (or the loopback one standing in)."""
+    root, target = urllib.parse.urlsplit(github_api_url()), urllib.parse.urlsplit(url)
+    return (target.scheme, target.netloc) == (root.scheme, root.netloc)
+
+
 def github_api_url() -> str:
     """The GitHub REST API root the guard reads and callers should call.
 
@@ -230,7 +259,7 @@ def read_rate_limit() -> dict[str, dict[str, int]]:
     token = _token()
     if token:
         request.add_header("Authorization", f"Bearer {token}")
-    with urllib.request.urlopen(request, timeout=30) as response:
+    with open_checked(request, is_github_api_url, timeout=30) as response:
         body = json.load(response)
     resources = body.get("resources") if isinstance(body, dict) else None
     if not isinstance(resources, dict):

@@ -1173,6 +1173,83 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertFalse((root / "unprobed").exists())
             self.assertEqual(state["downloads"], 1)
 
+    def test_a_redirect_is_followed_only_to_an_allowed_url_and_never_carries_the_token_across_hosts(self) -> None:
+        landed: list[str | None] = []
+        redirect_rate_limit = threading.Event()
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                port = self.server.server_address[1]
+                if self.path == "/rate_limit" and redirect_rate_limit.is_set():
+                    self.redirect("http://example.invalid/rate_limit")
+                elif self.path == "/rate_limit":
+                    self.reply(json.dumps({"resources": {"core": {
+                        "limit": 100, "used": 0, "remaining": 100, "reset": int(time.time()) + 60,
+                    }}}).encode())
+                elif self.path == "/away.tar.gz":
+                    self.redirect("http://example.invalid/tree.tar.gz")
+                elif self.path == "/same-host.tar.gz":
+                    self.redirect("/landing.tar.gz")
+                elif self.path == "/other-host.tar.gz":
+                    self.redirect(f"http://localhost:{port}/landing.tar.gz")
+                elif self.path == "/landing.tar.gz":
+                    landed.append(self.headers.get("Authorization"))
+                    self.reply(b"tree bytes")
+
+            def redirect(self, location: str) -> None:
+                self.send_response(302)
+                self.send_header("Location", location)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+
+            def reply(self, body: bytes) -> None:
+                self.send_response(200)
+                self.send_header("x-ratelimit-resource", "core")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_port}"
+        env = {**os.environ, "CROZIER_GITHUB_API_URL": url, "GITHUB_TOKEN": "local-test-token"}
+
+        def acquire(root: Path, path: str) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                [sys.executable, str(GITHUB_ACQUIRE), f"{url}{path}", str(root / "tree.tar.gz"),
+                 "--evidence-dir", str(root / "evidence")],
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            # A redirect within the API host keeps the token; one to another host drops it.
+            for path, token in (("/same-host.tar.gz", "Bearer local-test-token"), ("/other-host.tar.gz", None)):
+                with self.subTest(path):
+                    landed.clear()
+                    completed = acquire(root, path)
+                    self.assertEqual(completed.returncode, 0, completed.stderr)
+                    self.assertEqual(b"tree bytes", (root / "tree.tar.gz").read_bytes())
+                    self.assertEqual(landed, [token])
+            # A redirect to a host no download may reach is refused, and nothing is saved.
+            (root / "tree.tar.gz").unlink()
+            refused = acquire(root, "/away.tar.gz")
+            self.assertEqual(refused.returncode, 1, refused.stderr)
+            self.assertIn("redirect to http://example.invalid/tree.tar.gz refused", refused.stderr)
+            self.assertIn("retry the recorded source when available", refused.stderr)
+            self.assertFalse((root / "tree.tar.gz").exists())
+            # The guard's own rate-limit read is held to the API host the same way.
+            redirect_rate_limit.set()
+            guarded = acquire(root, "/same-host.tar.gz")
+            self.assertEqual(guarded.returncode, 1, guarded.stderr)
+            self.assertIn("redirect to http://example.invalid/rate_limit refused", guarded.stderr)
+            self.assertFalse((root / "tree.tar.gz").exists())
+
     def test_guarded_acquisition_succeeds_only_once_the_transfer_completes(self) -> None:
         served: list[str] = []
 

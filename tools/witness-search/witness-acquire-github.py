@@ -39,13 +39,18 @@ DOWNLOAD_HOSTS = ("api.github.com", "codeload.github.com", "raw.githubuserconten
 """The GitHub services a pinned tree or document is downloaded from."""
 
 
-def download_url(value: str) -> str:
-    """Accept a GitHub download over HTTPS, or a loopback HTTP server (the offline tier)."""
+def is_download_url(value: str) -> bool:
+    """A GitHub download over HTTPS, or a loopback HTTP server (the offline tier)."""
     parsed = urllib.parse.urlsplit(value)
-    if not parsed.hostname or not (
+    return bool(parsed.hostname) and (
         (parsed.scheme == "https" and parsed.hostname in DOWNLOAD_HOSTS)
         or (parsed.scheme == "http" and parsed.hostname in GUARD.LOOPBACK_HOSTS)
-    ):
+    )
+
+
+def download_url(value: str) -> str:
+    """`value`, once it is a download this script may make; every redirect it follows is held to the same."""
+    if not is_download_url(value):
         raise argparse.ArgumentTypeError(
             f"{value!r} must be an https:// URL on {', '.join(DOWNLOAD_HOSTS)} or a loopback HTTP URL"
         )
@@ -81,7 +86,7 @@ def main() -> int:
     try:
         guard.acquire(args.bucket, cost=1)
         try:
-            with urllib.request.urlopen(request, timeout=120) as response:
+            with GUARD.open_checked(request, is_download_url, timeout=120) as response:
                 record["status"] = response.status
                 with temporary.open("wb") as handle:
                     while chunk := response.read(1024 * 1024):
