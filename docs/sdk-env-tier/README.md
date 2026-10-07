@@ -13,7 +13,9 @@ first build rather than race it.
 
 Captured on Linux at commit `ef6118978`, the commit that locked the runtime
 venv; the evidence commit adds only this directory. `<repo>` stands for the
-checkout path, `<tmp>` for a test's temporary directory.
+checkout path, `<tmp>` for a test's temporary directory. In `test-e2e.log` the
+names of four tests of a since-removed corpus are redacted as `<redacted>`;
+every other byte of that capture is as run.
 
 - [`test-e2e.log`](test-e2e.log) — `just test-e2e`, exit 0: 416 passed, 9
   skipped. No `sdk_env_` journey runs; the one line mentioning `sdk_env_` is
