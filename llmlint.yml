@@ -121,9 +121,7 @@ files:
     # their own repository, not crozier's code.
     - "llmlint-plugins/**"
 rationales: true
-agents:
-  default:
-    harness: claude-code   # any id from `oneharness list`
+# No `agents` block: the committed fallback `oneharness.toml` selects the harness.
 plugins:
   # Ships INSIDE the llmlint binary and resolves offline (no fetch, no cache), so
   # it stays a URL: it is not a job-time network dependency.
@@ -138,3 +136,6 @@ plugins:
   # scripts' `llmlint: ignore` directives reference.
   - "./llmlint-plugins/languages/bash.llmlint.yml"
   - "./llmlint-plugins/ci.llmlint.yml"
+  # crozier ships versioned artifacts (release-plz → crates.io, PyPI, GitHub
+  # Releases), so the releasing plugin judges the release wiring.
+  - "./llmlint-plugins/releasing.llmlint.yml"

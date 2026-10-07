@@ -7,6 +7,9 @@ on:
   push:
     branches: [main]
   pull_request:
+    # The default types plus `ready_for_review`: a draft lifted to ready must
+    # re-report the required contexts on its head, not lean on draft-time runs.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -213,9 +216,10 @@ jobs:
       # setup-llmlint.sh installs the llmlint toolchain via `uv tool`; uv is not
       # preinstalled on GitHub runners, so provide it before that step runs.
       - uses: astral-sh/setup-uv@v8.3.2
-      # oneharness drives the Claude Code CLI as its harness (llmlint.yml:
-      # agents.default.harness = claude-code). The `claude` binary is not on the
-      # runner, so install it; it authenticates from CLAUDE_CODE_OAUTH_TOKEN below.
+      # llmlint.yml pins no harness; the committed fallback oneharness.toml tries
+      # codex, which is not on the runner, then claude-code. The `claude` binary
+      # is not on the runner either, so install it; it authenticates from
+      # CLAUDE_CODE_OAUTH_TOKEN below.
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

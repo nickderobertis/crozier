@@ -62,7 +62,7 @@ jobs:
 
   # Gate the release on a passing run of the same full gate CI enforces, so a tag
   # can never publish an artifact that would not pass `just check`.
-  # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] A Release is not tied to a commit ci.yml swept: the header names a Release cut by hand in the GitHub UI as the supported fallback, and it can tag any commit. This job is the only gate such a tag passes before publishing to crates.io and PyPI, which cannot be taken back.
+  # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit, release_does_not_regate_an_already_swept_commit] A Release is not tied to a commit ci.yml swept: the header names a Release cut by hand in the GitHub UI as the supported fallback, and it can tag any commit. This job is the only gate such a tag passes before publishing to crates.io and PyPI, which cannot be taken back.
   test:
     runs-on: ubuntu-latest
     steps:
