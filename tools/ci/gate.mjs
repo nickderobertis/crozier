@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // The gate: one recipe (`just check`), two tiers, chosen by a flag.
 //
-//   node tools/ci/gate.mjs [--sweep] [--targets=a,b] [--projects=p,q] [--exclude=p,q]
+//   node tools/ci/gate.mjs [--sweep] [--projects=p,q] [--exclude=p,q] -- nx run-many --targets=a,b
+//
+// The recipe names the Nx command it runs (`just check`, `just test` and `just
+// lint` differ only in their target list); this driver validates the base,
+// selects the projects for the tier, and runs that command over them.
 //
 // The affected tier (the default) runs the gate targets of every project a
 // change can reach, keyed off an explicitly derived base:
@@ -28,7 +32,6 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TOOL = "gate";
-export const GATE_TARGETS = ["format", "lint", "test", "build", "coverage", "supply-chain", "doc"];
 const PROMOTED_TAG = "tier:promoted";
 const DEFAULT_BASE_REF = "origin/main";
 
@@ -38,12 +41,11 @@ function die(message, action, code = 2) {
   process.exit(code);
 }
 
-const USAGE = `usage: just check [--sweep] [--targets=a,b] [--projects=p,q] [--exclude=p,q]
+const USAGE = `usage: just check|test|lint [--sweep] [--projects=p,q] [--exclude=p,q]
   (default)    affected tier: the projects a change since the base can reach;
                the base is NX_BASE (a ref name or commit SHA) or the merge base
                of HEAD with ${DEFAULT_BASE_REF}
   --sweep      broader tier: every project, promoted tiers included, uncached
-  --targets    the targets to run (default: ${GATE_TARGETS.join(",")})
   --projects   only these projects (promoted ones run only when named)
   --exclude    never these projects
   Each list takes project names and tag:<tag> patterns.`;
@@ -54,8 +56,19 @@ const USAGE = `usage: just check [--sweep] [--targets=a,b] [--projects=p,q] [--e
 const LIST_ITEM = String.raw`(?:tag:[a-z0-9][a-z0-9:-]*|[a-z0-9][a-z0-9-]*)`;
 const NAME_LIST = new RegExp(`^${LIST_ITEM}(,${LIST_ITEM})*$`);
 
+// The one command a recipe may hand over: `nx run-many --targets=<names>`.
+const COMMAND = /^--targets=(.+)$/;
+
 function parseArgs(argv) {
-  const options = { sweep: false, targets: GATE_TARGETS, projects: undefined, exclude: [] };
+  const options = { sweep: false, targets: undefined, projects: undefined, exclude: [] };
+  const split = argv.indexOf("--");
+  const command = split < 0 ? [] : argv.slice(split + 1);
+  const targets = command.length === 3 && command[0] === "nx" && command[1] === "run-many" && COMMAND.exec(command[2]);
+  if (!targets || !NAME_LIST.test(targets[1]) || targets[1].includes("tag:")) {
+    die("the recipe must end its arguments with `-- nx run-many --targets=a,b`", USAGE);
+  }
+  options.targets = targets[1].split(",");
+  argv = argv.slice(0, split);
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const [flag, inline] = arg.includes("=") ? [arg.slice(0, arg.indexOf("=")), arg.slice(arg.indexOf("=") + 1)] : [arg, undefined];
@@ -69,9 +82,6 @@ function parseArgs(argv) {
     switch (flag) {
       case "--sweep":
         options.sweep = true;
-        break;
-      case "--targets":
-        options.targets = value();
         break;
       case "--projects":
         options.projects = value();

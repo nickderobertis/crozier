@@ -22,7 +22,8 @@ bootstrap:
     @git config core.hooksPath .githooks
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
-# The quality gate — one recipe, two tiers, the tier a flag on it (tools/ci/gate.mjs):
+# The quality gate — one recipe, two tiers, the tier a flag on it. tools/ci/gate.mjs
+# validates the base and selects the projects; the Nx command below runs over them:
 #   just check            the affected tier: every gate target (format, lint, test,
 #                         build, coverage, supply-chain, doc) of the projects a change
 #                         since the base can reach. The base is NX_BASE (a ref name or
@@ -33,7 +34,7 @@ bootstrap:
 # to run each promoted tier on the runner that holds its toolchain. Fails on any
 # issue (no warnings-only mode); e2e is part of the gate, not opt-in.
 check *args:
-    @node tools/ci/gate.mjs "$@"
+    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=format,lint,test,build,coverage,supply-chain,doc
 
 # What CI runs: the tier the GitHub event owes (tools/ci/ci-tier.mjs) — the
 # broader tier on the release-plz release pull request, the affected tier against
@@ -54,13 +55,13 @@ fmt-check:
 # Every affected project's `lint` (clippy with warnings as errors, the module-
 # boundary rule, the corpus/licence lints); `--sweep` for all of them.
 lint *args:
-    @node tools/ci/gate.mjs --targets=lint "$@"
+    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=lint
 
 # Every affected project's `test`, then the 95% line-coverage floor over the crate
 # (`workspace:coverage`, over the profiles `crozier:test` writes); `--sweep` for all.
 # Lower the floor only with a reason in AGENTS.md.
 test *args:
-    @node tools/ci/gate.mjs --targets=test,coverage "$@"
+    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=test,coverage
 
 # End-to-end: drive the compiled binary the way a user runs it (assert_cmd),
 # byte-comparing its stripped output to the committed Fern fixtures — the
