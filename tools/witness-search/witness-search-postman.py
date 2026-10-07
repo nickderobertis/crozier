@@ -155,29 +155,40 @@ def classify_body(status: int | None, content_type: str, body: bytes,
             "document_kind": "postman-collection" if "getpostman.com" in str(schema) else "other-json"}
 
 
+# What `witness-search-region-keys.py` writes in a row's `census_status`.
+CENSUS_STATUSES = ("supported", "unsupported-by-census")
+
+
 def read_keys(path: Path, census) -> list[dict]:
     """The supported rows of the region-key derivation TSV, refused unless every one is well formed.
 
-    Each row has exactly the header's cells, a nonempty key named once, and a
-    selector the census evaluates; rows the derivation marks unsupported are
-    not asked about."""
+    Each row has exactly the header's cells, a nonempty key named once, a
+    `census_status` the derivation writes, and a selector the census evaluates;
+    rows the derivation marks unsupported are not asked about."""
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, dialect="excel-tab")
-        if not {"key", "selector"} <= set(reader.fieldnames or ()):
+        columns = reader.fieldnames or []
+        if not {"key", "selector"} <= set(columns):
             raise ValueError("it has no key and selector columns")
+        repeated = sorted({column for column in columns if columns.count(column) > 1})
+        if repeated:
+            raise ValueError(f"its header names {', '.join(repeated)} more than once")
         keys, seen = [], set()
         for row in reader:
             line = reader.line_num
             if None in row or None in row.values():
-                raise ValueError(f"line {line} does not have the header's {len(reader.fieldnames)} cells")
-            if row.get("census_status", "supported") != "supported":
-                continue
+                raise ValueError(f"line {line} does not have the header's {len(columns)} cells")
             key, selector = row["key"], row["selector"]
             if not key or not selector:
                 raise ValueError(f"line {line} has an empty key or selector")
             if key in seen:
                 raise ValueError(f"line {line} repeats key {key!r}")
             seen.add(key)
+            status = row.get("census_status", "supported")
+            if status not in CENSUS_STATUSES:
+                raise ValueError(f"line {line} has census_status {status!r}, not {' or '.join(CENSUS_STATUSES)}")
+            if status != "supported":
+                continue
             error = census.selector_error(selector)
             if error is not None:
                 raise ValueError(f"line {line} ({key}): {error}")

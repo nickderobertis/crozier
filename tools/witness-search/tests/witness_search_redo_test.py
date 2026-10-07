@@ -1032,7 +1032,9 @@ class WideWitnessTests(unittest.TestCase):
                     dict(source, local_path='/tree/APIs/x/openapi.yaml', path='APIs/x/openapi.yaml'),
                     dict(source, local_path='tree/APIs/x/openapi.yaml', **local),
                     dict(source, local_path='/tree/../etc/APIs/x/openapi.yaml', **local),
-                    dict(source, local_path=7, **local)):
+                    dict(source, local_path=7, **local),
+                    # A tree `path` that is itself absolute would let any file pass as its own tree's.
+                    dict(source, local_path='/etc/passwd', path='/etc/passwd', sha256='a' * 64)):
             cases.append(({'schema_version': 1, 'sources': [row]}, 'malformed local_path'))
         args = ('acquire', '--inventory', inventory, '--cache', cache,
                 '--contract', self.report / 'keys.md', '--output', output)

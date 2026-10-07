@@ -228,6 +228,7 @@ def read_inventory(path: Path) -> dict:
                 not isinstance(local, str)
                 or not isinstance(tree_path, str)
                 or not tree_path
+                or Path(tree_path).is_absolute()
                 or ".." in Path(tree_path).parts
                 or not Path(local).is_absolute()
                 or ".." in Path(local).parts
@@ -236,7 +237,7 @@ def read_inventory(path: Path) -> dict:
             ):
                 raise ValueError(
                     f"{path}: malformed local_path for {row['artifact']}: it must be the absolute path of the "
-                    "row's own tree `path`, on a row carrying the sha256 it is checked against; rebuild the "
+                    "row's own relative tree `path`, on a row carrying the sha256 it is checked against; rebuild the "
                     "inventory with `index-tree --local-paths`"
                 )
     return value
