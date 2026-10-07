@@ -54,8 +54,8 @@ the worked examples, and the two conditional sections below.
 
 - **License / attribution:** Apache-2.0; the same `../NOTICE` and
   `../licenses/fern-APACHE-2.0.txt` cover it.
-- **Source:** Fern's Python generator over the exhaustive OpenAPI document, same
-  version as `core/`.
+- **Source:** Fern's Python generator, at the same version as `core/`. Its per-SDK
+  text is parameterized as described below.
 - **Change made (Apache-2.0 §4(c)):** `@@...@@` placeholders replace the per-SDK
   text, which the emitter fills in: the organization, package, and client
   names (`@@ORG@@`, `@@PKG@@`, `@@CLIENT@@`); the worked sync and async usage
