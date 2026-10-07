@@ -427,6 +427,11 @@ class LegacyScreenCliTests(unittest.TestCase):
                      "--evidence-root", str(self.root)], env=self.env, capture_output=True, text=True, cwd=REPO)
                 self.assertEqual(1, refused.returncode, refused.stderr)
                 self.assertIn(f"{path!r} is no path inside a repository", refused.stderr)
+        for repository in ("../acme", "acme/..", "./shop"):
+            with self.subTest(repository=repository):
+                refused = self.screen(repository=repository)
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(f"{repository!r} is no `<owner>/<name>` repository", refused.stderr)
         mutable = subprocess.run(
             [sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "sample-shape",
              "--repository", "acme/shop", "--commit", "main", "--path", "openapi.yaml",
@@ -493,6 +498,9 @@ class LegacyScreenCliTests(unittest.TestCase):
             (lambda r: r.update(screened_at="yesterday"), "when it was measured (`screened_at`"),
             (lambda r: r.update(screened_at="2026-10-05T10:00:00"), "when it was measured (`screened_at`"),
             (lambda r: r["document"].update(path=""), "the document it read (['path'] of `document`)"),
+            (lambda r: r["document"].update(path="../escape.yaml"), "the document it read (['path'] of `document`)"),
+            (lambda r: r["document"].update(repository="../acme"),
+             "the document it read (['repository'] of `document`)"),
             (lambda r: r["ref"].update(outcome="passed-invalid"), "a ref outcome reading `passed` or `failed: "),
             (lambda r: r["ref"]["pins"].update(path="other.yaml"), "its repository, commit and path pins"),
             (lambda r: r["ref"]["pins"].update(expected_sha256="0" * 64), "the bytes its pin names"),

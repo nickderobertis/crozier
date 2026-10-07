@@ -1834,6 +1834,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             (("beta", "5.20.0"), {"CLIENT_CLASS_NAME": "Acme\n          timeout: 1"}, "invalid client_class_name"),
             (("beta", "5.20.0"), {"CLIENT_CLASS_NAME": "9Client"}, "use a Python class name"),
             (("beta", "5.20.0"), {"CLIENT_CLASS_NAME": "null"}, "CLIENT_CLASS_NAME or its"),
+            (("beta", "5.20.0"), {"FERN_CLI_VERSION": "latest; touch pwned"}, "invalid FERN_CLI_VERSION"),
             (("gamma", "5.20.0"), {}, "or pass the document as SPEC_PATH"),
             (("beta", "5.20.0"), {"FERN_NO_OUTPUT": "1"}, "no packaged SDK"),
             (("--layout", "flat", "beta", "5.20.0"), {"FERN_NO_OUTPUT": "1"}, "without an __init__.py"),
@@ -2266,6 +2267,8 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         upstream = self.base / "upstream"
         upstream.mkdir()
         (upstream / "README.md").write_text("no spec here\n", encoding="utf-8")
+        # A YAML file that is no OpenAPI document, so discovery reads one file.
+        (upstream / "settings.yml").write_text("theme: dark\n", encoding="utf-8")
         environment = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull}
         for command in (
             ["init", "-q"],
@@ -2317,6 +2320,18 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stderr)
         self.assertIn(f"could not read the numbered rows of {manifest}", result.stderr)
         self.assertIn("git checkout -- tests/fixtures/CORPUS.md", result.stderr)
+        self.assertNotIn("generate-fern-fixture:", result.stderr)
+
+    def test_a_discovery_search_that_cannot_read_a_file_stops_naming_it(self) -> None:
+        stubs = self.base / "failing-rg"
+        stubs.mkdir()
+        (stubs / "rg").write_text("#!/bin/sh\necho 'rg: Permission denied' >&2\nexit 2\n", encoding="utf-8")
+        (stubs / "rg").chmod(0o755)
+        result = self.run_script("--only", "gamma", "--fetch-root", str(self.base / "cache"),
+                                 PATH=f"{stubs}{os.pathsep}{os.environ['PATH']}")
+        self.assertNotEqual(result.returncode, 0, result.stderr)
+        self.assertIn("settings.yml while looking for the OpenAPI document (rg exit 2)", result.stderr)
+        self.assertIn("the search for the OpenAPI document under", result.stderr)
         self.assertNotIn("generate-fern-fixture:", result.stderr)
 
     def test_each_refusal_names_how_to_supply_what_is_missing(self) -> None:

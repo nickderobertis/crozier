@@ -146,6 +146,10 @@ def main() -> int:
     registrations = CENSUS.golden_registrations(REPO / CENSUS.GOLDEN_REGISTRY)
     for key, (fixture, perturb) in CASES.items():
         path = CENSUS.spec_in(REPO / "tests" / "fixtures" / "corpus-sources" / fixture)
+        if path is None:
+            sys.exit(f"residual-attribution: {key}'s witness {fixture} has no committed source under "
+                     "tests/fixtures/corpus-sources/; restore it from git (`just lint-corpus-sources` names "
+                     "what is missing), then re-run")
         perturbed = CENSUS.load_document(path)
         if not perturb(perturbed):
             sys.exit(

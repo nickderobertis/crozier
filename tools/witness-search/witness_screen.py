@@ -418,6 +418,11 @@ def licence_screen(document_text: str | None | object, files: list[tuple[str, in
     return outcome, {"exit": exit_status, "pins": pins}, log
 
 
+def repository_name(name: str) -> bool:
+    """Whether `name` is an `<owner>/<name>` repository, neither part `.` or `..`."""
+    return REPOSITORY.fullmatch(name) is not None and not {".", ".."} & set(name.split("/"))
+
+
 def repository_path(path: str) -> bool:
     """Whether `path` names a file inside a repository: relative, `/`-separated, no `..`."""
     parts = PurePosixPath(path).parts
@@ -465,7 +470,7 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     `fetch(url, subject)` is the guarded acquirer's exact-commit raw route; it
     answers `(status, bytes)`. Logs land in `logs`, recorded relative to `base`.
     """
-    if not REPOSITORY.fullmatch(repository):
+    if not repository_name(repository):
         fail(f"{repository!r} is no `<owner>/<name>` repository; pass the one the candidate was acquired from")
     if not repository_path(path):
         fail(f"{path!r} is no path inside a repository (relative, `/`-separated, no `..`); pass the "
@@ -566,6 +571,11 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
               or not document[field]]
     if not isinstance(document.get("sha256"), str) or (document["sha256"] and not SHA.fullmatch(document["sha256"])):
         absent.append("sha256")
+    # The same identity a fresh measurement holds its arguments to.
+    if "repository" not in absent and not repository_name(document["repository"]):
+        absent.append("repository")
+    if "path" not in absent and not repository_path(document["path"]):
+        absent.append("path")
     if absent:
         missing.append(f"the document it read ({absent} of `document`)")
     for name in SCREENS:

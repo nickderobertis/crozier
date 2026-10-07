@@ -75,6 +75,10 @@ def load_lock() -> dict[str, Any]:
         if missing:
             fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} lacks {', '.join(missing)}",
                  "give every plugin entry a non-empty name, url, pin and file (docs/llmlint-plugins.md)")
+        rules = plugin.get("rules", [])
+        if not isinstance(rules, list) or not all(isinstance(rule, str) and rule for rule in rules):
+            fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} has `rules` {rules!r}, not a list of rule names",
+                 "restore the lock from git, or delete the field and refresh to regenerate it")
         if not isinstance(plugin.get("bundled", False), bool):
             fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} has `bundled` {plugin['bundled']!r}, not a boolean",
                  "write `\"bundled\": true` for a plugin llmlint ships, or drop the field for a vendored one")

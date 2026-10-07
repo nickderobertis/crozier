@@ -124,6 +124,13 @@ SPEC_OVERRIDE="${3:-}"
 # the corpus's `.fern/metadata.json` cliVersion so regenerated output stays
 # consistent; a `*` here would float to the latest CLI and can drift the output.
 FERN_CLI_VERSION="${FERN_CLI_VERSION:-5.67.1}"
+# Interpolated into fern.config.json and the provenance record, so held to the
+# same exact-version grammar as the generator's.
+valid_fern_version "$FERN_CLI_VERSION" || {
+  echo "generate-fern-fixture: invalid FERN_CLI_VERSION '$FERN_CLI_VERSION' — use an exact semantic version" \
+       "such as 5.67.1 (the corpus's .fern/metadata.json cliVersion), then re-run" >&2
+  exit 1
+}
 
 # A flat golden is declared in one table, which also names the fixture whose
 # vendored spec it generates from when the golden's own directory has none (a

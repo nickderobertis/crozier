@@ -18,7 +18,11 @@ Run: `just test-fern-refusals` (part of `just check`).
 
 from __future__ import annotations
 
+import contextlib
 import gzip
+import io
+import importlib.util
+import json
 import os
 import shutil
 import subprocess
@@ -345,9 +349,46 @@ class MalformedInputs(unittest.TestCase):
                 result = self.select_over(edit)
                 self.assertIn(f"has {field}, not a non-empty string; restore it from git", result.stderr)
 
+    def test_a_failed_screens_logs_must_be_a_list_of_paths(self) -> None:
+        result = self.select_over((self.SCREENS, '{"fern": "failed: check", "source": "scratch", '
+                                                 '"repository": "o/r", "commit": "c", "path": "a.yml", '
+                                                 '"fern_logs": "check.log"}'))
+        self.assertIn("has fern_logs 'check.log', not a list of log paths; restore it from git", result.stderr)
+
     def test_a_record_that_is_not_json_names_the_line(self) -> None:
         result = self.select_over((self.SCREENS, "{not json"))
         self.assertIn("is not JSON", result.stderr)
+
+
+class MeasurementsAndArguments(unittest.TestCase):
+    """What `measure` reads back and what it is told: a measurement field that is
+    not text, and a count or timeout outside its range, are refused up front."""
+
+    def test_a_measurement_field_that_is_not_text_is_refused_naming_its_line(self) -> None:
+        spec = importlib.util.spec_from_file_location("fern_refusals_measurements", SCRIPT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as scratch:
+            module.EVIDENCE = Path(scratch)
+            path = Path(scratch) / "measurements.jsonl"
+            path.write_text(json.dumps({"key": "k", "check_exit": 1}) + "\n", encoding="utf-8")
+            stderr = io.StringIO()
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(stderr):
+                module.read_measurements()
+            self.assertIn("measurements.jsonl line 1 has check_exit 1, not a non-empty string", stderr.getvalue())
+            path.write_text(json.dumps({"key": "k", "check_exit": "1", "check_log": ""}) + "\n", encoding="utf-8")
+            self.assertEqual("1", module.read_measurements()["k"]["check_exit"])
+
+    def test_a_count_or_timeout_out_of_range_is_refused_before_anything_runs(self) -> None:
+        for args, message in ((("measure", "--jobs", "0"), "0 is not a positive integer"),
+                              (("measure", "--timeout", "-5"), "-5 is not a positive integer"),
+                              (("measure", "--limit", "-1"), "-1 is not a non-negative integer"),
+                              (("confirm", "--per-class", "-2"), "-2 is not a non-negative integer"),
+                              (("probe", "x", "--jobs", "many"), "invalid positive value: 'many'")):
+            with self.subTest(args=args):
+                refused = run(*args)
+                self.assertEqual(2, refused.returncode, refused.stderr)
+                self.assertIn(message, refused.stderr)
 
 
 if __name__ == "__main__":

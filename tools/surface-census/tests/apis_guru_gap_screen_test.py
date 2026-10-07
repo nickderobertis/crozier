@@ -757,17 +757,28 @@ components:
 
     def test_nonpositive_numeric_arguments_are_rejected(self) -> None:
         index = self.index([])
-        expected = "apis-guru-gap-screen: attempts, workers, and timeout must be positive\n"
+        expected = "apis-guru-gap-screen: attempts, workers, and timeout must be positive (and the timeout finite)\n"
         for option, value in (
             ("--attempts", "0"),
             ("--workers", "0"),
             ("--timeout", "0"),
+            ("--timeout", "nan"),
+            ("--timeout", "inf"),
         ):
             with self.subTest(option=option):
                 completed, output = self.invoke(index, None, None, option, value)
                 self.assertEqual(completed.returncode, 2)
                 self.assertEqual(completed.stderr, expected)
                 self.assertEqual(completed.stdout, "")
+                self.assertFalse(output.exists())
+
+    def test_a_snapshot_stamp_that_is_no_utc_instant_is_rejected(self) -> None:
+        index = self.index([])
+        for value in ("yesterday", "2026-10-07T12:00:00+02:00", "2026-13-07T12:00:00Z"):
+            with self.subTest(value=value):
+                completed, output = self.invoke(index, None, None, "--snapshot-utc", value)
+                self.assertEqual(completed.returncode, 2, completed.stderr)
+                self.assertIn(f"--snapshot-utc {value!r} is not a UTC instant", completed.stderr)
                 self.assertFalse(output.exists())
 
     def test_a_handwritten_row_stays_a_screening_target(self) -> None:

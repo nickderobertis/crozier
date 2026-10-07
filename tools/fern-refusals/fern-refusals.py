@@ -261,7 +261,13 @@ def population() -> list[Entry]:
                 continue
             if "candidate" not in row:
                 require_fields(screens, number, row, ("source", "repository", "commit", "path"))
-                logs = [rel(screens.parent / log) for log in row.get("fern_logs", [])]
+                fern_logs = row.get("fern_logs", [])
+                if not isinstance(fern_logs, list) or not all(isinstance(log, str) and log for log in fern_logs):
+                    fail(f"{record} line {number} has fern_logs {fern_logs!r}, not a list of log paths; "
+                         "restore it from git")
+                if not isinstance(row.get("sha256", ""), str):
+                    fail(f"{record} line {number} has sha256 {row['sha256']!r}, not a digest string; restore it from git")
+                logs = [rel(screens.parent / log) for log in fern_logs]
                 entries.append({"digest": row.get("sha256", ""), "source": row["source"],
                                 "locator": raw_url(row["repository"], row["commit"], row["path"]),
                                 "revision": row["commit"], "records": {record}, "verdict": row["fern"],
@@ -496,6 +502,9 @@ def read_measurements() -> dict[str, dict[str, str]]:
     for number, row in rows:
         if "fern_stage" in row:
             require_fields(path, number, row, ("fern_stage", "fern_exit", "fern_log"), may_be_empty=("fern_log",))
+        # Every other field `measure` writes is text; `upgraded` fills a missing one.
+        present = tuple(field for field in MEASUREMENT_FIELDS if field in row)
+        require_fields(path, number, row, present, may_be_empty=present)
     return {row["key"]: upgraded(row) for _number, row in rows}
 
 
@@ -1098,32 +1107,48 @@ def finding(args: argparse.Namespace) -> int:
     return 0
 
 
+def positive(text: str) -> int:
+    """A worker count or a timeout: an integer of at least one."""
+    value = int(text)
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"{text} is not a positive integer")
+    return value
+
+
+def nonnegative(text: str) -> int:
+    """A limit or a per-class count: an integer of at least zero (0 is no limit)."""
+    value = int(text)
+    if value < 0:
+        raise argparse.ArgumentTypeError(f"{text} is not a non-negative integer")
+    return value
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("select", help="print the selected population").set_defaults(run=select)
     m = sub.add_parser("measure", help="fetch, run Fern and crozier, record measurements.jsonl")
-    m.add_argument("--jobs", type=int, default=6)
-    m.add_argument("--timeout", type=int, default=3600)
-    m.add_argument("--limit", type=int, default=0)
+    m.add_argument("--jobs", type=positive, default=6)
+    m.add_argument("--timeout", type=positive, default=3600)
+    m.add_argument("--limit", type=nonnegative, default=0)
     m.add_argument("--again", action="store_true", help="re-measure documents already on record")
     m.add_argument("--root", type=Path, action="append", default=[],
                    help="another directory whose files may supply a document by digest")
     m.set_defaults(run=measure)
     p = sub.add_parser("probe", help="measure Fern on classes' probes and write their fern-refusal.txt")
     p.add_argument("cls", nargs="+", metavar="CLASS")
-    p.add_argument("--jobs", type=int, default=6)
-    p.add_argument("--timeout", type=int, default=900)
+    p.add_argument("--jobs", type=positive, default=6)
+    p.add_argument("--timeout", type=positive, default=900)
     p.set_defaults(run=probe)
     f = sub.add_parser("finding", help="measure Fern on findings' probes and record their exits")
     f.add_argument("name", nargs="+", metavar="FINDING")
-    f.add_argument("--jobs", type=int, default=6)
-    f.add_argument("--timeout", type=int, default=900)
+    f.add_argument("--jobs", type=positive, default=6)
+    f.add_argument("--timeout", type=positive, default=900)
     f.set_defaults(run=finding)
     c = sub.add_parser("confirm", help="sample each class's real documents through fern generate")
-    c.add_argument("--per-class", type=int, default=3)
-    c.add_argument("--jobs", type=int, default=6)
-    c.add_argument("--timeout", type=int, default=3600)
+    c.add_argument("--per-class", type=nonnegative, default=3)
+    c.add_argument("--jobs", type=positive, default=6)
+    c.add_argument("--timeout", type=positive, default=3600)
     c.set_defaults(run=confirm)
     sub.add_parser("build", help="rewrite the tables from the committed inputs").set_defaults(run=build)
     sub.add_parser("check", help="fail when the tables drift from the inputs").set_defaults(run=check)

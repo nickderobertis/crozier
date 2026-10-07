@@ -197,6 +197,16 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
         self.assertIn("non-empty name, url, pin and file", run.stderr)
         self.assertNotIn("Traceback", run.stderr)
 
+    def test_a_recorded_rule_list_that_is_not_names_is_refused(self) -> None:
+        for rules in ("alpha", [None], [["alpha"]]):
+            with self.subTest(rules=rules):
+                run = self.refresh_over({"schema": 1, "plugins": [
+                    {"name": "base", "url": "https://example.test/b.yml", "pin": "1",
+                     "file": "llmlint-plugins/base.llmlint.yml", "rules": rules}]})
+                self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+                self.assertIn(f"plugin #1 has `rules` {rules!r}, not a list of rule names", run.stderr)
+                self.assertNotIn("Traceback", run.stderr)
+
     def test_a_file_outside_the_vendor_directory_is_refused(self) -> None:
         # A loopback http URL: were the path accepted, the fetch would refuse it
         # without touching the network, with a different message.

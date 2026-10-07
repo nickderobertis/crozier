@@ -228,7 +228,7 @@ def read_document(path: str, timeout: int, phase: Callable[[str], None] | None =
             signal.alarm(0)
 
 
-def _bounded_child(path: str, timeout: int, connection: Any) -> None:
+def _bounded_child(path: str, timeout: int, connection: multiprocessing.connection.Connection) -> None:
     """A spawned reader: each phase's would-be refusal, then the verdict, over `connection`."""
     connection.send(("verdict", read_document(path, timeout, lambda reason: connection.send(("phase", reason)))))
     connection.close()
@@ -250,7 +250,8 @@ def bounded_reads(paths: dict[str, str], timeout: int, jobs: int) -> dict[str, d
             return {futures[future]: future.result() for future in concurrent.futures.as_completed(futures)}
     context = multiprocessing.get_context("spawn")
     queued = sorted(paths.items())
-    running: dict[Any, tuple[str, Any, float | None, str]] = {}
+    running: dict[multiprocessing.connection.Connection,
+                  tuple[str, multiprocessing.process.BaseProcess, float | None, str]] = {}
     verdicts: dict[str, dict[str, Any]] = {}
     while queued or running:
         while queued and len(running) < jobs:

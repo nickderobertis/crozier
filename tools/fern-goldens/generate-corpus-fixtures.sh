@@ -50,6 +50,10 @@ done
 }
 
 
+# discover_openapi ROOT — the one OpenAPI document under ROOT: exit 1 when there
+# is none, 2 when there are several, 3 when the search itself failed. Callers
+# test it in an `||`, which turns off errexit inside, so each failure is
+# returned explicitly rather than left to `set -e`.
 discover_openapi() {
   local root="$1" candidates count
   candidates="$({
@@ -57,11 +61,21 @@ discover_openapi() {
       \( -path '*/.git' -o -path '*/node_modules' -o -path '*/target' -o -path '*/dist' -o -path '*/build' -o -path '*/vendor' \) -prune \
       -o -type f \( -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) -size -20M -print0 |
     while IFS= read -r -d '' f; do
-      if LC_ALL=C rg -q "(^|[\"'[:space:]])openapi([\"'[:space:]]*:|:)" "$f"; then
-        printf '%s\n' "$f"
-      fi
+      matched=0
+      LC_ALL=C rg -q "(^|[\"'[:space:]])openapi([\"'[:space:]]*:|:)" "$f" || matched=$?
+      case "$matched" in
+        0) printf '%s\n' "$f" ;;
+        1) ;;
+        *) echo "generate-corpus-fixtures: could not read $f while looking for the OpenAPI document" \
+                "(rg exit $matched)" >&2
+           exit 3 ;;
+      esac
     done
-  })"
+  })" || {
+    echo "generate-corpus-fixtures: the search for the OpenAPI document under $root failed — make it" \
+         "readable (or remove the unreadable file named above), then re-run" >&2
+    return 3
+  }
   count="$(printf '%s\n' "$candidates" | sed '/^$/d' | wc -l | tr -d ' ')"
   case "$count" in
     0) return 1 ;;

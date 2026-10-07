@@ -13,6 +13,9 @@ table's offline shape checks are `tools/surface-census/tests/surface_census_test
 
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
 import os
 import shutil
@@ -53,6 +56,22 @@ class ResidualAttributionTests(unittest.TestCase):
                                  f"{key}: every `unmatched` file it moves is an open gap the table names")
                 expected = "split" if matched and unmatched else "byte-matched" if matched else "open gap"
                 self.assertEqual(expected, verdict)
+
+
+class AMissingWitnessSource(unittest.TestCase):
+    def test_a_case_whose_witness_has_no_committed_source_names_the_fix(self) -> None:
+        """The script's own refusal, before it builds anything over a source that is not there."""
+        spec = importlib.util.spec_from_file_location("residual_attribution_missing", SCRIPT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.CROZIER = Path(sys.executable)
+        module.CASES = {"some-row": ("no-such-witness", lambda document: 1)}
+        if shutil.which("ruff") is None:
+            self.fail("no ruff on PATH; install it with `just bootstrap`")
+        with self.assertRaises(SystemExit) as refused, contextlib.redirect_stdout(io.StringIO()):
+            module.main()
+        self.assertIn("some-row's witness no-such-witness has no committed source", str(refused.exception))
+        self.assertIn("`just lint-corpus-sources` names what is missing", str(refused.exception))
 
 
 if __name__ == "__main__":
