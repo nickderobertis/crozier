@@ -195,6 +195,71 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
         self.assertIn("non-empty name, url, pin and file", run.stderr)
         self.assertNotIn("Traceback", run.stderr)
 
+    def test_a_file_outside_the_vendor_directory_is_refused(self) -> None:
+        # A loopback http URL: were the path accepted, the fetch would refuse it
+        # without touching the network, with a different message.
+        for file in (
+            "/tmp/base.llmlint.yml",
+            "../base.llmlint.yml",
+            "llmlint-plugins/../../base.llmlint.yml",
+            "docs/base.llmlint.yml",
+            "llmlint-plugins",
+            "llmlint-plugins\\..\\..\\base.llmlint.yml",
+        ):
+            with self.subTest(file=file):
+                run = self.refresh_over({"schema": 1, "plugins": [
+                    {"name": "base", "url": "http://127.0.0.1:9/base.yml", "pin": "1", "file": file}]})
+                self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+                self.assertIn(f"plugin #1 file {file!r} is not under llmlint-plugins/", run.stderr)
+                self.assertIn("record a relative path inside llmlint-plugins/ with no '..'", run.stderr)
+                self.assertNotIn("Traceback", run.stderr)
+
+
+class AMalformedLlmlintAnswerIsRefused(unittest.TestCase):
+    """`refresh` names each plugin's rules from `llmlint config --sources`; a
+    stub `llmlint` on PATH answering in the wrong shape must fail with the fix.
+    A bundled-only lock reaches that call without fetching anything."""
+
+    def refresh_with_answer(self, answer: str) -> subprocess.CompletedProcess[str]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "tools" / "llmlint" / "llmlint-plugins.py"
+            script.parent.mkdir(parents=True)
+            shutil.copy2(REPO / "tools" / "llmlint" / "llmlint-plugins.py", script)
+            (root / "llmlint-plugins").mkdir()
+            lock = {"schema": 1, "plugins": [{
+                "name": "config-lint", "url": "https://example.test/config_lint.yml", "pin": "1",
+                "file": "llmlint-plugins/config-lint.yml", "bundled": True}]}
+            (root / "llmlint-plugins" / "lock.json").write_text(json.dumps(lock), encoding="utf-8")
+            stubs = root / "bin"
+            stubs.mkdir()
+            (stubs / "llmlint").write_text(
+                f"#!/bin/sh\ncat <<'ANSWER'\n{answer}\nANSWER\n", encoding="utf-8"
+            )
+            (stubs / "llmlint").chmod(0o755)
+            run = subprocess.run([sys.executable, str(script), "refresh"], capture_output=True, text=True,
+                                 env={**os.environ, "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}"}, timeout=60)
+            self.assertEqual(json.loads((root / "llmlint-plugins" / "lock.json").read_text()), lock,
+                             "a refused answer must leave the lock untouched")
+            return run
+
+    @unittest.skipIf(os.name == "nt", "the stub llmlint is a POSIX shell script")
+    def test_each_malformed_answer_names_the_fix(self) -> None:
+        for answer, message in (
+            ("not json", "printed no JSON document"),
+            ("[]", "no `sources.rules` object"),
+            ('{"sources": {}}', "no `sources.rules` object"),
+            ('{"sources": {"rules": ["base"]}}', "no `sources.rules` object"),
+            ('{"sources": {"rules": {"base": "here"}}}', "rule 'base' without a source string"),
+            ('{"sources": {"rules": {"base": {"source": 7}}}}', "rule 'base' without a source string"),
+        ):
+            with self.subTest(answer=answer):
+                run = self.refresh_with_answer(answer)
+                self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+                self.assertIn(message, run.stderr)
+                self.assertIn("reinstall it with that recipe), then re-run", run.stderr)
+                self.assertNotIn("Traceback", run.stderr)
+
 
 class TheGateAndTheRequiredCheckRunThisSuite(unittest.TestCase):
     """Where this suite runs is what keeps it from passing vacuously.

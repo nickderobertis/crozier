@@ -29,11 +29,13 @@ import sys
 import tempfile
 import urllib.error
 import urllib.request
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 REPO = Path(__file__).resolve().parents[2]
-LOCK = REPO / "llmlint-plugins" / "lock.json"
+# Every vendored plugin document lives here; the lock may name nothing outside it.
+VENDOR_DIR = "llmlint-plugins"
+LOCK = REPO / VENDOR_DIR / "lock.json"
 FETCH_TIMEOUT_SECONDS = 30
 # The hand-edited fields of a lock entry; refresh generates the rest.
 INPUT_FIELDS = ("name", "url", "pin", "file")
@@ -64,6 +66,19 @@ def load_lock() -> dict[str, Any]:
         if missing:
             fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} lacks {', '.join(missing)}",
                  "give every plugin entry a non-empty name, url, pin and file (docs/llmlint-plugins.md)")
+        file = PurePosixPath(plugin["file"])
+        vendored = (REPO / VENDOR_DIR).resolve()
+        # A relative path's first part is the vendor directory only when it is
+        # neither absolute nor a drive or backslash spelling; resolving catches a
+        # symlink that leads back out.
+        if (
+            ".." in file.parts
+            or len(file.parts) < 2
+            or file.parts[0] != VENDOR_DIR
+            or not (REPO / file).resolve().is_relative_to(vendored)
+        ):
+            fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} file {plugin['file']!r} is not under {VENDOR_DIR}/",
+                 f"record a relative path inside {VENDOR_DIR}/ with no '..' (e.g. {VENDOR_DIR}/base.llmlint.yml)")
     return lock
 
 
@@ -127,10 +142,22 @@ def rules_by_source(plugins: list[dict[str, Any]]) -> dict[str, list[str]]:
                 f"llmlint could not resolve the refreshed plugin set: {resolved.stderr.strip()}",
                 "fix the reported plugin, then re-run",
             )
-    sources = json.loads(resolved.stdout)["sources"]["rules"]
+    remedy = ("check that `llmlint --version` is the release `just setup-llmlint` installs"
+              " (reinstall it with that recipe), then re-run")
+    try:
+        reported = json.loads(resolved.stdout)
+    except json.JSONDecodeError as error:
+        fail(f"`llmlint config --sources` printed no JSON document ({error})", remedy)
+    sources = reported.get("sources") if isinstance(reported, dict) else None
+    rules = sources.get("rules") if isinstance(sources, dict) else None
+    if not isinstance(rules, dict):
+        fail("`llmlint config --sources` reported no `sources.rules` object", remedy)
     by_source: dict[str, list[str]] = {}
-    for rule, origin in sorted(sources.items()):
-        by_source.setdefault(origin["source"], []).append(rule)
+    for rule, origin in sorted(rules.items()):
+        source = origin.get("source") if isinstance(origin, dict) else None
+        if not isinstance(source, str) or not source:
+            fail(f"`llmlint config --sources` reported rule {rule!r} without a source string", remedy)
+        by_source.setdefault(source, []).append(rule)
     return by_source
 
 
