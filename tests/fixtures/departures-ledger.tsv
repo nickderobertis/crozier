@@ -458,11 +458,6 @@ docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected	s
 docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/signal-cabinet-labels/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/signal-cabinet-labels/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/signal-cabinet-labels/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/signal-cabinet-labels/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/signal-cabinet-labels/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1487,6 +1482,12 @@ tests/fixtures/color.pizza/expected	src/fern/core/client_wrapper.py	35	sdk-ident
 tests/fixtures/color.pizza/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/color.pizza/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/color.pizza/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/confluent-kafka-connect/expected	src/fern/__init__.py	78	init-type-checking-import-order
+tests/fixtures/confluent-kafka-connect/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/confluent-kafka-connect/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/confluent-kafka-connect/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/confluent-kafka-connect/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
+tests/fixtures/confluent-kafka-connect/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/cookie-parameters/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/cookie-parameters/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/cookie-parameters/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
