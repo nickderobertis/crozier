@@ -3,7 +3,6 @@
 # requires-python = ">=3.11"
 # dependencies = ["ruamel.yaml==0.19.1"]
 # ///
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this arm-search script sits in scripts/ beside golden-reach.py, whose ledger it reads, and the witness-search scripts whose acquirer it drives.
 """Search the six declared sources for a real-world witness of a golden row's unreached arm.
 
 A `golden` row whose reach cell names an unreached handling site is missing an

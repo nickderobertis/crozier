@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate uses just rather than Nx; this guarded archive acquisition command lives with the other repository scripts and is exercised by the witness-search acquisition tier.
 """Download a pinned public GitHub tree through the shared REST-bucket guard."""
 
 from __future__ import annotations

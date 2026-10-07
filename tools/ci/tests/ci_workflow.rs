@@ -2,7 +2,6 @@
 //! lifted to ready for review must re-run them on its head: the default
 //! `pull_request` types omit `ready_for_review`, so without it the lift reports
 //! nothing new and the merge path is left reading draft-time runs.
-// llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace yet; this integration test sits in tests/ beside notignored_workflow.rs, its sibling workflow test, and runs under `just test`.
 
 use serde_yaml_ng::Value;
 

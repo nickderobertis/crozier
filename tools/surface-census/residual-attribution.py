@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this measurement script sits in scripts/ beside golden-reach.py, whose census module it reuses, and runs as `just residual-attribution`.
 """Which generated files a feature resting only on residual goldens lands in.
 
 Three registered rows — `komga`, `short-io` and `webflow-v2` — are golden tests

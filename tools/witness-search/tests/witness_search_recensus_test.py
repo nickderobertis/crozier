@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this test sits in tests/ beside the other witness-search suites and runs under `just test-census-fallback`, which CI's live-e2e leg runs.
 """`tools/witness-search/witness-search-recensus.py`, driven through its real CLI.
 
 `full-yaml` over a temporary ledger whose parse failures name real documents in

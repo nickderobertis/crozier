@@ -1,4 +1,3 @@
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier uses Cargo and just rather than Nx; this test belongs to the existing pytest live-e2e suite run by test-live-e2e.
 """The live harness reads committed corpus inputs through its real staging CLI."""
 import subprocess
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; the paced Postman search command belongs beside the other just-driven witness-search scripts and is exercised by the acquisition tier.
 """Ask Postman's three public API-network indices for every current FIXTURE gap."""
 
 from __future__ import annotations

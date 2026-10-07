@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this subprocess and loopback-server suite is wired into just test-witness-search-acquisition and the deterministic check gate.
 """End-to-end coverage of the witness-search acquisition, census and ledger scripts."""
 
 from __future__ import annotations

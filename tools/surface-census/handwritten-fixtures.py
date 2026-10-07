@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this script sits in scripts/ beside golden-reach.py, whose site resolution and coverage reading it reuses, and runs as `just handwritten-reach` and from the `crates/crozier-e2e/tests/e2e.rs` gate.
 """Read and measure the hand-written generation fixtures.
 
 A hand-written fixture is generation evidence of a lower level than a real

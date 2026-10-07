@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx project; this evidence index is a maintenance script beside its acquisition command in scripts/.
 """Reconcile acquired search results into per-source and consolidated candidate rows.
 
 Exit 0 means the index is current or was regenerated; exit 1 means evidence or

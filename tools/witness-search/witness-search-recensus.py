@@ -3,7 +3,6 @@
 # requires-python = ">=3.10"
 # dependencies = ["ruamel.yaml==0.19.1"]
 # ///
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx project; this maintenance command belongs in scripts/ beside the acquisition ledgers it appends to.
 """Decide the witness-search candidates the first acquisition left undecided.
 
 Two stages, each appending to a query or walk source's own ledger

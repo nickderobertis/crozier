@@ -1,4 +1,3 @@
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier uses Cargo and just rather than Nx; this boundary suite belongs to test-corpus-sources in the deterministic check.
 """Boundary coverage for the committed corpus sources.
 
 Every registered `tests/fixtures/CORPUS.md` row's source document is committed

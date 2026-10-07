@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this screening stage sits in scripts/ beside the two witness-search families that file their screens through it.
 """The one measured screening stage a witness candidate's three screens come from.
 
 A candidate owes three screens before it can stand as a witness: its licence

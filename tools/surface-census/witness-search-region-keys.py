@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this region-key derivation command lives with the just-driven census scripts and is drift-checked by the acquisition tier.
 """Derive the witness-search key set from the region tables at this checkout.
 
 The set is every `FIXTURE` `gap` row, plus every `handwritten` row: a hand-written

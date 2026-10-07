@@ -1,4 +1,3 @@
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier's Python maintenance tests live in tests/ and run through just; no Nx workspace or project boundary exists for this offline HTTP tier.
 """Exercise witness acquisition through real local HTTP responses and the census."""
 
 from __future__ import annotations

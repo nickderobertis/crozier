@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Rust CLI with Python maintenance scripts in scripts/ and no Nx project; this acquisition command belongs beside the surface census and quota guard it calls.
 """Acquire GitHub and Sourcegraph witness-search results through Contract C.
 
 The search index supplies document identities. Only the surface census over the

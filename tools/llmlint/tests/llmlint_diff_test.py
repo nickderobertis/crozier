@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this boundary test sits in tests/ beside llmlint_plugins_test.py and runs under `just test-llmlint-diff`.
 """Offline tests for `tools/llmlint/llmlint-diff.py`, the `lint-llm-diff` recipe's body.
 
 Each case builds a real git repository with a base branch and a feature branch,

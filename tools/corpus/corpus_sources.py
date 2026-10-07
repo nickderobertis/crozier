@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by just, not an Nx workspace; this maintenance script is owned by lint-corpus-sources, test-corpus-sources and corpus-sources.
 """The committed source documents of every registered corpus row.
 
 Every numbered `tests/fixtures/CORPUS.md` row's source document is committed

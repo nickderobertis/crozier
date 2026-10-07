@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier uses Cargo and just rather than Nx; this real-recipe journey belongs to test-corpus-offline and CI live-e2e.
 """Drive real corpus recipes without sockets or an ignored corpus cache (Linux)."""
 from __future__ import annotations
 

@@ -6,7 +6,6 @@
 //! required check — a required context that skips on forks would block them.
 //! Every context `ci.yml` reports is a candidate for branch protection, so the
 //! job must share a name with none of them and none may depend on it.
-// llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace yet; this integration test sits in tests/ beside release_workflow.rs, its sibling workflow test, and runs under `just test`.
 
 use serde_yaml_ng::{Mapping, Value};
 

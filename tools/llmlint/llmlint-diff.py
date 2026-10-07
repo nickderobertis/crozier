@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this wrapper sits in scripts/ beside the other llmlint tooling and is the `lint-llm-diff` recipe's body.
 """Judge a branch's diff with llmlint, in batches the judge can hold.
 
 `llmlint --diff` hands one rule batch every changed file it targets, whole and

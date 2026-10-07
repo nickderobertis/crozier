@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this derivation lives with the just-driven witness-search scripts and is drift-checked by the acquisition tier.
 """Derive the registry search's consolidated ledgers from its per-source records.
 
 `candidates.tsv` is every source's `records.tsv` row, pointing back at it.

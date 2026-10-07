@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace (no nx.json or project.json anywhere); this script sits in scripts/ beside the census scripts whose records it reads, and runs as `just fern-refusals-*` and under `just test-fern-refusals`.
 """Build the refused-document population of `docs/fern-refusals/`.
 
 The registry's population is every document crozier's committed records name as

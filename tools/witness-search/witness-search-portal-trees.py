@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; pinned portal archive extraction is a just-driven repository script exercised by the witness-search acquisition tier.
 """Extract and inventory JSON/YAML files from pinned vendor portal archives."""
 
 from __future__ import annotations

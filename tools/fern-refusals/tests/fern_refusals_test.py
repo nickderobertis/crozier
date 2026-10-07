@@ -1,4 +1,3 @@
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this boundary test sits in tests/ beside the other script tests and runs under `just test-fern-refusals`, part of `check`.
 """Coverage for `tools/fern-refusals/fern-refusals.py`, which builds `docs/fern-refusals/`.
 
 The script derives the refused-document population from committed records and

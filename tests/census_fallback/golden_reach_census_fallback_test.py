@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this test sits in tests/ beside golden_reach_test.py and runs under `just test-census-fallback`, which CI's live-e2e leg runs.
 """The arm search's YAML fallback counts what the census's own loader would.
 
 `tools/surface-census/golden-reach-search.py recensus` counts a document the census's stdlib
