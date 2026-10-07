@@ -4,8 +4,11 @@ The README's "See it in action" images are **real captures of the `crozier`
 CLI**, gated by [screencomp](https://github.com/nickderobertis/screencomp) so a
 change to what a command prints can't land without the committed image changing
 with it. This folder holds the inputs; the mechanics live in
-[`scripts/screenshots.sh`](../scripts/screenshots.sh) (static SVGs) and
-[`screenshots/demo-gif.py`](../screenshots/demo-gif.py) (the animated hero).
+[`scripts/screenshots.sh`](../scripts/screenshots.sh) (static SVGs; it stays in
+`scripts/` because the pre-push guard and the Visual-docs workflow run it by that
+path) and [`demo-gif.py`](demo-gif.py) (the animated hero). The Nx project
+`screenshots` (`project.json` here) carries them as `capture` and `demo-gif`,
+which neither gate tier runs: screencomp owns the comparison.
 
 ## What's here
 

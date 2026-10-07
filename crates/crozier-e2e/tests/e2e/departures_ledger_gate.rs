@@ -633,6 +633,9 @@ fn the_documented_ledger_format_is_the_loaders() {
         justfile.contains(&format!("\n{recipe}:")),
         "the justfile has no `{recipe}` recipe"
     );
-    assert!(justfile.contains(departures_ledger::RECORD_ENV));
-    assert!(justfile.contains("write_departures_ledger"));
+    // The recipe runs the crozier-e2e project's target, whose script records.
+    let script =
+        std::fs::read_to_string(root.join("crates/crozier-e2e/departures-ledger.sh")).unwrap();
+    assert!(script.contains(departures_ledger::RECORD_ENV));
+    assert!(script.contains("write_departures_ledger"));
 }

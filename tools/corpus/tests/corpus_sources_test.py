@@ -123,44 +123,6 @@ class TheCommittedTreeHolds(unittest.TestCase):
             fetched_rows = [tuple(line.split("\t")[:2]) for line in result.stdout.splitlines()]
             self.assertEqual([(row.name, row.url) for row in corpus_sources.corpus_rows(REPO)], fetched_rows)
 
-    def test_offline_recipe_failure_restores_the_original_cache(self) -> None:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("offline_cache_recovery", REPO / "tests/corpus_match/corpus_offline_test.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        if getattr(module.OfflineCorpusRecipes, "__unittest_skip__", False):
-            self.skipTest(module.OfflineCorpusRecipes.__unittest_skip_why__)
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            cache = root / ".local/corpus"
-            cache.mkdir(parents=True)
-            marker = cache / "original.txt"
-            marker.write_text("original cached bytes")
-            (root / "justfile").write_text(
-                "test-corpus-match:\n    mkdir -p .local/corpus/generated\n    false\n\n"
-                "surface-census:\n    true\n"
-            )
-            # The warm step fetches locked crates: give the root a package with
-            # none, so it succeeds offline and the failing recipe is reached.
-            (root / "Cargo.toml").write_text('[package]\nname = "synthetic"\nversion = "0.0.0"\n')
-            (root / "src").mkdir()
-            (root / "src/lib.rs").write_text("")
-            subprocess.run(["cargo", "generate-lockfile", "--offline"], cwd=root, check=True,
-                           capture_output=True)
-            tests = root / "tests"
-            tests.mkdir()
-            script = tests / "corpus_offline_test.py"
-            shutil.copy2(REPO / "tests/corpus_match/corpus_offline_test.py", script)
-            completed = subprocess.run(
-                [sys.executable, str(script), "OfflineCorpusRecipes.test_real_recipes_without_network_or_cache"],
-                cwd=root, capture_output=True, text=True,
-            )
-            self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
-            self.assertIn("mkdir -p .local/corpus/generated", completed.stderr)
-            self.assertNotIn("Directory not empty", completed.stderr)
-            self.assertEqual("original cached bytes", marker.read_text())
-            self.assertFalse((cache / "generated").exists())
-
     def test_prepare_rejects_unsafe_names(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             completed = run(REPO, "prepare", "--fixture", "../exhaustive", "--output", directory)

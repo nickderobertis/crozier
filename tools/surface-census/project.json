@@ -1,0 +1,114 @@
+{
+  "name": "surface-census",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "measures:crozier-e2e",
+    "lang:python"
+  ],
+  "targets": {
+    "test-census": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "sh scripts/census-python.sh tools/surface-census/tests/surface_census_test.py",
+          "sh scripts/census-python.sh tools/surface-census/tests/apis_guru_gap_screen_test.py"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tests/resolving-arm-inputs.json",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/tools/corpus/*.py",
+        "{workspaceRoot}/tools/corpus/*.sh",
+        "{workspaceRoot}/tools/witness-search/*.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/llmlint.yml"
+      ]
+    },
+    "test-reach": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "python3 tools/surface-census/tests/fixtures_coverage_test.py",
+          "python3 tools/surface-census/tests/handwritten_reach_test.py",
+          "python3 tools/surface-census/tests/golden_reach_test.py"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateTests",
+        "e2eSource",
+        "generator",
+        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/witness-search/*.py",
+        "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
+        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test-reach-portable": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/surface-census/tests/golden_reach_test.py",
+        "env": {
+          "PYTHONPATH": "tools/surface-census/tests/without-posix-modules"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateTests",
+        "e2eSource",
+        "generator",
+        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/witness-search/*.py",
+        "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
+        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test-fixtures-coverage": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-reach",
+        "test-reach-portable"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-census",
+        "test-fixtures-coverage"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs surface-census"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

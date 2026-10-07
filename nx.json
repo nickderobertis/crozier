@@ -1,0 +1,124 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "cacheDirectory": ".nx/cache",
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*"
+    ],
+    "cargo": [
+      "{workspaceRoot}/Cargo.toml",
+      "{workspaceRoot}/Cargo.lock",
+      "{workspaceRoot}/rust-toolchain.toml",
+      "{workspaceRoot}/.cargo/config.toml"
+    ],
+    "crateSource": [
+      "cargo",
+      "{workspaceRoot}/src/**/*.rs",
+      "{workspaceRoot}/templates/**/*",
+      "{workspaceRoot}/assets/**/*"
+    ],
+    "crateTests": [
+      "crateSource",
+      "{workspaceRoot}/tests/*.rs",
+      "{workspaceRoot}/tests/support/**/*"
+    ],
+    "crateTestReads": [
+      "{workspaceRoot}/docs/README.md",
+      "{workspaceRoot}/docs/compare.md",
+      "{workspaceRoot}/docs/departures/**/*",
+      "{workspaceRoot}/docs/examples/**/*",
+      "{workspaceRoot}/docs/fern-measurements/**/*",
+      "{workspaceRoot}/docs/fern-reference.md",
+      "{workspaceRoot}/docs/fern-refusals/**/*",
+      "{workspaceRoot}/docs/github-action.md",
+      "{workspaceRoot}/docs/openapi-surface/authored-probes/**/*",
+      "{workspaceRoot}/docs/openapi-surface/handwritten/**/*",
+      "{workspaceRoot}/docs/openapi-surface/probe-expected/**/*",
+      "{workspaceRoot}/docs/openapi-surface/probes/**/*",
+      "{workspaceRoot}/tests/fixtures/**/*",
+      "{workspaceRoot}/tests/resolving-arm-inputs.json"
+    ],
+    "e2eSource": [
+      "{workspaceRoot}/crates/crozier-e2e/**/*",
+      "{workspaceRoot}/tests/support/**/*"
+    ],
+    "e2eReads": [
+      "{workspaceRoot}/docs/**/*",
+      "!{workspaceRoot}/docs/openapi-surface/witness-search-*/**/*",
+      "!{workspaceRoot}/docs/openapi-surface/golden-reach-witnesses/**/*",
+      "{workspaceRoot}/tests/fixtures/**/*",
+      "{workspaceRoot}/justfile",
+      "{workspaceRoot}/action.yml",
+      "{workspaceRoot}/pyproject.toml",
+      "{workspaceRoot}/.github/workflows/release.yml",
+      "{workspaceRoot}/scripts/install.sh",
+      "{workspaceRoot}/scripts/install-ruff.sh",
+      "{workspaceRoot}/scripts/update-major-tag.sh",
+      "{workspaceRoot}/scripts/lib.sh",
+      "{workspaceRoot}/tests/corpus_match/match.sh",
+      "{workspaceRoot}/tools/corpus/corpus_sources.py",
+      "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+      "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+      "{workspaceRoot}/tools/surface-census/golden-reach.py",
+      "{workspaceRoot}/tools/surface-census/fixtures-coverage.sh",
+      "{workspaceRoot}/tools/surface-census/fixtures-coverage-report.py",
+      "{workspaceRoot}/tools/surface-census/handwritten-fixtures.py",
+      "{workspaceRoot}/tools/surface-census/probe-differential-isolation.py",
+      "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+      "{workspaceRoot}/tools/fern-goldens/fern-overlay-goldens.sh",
+      "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+      "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
+      "{workspaceRoot}/tools/github-action/*.sh"
+    ],
+    "generator": [
+      "{workspaceRoot}/.ruff-version",
+      {
+        "runtime": "ruff --version"
+      }
+    ],
+    "boundaries": [
+      "{projectRoot}/project.json",
+      "{workspaceRoot}/nx.json",
+      "{workspaceRoot}/scripts/check-project-boundaries.mjs",
+      "{workspaceRoot}/bun.lock"
+    ]
+  },
+  "targetDefaults": {},
+  "boundaries": {
+    "allow": {
+      "type:crate": [],
+      "type:e2e": [
+        "type:crate",
+        "type:tooling",
+        "type:tier"
+      ],
+      "type:tier": [
+        "type:crate",
+        "type:e2e",
+        "type:tooling",
+        "type:tier"
+      ],
+      "type:tooling": [
+        "type:crate",
+        "type:e2e",
+        "type:tooling"
+      ],
+      "type:aggregate": [
+        "type:crate",
+        "type:e2e",
+        "type:tooling"
+      ]
+    },
+    "unreachable": {
+      "cost:expensive": {
+        "rule": "expensive-suites-stay-unreachable",
+        "from": [
+          "cost:expensive",
+          "type:aggregate"
+        ],
+        "why": "an expensive suite (cost:expensive) may be depended on only by another expensive suite, the workspace-wide aggregate, or a project tagged measures:<suite>; anything else would put it behind an edge an unrelated change can reach"
+      }
+    }
+  }
+}

@@ -95,6 +95,11 @@ def recipe_body(name: str) -> list[str]:
     raise AssertionError(f"the justfile has no `{name}` recipe")
 
 
+def census_project() -> dict:
+    """The surface-census Nx project, whose targets the gate runs."""
+    return json.loads((REPO / "tools" / "surface-census" / "project.json").read_text(encoding="utf-8"))
+
+
 def script_under_test() -> Path:
     """The census script as the `surface-census` recipe names it.
 
@@ -2214,18 +2219,19 @@ class RecipeWiringTests(unittest.TestCase):
         self.assertTrue(SCRIPT.is_file(), SCRIPT)
 
     def test_the_gate_runs_this_file_offline(self) -> None:
+        # `just check` runs every affected project's `test`, and the
+        # surface-census project's aggregate names the target running this file.
+        project = census_project()
+        self.assertNotIn("tier:promoted", project["tags"])
         self.assertEqual(
             [
-                f'"$(./scripts/census-python.sh)" {Path(__file__).resolve().relative_to(REPO).as_posix()}',
-                '"$(./scripts/census-python.sh)" tools/surface-census/tests/apis_guru_gap_screen_test.py',
+                f"sh scripts/census-python.sh {Path(__file__).resolve().relative_to(REPO).as_posix()}",
+                "sh scripts/census-python.sh tools/surface-census/tests/apis_guru_gap_screen_test.py",
             ],
-            recipe_body("test-surface-census"),
+            project["targets"]["test-census"]["options"]["commands"],
         )
-        check = next(
-            line for line in (REPO / "justfile").read_text(encoding="utf-8").splitlines()
-            if line.startswith("check:")
-        )
-        self.assertIn("test-surface-census", check.split())
+        self.assertIn("test-census", project["targets"]["test"]["dependsOn"])
+        self.assertEqual(["@just nx run surface-census:test-census"], recipe_body("test-surface-census"))
 
 
 # The document-reading predicates `BodyAndResponseSelectorControls` discriminates:
@@ -7407,10 +7413,13 @@ class CensusInterpreterTests(unittest.TestCase):
         )
 
     def test_both_census_recipes_resolve_the_interpreter_through_the_resolver(self) -> None:
-        for recipe in ("surface-census", "test-surface-census"):
-            with self.subTest(recipe=recipe):
-                body = " ".join(recipe_body(recipe))
-                self.assertIn('"$(./scripts/census-python.sh)"', body)
+        # The measurement recipe, and the gate target the test recipe runs.
+        for name, body in (
+            ("surface-census", " ".join(recipe_body("surface-census"))),
+            ("test-census", " ".join(census_project()["targets"]["test-census"]["options"]["commands"])),
+        ):
+            with self.subTest(recipe=name):
+                self.assertIn("scripts/census-python.sh", body)
                 self.assertNotRegex(body, r"(?<!census-)\bpython3 ")
 
     def test_the_resolver_names_a_real_interpreter_that_is_not_a_virtualenv(self) -> None:

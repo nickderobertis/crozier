@@ -1,0 +1,103 @@
+{
+  "name": "crozier-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:e2e",
+    "cost:expensive",
+    "lang:rust"
+  ],
+  "implicitDependencies": [
+    "crozier"
+  ],
+  "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt -p crozier-e2e -- --check"
+      },
+      "configurations": {
+        "write": {
+          "command": "cargo fmt -p crozier-e2e"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "e2eSource"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cargo clippy -p crozier-e2e --all-targets --all-features --locked -- -D warnings",
+          "node scripts/check-project-boundaries.mjs crozier-e2e"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "e2eReads",
+        "boundaries"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo nextest run --locked -p crozier-e2e"
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "e2eReads",
+        "generator"
+      ],
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "fixtures-gaps": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash crates/crozier-e2e/fixtures-report.sh gaps"
+      },
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "fixtures-diff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash crates/crozier-e2e/fixtures-report.sh diff"
+      },
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "departures-ledger": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash crates/crozier-e2e/departures-ledger.sh"
+      },
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "fern-probe-refusal": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo test --locked -p crozier-e2e --test e2e fern_ref_pointer_unnamed_segment_refusal_matches_measurement -- --ignored --exact --nocapture"
+      },
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ]
+    }
+  }
+}

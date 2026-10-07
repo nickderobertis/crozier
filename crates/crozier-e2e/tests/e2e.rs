@@ -9887,7 +9887,7 @@ fn a_known_fern_failure_registration_cannot_excuse_anything_else() {
 #[test]
 fn every_registered_corpus_is_wired_into_the_gate() {
     let source = include_str!("e2e.rs");
-    let recipe = corpus_match_recipe(include_str!("../../../justfile"));
+    let recipe = corpus_match_recipe(include_str!("../../../tests/corpus_match/match.sh"));
 
     let mut enforced = std::collections::BTreeSet::new();
     for corpus in registered_diff_corpora() {
@@ -9956,20 +9956,23 @@ fn every_registered_corpus_is_wired_into_the_gate() {
     );
 }
 
-/// The test names `just test-corpus-match` enforces, in recipe order.
-fn corpus_match_recipe(justfile: &str) -> Vec<String> {
-    let tests: Vec<String> = justfile
+/// The test names `just test-corpus-match` enforces, in run order: the
+/// `cargo test` lines of `tests/corpus_match/match.sh`, the script the
+/// `corpus-match` project's `test-match` target runs.
+fn corpus_match_recipe(script: &str) -> Vec<String> {
+    let tests: Vec<String> = script
         .lines()
-        .skip_while(|line| !line.starts_with("test-corpus-match:"))
-        .skip(1)
-        .take_while(|line| line.starts_with(' ') || line.starts_with('\t'))
+        .filter(|line| !line.trim_start().starts_with('#'))
         .filter_map(|line| {
             line.trim_end()
                 .rsplit_once("--test e2e ")
                 .map(|(_, test)| test.to_string())
         })
         .collect();
-    assert!(!tests.is_empty(), "`test-corpus-match` enforces no tests");
+    assert!(
+        !tests.is_empty(),
+        "tests/corpus_match/match.sh enforces no tests"
+    );
     tests
 }
 

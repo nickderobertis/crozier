@@ -1,0 +1,42 @@
+{
+  "name": "fern-refusals",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-refusals/tests/fern_refusals_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "generator",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/tests/fixtures/CORPUS.md",
+        "{workspaceRoot}/tools/witness-search/*.py",
+        "{workspaceRoot}/tools/surface-census/*.py",
+        "{workspaceRoot}/tools/surface-census/tests/surface_census_test.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs fern-refusals"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "name": "census-fallback",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:python"
+  ],
+  "targets": {
+    "test-samples": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/census_fallback/run.sh samples"
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/witness-search/**/*",
+        "{workspaceRoot}/tools/corpus/*.py",
+        "{workspaceRoot}/tools/corpus/*.sh",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/scripts/lib.sh"
+      ]
+    },
+    "test-parsers": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/census_fallback/run.sh parsers"
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/witness-search/**/*",
+        "{workspaceRoot}/tools/corpus/*.py",
+        "{workspaceRoot}/tools/corpus/*.sh",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/scripts/lib.sh"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-samples",
+        "test-parsers"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs census-fallback"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "live-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:python"
+  ],
+  "implicitDependencies": [
+    "crozier"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/live_e2e/run.sh"
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "crateSource",
+        "generator",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs live-e2e"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

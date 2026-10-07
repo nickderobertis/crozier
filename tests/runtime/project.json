@@ -1,0 +1,48 @@
+{
+  "name": "runtime",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:python"
+  ],
+  "implicitDependencies": [
+    "crozier-e2e"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo nextest run --locked -p crozier-e2e --run-ignored only -E \"test(=sdk_env_crozier_matches_fern_runtime_behavior)\""
+      },
+      "cache": false,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "e2eReads",
+        "generator",
+        "default"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs runtime"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

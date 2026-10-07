@@ -104,7 +104,9 @@ class OfflineCorpusRecipes(unittest.TestCase):
                              "just", recipe], cwd=REPO, capture_output=True, text=True,
                             # A user-level sccache daemon needs a socket; the repo
                             # build contract has no wrapper and works offline.
-                            env={**os.environ, "RUSTC_WRAPPER": "", "UV_OFFLINE": "1"},
+                            # A replayed cache entry would prove nothing about the
+                            # network, so each recipe's target really runs.
+                            env={**os.environ, "RUSTC_WRAPPER": "", "UV_OFFLINE": "1", "NX_SKIP_NX_CACHE": "true"},
                         )
                         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
                         for cache in caches:

@@ -1,0 +1,108 @@
+{
+  "name": "corpus-match",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:rust"
+  ],
+  "implicitDependencies": [
+    "crozier-e2e"
+  ],
+  "targets": {
+    "test-match": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/corpus_match/match.sh"
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "e2eReads",
+        "generator",
+        "default",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/tools/surface-census/*.py"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "test-strict": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/corpus_match/match.sh --strict"
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "e2eReads",
+        "generator",
+        "default",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/tools/surface-census/*.py"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "test-offline": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "python3 tests/corpus_match/corpus_offline_test.py",
+          "python3 tests/corpus_match/corpus_offline_recovery_test.py"
+        ],
+        "parallel": false
+      },
+      "cache": false,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "e2eReads",
+        "generator",
+        "default",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/tests/census_fallback/**/*",
+        "{workspaceRoot}/tools/corpus/**/*",
+        "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/fern-refusals/**/*",
+        "{workspaceRoot}/tools/witness-search/**/*"
+      ],
+      "parallelism": false
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-match",
+        "test-strict",
+        "test-offline"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs corpus-match"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

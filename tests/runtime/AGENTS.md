@@ -6,8 +6,10 @@ job) — **differentially against Fern**. Driven by
 `crates/crozier-e2e/tests/e2e.rs::sdk_env_crozier_matches_fern_runtime_behavior`, which generates the
 `exhaustive` SDK, prepares a cached venv (httpx + pydantic + pytest), and runs
 `pytest` here with `CROZIER_SDK_SRC` / `FERN_SDK_SRC` pointing at the two SDKs.
-Installing those from PyPI puts it in the SDK Python-environment tier: `just
-test-sdk-env` (CI's `sdk-env` job, required by `gate`), never the offline `check`.
+Installing those from PyPI puts it in the SDK Python-environment tier: the Nx
+project `runtime` (`project.json` here), promoted out of the affected tier — `just
+test-runtime` alone, `just test-sdk-env` with the rest of the tier (CI's `sdk-env`
+job, required by `gate`), and `just check --sweep`.
 
 - **`_recorder.py`** (helper, not collected) drives one SDK through an injected
   `httpx.MockTransport` — the generated client accepts an `httpx_client` — and

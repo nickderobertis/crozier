@@ -176,11 +176,18 @@ class TheGateAndTheRequiredCheckRunThisSuite(unittest.TestCase):
     """
 
     def test_check_runs_this_file(self) -> None:
+        # `just check` runs every affected project's `test`; this project's
+        # aggregate names the target that runs this file, outside the promoted
+        # tiers, and the recipe CI's llmlint job calls is that target.
+        project = json.loads((REPO / "tools" / "llmlint" / "project.json").read_text(encoding="utf-8"))
+        self.assertNotIn("tier:promoted", project["tags"])
+        self.assertIn("test-plugins", project["targets"]["test"]["dependsOn"])
+        self.assertEqual(f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
+                         project["targets"]["test-plugins"]["options"]["command"])
+        self.assertIn({"env": "CROZIER_REQUIRE_LLMLINT"}, project["targets"]["test-plugins"]["inputs"])
         justfile = (REPO / "justfile").read_text(encoding="utf-8").splitlines()
-        gate = next(line for line in justfile if line.startswith("check:"))
-        self.assertIn("test-llmlint-plugins", gate.split())
         recipe = justfile[justfile.index("test-llmlint-plugins:") + 1].strip()
-        self.assertEqual(f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}", recipe)
+        self.assertEqual("@just nx run llmlint-tooling:test-plugins", recipe)
 
     def test_the_required_llmlint_check_runs_it_without_the_skip(self) -> None:
         workflow = (REPO / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")

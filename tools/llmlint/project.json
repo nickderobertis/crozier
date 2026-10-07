@@ -1,0 +1,59 @@
+{
+  "name": "llmlint-tooling",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test-plugins": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/llmlint/tests/llmlint_plugins_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/llmlint.yml",
+        "{workspaceRoot}/llmlint-plugins/**/*",
+        "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/justfile",
+        {
+          "env": "CROZIER_REQUIRE_LLMLINT"
+        },
+        {
+          "runtime": "llmlint --version || echo llmlint-absent"
+        }
+      ]
+    },
+    "test-diff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/llmlint/tests/llmlint_diff_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-plugins",
+        "test-diff"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs llmlint-tooling"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

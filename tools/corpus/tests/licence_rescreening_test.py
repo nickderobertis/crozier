@@ -21,6 +21,7 @@ Run: `just test-licence-rescreening` (part of `just check`).
 from __future__ import annotations
 
 import importlib.util
+import json
 import shutil
 import subprocess
 import sys
@@ -418,19 +419,22 @@ class TheRecordIsWhereTheGateSaysItIs(unittest.TestCase):
 
 class TheGateAndItsTestsAreBothInTheDeterministicTier(unittest.TestCase):
     def test_check_runs_both(self) -> None:
-        justfile = (REPO / "justfile").read_text(encoding="utf-8").splitlines()
-        gate = next(line for line in justfile if line.startswith("check:")).split()
-        self.assertIn("lint-licence-rescreening", gate)
-        self.assertIn("test-licence-rescreening", gate)
+        # `just check` runs every affected project's `lint` and `test`; the
+        # corpus project's aggregates name these two targets, the targets run
+        # these two files, and the project is not promoted out of that tier.
+        project = json.loads((REPO / "tools" / "corpus" / "project.json").read_text(encoding="utf-8"))
+        targets = project["targets"]
+        self.assertNotIn("tier:promoted", project["tags"])
+        self.assertIn("lint-licence-rescreening", targets["lint"]["dependsOn"])
+        self.assertIn("test-licence-rescreening", targets["test"]["dependsOn"])
         self.assertEqual(
-            justfile[justfile.index("lint-licence-rescreening:") + 1].strip(),
+            targets["lint-licence-rescreening"]["options"]["command"],
             f"python3 {SCRIPT.relative_to(REPO).as_posix()}",
         )
         self.assertEqual(
-            justfile[justfile.index("test-licence-rescreening:") + 1].strip(),
+            targets["test-licence-rescreening"]["options"]["command"],
             f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
         )
-
 
 if __name__ == "__main__":
     unittest.main()

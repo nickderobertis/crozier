@@ -1,0 +1,83 @@
+{
+  "name": "workspace",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:aggregate",
+    "lang:rust"
+  ],
+  "implicitDependencies": [
+    "crozier"
+  ],
+  "targets": {
+    "coverage": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo llvm-cov report --locked --fail-under-lines 95 --ignore-filename-regex \"main\\.rs$\"",
+        "env": {
+          "CARGO_LLVM_COV_TARGET_DIR": "target/llvm-cov-gate"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "crateTests",
+        "crateTestReads",
+        "generator",
+        "{projectRoot}/project.json"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "test"
+        }
+      ]
+    },
+    "supply-chain": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cargo deny --locked check",
+          "cargo machete"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "cargo",
+        "{workspaceRoot}/deny.toml",
+        "{workspaceRoot}/crates/*/Cargo.toml",
+        "{workspaceRoot}/tools/*/Cargo.toml",
+        "{workspaceRoot}/src/**/*.rs",
+        "{workspaceRoot}/tests/*.rs",
+        "{workspaceRoot}/tests/support/**/*.rs",
+        "{workspaceRoot}/crates/**/*.rs",
+        "{workspaceRoot}/tools/*/tests/*.rs"
+      ]
+    },
+    "doc": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo doc --no-deps --all-features --locked",
+        "env": {
+          "RUSTDOCFLAGS": "-D warnings"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs workspace"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

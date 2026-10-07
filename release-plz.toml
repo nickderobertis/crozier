@@ -21,3 +21,17 @@ git_tag_name = "v{{ version }}"
 # Pre-1.0: a breaking change bumps the minor (0.x), not the major. release-plz
 # follows Conventional Commits; this is the default 0.x behavior.
 changelog_update = true
+
+# The workspace's test-only members (`publish = false`) are never versioned,
+# changelogged or tagged; only the `crozier` package releases.
+[[package]]
+name = "crozier-e2e"
+release = false
+
+[[package]]
+name = "crozier-ci"
+release = false
+
+[[package]]
+name = "crozier-github-action"
+release = false
