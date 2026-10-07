@@ -17,6 +17,13 @@ die() {
   exit 1
 }
 
+# `is_exit_status VALUE`: VALUE is a canonical process exit status, 0-255 with no
+# leading zero. Bash truncates a larger `exit` modulo 256 (so 256 would pass) and
+# jq's --argjson refuses a leading zero, so both checks are needed.
+is_exit_status() {
+  [[ "$1" =~ ^(0|[1-9][0-9]{0,2})$ ]] && [ "$1" -le 255 ]
+}
+
 color_enabled() {
   if [ -n "${NO_COLOR:-}" ]; then
     return 1

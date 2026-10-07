@@ -554,6 +554,48 @@ fn finish_refuses_a_missing_exit_code() {
     assert!(String::from_utf8_lossy(&out.stderr).contains("is not an exit status"));
 }
 
+/// A status Bash would truncate (256 exits 0) or jq would refuse (a leading
+/// zero) is refused by both scripts that read `EXIT_CODE`, never passed on.
+#[test]
+fn finish_and_summary_refuse_a_status_outside_zero_to_255() {
+    let runner_temp = tempfile::tempdir().unwrap();
+    for script in ["finish.sh", "summary.sh"] {
+        for value in ["256", "01", "-1"] {
+            let out = step(
+                script,
+                repo_root(),
+                runner_temp.path(),
+                &[("EXIT_CODE", value)],
+            )
+            .output()
+            .unwrap();
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            assert_eq!(
+                out.status.code(),
+                Some(1),
+                "{script} EXIT_CODE={value}: {stderr}"
+            );
+            assert!(
+                stderr.contains(&format!("EXIT_CODE '{value}' is not an exit status (0-255")),
+                "{script} EXIT_CODE={value}: {stderr}"
+            );
+        }
+    }
+    let out = step(
+        "finish.sh",
+        repo_root(),
+        runner_temp.path(),
+        &[("EXIT_CODE", "255")],
+    )
+    .output()
+    .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(255),
+        "the largest status passes through"
+    );
+}
+
 /// A mismatch touching many files lists the first twenty of each kind in its
 /// row and counts the rest, which the diff artifact holds in full.
 #[test]

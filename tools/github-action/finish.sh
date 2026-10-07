@@ -11,7 +11,7 @@ set -euo pipefail
 . "$(dirname "$0")/lib.sh"
 
 code="${EXIT_CODE:-}"
-[[ "$code" =~ ^[0-9]+$ ]] || die "EXIT_CODE '$code' is not an exit status" \
+is_exit_status "$code" || die "EXIT_CODE '$code' is not an exit status (0-255, no leading zero)" \
   "pass the compare step's exit-code output; an empty one means that step did not finish"
 
 case "$code" in

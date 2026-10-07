@@ -14,7 +14,7 @@ set -euo pipefail
 . "$(dirname "$0")/lib.sh"
 
 exit_code="${EXIT_CODE:-}"
-[[ "$exit_code" =~ ^[0-9]+$ ]] || die "EXIT_CODE '$exit_code' is not an exit status" \
+is_exit_status "$exit_code" || die "EXIT_CODE '$exit_code' is not an exit status (0-255, no leading zero)" \
   "pass the status crozier compare exited with"
 
 if [ -z "${REPORT:-}" ] || ! jq -e '.schema_version == 1 or .schema_version == 2' "$REPORT" >/dev/null 2>&1; then
