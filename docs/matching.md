@@ -254,7 +254,7 @@ statement on one line (a small [`Doc`](../src/wrap.rs) expression rendered flat)
 and a post-pass ([`pyfmt`](../src/pyfmt.rs)) runs `ruff format` over the generated
 `.py` files. `ruff` is therefore a **generation-time dependency**, invoked over
 the CLI (not the unstable `ruff_python_formatter` library crates) and pinned in CI
-to match Fern's fixtures (the version lives in `.ruff-version`, installed by
+to match the certified SDK goldens (the version lives in `.ruff-version`, installed by
 `scripts/install-ruff.sh`); its formatter output is byte-identical, on the shapes
 crozier emits, across `0.11`–`0.15` (verified by running the e2e under both). The vendored `core/` runtime is left unformatted — it is already
 Fern's own `ruff`-formatted source, and reformatting it does not commute with the
@@ -312,7 +312,7 @@ here means matching Fern, not `ruff`.
 attribute at a time, and held by the goldens named:
 
 - *A required query array* is passed with one sampled item, whatever its item
-  type (`castes=[Caste.WORKER]`, `spots=[Spot()]`, `names=["names"]`), except
+  type: an enum member, a constructed model, or a string placeholder, except
   that Fern leaves every required query array out of an operation whose success
   body is `text/*` (`text/plain`, `text/xml`, `text/csv`), or that takes a
   required object or map query parameter beside it. `application/xml`, a `+json`
