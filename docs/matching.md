@@ -13,16 +13,15 @@ either its own definition files or an OpenAPI document, and the two produce
 that a plain OpenAPI document does not). So the golden fixtures must be Fern's
 output **generated from OpenAPI**, or the target would be unreachable by design.
 
-Two fixture sources, both Fern's real output (Apache-2.0, see `NOTICE`):
+The goldens are Fern's real generated output (see `NOTICE`) over two input
+categories:
 
-- **Offline corpus** — Fern commits Python SDK snapshots for its OpenAPI-sourced
-  test APIs (the `*-openapi` seeds). These need no Docker, are reproducible, and
-  gate on every run. `query-parameters-openapi` is the one vendored seed.
-- **Exhaustive target** — the broad `exhaustive` spec. Fern's
-  committed `exhaustive` Python output is *definition*-derived, so it is **not** a
-  valid OpenAPI target. The OpenAPI-derived golden comes from running
-  Fern's containerized generator over the vendored
-  `tests/fixtures/exhaustive/openapi.yml`.
+- **Publisher specifications** — numbered corpus rows record the publisher,
+  immutable source revision and redistribution grant. Their committed sources
+  make the comparison deterministic and offline.
+- **Independent shape fixtures** — locally authored OpenAPI documents isolate
+  generator decisions. A hand-written witness records its bounded publisher
+  search and certified generation evidence beside its golden.
 
 What a golden *can* pin is bounded by what Fern implements, and that boundary is
 measured rather than guessed: [`fern-limitations.md`](fern-limitations.md) records
@@ -114,76 +113,23 @@ distinct harness state from an open gap — a corpus that carries both a
 `known-fern-failure.json` and an `expected/` tree is an error, not a suppression.
 See [`fern-goldens.md`](fern-goldens.md#exact-known-upstream-failures).
 
-`query-parameters-openapi` is the one corpus whose golden is not the installed
-result of `fern generate --preview`. It is Fern's committed
-`seed/python-sdk/query-parameters-openapi/no-custom-config` repository tree at
-commit `4d07e6aeeed1d88917ce59dfc9b4cf9e6008e553` (the commit releasing
-`fernapi/fern-python-sdk:5.20.0`). That distinction is explicit in the harness:
+Every generated tree is compared in both directions, including Python types,
+clients, raw clients, errors, the runtime and project scaffolding. Python comments
+are stripped; non-Python files are compared as generated. A newly emitted file
+cannot silently fall outside the comparison.
 
-- The generated-SDK comparison covers every file Crozier emits. The two real
-  defects exposed by this seed are closed: a schema-less query parameter is a
-  string, and a package-root raw client derives its class from the configured
-  root client name. The packaged `_default_clients.py` helper matches too.
-- Seventeen repository-only files are classified separately:
-  `.github/workflows/ci.yml`, `.gitignore`, `poetry.lock`, `snippet.json`, and
-  the thirteen files under `tests/custom/` and `tests/utils/`. Inspection across
-  the packaged `--preview` corpora confirms that they do not occur there;
-  `_default_clients.py`, by contrast, occurs broadly and remains compared.
-- Six generated files have exact raw-byte expectations for Crozier's packaged
-  form: `README.md`, `reference.md`, `pyproject.toml`, `.fern/metadata.json`,
-  `src/seed/client.py`, and `src/seed/core/client_wrapper.py`. The seed embeds a
-  local repository publication (`generatorVersion: local`, requested SDK
-  version `0.0.1`, GitHub repository metadata, and the local generator's
-  all-optional snippet policy). Those inputs are not present in the OpenAPI
-  document or Crozier's naming settings. Length-plus-FNV fingerprints pin every
-  byte of the packaged 5.20 output, while a separate assertion preserves the
-  evidence that it differs from the local seed form.
-- Conversely, `src/seed/core/enum.py` is present throughout the packaged 5.20
-  corpora but absent from this local seed. It is an explicit packaged-only file,
-  reverse-checked on both sides.
+The request-shape journeys use publisher documents: Appwrite proves required and
+optional hoisted fields, Milvus proves vector-body conversion, Komga proves map
+bodies and array queries, Qakka proves binary bodies with path inputs and a content header,
+and Nextgen proves a required unknown body and typed errors. Med ANVISA proves a
+schema-less query parameter is a string; Marimo's configured golden proves the
+root raw-client name. Airbyte drives the runtime wire comparison.
 
-Both classifications are reverse-checked. A repository-only path becoming
-Crozier output fails and must re-enter comparison; a packaged expectation
-changing by any byte, disappearing, or unexpectedly matching the local seed
-fails until its evidence is deliberately updated. The gate also walks Crozier's
-output back against the golden, so a newly emitted file can never silently fall
-outside the compared set.
-
-**`exhaustive` matches its whole tree** — the widest single parity proof in
-the corpus, and the only fixture that exercises the whole generator end to end.
-This
-covers `version.py`, `py.typed`, the **entire type
-layer** (every `types/*.py` module including the hoisted `typesAnimal` variants),
-the **entire `core/` runtime**, the
-**`errors/` package** (a generated exception class per declared error plus its
-lazy-loading `__init__.py`), each endpoint client's package marker
-(`<tag>/__init__.py`), and the per-tag `raw_client.py` for **every endpoint
-tag**. That spans the no-request-body tags (`endpoints_put`,
-`endpoints_urls`, `noreqbody`), query parameters (`endpoints_pagination`,
-incl. array/allow-multiple params in `endpoints_params`), scalar/enum/union `$ref`
-bodies via the `convert_and_respect_annotation_metadata` wrapper where needed
-(`endpoints_primitive`, `endpoints_enum`, `endpoints_union`), header params
-(`reqwithheaders`), inlined object bodies — both `$ref` and inline — hoisted
-field-by-field (`endpoints_object`, `endpoints_http_methods`,
-`endpoints_content_type`, `inlinedrequests`), container bodies
-(`endpoints_container`), unknown (`{}`) and `application/octet-stream` bytes bodies
-plus mixed path/query/body operations (`endpoints_params`, `noauth`), and declared
-4xx error responses that raise generated exceptions (`noauth`, `inlinedrequests`).
-The **high-level per-tag `client.py`** and the **root
-`client.py`**
-(`FernApi`/`AsyncFernApi`, bearer auth) match too — each wrapper method returns
-`_response.data` and carries a worked `Examples` docstring produced by a byte-exact
-example-value generator (objects built from their required fields incl. inherited
-ones, unions/enums, containers, maps, datetimes, the `long` placeholder; ruff
-snippet formatting at line length 88). The two package `__init__.py` aggregators
-(`types/__init__.py`, package-root `__init__.py`), the generated `README.md`, and
-the project-root
-**scaffolding** (`pyproject.toml`, `requirements.txt`, `.fern/metadata.json`) all
-match.
-
-Non-Python matched files (the scaffolding) are Fern's verbatim output and compared
-without comment stripping; `.py` files are still comment-stripped before the
-comparison.
+The minimal hand-written cabinet-label request proves `Dict[str, str]`, while
+the pulse-counter response proves nonstandard integer-format fallback. Each has
+a certified whole-tree golden and its own failed publisher-search record. The
+Groupe PSA literal overlay proves inline string enums in unions. Swagger Petstore
+flat goldens prove default naming and custom distribution settings.
 
 ## Fern defects crozier does not reproduce
 
@@ -210,7 +156,7 @@ also covers the journeys a user actually takes, independent of the golden
 fixtures:
 
 - **The generated SDK is valid Python.** `assert_valid_python` compiles the whole
-  emitted tree with `python -m compileall` — for the `exhaustive` fixture and for
+  emitted tree with `python -m compileall` — for the registered `marimo` source and for
   an **arbitrary spec outside the corpus**. Byte-matching Fern cannot catch a
   generation bug on a spec Fern never saw; compiling can (it first caught an empty
   `from .errors import` emitted when a spec declares no errors). The check skips
@@ -224,7 +170,7 @@ fixtures:
   *derives* it from Fern: the committed **pytest** suite
   [`tests/runtime/test_wire.py`](../tests/runtime/test_wire.py) records the
   client's behavior (via a shared recorder, `_recorder.py`) for **both** the
-  committed Fern fixture SDK (`exhaustive/expected/src` — real, runnable Fern
+  committed Fern-generated SDK (`airbyte.local-config/expected/src` — real, runnable Fern
   output) and the crozier-generated SDK, and a parametrized test asserts — per
   journey — that the recordings are **identical**. (Both SDKs are named `fern`, so
   each recording runs in its own subprocess.) The generated client accepts an
@@ -308,7 +254,7 @@ statement on one line (a small [`Doc`](../src/wrap.rs) expression rendered flat)
 and a post-pass ([`pyfmt`](../src/pyfmt.rs)) runs `ruff format` over the generated
 `.py` files. `ruff` is therefore a **generation-time dependency**, invoked over
 the CLI (not the unstable `ruff_python_formatter` library crates) and pinned in CI
-to match Fern's fixtures (the version lives in `.ruff-version`, installed by
+to match the certified SDK goldens (the version lives in `.ruff-version`, installed by
 `scripts/install-ruff.sh`); its formatter output is byte-identical, on the shapes
 crozier emits, across `0.11`–`0.15` (verified by running the e2e under both). The vendored `core/` runtime is left unformatted — it is already
 Fern's own `ruff`-formatted source, and reformatting it does not commute with the
@@ -366,7 +312,7 @@ here means matching Fern, not `ruff`.
 attribute at a time, and held by the goldens named:
 
 - *A required query array* is passed with one sampled item, whatever its item
-  type (`castes=[Caste.WORKER]`, `spots=[Spot()]`, `names=["names"]`), except
+  type: an enum member, a constructed model, or a string placeholder, except
   that Fern leaves every required query array out of an operation whose success
   body is `text/*` (`text/plain`, `text/xml`, `text/csv`), or that takes a
   required object or map query parameter beside it. `application/xml`, a `+json`
@@ -376,8 +322,7 @@ attribute at a time, and held by the goldens named:
   the shorter call matches it and runs: this is Fern behaviour, and crozier
   reproduces it. Corpus row 316, `typescript-service-template`, holds the JSON
   rendering; `amazonaws.com-cloudformation` and `aws-importexport` hold the
-  `text/xml` omission, and `query-parameters-openapi`'s pinned files the
-  object-parameter one; the authored probe
+  `text/xml` omission; the authored probe
   `parity-required-query-array-examples` holds all three in operations that
   differ in that attribute alone.
 - *A `null` in a request example* is no value. The docstring leaves an optional
@@ -425,7 +370,7 @@ attribute at a time, and held by the goldens named:
 
 ## The 5.20.0 refresh and the rules it established
 
-`exhaustive` and the other hand-authored feature-coverage goldens were
+The hand-authored feature-coverage goldens were
 regenerated with `fernapi/fern-python-sdk:5.20.0` — the version the real-world
 corpus already pins — and each records that exact generator in its
 `expected/.crozier-fern-golden.json` provenance. Their trees had been pre-5.20
@@ -460,15 +405,13 @@ constant transport header; Fern still documents that input as
 `storage_unit: typing.Literal` and counts it when choosing `(...)` for the
 abbreviated signature. Both reference-only rules now match the 5.20 golden.
 
-The refresh also **closed** two divergences it had first exposed, both in
-`exhaustive`:
+The refresh also **closed** two shape divergences:
 
 - **Unknown (`{}`) request-body requiredness.** Fern splits on the schema's
   `nullable`, not the document version: a bare `{}` body is a *required*
   `typing.Any`, and `{nullable: true}` is `typing.Optional[typing.Any] = None`.
-  crozier had gated the required form to OpenAPI 3.1 documents — a rule fitted to
-  the stale pre-5.20 `exhaustive` golden — which mistyped that 3.0.1 spec's
-  `noAuth_postWithNoAuth`. `letta` declares both shapes and pins the rule.
+  `letta` declares both forms, and Nextgen's care-team request pins the required
+  form. Requiredness follows the schema in both OpenAPI versions.
 - **Doc type spelling.** A `reference.md` entry's ` -> <type>` summary spells the
   datetime types in full (`datetime.datetime`), never the `dt.` alias the
   generated Python imports them under — the same prose spelling the parameter
@@ -479,9 +422,7 @@ The per-corpus measurement lives in the `CORPORA`/`FEATURE_TARGETS` data in
 The configured `audience-filter`, `audience-filter-strict`, `client-class-name`,
 `pydantic-extra-fields`, and `eos.local-extra-fields-forbid` fixtures are on
 5.20.0 like the rest.
-`query-parameters-openapi` is re-vendored from Fern's 5.20.0 release commit; its
-seed-repository boundary and exact packaged-output expectations are documented
-above. `calorieninjas.com` is the accepted exception described earlier: it has no
+`calorieninjas.com` is the accepted exception described earlier: it has no
 golden because 5.20.0 cannot emit valid Python for it, and its former tree had no
 managed provenance, so retaining it would have made byte parity depend on
 unidentified older Fern output. The items below record how each shape generates;
@@ -510,7 +451,7 @@ Its guard
 mirrors apideck's — skip when the committed source is absent, enforce under
 `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
-**Fixed while landing bunq** (each guarded so the apideck/exhaustive/feature corpora
+**Fixed while landing bunq** (each guarded so the apideck and feature corpora
 stay byte-identical — none of them exercised these paths):
 
 - **Tag-based sub-client grouping.** bunq tags every operation, but its operationIds
@@ -520,7 +461,7 @@ stay byte-identical — none of them exercised these paths):
   the operationId, producing ~2.5× too many sub-clients. `endpoint_module`/
   `endpoint_method_name` (`src/ir.rs`) now group by the tag unless the operationId
   prefix *is* the tag (`inlinedRequests_post…` under `InlinedRequests` — the case the
-  synthetic seeds hit, where both rules agree). This was the bulk of the gap.
+  local shape fixtures hit, where both rules agree). This was the bulk of the gap.
 - **Latin accents fold in an enum member and vanish from a property.** Fern's two
   naming paths disagree with each other over the same word, and
   `med-anvisa-price` pins both halves from one document: the enum path folds a
@@ -548,7 +489,7 @@ stay byte-identical — none of them exercised these paths):
   empty model class.
 - **Path-param empty-description docstrings.** A path param whose spec declares an
   *empty* `description` (bunq's `itemId: {description: ""}`) renders a blank docstring
-  slot; one that omits `description` entirely (the seeds) renders none — the two now
+  slot; one that omits `description` entirely (local shape fixtures) renders none — the two now
   differ ([`ir::declared_doc`]/[`emit::push_path_param`]). The `reference.md` param
   table mirrors this: a declared (even empty) description gets the ` — ` separator,
   an omitted one the bare space.
@@ -605,7 +546,7 @@ golden by walking it.
 Its guard mirrors apideck's and bunq's — skip when the committed source is absent, enforce
 under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
-**Fixed while landing bungie** (each guarded so the apideck/bunq/exhaustive/feature
+**Fixed while landing bungie** (each guarded so the apideck, bunq and feature
 corpora stay byte-identical — none of them exercised these paths):
 
 1. **Operation grouping for dotted corpus APIs** (`src/ir.rs`) — operations Fern
@@ -697,8 +638,7 @@ exposed a run of divergences, all repaired in `src/`. They fall into three group
    whose *value* becomes `Optional` exactly as 3.0's `nullable` does, and for an
    inline request field, whose convert-wrapper annotation carries the `Optional`.
    A `nullable` beside a `$ref` is **not** that: 3.0 ignores a reference's
-   siblings, which is why `exhaustive`'s `getAndReturnOptional` still returns a
-   bare model.
+   siblings, so a nullable reference still returns the referenced model.
 3. **Two selection rules the corpus had never crossed.** A request body offering
    `multipart/form-data` beside a JSON representation is sent as JSON, so its model
    is flattened and dropped like any other inlined one (`MessageCreateRequest`),
@@ -783,8 +723,7 @@ SDK. All three are closed byte-for-byte against Fern goldens.
    pydantic can dispatch on the tag; a plain `Shape = typing.Union[...]` cannot.
    This landed in `fern-python-sdk` 4.35.0, so the corpus was bumped 4.34.0 → 4.35.0
    to pin it — a deliberately **minimal** bump: 4.35.0's only output change over
-   4.34.0 is this annotation (the `exhaustive` tree of the day differed by only
-   the `.fern/metadata.json` version string), so no other generator work was needed.
+   4.34.0 is this annotation, so no other generator work was needed.
    [`emit::render_discriminated_union`] now emits the annotated alias.
 3. **SSE streaming operations were reduced to a `-> None` method** that discarded
    the stream (`sse-streaming`, gap #3). A `text/event-stream` 2xx response now
@@ -896,8 +835,8 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
 1. **Auth models beyond bearer** (`auth-schemes`, partially implemented).
    `components.securitySchemes` plus each operation's `security` now feed an
    [`ir::Auth`] model: the first declared scheme selects the credential, and it is
-   *required* when every operation is authenticated (else optional, e.g. exhaustive's
-   `noauth`). `client_wrapper.py` is generated from it — api-key (`api_key: str` +
+   *required* when every operation is authenticated, and optional when an operation
+   is unauthenticated. `client_wrapper.py` is generated from it — api-key (`api_key: str` +
    the scheme's header) and bearer (`token`, required/optional) both match across the
    fixtures, and the bearer-optional form stays byte-identical to Fern's default. The
    auth model is also threaded through the root `client.py` (constructor param, the
@@ -986,11 +925,11 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    an **optional** operation header is promoted to a client-wrapper-level "global"
    field (Fern lifts `X-Tenant` → a `tenant` field set once at construction, wired
    through `client_wrapper.py`, the root client, and the worked examples). The
-   promotion heuristic is evidence-based: across the corpus the only two operation
-   headers split exactly on `required` — `cookie-parameters`' optional `X-Tenant`
-   promotes, `exhaustive`'s required `X-TEST-ENDPOINT-HEADER` stays per-method — so
-   crozier promotes a header that is optional in every operation it appears in
-   ([`ir::global_headers`]). `cookie-parameters` matches in full.
+   promotion depends on operation coverage, requiredness and defaults
+   ([`ir::global_headers`]). `cookie-parameters` promotes its optional `X-Tenant`,
+   while Komga keeps its required claim credentials in the operation method.
+   Dedicated parameter-lowering probes cover required headers shared across all
+   operations and the single-operation case.
 6. **Form request bodies (implemented).** `multipart/form-data` splits its fields
    into `data={...}` (non-file) and `files={...}` (`format: binary` → `core.File`)
    with `force_multipart=True`; `application/x-www-form-urlencoded` sends all fields
@@ -1131,7 +1070,7 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    from a byte-exact example-value generator, and the root `FernApi`/`AsyncFernApi`
    aggregates the tag clients under bearer auth. The package `__init__.py`
    aggregators and the generated docs (`README.md`, `reference.md`) all match too,
-   so the endpoint layer — and the whole `exhaustive` corpus — is complete. Item 4
+   so the endpoint layer is covered by whole-tree comparisons. Item 4
    above (inline request/response hoisting) generalized it beyond these shapes.
 
 ## Real-world-spec robustness (issue #40)
@@ -1315,9 +1254,8 @@ byte-match target like the rest of the corpus.
   dispatch method
   ([`ir::EnumType`]/[`emit::render_enum`]). This is Fern's `enum_type: python_enums`
   mode; the golden corpus was generated with
-  `pydantic_config.enum_type: python_enums`, so exhaustive and every enum-bearing
-  target byte-match the class
-  form, and worked examples use member access (`TypesWeatherReport.SUNNY`). The one
+  `pydantic_config.enum_type: python_enums`, so enum-bearing targets byte-match
+  the class form. Worked examples use member access. The one
   Fern-only artifact this introduces — the `generatorConfig` block Fern writes into
   `.fern/metadata.json` — differs only where a golden ran another configuration,
   and is then the `fern-metadata-generator-config` departure, the same posture as
@@ -1385,7 +1323,7 @@ byte-match target like the rest of the corpus.
   which assert the marked ops are gone, their exclusive types stay, and the SDK
   still compiles.
 
-These fixtures are the *packaged* SDK form (like exhaustive), reproduced with
+These fixtures are the *packaged* SDK form, reproduced with
 `fern generate --preview` (see the regeneration note below).
 
 ### Fern-compatible extension policy
@@ -1699,9 +1637,8 @@ from `--package-name`, so the Fern input matching crozier's package name is the
 organization. The flat README's shield `utm_source` follows that
 package-derived organization, as the `acme` golden below measured. The packaged
 README keeps the fixed `Fern` it has always carried, which every
-`fern`-organization golden matches. The seed golden's `Seed%2FPython` shows
-Fern's packaged shield follows the organization too, but aligning it would move
-packaged output, which the setting leaves untouched. Fern's own
+`fern`-organization golden matches. The layout setting preserves the
+existing packaged comparison. Fern's own
 `package_name` option is a different knob. With `package_name: my_pkg` it
 renamed the module and the distribution, but the client stayed `FernApi` and
 the README heading stayed `# Fern Python Library`. crozier cannot set the
@@ -1738,15 +1675,16 @@ flat tree:
 
 | Flat golden | Setting it pins |
 | --- | --- |
-| `exhaustive` | the default names (`fern`, `default_package_name`) over the broadest spec |
+| `swagger-petstore` | the default names (`fern`, `default_package_name`) |
 | `client-class-name` | `client-class-name: AcmeClient` |
 | `audience-filter-strict` | `audiences: [public]` with `audience-strict: true` |
 | `eos.local-extra-fields-forbid` | `extra-fields: forbid` (a `CORPUS.md` row, refreshed by the workflow) |
-| `exhaustive-package-name` | package `acme` (Fern organization `acme`) and project `acme-dist`, over `exhaustive`'s spec |
+| `swagger-petstore-distribution` | package `acme` and project `acme-dist` |
+| `swagger-petstore-organization` | custom Fern organization naming |
 
-`exhaustive-package-name` has no spec of its own: its `flat-goldens.txt` row
-names `exhaustive`, whose vendored document it generates from. That keeps it
-out of the source census, which counts documents, not goldens. The corpus gate
+The distribution and organization variants use the registered Swagger Petstore
+source named by their `flat-goldens.txt` rows. They add goldens without adding
+source documents to the census. The corpus gate
 runs one `*_flat_matches_fern` test per golden (`tests/e2e.rs::FLAT_GOLDENS`,
 held to the table and to the directories on disk). `just fixtures-gaps` and
 `just fixtures-diff` report the flat goldens after the packaged ones, labelled
@@ -2006,9 +1944,8 @@ that exist only to be flattened into one request — send it. The 36th,
 `POST /api/v2/GlobalImages`, keeps the header on a surviving schema because it
 rides a query parameter, which is the same exception the shared-schema drop
 already recorded for Palo Alto's crypto profiles. The drop is scoped to
-several-media bodies (`Endpoint::body_media_alternatives`) because exhaustive's
-`postJsonPatchContentType` and `getAndReturnOptional` — each a lone
-`application/json` over a surviving schema — keep their header.
+several-media bodies (`Endpoint::body_media_alternatives`): a lone JSON media
+type over a surviving schema keeps its header.
 
 ## What the collision goldens' alternates cost (issue #188)
 
@@ -2168,9 +2105,7 @@ Audiobookshelf's `EmailSettings` and `Podcast` and LORIS's `QueryObject` are eac
 one media type over a surviving component and Fern leaves every one of their
 content types to httpx. What separates them from the flattened bodies that keep
 the header is the `title` — the name Fern's importer takes the request model from
-— which letta's `CreateBlock`/`BlockUpdate` and exhaustive's
-`typesObjectWithOptionalField` and `typesObjectWithRequiredField` carry and none
-of the drops do. The drop is scoped to a flattened object body, so a `$ref` to a
+— which letta's `CreateBlock`/`BlockUpdate` carry and none of the drops do. The drop is scoped to a flattened object body, so a `$ref` to a
 scalar alias keeps its header; a `stream-condition` request keeps it because Fern
 augments that body with the condition property; and a documented resource
 envelope escapes it as it already escapes the request/response drop. A query

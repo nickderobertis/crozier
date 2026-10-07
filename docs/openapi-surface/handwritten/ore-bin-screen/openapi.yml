@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Ore Bin Screen
+  version: 1.0.0
+paths:
+  /bins:
+    get:
+      operationId: inspect_bins
+      parameters:
+        - name: gate
+          in: query
+          required: true
+          style: form
+          schema:
+            $ref: '#/components/schemas/GradeWindow'
+      responses:
+        '204':
+          description: Inspected
+components:
+  schemas:
+    GradeWindow:
+      type: object
+      required:
+        - cutoff
+      properties:
+        cutoff:
+          type: integer

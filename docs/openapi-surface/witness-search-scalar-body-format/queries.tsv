@@ -1,0 +1,4 @@
+key	query	outcome	result_count
+format-uuid	"file:(openapi|swagger).*\.(yaml|yml|json)$ content:""requestBody"" content:""format"" content:""uuid"" count:100 type:file"	answered	2
+format-byte	"file:(openapi|swagger).*\.(yaml|yml|json)$ content:""requestBody"" content:""format"" content:""byte"" count:100 type:file"	answered	2
+format-date	"file:(openapi|swagger).*\.(yaml|yml|json)$ content:""requestBody"" content:""format"" content:""date"" count:100 type:file"	answered	2

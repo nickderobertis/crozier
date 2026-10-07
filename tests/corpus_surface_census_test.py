@@ -8,11 +8,16 @@ import hashlib
 import importlib.util
 import io
 import itertools
+import os
 import re
 import subprocess
 import sys
 import unittest
 from pathlib import Path
+
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
 
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "openapi-surface-census.py"
@@ -48,7 +53,7 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
         sources = census.registered_sources(
             REPO / "tests" / "fixtures", REPO / "tests" / "fixtures" / "corpus-sources", False
         )
-        self.assertEqual(242, len(sources))
+        self.assertEqual(241, len(sources))
         declared: list[str] = []
         for offset in range(0, len(sources), 30):
             fixture_args = list(
@@ -62,7 +67,7 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
                 cwd=REPO,
                 capture_output=True,
                 text=True,
-                timeout=CENSUS_TIMEOUT,
+                timeout=CENSUS_TIMEOUT, encoding="utf-8",
             )
             self.assertEqual(0, completed.returncode, completed.stderr)
             for line in completed.stdout.splitlines():

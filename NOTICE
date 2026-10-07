@@ -1,7 +1,7 @@
 crozier
 Copyright 2026 Nick DeRobertis
 
-This product includes both test fixtures and a vendored runtime derived from Fern
+This product includes generated SDK goldens and a vendored runtime derived from Fern
 (https://github.com/fern-api/fern), which is licensed under the Apache License,
 Version 2.0. A copy of that license is retained at licenses/fern-APACHE-2.0.txt.
 
@@ -49,22 +49,15 @@ census's YAML fallback reader to the stdlib loader:
 
 Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(c)):
 
-  * Source: fern-api/fern, commit 3a471b03d4778f291849adc03bacfcd40340fc26.
-  * Vendored under tests/fixtures/ are (a) OpenAPI source documents from Fern's
-    test definitions and (b) the Python SDK output Fern's generator produced from
-    them. These are used unmodified as source specs and as golden output that
-    crozier is verified against.
-  * The exhaustive fixture's expected output (tests/fixtures/exhaustive/expected/)
-    was produced by running Fern's published Python generator image
-    fernapi/fern-python-sdk:4.35.0 locally over the vendored exhaustive OpenAPI
-    document (see scripts/generate-fern-fixture.sh), rather than copied from the
-    fern repository. It is otherwise treated identically to the vendored output.
+  * Golden SDK trees are produced by Fern from independently authored OpenAPI
+    fixtures and registered publisher specifications. Their source provenance
+    and generator settings are recorded beside the output and in the corpus
+    manifest.
   * Change made to the vendored Python output: source-code comments were removed
     (a string-safe strip of `#` comments) so that generator-identifying comment
     text does not affect the byte-for-byte comparison. No other transformation is
     applied; the fixtures are otherwise Fern's output verbatim.
-  * Fern's own API-definition files were intentionally NOT used. crozier consumes
-    only the OpenAPI document.
+
 
 Additional issue #77 real-world OpenAPI source specs:
 
@@ -507,3 +500,10 @@ Additional request-body collision specification:
     redistribution; corpus row 329 records the immutable reference.
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
+
+  * tests/fixtures/marimo-client-class-name/expected/ is generated from Marimo's
+    published OpenAPI document at revision
+    257ea7a983e2dbe4627f0168072fdcd538c93c5c of marimo-team/marimo, with a
+    configured client name. CORPUS.md row 330 records its immutable source;
+    docs/corpus-licensing.md records the redistribution grant. Only generated
+    output is vendored, with Python comments stripped as described above.

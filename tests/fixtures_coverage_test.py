@@ -24,12 +24,16 @@ import textwrap
 import unittest
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "fixtures-coverage.sh"
 REPORTER = REPO / "scripts" / "fixtures-coverage-report.py"
 
 # Vendored (never fetched) goldens, so the scoped runs stay offline.
-OFFLINE_GOLDEN = "query_parameters_matches_fern_output_byte_for_byte"
+OFFLINE_GOLDEN = "med_anvisa_price_matches_fern_output"
 JOURNEY = "help_lists_generate"
 UNIT = "wrap::tests::flat_atom_is_verbatim"
 OFFLINE_SCOPE = (
@@ -65,7 +69,7 @@ def nextest_list(
         capture_output=True,
         text=True,
         check=True,
-        env=env,
+        env=env, encoding="utf-8",
     ).stdout
     selected = set()
     for line in listing.splitlines():
@@ -112,9 +116,9 @@ class TierSelectionTests(unittest.TestCase):
 
     def test_the_golden_tier_is_exactly_the_committed_byte_match_tests(self) -> None:
         golden = {name for _binary, name in nextest_list(tier_expressions()["golden"])}
-        # Both vendored byte-for-byte goldens and a representative corpus golden.
+        # Publisher byte-match goldens and their generator-setting variant.
         self.assertIn(OFFLINE_GOLDEN, golden)
-        self.assertIn("exhaustive_matches_fern_output_byte_for_byte", golden)
+        self.assertIn("marimo_client_class_name_matches_fern_output", golden)
         self.assertIn("frankfurter_matches_fern_output", golden)
         # Deliberately NOT golden: the runtime-behavior comparison is a wire test,
         # not a byte comparison against a committed golden, and the CalorieNinjas
@@ -146,7 +150,7 @@ class RecipeEndToEndTests(unittest.TestCase):
 
     def run_script(self, *args: str, env: dict[str, str] | None = None):
         return subprocess.run(
-            [str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True, env=env
+            [str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True, env=env, encoding="utf-8"
         )
 
     def reporter_process(self, *args: str):
@@ -155,7 +159,7 @@ class RecipeEndToEndTests(unittest.TestCase):
             [sys.executable, str(REPORTER), "--repo-root", str(REPO), *args],
             cwd=REPO,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
 
     def run_reporter(self, *args: str):
@@ -280,7 +284,7 @@ class RecipeEndToEndTests(unittest.TestCase):
     def test_a_malformed_coverage_export_is_refused_not_trusted(self) -> None:
         _report, out = self.scoped_run()
         broken = out / "broken.json"
-        broken.write_text('{"data": [{"functions": [{"regions": [[1, 1]]}]}]}', encoding="utf-8")
+        broken.write_text('{"data": [{"functions": [{"regions": [[1, 1]]}]}]}', encoding="utf-8", newline="\n")
         completed = self.run_reporter(
             "--tier",
             json.dumps(
@@ -466,7 +470,7 @@ def _scoped_run():
             [str(SCRIPT), "--no-fetch", "--out", str(out), OFFLINE_SCOPE],
             cwd=REPO,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         _SCOPED = (completed, out)
     return _SCOPED

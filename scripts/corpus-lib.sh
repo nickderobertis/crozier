@@ -86,15 +86,10 @@ corpus_fixture_for() {
         fail("duplicate fixture directory " $2);
       sources[$1]=1;
       fixtures[$2]=1;
-      count++;
       if ($1 == requested)
         resolved=$2;
     }
     END {
-      if (!invalid && count == 0) {
-        printf "corpus: fixture alias file %s has no aliases\n", FILENAME > "/dev/stderr";
-        exit 2;
-      }
       if (!invalid)
         print resolved;
     }

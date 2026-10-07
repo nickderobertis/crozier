@@ -11,7 +11,7 @@ from conftest import FIXTURES, Fixture, _FIXTURES, _spec_path
 def test_live_source_is_committed(fixture, tmp_path):
     source = _spec_path(fixture, tmp_path)
     assert source.is_file()
-    if fixture.spec_url is None:
+    if not fixture.registered_source:
         assert source == _FIXTURES / fixture.name / "openapi.yml"
     else:
         committed = _FIXTURES / "corpus-sources" / fixture.name / source.name
@@ -19,7 +19,7 @@ def test_live_source_is_committed(fixture, tmp_path):
 
 
 def test_missing_live_source_reports_recovery(tmp_path):
-    fixture = Fixture(name="not-a-registered-source", spec_url="https://invalid.example/spec")
+    fixture = Fixture(name="not-a-registered-source", registered_source=True)
     with pytest.raises(subprocess.CalledProcessError) as failure:
         _spec_path(fixture, tmp_path)
     assert "just lint-corpus-sources" in failure.value.stderr

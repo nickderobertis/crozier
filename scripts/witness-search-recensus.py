@@ -92,7 +92,7 @@ def ledger_name(source: str) -> str:
 def identity(source: str, row: dict[str, Any]) -> tuple[str, ...]:
     """What a later ledger row replaces an earlier one by, as the index reads it."""
     name = INDEX.candidate_name(row)
-    revision = row.get("commit") or f"blob:{row.get('blob') or row.get('sha') or 'unresolved'}"
+    revision = INDEX.candidate_revision(row)
     if source == "github-publisher-trees":
         return (name, revision)
     return (row["key"], name, revision)
@@ -103,8 +103,19 @@ def latest_rows(evidence: Path, source: str) -> list[tuple[int, dict[str, Any]]]
     for number, row in INDEX.jsonl(evidence / ledger_name(source)):
         latest[identity(source, row)] = (number, row)
         if row.get("supersedes"):
-            latest.pop(identity(source, {**row, "commit": row["supersedes"]}), None)
+            latest.pop(identity(source, INDEX.superseded_row(row)), None)
     return sorted(latest.values(), key=lambda item: item[0])
+
+
+def continuation_rows(evidence: Path, source: str) -> tuple[list[tuple[int, dict[str, Any]]], int]:
+    rows = latest_rows(evidence, source)
+    eligible = [item for item in rows if not INDEX.opaque_identity(item[1]["path"])]
+    return eligible, len(rows) - len(eligible)
+
+
+def opaque_summary(count: int) -> str:
+    version = INDEX.OPAQUE_PREFIX.split(":")[1]
+    return f"; {count} opaque {version} record(s) screened by repository rule" if count else ""
 
 
 def status_of(row: dict[str, Any]) -> str:
@@ -269,7 +280,8 @@ def full_yaml(args: argparse.Namespace) -> int:
     wanted = set(args.key)
     pending: list[tuple[dict[str, Any], str]] = []
     recounts = 0
-    for _, row in latest_rows(evidence, args.source):
+    rows, opaque_count = continuation_rows(evidence, args.source)
+    for _, row in rows:
         if uncounted(args.source, row, wanted or set(keys)):
             recounts += 1
         elif status_of(row) != "parse-failure":
@@ -319,7 +331,7 @@ def full_yaml(args: argparse.Namespace) -> int:
     counted_since = f" and {recounts} full-parser reading(s) missing a key's count" if recounts else ""
     print(f"witness-search-recensus: {args.source}: {len(pending) - recounts} parse-failure row(s)"
           f"{counted_since} over {len(copies)} document(s) read again: "
-          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())))
+          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())) + opaque_summary(opaque_count))
     return 0
 
 
@@ -386,7 +398,8 @@ def reacquire_head(args: argparse.Namespace) -> int:
     evidence = args.evidence_root / f"witness-search-{source}"
     keys = INDEX.read_keys(evidence)
     wanted = set(args.key)
-    pending = [row for _, row in latest_rows(evidence, source)
+    rows, opaque_count = continuation_rows(evidence, source)
+    pending = [row for _, row in rows
                if status_of(row) == "acquisition-failure" and row.get("status") == 404
                and (args.again or not row.get("reacquired_at_head"))
                and (not wanted or row["key"] in wanted)]
@@ -445,7 +458,7 @@ def reacquire_head(args: argparse.Namespace) -> int:
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1
     print(f"witness-search-recensus: {len(pending)} 404 candidate(s) requested at head: "
-          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())))
+          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())) + opaque_summary(opaque_count))
     return 0
 
 
@@ -483,7 +496,8 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
     evidence = args.evidence_root / f"witness-search-{source}"
     keys = INDEX.read_keys(evidence)
     wanted = set(args.key)
-    pending = [row for _, row in latest_rows(evidence, source)
+    rows, opaque_count = continuation_rows(evidence, source)
+    pending = [row for _, row in rows
                if status_of(row) == "acquisition-failure" and row.get("status") == 404
                and row.get("reacquired_at_head")
                and (args.again or not row.get("namesakes_searched"))
@@ -539,7 +553,7 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1
     print(f"witness-search-recensus: {len(pending)} refused candidate(s) sought in namesake repositories: "
-          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())))
+          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())) + opaque_summary(opaque_count))
     return 0
 
 

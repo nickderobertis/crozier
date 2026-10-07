@@ -18,6 +18,7 @@ mod examples;
 #[derive(Clone, Copy)]
 enum Class {
     UnsupportedOpenapiVersion,
+    HeadRequestBody,
     ServiceAuthUndefined,
     EndpointAuthUndefined,
     UnresolvedReference,
@@ -48,6 +49,7 @@ impl Class {
     fn id(self) -> &'static str {
         match self {
             Self::UnsupportedOpenapiVersion => "unsupported-openapi-version",
+            Self::HeadRequestBody => "head-request-body",
             Self::ServiceAuthUndefined => "service-auth-undefined",
             Self::EndpointAuthUndefined => "endpoint-auth-undefined",
             Self::UnresolvedReference => "unresolved-reference",
@@ -1885,6 +1887,18 @@ fn imported_reference_scheme(scheme: &SecurityScheme, path: &Path) -> bool {
 /// Reject an evaluated class before rendering or writing an SDK.
 pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     check_version(&doc.openapi, path, strict)?;
+    for (route, item) in &doc.paths {
+        if let Some(operation) = &item.head {
+            if !operation.ignored() && operation.request_body.is_some() {
+                return refusal(
+                    path,
+                    strict,
+                    Class::HeadRequestBody,
+                    &format!("HEAD {route}"),
+                );
+            }
+        }
+    }
     // Inline scheme support is reconciled with the SDK IR by imported_auth_agrees_with_sdk_ir.
     // Relative references use the separately measured Fern importer boundary.
     let imported_auth = doc

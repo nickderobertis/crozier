@@ -1,0 +1,3 @@
+key	query	outcome	result_count
+request-body-string-map	"file:(openapi|swagger).*\.(yaml|yml)$ content:""requestBody:"" content:""additionalProperties:"" count:all type:file"	answered	6263
+request-body-string-map	"file:(openapi|swagger).*\.json$ content:""\""requestBody\"""" content:""\""additionalProperties\"""" count:all type:file"	answered	15540

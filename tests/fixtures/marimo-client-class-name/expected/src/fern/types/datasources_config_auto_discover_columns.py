@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .datasources_config_auto_discover_columns_one import DatasourcesConfigAutoDiscoverColumnsOne
+
+DatasourcesConfigAutoDiscoverColumns = typing.Union[bool, DatasourcesConfigAutoDiscoverColumnsOne]

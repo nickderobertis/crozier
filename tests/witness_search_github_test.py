@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import base64
 import csv
+import gzip
 import hashlib
 import importlib.util
 import json
@@ -27,6 +28,10 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "scripts"))
 sys.path.insert(0, str(REPO / "tests"))
 import rate_limit_guard as guard_module  # noqa: E402 - scripts must enter sys.path first
+
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
 
 SPEC = importlib.util.spec_from_file_location(
     "witness_search_github", REPO / "scripts/witness-search-github.py"
@@ -87,11 +92,288 @@ class PublisherSelectionTests(unittest.TestCase):
 
 
 
+class StringMapSearchRecordTests(unittest.TestCase):
+    """The bounded search summary agrees with its real acquisition and screen records."""
+
+    def test_summary_counts_and_dispositions_match_the_retained_measurements(self) -> None:
+        root = REPO / "docs/openapi-surface/witness-search-string-map"
+        queries = [json.loads(line) for line in (root / "sourcegraph/queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        with (root / "queries.tsv").open(newline="", encoding="utf-8") as handle:
+            summary = list(csv.DictReader(handle, delimiter="\t"))
+        self.assertEqual(2, len(queries))
+        self.assertEqual(len(queries), len(summary))
+        record = (root / "README.md").read_text(encoding="utf-8")
+        for measured, stated in zip(queries, summary):
+            self.assertEqual(measured["key"], stated["key"])
+            self.assertEqual(measured["query"], stated["query"])
+            self.assertEqual(measured["outcome"], stated["outcome"])
+            self.assertEqual(len(measured["results"]), int(stated["result_count"]))
+            self.assertEqual(measured["result_count"], int(stated["result_count"]))
+            self.assertIn(f"{measured['result_count']:,}", record)
+        publisher = root / "github-publisher-trees"
+        documents = [json.loads(line) for line in (publisher / "documents.jsonl").read_text(encoding="utf-8").splitlines()]
+        identities = {(row["repository"], row["commit"], row["path"]): row for row in documents}
+        self.assertEqual(4, len(identities))
+        for row in identities.values():
+            label = f"| {row['repository']}, {row['path']} | `{row['commit']}` |"
+            matches = [line for line in record.splitlines() if line.startswith(label)]
+            self.assertEqual(1, len(matches), label)
+            self.assertEqual(row["selector_counts"]["request-body-string-map"],
+                             int(matches[0].split("|")[3]))
+        latest = {}
+        for line in (publisher / "screens.jsonl").read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            latest[row["repository"], row["commit"], row["path"]] = row
+        self.assertEqual(2, len(latest))
+        for identity, row in latest.items():
+            self.assertEqual(identities[identity]["sha256"], row["sha256"])
+            self.assertTrue(row["disposition"].startswith("declined:"), row["disposition"])
+            for stage in ("licence", "ref", "fern"):
+                measured = row["measured"][stage]
+                self.assertTrue(measured["outcome"].startswith("passed"))
+                self.assertEqual(measured["log_sha256"],
+                                 hashlib.sha256((publisher / measured["log"]).read_bytes()).hexdigest())
+            pins = row["measured"]["fern"]["pins"]
+            self.assertEqual("5.67.1", pins["fern_cli"])
+            self.assertEqual("5.20.0", pins["generator_version"])
+
+
+class ReplacementArmSearchRecordTests(unittest.TestCase):
+    def test_bounded_summaries_match_actual_queries_and_whole_document_acquisitions(self):
+        records = (
+            ("scalar-body-format", 3, 6),
+            ("typed-form-query", 1, 2),
+        )
+        for name, query_budget, document_budget in records:
+            with self.subTest(record=name):
+                root = REPO / "docs/openapi-surface" / ("witness-search-" + name)
+                queries = [json.loads(line) for line in (root / "sourcegraph/queries.jsonl").read_text(encoding="utf-8").splitlines()]
+                with (root / "queries.tsv").open(newline="", encoding="utf-8") as handle:
+                    summary = list(csv.DictReader(handle, delimiter="\t"))
+                self.assertEqual(query_budget, len(queries))
+                self.assertEqual(len(queries), len(summary))
+                for measured, stated in zip(queries, summary):
+                    self.assertEqual(measured["key"], stated["key"])
+                    self.assertEqual(measured["query"], stated["query"])
+                    self.assertIn("count:100", measured["query"])
+                    self.assertEqual("answered", measured["outcome"])
+                    self.assertEqual(measured["outcome"], stated["outcome"])
+                    self.assertEqual(len(measured["results"]), int(stated["result_count"]))
+                    self.assertEqual(measured["result_count"], int(stated["result_count"]))
+                    self.assertLessEqual(len(measured["results"]), 100)
+                    self.assertEqual(100, measured["progress"]["matchCount"])
+                    self.assertTrue(any(item["reason"] == "shard-match-limit" for item in measured["progress"]["skipped"]))
+                acquisitions = [json.loads(line) for line in (root / "sourcegraph/candidates.jsonl").read_text(encoding="utf-8").splitlines()]
+                with (root / "shape-screen.tsv").open(newline="", encoding="utf-8") as handle:
+                    screens = list(csv.DictReader(handle, delimiter="\t"))
+                identity = lambda row: (row["key"], row["repository"], row["path"], row["commit"])
+                acquired = {identity(row): row for row in acquisitions}
+                self.assertEqual(document_budget, len(acquired))
+                self.assertEqual(set(acquired), {identity(row) for row in screens})
+                record = (root / "README.md").read_text(encoding="utf-8")
+                for row in screens:
+                    measured = acquired[identity(row)]
+                    self.assertEqual(measured["sha256"], row["sha256"])
+                    self.assertRegex(row["commit"], r"^[0-9a-f]{40}$")
+                    self.assertRegex(row["sha256"], r"^[0-9a-f]{64}$")
+                    self.assertEqual(measured["selector_count"], int(row["selector_count"]))
+                    self.assertEqual(0, int(row["shape_count"]))
+                    self.assertEqual("does-not-declare-request-shape", row["disposition"])
+                    self.assertIn("| `" + row["key"] + "` | `search-incomplete` |", record)
+                    self.assertIn("| `" + row["key"] + "` | `none-registrable` |", record)
+
+
+class IntegerFormatSearchRecordTests(unittest.TestCase):
+    """The bounded format search agrees with its real acquisitions and refusal."""
+
+    def test_summary_counts_and_refusal_match_the_retained_measurements(self) -> None:
+        root = REPO / "docs/openapi-surface/witness-search-integer-format"
+        source = root / "sourcegraph"
+        queries = [json.loads(line) for line in (source / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        with (root / "queries.tsv").open(newline="", encoding="utf-8") as handle:
+            summary = list(csv.DictReader(handle, delimiter="\t"))
+        self.assertEqual(2, len(queries))
+        self.assertEqual(len(queries), len(summary))
+        record = (root / "README.md").read_text(encoding="utf-8")
+        for measured, stated in zip(queries, summary):
+            self.assertEqual(measured["key"], stated["key"])
+            self.assertEqual(measured["query"], stated["query"])
+            self.assertEqual(measured["outcome"], stated["outcome"])
+            self.assertEqual(len(measured["results"]), int(stated["result_count"]))
+            self.assertEqual(measured["result_count"], int(stated["result_count"]))
+            self.assertIn(str(measured["result_count"]), record)
+        documents = [json.loads(line) for line in (source / "candidates.jsonl").read_text(encoding="utf-8").splitlines()]
+        identities = {
+            (row["repository"].removeprefix("github.com/"), row["commit"], row["path"]): row
+            for row in documents
+        }
+        self.assertEqual(3, len(identities))
+        for (repository, commit, path), row in identities.items():
+            label = f"| {repository}, {path} | `{commit}` |"
+            matches = [line for line in record.splitlines() if line.startswith(label)]
+            self.assertEqual(1, len(matches), label)
+            self.assertEqual(row["selector_count"], int(matches[0].split("|")[3]))
+        screens = [json.loads(line) for line in (source / "screens.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(1, len(screens))
+        row = screens[0]
+        identity = row["repository"], row["commit"], row["path"]
+        self.assertEqual(identities[identity]["sha256"], row["sha256"])
+        self.assertEqual("rejected", row["disposition"])
+        for stage in ("licence", "ref", "fern"):
+            measured = row["measured"][stage]
+            expected = "failed" if stage == "fern" else "passed"
+            self.assertTrue(measured["outcome"].startswith(expected), measured["outcome"])
+            self.assertEqual(measured["log_sha256"],
+                             hashlib.sha256((source / measured["log"]).read_bytes()).hexdigest())
+        fern = row["measured"]["fern"]
+        self.assertEqual("5.67.1", fern["pins"]["fern_cli"])
+        self.assertEqual("5.20.0", fern["pins"]["generator_version"])
+        self.assertEqual("1", fern["run"]["check_exit"])
+
+
 class LedgerShardTests(unittest.TestCase):
     """A ledger past GitHub's blob limit is kept as line-aligned parts."""
 
     GITHUB_BLOB_LIMIT = 100 * 1000 * 1000
     GITHUB_WARNING_SIZE = 50 * 1000 * 1000
+
+    def test_history_verifier_rejects_changed_joins_and_verdicts_and_recovers(self) -> None:
+        script = REPO / "scripts/witness-evidence-integrity.py"
+        spec = importlib.util.spec_from_file_location("integrity_boundary", script)
+        assert spec and spec.loader
+        integrity = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(integrity)
+        def token(number: int) -> str:
+            return SEARCH.INDEX.make_opaque_identity("f" * 32, number)
+        directory = "docs/openapi-surface/example-history"
+        candidate = {"repository": "example/metering", "path": token(1), "commit": token(2),
+                     "sha": token(3), "sha256": token(4), "key": "schema-object",
+                     "selector_count": 1, "status": "read"}
+        screen = {**candidate, "fern": "pass", "keys": ["schema-object"]}
+        rows = {"candidates.jsonl": [candidate, dict(candidate)], "screens.jsonl": [screen],
+                "probe.jsonl": [{"key": "schema-object", "candidate": f"{token(1)}@{token(2)}",
+                                 "status": "ok", "reached": ["conversion-arm"]}]}
+        files = {f"{directory}/{name}": len(values) for name, values in rows.items()}
+        root = self.root / "repository"
+        for name, values in rows.items():
+            path = root / directory / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("".join(json.dumps(row) + "\n" for row in values), encoding="utf-8", newline="\n")
+        baseline = self.root / "profile.json"
+        baseline.write_text(json.dumps(integrity.profile(files, integrity.opaque_path, root)), encoding="utf-8", newline="\n")
+
+        def verify() -> subprocess.CompletedProcess[str]:
+            return subprocess.run([sys.executable, str(script), "--root", str(root),
+                                   "--baseline", str(baseline)], capture_output=True, text=True, encoding="utf-8")
+
+        self.assertEqual(0, verify().returncode)
+        saved_baseline = baseline.read_bytes()
+        expected = json.loads(saved_baseline)
+        for invalid_counts in (None, [], {}, {next(iter(files)): 0},
+                               {next(iter(files)): -1}, {next(iter(files)): True}):
+            with self.subTest(record_counts=invalid_counts):
+                baseline.write_text(json.dumps({**expected, "record_counts": invalid_counts}), encoding="utf-8", newline="\n")
+                rejected = verify()
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn("record_counts must map ledger paths to positive integers", rejected.stderr)
+                baseline.write_bytes(saved_baseline)
+                self.assertEqual(0, verify().returncode)
+        for invalid_path in (str(root / "outside.jsonl"),
+                             "docs/openapi-surface/../outside.jsonl", "tests/outside.jsonl"):
+            with self.subTest(ledger_path=invalid_path):
+                baseline.write_text(json.dumps({**expected, "record_counts": {invalid_path: 1}}), encoding="utf-8", newline="\n")
+                rejected = verify()
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn("invalid historical ledger path", rejected.stderr)
+                self.assertIn("restore the baseline from git", rejected.stderr)
+                baseline.write_bytes(saved_baseline)
+                self.assertEqual(0, verify().returncode)
+        path = root / directory / "candidates.jsonl"
+        saved = path.read_bytes()
+        path.write_text(json.dumps(candidate) + "\n", encoding="utf-8", newline="\n")
+        truncated = verify()
+        self.assertEqual(1, truncated.returncode)
+        self.assertIn("historical prefix needs 2 records, found 1", truncated.stderr)
+        self.assertIn("restore the ledger from git", truncated.stderr)
+        path.write_bytes(saved)
+        self.assertEqual(0, verify().returncode)
+        for field, replacement, metric in (("commit", token(5), "revision_groups"),
+                                          ("sha", token(5), "blob_groups"),
+                                          ("sha256", token(5), "digest_groups"),
+                                          ("selector_count", 0, "verdicts")):
+            with self.subTest(field=field):
+                path.write_text(json.dumps({**candidate, field: replacement}) + "\n" +
+                                json.dumps(candidate) + "\n", encoding="utf-8", newline="\n")
+                rejected = verify()
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn(metric, rejected.stderr)
+                self.assertIn("restore the retained records and joins", rejected.stderr)
+                path.write_bytes(saved)
+                self.assertEqual(0, verify().returncode)
+        probe = root / directory / "probe.jsonl"
+        saved_probe = probe.read_bytes()
+        probe.write_text(json.dumps({**rows["probe.jsonl"][0],
+                                     "candidate": f"{token(1)}@{token(5)}"}) + "\n", encoding="utf-8", newline="\n")
+        rejected = verify()
+        self.assertEqual(1, rejected.returncode)
+        self.assertIn("subject_joins", rejected.stderr)
+        probe.write_bytes(saved_probe)
+        self.assertEqual(0, verify().returncode)
+
+        # The earlier publisher spelling and the replacement token must retain
+        # the same join, including a URL-host prefix on the probe's subject.
+        publisher = {**candidate, "path": "flow.yaml", "commit": "a" * 40,
+                     "sha": "b" * 40, "sha256": "c" * 64}
+        publisher_screen = {**screen, **{key: publisher[key] for key in ("path", "commit", "sha", "sha256")}}
+        publisher_probe = {**rows["probe.jsonl"][0],
+                           "candidate": f"github.com/example/metering:flow.yaml@{'a' * 40}"}
+        original_rows = {"candidates.jsonl": [publisher, dict(publisher)],
+                         "screens.jsonl": [publisher_screen], "probe.jsonl": [publisher_probe]}
+        for name, values in original_rows.items():
+            (root / directory / name).write_text("".join(json.dumps(row) + "\n" for row in values), encoding="utf-8", newline="\n")
+        baseline.write_text(json.dumps(integrity.profile(files, lambda _row, _location: True, root)), encoding="utf-8", newline="\n")
+        for name, values in rows.items():
+            (root / directory / name).write_text("".join(json.dumps(row) + "\n" for row in values), encoding="utf-8", newline="\n")
+        recovered = verify()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_retained_opaque_history_preserves_record_groups_and_verdicts(self) -> None:
+        script = REPO / "scripts/witness-evidence-integrity.py"
+        baseline = REPO / "docs/openapi-surface/opaque-history-profile.json"
+        saved = json.loads(baseline.read_text(encoding="utf-8"))
+        self.assertGreater(sum(saved["node_counts"].values()), 0)
+        self.assertGreater(saved["screen_joins"]["pairs"], 0)
+        invalid = self.root / "unsupported-profile.json"
+        invalid.write_text("[]", encoding="utf-8", newline="\n")
+        malformed = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
+                                   capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(1, malformed.returncode)
+        self.assertIn("profile must be a JSON object", malformed.stderr)
+        invalid.write_text(json.dumps({**saved, "version": 99}), encoding="utf-8", newline="\n")
+        rejected = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
+                                  capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(1, rejected.returncode)
+        self.assertIn("unsupported profile version 99", rejected.stderr)
+        self.assertIn("restore version 1 evidence", rejected.stderr)
+        invalid.write_text(json.dumps(saved), encoding="utf-8", newline="\n")
+        recovered = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
+                                   capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual("witness-evidence-integrity: historical records and joins preserved\n", recovered.stdout)
+
+    def test_documented_identity_grammar_matches_the_shared_contract(self) -> None:
+        readme = (REPO / "docs/openapi-surface/witness-search-github/README.md").read_text(encoding="utf-8")
+        self.assertIn(f"`{SEARCH.INDEX.OPAQUE_PREFIX}I:N`", readme)
+        version = SEARCH.INDEX.OPAQUE_PREFIX.split(":")[1]
+        self.assertEqual({version}, set(re.findall(r"\bv[0-9]+\b", readme)))
+        contract = readme.split("Excluded inputs use ", 1)[1].split("\nGitHub refuses ", 1)[0]
+        named_repositories = set(re.findall(r"`([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)`", contract))
+        self.assertEqual(SEARCH.INDEX.EXCLUDED_REPOSITORIES, named_repositories)
+        token = SEARCH.INDEX.make_opaque_identity("f" * 32, 17)
+        self.assertEqual(token, SEARCH.INDEX.opaque_identity(token))
+        with self.assertRaisesRegex(ValueError, "positive assigned integer"):
+            SEARCH.INDEX.make_opaque_identity("f" * 32, 0)
+
 
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
@@ -157,6 +439,168 @@ class LedgerShardTests(unittest.TestCase):
         read = SEARCH.jsonl(evidence / "candidates.jsonl")
         self.assertEqual([row["repository"] for row in rows], [row["repository"] for row in read])
 
+    def test_index_preserves_versioned_opaque_candidate_measurements(self) -> None:
+        root = self.root / "opaque-index"
+        for source in SEARCH.INDEX.SOURCES:
+            directory = root / f"witness-search-{source}"
+            directory.mkdir(parents=True)
+            (directory / "keys.json").write_text(json.dumps({"keys": {
+                "shape": {"selector": "schema.additionalProperties=false"}
+            }}), encoding="utf-8", newline="\n")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
+            json.dumps({"publishers": []}), encoding="utf-8", newline="\n"
+        )
+        token = "screened-nonpublic-input:v2:" + "a" * 32 + ":731"
+        ordinary = {"source": "sourcegraph", "key": "shape",
+                    "repository": "example/api", "path": "openapi.yaml",
+                    "commit": "c" * 40, "sha256": "d" * 64,
+                    "disposition": "does-not-declare", "selector_count": 0}
+        historical = {**ordinary, "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY, "path": token, "commit": token,
+                      "sha256": token, "selector_count": 0}
+        ledger = root / "witness-search-sourcegraph/candidates.jsonl"
+
+        def write(row: dict[str, object]) -> None:
+            ledger.write_text(json.dumps(ordinary) + "\n" + json.dumps(row) + "\n",
+                              encoding="utf-8", newline="\n")
+
+        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
+                   "--evidence-root", str(root)]
+        write(historical)
+        generated = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(0, generated.returncode, generated.stderr)
+        with (root / "witness-search-sourcegraph/records.tsv").open(encoding="utf-8") as stream:
+            rows = {row["candidate"]: row for row in csv.DictReader(stream, delimiter="\t")}
+        self.assertEqual({token, "example/api:openapi.yaml"}, set(rows))
+        self.assertEqual(token, rows[token]["digest"])
+        self.assertEqual(token, rows[token]["revision"])
+        for field in ("census", "licence_screen", "revision_screen",
+                      "fern_screen", "disposition"):
+            self.assertEqual(rows["example/api:openapi.yaml"][field], rows[token][field])
+        subprocess.run([*command, "--check"], check=True, capture_output=True, text=True, encoding="utf-8")
+        other_token = token.replace("a" * 32, "b" * 32)
+        fresh = {"source": "sourcegraph", "key": "shape", "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY,
+                 "path": other_token, "disposition": "excluded-repository"}
+        ledger.write_text(ledger.read_text(encoding="utf-8") + json.dumps(fresh) + "\n",
+                          encoding="utf-8", newline="\n")
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
+        with (root / "witness-search-sourcegraph/records.tsv").open(encoding="utf-8") as stream:
+            distinct = {row["candidate"]: row for row in csv.DictReader(stream, delimiter="\t")}
+        self.assertEqual({token, other_token, "example/api:openapi.yaml"}, set(distinct))
+        self.assertEqual("not-run: screened by repository rule", distinct[other_token]["census"])
+        self.assertEqual("rejected", distinct[other_token]["disposition"])
+
+        for invalid, message in (
+            ({**historical, "path": token.replace(":v2:", ":v1:")},
+             "unsupported opaque identity version v1"),
+            ({**historical, "path": token.replace(":v2:", ":v3:")},
+             "unsupported opaque identity version v3"),
+            ({**historical, "path": "openapi.yaml"},
+             "opaque locator path must carry an opaque revision"),
+            ({**historical, "sha256": "screened-nonpublic-input:v2:" + "a" * 32 + ":0"},
+             "invalid opaque identity"),
+            ({**ordinary, "disposition": "excluded-repository"},
+             "excluded-repository requires an opaque identity"),
+            ({**fresh, "selector_count": 0},
+             "excluded-repository cannot carry measured selector counts"),
+            *(({**historical, field: value}, f"opaque locator {field} must carry an opaque revision")
+              for field in SEARCH.INDEX.OPAQUE_LOCATORS
+              for value in ("c" * 40,)),
+        ):
+            with self.subTest(message=message):
+                write(invalid)
+                rejected = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn(message, rejected.stderr)
+        write(historical)
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
+        subprocess.run([*command, "--check"], check=True, capture_output=True, text=True, encoding="utf-8")
+
+    def test_index_preserves_shared_screen_joins_across_opaque_revisions(self) -> None:
+        root = self.root / "shared-screen"
+        for source in SEARCH.INDEX.SOURCES:
+            directory = root / f"witness-search-{source}"
+            directory.mkdir(parents=True)
+            (directory / "keys.json").write_text(json.dumps({"keys": {
+                "shape": {"selector": "schema.additionalProperties=false"}
+            }}), encoding="utf-8", newline="\n")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
+            json.dumps({"publishers": []}), encoding="utf-8", newline="\n")
+        def token(number: int) -> str:
+            return SEARCH.INDEX.make_opaque_identity("e" * 32, number)
+        candidate = {"source": "sourcegraph", "key": "shape", "selector_count": 1,
+                     "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY, "path": token(1),
+                     "sha256": token(2), "disposition": "declares"}
+        directory = root / "witness-search-sourcegraph"
+        ledger = directory / "candidates.jsonl"
+        ledger.write_text("".join(json.dumps({**candidate, "commit": token(n)}) + "\n"
+                                  for n in (3, 4)), encoding="utf-8", newline="\n")
+        screen = {**candidate, "commit": token(3), "keys": ["shape"],
+                  "license": "passed", "ref": "passed", "fern": "failed: measured refusal",
+                  "disposition": "rejected", "screened_at": "2025-01-01T00:00:00Z"}
+        (directory / "screens.jsonl").write_text(json.dumps(screen) + "\n", encoding="utf-8", newline="\n")
+        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
+                   "--evidence-root", str(root)]
+        generated = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(0, generated.returncode, generated.stderr)
+        with (directory / "records.tsv").open(encoding="utf-8") as stream:
+            records = list(csv.DictReader(stream, delimiter="\t"))
+        self.assertEqual({token(3), token(4)}, {row["revision"] for row in records})
+        self.assertTrue(all(row["candidate"] == token(1) and row["digest"] == token(2)
+                            and row["fern_screen"] == "failed: measured refusal"
+                            and row["disposition"] == "rejected" for row in records), records)
+        subprocess.run([*command, "--check"], check=True, capture_output=True, text=True, encoding="utf-8")
+        ledger.write_text(ledger.read_text(encoding="utf-8").replace(token(2), token(2).replace(":v2:", ":v3:")), encoding="utf-8", newline="\n")
+        rejected = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(1, rejected.returncode)
+        self.assertIn("unsupported opaque identity version v3", rejected.stderr)
+        ledger.write_text(ledger.read_text(encoding="utf-8").replace(":v3:", ":v2:"), encoding="utf-8", newline="\n")
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
+
+    def test_index_replaces_the_prior_opaque_input_revision(self) -> None:
+        root = self.root / "opaque-revisions"
+        for source in SEARCH.INDEX.SOURCES:
+            directory = root / f"witness-search-{source}"
+            directory.mkdir(parents=True)
+            (directory / "keys.json").write_text(json.dumps({"keys": {
+                "shape": {"selector": "schema.additionalProperties=false"}
+            }}), encoding="utf-8", newline="\n")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
+            json.dumps({"publishers": []}), encoding="utf-8", newline="\n"
+        )
+        first = "screened-nonpublic-input:v2:" + "a" * 32 + ":41"
+        second = "screened-nonpublic-input:v2:" + "a" * 32 + ":42"
+        old = {"source": "github-code-search", "key": "shape", "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY,
+               "path": first, "commit": first, "blob": first, "sha256": first,
+               "disposition": "does-not-declare", "selector_count": 0}
+        replacement = {**old, "commit": second,
+                       "blob": second, "sha256": second, "supersedes": first}
+        directory = root / "witness-search-github-code-search"
+        ledger = directory / "candidates.jsonl"
+        ledger.write_text(json.dumps(old) + "\n" + json.dumps(replacement) + "\n", encoding="utf-8", newline="\n")
+        (directory / "queries.jsonl").write_text(json.dumps({
+            "source": "github-code-search", "key": "shape", "query": "object shape",
+            "outcome": "answered", "results": [{"repository": SEARCH.INDEX.EXCLUDED_REPOSITORY, "path": first,
+                                                 "sha": first, "commit": first}]
+        }) + "\n", encoding="utf-8", newline="\n")
+        command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
+                   "--evidence-root", str(root)]
+        generated = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(0, generated.returncode, generated.stderr)
+        with (directory / "records.tsv").open(encoding="utf-8") as stream:
+            records = list(csv.DictReader(stream, delimiter="\t"))
+        self.assertEqual(1, len(records), records)
+        self.assertEqual(first, records[0]["candidate"])
+        self.assertEqual(second, records[0]["revision"])
+        self.assertEqual("rejected", records[0]["disposition"])
+        subprocess.run([*command, "--check"], check=True, capture_output=True, text=True, encoding="utf-8")
+        bad = {**replacement, "supersedes": "c" * 40}
+        ledger.write_text(json.dumps(old) + "\n" + json.dumps(bad) + "\n", encoding="utf-8", newline="\n")
+        rejected = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(1, rejected.returncode)
+        self.assertIn("opaque locator supersedes must carry an opaque revision", rejected.stderr)
+        ledger.write_text(json.dumps(old) + "\n" + json.dumps(replacement) + "\n", encoding="utf-8", newline="\n")
+        subprocess.run([*command, "--check"], check=True, capture_output=True, text=True, encoding="utf-8")
+
     def test_index_writes_parts_and_checks_them_as_one_ledger(self) -> None:
         root = self.root / "index"
         for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
@@ -164,9 +608,9 @@ class LedgerShardTests(unittest.TestCase):
             directory.mkdir(parents=True)
             (directory / "keys.json").write_text(json.dumps(
                 {"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}
-            ), encoding="utf-8")
+            ), encoding="utf-8", newline="\n")
         (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
-            json.dumps({"publishers": []}), encoding="utf-8"
+            json.dumps({"publishers": []}), encoding="utf-8", newline="\n"
         )
         SEARCH.INDEX.write_ledger(
             root / "witness-search-github-code-search/candidates.jsonl",
@@ -182,7 +626,7 @@ class LedgerShardTests(unittest.TestCase):
         command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
                    "--evidence-root", str(root)]
         central = root / "witness-search-github/candidates.tsv"
-        sharded = subprocess.run([*command, "--shard-bytes", "500"], capture_output=True, text=True)
+        sharded = subprocess.run([*command, "--shard-bytes", "500"], capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, sharded.returncode, sharded.stderr)
         parts = SEARCH.INDEX.ledger_parts(central)
         self.assertGreater(len(parts), 1)
@@ -201,8 +645,8 @@ class LedgerShardTests(unittest.TestCase):
             )],
         )
         subprocess.run([*command, "--check"], check=True, capture_output=True)
-        parts[-1].write_text("", encoding="utf-8")
-        stale = subprocess.run([*command, "--check"], capture_output=True, text=True)
+        parts[-1].write_text("", encoding="utf-8", newline="\n")
+        stale = subprocess.run([*command, "--check"], capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, stale.returncode)
         self.assertIn("candidates.tsv", stale.stderr)
         subprocess.run(command, check=True, capture_output=True)
@@ -211,14 +655,14 @@ class LedgerShardTests(unittest.TestCase):
         subprocess.run([*command, "--check"], check=True, capture_output=True)
         search_index = root / "witness-search-github-code-search/search-index.tsv"
         indexed_text = search_index.read_text(encoding="utf-8")
-        search_index.write_text(indexed_text + "shape\tquery\tnever issued\t0 results\tqueries.jsonl\n", encoding="utf-8")
-        drifted = subprocess.run([*command, "--check"], capture_output=True, text=True)
+        search_index.write_text(indexed_text + "shape\tquery\tnever issued\t0 results\tqueries.jsonl\n", encoding="utf-8", newline="\n")
+        drifted = subprocess.run([*command, "--check"], capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, drifted.returncode)
         self.assertIn(str(search_index), drifted.stderr)
         self.assertIn("indexed query 'never issued' was never issued", drifted.stderr)
-        search_index.write_text(indexed_text, encoding="utf-8")
+        search_index.write_text(indexed_text, encoding="utf-8", newline="\n")
         subprocess.run([*command, "--check"], check=True, capture_output=True)
-        refused = subprocess.run([*command, "--shard-bytes", "0"], capture_output=True, text=True)
+        refused = subprocess.run([*command, "--shard-bytes", "0"], capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(2, refused.returncode)
         self.assertIn("--shard-bytes must be positive", refused.stderr)
 
@@ -228,6 +672,7 @@ class LocalServer(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         state = self.server.state
+        state.setdefault("requests", []).append(self.path)
         if self.path == "/rate_limit":
             state["reads"] += 1
             used = 7 if state["reads"] == 1 and state["cap"] else 0
@@ -273,6 +718,9 @@ class LocalServer(BaseHTTPRequestHandler):
                          "sha": "a" * 40,
                          "url": f"http://127.0.0.1:{self.server.server_port}/repos/example/api/contents/openapi.yaml?ref={'b' * 40}"}
                         for n in range(22 if page == 10 else 100)]})
+            elif state.get("search_items") is not None:
+                self.reply(200, {"total_count": len(state["search_items"]),
+                                 "incomplete_results": False, "items": state["search_items"]})
             else:
                 early_empty = state["early_empty"] and "page=2" in self.path
                 self.reply(
@@ -298,7 +746,7 @@ class LocalServer(BaseHTTPRequestHandler):
                 )
         elif self.path.startswith("/repos/example/api/contents/open%20api.yaml"):
             state["contents"] += 1
-            self.reply(200, {"encoding": "base64", "content": base64.b64encode(DOCUMENT).decode()})
+            self.reply(200, {"encoding": "base64", "content": base64.b64encode(DOCUMENT).decode("utf-8")})
         elif self.path.startswith("/repos/example/api/contents/openapi.yaml"):
             state["contents"] += 1
             if state["contents_status"]:
@@ -325,7 +773,7 @@ class LocalServer(BaseHTTPRequestHandler):
                     200,
                     {
                         "encoding": "base64",
-                        "content": base64.b64encode(DOCUMENT).decode(),
+                        "content": base64.b64encode(DOCUMENT).decode("utf-8"),
                     },
                 )
         elif self.path.startswith("/repos/example/api/git/trees/"):
@@ -381,12 +829,12 @@ class LocalServer(BaseHTTPRequestHandler):
                 matches = (
                     b"event: matches\ndata: [\n\n"
                     if state["malformed_sourcegraph"]
-                    else b"event: matches\ndata: []\n\n"
+                    else b"event: matches\ndata: " + json.dumps(state.get("sourcegraph_matches", [])).encode("utf-8") + b"\n\n"
                 )
                 progress = (
                     b'event: progress\ndata: {"done":false,"matchCount":0}\n\n'
                     if state["incomplete_sourcegraph"]
-                    else b'event: progress\ndata: {"done":true,"matchCount":0}\n\n'
+                    else b"event: progress\ndata: " + json.dumps({"done": True, "matchCount": len(state.get("sourcegraph_matches", []))}).encode("utf-8") + b"\n\n"
                 )
                 body = matches + progress
                 self.send_response(200)
@@ -399,7 +847,7 @@ class LocalServer(BaseHTTPRequestHandler):
     def reply(
         self, status: int, body: object, headers: dict[str, str] | None = None
     ) -> None:
-        data = json.dumps(body).encode()
+        data = json.dumps(body).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))
@@ -670,8 +1118,8 @@ class WitnessSearchGithubTests(unittest.TestCase):
         directory = root / "witness-search-github-publisher-trees"
         directory.mkdir(parents=True)
         grown = {**first, "one-of": {"selector": "schema.oneOf"}}
-        (directory / "keys.json").write_text(json.dumps({"keys": grown}), encoding="utf-8")
-        (directory / "documents.jsonl").write_text(ledger.read_text(encoding="utf-8"), encoding="utf-8")
+        (directory / "keys.json").write_text(json.dumps({"keys": grown}), encoding="utf-8", newline="\n")
+        (directory / "documents.jsonl").write_text(ledger.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
         owed = {row["key"]: row for row in SEARCH.INDEX.source_rows(root, "github-publisher-trees")}
         self.assertEqual("outstanding", owed["one-of"]["disposition"])
         self.assertIn("never counted this key", owed["one-of"]["census"])
@@ -683,7 +1131,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(["one-of"], after[-1]["recounted_keys"])
         self.assertEqual(before[0]["sha256"], after[-1]["sha256"])
         self.assertEqual(before[0]["selector_counts"]["closed-object"], after[-1]["selector_counts"]["closed-object"])
-        (directory / "documents.jsonl").write_text(ledger.read_text(encoding="utf-8"), encoding="utf-8")
+        (directory / "documents.jsonl").write_text(ledger.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
         counted = {row["key"]: row for row in SEARCH.INDEX.source_rows(root, "github-publisher-trees")}
         self.assertEqual(f"census {after[-1]['selector_counts']['one-of']}", counted["one-of"]["census"])
         self.assertEqual(owed["closed-object"], counted["closed-object"] | {"evidence": owed["closed-object"]["evidence"]})
@@ -696,14 +1144,14 @@ class WitnessSearchGithubTests(unittest.TestCase):
         publisher_file = self.root / "walk-publisher.json"
         publisher_file.write_text(json.dumps({"publishers": [
             {"repository": "example/api", "commit": "c" * 40, "scope": "", "derivation": "local API publisher"}
-        ]}), encoding="utf-8")
+        ]}), encoding="utf-8", newline="\n")
         return subprocess.run(
             [sys.executable, str(REPO / "scripts/witness-search-github.py"), *SOURCE_COMMIT,
              "--evidence", str(evidence), "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(publisher_file), *extra],
             env={**os.environ, "CROZIER_GITHUB_API_URL": self.url, "CROZIER_RAW_GITHUB_URL": self.url,
                  "GITHUB_TOKEN": "offline-test-token"},
-            capture_output=True, text=True,
+            capture_output=True, text=True, encoding="utf-8",
         )
 
     def test_cli_without_cache_keeps_fetched_documents_out_of_the_evidence_directory(self) -> None:
@@ -712,7 +1160,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         The document carries this test's temporary directory name, so its digest
         names a cache file no other run writes, and that one file is removed after.
         """
-        document = DOCUMENT + f"# {self.root.name}\n".encode()
+        document = DOCUMENT + f"# {self.root.name}\n".encode("utf-8")
         self.server.state["raw_document"] = document
         digest = hashlib.sha256(document).hexdigest()
         cached = REPO / ".local" / "witness-search-cache" / "documents" / f"{digest}.yaml"
@@ -740,7 +1188,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         cache = self.root / "cli-reacquire-cache"
         evidence.mkdir()
         keys = {"closed-object": {"selector": "schema.additionalProperties=false"}}
-        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8")
+        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8", newline="\n")
         first = self.walk_cli(evidence, "--cache", str(cache))
         self.assertEqual(0, first.returncode, first.stderr)
         ledger = evidence / "documents.jsonl"
@@ -751,7 +1199,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
         copy.unlink()
         keys["one-of"] = {"selector": "schema.oneOf"}
-        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8")
+        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8", newline="\n")
         recounted = self.walk_cli(evidence, "--cache", str(cache))
         self.assertEqual(0, recounted.returncode, recounted.stderr)
         self.assertEqual(fetched + 1, self.server.state["raw_hits"], "the removed copy is requested once more")
@@ -766,7 +1214,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         tampered = DOCUMENT + b"# not the recorded bytes\n"
         self.server.state["raw_document"] = tampered
         keys["string-const"] = {"selector": "schema.const"}
-        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8")
+        (evidence / "keys.json").write_text(json.dumps({"keys": keys}), encoding="utf-8", newline="\n")
         refused = self.walk_cli(evidence, "--cache", str(cache))
         self.assertEqual(1, refused.returncode)
         self.assertIn(f"refused: example/api/openapi.yaml@{'c' * 40} served sha256 "
@@ -888,13 +1336,178 @@ class WitnessSearchGithubTests(unittest.TestCase):
         waits = [json.loads(line) for line in (self.root / "raw-github-waits.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertEqual(4, len(waits))
 
+    def test_cli_refuses_excluded_publisher_before_requests_or_evidence_writes(self) -> None:
+        evidence = self.root / "excluded-publisher-evidence"
+        cache = self.root / "excluded-publisher-cache"
+        publisher_file = self.root / "excluded-publisher.json"
+        publisher = {"repository": "fern-api/fern", "commit": "b" * 40, "scope": ""}
+        publisher_file.write_text(json.dumps({"publishers": [publisher]}), encoding="utf-8", newline="\n")
+        env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url,
+               "CROZIER_RAW_GITHUB_URL": self.url, "CROZIER_SOURCEGRAPH_URL": self.url,
+               "GITHUB_TOKEN": "offline-test-token"}
+        command = [sys.executable, str(REPO / "scripts/witness-search-github.py"), *SOURCE_COMMIT,
+                   "--evidence", str(evidence), "--cache", str(cache),
+                   "--source", "github-publisher-trees", "--stage", "walk",
+                   "--publisher-file", str(publisher_file)]
+        for repository in sorted(SEARCH.INDEX.EXCLUDED_REPOSITORIES):
+            with self.subTest(repository=repository):
+                publisher_file.write_text(json.dumps({"publishers": [{**publisher, "repository": repository}]}), encoding="utf-8", newline="\n")
+                rejected = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual(2, rejected.returncode)
+                self.assertIn("excluded by the repository rule", rejected.stderr)
+                self.assertIn("use the specification publisher's repository", rejected.stderr)
+                self.assertEqual([], self.server.state.get("requests", []))
+                self.assertFalse(evidence.exists())
+                self.assertFalse(cache.exists())
+        publisher_file.write_text(json.dumps({"publishers": [
+            {**publisher, "repository": "example/api"}
+        ]}), encoding="utf-8", newline="\n")
+        recovered = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        walked = list(map(json.loads, (evidence / "trees.jsonl").read_text(encoding="utf-8").splitlines()))
+        self.assertEqual("example/api", walked[0]["repository"])
+        self.assertTrue(walked[0]["paths"])
+        documents = list(map(json.loads, (evidence / "documents.jsonl").read_text(encoding="utf-8").splitlines()))
+        self.assertEqual(hashlib.sha256(DOCUMENT).hexdigest(), documents[0]["sha256"])
+
+    def test_search_preserves_repository_relative_paths_and_shared_blobs(self) -> None:
+        self.server.state["search_items"] = [
+            {"repository": {"full_name": repository}, "path": "harbor-metering/api.yaml",
+             "sha": "b" * 40,
+             "url": f"{self.url}/repos/{repository}/contents/harbor-metering/api.yaml?ref={'c' * 40}"}
+            for repository in sorted(SEARCH.INDEX.EXCLUDED_REPOSITORIES)
+        ]
+        self.search.github_search("closed-object", "additionalProperties")
+        results = SEARCH.jsonl(self.root / "queries.jsonl")[0]["results"]
+        self.assertEqual(2, len(results))
+        self.assertEqual(2, len({item["path"] for item in results}))
+        self.assertEqual(1, len({item["sha"] for item in results}))
+        self.assertEqual(SEARCH.INDEX.EXCLUDED_REPOSITORIES, {item["repository"] for item in results})
+        self.assertFalse(any("/contents/harbor-metering" in path for path in self.server.state["requests"]))
+
+    def test_search_keeps_distinct_blobs_when_the_contents_url_names_a_branch(self) -> None:
+        self.server.state["search_items"] = [
+            {"repository": {"full_name": SEARCH.INDEX.EXCLUDED_REPOSITORY},
+             "path": "harbor-metering/api.yaml", "sha": revision,
+             "url": f"{self.url}/repos/fern-api/fern/contents/harbor-metering/api.yaml?ref=main"}
+            for revision in ("b" * 40, "c" * 40)
+        ]
+        self.search.github_search("closed-object", "additionalProperties")
+        results = SEARCH.jsonl(self.root / "queries.jsonl")[0]["results"]
+        self.assertEqual(2, len(results))
+        self.assertEqual(2, len({item["sha"] for item in results}))
+        self.assertEqual(1, len({item["path"] for item in results}))
+        self.assertEqual(1, len({item["url"] for item in results}))
+        self.assertFalse(any("/contents/harbor-metering" in path for path in self.server.state["requests"]))
+
+    def test_acquirer_records_opaque_revisions_and_skips_direct_reacquisition(self) -> None:
+        row = {"source": "sourcegraph", "key": "shape", "selector": "schema.additionalProperties=false",
+               "repository": SEARCH.INDEX.EXCLUDED_REPOSITORY, "path": "harbor-metering/api.yaml",
+               "commit": "b" * 40, "disposition": "does-not-declare", "selector_count": 0}
+        self.search.write("candidates.jsonl", row)
+        self.search.write("candidates.jsonl", {**row, "commit": "c" * 40, "supersedes": row["commit"]})
+        ledger = self.root / "candidates.jsonl"
+        first, replacement = SEARCH.jsonl(ledger)
+        self.assertEqual(first["path"], replacement["path"])
+        self.assertNotEqual(first["commit"], replacement["commit"])
+        self.assertEqual(first["commit"], replacement["supersedes"])
+        self.assertNotEqual(replacement["path"], replacement["commit"])
+        original = ledger.read_bytes()
+        requests = list(self.server.state.get("requests", []))
+        self.assertIsNone(self.search.resolve(replacement, "shape"))
+        self.assertIsNone(self.search.reacquire(replacement, "shape"))
+        self.assertEqual(requests, self.server.state.get("requests", []))
+        self.assertEqual(original, ledger.read_bytes())
+        with self.assertRaisesRegex(ValueError, "opaque locator supersedes must carry an opaque revision"):
+            self.search.write("candidates.jsonl", {**replacement, "supersedes": "b" * 40})
+        self.assertEqual(original, ledger.read_bytes())
+        self.search.write("candidates.jsonl", replacement)
+        self.assertEqual(3, len(SEARCH.jsonl(ledger)))
+
+    def test_cli_excludes_repository_inputs_without_fetching_or_losing_query_counts(self) -> None:
+        excluded_path = "harbor-metering/api.yaml"
+        key = "annotated-ref-target-string-const"
+        commit = "b" * 40
+        ordinary = {"repository": {"full_name": "example/api"}, "path": "openapi.yaml",
+                    "sha": "a" * 40,
+                    "url": f"{self.url}/repos/example/api/contents/openapi.yaml?ref={commit}"}
+        excluded = {**ordinary, "repository": {"full_name": "fern-api/fern"},
+                    "path": excluded_path,
+                    "url": f"{self.url}/repos/fern-api/fern/contents/{excluded_path}?ref={commit}"}
+        self.server.state["search_items"] = [ordinary, excluded]
+        self.server.state["sourcegraph_matches"] = [
+            {"repository": "github.com/example/api", "path": "openapi.yaml", "commit": commit},
+            {"repository": "github.com/fern-api/fern", "path": excluded_path, "commit": commit},
+        ]
+        env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url,
+               "CROZIER_SOURCEGRAPH_URL": self.url, "CROZIER_RAW_GITHUB_URL": self.url,
+               "CROZIER_TEST_CODE_SEARCH_SPACING_S": "0", "GITHUB_TOKEN": "offline-test-token"}
+        for source in ("github-code-search", "sourcegraph"):
+            with self.subTest(source=source):
+                evidence = self.root / f"opaque-{source}"
+                cache = self.root / f"opaque-{source}-cache"
+                command = [sys.executable, str(REPO / "scripts/witness-search-github.py"),
+                           *SOURCE_COMMIT, "--evidence", str(evidence), "--cache", str(cache),
+                           "--source", source, "--key", key]
+                searched = subprocess.run([*command, "--stage", "search"], env=env,
+                                          capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual(0, searched.returncode, searched.stderr)
+                queries_path = evidence / "queries.jsonl"
+                original_queries = queries_path.read_text(encoding="utf-8")
+                queries = [row for row in map(json.loads, original_queries.splitlines())
+                           if row.get("outcome") == "answered"]
+                self.assertTrue(queries)
+                tokens = set()
+                for query in queries:
+                    self.assertEqual(2, query["result_count"])
+                    self.assertEqual(2, len(query["results"]))
+                    tokens.add(query["results"][1]["path"])
+                self.assertEqual(1, len(tokens))
+                token = tokens.pop()
+                self.assertEqual(token, SEARCH.INDEX.opaque_identity(token))
+                self.assertNotIn(excluded_path, original_queries)
+                for query in queries:
+                    result = query["results"][1]
+                    self.assertEqual(token, result["path"])
+                    for field in ("url", "sha", "blob", "sha256", "commit"):
+                        if field in result:
+                            self.assertEqual(result[field], SEARCH.INDEX.opaque_identity(result[field]))
+                evaluated = subprocess.run([*command, "--stage", "evaluate"], env=env,
+                                           capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual(0, evaluated.returncode, evaluated.stderr)
+                original_candidates = (evidence / "candidates.jsonl").read_bytes()
+                rows = list(map(json.loads, (evidence / "candidates.jsonl").read_text(encoding="utf-8").splitlines()))
+                opaque = [row for row in rows if row["path"] == token]
+                self.assertEqual(1, len(opaque))
+                self.assertEqual("excluded-repository", opaque[0]["disposition"])
+                self.assertNotIn("selector_count", opaque[0])
+                regular = next(row for row in rows if row["path"] != token)
+                self.assertEqual("does-not-declare", regular["disposition"])
+                self.assertEqual(hashlib.sha256(DOCUMENT).hexdigest(), regular["sha256"])
+                self.assertFalse(any("/fern-api/fern/" in path for path in self.server.state["requests"]))
+                acquired = len(self.server.state["requests"])
+                queries_path.write_text(original_queries.replace(token, token.replace(":v2:", ":v3:")),
+                                        encoding="utf-8", newline="\n")
+                rejected = subprocess.run([*command, "--stage", "evaluate"], env=env,
+                                          capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn("unsupported opaque identity version v3", rejected.stderr)
+                self.assertEqual(acquired, len(self.server.state["requests"]))
+                self.assertEqual(original_candidates, (evidence / "candidates.jsonl").read_bytes())
+                queries_path.write_text(original_queries, encoding="utf-8", newline="\n")
+                recovered = subprocess.run([*command, "--stage", "evaluate"], env=env,
+                                           capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+                self.assertEqual(acquired, len(self.server.state["requests"]))
+                self.assertEqual(original_candidates, (evidence / "candidates.jsonl").read_bytes())
+
     def test_cli_search_evaluate_walk_resume_and_failure_exits(self) -> None:
         script = REPO / "scripts/witness-search-github.py"
         evidence = self.root / "cli"
         derived = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence), "--derive-only"],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         self.assertEqual(0, derived.returncode, derived.stderr)
         self.assertIn("FIXTURE gap keys", derived.stdout)
@@ -905,14 +1518,14 @@ class WitnessSearchGithubTests(unittest.TestCase):
             [sys.executable, str(script), "--source-commit", "abc123", "--evidence",
              str(self.root / "cli-short-commit"), "--derive-only"],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         self.assertEqual(2, short_commit.returncode)
         self.assertIn("--source-commit must be a full 40-character", short_commit.stderr)
         invalid = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence)],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         self.assertEqual(2, invalid.returncode)
         self.assertIn("--source and --stage", invalid.stderr)
@@ -938,7 +1551,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             ],
             env=env,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         self.assertEqual(1, stopped.returncode, stopped.stderr)
         self.assertIn("backoff before resuming", stopped.stderr)
@@ -968,7 +1581,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                     "results": [item],
                 }
             )
-            + "\n", encoding="utf-8"
+            + "\n", encoding="utf-8", newline="\n"
         )
         before = self.server.state["contents"]
         command = [
@@ -986,14 +1599,14 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "--key",
             "annotated-ref-target-string-const",
         ]
-        evaluated = subprocess.run(command, env=env, capture_output=True, text=True)
+        evaluated = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, evaluated.returncode, evaluated.stderr)
         candidate = json.loads(
             (evaluation / "candidates.jsonl").read_text(encoding="utf-8").splitlines()[0]
         )
         self.assertEqual("does-not-declare", candidate["disposition"])
         self.assertEqual(before + 1, self.server.state["contents"])
-        resumed = subprocess.run(command, env=env, capture_output=True, text=True)
+        resumed = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, resumed.returncode, resumed.stderr)
         self.assertEqual(before + 1, self.server.state["contents"])
 
@@ -1002,14 +1615,14 @@ class WitnessSearchGithubTests(unittest.TestCase):
         publisher_file.write_text(json.dumps({"publishers": [
             {"repository": "example/api", "commit": "c" * 40,
              "scope": "", "derivation": "local API publisher"}
-        ]}), encoding="utf-8")
+        ]}), encoding="utf-8", newline="\n")
         walked = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(walk_evidence),
              "--cache", str(self.root / "cli-walk-cache"), "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(publisher_file)],
             env={**env, "CROZIER_RAW_GITHUB_URL": self.url},
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         self.assertEqual(0, walked.returncode, walked.stderr)
         self.assertEqual(1, len(json.loads((walk_evidence / "publisher-set.json").read_text(encoding="utf-8"))["publishers"]))
@@ -1020,22 +1633,22 @@ class WitnessSearchGithubTests(unittest.TestCase):
         invalid_key = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-key"),
              "--source", "github-code-search", "--stage", "search", "--key", "no-such-key"],
-            env=env, capture_output=True, text=True,
+            env=env, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(2, invalid_key.returncode)
         self.assertIn("unknown key", invalid_key.stderr)
         invalid_regions = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-no-regions"),
              "--regions", str(self.root / "missing-regions"), "--derive-only"],
-            capture_output=True, text=True,
+            capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(1, invalid_regions.returncode)
         self.assertIn("repair the region file and rerun", invalid_regions.stderr)
         evidence_file = self.root / "evidence-is-a-file"
-        evidence_file.write_text("occupied", encoding="utf-8")
+        evidence_file.write_text("occupied", encoding="utf-8", newline="\n")
         unwritable_evidence = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence_file), "--derive-only"],
-            capture_output=True, text=True,
+            capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(1, unwritable_evidence.returncode)
         self.assertIn("make --evidence and --cache writable", unwritable_evidence.stderr)
@@ -1043,12 +1656,12 @@ class WitnessSearchGithubTests(unittest.TestCase):
             git_failure = self.root / "git-failure"
             git_failure.mkdir()
             fake_git = git_failure / "git"
-            fake_git.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+            fake_git.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8", newline="\n")
             fake_git.chmod(0o755)
             no_commit = subprocess.run(
                 [sys.executable, str(script), "--evidence", str(self.root / "cli-no-commit"),
                  "--derive-only"],
-                env={**env, "PATH": str(git_failure)}, capture_output=True, text=True,
+                env={**env, "PATH": str(git_failure)}, capture_output=True, text=True, encoding="utf-8",
             )
             self.assertEqual(1, no_commit.returncode)
             self.assertIn("fetch origin/main or pass --source-commit", no_commit.stderr)
@@ -1062,35 +1675,35 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-no-credential"),
                  "--source", "github-code-search", "--stage", "search",
                  "--key", "annotated-ref-target-string-const"],
-                env=no_credential_env, capture_output=True, text=True,
+                env=no_credential_env, capture_output=True, text=True, encoding="utf-8",
             )
             self.assertEqual(1, no_credential.returncode)
             self.assertIn("set GITHUB_TOKEN or run gh auth login", no_credential.stderr)
         bad_publishers = self.root / "bad-publishers.json"
-        bad_publishers.write_text('{"publishers": [{}]}', encoding="utf-8")
+        bad_publishers.write_text('{"publishers": [{}]}', encoding="utf-8", newline="\n")
         invalid_file = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-bad-publishers"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(bad_publishers)],
-            env=env, capture_output=True, text=True,
+            env=env, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(2, invalid_file.returncode)
         self.assertIn("invalid publisher repository", invalid_file.stderr)
-        bad_publishers.write_text('{"publishers": [{"repository": "publisher/api", "commit": "main", "scope": ""}]}', encoding="utf-8")
+        bad_publishers.write_text('{"publishers": [{"repository": "publisher/api", "commit": "main", "scope": ""}]}', encoding="utf-8", newline="\n")
         mutable_ref = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-mutable-publisher"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(bad_publishers)],
-            env=env, capture_output=True, text=True,
+            env=env, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(2, mutable_ref.returncode)
         self.assertIn("publisher commit must be a 40-hex SHA", mutable_ref.stderr)
-        bad_publishers.write_text("{broken json}", encoding="utf-8")
+        bad_publishers.write_text("{broken json}", encoding="utf-8", newline="\n")
         invalid_json_file = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-bad-json-publishers"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(bad_publishers)],
-            env=env, capture_output=True, text=True,
+            env=env, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(2, invalid_json_file.returncode)
         self.assertIn("--publisher-file cannot be read", invalid_json_file.stderr)
@@ -1098,7 +1711,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-missing-catalog"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-root", str(self.root / "missing-catalog")],
-            env=env, capture_output=True, text=True,
+            env=env, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(1, missing_catalog.returncode)
         self.assertIn("repair the publisher manifests and rerun", missing_catalog.stderr)
@@ -1109,7 +1722,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                      "--source", "sourcegraph", "--stage", "search",
                      "--key", "annotated-ref-target-string-const"],
                     env={**env, override: "file:///etc/passwd"},
-                    capture_output=True, text=True,
+                    capture_output=True, text=True, encoding="utf-8",
                 )
                 self.assertEqual(2, invalid_url.returncode)
                 self.assertIn(override, invalid_url.stderr)
@@ -1120,7 +1733,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-walk-stop"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(publisher_file)],
-            env={**env, "CROZIER_RAW_GITHUB_URL": self.url}, capture_output=True, text=True,
+            env={**env, "CROZIER_RAW_GITHUB_URL": self.url}, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(1, walk_stopped.returncode)
         self.assertIn("rerun --source github-publisher-trees --stage walk", walk_stopped.stderr)
@@ -1129,12 +1742,12 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.server.state["contents_status"] = 403
         evaluation_stop = self.root / "cli-evaluate-stop"
         evaluation_stop.mkdir()
-        (evaluation_stop / "queries.jsonl").write_text((evaluation / "queries.jsonl").read_text(encoding="utf-8"), encoding="utf-8")
+        (evaluation_stop / "queries.jsonl").write_text((evaluation / "queries.jsonl").read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
         stopped_evaluation = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evaluation_stop),
              "--source", "github-code-search", "--stage", "evaluate",
              "--key", "annotated-ref-target-string-const"],
-            env=env, capture_output=True, text=True,
+            env=env, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(1, stopped_evaluation.returncode)
         self.assertIn("--stage evaluate", stopped_evaluation.stderr)
@@ -1144,7 +1757,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-sourcegraph-stop"),
              "--source", "sourcegraph", "--stage", "search",
              "--key", "annotated-ref-target-string-const"],
-            env={**env, "CROZIER_SOURCEGRAPH_URL": self.url}, capture_output=True, text=True,
+            env={**env, "CROZIER_SOURCEGRAPH_URL": self.url}, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(1, sourcegraph_stop.returncode)
         self.assertIn("--stage search", sourcegraph_stop.stderr)
@@ -1165,13 +1778,13 @@ class WitnessSearchGithubTests(unittest.TestCase):
             json.dumps({"source": "github-code-search", "key": key, "query": f"q {key}",
                         "outcome": "answered", "results": [item]}) + "\n"
             for key in keys
-        ), encoding="utf-8")
+        ), encoding="utf-8", newline="\n")
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}
         evaluated = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evaluation),
              "--cache", str(self.root / "cli-shared-cache"), "--source", "github-code-search",
              "--stage", "evaluate", *(arg for key in keys for arg in ("--key", key))],
-            env=env, capture_output=True, text=True,
+            env=env, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(0, evaluated.returncode, evaluated.stderr)
         self.assertEqual(1, self.server.state["contents"])
@@ -1205,13 +1818,13 @@ class WitnessSearchGithubTests(unittest.TestCase):
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}
 
         def evaluate(key: str) -> subprocess.CompletedProcess[str]:
-            with (evaluation / "queries.jsonl").open("a", encoding="utf-8") as queries:
+            with (evaluation / "queries.jsonl").open("a", encoding="utf-8", newline="\n") as queries:
                 queries.write(json.dumps({"source": "github-code-search", "key": key, "query": f"q {key}",
                                           "outcome": "answered", "results": [item]}) + "\n")
             return subprocess.run(
                 [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evaluation),
                  "--cache", str(cache), "--source", "github-code-search", "--stage", "evaluate", "--key", key],
-                env=env, capture_output=True, text=True,
+                env=env, capture_output=True, text=True, encoding="utf-8",
             )
 
         def rows() -> list[dict]:
@@ -1247,7 +1860,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
         copy.unlink()
         changed = DOCUMENT + b"# changed upstream at the same commit\n"
-        self.server.state["contents_payload"] = {"encoding": "base64", "content": base64.b64encode(changed).decode()}
+        self.server.state["contents_payload"] = {"encoding": "base64", "content": base64.b64encode(changed).decode("utf-8")}
         count = len(rows())
         refused = evaluate(fifth)
         self.assertEqual(1, refused.returncode)
@@ -1279,7 +1892,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         key = min(SEARCH.derive_keys(REPO / "docs/openapi-surface"))
         (evaluation / "queries.jsonl").write_text(json.dumps({
             "source": "github-code-search", "key": key,
-            "query": "q", "outcome": "answered", "results": items}) + "\n", encoding="utf-8")
+            "query": "q", "outcome": "answered", "results": items}) + "\n", encoding="utf-8", newline="\n")
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "CROZIER_RAW_GITHUB_URL": self.url,
                "GITHUB_TOKEN": "offline-test-token"}
         def run(*extra: str) -> subprocess.CompletedProcess:
@@ -1288,7 +1901,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                  "--cache", str(self.root / "cli-raw-cache"), "--source", "github-code-search",
                  "--stage", "evaluate", "--key", key,
                  "--route", "raw", *extra],
-                env=env, capture_output=True, text=True,
+                env=env, capture_output=True, text=True, encoding="utf-8",
             )
         first = run("--shard", "0/2")
         self.assertEqual(0, first.returncode, first.stderr)
@@ -1339,7 +1952,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         run = lambda *extra: subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence),
              "--source", "github-code-search", "--stage", "search", "--key", key, *extra],
-            env=env, capture_output=True, text=True)
+            env=env, capture_output=True, text=True, encoding="utf-8")
         for flags, message in ((("--split-truncated-floor", "0"), "--split-truncated-floor must be a positive"),
                                (("--split-budget", "-1"), "--split-budget must not be negative")):
             with self.subTest(flags=flags):
@@ -1351,7 +1964,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 refused = subprocess.run(
                     [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence),
                      "--source", "github-code-search", "--stage", "search", "--key", key],
-                    env={**env, "CROZIER_TEST_CODE_SEARCH_SPACING_S": bad}, capture_output=True, text=True)
+                    env={**env, "CROZIER_TEST_CODE_SEARCH_SPACING_S": bad}, capture_output=True, text=True, encoding="utf-8")
                 self.assertEqual(2, refused.returncode)
                 self.assertIn("must be a non-negative number of seconds", refused.stderr)
         self.server.state["early_empty"] = True
@@ -1373,16 +1986,16 @@ class WitnessSearchGithubTests(unittest.TestCase):
         evidence.mkdir()
         recorded = {"source_commit": "a" * 40, "derivation": "earlier branch point",
                     "keys": {"registered-since": {"region": "schemas", "selector": "schema.additionalProperties=false"}}}
-        (evidence / "keys.json").write_text(json.dumps(recorded), encoding="utf-8")
-        (evidence / "queries.jsonl").write_text("", encoding="utf-8")
+        (evidence / "keys.json").write_text(json.dumps(recorded), encoding="utf-8", newline="\n")
+        (evidence / "queries.jsonl").write_text("", encoding="utf-8", newline="\n")
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}
         run = lambda *extra: subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence), *extra],
-            env=env, capture_output=True, text=True)
+            env=env, capture_output=True, text=True, encoding="utf-8")
         kept = run("--source", "github-code-search", "--stage", "evaluate", "--key", "registered-since")
         self.assertEqual(0, kept.returncode, kept.stderr)
         self.assertEqual(recorded, json.loads((evidence / "keys.json").read_text(encoding="utf-8")))
-        (evidence / "keys.json").write_text(json.dumps({"keys": {"broken": {}}}), encoding="utf-8")
+        (evidence / "keys.json").write_text(json.dumps({"keys": {"broken": {}}}), encoding="utf-8", newline="\n")
         broken = run("--source", "github-code-search", "--stage", "evaluate")
         self.assertEqual(1, broken.returncode)
         self.assertIn("rerun with --derive-only", broken.stderr)
@@ -1399,27 +2012,27 @@ class WitnessSearchGithubTests(unittest.TestCase):
                    "--source", "github-code-search", "--stage", "evaluate",
                    "--key", "annotated-ref-target-string-const"]
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}
-        (evidence / "queries.jsonl").write_text("{bad json}\n", encoding="utf-8")
-        malformed = subprocess.run(command, env=env, capture_output=True, text=True)
+        (evidence / "queries.jsonl").write_text("{bad json}\n", encoding="utf-8", newline="\n")
+        malformed = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, malformed.returncode)
         self.assertIn("queries.jsonl:1", malformed.stderr)
         self.assertIn("repair the named evidence file", malformed.stderr)
         (evidence / "queries.jsonl").write_text(json.dumps({
             "source": "github-code-search", "key": "annotated-ref-target-string-const",
             "query": "test", "outcome": "answered",
-        }) + "\n", encoding="utf-8")
-        missing_results = subprocess.run(command, env=env, capture_output=True, text=True)
+        }) + "\n", encoding="utf-8", newline="\n")
+        missing_results = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, missing_results.returncode)
         self.assertIn("answered query lacks result identities", missing_results.stderr)
         (evidence / "queries.jsonl").write_text(json.dumps({
             "source": "github-code-search", "key": "annotated-ref-target-string-const",
             "query": "test", "outcome": "answered", "results": [],
-        }) + "\n", encoding="utf-8")
+        }) + "\n", encoding="utf-8", newline="\n")
         (evidence / "candidates.jsonl").write_text(json.dumps({
             "source": "github-code-search", "key": "annotated-ref-target-string-const",
             "repository": "example/api", "disposition": "does-not-declare",
-        }) + "\n", encoding="utf-8")
-        missing_identity = subprocess.run(command, env=env, capture_output=True, text=True)
+        }) + "\n", encoding="utf-8", newline="\n")
+        missing_identity = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, missing_identity.returncode)
         self.assertIn("candidates.jsonl:1: missing or invalid path", missing_identity.stderr)
 
@@ -1542,7 +2155,7 @@ components:
             for page, count in ((1, 1), (2, 0))
         ]
         (self.root / "queries.jsonl").write_text(
-            "".join(json.dumps(row) + "\n" for row in records), encoding="utf-8"
+            "".join(json.dumps(row) + "\n" for row in records), encoding="utf-8", newline="\n"
         )
         self.assertIsNone(self.search.github_search("closed-object", query))
         rows = [
@@ -1835,6 +2448,93 @@ components:
         self.assertIn("IncompleteRead after 3 attempts", document["diagnostic"])
         self.assertEqual(3, self.server.state["raw_hits"])
 
+    def test_plain_string_map_search_uses_its_fields_and_censuses_real_downloads(self) -> None:
+        selector = "operation.requestBody:plain-string-map"
+        plan = SEARCH.query_plan(selector)
+        for source, queries in plan.items():
+            with self.subTest(source=source):
+                self.assertTrue(queries)
+                self.assertTrue(all("requestBody" in query and "additionalProperties" in query for query in queries))
+        document = {"openapi": "3.0.3", "info": {"title": "Meter labels", "version": "1"},
+                    "paths": {"/labels": {"put": {"requestBody": {
+                        "required": True, "content": {"application/json": {"schema": {
+                            "type": "object", "additionalProperties": {"type": "string"}}}}},
+                        "responses": {"204": {"description": "saved"}}}}}}
+        original = json.dumps(document).encode("utf-8")
+        candidate = {"repository": "github.com/example/api", "path": "openapi.json", "commit": "c" * 40}
+        self.server.state["raw_document"] = original
+        matched = self.search.sourcegraph_document("request-body-string-map", selector, candidate)
+        self.assertEqual(("declares", 1), (matched["disposition"], matched["selector_count"]))
+        document["paths"]["/labels"]["put"]["requestBody"]["content"]["application/json"]["schema"]["additionalProperties"]["type"] = "integer"
+        self.server.state["raw_document"] = json.dumps(document).encode("utf-8")
+        rejected = self.search.sourcegraph_document("request-body-string-map", selector, {**candidate, "commit": "d" * 40})
+        self.assertEqual(("does-not-declare", 0), (rejected["disposition"], rejected["selector_count"]))
+        self.server.state["raw_document"] = original
+        recovered = self.search.sourcegraph_document("request-body-string-map", selector, candidate)
+        self.assertEqual(("declares", 1), (recovered["disposition"], recovered["selector_count"]))
+        self.assertEqual(matched["sha256"], recovered["sha256"])
+        self.assertEqual(3, self.server.state["raw_hits"])
+
+    def test_cli_searches_and_evaluates_a_plain_string_map_body(self) -> None:
+        """The string-map selector through the acquisition CLI: its fields reach every
+        query, a declaring document is counted, and a refused read is resumed."""
+        script = REPO / "scripts/witness-search-github.py"
+        evidence = self.root / "cli-string-map"
+        evidence.mkdir()
+        key, selector = "request-body-string-map", "operation.requestBody:plain-string-map"
+        (evidence / "keys.json").write_text(json.dumps({
+            "source_commit": "a" * 40, "derivation": "string-map journey",
+            "keys": {key: {"region": "bodies-media", "selector": selector}},
+        }), encoding="utf-8", newline="\n")
+        (evidence / "queries.jsonl").write_text("", encoding="utf-8", newline="\n")
+        document = (
+            b"openapi: 3.0.3\n"
+            b"info:\n"
+            b"  title: Meter labels\n"
+            b"  version: '1'\n"
+            b"paths:\n"
+            b"  /labels:\n"
+            b"    put:\n"
+            b"      requestBody:\n"
+            b"        required: true\n"
+            b"        content:\n"
+            b"          application/json:\n"
+            b"            schema:\n"
+            b"              type: object\n"
+            b"              additionalProperties:\n"
+            b"                type: string\n"
+            b"      responses:\n"
+            b"        '204':\n"
+            b"          description: saved\n"
+        )
+        self.server.state["contents_payload"] = {"encoding": "base64", "content": base64.b64encode(document).decode("utf-8")}
+        env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token",
+               "CROZIER_TEST_CODE_SEARCH_SPACING_S": "0.01"}
+        run = lambda stage: subprocess.run(
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence),
+             "--cache", str(self.root / "cli-string-map-cache"), "--source", "github-code-search",
+             "--stage", stage, "--key", key],
+            env=env, capture_output=True, text=True, encoding="utf-8")
+
+        searched = run("search")
+        self.assertEqual(0, searched.returncode, searched.stderr)
+        queries = [json.loads(line) for line in (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertTrue(queries)
+        self.assertTrue(all("requestBody" in row["query"] and "additionalProperties" in row["query"]
+                            for row in queries), queries)
+
+        self.server.state["contents_status"] = 403
+        stopped = run("evaluate")
+        self.assertEqual(1, stopped.returncode)
+        self.assertIn("--stage evaluate", stopped.stderr)
+
+        self.server.state["contents_status"] = 0
+        evaluated = run("evaluate")
+        self.assertEqual(0, evaluated.returncode, evaluated.stderr)
+        rows = [json.loads(line) for line in (evidence / "candidates.jsonl").read_text(encoding="utf-8").splitlines()]
+        declared = [row for row in rows if row["key"] == key and row["disposition"] == "declares"]
+        self.assertEqual([1], [row["selector_count"] for row in declared], rows)
+
     def test_newer_openapi_three_document_is_censused(self) -> None:
         self.server.state["raw_document"] = DOCUMENT.replace(
             b"openapi: 3.0.3", b"openapi: 3.2.0"
@@ -1862,15 +2562,15 @@ components:
         selector = "schema.additionalProperties=false"
         for directory in (code, trees, sourcegraph):
             directory.mkdir(parents=True)
-            (directory / "keys.json").write_text(json.dumps({"keys": {"shape": {"selector": selector}}}), encoding="utf-8")
+            (directory / "keys.json").write_text(json.dumps({"keys": {"shape": {"selector": selector}}}), encoding="utf-8", newline="\n")
         (trees / "publisher-set.json").write_text(json.dumps({"publishers": [
             {"repository": "example/api", "commit": "c" * 40},
             {"repository": "example/unlisted", "commit": "d" * 40},
-        ]}), encoding="utf-8")
+        ]}), encoding="utf-8", newline="\n")
         (trees / "trees.jsonl").write_text(json.dumps({
             "repository": "example/api", "commit": "c" * 40,
             "paths": [{"path": "openapi.yaml", "blob": "f" * 40}],
-        }) + "\n", encoding="utf-8")
+        }) + "\n", encoding="utf-8", newline="\n")
         plan = SEARCH.query_plan(selector)
         first, second = plan["github-code-search"][:2]
         (code / "queries.jsonl").write_text("".join(json.dumps(row) + "\n" for row in (
@@ -1878,14 +2578,14 @@ components:
              "page": 1, "result_count": 150, "retrieved_total": 100, "results": []},
             {"source": "github-code-search", "key": "shape", "query": second, "outcome": "refused",
              "page": 1, "status": 403, "diagnostic": "secondary rate limit"},
-        )), encoding="utf-8")
+        )), encoding="utf-8", newline="\n")
         sg_first = plan["sourcegraph"][0]
         (sourcegraph / "queries.jsonl").write_text(json.dumps(
             {"source": "sourcegraph", "key": "shape", "query": sg_first, "outcome": "answered",
-             "result_count": 0, "results": []}) + "\n", encoding="utf-8")
+             "result_count": 0, "results": []}) + "\n", encoding="utf-8", newline="\n")
         command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
                    "--evidence-root", str(root)]
-        subprocess.run(command, check=True, capture_output=True, text=True)
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
         with (root / "witness-search-github/outstanding.tsv").open(encoding="utf-8") as stream:
             rows = {row["source"]: row for row in csv.DictReader(stream, delimiter="\t")}
         code_row = rows["github-code-search"]
@@ -1915,16 +2615,16 @@ components:
         subprocess.run([*command, "--check"], check=True, capture_output=True)
         (sourcegraph / "queries.jsonl").write_text("".join(json.dumps(
             {"source": "sourcegraph", "key": "shape", "query": query, "outcome": "answered",
-             "result_count": 0, "results": []}) + "\n" for query in plan["sourcegraph"]), encoding="utf-8")
-        subprocess.run(command, check=True, capture_output=True, text=True)
+             "result_count": 0, "results": []}) + "\n" for query in plan["sourcegraph"]), encoding="utf-8", newline="\n")
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
         with (root / "witness-search-github/outstanding.tsv").open(encoding="utf-8") as stream:
             rows = {row["source"]: row for row in csv.DictReader(stream, delimiter="\t")}
         self.assertEqual("none-found", rows["sourcegraph"]["outcome"])
         self.assertEqual("[]", rows["sourcegraph"]["refusals"])
-        fresh = subprocess.run([*command, "--check"], capture_output=True, text=True)
+        fresh = subprocess.run([*command, "--check"], capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, fresh.returncode, fresh.stderr)
-        (code / "queries.jsonl").write_text("", encoding="utf-8")
-        drifted = subprocess.run([*command, "--check"], capture_output=True, text=True)
+        (code / "queries.jsonl").write_text("", encoding="utf-8", newline="\n")
+        drifted = subprocess.run([*command, "--check"], capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, drifted.returncode)
         self.assertIn("outstanding.tsv", drifted.stderr)
 
@@ -1939,8 +2639,8 @@ components:
             directory.mkdir(parents=True)
             (directory / "keys.json").write_text(json.dumps(
                 {"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}
-            ), encoding="utf-8")
-        (trees / "publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8")
+            ), encoding="utf-8", newline="\n")
+        (trees / "publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8", newline="\n")
         identity = {
             "repository": "example/api",
             "path": "openapi.yaml",
@@ -1958,7 +2658,7 @@ components:
                     "selector_count": 1,
                 }
             )
-            + "\n", encoding="utf-8"
+            + "\n", encoding="utf-8", newline="\n"
         )
         (code / "queries.jsonl").write_text(
             json.dumps(
@@ -1981,13 +2681,13 @@ components:
                     ],
                 }
             )
-            + "\n", encoding="utf-8"
+            + "\n", encoding="utf-8", newline="\n"
         )
         (trees / "documents.jsonl").write_text(
             json.dumps(
                 {**identity, "source": "github-publisher-trees", "status": "readable", "selector_counts": {"shape": 1}}
             )
-            + "\n", encoding="utf-8"
+            + "\n", encoding="utf-8", newline="\n"
         )
         (sourcegraph / "candidates.jsonl").write_text(
             json.dumps(
@@ -1999,7 +2699,7 @@ components:
                     "selector_count": 1,
                 }
             )
-            + "\n", encoding="utf-8"
+            + "\n", encoding="utf-8", newline="\n"
         )
         (sourcegraph / "screens.jsonl").write_text(
             json.dumps(
@@ -2013,7 +2713,7 @@ components:
                     "disposition": "witness-found",
                 }
             )
-            + "\n", encoding="utf-8"
+            + "\n", encoding="utf-8", newline="\n"
         )
         command = [
             sys.executable,
@@ -2021,7 +2721,7 @@ components:
             "--evidence-root",
             str(root),
         ]
-        first_index = subprocess.run(command, capture_output=True, text=True)
+        first_index = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, first_index.returncode, first_index.stderr)
         with (root / "witness-search-github/candidates.tsv").open(encoding="utf-8") as stream:
             indexed = list(csv.DictReader(stream, delimiter="\t"))
@@ -2045,8 +2745,8 @@ components:
                  "[records](witness-search-sourcegraph/records.tsv) witness `example/api:openapi.yaml` at `x`")
         region.write_text(
             "# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n|---|---|---|---|\n"
-            f"| `shape` | `witness-found` | {stale} | kept as written |\n\n## After\n", encoding="utf-8")
-        drifted = subprocess.run([*command, "--check"], capture_output=True, text=True)
+            f"| `shape` | `witness-found` | {stale} | kept as written |\n\n## After\n", encoding="utf-8", newline="\n")
+        drifted = subprocess.run([*command, "--check"], capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, drifted.returncode)
         self.assertIn(str(region), drifted.stderr)
         subprocess.run(command, check=True, capture_output=True)
@@ -2062,26 +2762,26 @@ components:
         # A segment the index cannot read is refused by name, and the region file is left as written.
         malformed = ("# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n"
                      "|---|---|---|---|\n| `shape` | `witness-found` | sourcegraph: many candidates | kept |\n")
-        region.write_text(malformed, encoding="utf-8")
+        region.write_text(malformed, encoding="utf-8", newline="\n")
         for args in (command, [*command, "--check"]):
-            refused = subprocess.run(args, capture_output=True, text=True)
+            refused = subprocess.run(args, capture_output=True, text=True, encoding="utf-8")
             self.assertEqual(1, refused.returncode, refused.stderr)
             self.assertIn(f"{region}: shape: malformed compact search segment 'sourcegraph: many candidates'",
                           refused.stderr)
             self.assertIn("inspect the source evidence and rerun the index", refused.stderr)
         self.assertEqual(malformed, region.read_text(encoding="utf-8"))
         region.unlink()
-        (code / "closure-shape.json").write_text(json.dumps({"witness": "example/api"}), encoding="utf-8")
-        subprocess.run(command, check=True, capture_output=True, text=True)
+        (code / "closure-shape.json").write_text(json.dumps({"witness": "example/api"}), encoding="utf-8", newline="\n")
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
         with (root / "witness-search-github/candidates.tsv").open(encoding="utf-8") as stream:
             closed_rows = list(csv.DictReader(stream, delimiter="\t"))
         closed = next(row for row in closed_rows if row["candidate"] == "example/other:openapi.yaml")
         self.assertEqual("not-owed", closed["disposition"])
-        with (code / "candidates.jsonl").open("a", encoding="utf-8") as stream:
+        with (code / "candidates.jsonl").open("a", encoding="utf-8", newline="\n") as stream:
             stream.write(json.dumps({**identity, "repository": "example/unavailable",
                                      "source": "github-code-search", "key": "shape", "disposition": "selector-unavailable",
                                      "diagnostic": "selector unavailable"}) + "\n")
-        subprocess.run(command, check=True, capture_output=True, text=True)
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
         with (root / "witness-search-github/candidates.tsv").open(encoding="utf-8") as stream:
             unavailable = next(row for row in csv.DictReader(stream, delimiter="\t")
                                if row["candidate"] == "example/unavailable:openapi.yaml")
@@ -2089,8 +2789,8 @@ components:
         (trees / "trees.jsonl").write_text(json.dumps({
             "repository": "example/api", "commit": "c" * 40,
             "paths": [{"path": "unfetched.yaml", "blob": "f" * 40}],
-        }) + "\n", encoding="utf-8")
-        subprocess.run(command, check=True, capture_output=True, text=True)
+        }) + "\n", encoding="utf-8", newline="\n")
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
         with (root / "witness-search-github/candidates.tsv").open(encoding="utf-8") as stream:
             walked = next(row for row in csv.DictReader(stream, delimiter="\t")
                           if row["candidate"] == "example/api:unfetched.yaml")
@@ -2099,9 +2799,9 @@ components:
         (sourcegraph / "screens.jsonl").write_text(
             (sourcegraph / "screens.jsonl")
             .read_text(encoding="utf-8")
-            .replace("witness-found", "fern-rejected"), encoding="utf-8"
+            .replace("witness-found", "fern-rejected"), encoding="utf-8", newline="\n"
         )
-        failed = subprocess.run([*command, "--check"], capture_output=True, text=True)
+        failed = subprocess.run([*command, "--check"], capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, failed.returncode)
         self.assertEqual("", failed.stdout)
         self.assertIn(
@@ -2109,41 +2809,41 @@ components:
             failed.stderr,
         )
         (code / "keys.json").unlink()
-        missing_keys = subprocess.run(command, capture_output=True, text=True)
+        missing_keys = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, missing_keys.returncode)
         self.assertIn("inspect the source evidence and rerun", missing_keys.stderr)
-        (code / "keys.json").write_text(json.dumps({"keys": "shape"}), encoding="utf-8")
-        malformed_keys = subprocess.run(command, capture_output=True, text=True)
+        (code / "keys.json").write_text(json.dumps({"keys": "shape"}), encoding="utf-8", newline="\n")
+        malformed_keys = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, malformed_keys.returncode)
         self.assertIn("keys must be a mapping", malformed_keys.stderr)
         (code / "keys.json").write_text(json.dumps(
             {"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}
-        ), encoding="utf-8")
+        ), encoding="utf-8", newline="\n")
         valid_candidates = (code / "candidates.jsonl").read_text(encoding="utf-8")
-        (code / "candidates.jsonl").write_text('"not an object"\n', encoding="utf-8")
-        invalid_record = subprocess.run(command, capture_output=True, text=True)
+        (code / "candidates.jsonl").write_text('"not an object"\n', encoding="utf-8", newline="\n")
+        invalid_record = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, invalid_record.returncode)
         self.assertIn("candidates.jsonl:1: expected a JSON object", invalid_record.stderr)
-        (code / "candidates.jsonl").write_text(valid_candidates, encoding="utf-8")
+        (code / "candidates.jsonl").write_text(valid_candidates, encoding="utf-8", newline="\n")
         screens_path = sourcegraph / "screens.jsonl"
         valid_screen = json.loads(screens_path.read_text(encoding="utf-8").splitlines()[0])
-        screens_path.write_text(json.dumps({**valid_screen, "license": 7}) + "\n", encoding="utf-8")
-        bad_screen = subprocess.run(command, capture_output=True, text=True)
+        screens_path.write_text(json.dumps({**valid_screen, "license": 7}) + "\n", encoding="utf-8", newline="\n")
+        bad_screen = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, bad_screen.returncode)
         self.assertIn("screens.jsonl:1: missing or invalid license", bad_screen.stderr)
-        screens_path.write_text(json.dumps(valid_screen) + "\n", encoding="utf-8")
+        screens_path.write_text(json.dumps(valid_screen) + "\n", encoding="utf-8", newline="\n")
         documents_path = trees / "documents.jsonl"
         valid_document = json.loads(documents_path.read_text(encoding="utf-8").splitlines()[0])
-        documents_path.write_text(json.dumps({**valid_document, "selector_counts": []}) + "\n", encoding="utf-8")
-        bad_counts = subprocess.run(command, capture_output=True, text=True)
+        documents_path.write_text(json.dumps({**valid_document, "selector_counts": []}) + "\n", encoding="utf-8", newline="\n")
+        bad_counts = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, bad_counts.returncode)
         self.assertIn("documents.jsonl:1: invalid selector_counts", bad_counts.stderr)
-        documents_path.write_text(json.dumps(valid_document) + "\n", encoding="utf-8")
+        documents_path.write_text(json.dumps(valid_document) + "\n", encoding="utf-8", newline="\n")
         (trees / "trees.jsonl").write_text(json.dumps({
             "repository": "example/api", "commit": "c" * 40,
             "paths": [{"path": "openapi.yaml"}],
-        }) + "\n", encoding="utf-8")
-        bad_tree = subprocess.run(command, capture_output=True, text=True)
+        }) + "\n", encoding="utf-8", newline="\n")
+        bad_tree = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, bad_tree.returncode)
         self.assertIn("trees.jsonl:1: invalid publisher tree paths", bad_tree.stderr)
 
@@ -2161,8 +2861,8 @@ components:
         selector = "schema.additionalProperties=false"
         for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
             (root / f"witness-search-{source}").mkdir(parents=True)
-            (root / f"witness-search-{source}/keys.json").write_text(json.dumps({"keys": {"shape": {"selector": selector}}}), encoding="utf-8")
-        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8")
+            (root / f"witness-search-{source}/keys.json").write_text(json.dumps({"keys": {"shape": {"selector": selector}}}), encoding="utf-8", newline="\n")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8", newline="\n")
         query = SEARCH.query_plan(selector)["github-code-search"][0]
         low, high = f"{query} size:0..99", f"{query} size:>=100"
         partition = {"source": "github-code-search", "key": "shape", "query": query, "outcome": "partitioned",
@@ -2176,16 +2876,16 @@ components:
         command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"), "--evidence-root", str(root)]
 
         def row() -> dict[str, str]:
-            subprocess.run(command, check=True, capture_output=True, text=True)
+            subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
             with (root / "witness-search-github/outstanding.tsv").open(encoding="utf-8") as stream:
                 return next(r for r in csv.DictReader(stream, delimiter="\t") if r["source"] == "github-code-search")
 
-        ledger.write_text("".join(json.dumps(r) + "\n" for r in (partition, answered(low), refused)), encoding="utf-8")
+        ledger.write_text("".join(json.dumps(r) + "\n" for r in (partition, answered(low), refused)), encoding="utf-8", newline="\n")
         pending = row()
         self.assertEqual(["partitioned"], [q["outcome"] for q in json.loads(pending["issued_incomplete"])])
         self.assertEqual([(high, "refused", 403)], [(r["query"], r["outcome"], r["status"]) for r in json.loads(pending["refusals"])])
         self.assertEqual("0", pending["answered_queries"])
-        ledger.write_text("".join(json.dumps(r) + "\n" for r in (partition, answered(low), refused, answered(high))), encoding="utf-8")
+        ledger.write_text("".join(json.dumps(r) + "\n" for r in (partition, answered(low), refused, answered(high))), encoding="utf-8", newline="\n")
         settled = row()
         self.assertEqual("1", settled["answered_queries"])
         self.assertEqual("[]", settled["refusals"])
@@ -2200,8 +2900,8 @@ components:
         selector = "schema.additionalProperties=false"
         for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
             (root / f"witness-search-{source}").mkdir(parents=True)
-            (root / f"witness-search-{source}/keys.json").write_text(json.dumps({"keys": {"shape": {"selector": selector}}}), encoding="utf-8")
-        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8")
+            (root / f"witness-search-{source}/keys.json").write_text(json.dumps({"keys": {"shape": {"selector": selector}}}), encoding="utf-8", newline="\n")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8", newline="\n")
         plan = SEARCH.query_plan(selector)["github-code-search"]
         base = {"source": "github-code-search", "key": "shape"}
         answered = lambda q, n: {**base, "query": q, "outcome": "answered", "page": 1,
@@ -2219,9 +2919,9 @@ components:
             answered(plan[3], 10),
             {**base, "query": plan[3], "outcome": "outstanding-incomplete-results"},
         ]
-        (root / "witness-search-github-code-search/queries.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+        (root / "witness-search-github-code-search/queries.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
         subprocess.run([sys.executable, str(REPO / "scripts/witness-search-github-index.py"), "--evidence-root", str(root)],
-                       check=True, capture_output=True, text=True)
+                       check=True, capture_output=True, text=True, encoding="utf-8")
         with (root / "witness-search-github/outstanding.tsv").open(encoding="utf-8") as stream:
             line = next(r for r in csv.DictReader(stream, delimiter="\t") if r["source"] == "github-code-search")
         self.assertEqual("0", line["answered_queries"])
@@ -2238,8 +2938,8 @@ components:
         selector = "schema.additionalProperties=false"
         for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
             (root / f"witness-search-{source}").mkdir(parents=True)
-            (root / f"witness-search-{source}/keys.json").write_text(json.dumps({"keys": {"shape": {"selector": selector}}}), encoding="utf-8")
-        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8")
+            (root / f"witness-search-{source}/keys.json").write_text(json.dumps({"keys": {"shape": {"selector": selector}}}), encoding="utf-8", newline="\n")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8", newline="\n")
         plan = SEARCH.query_plan(selector)["github-code-search"]
         base = {"source": "github-code-search", "key": "shape"}
         rows = [
@@ -2250,11 +2950,11 @@ components:
             {**base, "query": plan[2], "outcome": "answered", "page": 3, "page_count": 0,
              "result_count": 230, "retrieved_total": 228, "results": []},
         ]
-        (root / "witness-search-github-code-search/queries.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+        (root / "witness-search-github-code-search/queries.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
         command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"), "--evidence-root", str(root)]
 
         def reasons() -> dict[str, list[str]]:
-            subprocess.run(command, check=True, capture_output=True, text=True)
+            subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
             with (root / "witness-search-github/outstanding.tsv").open(encoding="utf-8") as stream:
                 line = next(r for r in csv.DictReader(stream, delimiter="\t") if r["source"] == "github-code-search")
             return {q["query"]: [w["reason"] for w in q["windows"]] for q in json.loads(line["issued_incomplete"])}
@@ -2265,7 +2965,7 @@ components:
             plan[1]: ["100 of 250 reported results read; page 2 onward never requested" + budget],
             plan[2]: ["GitHub reported 230 and served 228 before an empty page 3"],
         }, reasons())
-        (root / "witness-search-github-code-search/closure-shape.json").write_text("{}", encoding="utf-8")
+        (root / "witness-search-github-code-search/closure-shape.json").write_text("{}", encoding="utf-8", newline="\n")
         closed = reasons()
         self.assertTrue(closed[plan[1]][0].endswith("closure-shape.json closed it on a witness, and the turn budget went to the open keys"))
         self.assertEqual(["GitHub reported 230 and served 228 before an empty page 3"], closed[plan[2]])
@@ -2275,10 +2975,10 @@ components:
         for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
             (root / f"witness-search-{source}").mkdir(parents=True)
             (root / f"witness-search-{source}/keys.json").write_text(json.dumps(
-                {"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}), encoding="utf-8")
-        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8")
+                {"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}), encoding="utf-8", newline="\n")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8", newline="\n")
         code = root / "witness-search-github-code-search"
-        write = lambda name, rows: (code / name).write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+        write = lambda name, rows: (code / name).write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
         write("rate-limit-calls.jsonl", [{"at": "2026-09-25T00:00:00+00:00", "bucket": "code_search", "status": 200}] * 2
               + [{"at": "2026-09-25T00:00:00+00:00", "bucket": "core", "status": 200}])
         write("index-pacing-waits.jsonl", [{"bucket": "code_search", "cause": "spacing", "duration_s": 1.5},
@@ -2286,7 +2986,7 @@ components:
         write("raw-github-calls.jsonl", [{"key": "shape", "status": 429, "subject": "s", "url": "u"}])
         write("raw-github-waits.jsonl", [{"key": "shape", "cause": "HTTP 429 backoff", "duration_s": 3.0, "subject": "s"}])
         subprocess.run([sys.executable, str(REPO / "scripts/witness-search-github-index.py"), "--evidence-root", str(root)],
-                       check=True, capture_output=True, text=True)
+                       check=True, capture_output=True, text=True, encoding="utf-8")
         waits = {line.split("\t")[2]: (line.split("\t")[3], line.split("\t")[4])
                  for line in (code / "search-index.tsv").read_text(encoding="utf-8").splitlines()[1:] if "\twait\t" in line}
         self.assertEqual({
@@ -2301,7 +3001,7 @@ components:
         for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
             (root / f"witness-search-{source}").mkdir(parents=True)
             (root / f"witness-search-{source}/keys.json").write_text(json.dumps(
-                {"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}), encoding="utf-8")
+                {"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}), encoding="utf-8", newline="\n")
         trees = root / "witness-search-github-publisher-trees"
         queries = root / "witness-search-github-code-search/queries.jsonl"
         command = [sys.executable, str(REPO / "scripts/witness-search-github-index.py"),
@@ -2330,21 +3030,21 @@ components:
         }
         for expected, (query, publishers) in cases.items():
             with self.subTest(expected=expected):
-                queries.write_text(json.dumps(query) + "\n", encoding="utf-8")
-                (trees / "publisher-set.json").write_text(json.dumps(publishers), encoding="utf-8")
-                refused = subprocess.run(command, capture_output=True, text=True)
+                queries.write_text(json.dumps(query) + "\n", encoding="utf-8", newline="\n")
+                (trees / "publisher-set.json").write_text(json.dumps(publishers), encoding="utf-8", newline="\n")
+                refused = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
                 self.assertEqual(1, refused.returncode)
                 self.assertIn(expected, refused.stderr)
                 self.assertIn("inspect the source evidence and rerun", refused.stderr)
-        queries.write_text("", encoding="utf-8")
-        (trees / "publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8")
+        queries.write_text("", encoding="utf-8", newline="\n")
+        (trees / "publisher-set.json").write_text(json.dumps({"publishers": []}), encoding="utf-8", newline="\n")
         waits = root / "witness-search-github-code-search/index-pacing-waits.jsonl"
-        waits.write_text(json.dumps({"bucket": "code_search", "duration_s": "30"}) + "\n", encoding="utf-8")
-        refused = subprocess.run(command, capture_output=True, text=True)
+        waits.write_text(json.dumps({"bucket": "code_search", "duration_s": "30"}) + "\n", encoding="utf-8", newline="\n")
+        refused = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertIn("index-pacing-waits.jsonl:1: duration_s is not a number", refused.stderr)
         waits.unlink()
-        (root / "witness-search-sourcegraph/keys.json").write_text(json.dumps({"keys": {"shape": {}}}), encoding="utf-8")
-        refused = subprocess.run(command, capture_output=True, text=True)
+        (root / "witness-search-sourcegraph/keys.json").write_text(json.dumps({"keys": {"shape": {}}}), encoding="utf-8", newline="\n")
+        refused = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(1, refused.returncode)
         self.assertIn("every key must map to an object carrying its selector", refused.stderr)
 
@@ -2386,13 +3086,13 @@ components:
         command = [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence),
                    "--source", "github-code-search", "--stage", "search", "--key", key,
                    "--first-page-only"]
-        first = subprocess.run(command, env=env, capture_output=True, text=True)
+        first = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, first.returncode, first.stderr)
         planned = len(SEARCH.query_plan(SEARCH.derive_keys(REPO / "docs/openapi-surface")[key]["selector"])["github-code-search"])
         self.assertEqual(planned, self.server.state["searches"])
         rows = [json.loads(line) for line in (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertEqual({"partitioned"}, {row["outcome"] for row in rows})
-        again = subprocess.run(command, env=env, capture_output=True, text=True)
+        again = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, again.returncode, again.stderr)
         self.assertEqual(planned, self.server.state["searches"])
 
@@ -2431,14 +3131,14 @@ components:
         candidate = next(line for line in lines if "\tcandidate\t" in line)
         query = next(line for line in lines if "\tquery\t" in line)
         kept = [line for line in lines if line not in (candidate, query)]
-        (work / "search-index.tsv").write_text("\n".join([*kept, candidate.replace("census", "census 9") + "x"]) + "\n", encoding="utf-8")
+        (work / "search-index.tsv").write_text("\n".join([*kept, candidate.replace("census", "census 9") + "x"]) + "\n", encoding="utf-8", newline="\n")
         failures = "\n".join(SEARCH.INDEX.search_index_failures(work))
         self.assertIn("is not indexed", failures)
         self.assertIn("has no records.tsv row", failures)
         self.assertIn(f"issued query {query.split(chr(9))[2]!r} is not indexed", failures)
-        (work / "search-index.tsv").write_text("\n".join([*lines, "k\tquery\tnever asked\t0\tqueries.jsonl"]) + "\n", encoding="utf-8")
+        (work / "search-index.tsv").write_text("\n".join([*lines, "k\tquery\tnever asked\t0\tqueries.jsonl"]) + "\n", encoding="utf-8", newline="\n")
         self.assertIn("indexed query 'never asked' was never issued", "\n".join(SEARCH.INDEX.search_index_failures(work)))
-        (work / "search-index.tsv").write_text("\n".join([*lines, query]) + "\n", encoding="utf-8")
+        (work / "search-index.tsv").write_text("\n".join([*lines, query]) + "\n", encoding="utf-8", newline="\n")
         self.assertIn("a query is indexed twice", "\n".join(SEARCH.INDEX.search_index_failures(work)))
 
     def test_the_readme_states_the_search_index_columns_the_index_writes(self) -> None:
@@ -2455,7 +3155,7 @@ components:
             str(REPO / "docs/openapi-surface"),
             "--check",
         ]
-        subprocess.run(command, check=True, capture_output=True, text=True)
+        subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
 
 
 class HandwrittenKeyDerivationTest(unittest.TestCase):
@@ -2471,7 +3171,7 @@ class HandwrittenKeyDerivationTest(unittest.TestCase):
         return subprocess.run(
             [sys.executable, str(REPO / "scripts/witness-search-github.py"), *SOURCE_COMMIT,
              "--evidence", str(evidence), "--derive-only", *extra],
-            capture_output=True, text=True,
+            capture_output=True, text=True, encoding="utf-8",
         )
 
     def test_a_flip_to_handwritten_moves_no_derived_key(self) -> None:
@@ -2500,6 +3200,134 @@ class HandwrittenKeyDerivationTest(unittest.TestCase):
             self.assertTrue(any(
                 line.replace("`", "").startswith(f"| {named[2]} |") and "| handwritten |" in line
                 for line in (regions / f"{named[1]}.md").read_text(encoding="utf-8").splitlines()), named[2])
+
+
+class LocatorAuditTests(unittest.TestCase):
+    def run_audit(self, root):
+        return subprocess.run(
+            [sys.executable, str(REPO / "scripts/witness-locator-audit.py"), "--root", str(root)],
+            capture_output=True, text=True, check=False, encoding="utf-8",
+        )
+
+    def test_public_locator_failure_and_anonymous_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            record = root / "docs/openapi-surface/search/records.jsonl"
+            record.parent.mkdir(parents=True)
+            token = "screened-nonpublic-input:v2:" + "a" * 32 + ":1"
+            for repository in SEARCH.INDEX.EXCLUDED_REPOSITORIES:
+                for locator in (
+                    repository + ":description.json@" + "0" * 40,
+                    repository + "@" + "0" * 40,
+                    repository + "/description.json@" + "0" * 40,
+                    "https://github.com/" + repository + "/blob/" + "0" * 40 + "/description.json",
+                ):
+                    with self.subTest(repository=repository, locator=locator):
+                        record.write_text(json.dumps({"subject": locator}) + "\n", encoding="utf-8", newline="\n")
+                        subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                        refused = self.run_audit(root)
+                        self.assertNotEqual(0, refused.returncode)
+                        self.assertIn("public locator", refused.stderr)
+                        record.write_text(json.dumps({"subject": repository + ":" + token + "@" + token}) + "\n", encoding="utf-8", newline="\n")
+                        recovered = self.run_audit(root)
+                        self.assertEqual(0, recovered.returncode, recovered.stderr)
+                record.write_text(json.dumps({"repository": repository, "path": "description.json"}) + "\n", encoding="utf-8", newline="\n")
+                refused = self.run_audit(root)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn("public path", refused.stderr)
+                record.write_text(json.dumps({"repository": repository, "path": token}) + "\n", encoding="utf-8", newline="\n")
+                self.assertEqual(0, self.run_audit(root).returncode)
+
+    def test_quoted_input_notes_reject_then_recover(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            note = root / "docs/openapi-surface/note.md"
+            note.parent.mkdir(parents=True)
+            for repository in SEARCH.INDEX.EXCLUDED_REPOSITORIES:
+                with self.subTest(repository=repository):
+                    note.write_text(f"`{repository}`'s own `description.json`", encoding="utf-8", newline="\n")
+                    subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                    refused = self.run_audit(root)
+                    self.assertNotEqual(0, refused.returncode)
+                    self.assertIn("public locator", refused.stderr)
+                    note.write_text("one anonymous synthetic input", encoding="utf-8", newline="\n")
+                    recovered = self.run_audit(root)
+                    self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_generic_repository_links_are_exact_exceptions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            note = root / "docs/openapi-surface/note.md"
+            note.parent.mkdir(parents=True)
+            urls = (
+                "https://github.com/fern-api/fern/blob/main/CONTRIBUTING.md",
+                "https://github.com/fern-api/fern/issues",
+            )
+            note.write_text("\n".join("[Repository link](" + url + ")" for url in urls), encoding="utf-8", newline="\n")
+            subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+            accepted = self.run_audit(root)
+            self.assertEqual(0, accepted.returncode, accepted.stderr)
+            for url in urls:
+                note.write_text("[Public locator](" + url + "/description.json)", encoding="utf-8", newline="\n")
+                refused = self.run_audit(root)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn("public locator", refused.stderr)
+
+    def test_revision_notes_and_structured_formats_reject_then_recover(self):
+        token = "screened-nonpublic-input:v2:" + "a" * 32 + ":1"
+        repository = sorted(SEARCH.INDEX.EXCLUDED_REPOSITORIES)[0]
+        raw = json.dumps({"records": [{"repository": repository, "path": "description.json"}]})
+        anonymous = json.dumps({"records": [{"repository": repository, "path": token}]})
+        cases = (
+            (".md", repository + " at `" + "0" * 40 + "`", repository + " at `" + token + "`", "public revision"),
+            (".json", raw, anonymous, "public path"),
+            (".jsonl.gz", raw + "\n", anonymous + "\n", "public path"),
+        )
+        for extension, original, replacement, diagnostic in cases:
+            with self.subTest(extension=extension), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                subprocess.run(["git", "init", "-q", str(root)], check=True)
+                record = root / ("docs/openapi-surface/records" + extension)
+                record.parent.mkdir(parents=True)
+                def write(text):
+                    data = text.encode("utf-8")
+                    record.write_bytes(gzip.compress(data) if extension.endswith(".gz") else data)
+                write(original)
+                subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                refused = self.run_audit(root)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(diagnostic, refused.stderr)
+                write(replacement)
+                recovered = self.run_audit(root)
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_malformed_and_missing_evidence_fail_with_recovery(self):
+        for suffix, invalid in ((".json", b"{"), (".jsonl", b"{\n"), (".jsonl.gz", b"not gzip"), (".md", b"\xff")):
+            with self.subTest(suffix=suffix), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                subprocess.run(["git", "init", "-q", str(root)], check=True)
+                record = root / ("docs/openapi-surface/records" + suffix)
+                record.parent.mkdir(parents=True)
+                record.write_bytes(invalid)
+                subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                refused = self.run_audit(root)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn("restore valid evidence and retry", refused.stderr)
+                record.unlink()
+                missing = self.run_audit(root)
+                self.assertNotEqual(0, missing.returncode)
+                self.assertIn("restore valid evidence and retry", missing.stderr)
+                valid = b"{}\n" if suffix != ".md" else b"Anonymous evidence\n"
+                record.write_bytes(gzip.compress(valid) if suffix.endswith(".gz") else valid)
+                recovered = self.run_audit(root)
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_committed_evidence_has_only_anonymous_excluded_locators(self):
+        result = self.run_audit(REPO)
+        self.assertEqual(0, result.returncode, result.stderr)
 
 
 if __name__ == "__main__":

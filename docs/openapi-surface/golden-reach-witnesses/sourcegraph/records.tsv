@@ -669,7 +669,6 @@ anyof-anyof-variant	document	github.com/datamodel-code-generator/datamodel-code-
 anyof-anyof-variant	document	github.com/datawhalechina/hello-agents:Co-creation-projects/senming666-api_test_assistant/tests/fixtures/chat_openapi.json@8c57a6c86a1e23af731b345ba69ab910b8b2d735	census 0	candidates.jsonl
 anyof-anyof-variant	document	github.com/dograh-hq/dograh:docs/api-reference/openapi.json@fa1df11252c5a01ca9d4513c67f57a925a452769	census 0	candidates.jsonl
 anyof-anyof-variant	document	github.com/dstackai/dstack:website/mkdocs/docs/reference/plugins/rest/rest_plugin_openapi.json@229f535b6471945c7d827f0385d297b7f076b0cc	census 0	candidates.jsonl
-anyof-anyof-variant	document	github.com/fern-api/fern:seed/cli/nullable-request-body/cli/nullable-request-body/openapi0.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
 anyof-anyof-variant	document	github.com/fletch-now/fletch-api:spec/openapi.json@1a53255dd8abd7b4c9e241d350d9019a4ce3c8de	census 0	candidates.jsonl
 anyof-anyof-variant	document	github.com/fletch-now/fletch-mcp:docs/openapi-2026-09-10-reliability.json@4808c3c96272cdb69476728570b2fea1bcae122d	census 0	candidates.jsonl
 anyof-anyof-variant	document	github.com/fletch-now/fletch-mcp:docs/openapi-2026-09-10.json@4808c3c96272cdb69476728570b2fea1bcae122d	census 0	candidates.jsonl
@@ -815,6 +814,7 @@ anyof-anyof-variant	document	github.com/vinay-gatech/stocks-insights-ai-agent:do
 anyof-anyof-variant	document	github.com/wock9000/robinhoodpools:src/rhpools/static/openapi.json@e715da893616f890b49686b53999752e4d114d55	census 0	candidates.jsonl
 anyof-anyof-variant	document	github.com/zenstackhq/zenstack:packages/server/test/openapi/baseline/rpc.baseline.yaml@b812e1161d653fac957989c2fcba9e563a8e8f93	census 20	candidates.jsonl
 anyof-anyof-variant	document	github.com/zk1tty/rebrowse-app:ui/src/lib/api/openapi.json@708bda967ff3421ff013ca93b59898412e74266f	census 0	candidates.jsonl
+anyof-anyof-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:126@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
 anyof-anyof-variant	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"- anyOf:" count:all type:file	155	queries.jsonl
 anyof-anyof-variant	query	file:(openapi|swagger).*\.json$ content:"{\"anyOf\":" count:all type:file	152	queries.jsonl
 anyof-anyof-variant	screen	github.com/PierreBeucher/cloudypad:src/providers/paperspace/client/openapi/openapi.json@24f6a4ae35e796a0578036823cc0551d3bab18f7 fern	passed	screens.jsonl
@@ -2070,7 +2070,6 @@ anyof-oneof-variant	document	github.com/ballerina-platform/openapi-tools:openapi
 anyof-oneof-variant	document	github.com/datamodel-code-generator/datamodel-code-generator:tests/data/openapi/allof_with_required_inherited_coverage.yaml@ebfc11d0644d37a71374b28aac06d98748e584ec	census 0	candidates.jsonl
 anyof-oneof-variant	document	github.com/deckhouse/deckhouse:modules/110-istio/openapi/config-values.yaml@eccfeab8bfc590f230897ec8e8e53767b0859267	census 0	candidates.jsonl
 anyof-oneof-variant	document	github.com/dstackai/dstack:website/mkdocs/docs/reference/plugins/rest/rest_plugin_openapi.json@fdfce0afed3158c55ec77cbd1d6f5577e2910ab7	census 0	candidates.jsonl
-anyof-oneof-variant	document	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/allof-oneof-anyof-edge-cases/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 0	candidates.jsonl
 anyof-oneof-variant	document	github.com/lobehub/lobehub:packages/openapi/openapi.yml@a950e51f59c9be8fd575c2e65870e8a20c52020e	census 1	candidates.jsonl
 anyof-oneof-variant	document	github.com/muonsoft/openapi-mock:test/resources/openapi-files/CombinedTypes.yaml@0418a29ad2e56bb6e9c847a6ee271a75bf61b785	census 0	candidates.jsonl
 anyof-oneof-variant	document	github.com/ogen-go/ogen:_testdata/examples/openai-2.3.0.openapi.yaml@2569478736aed33cf1fe9d2a5b6e2d659bea0e69	census 0	candidates.jsonl
@@ -2160,6 +2159,7 @@ anyof-oneof-variant	document	github.com/swagger-api/swagger-parser:modules/swagg
 anyof-oneof-variant	document	github.com/useVenice/venice:connectors/connector-vercel/vercel.openapi.gen.yaml@6e94d3a04bc98bf1a02a484852751d6f2c46776e	census 0	candidates.jsonl
 anyof-oneof-variant	document	github.com/wavesplatform/Waves:node/src/main/resources/swagger-ui/openapi.yaml@66faa85e5f6195c7ac3edf4cbe15723de865825c	census 0	candidates.jsonl
 anyof-oneof-variant	document	github.com/wock9000/robinhoodpools:src/rhpools/static/openapi.json@e715da893616f890b49686b53999752e4d114d55	census 0	candidates.jsonl
+anyof-oneof-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:116@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2	census 0	candidates.jsonl
 anyof-oneof-variant	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"- oneOf:" count:all type:file	130	queries.jsonl
 anyof-oneof-variant	query	file:(openapi|swagger).*\.json$ content:"\"anyOf\": [" content:"{\"oneOf\"" count:all type:file	5	queries.jsonl
 anyof-sole-member	candidate	github.com/lehhair/OpenCodeUI:openapi_doc.json@8a6d4eae9424317f01e88f3819b14b24e57bab10	census 1	probe.jsonl
@@ -5290,7 +5290,6 @@ format-hostname	document	github.com/datacol-io/datacol:vendor/github.com/go-open
 format-hostname	document	github.com/datacol-io/datacol:vendor/github.com/go-openapi/validate/fixtures/jsonschema_suite/optional/format.json@99baf52b8352b4af9320ca62f3748792fdb541b3	census 0	candidates.jsonl
 format-hostname	document	github.com/datamodel-code-generator/datamodel-code-generator:tests/data/openapi/pattern.yaml@34f144ff3569ef7525c1718a5d818841ed2cc43a	census 1	candidates.jsonl
 format-hostname	document	github.com/feinoujc/Mandrill.net:spec/mandrill-openapi.json@ea1789e06e286720cf375a37d450402e3426d723	census 17	candidates.jsonl
-format-hostname	document	github.com/fern-api/fern:packages/cli/workspace/loader/src/__test__/fixtures/openapi-split/openapi/components/schemas/Schema.yaml@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
 format-hostname	document	github.com/firecrawl/firecrawl-docs:api-reference/v2-openapi.json@f2a8a93569d353640659110691da14b252fa3d47	census 2	candidates.jsonl
 format-hostname	document	github.com/firecrawl/firecrawl-docs:es/api-reference/v2-openapi.json@f2a8a93569d353640659110691da14b252fa3d47	census 2	candidates.jsonl
 format-hostname	document	github.com/firecrawl/firecrawl-docs:fr/api-reference/v2-openapi.json@f2a8a93569d353640659110691da14b252fa3d47	census 2	candidates.jsonl
@@ -5405,6 +5404,7 @@ format-hostname	document	github.com/supabase/auth:openapi.yaml@ce9a8eee0cc042be8
 format-hostname	document	github.com/useVenice/venice:connectors/connector-vercel/vercel.openapi.gen.yaml@6e94d3a04bc98bf1a02a484852751d6f2c46776e	census 1	candidates.jsonl
 format-hostname	document	github.com/vitodeploy/vito:public/api-docs/openapi/sites.yaml@b65680dedceaa77c9f1d13ad2a8d2e67d8d2f692	census 0	candidates.jsonl
 format-hostname	document	github.com/wework/json-schema-to-openapi-schema:test/schemas/example2/openapi.json@b33ca9b5e03fca2e960693c97079777ed2e4fe90	census 0	candidates.jsonl
+format-hostname	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:151@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
 format-hostname	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: hostname" count:all type:file	89	queries.jsonl
 format-hostname	query	file:(openapi|swagger).*\.json$ content:"\"format\": \"hostname\"" count:all type:file	118	queries.jsonl
 format-idn-hostname	document	github.com/WebFuzzing/EvoMaster:core-tests/e2e-tests/spring/spring-rest-bb/src/main/resources/static/openapi-bbadvancedformats.json@39d9814afc1bf682a36f6aea8aa31618323e711a	census 1	candidates.jsonl
@@ -5494,7 +5494,6 @@ format-ipv4	document	github.com/datamodel-code-generator/datamodel-code-generato
 format-ipv4	document	github.com/deckhouse/deckhouse:modules/110-istio/openapi/config-values.yaml@cba918816ced4428f2b965d72f3ae68f0ef2854d	census 0	candidates.jsonl
 format-ipv4	document	github.com/deckhouse/deckhouse:modules/110-istio/openapi/openapi-case-tests.yaml@cba918816ced4428f2b965d72f3ae68f0ef2854d	census 0	candidates.jsonl
 format-ipv4	document	github.com/feinoujc/Mandrill.net:spec/mandrill-openapi.json@ea1789e06e286720cf375a37d450402e3426d723	census 2	candidates.jsonl
-format-ipv4	document	github.com/fern-api/fern:packages/cli/workspace/loader/src/__test__/fixtures/openapi-split/openapi/components/schemas/Schema.yaml@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
 format-ipv4	document	github.com/google/capsem:sdk/specification/openapi.json@efe503ce679fa8219a8a3b9420ef57471a125fae	census 1	candidates.jsonl
 format-ipv4	document	github.com/internetstandards/Internet.nl:interface/batch/openapi.yaml@bf322a92ab6bdc06bd55bfa12197eb5c09409d9f	census 0	candidates.jsonl
 format-ipv4	document	github.com/invoice-collector/invoice-collector:views/openapi/openapi.yml@932b7abcb6be1472cbf19a58063de8e14b7d1ca5	census 1	candidates.jsonl
@@ -5616,6 +5615,7 @@ format-ipv4	document	github.com/vitodeploy/vito:public/api-docs/openapi/firewall
 format-ipv4	document	github.com/vitodeploy/vito:public/api-docs/openapi/sites.yaml@b65680dedceaa77c9f1d13ad2a8d2e67d8d2f692	census 0	candidates.jsonl
 format-ipv4	document	github.com/vmware/vic:lib/apiservers/service/swagger.json@9489f63e37c67fba813bb72f447338e6360b1d14	census 0	candidates.jsonl
 format-ipv4	document	github.com/wework/json-schema-to-openapi-schema:test/schemas/example2/openapi.json@b33ca9b5e03fca2e960693c97079777ed2e4fe90	census 0	candidates.jsonl
+format-ipv4	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:151@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
 format-ipv4	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: ipv4" count:all type:file	148	queries.jsonl
 format-ipv4	query	file:(openapi|swagger).*\.json$ content:"\"format\": \"ipv4\"" count:all type:file	162	queries.jsonl
 format-iri	document	github.com/3redronin/mu-server:src/test/resources/openapi/meta-2026-02-26.json@24119c79d7953f3dacd4cdc87536b9b2fd829b6a	census 0	candidates.jsonl
@@ -5726,7 +5726,6 @@ format-password	document	github.com/ebowman/api-first-hand:plugin/src/sbt-test/s
 format-password	document	github.com/ebowman/api-first-hand:swagger-parser/src/test/resources/validations/string_formats_validation.yaml@b863a05a39debfb351505ca3a9fdfe97d1aaf967	census 0	candidates.jsonl
 format-password	document	github.com/eikek/sharry:modules/restapi/src/main/resources/sharry-openapi.yml@2a766c7990b53d79527ec4490e4fe8e1317718cd	census 7	candidates.jsonl
 format-password	document	github.com/err0r500/go-realworld-clean:api/swagger.json@137f16f344f03dc4e3c8b5096b7b5593b234f508	census 0	candidates.jsonl
-format-password	document	github.com/fern-api/fern:packages/cli/workspace/loader/src/__test__/fixtures/openapi-split/openapi/components/schemas/Schema.yaml@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
 format-password	document	github.com/fiberplane/fiberplane-archived:schemas/openapi_v1.yml@ece3c5659c36302669115a9f22fd33abee3a7e63	census 2	candidates.jsonl
 format-password	document	github.com/flftfqwxf/mockserver:www/static/swagger/specs/v2/petstore.json@5ddea7013cb538770effa6ce93238d737ff2fb83	census 0	candidates.jsonl
 format-password	document	github.com/grokify/spectrum:examples/openapi3table/spec_ringcentral_openapi2.yaml@684baa649fb14f79970c45c7996c8aa699f55184	census 0	candidates.jsonl
@@ -5857,6 +5856,7 @@ format-password	document	github.com/wallarm/api-firewall:resources/test/specific
 format-password	document	github.com/yurisldk/realworld-react-fsd:openapi.yaml@969709a379b13935b4e1caae0ad8cad548e5879a	census 2	candidates.jsonl
 format-password	document	github.com/zhuchunshu/SForum:contracts/openapi/paths/identity.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
 format-password	document	github.com/zhuchunshu/SForum:contracts/openapi/schemas/identity.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
+format-password	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:151@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
 format-password	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: password" count:all type:file	998	queries.jsonl
 format-password	query	file:(openapi|swagger).*\.json$ content:"\"format\": \"password\"" count:all type:file	345	queries.jsonl
 format-regex	document	github.com/APIs-guru/openapi-directory:APIs/here.com/positioning/2.1.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 1	candidates.jsonl
@@ -7456,9 +7456,6 @@ mutually-recursive-graph	document	github.com/ent/contrib:entoas/internal/cycle/o
 mutually-recursive-graph	document	github.com/epam/edp-keycloak-operator:pkg/client/keycloakapi/openapi/openapi.yaml@5d09bf5363e490dd789c0d74b7bb21d448ec038e	census 457	candidates.jsonl
 mutually-recursive-graph	document	github.com/erda-project/erda:pkg/swagger/oas3/testdata/gaia-oas32.yaml@7195c3a774d577783ab834c60cb0a6480ba0300d	census 815	candidates.jsonl
 mutually-recursive-graph	document	github.com/fastforgedev/fastforge:apps/studio-api/openapi.yaml@ce39d1da1cdde1bd532766bee5f679749f2f9024	census 64	candidates.jsonl
-mutually-recursive-graph	document	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/__snapshots__/openapi-ir/circular-refs-edge-cases.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-mutually-recursive-graph	document	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/__snapshots__/openapi/circular-refs-edge-cases.json@94841b83acb20355801a7c491a61749520039a9e	acquisition-failure: parse-failure	candidates.jsonl
-mutually-recursive-graph	document	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/circular-refs-edge-cases/openapi.yml@94841b83acb20355801a7c491a61749520039a9e	census 18	candidates.jsonl
 mutually-recursive-graph	document	github.com/flowable/flowable-engine:docs/public-api/references/swagger/cmmn/flowable-swagger-cmmn.yaml@74fdb349c134e96e1f10592020ccca6e2e4b85f0	census 0	candidates.jsonl
 mutually-recursive-graph	document	github.com/gamonoid/icehrm:docs/openapi/openapi3_0.yaml@83d06fe4e27cb025dc0a399085958b06edae8e88	census 126	candidates.jsonl
 mutually-recursive-graph	document	github.com/gastownhall/beads:internal/httpapi/spec/openapi.v0.yaml@da6263374d97fa6765214fba1b0562f1b3d0d2ed	census 183	candidates.jsonl
@@ -7560,6 +7557,9 @@ mutually-recursive-graph	document	github.com/utomic-media/directus-extension-fie
 mutually-recursive-graph	document	github.com/visavi/rotor:public/openapi/openapi.json@8985b472b8be789e974d99bc23256350ac73c05b	census 42	candidates.jsonl
 mutually-recursive-graph	document	github.com/withqwerty/football-docs:data/provider-truth/wyscout.openapi.json@af018cabd15593b4145cb13f25eb363e72820657	census 0	candidates.jsonl
 mutually-recursive-graph	document	github.com/xpert-ai/xpert:docs/api/openapi.ai.json@d24ca81b9f5885cf44dd77afdb0f91359b49c4ea	census 273	candidates.jsonl
+mutually-recursive-graph	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:145@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 18	candidates.jsonl
+mutually-recursive-graph	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:147@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	acquisition-failure: parse-failure	candidates.jsonl
+mutually-recursive-graph	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:149@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
 mutually-recursive-graph	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"parent:" content:"children:" content:"$ref:" count:all type:file	179	queries.jsonl
 mutually-recursive-graph	query	file:(openapi|swagger).*\.json$ content:"\"parent\"" content:"\"children\"" count:all type:file	284	queries.jsonl
 non-identifier-operation-id	document	github.com/ArtisanCloud/PowerX:docs/standards/powerx/backend/swagger.json@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 142	candidates.jsonl
@@ -8773,17 +8773,6 @@ oneof-string-const-variant	document	github.com/docker/docker-agent:pkg/chatserve
 oneof-string-const-variant	document	github.com/dograh-hq/dograh:docs/api-reference/openapi.json@fa1df11252c5a01ca9d4513c67f57a925a452769	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/e2b-dev/e2b-cookbook:examples/openai-agents-api-python-sdk/openapi/openapi.yaml@d6fa328a0cbdcc67180cf68f4debafdd6c5bfb3b	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/eclipse-vertx/vertx-json-schema:src/test/resources/schema_definition_validation/OpenAPI3_1.json@523292c8586d4127414872c668ce5ae8b7a6e35e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__StreamDataContextResponse.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__StreamDataContextWithEnvelopeSchemaResponse.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__StreamNoContextResponse.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__StreamProtocolCollisionResponse.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__StreamProtocolNoCollisionResponse.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__StreamProtocolWithFlatSchemaResponse.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__StreamXFernStreamingUnionRequest.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__StreamXFernStreamingUnionStreamRequest.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:packages/cli/fern-definition/ir-to-jsonschema/src/__test__/__snapshots__/server-sent-events-openapi/type__UnionStreamRequest.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:seed/cli/discriminated-union-with-nested-oneof/cli/discriminated-union-with-nested-oneof/openapi0.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
-oneof-string-const-variant	document	github.com/fern-api/fern:seed/cli/server-sent-events-openapi/cli/server-sent-events-openapi/openapi0.json@94841b83acb20355801a7c491a61749520039a9e	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/firecrawl/web-agent:agent-core/openapi.yaml@f023adf1cd1f731e27fdc844af62996f6c2a41c4	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/firecrawl/web-agent:agent-templates/express/agent-core/openapi.yaml@f023adf1cd1f731e27fdc844af62996f6c2a41c4	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/firecrawl/web-agent:agent-templates/library/agent-core/openapi.yaml@f023adf1cd1f731e27fdc844af62996f6c2a41c4	census 0	candidates.jsonl
@@ -8897,6 +8886,17 @@ oneof-string-const-variant	document	github.com/zhuchunshu/SForum:contracts/opena
 oneof-string-const-variant	document	github.com/zhuchunshu/SForum:contracts/openapi/schemas/extensions-v3-registry.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/zhuchunshu/SForum:contracts/openapi/schemas/extensions.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/zhuchunshu/SForum:contracts/openapi/schemas/identity.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:128@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:130@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:132@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:134@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:135@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:137@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:138@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:140@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:141@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:142@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
+oneof-string-const-variant	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:143@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 0	candidates.jsonl
 oneof-string-const-variant	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"const:" count:all type:file	483	queries.jsonl
 oneof-string-const-variant	query	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"const\"" count:all type:file	482	queries.jsonl
 oneof-string-const-variant	screen	github.com/Lap-Platform/LAP:examples/verbose/openapi/vercel.yaml@28649a16232be198447487a7e421cca242c1cdd7 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 3 errors and 2 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown. First: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	screens.jsonl
@@ -10001,7 +10001,6 @@ ref-pointer-nested-properties	document	github.com/elierotenberg/fastify-zod:src/
 ref-pointer-nested-properties	document	github.com/embedpdf/embed-pdf-viewer:cloudpdf/contract/openapi.json@2516e2786ee894383220ecd436fbd248182ef444	census 1160	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/etewiah/property_web_builder:docs/api/openapi.yaml@34ed1756762bf3d4ba55b4eabda93e798e9ca6aa	census 0	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/etewiah/property_web_builder:swagger/v1/api_public_swagger.yaml@34ed1756762bf3d4ba55b4eabda93e798e9ca6aa	census 0	candidates.jsonl
-ref-pointer-nested-properties	document	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/assembly/openapi.yml@94841b83acb20355801a7c491a61749520039a9e	census 6	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/freee/freee-mcp:openapi/hr-api-schema.json@c30926b7fd7825e9a9db5ae58a93a8ffe4a3a1ba	census 4	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/freee/freee-mcp:openapi/pm-api-schema.json@c30926b7fd7825e9a9db5ae58a93a8ffe4a3a1ba	census 0	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/gchq/stroom:stroom-app/src/main/resources/ui/noauth/swagger/stroom.json@88774a9d93cdc995aaa1370748585f1320f12ac3	census 0	candidates.jsonl
@@ -10107,6 +10106,7 @@ ref-pointer-nested-properties	document	github.com/wireapp/wire-server:services/b
 ref-pointer-nested-properties	document	github.com/xibosignage/xibo-cms:web/swagger.json@b08671b489dfa6c3d0cf1aed0a4e90ed0ae0b2fe	census 0	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/xlang-ai/OpenAgents:real_agents/plugins_agent/plugins/Singapore_Places_Of_Interest/openapi.yaml@ff2e46440699af1324eb25655b622c4a131265bb	census 2	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/xlang-ai/OpenAgents:real_agents/plugins_agent/plugins/got2go_plugin_v1/openapi.yaml@ff2e46440699af1324eb25655b622c4a131265bb	census 0	candidates.jsonl
+ref-pointer-nested-properties	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:124@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:6	census 6	candidates.jsonl
 ref-pointer-nested-properties	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"#/components/schemas/" content:"/properties/" count:all type:file	319	queries.jsonl
 ref-pointer-nested-properties	query	file:(openapi|swagger).*\.json$ content:"#/components/schemas/" content:"/properties/" count:all type:file	560	queries.jsonl
 ref-pointer-nested-properties	screen	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49 fern	passed	screens.jsonl
@@ -10526,20 +10526,16 @@ securityscheme-type-openidconnect	screen	github.com/rust-codegen-group/openapi-n
 securityscheme-type-openidconnect	screen	github.com/vert-x3/vertx-web:vertx-web-openapi-router/src/test/resources/security/security_optional_callbackaware.yaml@477021fa680b8fe0183063dc7ba91623e662f0ca fern	passed	screens.jsonl
 securityscheme-type-openidconnect	screen	github.com/vert-x3/vertx-web:vertx-web-openapi-router/src/test/resources/security/security_optional_callbackaware.yaml@477021fa680b8fe0183063dc7ba91623e662f0ca licence	passed	screens.jsonl
 securityscheme-type-openidconnect	screen	github.com/vert-x3/vertx-web:vertx-web-openapi-router/src/test/resources/security/security_optional_callbackaware.yaml@477021fa680b8fe0183063dc7ba91623e662f0ca ref	passed	screens.jsonl
-x-fern-or-crozier-ignore	candidate	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 4	probe.jsonl
-x-fern-or-crozier-ignore	candidate	github.com/fern-api/fern:packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 2	probe.jsonl
 x-fern-or-crozier-ignore	candidate	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe	census 1	probe.jsonl
 x-fern-or-crozier-ignore	candidate	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe	census 1	probe.jsonl
 x-fern-or-crozier-ignore	candidate	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe	census 1	probe.jsonl
 x-fern-or-crozier-ignore	candidate	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe	census 1	probe.jsonl
 x-fern-or-crozier-ignore	candidate	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/openapi.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe	census 1	probe.jsonl
+x-fern-or-crozier-ignore	candidate	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:118@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2	census 2	probe.jsonl
+x-fern-or-crozier-ignore	candidate	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:120@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2	census 4	probe.jsonl
 x-fern-or-crozier-ignore	document	github.com/Skyvern-AI/skyvern:fern/openapi/overrides.yml@61dd1acd9f2f207a1b9f86936867008af22148f1	census 0	candidates.jsonl
 x-fern-or-crozier-ignore	document	github.com/VapiAI/docs:fern/apis/api/openapi-overrides.yml@a56da80b91ff85bec39012b21d42a13e649e84af	census 0	candidates.jsonl
 x-fern-or-crozier-ignore	document	github.com/comet-ml/opik:apps/opik-documentation/documentation/fern/openapi/overrides.yml@661aa507147c363447cbcdb36f361687c8bffee3	census 0	candidates.jsonl
-x-fern-or-crozier-ignore	document	github.com/fern-api/fern:generators/cli/sdk/cli/openapi-fixture/openapi.yaml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 1	candidates.jsonl
-x-fern-or-crozier-ignore	document	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 4	candidates.jsonl
-x-fern-or-crozier-ignore	document	github.com/fern-api/fern:packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 2	candidates.jsonl
-x-fern-or-crozier-ignore	document	github.com/fern-api/fern:packages/cli/workspace/oss-validator/src/rules/no-duplicate-overrides/__test__/fixtures/fern-ignore/openapi/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 2	candidates.jsonl
 x-fern-or-crozier-ignore	document	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe	census 1	candidates.jsonl
 x-fern-or-crozier-ignore	document	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe	census 1	candidates.jsonl
 x-fern-or-crozier-ignore	document	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe	census 1	candidates.jsonl
@@ -10553,14 +10549,12 @@ x-fern-or-crozier-ignore	document	github.com/jentic/jentic-public-apis:apis/open
 x-fern-or-crozier-ignore	document	github.com/latitude-dev/latitude-llm:apps/api/openapi.json@93f0733dc7596005dcb061ca163a016d4d86e3e2	census 2	candidates.jsonl
 x-fern-or-crozier-ignore	document	github.com/truefoundry/trueforge:.github/fern/openapi/openapi.json@7d0a6c4f899b40438c32e86d6be27f2b4d061e59	census 7	candidates.jsonl
 x-fern-or-crozier-ignore	document	github.com/truefoundry/trueforge:docs/openapi.json@7d0a6c4f899b40438c32e86d6be27f2b4d061e59	census 7	candidates.jsonl
+x-fern-or-crozier-ignore	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:118@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2	census 2	candidates.jsonl
+x-fern-or-crozier-ignore	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:120@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2	census 4	candidates.jsonl
+x-fern-or-crozier-ignore	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:122@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2	census 2	candidates.jsonl
+x-fern-or-crozier-ignore	document	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:1@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2	census 1	candidates.jsonl
 x-fern-or-crozier-ignore	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"x-fern-ignore: true" count:all type:file	7	queries.jsonl
 x-fern-or-crozier-ignore	query	file:(openapi|swagger).*\.json$ content:"\"x-fern-ignore\"" count:all type:file	13	queries.jsonl
-x-fern-or-crozier-ignore	screen	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181 fern	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181 licence	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181 ref	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	github.com/fern-api/fern:packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181 fern	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	github.com/fern-api/fern:packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181 licence	passed	screens.jsonl
-x-fern-or-crozier-ignore	screen	github.com/fern-api/fern:packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181 ref	passed	screens.jsonl
 x-fern-or-crozier-ignore	screen	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
 x-fern-or-crozier-ignore	screen	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe ref	passed: 270121 bytes read at the immutable commit 047e4ec2befca70c4bcdd05f162b2c005fc7cdfe, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87	screens.jsonl
@@ -10576,3 +10570,9 @@ x-fern-or-crozier-ignore	screen	github.com/jentic/jentic-public-apis:apis/openap
 x-fern-or-crozier-ignore	screen	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/openapi.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe fern	not-run: the licence screen failed	screens.jsonl
 x-fern-or-crozier-ignore	screen	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/openapi.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
 x-fern-or-crozier-ignore	screen	github.com/jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/openapi.json@047e4ec2befca70c4bcdd05f162b2c005fc7cdfe ref	passed: 270121 bytes read at the immutable commit 047e4ec2befca70c4bcdd05f162b2c005fc7cdfe, sha256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87	screens.jsonl
+x-fern-or-crozier-ignore	screen	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:118@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2 fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:118@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2 licence	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:118@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2 ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:120@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2 fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:120@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2 licence	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:120@screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2 ref	passed	screens.jsonl

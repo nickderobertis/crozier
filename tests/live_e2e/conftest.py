@@ -27,6 +27,10 @@ from pathlib import Path
 
 import pytest
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 # The `client.<sub>.<method>` call that names the endpoint a reference snippet
 # exercises (the client-construction line `client = FernApi(` never matches). The
 # captured `sub.method` is the endpoint key: real specs reuse a method name across
@@ -53,8 +57,8 @@ class Fixture:
     generated package must be importable as `fern` for the `reference.md` snippets
     to run, so `package_name` is `fern`.
 
-    `spec_url` distinguishes real-world registered sources from synthetic Fern
-    seeds. Both are committed; URLs are retained as rebuild provenance only."""
+    `registered_source` selects the committed publisher-source registry; locally
+    authored specifications live beside their goldens."""
 
     name: str
     package_name: str = "fern"
@@ -63,10 +67,10 @@ class Fixture:
     audience_strict: bool = False
     client_class_name: str | None = None
     extra_fields: str | None = None
-    spec_url: str | None = None
+    registered_source: bool = False
     # Whether crozier's client *grouping* matches Fern's, so its generated
     # `reference.md` endpoint keys (`sub_client.method`) equal the committed golden's.
-    # True for a byte-matched corpus (apideck, exhaustive): each Fern-documented
+    # True for a byte-matched corpus: each Fern-documented
     # endpoint is cross-checked one-per-test and coverage is asserted key-for-key.
     # False for a partially-matched corpus (bunq groups sub-clients differently —
     # see docs/matching.md): the runtime sweep instead proves crozier's *own*
@@ -97,22 +101,21 @@ class Fixture:
         return args
 
 
-# The corpora driven live. Spec-driven, so this grows by one line as more fixtures
-# gain a runnable SDK. `exhaustive` is the deliberately complicated synthetic seed
-# (56 typed endpoints across 15 sub-clients); `apideck.com-crm` is a real-world
-# `link-ok` corpus API (40 endpoints across 8 sub-clients) whose spec is fetched,
-# not vendored; `bunq.com` is a much larger real-world `link-ok` corpus (421
-# endpoints across 118 sub-clients) that stresses the pipeline at scale. See
-# tests/live_e2e/AGENTS.md.
+# Registered publisher APIs driven live: Qakka exercises binary requests,
+# Apideck CRM provides a smaller resource API, and bunq stresses the pipeline
+# at scale. The committed references supply endpoint counts.
 FIXTURES: list[Fixture] = [
-    Fixture(name="exhaustive"),
+    Fixture(
+        name="apache.org-qakka",
+        registered_source=True,
+    ),
     Fixture(
         name="apideck.com-crm",
-        spec_url="https://api.apis.guru/v2/specs/apideck.com/crm/9.3.0/openapi.json",
+        registered_source=True,
     ),
     Fixture(
         name="bunq.com",
-        spec_url="https://api.apis.guru/v2/specs/bunq.com/1.0/openapi.json",
+        registered_source=True,
         # crozier does not yet reproduce bunq's tag-based sub-client grouping, so its
         # generated reference keys diverge from the golden's. The runtime sweep still
         # drives crozier's own reference and asserts every documented endpoint
@@ -131,7 +134,7 @@ def reference_methods(fixture: Fixture) -> list[str]:
     """Ordered, de-duplicated `sub.method` endpoint keys from a fixture's committed
     `reference.md` — the endpoint catalog, resolved at collection time so each
     endpoint is its own reported test case."""
-    text = committed_reference(fixture).read_text()
+    text = committed_reference(fixture).read_text(encoding="utf-8")
     return list(dict.fromkeys(_CALL_RE.findall(text)))
 
 
@@ -210,12 +213,12 @@ def _wait_until_listening(port: int, proc: subprocess.Popen, timeout: float = 60
 
 def _spec_path(fixture: Fixture, work: Path) -> Path:
     """Read the committed source; corpus URLs are rebuild provenance only."""
-    if fixture.spec_url is None:
+    if not fixture.registered_source:
         return _FIXTURES / fixture.name / "openapi.yml"
     result = subprocess.run(
         [sys.executable, str(_FIXTURES.parent.parent / "scripts/corpus_sources.py"),
          "prepare", "--fixture", fixture.name, "--output", str(work / "source")],
-        check=True, capture_output=True, text=True,
+        check=True, capture_output=True, text=True, encoding="utf-8",
     )
     return Path(result.stdout.strip())
 
@@ -224,7 +227,7 @@ def _generate_sdk(crozier: str, fixture: Fixture, spec: Path, out: Path):
     result = subprocess.run(
         [crozier, *fixture.generate_args(spec, out)],
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8",
     )
     if result.returncode != 0:
         raise RuntimeError(
@@ -234,7 +237,7 @@ def _generate_sdk(crozier: str, fixture: Fixture, spec: Path, out: Path):
 
 def _relax_spec(python: str, fixture: Fixture, spec: Path, dest: Path):
     result = subprocess.run(
-        [python, str(_RELAX), str(spec), str(dest)], capture_output=True, text=True
+        [python, str(_RELAX), str(spec), str(dest)], capture_output=True, text=True, encoding="utf-8"
     )
     if result.returncode != 0:
         raise RuntimeError(
@@ -254,7 +257,7 @@ def _drive(python: str, sdk_src: Path, reference: Path, base_url: str) -> dict:
             "LIVE_BASE_URL": base_url,
         },
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8",
     )
     if result.returncode != 0:
         raise RuntimeError(
@@ -306,7 +309,7 @@ def recordings(tmp_path_factory) -> dict[str, dict]:
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True,
+                text=True, encoding="utf-8",
             )
             servers.append(proc)
             _wait_until_listening(port, proc)

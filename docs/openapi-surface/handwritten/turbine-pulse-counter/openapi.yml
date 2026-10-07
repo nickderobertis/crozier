@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: Turbine Pulse Counter
+  version: 1.0.0
+paths:
+  /pulse-count:
+    get:
+      operationId: read_pulse_count
+      responses:
+        '200':
+          description: Recorded pulse count
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: bigint

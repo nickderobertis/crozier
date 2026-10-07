@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "8745901f142a66af3d0345d39c4e657ac94c65903fe8236dff8c17f96d414ac1"
+
+[[covers]]
+key = "format-date"
+arm = 'src/ir.rs::scalar_body[=Some\("date"\) =>]'
+search = "docs/openapi-surface/witness-search-scalar-body-format/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-scalar-body-format/README.md"

@@ -10,8 +10,8 @@
 # exits 0 — a flaky install must never break session startup; the generate script
 # still gates each prerequisite with an actionable error when the time comes.
 #
-# The OFFLINE path (`just fixtures-refresh`, `just fixtures-candidates`) needs NONE
-# of this and is unaffected whether this succeeds or not.
+# Routine corpus comparisons use committed sources and goldens; they need none
+# of this setup and are unaffected whether it succeeds or not.
 #
 # What it does, and why — each guarded by "is it already here?":
 #   1. fern CLI — Fern's orchestrator (installed from npm; the pinned *generator

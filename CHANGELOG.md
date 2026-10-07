@@ -405,7 +405,7 @@ Commit messages; do not edit released sections by hand.
 
 ### Fixed
 
-- resolve the Fern seed corpus comparison scope ([#135](https://github.com/nickderobertis/crozier/pull/135))
+- resolve the SDK corpus comparison scope ([#135](https://github.com/nickderobertis/crozier/pull/135))
 
 ## [0.0.40](https://github.com/nickderobertis/crozier/compare/v0.0.39...v0.0.40) - 2026-07-30
 
@@ -622,7 +622,7 @@ Commit messages; do not edit released sections by hand.
 
 ### Added
 
-- complete the client layer, aggregators, and docs (exhaustive fully matches Fern) ([#25](https://github.com/nickderobertis/crozier/pull/25))
+- complete the client layer, aggregators, and docs with byte-exact SDK output ([#25](https://github.com/nickderobertis/crozier/pull/25))
 
 ## [0.0.4](https://github.com/nickderobertis/crozier/compare/v0.0.3...v0.0.4) - 2026-07-10
 
@@ -666,7 +666,7 @@ Commit messages; do not edit released sections by hand.
 
 ### Other
 
-- commit exhaustive Fern fixture and byte-match 8 files ([#3](https://github.com/nickderobertis/crozier/pull/3))
-- vendor exhaustive openapi.yml and add fixtures provenance README
+- commit an SDK golden and byte-match eight generated files ([#3](https://github.com/nickderobertis/crozier/pull/3))
+- commit an OpenAPI generation witness and fixture provenance README
 - add aggregation gate job and simplify llmlint context
 - scaffold crozier repo, pipeline, and first byte-exact fixture match

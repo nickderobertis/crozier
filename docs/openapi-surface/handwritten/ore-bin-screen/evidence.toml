@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "63e11d8c1ba20e9ff86db4db5bfe86ffab66d7450add51f7749b0f7f1dbf6139"
+
+[[covers]]
+key = "parameter-style-form-query-object"
+arm = 'src/emit.rs::append_request_call_args[\} else if qp\.convert \{]'
+search = "docs/openapi-surface/witness-search-typed-form-query/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-typed-form-query/README.md"

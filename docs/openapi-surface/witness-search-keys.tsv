@@ -7,6 +7,7 @@ base-path-extension	openapi.x-fern-base-path	oas31-extensions.md	supported
 component-same-primitive-union	components.schemas:same-primitive-union	schemas.md	supported
 cycle-into-cycle	components.schemas:cycle-into-cycle	schemas.md	supported
 header-subset-string-default	parameter.schema:subset-header-string-default	parameters.md	supported
+integer-format-fallback	schema.format=bigint	schemas.md	supported
 oneof-array-variant-annotated-ref-item	schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component	schemas.md	supported
 oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union	schemas.md	supported
 oneof-array-variant-anyof-nullable-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	schemas.md	supported
@@ -19,6 +20,7 @@ property-sole-oneof-empty-object-member	schema.properties>schema.oneOf:sole-memb
 query-array-items-union	parameter.schema:query-items-union	parameters.md	supported
 request-body-described-inline-scalar	operation.requestBody:described-inline-scalar	bodies-media.md	supported
 request-body-property-closed-empty-object	mediaType.schema:closed-empty-object-property	schemas.md	supported
+request-body-string-map	operation.requestBody:plain-string-map	bodies-media.md	supported
 request-example-deprecated-property	mediaType.example:deprecated-property	bodies-media.md	supported
 request-example-nested-null	mediaType.example:nested-null-member	bodies-media.md	supported
 response-contentless-200-with-created	operation.responses:contentless-two-hundred-with-created	bodies-media.md	supported

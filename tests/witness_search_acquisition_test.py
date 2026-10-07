@@ -22,6 +22,10 @@ import time
 import unittest
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts/witness-search-local-census.py"
 GITHUB_ACQUIRE = REPO / "scripts/witness-acquire-github.py"
@@ -40,21 +44,21 @@ def run_explicit_key_census(interpreter_flags: list[str]) -> tuple[int, dict]:
         (documents / "hit.yaml").write_text(
             "? openapi\n: 3.0.0\npaths: {}\ncomponents:\n  schemas:\n"
             "    Shape:\n      type: array\n      items: {type: string}\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         (documents / "broken.yaml").write_text(
-            "? openapi\n: [unterminated\n", encoding="utf-8"
+            "? openapi\n: [unterminated\n", encoding="utf-8", newline="\n"
         )
         contract = root / "keys.md"
         contract.write_text(
             "| key | selector |\n|---|---|\n| `array` | `schema.items` |\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         completed = subprocess.run(
             [sys.executable, *interpreter_flags, str(SCRIPT),
              "--contract", str(contract),
              "--documents", f"local={documents}", "--all-documents-jsonl"],
-            cwd=REPO, capture_output=True, text=True, timeout=30,
+            cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
         )
         return completed.returncode, {
             row["document"]: row
@@ -104,17 +108,17 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "broken.json").write_text(
-                '{"openapi":"3.0.0","paths":{},}', encoding="utf-8"
+                '{"openapi":"3.0.0","paths":{},}', encoding="utf-8", newline="\n"
             )
             contract = root / "keys.md"
             contract.write_text(
                 "| key | selector |\n|---|---|\n| `array` | `schema.items` |\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={root}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 1)
             record = json.loads(completed.stdout)
@@ -125,16 +129,16 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
     def test_other_json_decode_failure_is_unreadable(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            (root / "broken.json").write_text('{"openapi":', encoding="utf-8")
+            (root / "broken.json").write_text('{"openapi":', encoding="utf-8", newline="\n")
             contract = root / "keys.md"
             contract.write_text(
                 "| key | selector |\n|---|---|\n| `array` | `schema.items` |\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={root}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 1)
             record = json.loads(completed.stdout)
@@ -148,8 +152,8 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             archives.mkdir()
             source = root / "source"
             source.mkdir()
-            (source / "openapi.json").write_text('{"openapi":"3.0.0"}', encoding="utf-8")
-            (source / "notes.txt").write_text("not a spec", encoding="utf-8")
+            (source / "openapi.json").write_text('{"openapi":"3.0.0"}', encoding="utf-8", newline="\n")
+            (source / "notes.txt").write_text("not a spec", encoding="utf-8", newline="\n")
             pin = "a" * 40
             with tarfile.open(archives / "example--api.tar.gz", "w:gz") as archive:
                 for path in source.iterdir():
@@ -157,7 +161,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             plan = root / "plan.tsv"
             plan.write_text(
                 "repository\tpinned_ref\nexample/api\t" + pin +
-                "\nmutable/api\tmain\n", encoding="utf-8",
+                "\nmutable/api\tmain\n", encoding="utf-8", newline="\n",
             )
             tree = root / "tree"
             manifest = root / "manifest.tsv"
@@ -165,7 +169,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(PORTAL_TREES), "--plan", str(plan),
                  "--archives", str(archives), "--tree", str(tree),
                  "--manifest", str(manifest)],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual((tree / "example--api/openapi.json").read_bytes(),
@@ -190,15 +194,15 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             command = [sys.executable, str(PORTAL_TREES), "--plan", str(plan),
                        "--archives", str(archives), "--tree", str(tree),
                        "--manifest", str(manifest)]
-            plan.write_text("wrong\theader\n", encoding="utf-8")
+            plan.write_text("wrong\theader\n", encoding="utf-8", newline="\n")
             malformed = subprocess.run(command, cwd=REPO, capture_output=True,
-                                       text=True, timeout=30)
+                                       text=True, timeout=30, encoding="utf-8")
             self.assertEqual(malformed.returncode, 1)
             self.assertIn("repository and pinned_ref columns", malformed.stderr)
             plan.write_text("repository\tpinned_ref\nexample/api\t" + "a" * 40 + "\n",
-                            encoding="utf-8")
+                            encoding="utf-8", newline="\n")
             missing = subprocess.run(command, cwd=REPO, capture_output=True,
-                                     text=True, timeout=30)
+                                     text=True, timeout=30, encoding="utf-8")
             self.assertEqual(missing.returncode, 1)
             self.assertIn("missing pinned archive", missing.stderr)
             archive = archives / "example--api.tar.gz"
@@ -208,7 +212,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 info.size = len(body)
                 handle.addfile(info, io.BytesIO(body))
             unsafe = subprocess.run(command, cwd=REPO, capture_output=True,
-                                    text=True, timeout=30)
+                                    text=True, timeout=30, encoding="utf-8")
             self.assertEqual(unsafe.returncode, 1)
             self.assertIn("unsafe archive path", unsafe.stderr)
             self.assertFalse(manifest.exists())
@@ -225,7 +229,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     payload = b"Forbidden"
                 else:
                     self.send_response(200)
-                    payload = json.dumps({"data": {}, "meta": {"total": {"api": 0}}}).encode()
+                    payload = json.dumps({"data": {}, "meta": {"total": {"api": 0}}}).encode("utf-8")
                 self.end_headers()
                 self.wfile.write(payload)
 
@@ -242,18 +246,18 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             keys = root / "keys.tsv"
             keys.write_text(
                 "key\tselector\narray-item\tschema.items\n"
-                "oauth2-password\tsecurityScheme.flows.password\n", encoding="utf-8",
+                "oauth2-password\tsecurityScheme.flows.password\n", encoding="utf-8", newline="\n",
             )
             evidence = root / "postman"
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = [json.loads(line) for line in
-                    (evidence / "queries.jsonl").read_text().splitlines()]
+                    (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual(len(rows), 12)
             self.assertNotEqual(rows[0]["query"], rows[3]["query"])
             self.assertEqual(rows[0]["classification"], "source-refused")
@@ -266,7 +270,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 "apinetwork.team", "runtime.collection", "adp.api"})
             self.assertTrue(all(len(x["body"]["queryIndices"]) == 1 for x in received))
             waits = [json.loads(line) for line in
-                     (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
+                     (evidence / "rate-limit-waits.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertTrue(any(row["cause"] == "spacing" for row in waits))
 
     def test_postman_refusal_waits_then_paginates_answer(self) -> None:
@@ -285,7 +289,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     count = 26 if index == "apinetwork.team" else 0
                     payload = json.dumps({"data": {}, "meta": {"total": {
                         "team": count, "collection": 0, "api": 0,
-                    }}}).encode()
+                    }}}).encode("utf-8")
                     self.send_response(200)
                 self.end_headers()
                 self.wfile.write(payload)
@@ -301,23 +305,23 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             keys = root / "keys.tsv"
-            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8", newline="\n")
             evidence = root / "postman"
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=50,
+                cwd=REPO, capture_output=True, text=True, timeout=50, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = [json.loads(line) for line in
-                    (evidence / "queries.jsonl").read_text().splitlines()]
+                    (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual(rows[0]["classification"], "source-refused")
             self.assertEqual(rows[0]["status"], 429)
             self.assertEqual(rows[1]["classification"], "answered")
             self.assertIn(25, [row["offset"] for row in rows])
             waits = [json.loads(line) for line in
-                     (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
+                     (evidence / "rate-limit-waits.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertTrue(any(row["cause"] == "backoff" for row in waits))
 
     def test_postman_malformed_answer_is_source_error(self) -> None:
@@ -339,17 +343,17 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             keys = root / "keys.tsv"
-            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8", newline="\n")
             evidence = root / "postman"
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = [json.loads(line) for line in
-                    (evidence / "queries.jsonl").read_text().splitlines()]
+                    (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual(len(rows), 6)
             self.assertTrue(all(row["classification"] == "source-error" for row in rows))
             self.assertTrue(all("total" in row["error"] for row in rows))
@@ -368,7 +372,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(json.dumps({"data": {}, "meta": {"total": {
                     "team": 0, "collection": 0, "api": 0,
-                }}}).encode())
+                }}}).encode("utf-8"))
 
             def log_message(self, *_args):
                 pass
@@ -381,17 +385,17 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             keys = root / "keys.tsv"
-            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8", newline="\n")
             evidence = root / "postman"
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=40,
+                cwd=REPO, capture_output=True, text=True, timeout=40, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = [json.loads(line) for line in
-                    (evidence / "queries.jsonl").read_text().splitlines()]
+                    (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual(rows[0]["classification"], "source-refused")
             self.assertIsNone(rows[0]["status"])
             self.assertTrue(rows[0]["response"])
@@ -403,7 +407,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(root / "missing.tsv"),
                  "--evidence-dir", str(root / "evidence")],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 2)
             self.assertIn("regenerate the region-key derivation", completed.stderr)
@@ -431,18 +435,18 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             keys = root / "keys.tsv"
-            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8", newline="\n")
             evidence = root / "postman"
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=180,
+                cwd=REPO, capture_output=True, text=True, timeout=180, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(len(received), 5)
             rows = [json.loads(line) for line in
-                    (evidence / "queries.jsonl").read_text().splitlines()]
+                    (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
             # The fifth response closes the guard reservation by raising
             # SecondaryLimit, so the consumer records that refusal with its
             # query identity and error instead of a normal HTTP result row.
@@ -455,10 +459,10 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         throttled = []
         openapi = json.dumps({"openapi": "3.0.0", "info": {"title": "t", "version": "1"},
                               "paths": {}, "components": {"schemas": {
-                                  "Shape": {"type": "array", "items": {"type": "string"}}}}}).encode()
+                                  "Shape": {"type": "array", "items": {"type": "string"}}}}}).encode("utf-8")
         collection = json.dumps({"info": {"_postman_id": "c", "name": "array item",
                                           "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
-                                 "item": []}).encode()
+                                 "item": []}).encode("utf-8")
 
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
@@ -495,7 +499,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             keys = root / "keys.tsv"
-            keys.write_text("key\tselector\nquery-says-nothing\tschema.items\n", encoding="utf-8")
+            keys.write_text("key\tselector\nquery-says-nothing\tschema.items\n", encoding="utf-8", newline="\n")
             evidence = root / "postman"
             evidence.mkdir()
             # The query text shares no word with the shape; only the body can declare it.
@@ -508,15 +512,15 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                                 {"document": {"id": "r2", "collection": {"id": "1-openapi"}}},
                                 "not-a-hit"],
                     "api": [{"document": {"id": "api-9"}}, {"document": {"id": "../x?y"}}],
-                }}) + "\n", encoding="utf-8")
+                }}) + "\n", encoding="utf-8", newline="\n")
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(evidence),
                  "--acquire-hits", "--web-base", base, "--api-base", base],
-                cwd=REPO, capture_output=True, text=True, timeout=120,
+                cwd=REPO, capture_output=True, text=True, timeout=120, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = {row["id"]: row for row in (json.loads(line) for line in
-                    (evidence / "hit-access.jsonl").read_text().splitlines())}
+                    (evidence / "hit-access.jsonl").read_text(encoding="utf-8").splitlines())}
             self.assertEqual(set(rows), {"7", "1-openapi", "2-coll", "3-bad", "api-9", "../x?y"})
             self.assertEqual(rows["3-bad"]["classification"], "parse-failure")
             self.assertIn("/apis/..%2Fx%3Fy", received)
@@ -533,9 +537,9 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertEqual((rows["api-9"]["status"], rows["api-9"]["classification"]),
                              (401, "source-refused"))
             waits = [json.loads(line) for line in
-                     (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
+                     (evidence / "rate-limit-waits.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertTrue(any(row["cause"] == "backoff" for row in waits))
-            calls = (evidence / "rate-limit-calls.jsonl").read_text().splitlines()
+            calls = (evidence / "rate-limit-calls.jsonl").read_text(encoding="utf-8").splitlines()
             self.assertEqual(len(calls), len(received))
 
     def test_outstanding_items_are_derived_by_key_and_source(self) -> None:
@@ -545,11 +549,11 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 "key\tselector\tregion\tcensus_status\n"
                 "shape-a\tschema.items\tschemas.md\tsupported\n"
                 "scheme-ref\tsecurityScheme:$ref\tsecurity.md\tunsupported-by-census\n",
-                encoding="utf-8")
+                encoding="utf-8", newline="\n")
             (root / "witness-search-portal-plan.tsv").write_text(
                 "repository\tpinned_ref\tprior_path\tderivation\tacquisition\n"
                 "gone/docs\tno-immutable-ref: HTTP 404\tapi.json\tprior\tsource-refused\n"
-                "kept/docs\tabc\tapi.json\tprior\tarchive\n", encoding="utf-8")
+                "kept/docs\tabc\tapi.json\tprior\tarchive\n", encoding="utf-8", newline="\n")
             portals = root / "witness-search-vendor-portals"
             portals.mkdir()
             (portals / "records.tsv").write_text(
@@ -558,27 +562,27 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 "vendor-portals\tshape-a\tbig.json\tabc\td\t3\tpass\tpass\t"
                 "not-run: Fern check timed out after 3600 seconds\toutstanding\tx\n"
                 "vendor-portals\tshape-a\tok.json\tabc\td\t1\tpass\tpass\tpass\twitness-found\tx\n",
-                encoding="utf-8")
+                encoding="utf-8", newline="\n")
             (portals / "enumeration.tsv").write_text(
                 "walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\n"
                 "kept/docs\tbad.json\tabc\t" + "0" * 64 + "\t\tunreadable: trailing comma\n"
-                "kept/docs\tok.json\tabc\t" + "1" * 64 + "\tshape-a\treadable\n", encoding="utf-8")
+                "kept/docs\tok.json\tabc\t" + "1" * 64 + "\tshape-a\treadable\n", encoding="utf-8", newline="\n")
             header = ("source\tkey\tcandidate\trevision\tdigest\tcensus\tlicence_screen\t"
                       "revision_screen\tfern_screen\tdisposition\tevidence\n")
             for source in ("apis.guru", "jentic"):
                 (root / f"witness-search-{source}").mkdir(exist_ok=True)
-                (root / f"witness-search-{source}/records.tsv").write_text(header, encoding="utf-8")
+                (root / f"witness-search-{source}/records.tsv").write_text(header, encoding="utf-8", newline="\n")
             (root / "witness-search-registries").mkdir()
             command = [sys.executable, str(REPO / "scripts/witness-search-registries-index.py"),
                        "--root", str(root)]
-            stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30)
+            stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(stale.returncode, 1)
             self.assertIn("rerun without --check", stale.stderr)
             self.assertEqual(subprocess.run(command, timeout=30).returncode, 0)
             self.assertEqual(subprocess.run([*command, "--check"], timeout=30).returncode, 0)
-            with (root / "witness-search-registries/outstanding.tsv").open(newline="") as handle:
+            with (root / "witness-search-registries/outstanding.tsv").open(newline="", encoding="utf-8") as handle:
                 rows = list(csv.DictReader(handle, dialect="excel-tab"))
-            with (root / "witness-search-registries/candidates.tsv").open(newline="") as handle:
+            with (root / "witness-search-registries/candidates.tsv").open(newline="", encoding="utf-8") as handle:
                 ledger = list(csv.DictReader(handle, dialect="excel-tab"))
             self.assertEqual([(row["candidate"], row["record"]) for row in ledger], [
                 ("big.json", "witness-search-vendor-portals/records.tsv:2"),
@@ -595,21 +599,21 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                              ["bad.json@abc"])
             self.assertEqual(found["shape-a", "vendor-portals", "portal-unanswered"]["items"], '["gone/docs"]')
             self.assertEqual(len(rows), 6)
-            (root / "witness-search-jentic/records.tsv").write_text("source\tkey\n", encoding="utf-8")
-            broken = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            (root / "witness-search-jentic/records.tsv").write_text("source\tkey\n", encoding="utf-8", newline="\n")
+            broken = subprocess.run(command, capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(broken.returncode, 1)
             self.assertIn("does not have the candidate-record header", broken.stderr)
             self.assertIn("repair the ledger it names", broken.stderr)
             (root / "witness-search-jentic/records.tsv").write_text(
                 header + "jentic\tshape-a\tall-pass.json\tabc\td\t1\tpass\tpass\tpass\toutstanding\tx\n",
-                encoding="utf-8")
-            passing = subprocess.run(command, capture_output=True, text=True, timeout=30)
+                encoding="utf-8", newline="\n")
+            passing = subprocess.run(command, capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(passing.returncode, 1)
             self.assertIn("records.tsv:2 is outstanding but every screen reads pass", passing.stderr)
             self.assertIn("repair the ledger it names", passing.stderr)
-            (root / "witness-search-jentic/records.tsv").write_text(header, encoding="utf-8")
-            (root / "witness-search-keys.tsv").write_text("key\tselector\nshape-a\tx\n", encoding="utf-8")
-            unnamed = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            (root / "witness-search-jentic/records.tsv").write_text(header, encoding="utf-8", newline="\n")
+            (root / "witness-search-keys.tsv").write_text("key\tselector\nshape-a\tx\n", encoding="utf-8", newline="\n")
+            unnamed = subprocess.run(command, capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(unnamed.returncode, 1)
             self.assertIn("witness-search-keys.tsv lacks column(s) census_status", unnamed.stderr)
 
@@ -636,36 +640,36 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             keys = root / "keys.tsv"
-            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8", newline="\n")
             evidence = root / "postman"
             evidence.mkdir()
             (evidence / "queries.jsonl").write_text(json.dumps({
                 "key": "array-item", "data": {"collection": [{"document": {"id": "c"}}]},
-            }) + "\n", encoding="utf-8")
+            }) + "\n", encoding="utf-8", newline="\n")
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(evidence),
                  "--acquire-hits", "--web-base", base, "--api-base", base],
-                cwd=REPO, capture_output=True, text=True, timeout=240,
+                cwd=REPO, capture_output=True, text=True, timeout=240, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(len(received), 5)
             [row] = [json.loads(line) for line in
-                     (evidence / "hit-access.jsonl").read_text().splitlines()]
+                     (evidence / "hit-access.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual((row["status"], row["classification"]), (None, "source-refused"))
             self.assertIn("postman", row["response"])
             waits = [json.loads(line) for line in
-                     (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
+                     (evidence / "rate-limit-waits.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual(len([w for w in waits if w["cause"] == "backoff"]), 4)
 
     def test_postman_hit_acquisition_without_a_search_gives_repair_action(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             keys = root / "keys.tsv"
-            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8", newline="\n")
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir",
                  str(root / "postman"), "--acquire-hits"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 1)
             self.assertIn("run the search stage first", completed.stderr)
@@ -674,26 +678,26 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
     def test_committed_outstanding_inventory_matches_its_ledgers(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(REPO / "scripts/witness-search-registries-index.py"), "--check"],
-            cwd=REPO, capture_output=True, text=True, timeout=120,
+            cwd=REPO, capture_output=True, text=True, timeout=120, encoding="utf-8",
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         spec = importlib.util.spec_from_file_location(
             "registries_index", REPO / "scripts/witness-search-registries-index.py")
         index = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(index)
-        readme = (REPO / "docs/openapi-surface/witness-search-registries/README.md").read_text()
+        readme = (REPO / "docs/openapi-surface/witness-search-registries/README.md").read_text(encoding="utf-8")
         section = readme.partition("## Outstanding items")[2].partition("\n## ")[0]
         self.assertEqual(tuple(re.findall(r"^- `([a-z-]+)`:", section, re.MULTILINE)), index.KINDS)
 
     def test_key_derivation_reads_current_region_tables(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(KEYS)], cwd=REPO,
-            capture_output=True, text=True, timeout=30,
+            capture_output=True, text=True, timeout=30, encoding="utf-8",
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
-        self.assertEqual(len(rows), 33)
-        self.assertEqual(len({row["key"] for row in rows}), 33)
+        self.assertEqual(len(rows), 35)
+        self.assertEqual(len({row["key"] for row in rows}), 35)
         self.assertEqual(
             [row["key"] for row in rows if row["census_status"] == "unsupported-by-census"],
             [],
@@ -714,13 +718,13 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             root = Path(temporary)
             for region in ("document-paths.md", "parameters.md", "bodies-media.md",
                            "schemas.md", "security.md", "oas31-extensions.md"):
-                (root / region).write_text("", encoding="utf-8")
+                (root / region).write_text("", encoding="utf-8", newline="\n")
             for expected, contents in invalid.items():
                 with self.subTest(expected=expected):
-                    (root / "schemas.md").write_text(contents, encoding="utf-8")
+                    (root / "schemas.md").write_text(contents, encoding="utf-8", newline="\n")
                     completed = subprocess.run(
                         [sys.executable, str(KEYS), "--regions-dir", str(root)],
-                        cwd=REPO, capture_output=True, text=True, timeout=30,
+                        cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
                     )
                     self.assertEqual(completed.returncode, 1)
                     self.assertIn(expected, completed.stderr)
@@ -736,23 +740,23 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             root = Path(temporary)
             for region in ("document-paths.md", "parameters.md", "bodies-media.md",
                            "security.md", "oas31-extensions.md"):
-                (root / region).write_text("", encoding="utf-8")
+                (root / region).write_text("", encoding="utf-8", newline="\n")
             (root / "schemas.md").write_text(
                 "| `shape-a` | x | x | `gap` | census `schema.items` | x | x | FIXTURE |\n"
                 "| `shape-b` | x | x | `handwritten` | handwritten: shape-b-fixture; search: exhausted"
                 " ([record](schemas.md#witness-search-exhaustive)) |  |  |  |\n"
                 "| `shape-c` | x | x | `golden` | census `schema.oneOf` | x |  |  |\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             (root / "witness-search-keys.tsv").write_text(
                 "key\tselector\tregion\tcensus_status\n"
                 "shape-a\tschema.items\tschemas.md\tsupported\n"
                 "shape-b\tschema.items>schema.discriminator:inheritance-union\tschemas.md\tsupported\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             completed = subprocess.run(
                 [sys.executable, str(KEYS), "--regions-dir", str(root)],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(
@@ -761,11 +765,11 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 "the derivation dropped the handwritten row or changed its selector",
             )
             (root / "witness-search-keys.tsv").write_text(
-                "name\tshape\nshape-b\tschema.items\n", encoding="utf-8"
+                "name\tshape\nshape-b\tschema.items\n", encoding="utf-8", newline="\n"
             )
             refused = subprocess.run(
                 [sys.executable, str(KEYS), "--regions-dir", str(root)],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(refused.returncode, 1)
             self.assertIn("has no `key` and `selector` columns", refused.stderr)
@@ -774,11 +778,11 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             contract = root / "keys.tsv"
-            contract.write_text("key\tselector\nshape-a\tschema.items\n", encoding="utf-8")
+            contract.write_text("key\tselector\nshape-a\tschema.items\n", encoding="utf-8", newline="\n")
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={root}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 2)
             self.assertIn("requires key, selector, and census_status", completed.stderr)
@@ -795,7 +799,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     body = json.dumps({"resources": {"core": {
                         "limit": 100, "used": used, "remaining": 100 - used,
                         "reset": int(time.time()),
-                    }}}).encode()
+                    }}}).encode("utf-8")
                     self.send_response(200)
                 elif self.path == "/tree.tar.gz":
                     state["downloads"] += 1
@@ -831,7 +835,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/tree.tar.gz",
                  str(output), "--evidence-dir", str(evidence)],
-                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(output.read_bytes(), b"real local tree archive bytes")
@@ -839,7 +843,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertEqual(state["downloads"], 1)
             self.assertTrue(state["authorized"])
             waits = [json.loads(line) for line in
-                     (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
+                     (evidence / "rate-limit-waits.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertTrue(any(row["kind"] == "wait" and row["cause"] == "cap"
                                 and row["bucket"] == "core" for row in waits))
             self.assertTrue(any(row["kind"] == "probe" and row["reading"]["used"] == 71
@@ -847,29 +851,29 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             refused = subprocess.run(
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/forbidden",
                  str(root / "missing"), "--evidence-dir", str(evidence)],
-                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(refused.returncode, 1)
             records = [json.loads(line) for line in
-                       (evidence / "acquisitions.jsonl").read_text().splitlines()]
+                       (evidence / "acquisitions.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual([row["status"] for row in records], [200, 403])
             self.assertFalse((root / "missing").exists())
             transport = subprocess.run(
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/transport",
                  str(root / "missing"), "--evidence-dir", str(evidence)],
-                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(transport.returncode, 1)
             self.assertIn("transport error", transport.stderr)
             records = [json.loads(line) for line in
-                       (evidence / "acquisitions.jsonl").read_text().splitlines()]
+                       (evidence / "acquisitions.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertNotIn("status", records[-1])
             self.assertTrue(records[-1]["error"])
             invalid_bucket = subprocess.run(
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/tree.tar.gz",
                  str(root / "invalid"), "--evidence-dir", str(evidence),
                  "--bucket", "graphql"],
-                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(invalid_bucket.returncode, 2)
             self.assertIn("invalid choice", invalid_bucket.stderr)
@@ -879,7 +883,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/tree.tar.gz",
                  str(root / "unprobed"), "--evidence-dir", str(evidence)],
                 cwd=REPO, env={**env, "CROZIER_GITHUB_API_URL": f"{url}/missing"},
-                capture_output=True, text=True, timeout=30,
+                capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(probe_failure.returncode, 1)
             self.assertIn("rate-limit guard refused acquisition", probe_failure.stderr)
@@ -891,17 +895,17 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             root = Path(temporary)
             documents = root / "documents"
             documents.mkdir()
-            (documents / "broken.json").write_text('{"openapi":', encoding="utf-8")
+            (documents / "broken.json").write_text('{"openapi":', encoding="utf-8", newline="\n")
             contract = root / "keys.md"
             contract.write_text(
                 "| key | selector |\n|---|---|\n"
                 "| `array` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf` |\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 1)
             rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
@@ -919,31 +923,31 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             contract.write_text(
                 "| key | selector |\n|---|---|\n"
                 "| `array` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf` |\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             hit = json.dumps({
                 "openapi": "3.0.0", "info": {"title": "hit", "version": "1"},
                 "paths": {}, "components": {"schemas": {"Shape": {"oneOf": [
                     {"type": "array", "items": {"anyOf": [{"type": "string"}]}}
                 ]}}},
-            }).encode()
+            }).encode("utf-8")
             miss = json.dumps({
                 "openapi": "3.0.0", "info": {"title": "miss", "version": "1"},
                 "paths": {}, "components": {"schemas": {"Shape": {"type": "string"}}},
-            }).encode()
+            }).encode("utf-8")
             (documents / "hit.json").write_bytes(hit)
             (documents / "hit.yaml").write_bytes(hit)
             (documents / "miss.json").write_bytes(miss)
             (documents / "metadata.json").write_text(
-                json.dumps({"bundle": json.loads(hit)}), encoding="utf-8"
+                json.dumps({"bundle": json.loads(hit)}), encoding="utf-8", newline="\n"
             )
             (documents / "notes.yaml").write_text(
-                "title: no OpenAPI document\n", encoding="utf-8"
+                "title: no OpenAPI document\n", encoding="utf-8", newline="\n"
             )
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
@@ -961,7 +965,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents-jsonl",
                  "--progress-log", str(root / "progress.jsonl")],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(compact.returncode, 0, compact.stderr)
             objects = [json.loads(line) for line in compact.stdout.splitlines()]
@@ -972,7 +976,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                               "metadata.json": 0,
                               "notes.yaml": 0})
             progress = [json.loads(line) for line in
-                        (root / "progress.jsonl").read_text().splitlines()]
+                        (root / "progress.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual(len(progress), 10)
             self.assertEqual(
                 {name: sum(row["event"] == name for row in progress)
@@ -983,7 +987,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents-jsonl",
                  "--start-after", "miss.json"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(resumed.returncode, 0, resumed.stderr)
             self.assertEqual(
@@ -997,12 +1001,12 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 "array\tschema.oneOf>schema.type:primary=array&schema.items>schema.anyOf\t"
                 "schemas.md\tsupported\n"
                 "pending\tsecurityScheme:$ref\tsecurity.md\tunsupported-by-census\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             from_regions = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(derived),
                  "--documents", f"local={documents}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(from_regions.returncode, 0, from_regions.stderr)
             derived_rows = [json.loads(line) for line in from_regions.stdout.splitlines()]
@@ -1022,7 +1026,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             contract.write_text(
                 "key\tselector\tregion\tcensus_status\n"
                 "securityscheme-ref\tsecurityScheme:$ref\tsecurity.md\tsupported\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             scheme = {"type": "http", "scheme": "bearer"}
             (documents / "two.json").write_text(json.dumps({
@@ -1032,15 +1036,15 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     "a": {"$ref": "#/components/securitySchemes/real"},
                     "b": {"$ref": "#/components/securitySchemes/real"},
                 }},
-            }), encoding="utf-8")
+            }), encoding="utf-8", newline="\n")
             (documents / "inline.json").write_text(json.dumps({
                 "openapi": "3.0.3", "info": {"title": "inline", "version": "1"}, "paths": {},
                 "components": {"securitySchemes": {"real": scheme}},
-            }), encoding="utf-8")
+            }), encoding="utf-8", newline="\n")
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(
@@ -1059,7 +1063,7 @@ class SecuritySchemeRefCensusReadmeTest(unittest.TestCase):
 
     def test_readme_counts_are_derived_from_each_sources_census(self) -> None:
         root = REPO / "docs/openapi-surface"
-        readme = " ".join((root / "witness-search-registries/README.md").read_text().split())
+        readme = " ".join((root / "witness-search-registries/README.md").read_text(encoding="utf-8").split())
         rows, parsed, unreadable = {}, {}, {}
         for source, _ in self.SOURCES:
             with gzip.open(root / f"witness-search-{source}/securityscheme-ref-census.tsv.gz",

@@ -6,4 +6,5 @@ digest = "9c8131cba3e4865f05063c71b4eebe871a255bdd002076e4d8e988b6fe11d3ca"
 key = "x-fern-or-crozier-ignore"
 arm = 'src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/x-fern-or-crozier-ignore.md#witness-search-exhaustive"
-verdict = "exhausted"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/golden-reach-witnesses/searches/x-fern-or-crozier-ignore.md"

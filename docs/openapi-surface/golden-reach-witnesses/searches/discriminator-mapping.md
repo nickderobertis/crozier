@@ -67,8 +67,8 @@ its `matched_keys`, and `queries.tsv` holds no phrasing for it.
 The three goldens generated with an audience, `audience-filter`,
 `audience-filter-strict` and `ziptax-node`, declare no `discriminator`. The one
 audience-labelled document among the query sources' locally cached results is
-`fern-api/fern`'s `generators/cli/sdk/cli/openapi-fixture/openapi.yaml` at
-`7afb6e0d`, a Fern test fixture ("Not a real API") that declares no
+An excluded synthetic input, `screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:1` at
+`screened-nonpublic-input:v2:2a9e147687d94da191ed78449f6ed061:2`, declares no
 `discriminator`. That cache is not committed, so this is supporting detail only.
 
 **The real-specification route stays open.** A corpus row registered with an

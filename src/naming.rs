@@ -961,13 +961,13 @@ pub fn enum_visit_param(value: &str) -> String {
 /// Names Fern suffixes with `_` (keeping the wire name as an alias): Python hard
 /// keywords (syntactically un-usable as identifiers) plus the specific builtins
 /// observed in Fern's output. The builtin set is deliberately evidence-based —
-/// only names confirmed against a Fern fixture belong here, since over-munging a
+/// only names confirmed by a measured generation belong here, since over-munging a
 /// name Fern leaves alone would break the byte-for-byte match. Expand it as new
-/// fixtures confirm more.
+/// measurements confirm more.
 #[must_use]
 pub fn is_reserved(name: &str) -> bool {
-    // Builtins/module names Fern munges in *field/type* contexts (confirmed in the
-    // exhaustive fixture). Method names are narrower — see `is_reserved_method`.
+    // Builtins/module names Fern munges in *field/type* contexts.
+    // Method names are narrower — see `is_reserved_method`.
     const RESERVED_BUILTINS: &[&str] = &[
         "all", "bool", "float", "int", "list", "long", "map", "set", "uuid",
     ];
@@ -1002,7 +1002,7 @@ pub fn model_field_name(wire_name: &str) -> String {
 /// type names — leaves other builtins alone: appwrite's derived `list` stays `list`,
 /// not `list_`, and `bool`/`set`/… likewise. Evidence-based against the golden corpus
 /// (the only `_`-suffixed method names Fern emits are keywords, `all`, and dunders);
-/// widen only when a fixture shows Fern suffixing another method name.
+/// widen only when a measured generation shows Fern suffixing another method name.
 #[must_use]
 pub fn is_reserved_method(name: &str) -> bool {
     PYTHON_KEYWORDS.contains(&name) || name == "all"
@@ -1039,8 +1039,8 @@ mod tests {
         assert!(is_reserved_method("import"));
         assert!(!is_reserved_method("list"));
         assert!(!is_reserved_method("bool"));
-        // The general set still guards field/type names (confirmed in the exhaustive
-        // fixture), so `list`/`bool` stay reserved there.
+        // The general set still guards field/type names, so `list`/`bool`
+        // stay reserved there.
         assert!(is_reserved("list"));
         assert!(is_reserved("bool"));
         assert!(is_reserved("all"));
@@ -1055,7 +1055,7 @@ mod tests {
 
     #[test]
     fn snake_case_variants() {
-        assert_eq!(to_snake_case("NestedUser"), "nested_user");
+        assert_eq!(to_snake_case("ParcelNotice"), "parcel_notice");
         assert_eq!(to_snake_case("SearchResponse"), "search_response");
         assert_eq!(to_snake_case("name"), "name");
         assert_eq!(to_snake_case("customFields"), "custom_fields");
@@ -1066,14 +1066,14 @@ mod tests {
 
     #[test]
     fn pascal_case_is_idempotent_on_pascal() {
-        assert_eq!(to_pascal_case("NestedUser"), "NestedUser");
-        assert_eq!(to_pascal_case("nested_user"), "NestedUser");
+        assert_eq!(to_pascal_case("ParcelNotice"), "ParcelNotice");
+        assert_eq!(to_pascal_case("parcel_notice"), "ParcelNotice");
         assert_eq!(to_pascal_case("search_response"), "SearchResponse");
     }
 
     #[test]
     fn module_name_snakes_class() {
-        assert_eq!(module_name("NestedUser"), "nested_user");
+        assert_eq!(module_name("ParcelNotice"), "parcel_notice");
         assert_eq!(module_name("Class"), "class_");
         assert_eq!(module_name("_5GmmCause"), "_5_gmm_cause");
     }
@@ -1427,7 +1427,10 @@ mod tests {
         assert_eq!(sanitize_identifier("2fa"), "_2fa");
         assert_eq!(to_pascal_case("ipam_l2vpns_list"), "IpamL2VpnsList");
         // Already-legal identifiers pass through unchanged.
-        assert_eq!(sanitize_identifier("postwithnoauth"), "postwithnoauth");
+        assert_eq!(
+            sanitize_identifier("dispatchwithoutbadge"),
+            "dispatchwithoutbadge"
+        );
         assert_eq!(
             prose_identifier("The /content endpoint"),
             "the_content_endpoint"
@@ -1441,8 +1444,8 @@ mod tests {
             "returns200on_success_or422on_failure"
         );
         assert_eq!(
-            sanitize_identifier("endpoints_container"),
-            "endpoints_container"
+            sanitize_identifier("handling_manifest"),
+            "handling_manifest"
         );
     }
 

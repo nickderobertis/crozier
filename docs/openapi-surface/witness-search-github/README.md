@@ -12,6 +12,27 @@ candidate identity, digest when fetched, classification, screens, and dispositio
 `candidates.tsv` is their consolidated index; regenerate and check both with
 `python3 scripts/witness-search-github-index.py` and its `--check` option.
 
+Excluded inputs use `screened-nonpublic-input:v2:I:N`, where `I` is a random 32-character lowercase
+hexadecimal invocation ID and `N` is a positive assigned integer. Neither is
+derived from the public name, path or content hash. The migration uses one
+invocation ID; a fresh search uses a new one. Within that invocation, each distinct original locator value gets an assigned
+number for its kind: path, revision, blob, digest or other locator. A path locator
+is the original repository and relative path together. Equal values
+of one kind retain equal tokens; distinct revisions retain distinct revision
+tokens. Repository retains its public name; path, revision and SHA256 fields
+hold their independent tokens. A `supersedes` token names the prior revision.
+The candidate name is the path token; a search subject is
+`path-token@revision-token`. Tokens from different invocations never join as
+the same input. Optional locators may be omitted. No reverse mapping is
+committed. Readers accept version `v2` and reject other versions explicitly.
+These historical rows preserve their measured selectors, counts, screens and
+verdicts. Acquisition and census continuations must skip them as screened by the
+repository exclusion rule; fresh candidates from `fern-api/fern` and its mirror `khulnasoft/RapidDocs` must be excluded
+and recorded opaquely before fetching. A fresh exclusion uses raw status `excluded-repository` with no measured
+selector counts; it makes no claim that the document lacks a shape. Migrated
+rows keep their original dispositions and counts. Other candidates retain their
+publisher identities and integrity digests.
+
 GitHub refuses a pushed file over 100 MB, so a ledger larger than 45 MB is
 stored in parts split at line boundaries. The first part keeps the ledger's
 own name (`candidates.tsv`), and the rest follow in order as
@@ -19,6 +40,12 @@ own name (`candidates.tsv`), and the rest follow in order as
 source's `records.tsv`, `candidates.jsonl` and `queries.jsonl`. Read the parts
 concatenated in that order; a `records.tsv:N` or `candidates.jsonl:N` reference
 counts lines across all of them.
+
+[`opaque-history-profile.json`](../opaque-history-profile.json) pins the retained
+historical prefixes. `scripts/witness-evidence-integrity.py` verifies their
+record counts, shared locator values, revision/blob/digest groups, screen,
+probe and supersession joins, and verdict multisets without a reverse mapping. Later appended evidence falls
+outside that snapshot; its existing records remain protected.
 
 `outstanding.tsv` is the checkpoint inventory by key and source, derived from
 the same ledgers by the same index script and held to them by `--check`. It lists

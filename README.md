@@ -312,6 +312,8 @@ crozier is licensed under [Apache-2.0](LICENSE). It is an independent, clean-roo
 implementation — it reproduces Fern's generated *output* format (the project's
 explicit goal) and does not copy Fern's generator source.
 
-The test fixtures under `tests/fixtures/` are Fern's own output and OpenAPI test
-specs, used under Apache-2.0 with attribution and a statement of changes; see
+The SDK goldens under `tests/fixtures/` are Fern-generated output, retained
+under Apache-2.0 with attribution and a statement of changes; see
 [`NOTICE`](NOTICE) and [`licenses/fern-APACHE-2.0.txt`](licenses/fern-APACHE-2.0.txt).
+Their OpenAPI inputs are independently authored or published descriptions of
+real APIs, admitted under the [corpus redistribution policy](docs/corpus-licensing.md).
