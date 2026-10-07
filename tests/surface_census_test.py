@@ -7029,7 +7029,7 @@ class CorpusManifestAgreementTests(unittest.TestCase):
             fixtures = root / "tests" / "fixtures"
             fixtures.mkdir(parents=True)
             (fixtures / "corpus-aliases.tsv").write_text(
-                "planet-window\talpha\nsignal-history\tbeta\n"
+                "planet-window\talpha\nsignal-history\tbeta\n", encoding="utf-8"
             )
             aliases = census.corpus_aliases(fixtures)
             self.assertEqual({"planet-window": "alpha", "signal-history": "beta"}, aliases)
@@ -7038,7 +7038,7 @@ class CorpusManifestAgreementTests(unittest.TestCase):
                 f"| {number} | `{name}` | test | https://example.test/{name}.yaml "
                 "| `1` | MIT | link-ok | alias |"
                 for number, name in enumerate(names, start=1)
-            ) + "\n")
+            ) + "\n", encoding="utf-8")
             for name in names:
                 completed = subprocess.run(
                     [scripts / "fetch-corpus.sh", "--dry-run", "--fixture", aliases.get(name, name)],

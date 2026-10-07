@@ -1927,9 +1927,9 @@ class ArmSearchNetworkStageTests(_StageScratch):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
             self.assertEqual(0, golden_reach_search.main(["outstanding"]))
-        outstanding = (golden_reach_search.EVIDENCE / "outstanding.tsv").read_text()
+        outstanding = (golden_reach_search.EVIDENCE / "outstanding.tsv").read_text(encoding="utf-8")
         self.assertNotIn(token, outstanding)
-        rendered = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text()
+        rendered = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
         summary = next(line for line in rendered.splitlines()
                        if line.startswith("| `github-code-search` |"))
         self.assertEqual(["1", "1", "0"], [cell.strip() for cell in summary.split("|")[2:5]])
@@ -2037,21 +2037,21 @@ class ArmSearchNetworkStageTests(_StageScratch):
         ledger = directory / "candidates.jsonl"
         ledger.write_text(json.dumps({"key": self.KEY, "repository": "example/copied-input",
                                       "path": token(1), "commit": token(2), "sha256": token(3),
-                                      "document": token(4), "disposition": "parse-failure"}) + "\n")
+                                      "document": token(4), "disposition": "parse-failure"}) + "\n", encoding="utf-8")
         golden_reach_search.replace_records("github-code-search", [{
             "key": self.KEY, "kind": "document", "subject": subject,
             "result": "unreadable: parser refused the document", "file": ledger.name}])
         refusal = directory / golden_reach_search.REFUSED_FILE
         refusal.write_text("\t".join(golden_reach_search.REFUSED_FIELDS) + "\n" +
-                           f"{subject}\t{token(3)}\tpinned-parser\tsyntax\thistorical reading\n")
+                           f"{subject}\t{token(3)}\tpinned-parser\tsyntax\thistorical reading\n", encoding="utf-8")
         probe = {"key": self.KEY, "candidate": subject, "status": "ok", "reached": ["site"],
                  "build": self.head[:12]}
-        (directory / "probe.jsonl").write_text(json.dumps(probe) + "\n")
+        (directory / "probe.jsonl").write_text(json.dumps(probe) + "\n", encoding="utf-8")
         screen = {"key": self.KEY, "candidate": subject, "fern": "failed: previous refusal"}
-        (directory / "screens.jsonl").write_text(json.dumps(screen) + "\n")
+        (directory / "screens.jsonl").write_text(json.dumps(screen) + "\n", encoding="utf-8")
         rescreen = directory / golden_reach_search.RESCREEN_FILE
         rescreen.write_text(json.dumps({"candidate": subject, "sha256": token(3),
-                                       "exit": 1, "diagnostic": "historical refusal"}) + "\n")
+                                       "exit": 1, "diagnostic": "historical refusal"}) + "\n", encoding="utf-8")
         original = {path: path.read_bytes() for path in
                     (ledger, refusal, rescreen, directory / "screens.jsonl", directory / "records.tsv")}
         for stage in ("recensus", "refuse", "fern-rescreen"):
@@ -2083,18 +2083,18 @@ class ArmSearchNetworkStageTests(_StageScratch):
         shared.mkdir(parents=True)
         ledger = shared / "documents.jsonl"
         original = json.dumps({"repository": "fern-api/fern", "path": token, "commit": token, "blob": token}) + "\n"
-        ledger.write_text(original)
+        ledger.write_text(original, encoding="utf-8")
         with contextlib.redirect_stdout(io.StringIO()) as printed:
             self.assertEqual(0, golden_reach_search.main(["fetch-pins", "--root", str(self.root)]))
         self.assertIn("1 opaque v2 record(s) screened by repository rule", printed.getvalue())
-        self.assertEqual(original, ledger.read_text())
+        self.assertEqual(original, ledger.read_text(encoding="utf-8"))
         self.assertEqual([], getattr(self.loopback, "requests", []))
         self.assertEqual([], golden_reach_search.pinned_listing("github-publisher-trees"))
-        ledger.write_text(original.replace(":v2:", ":v3:"))
+        ledger.write_text(original.replace(":v2:", ":v3:"), encoding="utf-8")
         with self.assertRaisesRegex(SystemExit, "unsupported opaque identity version v3"):
             golden_reach_search.main(["fetch-pins", "--root", str(self.root)])
         self.assertEqual([], getattr(self.loopback, "requests", []))
-        ledger.write_text(original)
+        ledger.write_text(original, encoding="utf-8")
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(0, golden_reach_search.main(["fetch-pins", "--root", str(self.root)]))
         self.assertEqual([], getattr(self.loopback, "requests", []))

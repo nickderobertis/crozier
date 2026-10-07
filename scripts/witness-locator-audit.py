@@ -85,7 +85,7 @@ def structured_findings(value: Any) -> list[str]:
 def audit(root: Path) -> list[str]:
     paths = subprocess.check_output(
         ['git', '-C', str(root), 'ls-files', '-z', 'docs/openapi-surface', 'docs/openapi-surface-coverage.md']
-    ).decode().split('\0')
+    ).decode('utf-8').split('\0')
     errors = []
     for name in filter(None, paths):
         path = root / name
@@ -93,7 +93,7 @@ def audit(root: Path) -> list[str]:
             continue
         compressed = path.suffix == '.gz'
         format_suffix = path.with_suffix('').suffix if compressed else path.suffix
-        text = gzip.decompress(path.read_bytes()).decode() if compressed else path.read_text()
+        text = gzip.decompress(path.read_bytes()).decode('utf-8') if compressed else path.read_text(encoding='utf-8')
         for line_number, line in enumerate(text.splitlines(), 1):
             problems = findings(line)
             if format_suffix == '.jsonl':

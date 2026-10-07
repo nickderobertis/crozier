@@ -93,12 +93,12 @@ class StringMapSearchRecordTests(unittest.TestCase):
 
     def test_summary_counts_and_dispositions_match_the_retained_measurements(self) -> None:
         root = REPO / "docs/openapi-surface/witness-search-string-map"
-        queries = [json.loads(line) for line in (root / "sourcegraph/queries.jsonl").read_text().splitlines()]
-        with (root / "queries.tsv").open(newline="") as handle:
+        queries = [json.loads(line) for line in (root / "sourcegraph/queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        with (root / "queries.tsv").open(newline="", encoding="utf-8") as handle:
             summary = list(csv.DictReader(handle, delimiter="\t"))
         self.assertEqual(2, len(queries))
         self.assertEqual(len(queries), len(summary))
-        record = (root / "README.md").read_text()
+        record = (root / "README.md").read_text(encoding="utf-8")
         for measured, stated in zip(queries, summary):
             self.assertEqual(measured["key"], stated["key"])
             self.assertEqual(measured["query"], stated["query"])
@@ -107,7 +107,7 @@ class StringMapSearchRecordTests(unittest.TestCase):
             self.assertEqual(measured["result_count"], int(stated["result_count"]))
             self.assertIn(f"{measured['result_count']:,}", record)
         publisher = root / "github-publisher-trees"
-        documents = [json.loads(line) for line in (publisher / "documents.jsonl").read_text().splitlines()]
+        documents = [json.loads(line) for line in (publisher / "documents.jsonl").read_text(encoding="utf-8").splitlines()]
         identities = {(row["repository"], row["commit"], row["path"]): row for row in documents}
         self.assertEqual(4, len(identities))
         for row in identities.values():
@@ -117,7 +117,7 @@ class StringMapSearchRecordTests(unittest.TestCase):
             self.assertEqual(row["selector_counts"]["request-body-string-map"],
                              int(matches[0].split("|")[3]))
         latest = {}
-        for line in (publisher / "screens.jsonl").read_text().splitlines():
+        for line in (publisher / "screens.jsonl").read_text(encoding="utf-8").splitlines():
             row = json.loads(line)
             latest[row["repository"], row["commit"], row["path"]] = row
         self.assertEqual(2, len(latest))
@@ -143,8 +143,8 @@ class ReplacementArmSearchRecordTests(unittest.TestCase):
         for name, query_budget, document_budget in records:
             with self.subTest(record=name):
                 root = REPO / "docs/openapi-surface" / ("witness-search-" + name)
-                queries = [json.loads(line) for line in (root / "sourcegraph/queries.jsonl").read_text().splitlines()]
-                with (root / "queries.tsv").open(newline="") as handle:
+                queries = [json.loads(line) for line in (root / "sourcegraph/queries.jsonl").read_text(encoding="utf-8").splitlines()]
+                with (root / "queries.tsv").open(newline="", encoding="utf-8") as handle:
                     summary = list(csv.DictReader(handle, delimiter="\t"))
                 self.assertEqual(query_budget, len(queries))
                 self.assertEqual(len(queries), len(summary))
@@ -159,14 +159,14 @@ class ReplacementArmSearchRecordTests(unittest.TestCase):
                     self.assertLessEqual(len(measured["results"]), 100)
                     self.assertEqual(100, measured["progress"]["matchCount"])
                     self.assertTrue(any(item["reason"] == "shard-match-limit" for item in measured["progress"]["skipped"]))
-                acquisitions = [json.loads(line) for line in (root / "sourcegraph/candidates.jsonl").read_text().splitlines()]
-                with (root / "shape-screen.tsv").open(newline="") as handle:
+                acquisitions = [json.loads(line) for line in (root / "sourcegraph/candidates.jsonl").read_text(encoding="utf-8").splitlines()]
+                with (root / "shape-screen.tsv").open(newline="", encoding="utf-8") as handle:
                     screens = list(csv.DictReader(handle, delimiter="\t"))
                 identity = lambda row: (row["key"], row["repository"], row["path"], row["commit"])
                 acquired = {identity(row): row for row in acquisitions}
                 self.assertEqual(document_budget, len(acquired))
                 self.assertEqual(set(acquired), {identity(row) for row in screens})
-                record = (root / "README.md").read_text()
+                record = (root / "README.md").read_text(encoding="utf-8")
                 for row in screens:
                     measured = acquired[identity(row)]
                     self.assertEqual(measured["sha256"], row["sha256"])
@@ -185,12 +185,12 @@ class IntegerFormatSearchRecordTests(unittest.TestCase):
     def test_summary_counts_and_refusal_match_the_retained_measurements(self) -> None:
         root = REPO / "docs/openapi-surface/witness-search-integer-format"
         source = root / "sourcegraph"
-        queries = [json.loads(line) for line in (source / "queries.jsonl").read_text().splitlines()]
-        with (root / "queries.tsv").open(newline="") as handle:
+        queries = [json.loads(line) for line in (source / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        with (root / "queries.tsv").open(newline="", encoding="utf-8") as handle:
             summary = list(csv.DictReader(handle, delimiter="\t"))
         self.assertEqual(2, len(queries))
         self.assertEqual(len(queries), len(summary))
-        record = (root / "README.md").read_text()
+        record = (root / "README.md").read_text(encoding="utf-8")
         for measured, stated in zip(queries, summary):
             self.assertEqual(measured["key"], stated["key"])
             self.assertEqual(measured["query"], stated["query"])
@@ -198,7 +198,7 @@ class IntegerFormatSearchRecordTests(unittest.TestCase):
             self.assertEqual(len(measured["results"]), int(stated["result_count"]))
             self.assertEqual(measured["result_count"], int(stated["result_count"]))
             self.assertIn(str(measured["result_count"]), record)
-        documents = [json.loads(line) for line in (source / "candidates.jsonl").read_text().splitlines()]
+        documents = [json.loads(line) for line in (source / "candidates.jsonl").read_text(encoding="utf-8").splitlines()]
         identities = {
             (row["repository"].removeprefix("github.com/"), row["commit"], row["path"]): row
             for row in documents
@@ -209,7 +209,7 @@ class IntegerFormatSearchRecordTests(unittest.TestCase):
             matches = [line for line in record.splitlines() if line.startswith(label)]
             self.assertEqual(1, len(matches), label)
             self.assertEqual(row["selector_count"], int(matches[0].split("|")[3]))
-        screens = [json.loads(line) for line in (source / "screens.jsonl").read_text().splitlines()]
+        screens = [json.loads(line) for line in (source / "screens.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertEqual(1, len(screens))
         row = screens[0]
         identity = row["repository"], row["commit"], row["path"]
@@ -254,9 +254,9 @@ class LedgerShardTests(unittest.TestCase):
         for name, values in rows.items():
             path = root / directory / name
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text("".join(json.dumps(row) + "\n" for row in values))
+            path.write_text("".join(json.dumps(row) + "\n" for row in values), encoding="utf-8")
         baseline = self.root / "profile.json"
-        baseline.write_text(json.dumps(integrity.profile(files, integrity.opaque_path, root)))
+        baseline.write_text(json.dumps(integrity.profile(files, integrity.opaque_path, root)), encoding="utf-8")
 
         def verify() -> subprocess.CompletedProcess[str]:
             return subprocess.run([sys.executable, str(script), "--root", str(root),
@@ -268,7 +268,7 @@ class LedgerShardTests(unittest.TestCase):
         for invalid_counts in (None, [], {}, {next(iter(files)): 0},
                                {next(iter(files)): -1}, {next(iter(files)): True}):
             with self.subTest(record_counts=invalid_counts):
-                baseline.write_text(json.dumps({**expected, "record_counts": invalid_counts}))
+                baseline.write_text(json.dumps({**expected, "record_counts": invalid_counts}), encoding="utf-8")
                 rejected = verify()
                 self.assertEqual(1, rejected.returncode)
                 self.assertIn("record_counts must map ledger paths to positive integers", rejected.stderr)
@@ -277,7 +277,7 @@ class LedgerShardTests(unittest.TestCase):
         for invalid_path in (str(root / "outside.jsonl"),
                              "docs/openapi-surface/../outside.jsonl", "tests/outside.jsonl"):
             with self.subTest(ledger_path=invalid_path):
-                baseline.write_text(json.dumps({**expected, "record_counts": {invalid_path: 1}}))
+                baseline.write_text(json.dumps({**expected, "record_counts": {invalid_path: 1}}), encoding="utf-8")
                 rejected = verify()
                 self.assertEqual(1, rejected.returncode)
                 self.assertIn("invalid historical ledger path", rejected.stderr)
@@ -286,7 +286,7 @@ class LedgerShardTests(unittest.TestCase):
                 self.assertEqual(0, verify().returncode)
         path = root / directory / "candidates.jsonl"
         saved = path.read_bytes()
-        path.write_text(json.dumps(candidate) + "\n")
+        path.write_text(json.dumps(candidate) + "\n", encoding="utf-8")
         truncated = verify()
         self.assertEqual(1, truncated.returncode)
         self.assertIn("historical prefix needs 2 records, found 1", truncated.stderr)
@@ -299,7 +299,7 @@ class LedgerShardTests(unittest.TestCase):
                                           ("selector_count", 0, "verdicts")):
             with self.subTest(field=field):
                 path.write_text(json.dumps({**candidate, field: replacement}) + "\n" +
-                                json.dumps(candidate) + "\n")
+                                json.dumps(candidate) + "\n", encoding="utf-8")
                 rejected = verify()
                 self.assertEqual(1, rejected.returncode)
                 self.assertIn(metric, rejected.stderr)
@@ -309,7 +309,7 @@ class LedgerShardTests(unittest.TestCase):
         probe = root / directory / "probe.jsonl"
         saved_probe = probe.read_bytes()
         probe.write_text(json.dumps({**rows["probe.jsonl"][0],
-                                     "candidate": f"{token(1)}@{token(5)}"}) + "\n")
+                                     "candidate": f"{token(1)}@{token(5)}"}) + "\n", encoding="utf-8")
         rejected = verify()
         self.assertEqual(1, rejected.returncode)
         self.assertIn("subject_joins", rejected.stderr)
@@ -326,39 +326,39 @@ class LedgerShardTests(unittest.TestCase):
         original_rows = {"candidates.jsonl": [publisher, dict(publisher)],
                          "screens.jsonl": [publisher_screen], "probe.jsonl": [publisher_probe]}
         for name, values in original_rows.items():
-            (root / directory / name).write_text("".join(json.dumps(row) + "\n" for row in values))
-        baseline.write_text(json.dumps(integrity.profile(files, lambda _row, _location: True, root)))
+            (root / directory / name).write_text("".join(json.dumps(row) + "\n" for row in values), encoding="utf-8")
+        baseline.write_text(json.dumps(integrity.profile(files, lambda _row, _location: True, root)), encoding="utf-8")
         for name, values in rows.items():
-            (root / directory / name).write_text("".join(json.dumps(row) + "\n" for row in values))
+            (root / directory / name).write_text("".join(json.dumps(row) + "\n" for row in values), encoding="utf-8")
         recovered = verify()
         self.assertEqual(0, recovered.returncode, recovered.stderr)
 
     def test_retained_opaque_history_preserves_record_groups_and_verdicts(self) -> None:
         script = REPO / "scripts/witness-evidence-integrity.py"
         baseline = REPO / "docs/openapi-surface/opaque-history-profile.json"
-        saved = json.loads(baseline.read_text())
+        saved = json.loads(baseline.read_text(encoding="utf-8"))
         self.assertGreater(sum(saved["node_counts"].values()), 0)
         self.assertGreater(saved["screen_joins"]["pairs"], 0)
         invalid = self.root / "unsupported-profile.json"
-        invalid.write_text("[]")
+        invalid.write_text("[]", encoding="utf-8")
         malformed = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
                                    capture_output=True, text=True)
         self.assertEqual(1, malformed.returncode)
         self.assertIn("profile must be a JSON object", malformed.stderr)
-        invalid.write_text(json.dumps({**saved, "version": 99}))
+        invalid.write_text(json.dumps({**saved, "version": 99}), encoding="utf-8")
         rejected = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
                                   capture_output=True, text=True)
         self.assertEqual(1, rejected.returncode)
         self.assertIn("unsupported profile version 99", rejected.stderr)
         self.assertIn("restore version 1 evidence", rejected.stderr)
-        invalid.write_text(json.dumps(saved))
+        invalid.write_text(json.dumps(saved), encoding="utf-8")
         recovered = subprocess.run([sys.executable, str(script), "--baseline", str(invalid)],
                                    capture_output=True, text=True)
         self.assertEqual(0, recovered.returncode, recovered.stderr)
         self.assertEqual("witness-evidence-integrity: historical records and joins preserved\n", recovered.stdout)
 
     def test_documented_identity_grammar_matches_the_shared_contract(self) -> None:
-        readme = (REPO / "docs/openapi-surface/witness-search-github/README.md").read_text()
+        readme = (REPO / "docs/openapi-surface/witness-search-github/README.md").read_text(encoding="utf-8")
         self.assertIn(f"`{SEARCH.INDEX.OPAQUE_PREFIX}I:N`", readme)
         version = SEARCH.INDEX.OPAQUE_PREFIX.split(":")[1]
         self.assertEqual({version}, set(re.findall(r"\bv[0-9]+\b", readme)))
@@ -545,11 +545,11 @@ class LedgerShardTests(unittest.TestCase):
                             and row["fern_screen"] == "failed: measured refusal"
                             and row["disposition"] == "rejected" for row in records), records)
         subprocess.run([*command, "--check"], check=True, capture_output=True, text=True)
-        ledger.write_text(ledger.read_text().replace(token(2), token(2).replace(":v2:", ":v3:")))
+        ledger.write_text(ledger.read_text(encoding="utf-8").replace(token(2), token(2).replace(":v2:", ":v3:")), encoding="utf-8")
         rejected = subprocess.run(command, capture_output=True, text=True)
         self.assertEqual(1, rejected.returncode)
         self.assertIn("unsupported opaque identity version v3", rejected.stderr)
-        ledger.write_text(ledger.read_text().replace(":v3:", ":v2:"))
+        ledger.write_text(ledger.read_text(encoding="utf-8").replace(":v3:", ":v2:"), encoding="utf-8")
         subprocess.run(command, check=True, capture_output=True, text=True)
 
     def test_index_replaces_the_prior_opaque_input_revision(self) -> None:
@@ -1347,7 +1347,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                    "--publisher-file", str(publisher_file)]
         for repository in sorted(SEARCH.INDEX.EXCLUDED_REPOSITORIES):
             with self.subTest(repository=repository):
-                publisher_file.write_text(json.dumps({"publishers": [{**publisher, "repository": repository}]}))
+                publisher_file.write_text(json.dumps({"publishers": [{**publisher, "repository": repository}]}), encoding="utf-8")
                 rejected = subprocess.run(command, env=env, capture_output=True, text=True)
                 self.assertEqual(2, rejected.returncode)
                 self.assertIn("excluded by the repository rule", rejected.stderr)
@@ -3220,19 +3220,19 @@ class LocatorAuditTests(unittest.TestCase):
                     "https://github.com/" + repository + "/blob/" + "0" * 40 + "/description.json",
                 ):
                     with self.subTest(repository=repository, locator=locator):
-                        record.write_text(json.dumps({"subject": locator}) + "\n")
+                        record.write_text(json.dumps({"subject": locator}) + "\n", encoding="utf-8")
                         subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
                         refused = self.run_audit(root)
                         self.assertNotEqual(0, refused.returncode)
                         self.assertIn("public locator", refused.stderr)
-                        record.write_text(json.dumps({"subject": repository + ":" + token + "@" + token}) + "\n")
+                        record.write_text(json.dumps({"subject": repository + ":" + token + "@" + token}) + "\n", encoding="utf-8")
                         recovered = self.run_audit(root)
                         self.assertEqual(0, recovered.returncode, recovered.stderr)
-                record.write_text(json.dumps({"repository": repository, "path": "description.json"}) + "\n")
+                record.write_text(json.dumps({"repository": repository, "path": "description.json"}) + "\n", encoding="utf-8")
                 refused = self.run_audit(root)
                 self.assertNotEqual(0, refused.returncode)
                 self.assertIn("public path", refused.stderr)
-                record.write_text(json.dumps({"repository": repository, "path": token}) + "\n")
+                record.write_text(json.dumps({"repository": repository, "path": token}) + "\n", encoding="utf-8")
                 self.assertEqual(0, self.run_audit(root).returncode)
 
     def test_quoted_input_notes_reject_then_recover(self):
@@ -3243,12 +3243,12 @@ class LocatorAuditTests(unittest.TestCase):
             note.parent.mkdir(parents=True)
             for repository in SEARCH.INDEX.EXCLUDED_REPOSITORIES:
                 with self.subTest(repository=repository):
-                    note.write_text(f"`{repository}`'s own `description.json`")
+                    note.write_text(f"`{repository}`'s own `description.json`", encoding="utf-8")
                     subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
                     refused = self.run_audit(root)
                     self.assertNotEqual(0, refused.returncode)
                     self.assertIn("public locator", refused.stderr)
-                    note.write_text("one anonymous synthetic input")
+                    note.write_text("one anonymous synthetic input", encoding="utf-8")
                     recovered = self.run_audit(root)
                     self.assertEqual(0, recovered.returncode, recovered.stderr)
 
@@ -3262,12 +3262,12 @@ class LocatorAuditTests(unittest.TestCase):
                 "https://github.com/fern-api/fern/blob/main/CONTRIBUTING.md",
                 "https://github.com/fern-api/fern/issues",
             )
-            note.write_text("\n".join("[Repository link](" + url + ")" for url in urls))
+            note.write_text("\n".join("[Repository link](" + url + ")" for url in urls), encoding="utf-8")
             subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
             accepted = self.run_audit(root)
             self.assertEqual(0, accepted.returncode, accepted.stderr)
             for url in urls:
-                note.write_text("[Public locator](" + url + "/description.json)")
+                note.write_text("[Public locator](" + url + "/description.json)", encoding="utf-8")
                 refused = self.run_audit(root)
                 self.assertNotEqual(0, refused.returncode)
                 self.assertIn("public locator", refused.stderr)

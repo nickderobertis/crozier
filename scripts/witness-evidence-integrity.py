@@ -27,7 +27,7 @@ Location = tuple[str | int, ...]
 
 def fingerprint(value: Any) -> str:
     return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
 
 
@@ -74,7 +74,7 @@ def profile(
             raise ValueError(
                 f"invalid historical ledger path {file!r}; restore the baseline from git"
             )
-        lines = (root / relative).read_text().splitlines()
+        lines = (root / relative).read_text(encoding="utf-8").splitlines()
         if len(lines) < files[file]:
             raise ValueError(
                 f"{file}: historical prefix needs {files[file]} records, found {len(lines)}; restore the ledger from git"
@@ -237,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=REPO)
     args = parser.parse_args(argv)
     try:
-        expected = json.loads(args.baseline.read_text())
+        expected = json.loads(args.baseline.read_text(encoding="utf-8"))
         if not isinstance(expected, dict):
             raise ValueError(
                 "profile must be a JSON object; restore the baseline from git"
