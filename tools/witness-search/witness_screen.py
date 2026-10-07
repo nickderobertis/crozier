@@ -52,7 +52,7 @@ import tempfile
 import urllib.parse
 from collections import Counter
 from collections.abc import Callable
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from types import ModuleType
 from typing import Any
 
@@ -96,8 +96,6 @@ def _load(name: str, path: Path) -> ModuleType:
     spec.loader.exec_module(module)
     return module
 
-
-# --- Fern: the pinned, measured runner -------------------------------------
 
 @functools.lru_cache(maxsize=1)
 def corpus_fern_pins() -> tuple[str, str, str, dict[str, Any]]:
@@ -254,8 +252,6 @@ def fern_verdict(row: dict[str, Any]) -> str | None:
     return "passed"
 
 
-# --- Licence: the corpus rule's admissible set, read off the rule itself ----
-
 @functools.lru_cache(maxsize=None)
 def admissible_families(rule: Path = RULE) -> tuple[str, ...]:
     """The licence names the rule's canonical enumeration admits, in its own order.
@@ -384,9 +380,6 @@ def licence_screen(document_text: str | None, files: list[tuple[str, int, bytes]
     exit_status = " ".join(f"{name}:{status}" for name, status, _data in files) or "none"
     return outcome, {"exit": exit_status, "pins": pins}, log
 
-
-# --- The stage: one measured record per screen, and the checks that refuse --
-# --- a success claim that lacks its pins, exit status or log digest ---------
 
 def raw_url(base: str, repository: str, commit: str, path: str) -> str:
     return f"{base.rstrip('/')}/{repository}/{commit}/{urllib.parse.quote(path)}"
@@ -529,6 +522,8 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
         log, digest = section.get("log"), section.get("log_sha256")
         if not isinstance(log, str) or not log or not isinstance(digest, str) or not SHA.fullmatch(digest):
             missing.append(f"the {name} screen's redacted log and its sha256")
+        elif base is not None and not inside(base, log):
+            missing.append(f"the {name} screen's log {log} inside the evidence directory, not outside it")
         elif base is not None:
             path = base / log
             if not path.is_file():
@@ -562,11 +557,22 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
     return missing
 
 
+def inside(base: Path, log: str) -> bool:
+    """Whether a recorded log path names a file under the evidence directory `base`.
+
+    It is read as the POSIX path it is written as, on every host: relative, with
+    no `..`, backslash or drive, and still under `base` once links resolve."""
+    relative = PurePosixPath(log)
+    if relative.is_absolute() or "\\" in log or ":" in log or ".." in relative.parts:
+        return False
+    return (base / Path(*relative.parts)).resolve().is_relative_to(base.resolve())
+
+
 def discard_logs(record: dict[str, Any], base: Path) -> None:
     """Remove the logs a measurement wrote when its record is refused, so no log outlives its row."""
     for name in SCREENS:
         section = record.get(name)
-        if isinstance(section, dict) and isinstance(section.get("log"), str):
+        if isinstance(section, dict) and isinstance(section.get("log"), str) and inside(base, section["log"]):
             (base / section["log"]).unlink(missing_ok=True)
 
 
@@ -632,10 +638,18 @@ def row_failures(row: dict[str, Any], base: Path, fields: dict[str, str]) -> lis
     return failures
 
 
-# --- The legacy family's producer --------------------------------------------
-
 SUCCESS_DISPOSITIONS = re.compile(r"witness-found|not-owed|pending-registration(?:; owner [a-z0-9-]+)?|"
                                   r"byte-identical to CORPUS row \d+, sha256 [0-9a-f]{64}")
+# A filed screen is one of those, or `rejected`: the index reads no other.
+REJECTED = "rejected"
+
+
+def disposition_arg(text: str) -> str:
+    if text and text != REJECTED and not SUCCESS_DISPOSITIONS.fullmatch(text):
+        raise argparse.ArgumentTypeError(
+            f"{text!r} is not a disposition: use {REJECTED}, witness-found, not-owed, "
+            "pending-registration[; owner <node>], or byte-identical to CORPUS row <n>, sha256 <digest>")
+    return text
 
 
 def legacy_screen(args: argparse.Namespace) -> int:
@@ -663,7 +677,7 @@ def legacy_screen(args: argparse.Namespace) -> int:
     passed = isinstance(record, dict) and all(
         isinstance(record.get(name), dict) and str(record[name].get("outcome", "")).startswith("passed")
         for name in SCREENS)
-    disposition = args.disposition or ("" if passed else "rejected")
+    disposition = args.disposition or ("" if passed else REJECTED)
     refusal = ""
     if missing:
         refusal = ("a screen is filed only with its measured record; it lacks " + "; ".join(missing)
@@ -706,7 +720,8 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--path", required=True)
     s.add_argument("--sha256", default="", help="the digest the acquisition pinned, checked against what is read")
     s.add_argument("--licence-refusal", default="", help="refuse a licence the reading would pass, and why")
-    s.add_argument("--disposition", default="", help="what becomes of a candidate passing every screen")
+    s.add_argument("--disposition", default="", type=disposition_arg,
+                   help="what becomes of a candidate passing every screen")
     s.add_argument("--measured", type=Path, help="a record this stage measured earlier, filed as it stands")
     s.add_argument("--timeout", type=positive_int, default=1800)
     s.add_argument("--evidence-root", type=Path, default=REPO / "docs" / "openapi-surface")

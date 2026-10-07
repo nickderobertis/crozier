@@ -248,6 +248,53 @@ class LegacyScreenCliTests(unittest.TestCase):
                 self.assertIn(missing, refused.stderr)
         self.assertEqual([], self.rows())
 
+    def test_a_measured_log_outside_the_evidence_directory_is_refused(self) -> None:
+        self.assertEqual(0, self.screen("--disposition", "witness-found").returncode)
+        record = self.rows()[0]["measured"]
+        (self.evidence / "screens.jsonl").unlink()
+        # The same bytes, so each recorded digest still matches: only where the
+        # log lives is wrong.
+        data = (self.evidence / record["fern"]["log"]).read_bytes()
+        outside = self.scratch / "outside.log"
+        outside.write_bytes(data)
+        (self.root / "outside.log").write_bytes(data)
+        link = self.evidence / "screens" / "linked.log"
+        link.symlink_to(outside)
+        for log in (str(outside), "../outside.log", "screens/../../outside.log", "screens/linked.log",
+                    "screens\\..\\..\\outside.log", "C:/outside.log"):
+            broken = json.loads(json.dumps(record))
+            broken["fern"]["log"] = log
+            path = self.scratch / "outside.json"
+            path.write_text(json.dumps(broken), encoding="utf-8")
+            with self.subTest(log=log):
+                refused = self.screen("--measured", str(path), "--disposition", "witness-found")
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(f"the fern screen's log {log} inside the evidence directory, not outside it",
+                              refused.stderr)
+                self.assertEqual([], self.rows())
+                self.assertFalse(SCREEN.inside(self.evidence, log))
+        self.assertEqual(data, outside.read_bytes())
+        # The record as measured, its logs under the evidence directory, files.
+        path.write_text(json.dumps(record), encoding="utf-8")
+        self.assertEqual(0, self.screen("--measured", str(path), "--disposition", "witness-found").returncode)
+        self.assertEqual(1, len(self.rows()))
+
+    def test_a_disposition_the_index_cannot_read_is_refused_before_measuring(self) -> None:
+        for disposition in ("approved", "witness-found-ish", "pending-registration; owner Bad Node",
+                            "byte-identical to CORPUS row x, sha256 abc"):
+            with self.subTest(disposition=disposition):
+                refused = self.screen("--disposition", disposition)
+                self.assertEqual(2, refused.returncode, refused.stderr)
+                self.assertIn(f"{disposition!r} is not a disposition: use rejected, witness-found", refused.stderr)
+                self.assertEqual([], self.rows())
+                self.assertFalse((self.evidence / "screens").exists(), "a refused argument measured something")
+        # Every spelling the index reads is filed as given.
+        for disposition in ("rejected", "pending-registration; owner node-7"):
+            with self.subTest(disposition=disposition):
+                filed = self.screen("--disposition", disposition)
+                self.assertEqual(0, filed.returncode, filed.stderr)
+                self.assertEqual(disposition, self.rows()[-1]["disposition"])
+
 
     def test_an_unreadable_measured_file_or_timeout_is_refused_with_its_remedy(self) -> None:
         missing = self.screen("--measured", str(self.scratch / "absent.json"))
