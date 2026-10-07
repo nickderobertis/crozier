@@ -693,7 +693,7 @@ setup-llmlint:
 # See docs/llmlint-plugins.md.
 # Refresh the vendored llmlint rule plugins and their lock.
 llmlint-plugins-refresh:
-    ./scripts/llmlint-plugins.py refresh
+    ./tools/llmlint/llmlint-plugins.py refresh
 
 # Boundary coverage for that plugin set: drives the REAL llmlint over the REAL
 # llmlint.yml with the plugin origin refused (a proxy at a closed port, a cold
@@ -703,7 +703,7 @@ llmlint-plugins-refresh:
 # job sets so the step cannot no-op.
 # Prove the judged tier resolves its rules with the plugin origin unreachable.
 test-llmlint-plugins:
-    python3 tests/llmlint_plugins_test.py
+    python3 tools/llmlint/tests/llmlint_plugins_test.py
 
 # Set up local Fern-golden reproduction (Fern CLI, Docker daemon, release binary).
 # Idempotent; also run by the SessionStart hook. The hosted workflow is the normal
@@ -724,15 +724,15 @@ lint-llm-validate *args:
 
 # `--diff` lints only what this branch introduced against the merge base, and
 # honors llmlint.yml's excludes. llmlint hands one rule batch every changed file,
-# so scripts/llmlint-diff.py splits a diff too large for the judge into file
+# so tools/llmlint/llmlint-diff.py splits a diff too large for the judge into file
 # batches it can hold, and runs the one plain invocation otherwise.
 # Blocking `llmlint` PR check; run before pushing. BASE defaults to origin/main.
 lint-llm-diff base="origin/main" *args:
-    python3 scripts/llmlint-diff.py {{base}} {{args}}
+    python3 tools/llmlint/llmlint-diff.py {{base}} {{args}}
 
 # Offline tests of the batching wrapper, against a stub llmlint.
 test-llmlint-diff:
-    python3 tests/llmlint_diff_test.py
+    python3 tools/llmlint/tests/llmlint_diff_test.py
 
 # --- Terminal screenshots (informational; never part of `check`) --------------
 # Deterministic SVGs of the real CLI output, rendered by `freeze` from a vendored

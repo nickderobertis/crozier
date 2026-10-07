@@ -1940,13 +1940,13 @@ WITHOUT_POSIX = REPO / "tests" / "without-posix-modules"
 # import without the POSIX-only modules; the rate-limit guard comes in through the
 # ones that search.
 PORTABLE_SCRIPTS = (
-    "golden-reach.py",
-    "golden-reach-search.py",
-    "llmlint-diff.py",
-    "openapi-surface-census.py",
-    "witness-scrape-wide.py",
-    "witness-search-github.py",
-    "witness_screen.py",
+    "scripts/golden-reach.py",
+    "scripts/golden-reach-search.py",
+    "tools/llmlint/llmlint-diff.py",
+    "scripts/openapi-surface-census.py",
+    "scripts/witness-scrape-wide.py",
+    "scripts/witness-search-github.py",
+    "scripts/witness_screen.py",
 )
 LOCK_HOLDER = """\
 import importlib.util, os, sys, time
@@ -1994,7 +1994,7 @@ class WithoutPosixModulesTests(unittest.TestCase):
     def test_every_script_runs_its_command_line_without_them(self) -> None:
         for script in PORTABLE_SCRIPTS:
             with self.subTest(script):
-                run = subprocess.run([sys.executable, str(REPO / "scripts" / script), "--help"],
+                run = subprocess.run([sys.executable, str(REPO / script), "--help"],
                                      capture_output=True, text=True, env=python_env(posix_modules=False))
                 self.assertEqual(0, run.returncode, run.stderr)
                 self.assertIn("usage:", run.stdout)

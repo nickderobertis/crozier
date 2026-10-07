@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this boundary test sits in tests/ beside llmlint_plugins_test.py and runs under `just test-llmlint-diff`.
-"""Offline tests for `scripts/llmlint-diff.py`, the `lint-llm-diff` recipe's body.
+"""Offline tests for `tools/llmlint/llmlint-diff.py`, the `lint-llm-diff` recipe's body.
 
 Each case builds a real git repository with a base branch and a feature branch,
 and runs the script as a subprocess inside it. The only stand-in is `llmlint`
@@ -20,8 +20,8 @@ import textwrap
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
-SCRIPT = REPO / "scripts" / "llmlint-diff.py"
+REPO = Path(__file__).resolve().parents[3]
+SCRIPT = REPO / "tools" / "llmlint" / "llmlint-diff.py"
 
 STUB = textwrap.dedent(
     """\
@@ -156,7 +156,7 @@ class LlmlintDiffTests(unittest.TestCase):
 
     def test_the_recipe_runs_this_script(self) -> None:
         justfile = (REPO / "justfile").read_text(encoding="utf-8")
-        self.assertIn('lint-llm-diff base="origin/main" *args:\n    python3 scripts/llmlint-diff.py {{base}} {{args}}',
+        self.assertIn('lint-llm-diff base="origin/main" *args:\n    python3 tools/llmlint/llmlint-diff.py {{base}} {{args}}',
                       justfile)
 
 

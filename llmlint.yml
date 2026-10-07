@@ -117,7 +117,7 @@ files:
     - "docs/fern-refusals/generated.tsv"
     - "docs/fern-refusals/unretrievable.tsv"
     # Vendored upstream rule plugins (llmlint-plugins/, refreshed by
-    # scripts/llmlint-plugins.py): someone else's authored configs, judged in
+    # tools/llmlint/llmlint-plugins.py): someone else's authored configs, judged in
     # their own repository, not crozier's code.
     - "llmlint-plugins/**"
 rationales: true

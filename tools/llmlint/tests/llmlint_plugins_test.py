@@ -33,7 +33,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[3]
 LOCK = REPO / "llmlint-plugins" / "lock.json"
 CONFIG = REPO / "llmlint.yml"
 RECORD = json.loads(LOCK.read_text(encoding="utf-8"))
@@ -180,7 +180,7 @@ class TheGateAndTheRequiredCheckRunThisSuite(unittest.TestCase):
         gate = next(line for line in justfile if line.startswith("check:"))
         self.assertIn("test-llmlint-plugins", gate.split())
         recipe = justfile[justfile.index("test-llmlint-plugins:") + 1].strip()
-        self.assertEqual(f"python3 tests/{Path(__file__).name}", recipe)
+        self.assertEqual(f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}", recipe)
 
     def test_the_required_llmlint_check_runs_it_without_the_skip(self) -> None:
         workflow = (REPO / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")

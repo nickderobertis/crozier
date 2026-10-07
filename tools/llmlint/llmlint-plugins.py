@@ -10,12 +10,12 @@ upstream rule change lands as a reviewable diff.
 
 Usage (needs network, plus `llmlint` on PATH to name each plugin's rules):
 
-    just llmlint-plugins-refresh        # ./scripts/llmlint-plugins.py refresh
+    just llmlint-plugins-refresh        # ./tools/llmlint/llmlint-plugins.py refresh
 
 `url`/`pin`/`file`/`name` in the lock are the hand-edited inputs — add a plugin
 by adding an entry with those four fields (and its path to `llmlint.yml`), then
 refresh. Every other field is generated; editing one by hand is what the
-boundary test in `tests/llmlint_plugins_test.py` catches.
+boundary test in `tools/llmlint/tests/llmlint_plugins_test.py` catches.
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[2]
 LOCK = REPO / "llmlint-plugins" / "lock.json"
 FETCH_TIMEOUT_SECONDS = 30
 # A plugin config declares its version on a top-level `version:` line; that
