@@ -35,6 +35,10 @@ import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "witness-search-recensus.py"
 KEY = "property-sole-anyof-composed-member"
@@ -105,7 +109,7 @@ def keys_file(directory: Path) -> None:
 
 def run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True,
-                          env={**os.environ, **(env or {})}, timeout=300)
+                          env={**os.environ, **(env or {})}, timeout=300, encoding="utf-8")
 
 
 class OpaqueContinuationTest(unittest.TestCase):

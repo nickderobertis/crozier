@@ -44,6 +44,10 @@ from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
 
@@ -73,7 +77,7 @@ def grep_speaks_pcre() -> bool:
     constructs the documented command actually depends on: `\\K` and a lookahead.
     """
     probe = subprocess.run(
-        ["grep", "-oP", r"a\Kb(?=c)"], input="abc\n", capture_output=True, text=True
+        ["grep", "-oP", r"a\Kb(?=c)"], input="abc\n", capture_output=True, text=True, encoding="utf-8"
     )
     return probe.returncode == 0 and probe.stdout.strip() == "b"
 
@@ -140,7 +144,7 @@ def run(*args: str) -> subprocess.CompletedProcess:
         cwd=REPO,
         capture_output=True,
         text=True,
-        timeout=CENSUS_TIMEOUT,
+        timeout=CENSUS_TIMEOUT, encoding="utf-8",
     )
 
 
@@ -2868,7 +2872,7 @@ class GrammarContractTests(unittest.TestCase):
             self.skipTest("this grep has no PCRE support, so the command cannot run here")
         grep = subprocess.run(
             ["grep", "-oP", pattern.group(1), "docs/fern-limitations.md"],
-            cwd=REPO, capture_output=True, text=True,
+            cwd=REPO, capture_output=True, text=True, encoding="utf-8",
         )
         # Fail loudly on a refusal rather than comparing against empty output:
         # every way this command can go wrong has to be a red, not a quiet zero.
@@ -2937,7 +2941,7 @@ class GrammarContractTests(unittest.TestCase):
             run = subprocess.run(
                 [sys.executable, str(Path(__file__).resolve()), case],
                 cwd=REPO, capture_output=True, text=True,
-                env={**os.environ, "PATH": f"{shim}{os.pathsep}{os.environ['PATH']}"},
+                env={**os.environ, "PATH": f"{shim}{os.pathsep}{os.environ['PATH']}"}, encoding="utf-8",
             )
         self.assertEqual(0, run.returncode, run.stderr)
         self.assertIn("skipped=1", run.stderr)
@@ -6365,7 +6369,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             arguments = ["--vendored-only", "--fixtures-root", str(fixtures), "--json"]
             real = subprocess.run(
                 [sys.executable, str(SCRIPT), *arguments, "--selector", real_residual],
-                capture_output=True, text=True, timeout=CENSUS_TIMEOUT,
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
             )
             self.assertEqual(0, real.returncode, real.stderr)
             self.assertEqual(
@@ -6373,7 +6377,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             )
             moved = subprocess.run(
                 [sys.executable, str(patched), *arguments, "--selector", patched_residual],
-                capture_output=True, text=True, timeout=CENSUS_TIMEOUT,
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
             )
             self.assertEqual(0, moved.returncode, moved.stderr)
             self.assertEqual([], json.loads(moved.stdout)["rows"])
@@ -6997,7 +7001,7 @@ class CorpusManifestAgreementTests(unittest.TestCase):
     def shell(self, snippet: str) -> str:
         return subprocess.run(
             ["bash", "-c", f". scripts/corpus-lib.sh\n{snippet}"],
-            cwd=REPO, capture_output=True, text=True, check=True,
+            cwd=REPO, capture_output=True, text=True, check=True, encoding="utf-8",
         ).stdout
 
     def test_the_census_registers_exactly_the_rows_the_fetcher_fetches(self) -> None:
@@ -7042,7 +7046,7 @@ class CorpusManifestAgreementTests(unittest.TestCase):
             for name in names:
                 completed = subprocess.run(
                     [scripts / "fetch-corpus.sh", "--dry-run", "--fixture", aliases.get(name, name)],
-                    cwd=root, capture_output=True, text=True,
+                    cwd=root, capture_output=True, text=True, encoding="utf-8",
                 )
                 self.assertEqual(0, completed.returncode, completed.stderr)
                 self.assertTrue(completed.stdout.startswith(name + "\t"), completed.stdout)
@@ -7470,7 +7474,7 @@ class CensusInterpreterTests(unittest.TestCase):
             [self.shell(), "-c", 'cd "$1" && pwd -P', "census-path", str(path)],
             capture_output=True,
             text=True,
-            timeout=CENSUS_TIMEOUT,
+            timeout=CENSUS_TIMEOUT, encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         return completed.stdout.strip()
@@ -7488,7 +7492,7 @@ class CensusInterpreterTests(unittest.TestCase):
             capture_output=True,
             text=True,
             env=environment,
-            timeout=CENSUS_TIMEOUT,
+            timeout=CENSUS_TIMEOUT, encoding="utf-8",
         )
 
     def test_both_census_recipes_resolve_the_interpreter_through_the_resolver(self) -> None:
@@ -7514,7 +7518,7 @@ class CensusInterpreterTests(unittest.TestCase):
             ],
             capture_output=True,
             text=True,
-            timeout=CENSUS_TIMEOUT,
+            timeout=CENSUS_TIMEOUT, encoding="utf-8",
         )
         self.assertEqual(0, prefixes.returncode, prefixes.stderr)
         # This repository commits no virtualenv, so PATH's system Python is the
@@ -7544,7 +7548,7 @@ class CensusInterpreterTests(unittest.TestCase):
 
             completed = subprocess.run(
                 [self.shell(), str(copied)], capture_output=True, text=True,
-                timeout=CENSUS_TIMEOUT,
+                timeout=CENSUS_TIMEOUT, encoding="utf-8",
             )
             expected = f"{self.shell_path(local)}/{interpreter.name}"
 
@@ -7560,7 +7564,7 @@ class CensusInterpreterTests(unittest.TestCase):
             foreign = Path(directory) / "other-project" / ".venv"
             built = subprocess.run(
                 [sys.executable, "-m", "venv", "--without-pip", str(foreign)],
-                capture_output=True, text=True, timeout=CENSUS_TIMEOUT,
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
             )
             if built.returncode != 0:
                 self.skipTest(f"this interpreter cannot build a venv: {built.stderr}")
@@ -8134,7 +8138,7 @@ class RankedBacklogTests(unittest.TestCase):
             self.skipTest(f"no {binary.relative_to(REPO)} or no ruff on PATH; run `just residual-attribution`")
         completed = subprocess.run(
             [sys.executable, str(REPO / "scripts" / "residual-attribution.py")],
-            cwd=REPO, capture_output=True, text=True, timeout=1800,
+            cwd=REPO, capture_output=True, text=True, timeout=1800, encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         measured = {
@@ -8662,7 +8666,7 @@ class RankedBacklogTests(unittest.TestCase):
         completed = subprocess.run(
             [sys.executable, str(SCRIPT), "--json", *itertools.chain.from_iterable(
                 ("--selector", selector) for selector in census.CONJUNCTIONS)],
-            cwd=REPO, capture_output=True, text=True, timeout=180,
+            cwd=REPO, capture_output=True, text=True, timeout=180, encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         payload = json.loads(completed.stdout)
@@ -8752,7 +8756,7 @@ class RankedBacklogTests(unittest.TestCase):
         if not grep_speaks_pcre():
             self.skipTest("this grep has no PCRE support, so the command cannot run here")
         run = subprocess.run(
-            ["bash", "-c", command.group(0)], cwd=REPO, capture_output=True, text=True
+            ["bash", "-c", command.group(0)], cwd=REPO, capture_output=True, text=True, encoding="utf-8"
         )
         # A pipeline's exit status is its last command's, and `grep` exits 1 on no
         # match — the correct status for an empty backlog. Any other non-zero is a
@@ -11921,7 +11925,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         cls.rows = cls.entries(cls.text)
         completed = subprocess.run(
             [sys.executable, str(SCRIPT), "--json"],
-            cwd=REPO, capture_output=True, text=True, timeout=REGISTRY_WALK_TIMEOUT,
+            cwd=REPO, capture_output=True, text=True, timeout=REGISTRY_WALK_TIMEOUT, encoding="utf-8",
         )
         assert completed.returncode == 0, completed.stderr
         cls.payload = json.loads(completed.stdout)

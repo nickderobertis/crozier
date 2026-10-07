@@ -285,15 +285,19 @@ def run_command(
     stderr: int | io.TextIOBase = subprocess.PIPE,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    # Output is decoded as UTF-8 whatever the platform's locale, so every child
+    # writes UTF-8: Python children (behind `just` and the generator) via UTF-8 mode.
+    environment = {**(os.environ if env is None else env), "PYTHONUTF8": "1"}
     try:
         return subprocess.run(
             argv,
             cwd=cwd,
             check=False,
             text=True,
+            encoding="utf-8",
             stdout=stdout,
             stderr=stderr,
-            env=env,
+            env=environment,
         )
     except OSError as error:
         raise GoldensError(f"could not run {argv[0]!r}: {error}") from error

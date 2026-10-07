@@ -27,6 +27,10 @@ from pathlib import Path
 
 import pytest
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 # The `client.<sub>.<method>` call that names the endpoint a reference snippet
 # exercises (the client-construction line `client = FernApi(` never matches). The
 # captured `sub.method` is the endpoint key: real specs reuse a method name across
@@ -214,7 +218,7 @@ def _spec_path(fixture: Fixture, work: Path) -> Path:
     result = subprocess.run(
         [sys.executable, str(_FIXTURES.parent.parent / "scripts/corpus_sources.py"),
          "prepare", "--fixture", fixture.name, "--output", str(work / "source")],
-        check=True, capture_output=True, text=True,
+        check=True, capture_output=True, text=True, encoding="utf-8",
     )
     return Path(result.stdout.strip())
 
@@ -223,7 +227,7 @@ def _generate_sdk(crozier: str, fixture: Fixture, spec: Path, out: Path):
     result = subprocess.run(
         [crozier, *fixture.generate_args(spec, out)],
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8",
     )
     if result.returncode != 0:
         raise RuntimeError(
@@ -233,7 +237,7 @@ def _generate_sdk(crozier: str, fixture: Fixture, spec: Path, out: Path):
 
 def _relax_spec(python: str, fixture: Fixture, spec: Path, dest: Path):
     result = subprocess.run(
-        [python, str(_RELAX), str(spec), str(dest)], capture_output=True, text=True
+        [python, str(_RELAX), str(spec), str(dest)], capture_output=True, text=True, encoding="utf-8"
     )
     if result.returncode != 0:
         raise RuntimeError(
@@ -253,7 +257,7 @@ def _drive(python: str, sdk_src: Path, reference: Path, base_url: str) -> dict:
             "LIVE_BASE_URL": base_url,
         },
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8",
     )
     if result.returncode != 0:
         raise RuntimeError(
@@ -305,7 +309,7 @@ def recordings(tmp_path_factory) -> dict[str, dict]:
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True,
+                text=True, encoding="utf-8",
             )
             servers.append(proc)
             _wait_until_listening(port, proc)

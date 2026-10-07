@@ -15,6 +15,10 @@ import unittest
 import unittest.mock
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 
 REPO = Path(__file__).resolve().parent.parent
 TOOL = REPO / "scripts" / "fern-goldens"
@@ -193,6 +197,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     command,
                     cwd=root,
                     text=True,
+                    encoding="utf-8",
                     capture_output=True,
                     check=False,
                 )
@@ -352,7 +357,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             env=self.environment(**env),
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         if check and result.returncode != 0:
             self.fail(f"command failed ({result.returncode}):\n{result.stdout}\n{result.stderr}")
@@ -463,7 +468,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 ["git", f"--git-dir={remote}", "show", "--name-only", "--format=", "goldens/test"],
                 text=True,
                 capture_output=True,
-                check=True,
+                check=True, encoding="utf-8",
             ).stdout.split()
 
         self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
@@ -535,7 +540,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             cwd=self.root,
             text=True,
             capture_output=True,
-            check=True,
+            check=True, encoding="utf-8",
         ).stdout.strip()
         subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=self.root, check=True)
         subprocess.run(
@@ -684,7 +689,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual("alpha", self.state("alpha")["corpus_spec_name"])
         resolved = subprocess.run(
             [self.root / "scripts" / "fetch-corpus.sh", "--dry-run", "--fixture", "alpha"],
-            cwd=self.root, text=True, capture_output=True,
+            cwd=self.root, text=True, capture_output=True, encoding="utf-8",
         )
         self.assertEqual(0, resolved.returncode, resolved.stderr)
         self.assertTrue(resolved.stdout.startswith("alpha\t"), resolved.stdout)
@@ -711,7 +716,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 self.assertEqual([], self.calls())
                 resolved = subprocess.run(
                     [self.root / "scripts" / "fetch-corpus.sh", "--dry-run", "--fixture", "alpha"],
-                    cwd=self.root, text=True, capture_output=True,
+                    cwd=self.root, text=True, capture_output=True, encoding="utf-8",
                 )
                 self.assertNotEqual(0, resolved.returncode, resolved.stdout)
                 self.assertIn("alias", resolved.stderr)
@@ -720,7 +725,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertIn("generated alpha", recovered.stdout)
         resolved = subprocess.run(
             [self.root / "scripts" / "fetch-corpus.sh", "--dry-run", "--fixture", "alpha"],
-            cwd=self.root, text=True, capture_output=True,
+            cwd=self.root, text=True, capture_output=True, encoding="utf-8",
         )
         self.assertEqual(0, resolved.returncode, resolved.stderr)
         self.assertTrue(resolved.stdout.startswith("alpha\t"), resolved.stdout)
@@ -773,7 +778,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     cwd=self.root,
                     text=True,
                     capture_output=True,
-                    check=False,
+                    check=False, encoding="utf-8",
                 )
                 self.assertEqual(resolved.returncode, 0, resolved.stderr)
                 self.assertTrue(resolved.stdout.startswith(f"{name}\t"), resolved.stdout)
@@ -866,7 +871,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     env=self.environment(),
                     text=True,
                     capture_output=True,
-                    check=False,
+                    check=False, encoding="utf-8",
                 )
                 self.assertEqual(first.returncode, 0, first.stderr)
                 canonical = destination / fixture / filename
@@ -879,7 +884,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     env=self.environment(FAIL_FETCH=failed_host),
                     text=True,
                     capture_output=True,
-                    check=False,
+                    check=False, encoding="utf-8",
                 )
                 self.assertEqual(second.returncode, 0, second.stderr)
                 self.assertEqual(second.stdout, f"{canonical}\n")
@@ -1092,7 +1097,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ["git", f"--git-dir={remote}", "log", "-1", "--format=%s", "goldens/test"],
             text=True,
             capture_output=True,
-            check=True,
+            check=True, encoding="utf-8",
         ).stdout.strip()
         self.assertEqual(remote_subject, "test(fixtures): refresh Fern goldens at 4.9.0")
         comparison = self.run_tool("compare", COMPARE_MODE="diff")
@@ -1177,7 +1182,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ],
             text=True,
             capture_output=True,
-            check=True,
+            check=True, encoding="utf-8",
         ).stdout
         self.assertEqual(json.loads(alpha_state)["fern_python_sdk_version"], "4.9.0")
         beta_state = subprocess.run(
@@ -1239,7 +1244,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ],
             text=True,
             capture_output=True,
-            check=True,
+            check=True, encoding="utf-8",
         ).stdout
         self.assertEqual(json.loads(published_alpha)["fern_python_sdk_version"], "4.9.0")
 
@@ -1257,7 +1262,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ],
             text=True,
             capture_output=True,
-            check=True,
+            check=True, encoding="utf-8",
         ).stdout
         self.assertEqual(still_published, published_alpha)
 
@@ -1297,7 +1302,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             cwd=self.root,
             text=True,
             capture_output=True,
-            check=True,
+            check=True, encoding="utf-8",
         ).stdout.strip()
         self.assertEqual(local_head, baseline)
         staged = subprocess.run(
@@ -1305,7 +1310,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             cwd=self.root,
             text=True,
             capture_output=True,
-            check=True,
+            check=True, encoding="utf-8",
         ).stdout
         self.assertEqual(staged, "")
 
@@ -1386,7 +1391,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             env={**environment, "FAIL_STRIP": "1"},
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         self.assertEqual(failed.returncode, 23, failed.stderr)
         after_failure = {
@@ -1425,7 +1430,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             env={**environment, "EXPECT_TREE": "1"},
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         self.assertEqual(tree_result.returncode, 0, tree_result.stderr)
         wrong_root = subprocess.run(
@@ -1437,7 +1442,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             env=environment,
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         self.assertNotEqual(wrong_root.returncode, 0)
         self.assertIn("not the pinned tree root", wrong_root.stderr)
@@ -1513,7 +1518,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ),
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
@@ -1632,7 +1637,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 env={**environment, **extra},
                 text=True,
                 capture_output=True,
-                check=False,
+                check=False, encoding="utf-8",
             )
 
         result = run("--layout", "flat", "beta", "5.20.0")
@@ -1787,7 +1792,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             cwd=REPO,
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         self.assertNotEqual(invalid_fetch.returncode, 0)
         self.assertIn("invalid fixture name", invalid_fetch.stderr)
@@ -1811,7 +1816,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             cwd=REPO,
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         self.assertNotEqual(generator.returncode, 0)
         self.assertIn("it must stay below", generator.stderr)
@@ -1836,7 +1841,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             env=self.environment(),
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         self.assertNotEqual(generation.returncode, 0)
         self.assertIn(
@@ -1857,7 +1862,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             env=self.environment(),
             text=True,
             capture_output=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         self.assertNotEqual(publication.returncode, 0)
         self.assertIn(
@@ -1994,7 +1999,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
             env={**os.environ, "FAIL_INSTALL": fail_install},
             capture_output=True,
             text=True,
-            check=False,
+            check=False, encoding="utf-8",
         )
         for stage in (self.root / "tests" / "fixtures").glob("*/.fern-overlay-stage.*"):
             stage.chmod(0o755)

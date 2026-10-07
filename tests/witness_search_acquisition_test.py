@@ -22,6 +22,10 @@ import time
 import unittest
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts/witness-search-local-census.py"
 GITHUB_ACQUIRE = REPO / "scripts/witness-acquire-github.py"
@@ -54,7 +58,7 @@ def run_explicit_key_census(interpreter_flags: list[str]) -> tuple[int, dict]:
             [sys.executable, *interpreter_flags, str(SCRIPT),
              "--contract", str(contract),
              "--documents", f"local={documents}", "--all-documents-jsonl"],
-            cwd=REPO, capture_output=True, text=True, timeout=30,
+            cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
         )
         return completed.returncode, {
             row["document"]: row
@@ -114,7 +118,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={root}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 1)
             record = json.loads(completed.stdout)
@@ -134,7 +138,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={root}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 1)
             record = json.loads(completed.stdout)
@@ -165,7 +169,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(PORTAL_TREES), "--plan", str(plan),
                  "--archives", str(archives), "--tree", str(tree),
                  "--manifest", str(manifest)],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual((tree / "example--api/openapi.json").read_bytes(),
@@ -192,13 +196,13 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                        "--manifest", str(manifest)]
             plan.write_text("wrong\theader\n", encoding="utf-8", newline="\n")
             malformed = subprocess.run(command, cwd=REPO, capture_output=True,
-                                       text=True, timeout=30)
+                                       text=True, timeout=30, encoding="utf-8")
             self.assertEqual(malformed.returncode, 1)
             self.assertIn("repository and pinned_ref columns", malformed.stderr)
             plan.write_text("repository\tpinned_ref\nexample/api\t" + "a" * 40 + "\n",
                             encoding="utf-8", newline="\n")
             missing = subprocess.run(command, cwd=REPO, capture_output=True,
-                                     text=True, timeout=30)
+                                     text=True, timeout=30, encoding="utf-8")
             self.assertEqual(missing.returncode, 1)
             self.assertIn("missing pinned archive", missing.stderr)
             archive = archives / "example--api.tar.gz"
@@ -208,7 +212,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 info.size = len(body)
                 handle.addfile(info, io.BytesIO(body))
             unsafe = subprocess.run(command, cwd=REPO, capture_output=True,
-                                    text=True, timeout=30)
+                                    text=True, timeout=30, encoding="utf-8")
             self.assertEqual(unsafe.returncode, 1)
             self.assertIn("unsafe archive path", unsafe.stderr)
             self.assertFalse(manifest.exists())
@@ -249,7 +253,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = [json.loads(line) for line in
@@ -307,7 +311,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=50,
+                cwd=REPO, capture_output=True, text=True, timeout=50, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = [json.loads(line) for line in
@@ -345,7 +349,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = [json.loads(line) for line in
@@ -387,7 +391,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=40,
+                cwd=REPO, capture_output=True, text=True, timeout=40, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = [json.loads(line) for line in
@@ -403,7 +407,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(root / "missing.tsv"),
                  "--evidence-dir", str(root / "evidence")],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 2)
             self.assertIn("regenerate the region-key derivation", completed.stderr)
@@ -437,7 +441,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(POSTMAN), "--keys", str(keys),
                  "--evidence-dir", str(evidence),
                  "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
-                cwd=REPO, capture_output=True, text=True, timeout=180,
+                cwd=REPO, capture_output=True, text=True, timeout=180, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(len(received), 5)
@@ -512,7 +516,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(evidence),
                  "--acquire-hits", "--web-base", base, "--api-base", base],
-                cwd=REPO, capture_output=True, text=True, timeout=120,
+                cwd=REPO, capture_output=True, text=True, timeout=120, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = {row["id"]: row for row in (json.loads(line) for line in
@@ -571,7 +575,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             (root / "witness-search-registries").mkdir()
             command = [sys.executable, str(REPO / "scripts/witness-search-registries-index.py"),
                        "--root", str(root)]
-            stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30)
+            stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(stale.returncode, 1)
             self.assertIn("rerun without --check", stale.stderr)
             self.assertEqual(subprocess.run(command, timeout=30).returncode, 0)
@@ -596,20 +600,20 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertEqual(found["shape-a", "vendor-portals", "portal-unanswered"]["items"], '["gone/docs"]')
             self.assertEqual(len(rows), 6)
             (root / "witness-search-jentic/records.tsv").write_text("source\tkey\n", encoding="utf-8", newline="\n")
-            broken = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            broken = subprocess.run(command, capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(broken.returncode, 1)
             self.assertIn("does not have the candidate-record header", broken.stderr)
             self.assertIn("repair the ledger it names", broken.stderr)
             (root / "witness-search-jentic/records.tsv").write_text(
                 header + "jentic\tshape-a\tall-pass.json\tabc\td\t1\tpass\tpass\tpass\toutstanding\tx\n",
                 encoding="utf-8", newline="\n")
-            passing = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            passing = subprocess.run(command, capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(passing.returncode, 1)
             self.assertIn("records.tsv:2 is outstanding but every screen reads pass", passing.stderr)
             self.assertIn("repair the ledger it names", passing.stderr)
             (root / "witness-search-jentic/records.tsv").write_text(header, encoding="utf-8", newline="\n")
             (root / "witness-search-keys.tsv").write_text("key\tselector\nshape-a\tx\n", encoding="utf-8", newline="\n")
-            unnamed = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            unnamed = subprocess.run(command, capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(unnamed.returncode, 1)
             self.assertIn("witness-search-keys.tsv lacks column(s) census_status", unnamed.stderr)
 
@@ -645,7 +649,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(evidence),
                  "--acquire-hits", "--web-base", base, "--api-base", base],
-                cwd=REPO, capture_output=True, text=True, timeout=240,
+                cwd=REPO, capture_output=True, text=True, timeout=240, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(len(received), 5)
@@ -665,7 +669,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir",
                  str(root / "postman"), "--acquire-hits"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 1)
             self.assertIn("run the search stage first", completed.stderr)
@@ -674,7 +678,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
     def test_committed_outstanding_inventory_matches_its_ledgers(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(REPO / "scripts/witness-search-registries-index.py"), "--check"],
-            cwd=REPO, capture_output=True, text=True, timeout=120,
+            cwd=REPO, capture_output=True, text=True, timeout=120, encoding="utf-8",
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         spec = importlib.util.spec_from_file_location(
@@ -688,7 +692,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
     def test_key_derivation_reads_current_region_tables(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(KEYS)], cwd=REPO,
-            capture_output=True, text=True, timeout=30,
+            capture_output=True, text=True, timeout=30, encoding="utf-8",
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
@@ -720,7 +724,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     (root / "schemas.md").write_text(contents, encoding="utf-8", newline="\n")
                     completed = subprocess.run(
                         [sys.executable, str(KEYS), "--regions-dir", str(root)],
-                        cwd=REPO, capture_output=True, text=True, timeout=30,
+                        cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
                     )
                     self.assertEqual(completed.returncode, 1)
                     self.assertIn(expected, completed.stderr)
@@ -752,7 +756,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             )
             completed = subprocess.run(
                 [sys.executable, str(KEYS), "--regions-dir", str(root)],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(
@@ -765,7 +769,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             )
             refused = subprocess.run(
                 [sys.executable, str(KEYS), "--regions-dir", str(root)],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(refused.returncode, 1)
             self.assertIn("has no `key` and `selector` columns", refused.stderr)
@@ -778,7 +782,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={root}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 2)
             self.assertIn("requires key, selector, and census_status", completed.stderr)
@@ -831,7 +835,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/tree.tar.gz",
                  str(output), "--evidence-dir", str(evidence)],
-                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(output.read_bytes(), b"real local tree archive bytes")
@@ -847,7 +851,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             refused = subprocess.run(
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/forbidden",
                  str(root / "missing"), "--evidence-dir", str(evidence)],
-                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(refused.returncode, 1)
             records = [json.loads(line) for line in
@@ -857,7 +861,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             transport = subprocess.run(
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/transport",
                  str(root / "missing"), "--evidence-dir", str(evidence)],
-                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(transport.returncode, 1)
             self.assertIn("transport error", transport.stderr)
@@ -869,7 +873,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/tree.tar.gz",
                  str(root / "invalid"), "--evidence-dir", str(evidence),
                  "--bucket", "graphql"],
-                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(invalid_bucket.returncode, 2)
             self.assertIn("invalid choice", invalid_bucket.stderr)
@@ -879,7 +883,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(GITHUB_ACQUIRE), f"{url}/tree.tar.gz",
                  str(root / "unprobed"), "--evidence-dir", str(evidence)],
                 cwd=REPO, env={**env, "CROZIER_GITHUB_API_URL": f"{url}/missing"},
-                capture_output=True, text=True, timeout=30,
+                capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(probe_failure.returncode, 1)
             self.assertIn("rate-limit guard refused acquisition", probe_failure.stderr)
@@ -901,7 +905,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 1)
             rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
@@ -943,7 +947,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
@@ -961,7 +965,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents-jsonl",
                  "--progress-log", str(root / "progress.jsonl")],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(compact.returncode, 0, compact.stderr)
             objects = [json.loads(line) for line in compact.stdout.splitlines()]
@@ -983,7 +987,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents-jsonl",
                  "--start-after", "miss.json"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(resumed.returncode, 0, resumed.stderr)
             self.assertEqual(
@@ -1002,7 +1006,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             from_regions = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(derived),
                  "--documents", f"local={documents}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(from_regions.returncode, 0, from_regions.stderr)
             derived_rows = [json.loads(line) for line in from_regions.stdout.splitlines()]
@@ -1040,7 +1044,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
+                cwd=REPO, capture_output=True, text=True, timeout=30, encoding="utf-8",
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(

@@ -24,6 +24,10 @@ import textwrap
 import unittest
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "fixtures-coverage.sh"
 REPORTER = REPO / "scripts" / "fixtures-coverage-report.py"
@@ -65,7 +69,7 @@ def nextest_list(
         capture_output=True,
         text=True,
         check=True,
-        env=env,
+        env=env, encoding="utf-8",
     ).stdout
     selected = set()
     for line in listing.splitlines():
@@ -146,7 +150,7 @@ class RecipeEndToEndTests(unittest.TestCase):
 
     def run_script(self, *args: str, env: dict[str, str] | None = None):
         return subprocess.run(
-            [str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True, env=env
+            [str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True, env=env, encoding="utf-8"
         )
 
     def reporter_process(self, *args: str):
@@ -155,7 +159,7 @@ class RecipeEndToEndTests(unittest.TestCase):
             [sys.executable, str(REPORTER), "--repo-root", str(REPO), *args],
             cwd=REPO,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
 
     def run_reporter(self, *args: str):
@@ -466,7 +470,7 @@ def _scoped_run():
             [str(SCRIPT), "--no-fetch", "--out", str(out), OFFLINE_SCOPE],
             cwd=REPO,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         _SCOPED = (completed, out)
     return _SCOPED

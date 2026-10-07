@@ -51,6 +51,10 @@ import textwrap
 import unittest
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "golden-reach.py"
 
@@ -269,7 +273,7 @@ class ReportTests(unittest.TestCase):
                 sys.executable, str(SCRIPT), "--repo-root", str(self.repo),
                 "--out", str(self.measurement), "report", *extra,
             ],
-            capture_output=True, text=True,
+            capture_output=True, text=True, encoding="utf-8",
         )
 
     def cells(self) -> dict[str, list[str]]:
@@ -317,7 +321,7 @@ class ReportTests(unittest.TestCase):
     def run_sites(self, *extra: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(SCRIPT), "--repo-root", str(self.repo), "sites", *extra],
-            capture_output=True, text=True,
+            capture_output=True, text=True, encoding="utf-8",
         )
 
     def test_sites_resolves_every_declared_site_and_names_its_span(self) -> None:
@@ -447,7 +451,7 @@ class ArmSearchTests(unittest.TestCase):
         path = self.document("", ".json")
         path.write_bytes(b'{\r\n"openapi": "3.1.0"}\n')
         git = subprocess.run(["git", "hash-object", "--no-filters", str(path)],
-                             capture_output=True, text=True, check=True)
+                             capture_output=True, text=True, check=True, encoding="utf-8")
         self.assertEqual(git.stdout.strip(), golden_reach_search.git_blob(path.read_bytes()))
 
     def test_a_checkout_s_converted_line_endings_keep_the_committed_blob(self) -> None:
@@ -459,7 +463,7 @@ class ArmSearchTests(unittest.TestCase):
         def git(*argv: str) -> str:
             return subprocess.run(["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@t",
                                    "-c", "commit.gpgsign=false", *argv],
-                                  capture_output=True, text=True, check=True).stdout.strip()
+                                  capture_output=True, text=True, check=True, encoding="utf-8").stdout.strip()
 
         git("init", "-q")
         git("config", "core.autocrlf", "false")
@@ -776,7 +780,7 @@ class ArmSearchOutcomeTests(unittest.TestCase):
 
     def test_the_commits_since_a_build_are_read_off_git(self) -> None:
         head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True,
-                              text=True, check=True).stdout.strip()
+                              text=True, check=True, encoding="utf-8").stdout.strip()
         self.assertEqual([], golden_reach_search.src_commits_since(head))
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.src_commits_since("0" * 40)
@@ -818,7 +822,7 @@ class _StageScratch(unittest.TestCase):
         self.addCleanup(scratch.cleanup)
         self.scratch = Path(scratch.name)
         self.head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True,
-                                   text=True, check=True).stdout.strip()
+                                   text=True, check=True, encoding="utf-8").stdout.strip()
         measurement = self.scratch / "measurement"
         measurement.mkdir()
         (measurement / "provenance.json").write_text(json.dumps({"commit": self.head}), encoding="utf-8", newline="\n")
@@ -1749,9 +1753,9 @@ class ArmSearchStageTests(_StageScratch):
 
     def test_render_as_of_an_earlier_build_keeps_the_searched_arm_and_counts_that_builds_probes(self) -> None:
         touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,
-                                 capture_output=True, text=True, check=True).stdout.strip()
+                                 capture_output=True, text=True, check=True, encoding="utf-8").stdout.strip()
         before = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{touched}^"], cwd=REPO,
-                                capture_output=True, text=True)
+                                capture_output=True, text=True, encoding="utf-8")
         if before.returncode != 0:
             self.skipTest("a shallow clone holds no commit before src/'s latest change")
         earlier = before.stdout.strip()[:12]
@@ -1815,9 +1819,9 @@ class ArmSearchStageTests(_StageScratch):
 
     def test_a_probe_refuses_a_build_src_has_moved_from(self) -> None:
         touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,
-                                 capture_output=True, text=True, check=True).stdout.strip()
+                                 capture_output=True, text=True, check=True, encoding="utf-8").stdout.strip()
         before = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{touched}^"], cwd=REPO,
-                                capture_output=True, text=True)
+                                capture_output=True, text=True, encoding="utf-8")
         if before.returncode != 0:
             self.skipTest("a shallow clone holds no commit before src/'s latest change")
         (golden_reach_search.REACH.DEFAULT_OUT / "provenance.json").write_text(
@@ -2173,7 +2177,7 @@ class WithoutPosixModulesTests(unittest.TestCase):
         for name in ("fcntl", "grp", "pwd", "resource", "termios"):
             with self.subTest(name):
                 run = subprocess.run([sys.executable, "-c", f"import {name}"], capture_output=True, text=True,
-                                     env=python_env(posix_modules=False))
+                                     env=python_env(posix_modules=False), encoding="utf-8")
                 self.assertNotEqual(0, run.returncode)
                 self.assertIn(f"import of {name} halted", run.stderr)
 
@@ -2181,7 +2185,7 @@ class WithoutPosixModulesTests(unittest.TestCase):
         for script in PORTABLE_SCRIPTS:
             with self.subTest(script):
                 run = subprocess.run([sys.executable, str(REPO / "scripts" / script), "--help"],
-                                     capture_output=True, text=True, env=python_env(posix_modules=False))
+                                     capture_output=True, text=True, env=python_env(posix_modules=False), encoding="utf-8")
                 self.assertEqual(0, run.returncode, run.stderr)
                 self.assertIn("usage:", run.stdout)
 
@@ -2194,7 +2198,7 @@ class WithoutPosixModulesTests(unittest.TestCase):
                         [sys.executable, "-c", LOCK_HOLDER, str(REPO / "scripts" / "golden-reach-search.py"),
                          scratch, key],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                        env=python_env(posix_modules=posix_modules),
+                        env=python_env(posix_modules=posix_modules), encoding="utf-8",
                     )
                     for key in keys
                 ]
@@ -2229,7 +2233,7 @@ class WorkerCountTests(unittest.TestCase):
         ):
             with self.subTest(script=script, argv=argv):
                 run = subprocess.run([sys.executable, str(REPO / "scripts" / script), *argv], cwd=REPO,
-                                     capture_output=True, text=True)
+                                     capture_output=True, text=True, encoding="utf-8")
                 self.assertEqual(2, run.returncode, run.stderr)
                 self.assertIn(f"{argv[-1]!r} is not a whole number above zero", run.stderr)
                 self.assertNotIn("Traceback", run.stderr)

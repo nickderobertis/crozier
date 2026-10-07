@@ -9889,7 +9889,7 @@ try:
     generated = case.run_tool('generate', '--version', '4.9.0', '--fixture', name)
     fetched = subprocess.run(
         [case.root / 'scripts/fetch-corpus.sh', '--dry-run', '--fixture', 'alpha'],
-        cwd=case.root, text=True, capture_output=True,
+        cwd=case.root, text=True, encoding='utf-8', capture_output=True,
     )
     if generated.returncode == 0:
         case.assertEqual(name, case.state('alpha')['corpus_spec_name'])
@@ -9923,6 +9923,7 @@ finally:
         }
         let output = std::process::Command::new(python)
             .args(["-c", journey, input, requested])
+            .env("PYTHONUTF8", "1")
             .output()
             .expect("public alias workflows");
         assert!(

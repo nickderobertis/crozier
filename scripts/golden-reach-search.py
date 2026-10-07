@@ -429,7 +429,7 @@ def committed_bytes(path: Path) -> bytes:
     git = ["git", "-C", str(path.parent)]
     literal = {**os.environ, "GIT_LITERAL_PATHSPECS": "1"}
     staged = subprocess.run([*git, "ls-files", "--stage", "--", path.name],
-                            capture_output=True, text=True, env=literal)
+                            capture_output=True, text=True, env=literal, encoding="utf-8")
     fields = staged.stdout.split() if staged.returncode == 0 else []
     if len(fields) < 2 or fields[1] == git_blob(data):
         return data
@@ -1107,7 +1107,7 @@ def _probe_one(
             run = subprocess.run(
                 [crozier, "generate", "--spec", path, "--output", str(scratch_path / "out"),
                  "--package-name", "fern", "--project-name", "default_package_name"],
-                capture_output=True, text=True, timeout=timeout, env=env,
+                capture_output=True, text=True, timeout=timeout, env=env, encoding="utf-8",
             )
         except subprocess.TimeoutExpired:
             return digest, {"status": f"timeout after {timeout}s", "reached": []}
@@ -1615,7 +1615,7 @@ def src_commits_since(build: str) -> list[str]:
     same history would render differently in a clone that has fetched more.
     """
     run = subprocess.run(["git", "log", "--format=%H", f"{build}..HEAD", "--", "src/"],
-                         cwd=REPO, capture_output=True, text=True)
+                         cwd=REPO, capture_output=True, text=True, encoding="utf-8")
     if run.returncode != 0:
         fail(f"cannot read src/'s history since {build}: {run.stderr.strip()} — "
              "fetch that commit, or re-run `just golden-reach` on this checkout")
@@ -1644,7 +1644,7 @@ SEARCHED_FOR = "The unreached handling site(s) searched for: "
 def probed_build(commit: str) -> str:
     """The short commit of an earlier build whose probes a record is rendered as of."""
     run = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{commit}^{{commit}}"],
-                         cwd=REPO, capture_output=True, text=True)
+                         cwd=REPO, capture_output=True, text=True, encoding="utf-8")
     if run.returncode != 0:
         fail(f"--build {commit} names no commit in this checkout; pass the build a record's probes "
              "were counted on, as its `build of commit` line spells it")

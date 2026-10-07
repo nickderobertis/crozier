@@ -1905,7 +1905,7 @@ def _main() -> int:
     else:
         try:
             source_commit = subprocess.check_output(
-                ["git", "merge-base", "origin/main", "HEAD"], cwd=REPO, text=True
+                ["git", "merge-base", "origin/main", "HEAD"], cwd=REPO, text=True, encoding="utf-8"
             ).strip()
         except (OSError, subprocess.CalledProcessError) as error:
             print(
@@ -1966,7 +1966,7 @@ def _main() -> int:
     ):
         try:
             os.environ["GH_TOKEN"] = subprocess.check_output(
-                ["gh", "auth", "token"], text=True, stderr=subprocess.DEVNULL
+                ["gh", "auth", "token"], text=True, stderr=subprocess.DEVNULL, encoding="utf-8"
             ).strip()
         except (OSError, subprocess.CalledProcessError) as error:
             print(

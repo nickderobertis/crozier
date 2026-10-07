@@ -35,6 +35,10 @@ SCRIPT = REPO / "scripts" / "corpus_sources.py"
 sys.path.insert(0, str(REPO / "scripts"))
 import corpus_sources  # noqa: E402 - the production scripts directory must be on sys.path first
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 COPIED_SCRIPTS = (
     "corpus-lib.sh",
     "corpus_remote_ref_pins.py",
@@ -63,7 +67,7 @@ def run(root: Path, *args: str, **environment: str) -> subprocess.CompletedProce
     env.update(environment)
     return subprocess.run(
         [sys.executable, str(root / "scripts" / "corpus_sources.py"), *args],
-        cwd=root, env=env, text=True, capture_output=True, check=False,
+        cwd=root, env=env, text=True, capture_output=True, check=False, encoding="utf-8",
     )
 
 
@@ -115,7 +119,7 @@ class TheCommittedTreeHolds(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             result = subprocess.run(
                 [corpus_sources.bash(), str(REPO / "scripts/fetch-corpus.sh"), "--dry-run", directory],
-                cwd=REPO, capture_output=True, text=True,
+                cwd=REPO, capture_output=True, text=True, encoding="utf-8",
             )
             self.assertEqual(0, result.returncode, result.stderr)
             fetched_rows = [tuple(line.split("\t")[:2]) for line in result.stdout.splitlines()]
@@ -151,7 +155,7 @@ class TheCommittedTreeHolds(unittest.TestCase):
             shutil.copy2(REPO / "tests/corpus_offline_test.py", script)
             completed = subprocess.run(
                 [sys.executable, str(script), "OfflineCorpusRecipes.test_real_recipes_without_network_or_cache"],
-                cwd=root, capture_output=True, text=True,
+                cwd=root, capture_output=True, text=True, encoding="utf-8",
             )
             self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
             self.assertIn("mkdir -p .local/corpus/generated", completed.stderr)
@@ -331,7 +335,7 @@ class TheRebuildToolingFetches(SyntheticRoot):
         fetched.mkdir()
         result = subprocess.run(
             [corpus_sources.bash(), str(self.root / "scripts/fetch-corpus.sh"), "--fixture", "plain", str(fetched)],
-            cwd=self.root, capture_output=True, text=True,
+            cwd=self.root, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(0, result.returncode, result.stderr)
         requests = len(self.server.requests)

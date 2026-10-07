@@ -177,10 +177,10 @@ def redact(text: str, *paths: Path) -> str:
 def _fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, str]:
     """One Fern command in a scratch workspace: its exit status (or `timeout`) and its output."""
     env = dict(os.environ, FERN_TOKEN=os.environ.get("FERN_TOKEN", "preview-only-no-publish"),
-               CI="true", GITHUB_ACTIONS="true")
+               CI="true", GITHUB_ACTIONS="true", PYTHONUTF8="1")
     try:
         run = subprocess.run(command, cwd=workspace, env=env, capture_output=True, text=True,
-                             errors="replace", timeout=timeout)
+                             errors="replace", timeout=timeout, encoding="utf-8")
     except subprocess.TimeoutExpired as expired:
         out = expired.stdout or ""
         return "timeout", out if isinstance(out, str) else out.decode("utf-8", "replace")

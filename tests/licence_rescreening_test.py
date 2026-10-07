@@ -21,12 +21,17 @@ Run: `just test-licence-rescreening` (part of `just check`).
 from __future__ import annotations
 
 import importlib.util
+import os
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
 
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "licence-rescreening-check.py"
@@ -103,7 +108,7 @@ def load_gate():
 def run_gate(root: Path = REPO, script: Path = SCRIPT):
     """The gate exactly as `just lint-licence-rescreening` runs it."""
     return subprocess.run(
-        [sys.executable, str(script)], cwd=root, capture_output=True, text=True
+        [sys.executable, str(script)], cwd=root, capture_output=True, text=True, encoding="utf-8"
     )
 
 

@@ -25,6 +25,10 @@ import unittest.mock
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "witness_screen.py"
 COMMIT = "c" * 40
@@ -109,7 +113,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             [sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "sample-shape",
              "--repository", repository, "--commit", COMMIT, "--path", "openapi.yaml",
              "--evidence-root", str(self.root), "--timeout", "60", *args],
-            env={**self.env, **env}, capture_output=True, text=True, cwd=REPO, timeout=300)
+            env={**self.env, **env}, capture_output=True, text=True, cwd=REPO, timeout=300, encoding="utf-8")
 
     def rows(self) -> list[dict[str, object]]:
         path = self.evidence / "screens.jsonl"
@@ -231,7 +235,7 @@ class LegacyScreenCliTests(unittest.TestCase):
                         command[command.index(flag) + 1] = value
                     else:
                         command += [flag, value]
-                done = subprocess.run(command, env=self.env, capture_output=True, text=True, cwd=REPO, timeout=300)
+                done = subprocess.run(command, env=self.env, capture_output=True, text=True, cwd=REPO, timeout=300, encoding="utf-8")
                 self.assertEqual(0, done.returncode, done.stderr)
                 [row] = self.rows()
                 self.assertEqual(ref, row["ref"])
@@ -316,7 +320,7 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertIn("is not JSON", refused.stderr)
         zero = subprocess.run([sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "k",
                                "--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml",
-                               "--timeout", "0"], capture_output=True, text=True, cwd=REPO)
+                               "--timeout", "0"], capture_output=True, text=True, cwd=REPO, encoding="utf-8")
         self.assertEqual(2, zero.returncode)
         self.assertIn("0 is not a positive number of seconds", zero.stderr)
         self.assertEqual([], self.rows())
