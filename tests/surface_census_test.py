@@ -7533,6 +7533,11 @@ class CensusInterpreterTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             interpreter = Path(directory) / ("python.exe" if os.name == "nt" else "python")
             shutil.copy2(Path(sys.executable).resolve(), interpreter)
+            if os.name == "nt":
+                # PATH is deliberately restricted, so retain the real runtime's
+                # adjacent DLLs as well as its executable.
+                for library in Path(sys.executable).resolve().parent.glob("*.dll"):
+                    shutil.copy2(library, Path(directory) / library.name)
             completed = self.resolve(path=self.shell_path(Path(directory)))
             self.assertEqual(0, completed.returncode, completed.stderr)
             invoked = subprocess.run(
