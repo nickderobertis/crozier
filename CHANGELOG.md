@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.105](https://github.com/nickderobertis/crozier/compare/v0.0.104...v0.0.105) - 2026-10-06
+
+### Fixed
+
+- *(ir)* match Fern on Body_ models, content-type, status keys and media ([#418](https://github.com/nickderobertis/crozier/pull/418))
+
 ## [0.0.104](https://github.com/nickderobertis/crozier/compare/v0.0.103...v0.0.104) - 2026-10-06
 
 ### Fixed

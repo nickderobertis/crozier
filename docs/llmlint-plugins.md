@@ -100,9 +100,9 @@ hand-edited inputs; everything else in the lock is generated.
 
 ## What the repair changed about the rule set: nothing
 
-The vendored set is exactly what the URLs resolved to at capture time — same
+The vendored set was exactly what the URLs resolved to at capture time — same
 rules, same names, same source per rule, none dropped and none added. Before and
-after both resolve **38 rules**:
+after both resolved **38 rules**:
 
 | plugin | version | rules |
 | --- | --- | --- |
@@ -113,7 +113,15 @@ after both resolve **38 rules**:
 | `shapes/cli` | 1.1.1 | 2 |
 | `config-lint` (bundled in the binary) | — | 8 |
 
-A future refresh that moves a rule shows up as a change to `lock.json` — a
+### The set today
+
+A later refresh (create-repo v1.47.3) moved `base` and `ci` forward and added
+`releasing`, which judges the release wiring crozier ships through release-plz,
+crates.io and PyPI. `lock.json` is the record of the set as it stands — its
+versions, hashes and rules — and `just test-llmlint-plugins` holds the resolved
+rules to it, so this document does not restate them.
+
+A refresh that moves a rule shows up as a change to `lock.json` — a
 version bump, a different `sha256`, a name added or removed — so a genuine
 upstream rule change reads as one, and a substitution under an unchanged name
 cannot pass as the same rule. `just lint-llm-validate` now counts the vendored

@@ -22,25 +22,21 @@
 #      authenticated in this environment, into CLAUDE_ENV_FILE so later Bash calls
 #      inherit them.
 #
-# Harness selection: by default llmlint resolves the harness from `oneharness.toml`
-# (or llmlint.yml's `agents.default.harness`). If the harness you run in Claude
-# Code sessions differs from the committed default, export the override below.
+# Harness selection: llmlint.yml pins no harness, so the committed fallback
+# `oneharness.toml` decides (see its header). If its order can't select the right
+# harness for some environment, set ONEHARNESS_HARNESSES there.
 # llmlint: ignore-file[robust_shell, tool_output_is_signal, boundary_inputs_validated] deliberate for a session-startup installer (see header): `set -e` is omitted so a flaky install can't abort the hook — the script owns its exit codes and always exits 0; success stays quiet while failures log-and-continue rather than block startup; and the toolchain is installed from PyPI (`uv tool install llmlint-cli`) whose wheels ship with Trusted Publishing + PEP 740 attestations, so no unvalidated external input is executed.
 set -uo pipefail
 
 # Version floor, as a PyPI constraint (the `llmlint-cli` package version tracks the
 # wrapped binary version). `uv tool install --upgrade` installs the newest release
 # satisfying it; oneharness comes along transitively at a compatible version.
-# llmlint >= 0.3.7 finds `oneharness` beside its own executable (so a lone
-# `uv tool install llmlint-cli` works) and gives the whole-tree default the composed
-# llmlint.yml relies on (it omits `files.include`). >= 0.3.12 is required so the
-# diff-scoped run honors `files.exclude` (drops the vendored fixtures); older
-# builds re-include them and overflow the harness argv. >= 0.3.14 is the current
-# floor: it passes the judge system prompt by file rather than an argv string
-# (0.3.13, avoids argv-length truncation of the rules) and narrates the actual
-# lint set before judging (0.3.14). (0.3.15 fixes plain `--diff-base` three-dot
-# semantics but is not yet on PyPI; raise the floor once `llmlint-cli` ships it.)
-readonly LLMLINT_MIN="0.3.14"
+# The floor is 0.4.1: past create-repo's 0.3.23 (the `validate` gate `just
+# lint-llm-validate` runs, merge-base `--diff-base`, config_lint v1.2), it is the
+# oldest release the vendored plugin set is measured against
+# (docs/llmlint-plugins.md), whose bundled config-lint rules match the ones
+# `llmlint-plugins/lock.json` records — `just test-llmlint-plugins` asserts that.
+readonly LLMLINT_MIN="0.4.1"
 readonly BIN_DIR="$HOME/.local/bin"
 
 log() { printf 'setup-llmlint: %s\n' "$*" >&2; }
