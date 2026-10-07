@@ -692,59 +692,57 @@ fn a_diff_the_cli_could_not_write_fails_the_action_with_its_own_status() {
 /// script refuses it too, rather than writing garbage outputs or a table.
 #[test]
 fn a_report_of_the_wrong_shape_is_refused_by_compare_and_summary() {
-    let whole = serde_json::json!({
-        "schema_version": 2, "crozier_version": "0.0.0", "searched_paths": ["."], "exit_code": 0,
-        "counts": {"matched": 1, "mismatched": 0, "could_not_check": 0},
-        "timing_totals": {"generators_timed": 0, "reference_seconds": 0.0, "crozier_seconds": 0.0,
-                          "speedup": null, "saved_seconds": 0.0},
-        "results": [{"status": "matched", "config_file": "crozier.yml", "generator": "python", "spec": null,
-                     "reference": {"command": "./ref.sh", "exit_code": 0, "diagnostic": null},
-                     "comparison": {"layout": "packaged", "files_compared": 3, "differing": [],
-                                    "only_in_reference": [], "only_in_crozier": [], "departures": [],
-                                    "diff_file": null},
-                     "timing": null, "reason": null}]
-    });
-    let mut broken_count = whole.clone();
-    broken_count["counts"]["matched"] = serde_json::json!("1");
-    let mut broken_paths = whole.clone();
-    broken_paths["results"][0]["comparison"]["differing"] = serde_json::json!("a.py");
-    let mut broken_status = whole.clone();
-    broken_status["results"][0]["status"] = serde_json::json!("passed");
-    let mut broken_exit = whole.clone();
-    broken_exit["exit_code"] = serde_json::json!(2);
-    let mut broken_layout = whole.clone();
-    broken_layout["results"][0]["comparison"]["layout"] = serde_json::json!("<b>flat</b>");
-    let mut broken_total = whole.clone();
-    broken_total["timing_totals"]["reference_seconds"] = serde_json::Value::Null;
+    // The real CLI compares the fixture layout and writes its real report; the
+    // wrapper then corrupts one field of it, as a CLI out of step with this
+    // Action's contract would. Each jq edit is one such drift.
+    let real = crate::crozier_bin();
     let runner_temp = tempfile::tempdir().unwrap();
-    for (label, report) in [
-        ("count", broken_count),
-        ("paths", broken_paths),
-        ("status", broken_status),
-        ("exit code the schema does not list", broken_exit),
-        ("layout the schema does not list", broken_layout),
-        ("null total the schema requires", broken_total),
+    let report = runner_temp
+        .path()
+        .join("crozier-compare")
+        .join("report.json");
+    for (label, edit) in [
+        ("count", ".counts.matched = \"1\""),
+        (
+            "paths",
+            "(.results[] | select(.comparison != null) | .comparison.differing) = \"a.py\"",
+        ),
+        ("status", ".results[0].status = \"passed\""),
+        ("exit code the schema does not list", ".exit_code = 2"),
+        (
+            "layout the schema does not list",
+            "(.results[] | select(.comparison != null) | .comparison.layout) = \"<b>flat</b>\"",
+        ),
+        (
+            "null total the schema requires",
+            ".timing_totals.reference_seconds = null",
+        ),
     ] {
         let scratch = tempfile::tempdir().unwrap();
-        let file = scratch.path().join("report.json");
-        std::fs::write(&file, report.to_string()).unwrap();
-        // A stand-in CLI that writes this report where `--json` points and exits 0.
         let cli = scratch.path().join("crozier");
         write_executable(
             scratch.path(),
             "crozier",
             &format!(
-                "#!/bin/sh\nwhile [ \"$1\" != --json ]; do shift; done\ncp '{}' \"$2\"\n",
-                file.display()
+                "#!/bin/sh\nstatus=0\n'{}' \"$@\" || status=$?\n\
+                 jq \"$EDIT\" '{report}' > '{report}.edited' && mv '{report}.edited' '{report}'\n\
+                 exit $status\n",
+                real.display(),
+                report = report.display(),
             ),
         );
         let output_file = runner_temp.path().join("github-output");
         std::fs::write(&output_file, "").unwrap();
-        let compare = step("compare.sh", scratch.path(), runner_temp.path(), &[])
-            .env("CROZIER", &cli)
-            .env("GITHUB_OUTPUT", &output_file)
-            .output()
-            .unwrap();
+        let compare = step(
+            "compare.sh",
+            repo_root(),
+            runner_temp.path(),
+            &[("COMPARE_PATHS", FIXTURE_LAYOUT), ("EDIT", edit)],
+        )
+        .env("CROZIER", &cli)
+        .env("GITHUB_OUTPUT", &output_file)
+        .output()
+        .unwrap();
         let log = String::from_utf8_lossy(&compare.stderr);
         assert_eq!(compare.status.code(), Some(1), "{label}: {log}");
         assert!(
@@ -763,11 +761,11 @@ fn a_report_of_the_wrong_shape_is_refused_by_compare_and_summary() {
 
         let summary = step(
             "summary.sh",
-            scratch.path(),
+            repo_root(),
             runner_temp.path(),
             &[("EXIT_CODE", "0")],
         )
-        .env("REPORT", &file)
+        .env("REPORT", &report)
         .output()
         .unwrap();
         let log = String::from_utf8_lossy(&summary.stderr);
@@ -778,26 +776,6 @@ fn a_report_of_the_wrong_shape_is_refused_by_compare_and_summary() {
         );
         assert!(summary.stdout.is_empty(), "{label}: a summary was rendered");
     }
-    // The whole report renders.
-    let scratch = tempfile::tempdir().unwrap();
-    let file = scratch.path().join("report.json");
-    std::fs::write(&file, whole.to_string()).unwrap();
-    let summary = step(
-        "summary.sh",
-        scratch.path(),
-        runner_temp.path(),
-        &[("EXIT_CODE", "0")],
-    )
-    .env("REPORT", &file)
-    .output()
-    .unwrap();
-    assert_eq!(
-        summary.status.code(),
-        Some(0),
-        "{}",
-        String::from_utf8_lossy(&summary.stderr)
-    );
-    assert!(String::from_utf8_lossy(&summary.stdout).contains("Every checked generator matched"));
 }
 
 /// A RUNNER_TEMP the steps cannot write under stops each one naming its

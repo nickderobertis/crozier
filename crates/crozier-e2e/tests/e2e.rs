@@ -16463,8 +16463,8 @@ print("accepted")
 }
 
 /// `x-fern-property-name` / `x-crozier-property-name` rename a property only on
-/// the Python side: the `crozier-property-name` SDK, driven through a mock
-/// transport, sends each renamed request keyword argument under the property's
+/// the Python side: the `crozier-property-name` SDK, driven against a local
+/// HTTP server, sends each renamed request keyword argument under the property's
 /// JSON key — a referenced, an inline and a form body, and a nested inline
 /// object — and parses responses keyed that way into the renamed model fields,
 /// a discriminated union's variant among them, which serialize back to the key.
@@ -16483,9 +16483,9 @@ fn sdk_env_renamed_properties_keep_their_json_keys_on_the_wire() {
         .success();
     let script = r#"
 import json
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs
-
-import httpx
 
 from practice import PracticeApi
 from practice.practice import CreateInsuranceProductRequestCoverage
@@ -16503,22 +16503,32 @@ RESPONSES = {
 sent = []
 
 
-def handle(request):
-    content_type = request.headers.get("content-type", "")
-    if content_type.startswith("application/json"):
-        body = json.loads(request.content)
-    else:
-        body = {key: values[0] for key, values in parse_qs(request.content.decode()).items()}
-    sent.append((request.url.path, body))
-    if request.url.path in RESPONSES:
-        return httpx.Response(200, json=RESPONSES[request.url.path])
-    return httpx.Response(204)
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        raw = self.rfile.read(int(self.headers.get("Content-Length", "0")))
+        if self.headers.get("Content-Type", "").startswith("application/json"):
+            body = json.loads(raw)
+        else:
+            body = {key: values[0] for key, values in parse_qs(raw.decode()).items()}
+        sent.append((self.path, body))
+        if self.path in RESPONSES:
+            payload = json.dumps(RESPONSES[self.path]).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+        else:
+            self.send_response(204)
+            self.end_headers()
+
+    def log_message(self, *args):
+        pass
 
 
-client = PracticeApi(
-    base_url="https://api.test",
-    httpx_client=httpx.Client(transport=httpx.MockTransport(handle)),
-)
+server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+client = PracticeApi(base_url=f"http://127.0.0.1:{server.server_address[1]}")
 metadata = client.practice.create_service_metadata(
     "p-1",
     practice_service_metadata_create_practice_id="p-body",
@@ -16542,6 +16552,7 @@ assert (metadata.owning_practice_id, metadata.label) == ("p-owner", "Checkup"), 
 assert metadata.dict()["practice_id"] == "p-owner", metadata.dict()
 assert metadata.dict()["displayName"] == "Checkup", metadata.dict()
 assert (event.kind, event.opened_practice_id) == ("opened", "p-opened"), event
+server.shutdown()
 print("ok")
 "#;
     let py = sdk_python_env(&sdk.join("pyproject.toml"))
