@@ -25,6 +25,8 @@ set -euo pipefail
   "run this as a step of the crozier action, which GitHub Actions gives its own path"
 [ -n "${RUNNER_TEMP:-}" ] || die "RUNNER_TEMP is not set" \
   "run this inside GitHub Actions, or set RUNNER_TEMP to a scratch directory"
+[ -n "${GITHUB_OUTPUT:-}" ] || die "GITHUB_OUTPUT is not set" \
+  "run this inside GitHub Actions, or set GITHUB_OUTPUT to a writable file"
 case "${RUNNER_OS:-}" in
   Windows) die "the crozier action runs on Linux and macOS runners only" \
     "run the job on ubuntu-latest or macos-latest" ;;
@@ -78,4 +80,5 @@ if ! command -v ruff >/dev/null 2>&1; then
   bash "$GITHUB_ACTION_PATH/scripts/install-ruff.sh"
 fi
 
-echo "bin=$bin" >>"${GITHUB_OUTPUT:?GITHUB_OUTPUT is not set}"
+echo "bin=$bin" >>"$GITHUB_OUTPUT" || die "could not write the bin output to GITHUB_OUTPUT ($GITHUB_OUTPUT)" \
+  "check that GITHUB_OUTPUT names a writable file (GitHub Actions sets it for each step), then re-run"

@@ -80,10 +80,14 @@ could_not_check="$(field .counts.could_not_check)"
   echo "total-crozier-seconds=$(field .timing_totals.crozier_seconds)"
   echo "total-speedup=$(field .timing_totals.speedup)"
   echo "total-saved-seconds=$(field .timing_totals.saved_seconds)"
-} >>"$GITHUB_OUTPUT"
+} >>"$GITHUB_OUTPUT" || die "could not write the step outputs to GITHUB_OUTPUT ($GITHUB_OUTPUT)" \
+  "check that GITHUB_OUTPUT names a writable file (GitHub Actions sets it for each step), then re-run"
 
 if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
-  REPORT="$report_path" EXIT_CODE="$status" bash "$here/summary.sh" >>"$GITHUB_STEP_SUMMARY"
+  summary="$(REPORT="$report_path" EXIT_CODE="$status" bash "$here/summary.sh")"
+  printf '%s\n' "$summary" >>"$GITHUB_STEP_SUMMARY" \
+    || die "could not write the step summary to GITHUB_STEP_SUMMARY ($GITHUB_STEP_SUMMARY)" \
+      "check that GITHUB_STEP_SUMMARY names a writable file (GitHub Actions sets it), or unset it to skip the summary, then re-run"
 fi
 
 if [ -n "$report_path" ]; then

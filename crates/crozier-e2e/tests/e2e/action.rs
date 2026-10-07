@@ -710,11 +710,20 @@ fn a_report_of_the_wrong_shape_is_refused_by_compare_and_summary() {
     broken_paths["results"][0]["comparison"]["differing"] = serde_json::json!("a.py");
     let mut broken_status = whole.clone();
     broken_status["results"][0]["status"] = serde_json::json!("passed");
+    let mut broken_exit = whole.clone();
+    broken_exit["exit_code"] = serde_json::json!(2);
+    let mut broken_layout = whole.clone();
+    broken_layout["results"][0]["comparison"]["layout"] = serde_json::json!("<b>flat</b>");
+    let mut broken_total = whole.clone();
+    broken_total["timing_totals"]["reference_seconds"] = serde_json::Value::Null;
     let runner_temp = tempfile::tempdir().unwrap();
     for (label, report) in [
         ("count", broken_count),
         ("paths", broken_paths),
         ("status", broken_status),
+        ("exit code the schema does not list", broken_exit),
+        ("layout the schema does not list", broken_layout),
+        ("null total the schema requires", broken_total),
     ] {
         let scratch = tempfile::tempdir().unwrap();
         let file = scratch.path().join("report.json");
@@ -820,6 +829,74 @@ fn an_unwritable_runner_temp_names_the_directory_and_the_fix() {
             "{script}: {log}"
         );
     }
+}
+
+/// An output file a step cannot write to — GITHUB_OUTPUT or the step summary —
+/// stops it naming the file and the fix, not with a bare redirection error.
+#[test]
+fn an_unwritable_output_file_names_itself_and_the_fix() {
+    let runner_temp = tempfile::tempdir().unwrap();
+    let directory = runner_temp.path().join("a-directory");
+    std::fs::create_dir(&directory).unwrap();
+    let writable = runner_temp.path().join("github-output");
+    std::fs::write(&writable, "").unwrap();
+    for (output, summary, named) in [
+        (
+            &directory,
+            &writable,
+            "could not write the step outputs to GITHUB_OUTPUT",
+        ),
+        (
+            &writable,
+            &directory,
+            "could not write the step summary to GITHUB_STEP_SUMMARY",
+        ),
+    ] {
+        let out = step(
+            "compare.sh",
+            repo_root(),
+            runner_temp.path(),
+            &[("COMPARE_PATHS", FIXTURE_LAYOUT)],
+        )
+        .env("CROZIER", crate::crozier_bin())
+        .env("GITHUB_OUTPUT", output)
+        .env("GITHUB_STEP_SUMMARY", summary)
+        .output()
+        .unwrap();
+        let log = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(out.status.code(), Some(1), "{named}: {log}");
+        assert!(log.contains(named), "{log}");
+        assert!(
+            log.contains("names a writable file (GitHub Actions sets it"),
+            "{log}"
+        );
+    }
+
+    let mirror = Mirror::new(&["v0.0.80"]);
+    let mut install = step("install.sh", repo_root(), runner_temp.path(), &[]);
+    install
+        .env("GITHUB_ACTION_PATH", repo_root())
+        .env("GITHUB_OUTPUT", &directory)
+        .env("VERSION", "v0.0.80")
+        .env_remove("RUNNER_OS")
+        .env_remove("GITHUB_PATH")
+        .env_remove("CROZIER_VERSION")
+        .env_remove("CROZIER_RELEASE_BASE_URL")
+        .env_remove("CROZIER_CHECKSUM_BASE_URL");
+    for (key, value) in mirror.env() {
+        install.env(key, value);
+    }
+    let out = install.output().unwrap();
+    let log = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(out.status.code(), Some(1), "{log}");
+    assert!(
+        log.contains("could not write the bin output to GITHUB_OUTPUT"),
+        "{log}"
+    );
+    assert!(
+        log.contains("names a writable file (GitHub Actions sets it for each step)"),
+        "{log}"
+    );
 }
 
 /// The compare step refuses to run outside a runner rather than write its
@@ -1197,6 +1274,7 @@ fn install_refuses_a_missing_runner_environment() {
     for (missing, named) in [
         ("GITHUB_ACTION_PATH", "GITHUB_ACTION_PATH is not set"),
         ("RUNNER_TEMP", "RUNNER_TEMP is not set"),
+        ("GITHUB_OUTPUT", "GITHUB_OUTPUT is not set"),
     ] {
         let runner_temp = tempfile::tempdir().unwrap();
         let output_file = runner_temp.path().join("github-output");
