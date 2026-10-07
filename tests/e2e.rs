@@ -15059,6 +15059,32 @@ fn fern_refusal_classes_hold() {
     );
 }
 
+/// A body-bearing HEAD fails before writing; removing the body recovers.
+#[test]
+fn head_request_body_refuses_then_recovers() {
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-refusals/head-request-body/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &source, strict).unwrap();
+        assert!(
+            refused_failures("head-request-body", &run, "HEAD /patina", strict).is_empty(),
+            "{}",
+            run.stderr
+        );
+    }
+    let temp = tempfile::tempdir().unwrap();
+    let control = temp.path().join("control.yml");
+    let text = std::fs::read_to_string(source).unwrap();
+    let start = text.find("      requestBody:").unwrap();
+    let end = text.find("      responses:").unwrap();
+    std::fs::write(&control, format!("{}{}", &text[..start], &text[end..])).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &control, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+}
+
 /// crozier#358's one refused use site: a required property whose pointer,
 /// naming no `properties`, reaches nothing (`Named/items` on an object with no
 /// `items`). Pinned Fern fails to resolve it

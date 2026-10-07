@@ -1,0 +1,12 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Close-crozier-s-30-downstream-parity-gaps-and-mine-Fern-s-test-inputs-for-more/scratch/4031986-0/generation-tmp/fern-refusals-probe-kevnhqb1/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> inspect_patina
+                  __package__.yml
+                  [error] Endpoint is a HEAD, so it cannot have a request body.
+                  
+[api]: python-sdk Found 1 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

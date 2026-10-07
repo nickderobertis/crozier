@@ -1,0 +1,4 @@
+method=HEAD path=/patina body=b''
+Traceback (most recent call last):
+  File "<stdin>", line 14, in <module>
+AssertionError: required JSON request body is omitted by the generated SDK
