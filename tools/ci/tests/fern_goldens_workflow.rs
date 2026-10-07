@@ -437,10 +437,9 @@ fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
     assert!(justfile.contains("set positional-arguments := true"));
     assert!(justfile.contains("./tools/fern-goldens/fern-goldens generate \"$@\""));
     assert!(justfile.contains("./tools/fern-goldens/fern-goldens publish --branch \"$1\""));
-    // The fixtures reports (`just fixtures-diff`) write through a temp file.
-    let reports = include_str!("../../../crates/crozier-e2e/fixtures-report.sh");
-    assert!(reports.contains("crozier-fixtures-$1.XXXXXX"));
-    assert!(!reports.contains("out=$(cargo") && !justfile.contains("out=$(CROZIER_DIFF_CORPUS"));
+    // The fixtures reports (`just fixtures-diff`) write through a temp file;
+    // the script's own half of that is crozier-e2e's test, beside the script.
+    assert!(!justfile.contains("out=$(CROZIER_DIFF_CORPUS"));
 }
 
 #[cfg(unix)]

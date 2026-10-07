@@ -7512,6 +7512,21 @@ class CensusInterpreterTests(unittest.TestCase):
                 f"{expected!r} and {completed.stdout.strip()!r} are not the same file",
             )
 
+    def test_started_as_sh_it_runs_its_arguments_under_the_interpreter_and_keeps_their_status(self) -> None:
+        """The `sh scripts/census-python.sh SCRIPT ARGS...` form every Nx target spells."""
+        sh = shutil.which("sh")
+        if sh is None:
+            self.skipTest("no sh on PATH")
+        for code, expected in (("import sys; print(sys.argv[1:]); sys.exit(0)", 0),
+                               ("import sys; print(sys.argv[1:]); sys.exit(3)", 3)):
+            with self.subTest(expected=expected):
+                completed = subprocess.run(
+                    [sh, str(self.RESOLVER), "-c", code, "first arg", "--flag"],
+                    cwd=REPO, capture_output=True, text=True, timeout=CENSUS_TIMEOUT,
+                )
+                self.assertEqual(expected, completed.returncode, completed.stderr)
+                self.assertEqual("['first arg', '--flag']", completed.stdout.strip())
+
     @unittest.skipIf(os.name == "nt", "a shebang names the interpreter that cannot start only on POSIX")
     def test_an_interpreter_that_cannot_start_names_itself_and_the_fix(self) -> None:
         """A repo-local interpreter the kernel cannot execute is reported, not left to the shell."""

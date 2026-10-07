@@ -9394,6 +9394,16 @@ fn flat_goldens_are_the_declared_set() {
     }
 }
 
+/// `fixtures-report.sh` (the runner of the two reporters below) captures cargo's
+/// output in a named temporary file rather than a shell variable, so a report of
+/// any size survives and the run log can be shown in full when it fails.
+#[test]
+fn the_fixtures_reports_write_through_a_temp_file() {
+    let script = include_str!("../fixtures-report.sh");
+    assert!(script.contains("crozier-fixtures-$1.XXXXXX"), "{script}");
+    assert!(!script.contains("out=$(cargo"), "{script}");
+}
+
 /// Measurement aid — generate every available corpus and print the exact residual
 /// `unmatched` task list. Run via `just fixtures-gaps`.
 #[test]

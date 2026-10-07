@@ -216,13 +216,29 @@ const wellFormed =
       Array.isArray(entry.from) &&
       entry.from.every((from) => typeof from === "string" && /^[a-z][a-z0-9-]*:[a-z0-9:-]+$/.test(from)),
   );
+// An input is a pattern or named input (a string) or one of Nx's object forms;
+// a list of anything else is no input list the edge walk can read.
+const inputEntry = (entry) =>
+  typeof entry === "string" || (entry !== null && typeof entry === "object" && !Array.isArray(entry));
+const inputList = (entries) => Array.isArray(entries) && entries.every(inputEntry);
 const named = nxJson?.namedInputs;
 if (
   named !== undefined &&
   (named === null || typeof named !== "object" || Array.isArray(named) ||
-    !Object.values(named).every((entries) => Array.isArray(entries)))
+    !Object.values(named).every(inputList))
 ) {
-  fail(['nx.json\'s "namedInputs" is not a map of input names to lists', "ACTION: restore nx.json's namedInputs from git"]);
+  fail(['nx.json\'s "namedInputs" is not a map of input names to input lists', "ACTION: restore nx.json's namedInputs from git"]);
+}
+const targetDefaults = nxJson?.targetDefaults;
+if (
+  targetDefaults !== undefined &&
+  (targetDefaults === null || typeof targetDefaults !== "object" || Array.isArray(targetDefaults) ||
+    !Object.values(targetDefaults).every(
+      (defaults) => defaults !== null && typeof defaults === "object" && (defaults.inputs === undefined || inputList(defaults.inputs)),
+    ))
+) {
+  fail(['nx.json\'s "targetDefaults" is not a map of target names to settings with input lists',
+    "ACTION: restore nx.json's targetDefaults from git"]);
 }
 if (!wellFormed) {
   fail([

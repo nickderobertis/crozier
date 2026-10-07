@@ -67,6 +67,20 @@
         "crateSource"
       ]
     },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test tools/workspace/tests/release-roster.test.mjs"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "{workspaceRoot}/crates/*/Cargo.toml",
+        "{workspaceRoot}/tools/*/Cargo.toml",
+        "{workspaceRoot}/release-plz.toml"
+      ]
+    },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
