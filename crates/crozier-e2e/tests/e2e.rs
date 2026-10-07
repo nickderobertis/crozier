@@ -6794,8 +6794,6 @@ const TORRENTARR: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `komga`: the Komga comics server's own API is the corpus's second declarer of
-/// a media type range other than `*/*` — one `image/*` `default` response over
 /// `svix-webhooks`: the Svix API is the corpus's second declarer of a duplicated
 /// `operationId` — `GET /api/v1/health` and `HEAD /api/v1/health` both carry
 /// `v1.health.get` — where the two operations differ only in HTTP method.
@@ -6810,8 +6808,6 @@ const SVIX_WEBHOOKS: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `webflow-v2`: Webflow's Data API v2 is the corpus's third declarer of a
-/// duplicated `operationId` and the one where Fern's answer differs — both
 /// `komga`: the Komga comics server's own API is the corpus's second declarer of
 /// a media type range other than `*/*` — one `image/*` `default` response over
 /// `{type: string, format: binary}`, against corpus row 127's six and on the same
