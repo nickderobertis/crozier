@@ -36,7 +36,7 @@ split four ways:
 - **66 carry a committed Fern measurement of non-generation that crozier is
   byte-compared against.** These are the 52 `limitations` rows and the 14
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
-  `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
+  `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
 - **25 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real

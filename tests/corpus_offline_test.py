@@ -71,7 +71,7 @@ class OfflineCorpusRecipes(unittest.TestCase):
             warm_dependencies(self, env)
             build = subprocess.run(
                 [sys.executable, str(Path(__file__).resolve()), "--deny-network",
-                 "cargo", "test", "--locked", "--no-run", "--test", "e2e"],
+                 "cargo", "test", "--locked", "--no-run", "-p", "crozier-e2e", "--test", "e2e"],
                 cwd=REPO, env=env, capture_output=True, text=True,
             )
             self.assertEqual(0, build.returncode, build.stderr)

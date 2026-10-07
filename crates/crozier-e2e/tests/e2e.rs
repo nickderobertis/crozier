@@ -46,7 +46,7 @@ mod overlay_goldens;
 
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
-#[path = "e2e/departures_ledger.rs"]
+#[path = "../../../tests/support/departures_ledger.rs"]
 mod departures_ledger;
 
 use departures_ledger::{GoldenLedger, Ledger, Observed};
@@ -851,9 +851,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
 
 /// Path to a fixture directory under `tests/fixtures/`.
 fn fixture_dir(api: &str) -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures")
-        .join(api)
+    repo_root().join("tests/fixtures").join(api)
 }
 
 /// The repository's departure ledger, loaded once per test process against
@@ -862,7 +860,7 @@ fn fixture_dir(api: &str) -> PathBuf {
 fn departure_ledger() -> &'static Ledger {
     static LEDGER: std::sync::OnceLock<Ledger> = std::sync::OnceLock::new();
     LEDGER.get_or_init(|| {
-        load_departure_ledger(Path::new(env!("CARGO_MANIFEST_DIR"))).unwrap_or_else(|failures| {
+        load_departure_ledger(repo_root()).unwrap_or_else(|failures| {
             panic!(
                 "{} breaks its contract (docs/departures/README.md):\n{}",
                 departures_ledger::LEDGER,
@@ -1009,7 +1007,7 @@ fn recorded_carve_outs(c: &Corpus) -> std::collections::BTreeMap<String, Vec<Str
 /// names a golden. A tree outside the repository keeps its absolute spelling,
 /// which no row names.
 fn golden_path(path: &Path) -> String {
-    path.strip_prefix(env!("CARGO_MANIFEST_DIR"))
+    path.strip_prefix(repo_root())
         .map(|rel| {
             rel.components()
                 .map(|part| part.as_os_str().to_string_lossy())
@@ -1188,9 +1186,7 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
     if vendored.exists() {
         return Some(vendored);
     }
-    let committed = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/corpus-sources")
-        .join(api);
+    let committed = repo_root().join("tests/fixtures/corpus-sources").join(api);
     ["openapi.json", "openapi.yaml", "openapi.yml"]
         .into_iter()
         .map(|name| committed.join(name))
@@ -1198,9 +1194,7 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
         .or_else(|| {
             let interpreter = if cfg!(windows) { "python" } else { "python3" };
             let output = std::process::Command::new(interpreter)
-                .arg(
-                    Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/corpus_remote_ref_pins.py"),
-                )
+                .arg(repo_root().join("scripts/corpus_remote_ref_pins.py"))
                 .arg("tree-root")
                 .arg(api)
                 .output()
@@ -1214,9 +1208,47 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
         })
 }
 
+/// The repository root: this suite lives in `crates/crozier-e2e`, two levels
+/// below the tree it reads (the Fern corpus, the docs, the scripts).
+fn repo_root() -> &'static Path {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("crates/crozier-e2e sits two levels below the repository root")
+}
+
+/// The `crozier` binary every journey drives.
+///
+/// This crate cannot see the binary through `CARGO_BIN_EXE_crozier` — Cargo
+/// sets that only for the package that owns it — so it is the one `cargo build
+/// -p crozier` leaves in this profile's target directory, beside the `deps/`
+/// holding this test executable. `crozier-e2e:test` depends on `crozier:build`,
+/// so through `just test-e2e` that is always a freshly built artifact. A
+/// `CARGO_BIN_EXE_crozier` set in the environment overrides the lookup.
+fn crozier_bin() -> PathBuf {
+    if let Some(explicit) = std::env::var_os("CARGO_BIN_EXE_crozier") {
+        return PathBuf::from(explicit);
+    }
+    let exe = std::env::current_exe().expect("the test executable has a path");
+    let mut profile = exe
+        .parent()
+        .expect("the test executable sits in a directory");
+    if profile.ends_with("deps") {
+        profile = profile.parent().expect("deps/ sits in a profile directory");
+    }
+    let binary = profile.join(format!("crozier{}", std::env::consts::EXE_SUFFIX));
+    assert!(
+        binary.is_file(),
+        "no crozier binary at {}: build it first — `just test-e2e` (nx run crozier-e2e:test) \
+         runs `crozier:build` (cargo build -p crozier) before this suite",
+        binary.display()
+    );
+    binary
+}
+
 /// Fresh `crozier` command bound to the built binary.
 fn crozier() -> Command {
-    Command::cargo_bin("crozier").expect("crozier binary is built for tests")
+    Command::new(crozier_bin())
 }
 
 /// Require every Fern file except explicit residual gaps to match byte-for-byte.
@@ -1388,7 +1420,7 @@ fn assert_generated_tree_matches(
 // llmlint: ignore[names_match_behavior] The name is the one this node's acceptance criteria and its `cargo nextest -E 'test(witness_supply_probes_match_fern_measurements)'` check select it by; renaming it would silently empty that filter.
 #[test]
 fn witness_supply_probes_match_fern_measurements() {
-    let failures = probe_manifest_failures(Path::new(env!("CARGO_MANIFEST_DIR")));
+    let failures = probe_manifest_failures(repo_root());
     assert!(
         failures.is_empty(),
         "the committed probe measurements disagree with MANIFEST.tsv:\n{}",
@@ -1398,7 +1430,7 @@ fn witness_supply_probes_match_fern_measurements() {
 
 #[test]
 fn refused_probe_inputs_report_the_unsupported_shape() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let probes = root.join(PROBE_DOCUMENTS_DIR);
     let path_item = tempfile::tempdir().expect("path-item probe tempdir");
     let path_item_probe = path_item.path().join("header-at-path-item.yml");
@@ -1472,7 +1504,7 @@ class SlotStart(enum.StrEnum):
         if self is SlotStart.NOON:
             return noon()
 "#;
-    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let probe = repo_root()
         .join(PROBE_DOCUMENTS_DIR)
         .join("enum-leading-zero-member-refused-control.yml");
     let out = tempfile::tempdir().expect("probe output tempdir");
@@ -1810,10 +1842,8 @@ fn refusal_proof_failures(
 /// is held to the pin the goldens are, not to a second copy of it.
 fn probe_fern_pins() -> (String, String) {
     let metadata: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/scaffolding/metadata.json"),
-        )
-        .expect("crozier's packaged Fern metadata"),
+        &std::fs::read_to_string(repo_root().join("assets/scaffolding/metadata.json"))
+            .expect("crozier's packaged Fern metadata"),
     )
     .expect("crozier's packaged Fern metadata is JSON");
     let pin = |field: &str| {
@@ -1963,8 +1993,7 @@ fn differential_isolation_failures(
             "{key}: no python3/python on PATH to run the census selector over the pair"
         )];
     };
-    let script =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/probe-differential-isolation.py");
+    let script = repo_root().join("scripts/probe-differential-isolation.py");
     match std::process::Command::new(python)
         .arg(script)
         .arg(root)
@@ -2231,7 +2260,7 @@ fn authored_probe_refusal_failures(
 /// and every one it refused is refused in both modes under its registry class.
 #[test]
 fn naming_authored_probes_match_pinned_fern() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let mut cases: Vec<String> = std::fs::read_dir(root.join(AUTHORED_PROBES_DIR))
         .expect("the authored probes")
         .filter_map(Result::ok)
@@ -2338,7 +2367,7 @@ components:
 /// `x-fern-type-name` probe.
 #[test]
 fn canonical_type_name_hint_names_components_like_fern_spelling() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let probe = std::fs::read_to_string(
         root.join(AUTHORED_PROBES_DIR)
             .join("376-350-declared-type-name/openapi.yml"),
@@ -2379,8 +2408,7 @@ fn canonical_type_name_hint_names_components_like_fern_spelling() {
 /// README), so this is not a `*matches_fern_output*` test.
 #[test]
 fn authored_probe_measurements_match_fern() {
-    let failures =
-        authored_probe_failures(&Path::new(env!("CARGO_MANIFEST_DIR")).join(AUTHORED_PROBES_DIR));
+    let failures = authored_probe_failures(&repo_root().join(AUTHORED_PROBES_DIR));
     assert!(
         failures.is_empty(),
         "the authored-probe measurements break their contract \
@@ -2445,7 +2473,7 @@ fn authored_probe_failures(root: &Path) -> Vec<String> {
 #[test]
 fn authored_probe_gate_names_a_broken_case() {
     let root = tempfile::tempdir().unwrap();
-    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let source = repo_root()
         .join(AUTHORED_PROBES_DIR)
         .join("358-absent-property");
     let case = root.path().join("358-absent-property");
@@ -2529,7 +2557,7 @@ fn unwritten_module_imports(root: &Path) -> Vec<String> {
 /// is the authored probe pinned Fern measured for that site.
 #[test]
 fn unresolved_nested_pointers_import_only_written_modules() {
-    let probes = Path::new(env!("CARGO_MANIFEST_DIR")).join(AUTHORED_PROBES_DIR);
+    let probes = repo_root().join(AUTHORED_PROBES_DIR);
     for case in [
         "358-absent-property",
         "358-absent-required-property",
@@ -2599,7 +2627,7 @@ const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
 // llmlint: ignore[names_match_behavior] The name is the one the contract in docs/openapi-surface/handwritten/AGENTS.md and this node's acceptance criteria give the gate, and the `cargo nextest -E 'test(handwritten_fixtures_match_fern_goldens)'` check selects it by; renaming it would silently empty that filter.
 #[test]
 fn handwritten_fixtures_match_fern_goldens() {
-    let failures = handwritten_fixture_failures(Path::new(env!("CARGO_MANIFEST_DIR")));
+    let failures = handwritten_fixture_failures(repo_root());
     assert!(
         failures.is_empty(),
         "the hand-written fixtures break their contract \
@@ -2617,8 +2645,8 @@ fn handwritten_fixtures_match_fern_goldens() {
 /// changes nothing but the date-time separator.
 #[test]
 fn worked_date_time_examples_always_parse() {
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("docs/openapi-surface/handwritten/unread-date-time-examples/openapi.yml");
+    let fixture =
+        repo_root().join("docs/openapi-surface/handwritten/unread-date-time-examples/openapi.yml");
     let out = tempfile::tempdir().expect("tempdir");
     crozier()
         .args(["generate", "python", "--spec"])
@@ -2776,7 +2804,7 @@ fn handwritten_documents(
             vec!["no python3/python on PATH to read the hand-written fixtures' documents".into()],
         );
     };
-    let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/handwritten-fixtures.py");
+    let script = repo_root().join("scripts/handwritten-fixtures.py");
     let output = match std::process::Command::new(python)
         .arg(script)
         .arg("--repo-root")
@@ -2835,7 +2863,7 @@ fn handwritten_documents(
 /// each case pins.
 #[test]
 fn parameter_lowering_measurements_match_fern() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(PARAMETER_LOWERING_DIR);
+    let root = repo_root().join(PARAMETER_LOWERING_DIR);
     let mut cases: Vec<PathBuf> = std::fs::read_dir(&root)
         .expect("the measurement directory exists")
         .filter_map(Result::ok)
@@ -2876,7 +2904,7 @@ fn parameter_lowering_measurements_match_fern() {
 /// path, read alone, lifts nothing.
 #[test]
 fn crozier_base_path_alias_matches_and_wins() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(PARAMETER_LOWERING_DIR);
+    let root = repo_root().join(PARAMETER_LOWERING_DIR);
     let lifted = root.join("base-path-lifted-unincluded");
     let literal = root.join("base-path-string");
     let document = std::fs::read_to_string(lifted.join("openapi.yml")).unwrap();
@@ -2931,7 +2959,7 @@ fn crozier_base_path_alias_matches_and_wins() {
 /// imports: a hand-written fixture never counts as a corpus golden.
 #[test]
 fn the_handwritten_gate_is_outside_the_golden_only_tier() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     for (script, selector) in [
         (
             "scripts/fixtures-coverage.sh",
@@ -2949,7 +2977,8 @@ fn the_handwritten_gate_is_outside_the_golden_only_tier() {
             "{script} no longer selects the golden-only tier by {selector}; re-read this check"
         );
     }
-    let source = std::fs::read_to_string(root.join("tests/e2e.rs")).expect("this suite's source");
+    let source = std::fs::read_to_string(root.join("crates/crozier-e2e/tests/e2e.rs"))
+        .expect("this suite's source");
     let declared: Vec<&str> = source
         .lines()
         .filter_map(|line| line.strip_prefix("fn "))
@@ -2972,10 +3001,9 @@ fn the_handwritten_gate_is_outside_the_golden_only_tier() {
 /// the prose to it too. Every version the contract names is one of the two pins.
 #[test]
 fn the_handwritten_contract_states_the_corpus_pin() {
-    let contract = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("{HANDWRITTEN_DIR}/AGENTS.md")),
-    )
-    .expect("the hand-written fixture contract");
+    let contract =
+        std::fs::read_to_string(repo_root().join(format!("{HANDWRITTEN_DIR}/AGENTS.md")))
+            .expect("the hand-written fixture contract");
     let (cli_pin, sdk_pin) = probe_fern_pins();
     for (field, pin) in [
         ("fern_cli_version", &cli_pin),
@@ -3849,7 +3877,7 @@ impl ProbeManifestFixture {
         std::fs::write(probes.join(format!("{FIXTURE_CONTROL_KEY}.yml")), control)
             .expect("fixture control");
         std::fs::copy(
-            Path::new(env!("CARGO_MANIFEST_DIR"))
+            repo_root()
                 .join(PROBE_DOCUMENTS_DIR)
                 .join("ref-pointer-unnamed-segment.yml"),
             probes.join(format!("{FIXTURE_REFUSAL_KEY}.yml")),
@@ -4147,7 +4175,7 @@ fn probe_manifest_refuses_a_differential_pair_that_does_not_isolate_its_feature(
 #[test]
 #[ignore = "requires the Fern CLI, Docker, and generator image"]
 fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let workspace = tempfile::tempdir().expect("Fern probe workspace");
     let fern_root = workspace.path().join("fern");
     let openapi = fern_root.join("openapi");
@@ -4244,7 +4272,7 @@ fn generate_corpus_with(c: &Corpus, extra: &[&str]) -> tempfile::TempDir {
 fn corpus_command(c: &Corpus, output: &Path) -> (Command, tempfile::TempDir) {
     let staged = tempfile::tempdir().expect("source staging directory");
     let prepared = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" })
-        .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/corpus_sources.py"))
+        .arg(repo_root().join("scripts/corpus_sources.py"))
         .args(["prepare", "--fixture", c.api, "--output"])
         .arg(staged.path())
         .output()
@@ -9250,10 +9278,8 @@ flat_goldens! {
 /// `tests/fixtures/flat-goldens.txt` as `(fixture, spec fixture)` rows, the spec
 /// column empty when the golden uses its own fixture's spec.
 fn declared_flat_goldens() -> Vec<(String, String)> {
-    let table = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/flat-goldens.txt"),
-    )
-    .expect("read tests/fixtures/flat-goldens.txt");
+    let table = std::fs::read_to_string(repo_root().join("tests/fixtures/flat-goldens.txt"))
+        .expect("read tests/fixtures/flat-goldens.txt");
     table
         .lines()
         .filter(|line| !line.trim().is_empty() && !line.starts_with('#'))
@@ -9298,7 +9324,7 @@ fn flat_goldens_are_the_declared_set() {
     );
 
     let on_disk: std::collections::BTreeSet<String> =
-        std::fs::read_dir(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures"))
+        std::fs::read_dir(repo_root().join("tests/fixtures"))
             .expect("read tests/fixtures")
             .map(|entry| entry.expect("fixture entry").path())
             .filter(|path| path.join(FLAT_GOLDEN_DIR).exists())
@@ -9858,7 +9884,7 @@ fn a_known_fern_failure_registration_cannot_excuse_anything_else() {
 #[test]
 fn every_registered_corpus_is_wired_into_the_gate() {
     let source = include_str!("e2e.rs");
-    let recipe = corpus_match_recipe(include_str!("../justfile"));
+    let recipe = corpus_match_recipe(include_str!("../../../justfile"));
 
     let mut enforced = std::collections::BTreeSet::new();
     for corpus in registered_diff_corpora() {
@@ -10006,7 +10032,7 @@ fn corpus_fixture_aliases() -> Result<Vec<(&'static str, &'static str)>, String>
     let mut aliases = Vec::new();
     let mut sources = std::collections::HashSet::new();
     let mut fixtures = std::collections::HashSet::new();
-    for (index, line) in include_str!("fixtures/corpus-aliases.tsv")
+    for (index, line) in include_str!("../../../tests/fixtures/corpus-aliases.tsv")
         .lines()
         .enumerate()
     {
@@ -10086,7 +10112,7 @@ fn every_existing_manifest_golden_is_registered_for_aggregate_comparison() {
         .map(|corpus| corpus.api)
         .collect();
     let mut missing = Vec::new();
-    for line in include_str!("fixtures/CORPUS.md").lines() {
+    for line in include_str!("../../../tests/fixtures/CORPUS.md").lines() {
         let cells: Vec<&str> = line
             .trim()
             .trim_matches('|')
@@ -10197,7 +10223,7 @@ fn version_flag_reports_crate_version() {
         .arg("--version")
         .assert()
         .success()
-        .stdout(predicate::str::contains(env!("CARGO_PKG_VERSION")));
+        .stdout(predicate::str::contains(crozier::VERSION));
 }
 
 /// A spec that is *not* in the Fern corpus, exercising a schema-only object, an
@@ -10433,7 +10459,7 @@ fn sdk_env_crozier_matches_fern_runtime_behavior() {
     let py = runtime_python_env()
         .unwrap_or_else(|reason| panic!("runtime wire tests require a Python env: {reason}"));
 
-    let runtime_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime");
+    let runtime_dir = repo_root().join("tests/runtime");
     let fern_src = fixture_dir("exhaustive").join("expected/src");
     let output = std::process::Command::new(&py)
         .args(["-m", "pytest", "-q", "-p", "no:cacheprovider"])
@@ -11338,7 +11364,7 @@ components:
 #[test]
 fn non_json_multipart_array_part_keeps_encoded_list_through_the_cli() {
     let (_dir, out) = generate_ok(include_str!(
-        "../docs/openapi-surface/probes/encoding-explode.yml"
+        "../../../docs/openapi-surface/probes/encoding-explode.yml"
     ));
     let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py"))
         .expect("multipart raw client is generated");
@@ -11357,10 +11383,10 @@ fn non_json_multipart_array_part_keeps_encoded_list_through_the_cli() {
 #[test]
 fn responses_extension_beside_status_code_is_ignored_through_the_cli() {
     let (_probe_dir, probe_out) = generate_ok(include_str!(
-        "../docs/openapi-surface/probes/extension-responses.yml"
+        "../../../docs/openapi-surface/probes/extension-responses.yml"
     ));
     let (_control_dir, control_out) = generate_ok(include_str!(
-        "../docs/openapi-surface/probes/extension-responses-control.yml"
+        "../../../docs/openapi-surface/probes/extension-responses-control.yml"
     ));
     let path = "src/acme/raw_client.py";
     let probe =
@@ -13191,9 +13217,8 @@ fn the_cleared_env_list_covers_every_variable_the_settings_surface_reads() {
     let mut read_by_the_binary: Vec<String> = ["src/settings.rs", "src/cli.rs"]
         .iter()
         .flat_map(|relative| {
-            let source =
-                std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(relative))
-                    .expect("read the settings surface");
+            let source = std::fs::read_to_string(repo_root().join(relative))
+                .expect("read the settings surface");
             crozier_env_names(&source)
         })
         .collect();
@@ -15183,7 +15208,7 @@ enum WireTests {
 /// [`sdk_env_fern_refusal_wire_tests_hold`] adds.
 #[test]
 fn fern_refusal_classes_hold() {
-    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let registry = repo_root().join(FERN_REFUSALS_DIR);
     let mut failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
     failures.extend(nested_items_required_control_failures(&registry, &crozier));
     assert!(
@@ -15238,7 +15263,7 @@ fn nested_items_required_control_failures(
 /// bytes on that accepted document.
 #[test]
 fn service_auth_refusal_recovers_when_security_is_removed() {
-    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let registry = repo_root().join(FERN_REFUSALS_DIR);
     let probe = registry.join("service-auth-undefined/probe.yml");
     for strict in [false, true] {
         let run = refusal_run(&crozier, &probe, strict).unwrap();
@@ -15267,7 +15292,7 @@ fn service_auth_refusal_recovers_when_security_is_removed() {
 
 #[test]
 fn unsupported_version_refusal_recovers_with_openapi_31() {
-    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let registry = repo_root().join(FERN_REFUSALS_DIR);
     let probe = registry.join("unsupported-openapi-version/probe.yml");
     for strict in [false, true] {
         let run = refusal_run(&crozier, &probe, strict).unwrap();
@@ -15297,7 +15322,7 @@ fn unsupported_version_refusal_recovers_with_openapi_31() {
 
 #[test]
 fn endpoint_auth_refusal_recovers_when_security_is_removed() {
-    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let registry = repo_root().join(FERN_REFUSALS_DIR);
     let probe = registry.join("endpoint-auth-undefined/probe.yml");
     for strict in [false, true] {
         let run = refusal_run(&crozier, &probe, strict).unwrap();
@@ -15335,7 +15360,7 @@ fn endpoint_auth_refusal_recovers_when_security_is_removed() {
 
 #[test]
 fn inherited_auth_in_a_mixed_service_names_the_private_endpoint() {
-    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let registry = repo_root().join(FERN_REFUSALS_DIR);
     let text = std::fs::read_to_string(registry.join("service-auth-undefined/probe.yml")).unwrap();
     let dir = tempfile::tempdir().unwrap();
     let probe = dir.path().join("openapi.yml");
@@ -15366,7 +15391,7 @@ fn inherited_auth_in_a_mixed_service_names_the_private_endpoint() {
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_fern_refusal_wire_tests_hold() {
-    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let registry = repo_root().join(FERN_REFUSALS_DIR);
     let failures = fern_refusal_failures(&registry, &crozier, WireTests::Run);
     assert!(
         failures.is_empty(),
@@ -16742,7 +16767,7 @@ fn scratch_strict_crozier(dir: &Path, writes_on_refusal: bool) -> Option<impl Fn
     };
     let stub = dir.join("strict_crozier.py");
     std::fs::write(&stub, SCRATCH_STRICT_CROZIER).unwrap();
-    let real = assert_cmd::cargo::cargo_bin("crozier");
+    let real = crozier_bin();
     Some(move || {
         let mut command = Command::new(py);
         command.arg(&stub).env("STUB_CROZIER", &real);
@@ -16754,10 +16779,8 @@ fn scratch_strict_crozier(dir: &Path, writes_on_refusal: bool) -> Option<impl Fn
 }
 
 fn header_array_probe() -> String {
-    std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/probes/header-array.yml"),
-    )
-    .expect("the header-array probe crozier refuses")
+    std::fs::read_to_string(repo_root().join("docs/openapi-surface/probes/header-array.yml"))
+        .expect("the header-array probe crozier refuses")
 }
 
 // llmlint: ignore[e2e_not_mocked] No class is evaluated yet, so the real binary refuses nothing under --fern-strict and no journey over it can reach the gate's accepting or wrote-output branches; the stand-in emulates only the refusal line the contract fixes and runs the real binary for every generation. The gate under test is real, and the failing journeys drive the real binary.
@@ -17003,7 +17026,7 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
 /// replacing it with the declared bearer scheme restores identical SDK bytes.
 #[test]
 fn unresolved_security_reference_recovers_with_inline_scheme() {
-    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let probe = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("unresolved-reference/probe.yml");
     for strict in [false, true] {
@@ -17075,7 +17098,7 @@ fn noncomponent_response_reference_recovers_when_inlined() {
 fn ignored_security_reference_uses_canonical_precedence_through_cli() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("openapi.yml");
-    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let probe = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("unresolved-reference/probe.yml");
     let text = std::fs::read_to_string(probe)
@@ -17113,7 +17136,7 @@ fn ignored_security_reference_uses_canonical_precedence_through_cli() {
 
 #[test]
 fn path_without_leading_slash_recovers_with_valid_path() {
-    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let probe = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("path-without-leading-slash/probe.yml");
     for strict in [false, true] {
@@ -17156,7 +17179,7 @@ fn path_without_leading_slash_recovers_with_valid_path() {
 
 #[test]
 fn unreferenced_path_parameter_recovers_when_placeholder_is_added() {
-    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let probe = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("path-parameter-unreferenced/probe.yml");
     for strict in [false, true] {
@@ -17229,7 +17252,7 @@ fn shared_referenced_path_parameter_recovers_with_placeholder() {
 
 #[test]
 fn missing_parameter_component_recovers_when_definition_is_added() {
-    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let probe = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("undefined-component-reference/probe.yml");
     for strict in [false, true] {
@@ -17271,7 +17294,7 @@ fn missing_parameter_component_recovers_when_definition_is_added() {
 
 #[test]
 fn nested_named_example_reference_recovers_with_example_component() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("undefined-component-reference");
     let probe = class.join("named-example-probe.yml");
@@ -17374,7 +17397,7 @@ fn response_parameter_reference_recovers_with_inline_response() {
 
 #[test]
 fn response_component_fragment_is_not_an_operation_reference() {
-    let control = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let control = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("unresolved-reference/response-fragment-control.yml");
     for strict in [false, true] {
@@ -17410,7 +17433,7 @@ fn response_component_fragment_is_not_an_operation_reference() {
 fn security_reference_recovers_when_the_referenced_document_is_present() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("openapi.yml");
-    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let probe = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("unresolved-reference/probe.yml");
     std::fs::copy(probe, &spec).unwrap();
@@ -17498,7 +17521,7 @@ fn security_reference_recovers_when_the_referenced_document_is_present() {
 
 #[test]
 fn primitive_default_refusal_recovers_with_declared_types() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("default-not-valid-for-type");
     for case in [
@@ -17584,7 +17607,7 @@ fn primitive_default_refusal_recovers_with_declared_types() {
 
 #[test]
 fn list_default_refusal_recovers_with_an_array() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("list-default-not-array");
     for case in ["probe.yml", "boolean-default-control.yml"] {
@@ -17624,7 +17647,7 @@ fn list_default_refusal_recovers_with_an_array() {
 
 #[test]
 fn object_extension_refusal_preserves_scalar_aliases_and_object_bases() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("object-extends-non-object");
     for case in [
@@ -17672,7 +17695,7 @@ fn object_extension_refusal_preserves_scalar_aliases_and_object_bases() {
 
 #[test]
 fn inline_header_enum_refusal_recovers_with_a_named_schema() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("generator-missing-type");
     for case in [
@@ -17763,7 +17786,7 @@ fn inline_header_enum_refusal_recovers_with_a_named_schema() {
 
 #[test]
 fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_default() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("named-type-default");
     for case in [
@@ -17845,7 +17868,7 @@ fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_defau
 
 #[test]
 fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("extension-reference-cycle");
     for (case, diagnostic) in [
@@ -17940,7 +17963,7 @@ fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
 
 #[test]
 fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("unresolved-schema-reference");
     for case in [
@@ -18018,7 +18041,7 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
     // A required pointer naming `properties` is walked, and Fern generates from
     // one reaching nothing or a `$defs` member; each is an authored probe whose
     // Fern tree `authored_probe_measurements_match_fern` byte-matches.
-    let probes = Path::new(env!("CARGO_MANIFEST_DIR")).join(AUTHORED_PROBES_DIR);
+    let probes = repo_root().join(AUTHORED_PROBES_DIR);
     accepted.extend(
         [
             "358-absent-required-property",
@@ -18057,9 +18080,7 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
 
 #[test]
 fn recursive_inline_union_refusal_preserves_named_recursion() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(FERN_REFUSALS_DIR)
-        .join("heap-exhausted");
+    let class = repo_root().join(FERN_REFUSALS_DIR).join("heap-exhausted");
     for case in [
         "probe.yml",
         "single-child-control.yml",
@@ -18140,9 +18161,7 @@ fn generates_identically_in_both_modes(spec: &Path) {
 
 #[test]
 fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(FERN_REFUSALS_DIR)
-        .join("type-not-defined");
+    let class = repo_root().join(FERN_REFUSALS_DIR).join("type-not-defined");
     for (spec, element) in [
         ("probe.yml", "POST /users responses/403"),
         ("api-status-sweep-probe.yml", "POST /s400 responses/400"),
@@ -18192,7 +18211,7 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
 
 #[test]
 fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped_variant() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("missing-discriminant-property");
     let id = "missing-discriminant-property";
@@ -18311,9 +18330,7 @@ fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped
 /// refused shape (`*-probe.yml`) is refused with the class, and every accepted
 /// near miss (`*-control.yml`) generates identical bytes in both modes.
 fn example_value_class_holds(id: &str, diagnostic: &str) {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(FERN_REFUSALS_DIR)
-        .join(id);
+    let class = repo_root().join(FERN_REFUSALS_DIR).join(id);
     for strict in [false, true] {
         let run = refusal_run(&crozier, &class.join("probe.yml"), strict).unwrap();
         let failures = refused_failures(id, &run, diagnostic, strict);
@@ -18386,7 +18403,7 @@ fn example_missing_required_property_refusal_covers_measured_shapes() {
 
 #[test]
 fn enum_default_refusal_recovers_with_a_retained_default() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("default-not-enum-value");
     let probe = class.join("probe.yml");
@@ -18480,7 +18497,7 @@ fn enum_default_refusal_recovers_with_a_retained_default() {
 /// every measured near-miss Fern generates from writes the same SDK in both.
 #[test]
 fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("generator-lint-failure");
     for (probe, element) in [
@@ -18562,9 +18579,7 @@ fn assert_generates_in_both_modes(spec: &Path, label: &str) {
 #[test]
 fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
     let id = "duplicate-example-name";
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(FERN_REFUSALS_DIR)
-        .join(id);
+    let class = repo_root().join(FERN_REFUSALS_DIR).join(id);
     let probe = class.join("probe.yml");
     for strict in [false, true] {
         let run = refusal_run(&crozier, &probe, strict).unwrap();
@@ -18691,9 +18706,7 @@ fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
 #[test]
 fn example_query_parameter_refusal_follows_the_examples_fern_checks() {
     let id = "example-missing-required-query-parameter";
-    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(FERN_REFUSALS_DIR)
-        .join(id);
+    let class = repo_root().join(FERN_REFUSALS_DIR).join(id);
     let probe = class.join("probe.yml");
     for strict in [false, true] {
         let run = refusal_run(&crozier, &probe, strict).unwrap();
@@ -18828,8 +18841,7 @@ fn unnameable_enum_refusal_preserves_output_and_recovers_with_declared_name() {
     std::fs::create_dir(&output).unwrap();
     std::fs::write(output.join("keep.txt"), "existing SDK").unwrap();
     let probe = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/fern-refusals/enum-value-unnameable/probe.yml"),
+        repo_root().join("docs/fern-refusals/enum-value-unnameable/probe.yml"),
     )
     .unwrap();
     std::fs::write(&spec, &probe).unwrap();
@@ -19067,8 +19079,7 @@ fn discriminant_refusals_recover_with_a_valid_document_name() {
     let spec = dir.path().join("api.yml");
     let output = dir.path().join("sdk");
     let probe = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/fern-refusals/discriminant-value-unsuitable/probe.yml"),
+        repo_root().join("docs/fern-refusals/discriminant-value-unsuitable/probe.yml"),
     )
     .unwrap();
     for name in ["_t", "kind-name", "1kind"] {
@@ -19189,8 +19200,7 @@ fn repeated_path_names_refuse_and_distinct_positions_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
     let probe = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/fern-refusals/duplicate-path-parameter/probe.yml"),
+        repo_root().join("docs/fern-refusals/duplicate-path-parameter/probe.yml"),
     )
     .unwrap();
     let document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
@@ -19247,8 +19257,7 @@ fn normalized_parameter_collisions_refuse_and_renamed_parameters_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
     let probe = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
+        repo_root().join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
     )
     .unwrap();
     for strict in [false, true] {
@@ -19339,8 +19348,7 @@ fn declared_parameter_names_deconflict_refusals_without_repairing_generation() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let probe = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
+        repo_root().join("docs/fern-refusals/request-property-camelcase-collision/probe.yml"),
     )
     .unwrap();
     for body in [false, true] {
@@ -19398,8 +19406,7 @@ fn body_names_colliding_with_path_names_refuse_but_query_and_header_names_genera
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
     let probe = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/fern-refusals/request-property-name-collision/probe.yml"),
+        repo_root().join("docs/fern-refusals/request-property-name-collision/probe.yml"),
     )
     .unwrap();
     for location in ["path", "query", "header"] {
@@ -19861,7 +19868,7 @@ fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
-        "../docs/fern-refusals/sdk-method-collision/probe.yml"
+        "../../../docs/fern-refusals/sdk-method-collision/probe.yml"
     ))
     .unwrap();
     for strict in [false, true] {
@@ -19920,7 +19927,7 @@ fn nullable_inherited_property_collisions_refuse_and_nonnullable_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
-        "../docs/fern-refusals/object-property-name-collision/probe.yml"
+        "../../../docs/fern-refusals/object-property-name-collision/probe.yml"
     ))
     .unwrap();
     std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
@@ -19963,7 +19970,7 @@ fn type_names_across_namespaces_refuse_and_distinct_contexts_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
-        "../docs/fern-refusals/type-name-collision/probe.yml"
+        "../../../docs/fern-refusals/type-name-collision/probe.yml"
     ))
     .unwrap();
     std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
@@ -20014,7 +20021,7 @@ fn numeric_type_names_refuse_and_valid_declared_names_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
-        "../docs/fern-refusals/type-name-not-letter-led/probe.yml"
+        "../../../docs/fern-refusals/type-name-not-letter-led/probe.yml"
     ))
     .unwrap();
     std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
@@ -20094,7 +20101,8 @@ fn numeric_type_names_refuse_and_valid_declared_names_recover() {
 fn oversized_generated_names_refuse_without_writes_and_shorter_names_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
-    let original = include_str!("../docs/fern-refusals/generated-file-name-too-long/probe.yml");
+    let original =
+        include_str!("../../../docs/fern-refusals/generated-file-name-too-long/probe.yml");
     std::fs::write(&spec, original).unwrap();
     for strict in [false, true] {
         let output = dir.path().join(format!("bad-{strict}"));
@@ -20451,7 +20459,7 @@ fn webhook_local_object_names_refuse_and_component_names_recover() {
 /// (type-name-collision/evidence/namespaced-*.pinned-fern.log).
 #[test]
 fn namespaced_enum_collisions_follow_the_parameter_location() {
-    let evidence = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let evidence = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("type-name-collision/evidence");
     for case in [
@@ -20483,10 +20491,8 @@ fn namespaced_enum_collisions_follow_the_parameter_location() {
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_body_query_collision_keeps_both_callers_values() {
-    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/corpus-sources/waylay-queries/openapi.yaml");
-    let script = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("docs/departures/evidence/body-query-parameter-value.py");
+    let source = repo_root().join("tests/fixtures/corpus-sources/waylay-queries/openapi.yaml");
+    let script = repo_root().join("docs/departures/evidence/body-query-parameter-value.py");
     let directory = tempfile::tempdir().expect("collision SDKs");
     for version in ["3.0.3", "3.1.0"] {
         let spec = directory.path().join(format!("{version}.yaml"));

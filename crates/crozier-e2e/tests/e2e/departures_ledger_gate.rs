@@ -126,7 +126,7 @@ fn assert_names(failures: &[String], row: &str, says: &str) {
 /// this suite compares and the compiled catalog.
 #[test]
 fn departure_ledger_holds_to_its_contract() {
-    if let Err(failures) = load_departure_ledger(Path::new(env!("CARGO_MANIFEST_DIR"))) {
+    if let Err(failures) = load_departure_ledger(crate::repo_root()) {
         panic!(
             "{} breaks its contract:\n{}",
             departures_ledger::LEDGER,
@@ -572,7 +572,7 @@ fn recorded_departures_merge_into_the_ledger_golden_by_golden() {
 #[test]
 #[ignore = "the ledger's regeneration step; run via `just departures-ledger`"]
 fn write_departures_ledger() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = crate::repo_root();
     let records = std::env::var_os(departures_ledger::RECORD_ENV)
         .unwrap_or_else(|| panic!("set {} to the records", departures_ledger::RECORD_ENV));
     let merged = departures_ledger::merge_records(root, Path::new(&records))
@@ -591,7 +591,7 @@ fn write_departures_ledger() {
 /// `tests/generation.rs`, which reads it, validates against the same list.
 #[test]
 fn compared_goldens_inventory_is_current() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = crate::repo_root();
     let derived = compared_goldens(root).render();
     let path = root.join(departures_ledger::INVENTORY);
     if std::env::var_os("CROZIER_UPDATE_COMPARED_GOLDENS").is_some() {
@@ -613,7 +613,7 @@ fn compared_goldens_inventory_is_current() {
 /// loader and the failures use, and the `justfile` holds that recipe.
 #[test]
 fn the_documented_ledger_format_is_the_loaders() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = crate::repo_root();
     let page = std::fs::read_to_string(root.join("docs/departures/README.md")).unwrap();
     for said in [
         departures_ledger::LEDGER,

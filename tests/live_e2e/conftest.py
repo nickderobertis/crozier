@@ -49,7 +49,7 @@ PRISM_PKG = "@stoplight/prism-cli@5.14.2"
 @dataclass(frozen=True)
 class Fixture:
     """A corpus to drive live, plus the naming flags `crozier` is generated with —
-    the runtime-behavior analog of the byte-diff `Corpus` in `tests/e2e.rs`. The
+    the runtime-behavior analog of the byte-diff `Corpus` in `crates/crozier-e2e/tests/e2e.rs`. The
     generated package must be importable as `fern` for the `reference.md` snippets
     to run, so `package_name` is `fern`.
 

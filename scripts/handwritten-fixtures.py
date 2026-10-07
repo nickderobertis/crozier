@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this script sits in scripts/ beside golden-reach.py, whose site resolution and coverage reading it reuses, and runs as `just handwritten-reach` and from the `tests/e2e.rs` gate.
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this script sits in scripts/ beside golden-reach.py, whose site resolution and coverage reading it reuses, and runs as `just handwritten-reach` and from the `crates/crozier-e2e/tests/e2e.rs` gate.
 """Read and measure the hand-written generation fixtures.
 
 A hand-written fixture is generation evidence of a lower level than a real
@@ -16,7 +16,7 @@ category and its ledger — is stated once, in
   rows and reach ledger, and that nothing a fixture holds is a corpus row, a
   corpus golden or a census source. It prints one JSON object, the parsed pins
   and digest of each fixture and every failure, for
-  `handwritten_fixtures_match_fern_goldens` in `tests/e2e.rs`, which adds the
+  `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`, which adds the
   checks only Rust can make: Contract A's digest, the pin, and crozier's
   byte-match against `fern-expected/`.
 * ``measure`` runs an instrumented crozier over each fixture's `openapi.yml`
@@ -721,7 +721,7 @@ def measure(args: argparse.Namespace) -> int:
 def instrumented_crozier(repo_root: Path, reach: Any) -> Path:
     """Build the instrumented crozier `just golden-reach` measures with, and return it."""
     build = subprocess.run(
-        ["cargo", "llvm-cov", "--locked", "--no-report", "nextest", "-E",
+        ["cargo", "llvm-cov", "--locked", "--no-report", "nextest", "--workspace", "-E",
          "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)"],
         cwd=repo_root, capture_output=True, text=True,
     )

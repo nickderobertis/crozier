@@ -34,7 +34,7 @@ Four rules make the number honest; none of them a `grep` obeys.
 * **A registered source is one whose Fern golden crozier byte-matches.** A
   `CORPUS.md` row is acquisition: Fern can drop the document after it is
   committed (`axesso.de`), and a witness can be acquired as evidence only. The
-  golden population is read off the golden tests of `tests/e2e.rs`
+  golden population is read off the golden tests of `crates/crozier-e2e/tests/e2e.rs`
   (`golden_registrations`), and each member's document path is resolved from
   the acquisition manifest separately (`acquisition_sources`). A golden test
   that declares a measured `unmatched` residual byte-compares every other file
@@ -5267,7 +5267,7 @@ def pinned_tree_root(fixtures_root: Path, corpus_root: Path, fixture: str) -> Pa
     return path if path.is_file() else None
 
 
-# A golden test of `tests/e2e.rs` is one whose name says it compares a tree
+# A golden test of `crates/crozier-e2e/tests/e2e.rs` is one whose name says it compares a tree
 # against Fern's: `<api>_matches_fern_output`, as `scripts/golden-reach.py`
 # scopes one instrumented run to it.
 GOLDEN_TEST = re.compile(r"matches_fern_output")
@@ -5276,7 +5276,7 @@ _CORPUS_HELPER = re.compile(r"assert_(?:link_ok_|committed_)?corpus_matches\(&(\
 
 @dataclass(frozen=True)
 class GoldenRegistration:
-    """One fixture directory a golden test of `tests/e2e.rs` byte-compares.
+    """One fixture directory a golden test of `crates/crozier-e2e/tests/e2e.rs` byte-compares.
 
     `unmatched` is the measured residual that test declares: the golden's files
     crozier does not reproduce yet, each of which fails the gate the moment it
@@ -5289,7 +5289,7 @@ class GoldenRegistration:
 
 
 def golden_registrations(e2e: Path) -> dict[str, GoldenRegistration]:
-    """Fixture directory -> its golden registration, read off `tests/e2e.rs`.
+    """Fixture directory -> its golden registration, read off `crates/crozier-e2e/tests/e2e.rs`.
 
     A `Corpus { api, …, unmatched }` literal names a fixture directory and its
     residual; a `fn …matches_fern_output` that drives `&CONST` through one of the
@@ -5325,9 +5325,14 @@ def golden_registrations(e2e: Path) -> dict[str, GoldenRegistration]:
     return registrations
 
 
+# Where the binary e2e suite lives relative to the repository root.
+GOLDEN_REGISTRY = Path("crates") / "crozier-e2e" / "tests" / "e2e.rs"
+
+
 def golden_registry(fixtures_root: Path) -> Path:
-    """Where the golden tests of a fixtures root are declared: its sibling `e2e.rs`."""
-    return fixtures_root.parent / "e2e.rs"
+    """Where the golden tests of a fixtures root are declared: the e2e suite of
+    the repository holding it (`tests/fixtures` -> `crates/crozier-e2e/tests/e2e.rs`)."""
+    return fixtures_root.parent.parent / GOLDEN_REGISTRY
 
 
 def acquisition_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bool) -> list[Source]:
@@ -5376,7 +5381,7 @@ def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bo
     An original fixture's document is vendored beside its golden, so its
     directory is its registration. A corpus row is a golden source only when its
     fixture directory carries a committed `expected/` tree **and** a golden test
-    of `tests/e2e.rs` byte-compares it (`golden_registrations`); its document
+    of `crates/crozier-e2e/tests/e2e.rs` byte-compares it (`golden_registrations`); its document
     path is then resolved from the acquisition manifest, separately. A row Fern
     dropped, or one acquired as witness evidence only, carries no golden and is
     not a source here, whatever its `CORPUS.md` decision reads.
@@ -5495,7 +5500,7 @@ def main(argv: list[str] | None = None) -> int:
                 f"openapi-surface-census: no registered source is named {unknown[0]!r}.{why} "
                 "The registered sources are the tests/fixtures/<name>/openapi.* documents "
                 "and the CORPUS.md rows whose committed Fern golden a golden test of "
-                "tests/e2e.rs byte-compares.",
+                f"{GOLDEN_REGISTRY.as_posix()} byte-compares.",
                 file=sys.stderr,
             )
             return 1

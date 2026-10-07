@@ -250,7 +250,7 @@ fn overlay_corpora() -> Vec<(&'static Kind, &'static Corpus, Overlay)> {
 fn overlay_goldens_are_exactly_the_targeted_sets() {
     let listed_total: usize = KINDS.iter().map(|kind| kind.fixtures.len()).sum();
     assert_eq!(overlay_corpora().len(), listed_total);
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
+    let fixtures = crate::repo_root().join("tests/fixtures");
     let names: Vec<String> = std::fs::read_dir(&fixtures)
         .expect("read tests/fixtures")
         .map(|entry| {

@@ -93,7 +93,7 @@ it is usually already done).
    OpenAPI document can express needs no new spec: give the
    already-registered source a second row name and declare the setting for that
    name in `fern-generator-config.txt`.
-2. Register the same name as a `Corpus` in `tests/e2e.rs` with `unmatched: &[]`,
+2. Register the same name as a `Corpus` in `crates/crozier-e2e/tests/e2e.rs` with `unmatched: &[]`,
    add the `#[test]` that drives it, and — for a fetched `link-ok` spec — add its
    `just test-corpus-match` line;
    `every_registered_corpus_is_wired_into_the_gate` fails without both. Commit
@@ -209,7 +209,7 @@ packaged `expected/`. That is the tree `fern generate --local` writes to a
 `local-file-system` output path without `--preview`, which crozier reproduces
 with `--layout flat` (see [`matching.md`](matching.md#the-flat-layout)).
 [`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt) declares every flat
-golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
+golden, and `crates/crozier-e2e/tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
 
 - **The script's layout option.** `scripts/generate-fern-fixture.sh --layout
   flat <fixture> <pin>` runs that local-file-system generation, strips comments,
@@ -224,7 +224,7 @@ golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
   writes for a `CORPUS.md` row. Packaged records carry no `layout` key, so no
   packaged golden goes stale over it.
 - **Route A** for a hand-authored fixture: declare it in `flat-goldens.txt`, add
-  its `FLAT_GOLDENS` entry and `flat_goldens!` test in `tests/e2e.rs`, run the
+  its `FLAT_GOLDENS` entry and `flat_goldens!` test in `crates/crozier-e2e/tests/e2e.rs`, run the
   script's flat mode at the pin, then measure with `just fixtures-gaps
   <fixture>`. A flat golden whose directory has no spec names the fixture whose
   vendored `openapi.yml` it uses in its row's second column
@@ -245,7 +245,7 @@ golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
 ### Literal-enum goldens
 
 A targeted set of registered fixtures (`KINDS` in
-`tests/e2e/overlay_goldens.rs`, chosen so that together they reach every enum shape
+`crates/crozier-e2e/tests/e2e/overlay_goldens.rs`, chosen so that together they reach every enum shape
 crozier generates: named, inline-property, parameter, sanitized-name, optional
 and nullable enums) also carries `expected-literals/`: Fern's output for the
 same spec, pins and settings with
@@ -256,7 +256,7 @@ which crozier reproduces with `--enum-type literals`.
   python-enums tree only where an enum appears, so the directory holds just the
   files whose bytes differ, plus `.crozier-overlay.json`: the Fern
   versions, and the `expected/` files Fern does not emit in that mode
-  (`core/enum.py`). The gate in `tests/e2e/overlay_goldens.rs` rebuilds the full tree
+  (`core/enum.py`). The gate in `crates/crozier-e2e/tests/e2e/overlay_goldens.rs` rebuilds the full tree
   as `expected/` minus those files plus the overlay, and compares it with the
   corpus's own residuals. The gate also fails when a listed fixture lacks the
   overlay, when an overlay sits outside the list, and when the overlay's Fern

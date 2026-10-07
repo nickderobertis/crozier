@@ -56,5 +56,5 @@ window (`README.md:47`, `reference.md:28`); those are the golden's
 `constant-header-docs-arguments` rows in `tests/fixtures/departures-ledger.tsv`,
 beside the rows of the corpus goldens whose operations declare such a header.
 `compare_reports_the_parameter_docs_departures_and_fails_on_any_other_difference`
-in `tests/e2e/compare.rs` drives it, and shows the comparison failing when one
+in `crates/crozier-e2e/tests/e2e/compare.rs` drives it, and shows the comparison failing when one
 more line of either file differs.

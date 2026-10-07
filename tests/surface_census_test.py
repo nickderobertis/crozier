@@ -166,7 +166,7 @@ def write_fixture(root: Path, name: str, document: str) -> Path:
 
 
 def write_golden_registry(fixtures: Path, *apis: str, residual: dict[str, list[str]] | None = None) -> None:
-    """Register each corpus `api` as a golden source, the way `tests/e2e.rs` does.
+    """Register each corpus `api` as a golden source, the way `crates/crozier-e2e/tests/e2e.rs` does.
 
     A `Corpus` constant, the golden test driving it, and a committed `expected/`
     tree: the three things `golden_registrations` and `registered_sources` read.
@@ -182,7 +182,9 @@ def write_golden_registry(fixtures: Path, *apis: str, residual: dict[str, list[s
             f"    assert_committed_corpus_matches(&ROW_{index});\n}}\n"
         )
         (fixtures / api / "expected").mkdir(parents=True, exist_ok=True)
-    (fixtures.parent / "e2e.rs").write_text("\n".join(blocks), encoding="utf-8")
+    registry = census.golden_registry(fixtures)
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    registry.write_text("\n".join(blocks), encoding="utf-8")
 
 
 # --- the amended settlement rule -------------------------------------------
@@ -6578,8 +6580,8 @@ class PinnedTreeWalkTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         root = Path(self.temporary.name)
-        self.fixtures = root / "fixtures"
-        self.fixtures.mkdir()
+        self.fixtures = root / "tests" / "fixtures"
+        self.fixtures.mkdir(parents=True)
         self.corpus = root / "corpus"
         self.tree = self.corpus / "tree-proof"
         shutil.copytree(REPO / "tests/data/surface-census-tree", self.tree)
@@ -6681,8 +6683,8 @@ class GoldenSourcePopulationTests(unittest.TestCase):
     def test_a_corpus_row_is_a_source_only_when_a_golden_test_compares_its_golden(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            fixtures, corpus = root / "fixtures", root / "corpus"
-            fixtures.mkdir()
+            fixtures, corpus = root / "tests" / "fixtures", root / "corpus"
+            fixtures.mkdir(parents=True)
             rows_md = [
                 "| # | name | method | source | pinned ref | license | decision | shapes |",
                 "|---:|---|---|---|---|---|---|---|",
@@ -6710,7 +6712,7 @@ class GoldenSourcePopulationTests(unittest.TestCase):
             self.assertEqual(1, refused.returncode, refused.stdout)
             self.assertIn("carries no Fern golden", refused.stderr)
 
-            (fixtures.parent / "e2e.rs").unlink()
+            census.golden_registry(fixtures).unlink()
             unregistered = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus))
             self.assertEqual(1, unregistered.returncode, unregistered.stdout)
             self.assertIn("missing golden registry", unregistered.stderr)
@@ -6719,7 +6721,7 @@ class GoldenSourcePopulationTests(unittest.TestCase):
         corpus_root = REPO / "tests" / "fixtures" / "corpus-sources"
         acquired = census.acquisition_sources(FIXTURES, corpus_root, False)
         registered = census.registered_sources(FIXTURES, corpus_root, False)
-        registrations = census.golden_registrations(REPO / "tests" / "e2e.rs")
+        registrations = census.golden_registrations(REPO / census.GOLDEN_REGISTRY)
         aliases = census.corpus_aliases(FIXTURES)
 
         def compared(fixture: str) -> bool:
@@ -8001,7 +8003,7 @@ class RankedBacklogTests(unittest.TestCase):
         compares, an `open gap` row names none, and a `split` row names both: the
         byte-matched files that prove it and the `unmatched` ones left an open gap.
         """
-        registrations = census.golden_registrations(REPO / "tests" / "e2e.rs")
+        registrations = census.golden_registrations(REPO / census.GOLDEN_REGISTRY)
         residual = {api for api, registration in registrations.items() if registration.unmatched}
         vendored = {path.parent.name for path in FIXTURES.glob("*/openapi.*")}
         resting = {
@@ -9707,13 +9709,13 @@ class RankedBacklogTests(unittest.TestCase):
         )
 
     def test_contract_a_restatements_agree_with_the_gate(self) -> None:
-        """Three facts about Contract A live beside `tests/e2e.rs`'s manifest gate,
+        """Three facts about Contract A live beside `crates/crozier-e2e/tests/e2e.rs`'s manifest gate,
         so this holds them to it rather than letting either copy drift: the
         verdicts each proof form establishes, read off the gate's own `match form`
         (which also admits `measured` on an `absent-tree` row, a value no
         `limitations` row carries), the six verdicts the gate admits, and the
         refusal record's five fields, as the index states them."""
-        gate = (REPO / "tests" / "e2e.rs").read_text(encoding="utf-8")
+        gate = (REPO / census.GOLDEN_REGISTRY).read_text(encoding="utf-8")
         arms = {
             form: tuple(v for v in re.findall(r'"([a-z]+)"', verdicts) if v != "measured")
             for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)

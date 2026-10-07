@@ -4,7 +4,7 @@
 # the comparison finds one differing file.
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
-cp -R "$here/../../fixtures/client-class-name/expected/." "$CROZIER_REFERENCE_OUTPUT"
+cp -R "$here/../../../../../tests/fixtures/client-class-name/expected/." "$CROZIER_REFERENCE_OUTPUT"
 if [ "${1:-}" = --alter ]; then
   echo "A line the reference has and crozier does not." >>"$CROZIER_REFERENCE_OUTPUT/README.md"
 fi

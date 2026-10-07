@@ -67,7 +67,7 @@ outputs:
 
 # Every value reaches a `run:` script through `env`, never interpolated into it,
 # where it would be shell source rather than data. The logic lives in
-# scripts/action/, which tests/e2e/action.rs runs outside GitHub.
+# scripts/action/, which crates/crozier-e2e/tests/e2e/action.rs runs outside GitHub.
 runs:
   using: composite
   steps:

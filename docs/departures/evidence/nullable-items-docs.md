@@ -60,4 +60,4 @@ reports this departure once per file, at the first line of the differing window
 (`README.md:45`, `reference.md:26`); those are the goldens'
 `nullable-items-docs` rows in `tests/fixtures/departures-ledger.tsv`, and
 `compare_reports_the_parameter_docs_departures_and_fails_on_any_other_difference`
-in `tests/e2e/compare.rs` drives it.
+in `crates/crozier-e2e/tests/e2e/compare.rs` drives it.

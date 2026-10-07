@@ -5577,7 +5577,7 @@ fn resolve_request_body(
         // inline `{type: string, description: …}` body sends it and a titled
         // `{type: integer}` or `{type: string}` one does not. The hand-written
         // fixture `described-scalar-bodies` holds both sides, byte-compared by
-        // `handwritten_fixtures_match_fern_goldens` in `tests/e2e.rs`.
+        // `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`.
         let described = schema.reference.is_none() && schema.description.is_some();
         let mut body = single_with_override(
             type_ref,
@@ -7701,7 +7701,7 @@ fn has_bodyless_success(op: &Operation) -> bool {
     // body the primary response declares. A contentless `200` beside a typed
     // `201` stays non-optional too (the hand-written fixture
     // `contentless-created-success`, byte-compared by
-    // `handwritten_fixtures_match_fern_goldens` in `tests/e2e.rs`). EN 18222's `updateDPPById` returns
+    // `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`). EN 18222's `updateDPPById` returns
     // `HttpResponse[DigitalProductPassport]` with a bodyless `202` in the document.
     !(codes.is_empty()
         || success_response_schema(op).is_some()

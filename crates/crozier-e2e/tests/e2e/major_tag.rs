@@ -24,7 +24,7 @@ use std::path::Path;
 use std::process::{Command, Output};
 
 fn repo_root() -> &'static Path {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
+    crate::repo_root()
 }
 
 /// `program` in `dir`, with git isolated from the developer's own settings

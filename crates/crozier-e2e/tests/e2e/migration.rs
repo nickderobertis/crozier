@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 fn root() -> &'static Path {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
+    crate::repo_root()
 }
 
 /// The body of the code block marked `<!-- migration-e2e: name -->` in `page`.
@@ -31,7 +31,7 @@ fn block(page: &str, name: &str) -> String {
 
 /// The `crozier` binary's directory, prepended to `PATH`.
 fn path_with_crozier() -> String {
-    let bin = assert_cmd::cargo::cargo_bin("crozier");
+    let bin = crate::crozier_bin();
     let dir = bin.parent().unwrap();
     format!(
         "{}:{}",
@@ -129,7 +129,7 @@ fn the_migration_guide_workflow_runs_as_written() {
         &in_repo(repo, spec),
     );
     copy_file(
-        &root().join("tests/e2e/migration/fern-reference.sh"),
+        &root().join("crates/crozier-e2e/tests/e2e/migration/fern-reference.sh"),
         &in_repo(repo, command),
     );
     write(&repo.join("fern/generators.yml"), &generators_yml(true));

@@ -22,11 +22,11 @@ const YELLOW: &str = "\u{1b}[33m";
 const RESET: &str = "\u{1b}[0m";
 
 /// The committed layout whose three generators match, mismatch and cannot be
-/// checked (`tests/action-fixture/crozier.yml`).
-const FIXTURE_LAYOUT: &str = "tests/action-fixture";
+/// checked (`crates/crozier-e2e/tests/action-fixture/crozier.yml`).
+const FIXTURE_LAYOUT: &str = "crates/crozier-e2e/tests/action-fixture";
 
 fn repo_root() -> &'static Path {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
+    crate::repo_root()
 }
 
 fn golden(name: &str) -> PathBuf {
@@ -117,7 +117,7 @@ fn run_action(cwd: &Path, env: &[(&str, &str)]) -> ActionRun {
     std::fs::write(&summary_file, "").unwrap();
 
     let compare = step("compare.sh", cwd, runner_temp.path(), env)
-        .env("CROZIER", env!("CARGO_BIN_EXE_crozier"))
+        .env("CROZIER", crate::crozier_bin())
         .env("GITHUB_OUTPUT", &output_file)
         .env("GITHUB_STEP_SUMMARY", &summary_file)
         .output()
@@ -204,7 +204,7 @@ fn the_action_reports_one_of_each_status_over_the_fixture_layout() {
         "{summary}"
     );
     assert!(summary.contains("| 1 | 1 | 1 |"), "{summary}");
-    let config = "<code>tests/action-fixture/crozier.yml</code>";
+    let config = "<code>crates/crozier-e2e/tests/action-fixture/crozier.yml</code>";
     for row in [
         format!("| ✅ matched | {config} | <code>matched</code> | <code>./reference/copy-golden.sh</code> | 40 file(s) compared, layout <code>packaged</code> |"),
         format!("| ❌ mismatched | {config} | <code>mismatched</code> | <code>./reference/copy-golden.sh --alter</code> | differ: <code>README.md</code> |"),
@@ -725,7 +725,7 @@ impl Mirror {
         let dir = tempfile::tempdir().unwrap();
         let staging = dir.path().join("staging");
         std::fs::create_dir_all(&staging).unwrap();
-        std::fs::copy(env!("CARGO_BIN_EXE_crozier"), staging.join("crozier")).unwrap();
+        std::fs::copy(crate::crozier_bin(), staging.join("crozier")).unwrap();
         for tag in tags {
             let base = format!("crozier-{tag}-{}", host_target());
             let releases = dir.path().join("releases").join(tag);
@@ -831,12 +831,12 @@ fn version_of(bin: &Path) -> String {
 
 /// Empty `version` installs `v` + the `[package] version` of the action's own
 /// `Cargo.toml` — here this repository itself is the action's checkout, whose
-/// version Cargo read for this build (`CARGO_PKG_VERSION`), so the expectation
+/// version Cargo read for this build (`crozier::VERSION`), so the expectation
 /// does not share the action's own reading of the manifest. The mirror holds
 /// only that release, so nothing else could have been installed.
 #[test]
 fn an_empty_version_installs_the_release_the_action_ref_names() {
-    let own = format!("v{}", env!("CARGO_PKG_VERSION"));
+    let own = format!("v{}", crozier::VERSION);
     let mirror = Mirror::new(&[&own]);
     let run = install(repo_root(), "", Some(&mirror), &[]);
 
@@ -850,7 +850,7 @@ fn an_empty_version_installs_the_release_the_action_ref_names() {
     assert!(run.stderr.contains("checksum OK."), "{}", run.stderr);
     assert_eq!(
         version_of(&run.bin()),
-        format!("crozier {}", env!("CARGO_PKG_VERSION"))
+        format!("crozier {}", crozier::VERSION)
     );
 }
 

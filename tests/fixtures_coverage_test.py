@@ -60,7 +60,7 @@ def nextest_list(
     name in ANSI escapes, and no plain test name would match.
     """
     listing = subprocess.run(
-        ["cargo", "nextest", "list", "--locked", "--color", "never", "-E", expression],
+        ["cargo", "nextest", "list", "--workspace", "--locked", "--color", "never", "-E", expression],
         cwd=REPO,
         capture_output=True,
         text=True,

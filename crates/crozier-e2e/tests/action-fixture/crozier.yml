@@ -4,7 +4,7 @@
 # no reference tool runs, and none is needed.
 #
 # The naming settings are the ones the copied golden was produced under.
-spec: ../fixtures/client-class-name/openapi.yml
+spec: ../../../../tests/fixtures/client-class-name/openapi.yml
 output: ./sdk
 package-name: fern
 project-name: default_package_name

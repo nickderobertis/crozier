@@ -11,7 +11,7 @@ these cases drive instead is everything that decides what a cell *says*:
   the arm runs and nothing beside it, or a reached `else` reads as a reached
   `if`;
 * the `report` subcommand as a subprocess, over a small repository laid out
-  the way this one is (a region file, a site table, `tests/e2e.rs`, a census and
+  the way this one is (a region file, a site table, `crates/crozier-e2e/tests/e2e.rs`, a census and
   a measurement directory), so the ledger and the rewritten region cells are the
   CLI's own output rather than a function's return value;
 * `scripts/golden-reach-search.py`'s offline readings — the predicate a
@@ -243,7 +243,9 @@ class ReportTests(unittest.TestCase):
         (regions / "demo.md").write_text(REGION_FILE, encoding="utf-8")
         (regions / "golden-reach-sites.tsv").write_text(SITES, encoding="utf-8")
         (self.repo / "tests" / "fixtures").mkdir(parents=True)
-        (self.repo / "tests" / "e2e.rs").write_text(E2E, encoding="utf-8")
+        registry = self.repo / "crates" / "crozier-e2e" / "tests" / "e2e.rs"
+        registry.parent.mkdir(parents=True)
+        registry.write_text(E2E, encoding="utf-8")
         (self.measurement / "tests").mkdir(parents=True)
         (self.measurement / "universe.json").write_text(
             json.dumps({"src/demo.rs": UNIVERSE}), encoding="utf-8"

@@ -18,7 +18,7 @@ three conditions on the parsed documents, never on their text:
 The selector is read from the key's own region row, which is where every
 feature's census selector is recorded: the first code span in its `evidence`
 cell that the census grammar accepts. A selector ending `x-*` counts every
-extension that object declares. `tests/e2e.rs` runs this for every
+extension that object declares. `crates/crozier-e2e/tests/e2e.rs` runs this for every
 `differential` row of `docs/openapi-surface/probe-expected/MANIFEST.tsv`.
 
 Usage: probe-differential-isolation.py ROOT KEY PROBE CONTROL

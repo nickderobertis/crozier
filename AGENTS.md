@@ -268,7 +268,7 @@ The suite is the only QA loop. E2E runs the real binary and byte-compares its
 (comment-stripped) output to the committed fixtures — never mock the generator or
 the filesystem it writes. Done means complete, not minimal: cover malformed-spec
 failure and missing-file recovery, not just the happy path. Coverage is a floor
-(95%), not the target. `tests/e2e.rs` is the source of truth for measured
+(95%), not the target. `crates/crozier-e2e/tests/e2e.rs` is the source of truth for measured
 divergence — every corpus's `unmatched` list is empty, so a non-empty one means
 work in flight, never an accepted state; [`docs/matching.md`](docs/matching.md)
 holds the judgment about why.

@@ -4,7 +4,7 @@
 
 Three registered rows — `komga`, `short-io` and `webflow-v2` — are golden tests
 with a measured `unmatched` residual: every file of their goldens is
-byte-compared except the ones `tests/e2e.rs` names. A `golden` row whose only
+byte-compared except the ones `crates/crozier-e2e/tests/e2e.rs` names. A `golden` row whose only
 real witnesses are those rows is proven only where the code it emits sits in a
 byte-matched file, so this answers that per row, from crozier itself rather than
 from a reading of its source: render the witness document as committed and
@@ -143,7 +143,7 @@ def main() -> int:
         sys.exit(f"residual-attribution: no {CROZIER.relative_to(REPO)}; run `just residual-attribution`, which builds it")
     if shutil.which("ruff") is None:
         sys.exit("residual-attribution: `ruff` is not on PATH; install it with `just bootstrap`")
-    registrations = CENSUS.golden_registrations(REPO / "tests" / "e2e.rs")
+    registrations = CENSUS.golden_registrations(REPO / CENSUS.GOLDEN_REGISTRY)
     for key, (fixture, perturb) in CASES.items():
         path = CENSUS.spec_in(REPO / "tests" / "fixtures" / "corpus-sources" / fixture)
         perturbed = CENSUS.load_document(path)

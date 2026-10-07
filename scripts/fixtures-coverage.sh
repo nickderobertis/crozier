@@ -97,7 +97,7 @@ unit_expr="$(scoped 'not binary(e2e)')"
 
 count_tests() { # count_tests LABEL EXPRESSION
   local label="$1" expression="$2" listing count
-  if ! listing="$(cd "$repo_root" && cargo nextest list --locked -E "$expression" 2>>"$log")"; then
+  if ! listing="$(cd "$repo_root" && cargo nextest list --workspace --locked -E "$expression" 2>>"$log")"; then
     echo "fixtures-coverage: cargo nextest could not resolve the $label selection" \
          "'$expression'. Fix the filter expression (see 'cargo nextest list --help')" \
          "or the SCOPE argument." >&2
@@ -135,7 +135,7 @@ step "clearing stale coverage profiles" \
 
 step "measuring the non-e2e tier" \
   "Run 'just test' to see the failure on its own." \
-  cargo llvm-cov --locked --no-report nextest -E "$unit_expr"
+  cargo llvm-cov --locked --no-report nextest --workspace -E "$unit_expr"
 step "exporting the non-e2e tier" "Retry; if it persists, upgrade cargo-llvm-cov." \
   cargo llvm-cov report --locked --json --output-path "$out_dir/non-e2e.json"
 
@@ -144,7 +144,7 @@ step "clearing the non-e2e profiles" \
   cargo llvm-cov clean --profraw-only
 
 step "measuring the golden-only tier" "$corpus_next_action" \
-  cargo llvm-cov --locked --no-report nextest -E "$golden_expr"
+  cargo llvm-cov --locked --no-report nextest --workspace -E "$golden_expr"
 step "exporting the golden-only tier" "Retry; if it persists, upgrade cargo-llvm-cov." \
   cargo llvm-cov report --locked --json --output-path "$out_dir/golden-only.json"
 
@@ -152,7 +152,7 @@ step "exporting the golden-only tier" "Retry; if it persists, upgrade cargo-llvm
 # next export is the union — the all-e2e tier.
 step "measuring the e2e journey tests" \
   "Run 'just test-e2e' to see the failure on its own." \
-  cargo llvm-cov --locked --no-report nextest -E "$journey_expr"
+  cargo llvm-cov --locked --no-report nextest --workspace -E "$journey_expr"
 step "exporting the all-e2e tier" "Retry; if it persists, upgrade cargo-llvm-cov." \
   cargo llvm-cov report --locked --json --output-path "$out_dir/all-e2e.json"
 

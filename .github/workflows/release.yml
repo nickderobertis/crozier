@@ -432,7 +432,7 @@ jobs:
   # decision itself — derive the major, skip pre-releases (by the Release's
   # `prerelease` flag as well as by the tag's spelling) and older releases — is
   # scripts/update-major-tag.sh's, driven over real repositories, through this
-  # step's own `run:` and `env:`, by tests/e2e/major_tag.rs. The exact `vX.Y.Z`
+  # step's own `run:` and `env:`, by crates/crozier-e2e/tests/e2e/major_tag.rs. The exact `vX.Y.Z`
   # tag stays as release-plz cut it.
   major-tag:
     needs:

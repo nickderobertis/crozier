@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Scaffold a new feature-coverage fixture: create tests/fixtures/<name>/ with a
 # minimal placeholder openapi.yml and print the Corpus snippet to paste into
-# tests/e2e.rs. It does NOT author the spec or touch e2e.rs — those are judgment
+# crates/crozier-e2e/tests/e2e.rs. It does NOT author the spec or touch e2e.rs — those are judgment
 # (which shapes to exercise) and a source edit, kept in your hands on purpose.
 #
 # After this: replace openapi.yml with the spec you want to match, generate Fern's
@@ -52,7 +52,7 @@ cat >&2 <<EOF
 fixture-new: next steps —
   1. Replace tests/fixtures/$name/openapi.yml with the real spec.
   2. Generate Fern's golden tree:  scripts/generate-fern-fixture.sh $name
-  3. Wire it into tests/e2e.rs: copy an existing FEATURE_TARGETS entry, set
+  3. Wire it into crates/crozier-e2e/tests/e2e.rs: copy an existing FEATURE_TARGETS entry, set
      api: "$name" and matched: &[] (empty to start). Copying a real entry keeps
      the Corpus shape single-sourced — no hand-mirrored struct to drift.
   4. Grow \`matched\` as generation lands:  just fixtures-candidates

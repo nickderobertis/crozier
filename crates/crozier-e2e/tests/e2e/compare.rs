@@ -14,9 +14,7 @@ use super::crozier;
 const FIXTURE: &str = "client-class-name";
 
 fn fixture_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures")
-        .join(FIXTURE)
+    crate::repo_root().join("tests/fixtures").join(FIXTURE)
 }
 
 /// The settings the fixture's goldens were produced under, as config lines at
@@ -154,14 +152,14 @@ fn result<'a>(
 }
 
 /// The committed layout the GitHub Action's in-tree journeys run over
-/// (`tests/action-fixture/`): its small reference scripts — copy the golden,
+/// (`crates/crozier-e2e/tests/action-fixture/`): its small reference scripts — copy the golden,
 /// copy it with one file altered, refuse — give exactly one result of each
 /// status, and the mismatch dominates the exit status.
 #[cfg(unix)]
 #[test]
 fn compare_over_the_action_fixture_layout_gives_one_of_each_status() {
-    let out = compare_cmd(Path::new(env!("CARGO_MANIFEST_DIR")))
-        .args(["--json", "-", "tests/action-fixture"])
+    let out = compare_cmd(crate::repo_root())
+        .args(["--json", "-", "crates/crozier-e2e/tests/action-fixture"])
         .output()
         .unwrap();
     let stderr = String::from_utf8(out.stderr).unwrap();
@@ -172,7 +170,7 @@ fn compare_over_the_action_fixture_layout_gives_one_of_each_status() {
         report["counts"],
         serde_json::json!({"matched": 1, "mismatched": 1, "could_not_check": 1})
     );
-    let config = "tests/action-fixture/crozier.yml";
+    let config = "crates/crozier-e2e/tests/action-fixture/crozier.yml";
     assert_eq!(result(&report, config, "matched")["status"], "matched");
     let mismatched = result(&report, config, "mismatched");
     assert_eq!(mismatched["status"], "mismatched");
@@ -683,8 +681,10 @@ fn compare_colours_statuses_only_when_the_rule_says_so() {
 /// for the keywords that schema uses. Hand-rolled like the suite's other small
 /// checkers, so the contract test needs no validator dependency.
 fn validate_against_committed_schema(instance: &serde_json::Value) {
-    let schema: serde_json::Value =
-        serde_json::from_str(include_str!("../../assets/compare-report.schema.json")).unwrap();
+    let schema: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../assets/compare-report.schema.json"
+    ))
+    .unwrap();
     let mut errors = Vec::new();
     validate(&schema, &schema, instance, "$", &mut errors);
     assert!(
@@ -813,8 +813,10 @@ fn validate(
 #[test]
 fn the_schema_checker_rejects_a_report_that_breaks_the_contract() {
     // The checker must be able to fail, or a passing validation proves nothing.
-    let schema: serde_json::Value =
-        serde_json::from_str(include_str!("../../assets/compare-report.schema.json")).unwrap();
+    let schema: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../assets/compare-report.schema.json"
+    ))
+    .unwrap();
     let mut errors = Vec::new();
     let broken = serde_json::json!({
         "schema_version": 3,
@@ -1135,8 +1137,7 @@ fn compare_usage_errors_exit_2() {
 #[cfg(unix)]
 #[test]
 fn compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference() {
-    let case = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("docs/departures/evidence/readme-client-class-casing");
+    let case = crate::repo_root().join("docs/departures/evidence/readme-client-class-casing");
     let golden = format!(
         "docs/departures/evidence/readme-client-class-casing/{}",
         super::departures_ledger_gate::REFERENCE_TREE
@@ -1288,7 +1289,7 @@ fn compare_reports_the_readme_casing_departure_and_fails_on_any_other_difference
 #[cfg(unix)]
 #[test]
 fn compare_reports_the_readme_casing_departure_on_the_mixed_case_organization_golden() {
-    let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let manifest = crate::repo_root();
     let golden = "tests/fixtures/swagger-petstore-organization/expected-flat";
     let repo = tempfile::tempdir().expect("repo tempdir");
     let root = repo.path();
@@ -1413,8 +1414,8 @@ fn compare_reports_the_readme_casing_departure_on_the_mixed_case_organization_go
 #[test]
 fn compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_difference() {
     let golden = "docs/openapi-surface/handwritten/closed-empty-inline-objects/fern-expected";
-    let case = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("docs/openapi-surface/handwritten/closed-empty-inline-objects");
+    let case =
+        crate::repo_root().join("docs/openapi-surface/handwritten/closed-empty-inline-objects");
     let repo = tempfile::tempdir().expect("repo tempdir");
     let root = repo.path();
     git(root, &["init", "-q"]);
@@ -1562,9 +1563,7 @@ fn parameter_docs_departure_journey(
     edits: &[(&str, &str, &str, &str)],
 ) {
     let golden = format!("docs/fern-measurements/parameter-lowering/{case}/fern-expected");
-    let case = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(&golden)
-        .join("..");
+    let case = crate::repo_root().join(&golden).join("..");
     let repo = tempfile::tempdir().expect("repo tempdir");
     let root = repo.path();
     git(root, &["init", "-q"]);
@@ -1914,7 +1913,7 @@ fn compare_applies_the_packaging_and_metadata_departures_exactly() {
 #[cfg(unix)]
 #[test]
 fn compare_reports_the_body_query_departure_and_rejects_another_changed_line() {
-    let project = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let project = crate::repo_root();
     let golden = "tests/fixtures/waylay-queries/expected";
     let repo = tempfile::tempdir().expect("comparison repo");
     let root = repo.path();

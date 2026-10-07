@@ -1,10 +1,38 @@
-[package]
-name = "crozier"
-version = "0.0.105"
+# The root is both the `crozier` package and the Cargo workspace. It stays a
+# package (rather than a virtual manifest over `crates/crozier`) because `src/`
+# is a path the committed measurement ledgers key on thousands of times
+# (docs/openapi-surface/golden-reach*.tsv and the witness records), and because
+# `cargo install --path .`, maturin's root `pyproject.toml`, `action.yml` and the
+# release archives all build this manifest by that path. See src/AGENTS.md.
+[workspace]
+members = [".", "crates/crozier-e2e"]
+resolver = "2"
+
+[workspace.package]
 edition = "2021"
-description = "Ultra-fast OpenAPI-to-SDK code generator that matches Fern's output, byte for byte."
 license = "Apache-2.0"
 repository = "https://github.com/nickderobertis/crozier"
+
+# Shared by the crate's own tests and the test-only members; one lock resolves
+# them all.
+[workspace.dependencies]
+crozier = { path = "." }
+assert_cmd = "2"
+predicates = "3"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+serde_yaml_ng = "0.10"
+tempfile = "3"
+
+[package]
+name = "crozier"
+# Literal, not inherited: release-plz is the only version driver and bumps this
+# line; no other member is ever released.
+version = "0.0.105"
+edition.workspace = true
+description = "Ultra-fast OpenAPI-to-SDK code generator that matches Fern's output, byte for byte."
+license.workspace = true
+repository.workspace = true
 readme = "README.md"
 keywords = ["openapi", "codegen", "sdk", "python", "fern"]
 categories = ["command-line-utilities", "development-tools"]
@@ -40,20 +68,18 @@ path = "src/lib.rs"
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 minijinja = { version = "2", features = ["loader"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1", features = ["preserve_order"] }
-serde_yaml_ng = "0.10"
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml_ng = { workspace = true }
 indexmap = { version = "2", features = ["serde"] }
 schemars = "1"
 # `crozier compare` generates crozier's side and receives the reference in
 # temporary directories, never in the searched repository.
-tempfile = "3"
+tempfile = { workspace = true }
 thiserror = "2"
 
 [dev-dependencies]
-assert_cmd = "2"
-predicates = "3"
-tempfile = "3"
+tempfile = { workspace = true }
 toml = "1"
 
 [profile.release]

@@ -631,7 +631,7 @@ them, `servers-multiple-path-or-operation`, on two rows.
 `just check`.** The census had counted every numbered `CORPUS.md` row as a golden
 source, including rows Fern dropped and rows acquired as evidence only; it now
 counts the registered rows whose committed Fern golden a golden test of
-`tests/e2e.rs` byte-compares (#352). Over the tree of 2026-10-03 that is **222**
+`crates/crozier-e2e/tests/e2e.rs` byte-compares (#352). Over the tree of 2026-10-03 that is **222**
 sources (33 original fixtures, 189 corpus sources) of the 239 acquired, and the
 pin above is that walk. Every census cell of this table is re-transcribed from it.
 What moved is of two kinds. The 17 acquired rows with no golden left every list

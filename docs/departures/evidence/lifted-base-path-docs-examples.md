@@ -72,5 +72,5 @@ line of the differing window: `README.md:40` and `reference.md:20` in each. Thos
 the trees' `lifted-base-path-docs-examples` rows in
 `tests/fixtures/departures-ledger.tsv`, and
 `compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_difference`
-in `tests/e2e/compare.rs` drives exactly that, and shows the comparison failing
+in `crates/crozier-e2e/tests/e2e/compare.rs` drives exactly that, and shows the comparison failing
 when one more line of either file differs.

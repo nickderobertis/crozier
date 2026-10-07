@@ -98,7 +98,7 @@ the endpoint and sub-client catalog out of that fixture's committed
 ## Adding a fixture
 
 Add a `Fixture(...)` to `conftest.FIXTURES` — the generation flags are the runtime
-analog of the byte-diff `Corpus` in `tests/e2e.rs`; the package must generate as
+analog of the byte-diff `Corpus` in `crates/crozier-e2e/tests/e2e.rs`; the package must generate as
 `fern` so the reference snippets import. For a real-world corpus entry, set
 `spec_url` to its CORPUS.md row and commit the Fern golden `expected/` (the
 `reference.md` drives collection). Everything else — endpoint discovery, fetch, the

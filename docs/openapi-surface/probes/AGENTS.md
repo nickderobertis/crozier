@@ -37,7 +37,7 @@ when its workspace sits in one, and the corpus goldens carry no such field.
 Compare crozier against a probe Fern generated cleanly under the gate's own
 normalization — `crozier internal-strip` on both sides, SDK-identity headers
 normalized, `__init__.py` import order canonicalized with `ruff` isort,
-`.fern/metadata.json`'s `generatorConfig` dropped — which is what `tests/e2e.rs`
+`.fern/metadata.json`'s `generatorConfig` dropped — which is what `crates/crozier-e2e/tests/e2e.rs`
 does to a corpus golden. A divergence is repaired in `src/`, never written down
 as a Fern limitation.
 

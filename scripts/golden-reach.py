@@ -415,7 +415,7 @@ def measure(args: argparse.Namespace) -> int:
             "commit them first so the ledger's measured commit is the tree measured"
         )
     build = subprocess.run(
-        ["cargo", "llvm-cov", "--locked", "--no-report", "nextest", "-E",
+        ["cargo", "llvm-cov", "--locked", "--no-report", "nextest", "--workspace", "-E",
          "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)"],
         cwd=repo_root, capture_output=True, text=True,
     )
@@ -443,7 +443,7 @@ def measure(args: argparse.Namespace) -> int:
         fail(
             "no golden test is selected — check the --tests regex against "
             "`cargo nextest list -E 'binary(e2e)'`, or register the corpus's "
-            "`*_matches_fern_output` test in tests/e2e.rs"
+            "`*_matches_fern_output` test in crates/crozier-e2e/tests/e2e.rs"
         )
     profdata = _llvm_tool("llvm-profdata")
     llvm_cov = _llvm_tool("llvm-cov")
@@ -769,7 +769,7 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
 def fixture_test_map(repo_root: Path) -> dict[str, str]:
     """census fixture name -> the golden test comparing its committed golden.
 
-    The census reads `tests/e2e.rs` for its golden-source population
+    The census reads `crates/crozier-e2e/tests/e2e.rs` for its golden-source population
     (`golden_registrations`), so the reach join reads the same registrations
     rather than a second parse: a corpus helper or a feature-target macro one
     reader recognises and the other did not would leave a golden source with no
@@ -777,7 +777,7 @@ def fixture_test_map(repo_root: Path) -> dict[str, str]:
     which `corpus_aliases` maps back.
     """
     census = _census_module()
-    registrations = census.golden_registrations(repo_root / "tests" / "e2e.rs")
+    registrations = census.golden_registrations(repo_root / census.GOLDEN_REGISTRY)
     by_fixture = {api: registration.test for api, registration in registrations.items()}
     for fixture, api in census.corpus_aliases(repo_root / "tests" / "fixtures").items():
         if api in registrations:

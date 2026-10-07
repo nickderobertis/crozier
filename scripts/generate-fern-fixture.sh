@@ -154,7 +154,7 @@ fi
 spec="${SPEC_OVERRIDE:-$repo_root/tests/fixtures/$spec_fixture/openapi.yml}"
 # A flat golden over another fixture may name a registered corpus row whose source
 # is committed under tests/fixtures/corpus-sources/ rather than vendored beside a
-# fixture: the same lookup tests/e2e.rs's `corpus_spec` makes.
+# fixture: the same lookup crates/crozier-e2e/tests/e2e.rs's `corpus_spec` makes.
 if [ -z "$SPEC_OVERRIDE" ] && [ "$spec_fixture" != "$FIXTURE" ] && [ ! -f "$spec" ]; then
   for candidate in openapi.json openapi.yaml openapi.yml; do
     committed="$repo_root/tests/fixtures/corpus-sources/$spec_fixture/$candidate"

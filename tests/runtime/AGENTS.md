@@ -3,7 +3,7 @@
 A **pytest** suite that verifies a **generated** SDK's runtime behavior — the
 compiled client's behavior, not its source text (that is the byte-diff e2e's
 job) — **differentially against Fern**. Driven by
-`tests/e2e.rs::sdk_env_crozier_matches_fern_runtime_behavior`, which generates the
+`crates/crozier-e2e/tests/e2e.rs::sdk_env_crozier_matches_fern_runtime_behavior`, which generates the
 `exhaustive` SDK, prepares a cached venv (httpx + pydantic + pytest), and runs
 `pytest` here with `CROZIER_SDK_SRC` / `FERN_SDK_SRC` pointing at the two SDKs.
 Installing those from PyPI puts it in the SDK Python-environment tier: `just

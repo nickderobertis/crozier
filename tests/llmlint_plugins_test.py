@@ -70,7 +70,7 @@ class GeneratedProbeExpectationsStayNarrowlyExcluded(unittest.TestCase):
             "docs/openapi-surface/probes/annotated-ref-target-closed-object.yml",
             "scripts/openapi-surface-census.py",
             "tests/surface_census_test.py",
-            "tests/e2e.rs",
+            "crates/crozier-e2e/tests/e2e.rs",
         )
 
         self.assertTrue(

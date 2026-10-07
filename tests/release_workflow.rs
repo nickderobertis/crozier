@@ -368,7 +368,7 @@ fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
         "the tag decision belongs to scripts/update-major-tag.sh alone"
     );
     // The Release's own pre-release flag reaches the script through `env`,
-    // never interpolated into the `run:` (tests/e2e/major_tag.rs runs the step).
+    // never interpolated into the `run:` (crates/crozier-e2e/tests/e2e/major_tag.rs runs the step).
     let step = steps
         .iter()
         .find(|step| step.get("run").is_some())
