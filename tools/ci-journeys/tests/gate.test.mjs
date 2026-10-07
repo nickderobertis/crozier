@@ -150,6 +150,8 @@ test("an Nx answer of the wrong shape stops the gate before any target runs", { 
     [{ nodes: "a" }, ["a"], /nodes are not projects with string tags/],
     [good, { a: true }, /answered \{"a":true\}, not a list of this graph's projects/],
     [good, ["a", "ghost"], /answered \["ghost"\], not a list of this graph's projects/],
+    // A name that is not a string is refused, not coerced to the project it spells.
+    [good, [["a"]], /answered \[\["a"\]\], not a list of this graph's projects/],
   ]) {
     const root = scratchWorkspace(t);
     commitChange(root, "a/src.txt", "a changed\n");

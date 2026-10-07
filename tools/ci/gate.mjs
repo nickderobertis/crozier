@@ -233,7 +233,7 @@ function main() {
     tierLine = "broader tier (--sweep): every project, cache skipped";
   } else {
     candidates = nxJson(["show", "projects", "--affected", `--base=${base.sha}`, "--json"]);
-    const unknown = Array.isArray(candidates) ? candidates.filter((name) => !Object.hasOwn(tags, name)) : [];
+    const unknown = Array.isArray(candidates) ? candidates.filter((name) => typeof name !== "string" || !Object.hasOwn(tags, name)) : [];
     if (!Array.isArray(candidates) || unknown.length > 0) {
       die(
         `'nx show projects --affected' answered ${JSON.stringify(Array.isArray(candidates) ? unknown : candidates)}, not a list of this graph's projects`,

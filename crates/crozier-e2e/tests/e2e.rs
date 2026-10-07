@@ -2832,44 +2832,54 @@ fn handwritten_documents(
             )
         }
     };
-    // Exit 0 is a gate with no failure and 1 one with failures, the JSON
-    // printed either way; any other status, or a status that disagrees with
-    // the list it printed, is the check itself failing.
-    let parsed: serde_json::Value =
-        match serde_json::from_slice::<serde_json::Value>(&output.stdout) {
-            Ok(parsed)
-                if matches!(
-                    (
-                        output.status.code(),
-                        parsed["failures"]
-                            .as_array()
-                            .map(|failures| failures.is_empty())
-                    ),
-                    (Some(0), Some(true)) | (Some(1), Some(false))
-                ) =>
-            {
-                parsed
-            }
-            _ => {
-                return (
-                    Default::default(),
-                    vec![format!(
-                        "the hand-written fixture check failed ({}): {}",
-                        output.status,
-                        String::from_utf8_lossy(&output.stderr)
-                    )],
-                )
-            }
-        };
-    let failures = parsed["failures"]
+    handwritten_check_answer(output.status.code(), &output.stdout, &output.stderr)
+}
+
+type HandwrittenAnswer = (
+    std::collections::BTreeMap<String, serde_json::Value>,
+    Vec<String>,
+);
+
+/// What `handwritten-fixtures.py gate` answered, exiting `code` with `stdout`:
+/// each fixture's parsed pins, and its failures. Exit 0 is a gate with no
+/// failure and 1 one with failures, the JSON printed either way; any other
+/// status, a status that disagrees with the list it printed, or a failure that
+/// is not a message is the check itself failing, reported as one failure.
+fn handwritten_check_answer(code: Option<i32>, stdout: &[u8], stderr: &[u8]) -> HandwrittenAnswer {
+    let refused = |why: String| (Default::default(), vec![why]);
+    let parsed = match serde_json::from_slice::<serde_json::Value>(stdout) {
+        Ok(parsed)
+            if matches!(
+                (
+                    code,
+                    parsed["failures"]
+                        .as_array()
+                        .map(|failures| failures.is_empty())
+                ),
+                (Some(0), Some(true)) | (Some(1), Some(false))
+            ) =>
+        {
+            parsed
+        }
+        _ => {
+            return refused(format!(
+                "the hand-written fixture check failed (exit {code:?}): {}",
+                String::from_utf8_lossy(stderr)
+            ))
+        }
+    };
+    let Some(failures) = parsed["failures"]
         .as_array()
-        .map(|failures| {
-            failures
-                .iter()
-                .filter_map(|failure| failure.as_str().map(str::to_string))
-                .collect()
-        })
-        .unwrap_or_default();
+        .into_iter()
+        .flatten()
+        .map(|failure| failure.as_str().map(str::to_string))
+        .collect::<Option<Vec<_>>>()
+    else {
+        return refused(format!(
+            "the hand-written fixture check printed a failure that is not a message: {}",
+            parsed["failures"]
+        ));
+    };
     let evidence = parsed["fixtures"]
         .as_object()
         .map(|fixtures| {
@@ -2880,6 +2890,51 @@ fn handwritten_documents(
         })
         .unwrap_or_default();
     (evidence, failures)
+}
+
+/// The check's answer is taken only when its status and its list agree and
+/// every failure is a message; anything else is one failure naming why.
+#[test]
+fn a_handwritten_check_answer_that_is_malformed_is_one_failure() {
+    let answer = |code, stdout: &str| handwritten_check_answer(code, stdout.as_bytes(), b"boom");
+    let (evidence, failures) = answer(
+        Some(1),
+        r#"{"fixtures": {"a": {"pins": 1}}, "failures": ["a: drifted"]}"#,
+    );
+    assert_eq!(failures, ["a: drifted"]);
+    assert_eq!(evidence["a"], serde_json::json!({"pins": 1}));
+    assert_eq!(
+        answer(Some(0), r#"{"fixtures": {}, "failures": []}"#).1,
+        Vec::<String>::new()
+    );
+    for (code, stdout, why) in [
+        (
+            Some(1),
+            r#"{"failures": ["a: drifted", 7]}"#,
+            "a failure that is not a message: [\"a: drifted\",7]",
+        ),
+        (
+            Some(0),
+            r#"{"failures": ["a: drifted"]}"#,
+            "failed (exit Some(0)): boom",
+        ),
+        (
+            Some(1),
+            r#"{"failures": []}"#,
+            "failed (exit Some(1)): boom",
+        ),
+        (
+            Some(2),
+            r#"{"failures": []}"#,
+            "failed (exit Some(2)): boom",
+        ),
+        (Some(0), "not json", "failed (exit Some(0)): boom"),
+    ] {
+        let (evidence, failures) = answer(code, stdout);
+        assert!(evidence.is_empty(), "{stdout}");
+        assert_eq!(failures.len(), 1, "{stdout}: {failures:?}");
+        assert!(failures[0].contains(why), "{stdout}: {}", failures[0]);
+    }
 }
 
 /// The measured parameter-lowering cases under
