@@ -1657,6 +1657,187 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertFalse((fixtures / "delta" / "expected-flat").exists())
         self.assertFalse(list((fixtures / "beta").glob(".fern-output.*")))
 
+    def generator_repo(self, name: str) -> tuple[Path, Path, dict[str, str]]:
+        """A synthetic root around the REAL generate-fern-fixture.sh: stub `fern`,
+        `docker` and release `crozier` on PATH, the fixture `beta` with a spec."""
+        root = Path(self.temporary.name) / name
+        fixtures = root / "tests" / "fixtures"
+        fake_bin = root / "fake bin"
+        target = root / "target" / "release"
+        for directory in (root / "scripts", fixtures / "beta", fake_bin, target):
+            directory.mkdir(parents=True, exist_ok=True)
+        mirror(root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh")
+        (fixtures / "beta" / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+        self.write_executable(
+            fake_bin / "fern",
+            r"""
+            #!/usr/bin/env python3
+            import os
+            import pathlib
+            import sys
+
+            arguments = sys.argv[1:]
+            status = int(os.environ.get("FERN_EXIT", "0"))
+            if status:
+                print("fern: simulated generator failure", file=sys.stderr)
+                raise SystemExit(status)
+            if os.environ.get("FERN_NO_OUTPUT") == "1":
+                raise SystemExit(0)
+            if "--preview" in arguments:
+                output = pathlib.Path(arguments[arguments.index("--output") + 1])
+                generated = output / "fern-python-sdk" / "src" / "fern"
+                generated.mkdir(parents=True)
+                (generated / "version.py").write_text("generated\n", encoding="utf-8")
+                raise SystemExit(0)
+            flat = pathlib.Path("..") / "generated" / "python"
+            flat.mkdir(parents=True)
+            (flat / "__init__.py").write_text("flat\n", encoding="utf-8")
+            """,
+        )
+        self.write_executable(fake_bin / "docker", "#!/usr/bin/env bash\nexit 0\n")
+        self.write_executable(
+            target / "crozier",
+            r"""
+            #!/usr/bin/env python3
+            import pathlib
+            import sys
+
+            sys.stdout.buffer.write(pathlib.Path(sys.argv[2]).read_bytes())
+            """,
+        )
+        environment = self.environment(
+            PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+            CROZIER_FERN_NO_DOCKER_SHIM="1",
+        )
+        return root, root / "tools/fern-goldens/generate-fern-fixture.sh", environment
+
+    def test_real_generator_script_success_is_one_summary_line(self) -> None:
+        root, script, environment = self.generator_repo("quiet repo")
+        # A sandbox proxy with no CA bundle used to add two more lines of its own.
+        environment.pop("CROZIER_FERN_NO_DOCKER_SHIM")
+        environment.update(
+            HTTPS_PROXY="http://127.0.0.1:9",
+            CROZIER_FERN_DOCKER_CA=str(root / "no-such-ca.pem"),
+        )
+        result = subprocess.run(
+            self.script_command(script, "beta", "5.20.0"),
+            cwd=root, env=environment, text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "")
+        lines = result.stderr.splitlines()
+        self.assertEqual(len(lines), 1, result.stderr)
+        self.assertIn("wrote 2 files to", lines[0])
+        self.assertIn("(python-sdk@5.20.0, packaged)", lines[0])
+        self.assertIn("review, then wire them into the e2e manifest", lines[0])
+
+        # What the quiet run withheld is reported when Fern fails, with Fern's
+        # own exit status (fern-goldens matches a known failure on it).
+        failed = subprocess.run(
+            self.script_command(script, "beta", "5.20.0"),
+            cwd=root, env={**environment, "FERN_EXIT": "7"},
+            text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(failed.returncode, 7, failed.stderr)
+        self.assertIn("simulated generator failure", failed.stderr)
+        self.assertIn("fern generate (python-sdk@5.20.0, packaged) exited 7", failed.stderr)
+        self.assertIn("fix the cause Fern printed above, then re-run", failed.stderr)
+        self.assertIn("CROZIER_FERN_NO_DOCKER_SHIM=1", failed.stderr)
+        self.assertIn("set CROZIER_FERN_DOCKER_CA to the bundle", failed.stderr)
+
+    def test_real_generator_script_names_a_next_action_for_every_refusal(self) -> None:
+        root, script, environment = self.generator_repo("refusing repo")
+        fixtures = root / "tests" / "fixtures"
+        config = fixtures / "fern-generator-config.txt"
+        (fixtures / "gamma").mkdir()  # a fixture without its spec
+        (fixtures / "flat-goldens.txt").write_text("beta|\n", encoding="utf-8")
+
+        def run(*arguments: str, **extra: str) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                self.script_command(script, *arguments),
+                cwd=root, env={**environment, **extra},
+                text=True, capture_output=True, check=False,
+            )
+
+        cases = [
+            (("nosuch", "5.20.0"), {}, "scaffold it with tools/fern-goldens/fixture-new.sh nosuch"),
+            (
+                ("beta", "5.20.0", "", str(fixtures / "beta" / "missing" / "expected")),
+                {},
+                "create it with mkdir -p, or omit DEST_PATH",
+            ),
+            (("beta", "5.20.0"), {"AUDIENCE_STRICT": "maybe"}, "use true, false, or leave it empty"),
+            (("beta", "5.20.0"), {"EXTRA_FIELDS": "sometimes"}, "use allow, ignore, forbid, or leave it empty"),
+            (("gamma", "5.20.0"), {}, "or pass the document as SPEC_PATH"),
+            (("beta", "5.20.0"), {"FERN_NO_OUTPUT": "1"}, "no packaged SDK"),
+            (("--layout", "flat", "beta", "5.20.0"), {"FERN_NO_OUTPUT": "1"}, "without an __init__.py"),
+        ]
+        for arguments, extra, message in cases:
+            with self.subTest(arguments=arguments, extra=extra):
+                refused = run(*arguments, **extra)
+                self.assertNotEqual(refused.returncode, 0, refused.stderr)
+                self.assertIn(message, refused.stderr)
+        with self.subTest("missing fixture names its path"):
+            self.assertIn(str(fixtures / "nosuch"), run("nosuch", "5.20.0").stderr)
+        with self.subTest("no packaged SDK"):
+            self.assertIn("fix the spec, then re-run", run("beta", "5.20.0", FERN_NO_OUTPUT="1").stderr)
+
+        with self.subTest("duplicate configuration"):
+            config.write_text("beta||true|||\nbeta||false|||\n", encoding="utf-8")
+            duplicate = run("beta", "5.20.0")
+            config.unlink()
+            self.assertNotEqual(duplicate.returncode, 0)
+            self.assertIn("delete all but one 'beta|…' row, then re-run", duplicate.stderr)
+
+        expected = fixtures / "beta" / "expected"
+        self.assertEqual(run("beta", "5.20.0").returncode, 0)
+        before = self.tree(expected)
+        with self.subTest("stale backup"):
+            # A stale backup at this process's own backup path blocks the
+            # install; `exec` keeps the PID the script names its backup after.
+            stale = subprocess.run(
+                ["bash", "-c", 'mkdir "$0/.expected.backup.$$" && exec "$1" beta 5.20.0',
+                 str(fixtures / "beta"), str(script)],
+                cwd=root, env=environment, text=True, capture_output=True, check=False,
+            )
+            for leftover in (fixtures / "beta").glob(".expected.backup.*"):
+                leftover.rmdir()
+            self.assertNotEqual(stale.returncode, 0)
+            self.assertIn("stale backup blocks atomic install", stale.stderr)
+            self.assertIn("diff -r", stale.stderr)
+            self.assertIn("otherwise remove it (rm -rf), then re-run", stale.stderr)
+            self.assertEqual(self.tree(expected), before)
+
+        with self.subTest("failed install"):
+            # The final rename fails: the prior golden comes back, and the caller
+            # is told what to check before retrying.
+            real_mv = shutil.which("mv")
+            self.assertIsNotNone(real_mv)
+            failing_bin = root / "failing mv"
+            failing_bin.mkdir()
+            self.write_executable(
+                failing_bin / "mv",
+                "#!/usr/bin/env bash\n"
+                'case "${1:-}" in */.fern-output.*/expected) echo "mv: simulated failure" >&2; exit 1 ;; esac\n'
+                f'exec "{real_mv}" "$@"\n',
+            )
+            install = run("beta", "5.20.0", PATH=f"{failing_bin}{os.pathsep}{environment['PATH']}")
+            self.assertNotEqual(install.returncode, 0)
+            self.assertIn("could not atomically install the staged golden", install.stderr)
+            self.assertIn("is writable and has free space, then re-run", install.stderr)
+            self.assertEqual(self.tree(expected), before)
+
+        with self.subTest("symlinked destination"):
+            shutil.rmtree(expected)
+            elsewhere = root / "elsewhere"
+            elsewhere.mkdir()
+            expected.symlink_to(elsewhere, target_is_directory=True)
+            symlinked = run("beta", "5.20.0")
+            self.assertNotEqual(symlinked.returncode, 0)
+            self.assertIn("refusing to replace symlinked destination", symlinked.stderr)
+            self.assertIn("pass a real directory path as DEST_PATH", symlinked.stderr)
+            self.assertTrue(expected.is_symlink())
+
     def test_numbered_status_rows_below_the_manifest_are_skipped(self) -> None:
         """CORPUS.md's per-batch STATUS tables are numbered too, and are not rows.
 

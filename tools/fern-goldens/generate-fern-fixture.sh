@@ -171,11 +171,15 @@ dest="${4:-$fixture_dir/$golden_name}"
   exit 1
 }
 fixture_dir="$(cd "$fixture_dir" 2>/dev/null && pwd -P)" || {
-  echo "generate-fern-fixture: fixture directory does not exist: $fixture_dir" >&2
+  fixture_dir="$repo_root/tests/fixtures/$FIXTURE"
+  echo "generate-fern-fixture: fixture directory does not exist: $fixture_dir —" \
+       "scaffold it with tools/fern-goldens/fixture-new.sh $FIXTURE, or pass the name of a" \
+       "directory under tests/fixtures/" >&2
   exit 1
 }
 dest_parent="$(cd "$(dirname "$dest")" 2>/dev/null && pwd -P)" || {
-  echo "generate-fern-fixture: destination parent does not exist: $(dirname "$dest")" >&2
+  echo "generate-fern-fixture: destination parent does not exist: $(dirname "$dest") —" \
+       "create it with mkdir -p, or omit DEST_PATH to install into $fixture_dir/$golden_name" >&2
   exit 1
 }
 case "$dest_parent" in
@@ -200,7 +204,8 @@ if [ -f "$fixture_config" ]; then
     case "$configured_fixture" in ""|\#*) continue ;; esac
     [ "$configured_fixture" = "$FIXTURE" ] || continue
     [ -z "$configured_audience_strict" ] || {
-      echo "generate-fern-fixture: duplicate configuration for '$FIXTURE' in $fixture_config" >&2
+      echo "generate-fern-fixture: duplicate configuration for '$FIXTURE' in $fixture_config —" \
+           "delete all but one '$FIXTURE|…' row, then re-run" >&2
       exit 1
     }
     configured_audiences="$audiences"
@@ -216,11 +221,13 @@ CLIENT_CLASS_NAME="${CLIENT_CLASS_NAME:-$configured_client_class_name}"
 EXTRA_FIELDS="${EXTRA_FIELDS:-$configured_extra_fields}"
 ORGANIZATION="${ORGANIZATION:-$configured_organization}"
 case "$AUDIENCE_STRICT" in ""|true|false) ;; *)
-  echo "generate-fern-fixture: invalid audience_strict '$AUDIENCE_STRICT' for '$FIXTURE'" >&2
+  echo "generate-fern-fixture: invalid audience_strict '$AUDIENCE_STRICT' for '$FIXTURE' —" \
+       "use true, false, or leave it empty (AUDIENCE_STRICT or its $fixture_config column)" >&2
   exit 1
 esac
 case "$EXTRA_FIELDS" in ""|allow|ignore|forbid) ;; *)
-  echo "generate-fern-fixture: invalid extra_fields '$EXTRA_FIELDS' for '$FIXTURE'" >&2
+  echo "generate-fern-fixture: invalid extra_fields '$EXTRA_FIELDS' for '$FIXTURE' —" \
+       "use allow, ignore, forbid, or leave it empty (EXTRA_FIELDS or its $fixture_config column)" >&2
   exit 1
 esac
 # Letters and digits, starting with a letter. Capitals are admitted: an
@@ -243,7 +250,12 @@ fi
 need() { command -v "$1" >/dev/null 2>&1 || { echo "generate-fern-fixture: '$1' not found — $2" >&2; exit 1; }; }
 need fern "install it: npm i -g fern-api"
 need docker "start Docker; Fern runs its generator as a local container"
-[ -f "$spec" ] || { echo "generate-fern-fixture: missing spec $spec" >&2; exit 1; }
+[ -f "$spec" ] || {
+  echo "generate-fern-fixture: missing spec $spec — restore it (git checkout -- <path>)," \
+       "fetch a corpus row's source with tools/corpus/fetch-corpus.sh --fixture <name>," \
+       "or pass the document as SPEC_PATH" >&2
+  exit 1
+}
 
 crozier_bin="$repo_root/target/release/crozier"
 [ -x "$crozier_bin" ] || { echo "generate-fern-fixture: build crozier first (cargo build --release)" >&2; exit 1; }
@@ -347,7 +359,9 @@ ${client_class_name_block}${default_max_retries_block}${pydantic_config_block}  
           path: ../generated/python
 YAML
 
-echo "generate-fern-fixture: running Fern (python-sdk@${FERN_PYTHON_VERSION}, $LAYOUT) locally..." >&2
+# Quiet on success: what ran (and how docker was routed) is reported only if Fern
+# fails, beside its own output; a successful run ends in one summary line.
+run_detail="python-sdk@${FERN_PYTHON_VERSION}, $LAYOUT"
 # `--preview --output` writes the full *packaged* SDK (a pip package with
 # `src/<pkg>/…` + `pyproject.toml` + `README.md`/`reference.md` + `.fern/`) under
 # `<output>/fern-python-sdk/`. A plain `--local` with `location: local-file-system`
@@ -400,11 +414,12 @@ setup_docker_shim() {
   # for a bare `-e NAME`), and the proxy CA mounted read-only + trusted by node.
   local inject="--network host -e HTTPS_PROXY -e https_proxy -e HTTP_PROXY"
   inject+=" -e http_proxy -e NO_PROXY -e no_proxy"
+  local ca_note=""
   if [ -n "$ca" ] && [ -f "$ca" ]; then
     inject+=" -v $(printf '%q' "$ca"):/ca.crt:ro -e NODE_EXTRA_CA_CERTS=/ca.crt"
   else
-    echo "generate-fern-fixture: no proxy CA ($ca) — container TLS through the proxy" \
-         "may fail; set CROZIER_FERN_DOCKER_CA to the bundle." >&2
+    ca_note="; no proxy CA ($ca) was found, so container TLS through the proxy may"
+    ca_note+=" have failed — set CROZIER_FERN_DOCKER_CA to the bundle"
   fi
 
   local bin="$workdir/shim-bin"
@@ -425,29 +440,51 @@ exec $(printf '%q' "$real") "\${out[@]}"
 SHIM
   chmod +x "$bin/docker"
   export PATH="$bin:$PATH"
-  echo "generate-fern-fixture: proxy detected — routing Fern's docker through a" \
-       "host-network + CA shim (unset with CROZIER_FERN_NO_DOCKER_SHIM=1)." >&2
+  docker_route="; Fern's docker ran through a host-network + proxy CA shim (disable it with"
+  docker_route+=" CROZIER_FERN_NO_DOCKER_SHIM=1)${ca_note}"
 }
+docker_route=""
 setup_docker_shim
+
+# Fern's own exit status is kept: `fern-goldens` matches a known upstream
+# failure on it.
+run_fern() {
+  local status=0
+  ( cd "$workdir/fern" && fern generate --group python-sdk "$@" ) || status=$?
+  [ "$status" -ne 0 ] || return 0
+  echo "generate-fern-fixture: fern generate ($run_detail) exited $status — fix the cause" \
+       "Fern printed above, then re-run${docker_route}" >&2
+  exit "$status"
+}
 
 if [ "$LAYOUT" = packaged ]; then
   mkdir -p "$workdir/preview"
-  ( cd "$workdir/fern" && fern generate --group python-sdk --local --preview --output "$workdir/preview" --force )
+  run_fern --local --preview --output "$workdir/preview" --force
 
   # The packaged tree lands under `<output>/fern-python-sdk/`; it is already the
   # `src/…` + `.fern/` layout the committed corpus uses, so no path remapping.
   src="$workdir/preview/fern-python-sdk"
   if [ ! -d "$src/src" ]; then
-    echo "generate-fern-fixture: Fern produced no packaged SDK under $src" >&2
+    echo "generate-fern-fixture: Fern produced no packaged SDK under $src ($run_detail) —" \
+         "it exited 0 without one, so read its output above (a document it skips as" \
+         "invalid writes nothing), fix the spec, then re-run" >&2
     exit 1
   fi
 else
   # Without `--preview`, Fern writes to the `local-file-system` path the
   # generators.yml above names: the package's modules at its root, no `src/`.
-  ( cd "$workdir/fern" && fern generate --group python-sdk --local --force )
+  run_fern --local --force
   src="$workdir/generated/python"
-  if [ ! -f "$src/__init__.py" ] || [ -e "$src/src" ]; then
-    echo "generate-fern-fixture: Fern produced no flat module tree under $src" >&2
+  if [ -e "$src/src" ]; then
+    echo "generate-fern-fixture: Fern produced no flat module tree under $src ($run_detail) —" \
+         "it wrote the packaged src/ form, as it does when authenticated; clear any stored" \
+         "Fern login (FERN_TOKEN is already unset here), then re-run" >&2
+    exit 1
+  fi
+  if [ ! -f "$src/__init__.py" ]; then
+    echo "generate-fern-fixture: Fern produced no flat module tree under $src ($run_detail) —" \
+         "it exited 0 without an __init__.py, so read its output above (a document it skips" \
+         "as invalid writes nothing), fix the spec, then re-run" >&2
     exit 1
   fi
 fi
@@ -513,13 +550,17 @@ fi
 
 backup="$(dirname "$dest")/.$golden_name.backup.$$"
 [ ! -e "$backup" ] || {
-  echo "generate-fern-fixture: stale backup blocks atomic install: $backup" >&2
+  echo "generate-fern-fixture: stale backup blocks atomic install: $backup — an interrupted" \
+       "earlier install left it; compare it with $dest (diff -r), move it back over $dest" \
+       "if that golden is missing or damaged, otherwise remove it (rm -rf), then re-run" >&2
   exit 1
 }
 had_dest=0
 if [ -e "$dest" ]; then
   [ ! -L "$dest" ] || {
-    echo "generate-fern-fixture: refusing to replace symlinked destination $dest" >&2
+    echo "generate-fern-fixture: refusing to replace symlinked destination $dest — pass a" \
+         "real directory path as DEST_PATH, or replace the symlink with a directory" \
+         "(rm $dest), then re-run" >&2
     exit 1
   }
   mv "$dest" "$backup"
@@ -527,10 +568,12 @@ if [ -e "$dest" ]; then
 fi
 if ! mv "$staged_dest" "$dest"; then
   [ "$had_dest" -eq 0 ] || mv "$backup" "$dest"
-  echo "generate-fern-fixture: could not atomically install the staged golden" >&2
+  echo "generate-fern-fixture: could not atomically install the staged golden at $dest" \
+       "(the prior golden is left in place) — check that $(dirname "$dest") is writable" \
+       "and has free space, then re-run" >&2
   exit 1
 fi
 [ "$had_dest" -eq 0 ] || rm -rf "$backup"
 
-echo "generate-fern-fixture: wrote $(find "$dest" -type f | wc -l | tr -d ' ') files to $dest" >&2
-echo "generate-fern-fixture: review, then wire files into the e2e manifest (see docs/matching.md)." >&2
+echo "generate-fern-fixture: wrote $(find "$dest" -type f | wc -l | tr -d ' ') files to $dest" \
+     "($run_detail) — review, then wire them into the e2e manifest (see docs/matching.md)" >&2
