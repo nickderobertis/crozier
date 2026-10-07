@@ -43,7 +43,7 @@ FERN = """\
     if sys.argv[1] == "generate":
         package = pathlib.Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk"
         package.mkdir(parents=True)
-        (package / "client.py").write_text("class Client: ...\\n")
+        (package / "client.py").write_text("class Client: ...\\n", encoding="utf-8", newline="\\n")
     """
 
 
@@ -99,7 +99,7 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.addCleanup(server.shutdown)
         fake_bin = self.scratch / "bin"
         fake_bin.mkdir()
-        (fake_bin / "fern").write_text(f"#!{sys.executable}\n" + textwrap.dedent(FERN), encoding="utf-8")
+        (fake_bin / "fern").write_text(f"#!{sys.executable}\n" + textwrap.dedent(FERN), encoding="utf-8", newline="\n")
         os.chmod(fake_bin / "fern", 0o755)
         self.env = {**os.environ, "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}", "FERN_STUB": "pass",
                     "GITHUB_TOKEN": SECRET, "CROZIER_RAW_GITHUB_URL": f"http://127.0.0.1:{server.server_port}"}
@@ -195,7 +195,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             self.assertTrue(record[name]["log"].startswith("screens/"))
             self.assertEqual(record[name]["log_sha256"], hashlib.sha256(log.read_bytes()).hexdigest())
             self.assertNotIn(SECRET, log.read_text(encoding="utf-8"))
-        self.assertIn("token in use: [GITHUB_TOKEN redacted]", (self.evidence / record["fern"]["log"]).read_text())
+        self.assertIn("token in use: [GITHUB_TOKEN redacted]", (self.evidence / record["fern"]["log"]).read_text(encoding="utf-8"))
         # The reads went through the acquirer's raw lane, which logs each call.
         calls = [json.loads(line) for line in
                  (self.evidence / "raw-github-calls.jsonl").read_text(encoding="utf-8").splitlines()]
@@ -296,7 +296,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             broken = json.loads(json.dumps(record))
             mutate(broken)
             path = self.scratch / "broken.json"
-            path.write_text(json.dumps(broken), encoding="utf-8")
+            path.write_text(json.dumps(broken), encoding="utf-8", newline="\n")
             with self.subTest(missing=missing):
                 refused = self.screen("--measured", str(path), "--disposition", "witness-found")
                 self.assertEqual(1, refused.returncode)
@@ -310,7 +310,7 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertEqual(1, missing.returncode)
         self.assertIn("pass the JSON file a measurement wrote, or drop --measured", missing.stderr)
         garbled = self.scratch / "garbled.json"
-        garbled.write_text("{not json", encoding="utf-8")
+        garbled.write_text("{not json", encoding="utf-8", newline="\n")
         refused = self.screen("--measured", str(garbled))
         self.assertEqual(1, refused.returncode)
         self.assertIn("is not JSON", refused.stderr)
@@ -358,7 +358,7 @@ class HistoricalRowTests(unittest.TestCase):
         scratch = tempfile.TemporaryDirectory(prefix="witness-screen-history-")
         self.addCleanup(scratch.cleanup)
         path = Path(scratch.name) / "screens.jsonl"
-        path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
         return path
 
     def test_a_row_predating_the_stage_is_read_and_labelled_historical(self) -> None:

@@ -42,7 +42,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         # `receive-pack` a local push spawns. Every git these tests run inherits it.
         git_config = Path(self.temporary.name) / "gitconfig"
         git_config.write_text(
-            "[maintenance]\n\tauto = false\n[receive]\n\tautoGc = false\n", encoding="utf-8"
+            "[maintenance]\n\tauto = false\n[receive]\n\tautoGc = false\n", encoding="utf-8", newline="\n"
         )
         environment = unittest.mock.patch.dict(os.environ, {"GIT_CONFIG_GLOBAL": str(git_config)})
         environment.start()
@@ -62,8 +62,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             shutil.copy2(REPO / "scripts" / script, self.root / "scripts" / script)
         shutil.copy2(ALIASES, self.root / "tests" / "fixtures" / ALIASES.name)
         shutil.copy2(PIN_MANIFEST, self.root / "tests" / "fixtures" / PIN_MANIFEST.name)
-        (self.root / "justfile").write_text("default:\n    @true\n", encoding="utf-8")
-        (self.root / ".gitignore").write_text("/.local\n", encoding="utf-8")
+        (self.root / "justfile").write_text("default:\n    @true\n", encoding="utf-8", newline="\n")
+        (self.root / ".gitignore").write_text("/.local\n", encoding="utf-8", newline="\n")
         self.write_manifest()
         self.write_executable(
             self.root / "scripts" / "generate-fern-fixture.sh",
@@ -81,20 +81,20 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 arguments = arguments[2:]
             fixture, version, spec, destination = arguments
             root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
-            with (root / ".generator-calls").open("a", encoding="utf-8") as calls:
+            with (root / ".generator-calls").open("a", encoding="utf-8", newline="\n") as calls:
                 prefix = "--layout flat " if layout == "flat" else ""
                 calls.write(f"{prefix}{fixture} {version} {spec} {destination}\n")
             output = pathlib.Path(destination)
             if layout == "flat":
                 output.mkdir(parents=True)
                 if fixture in os.environ.get("FAIL_FLAT_FIXTURES", "").split(","):
-                    (output / "partial.py").write_text("partial\n")
+                    (output / "partial.py").write_text("partial\n", encoding="utf-8", newline="\n")
                     raise SystemExit(21)
                 if fixture in os.environ.get("PACKAGED_SHAPE_FLAT_FIXTURES", "").split(","):
                     (output / "src" / "fern").mkdir(parents=True)
-                    (output / "src" / "fern" / "__init__.py").write_text("wrong shape\n")
+                    (output / "src" / "fern" / "__init__.py").write_text("wrong shape\n", encoding="utf-8", newline="\n")
                     raise SystemExit(0)
-                (output / "__init__.py").write_text(f"flat {fixture}:{version}\n", encoding="utf-8")
+                (output / "__init__.py").write_text(f"flat {fixture}:{version}\n", encoding="utf-8", newline="\n")
                 raise SystemExit(0)
             (output / "src" / "fern").mkdir(parents=True)
             if fixture in os.environ.get("KNOWN_FAILURE_FIXTURES", "").split(","):
@@ -115,13 +115,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     summary = "Found 12 errors (5 fixed, 7 remaining)."
                 payload = "\n\n".join([*blocks, summary]) + "\n"
                 print(f"Failed to run command: {fingerprint['failed_command']}")
-                print(repr(payload.encode()))
+                print(repr(payload.encode("utf-8")))
                 raise SystemExit(int(os.environ.get("KNOWN_FAILURE_EXIT_CODE", "1")))
             if fixture in os.environ.get("FAIL_FIXTURES", "").split(","):
-                (output / "src" / "fern" / "partial.py").write_text("partial\n")
+                (output / "src" / "fern" / "partial.py").write_text("partial\n", encoding="utf-8", newline="\n")
                 raise SystemExit(19)
             (output / "src" / "fern" / "version.py").write_text(
-                f"{fixture}:{version}\n", encoding="utf-8"
+                f"{fixture}:{version}\n", encoding="utf-8", newline="\n"
             )
             """,
         )
@@ -141,8 +141,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 headers = pathlib.Path(args[args.index("--dump-header") + 1])
                 url = next(arg for arg in args if arg.startswith("https://"))
                 body = next((body for fragment, body in served.items() if fragment in url), '{"openapi":"3.0.3"}\n')
-                destination.write_text(body, encoding="utf-8")
-                headers.write_text("HTTP/1.1 200 OK\n", encoding="utf-8")
+                destination.write_text(body, encoding="utf-8", newline="\n")
+                headers.write_text("HTTP/1.1 200 OK\n", encoding="utf-8", newline="\n")
                 sys.stdout.write("200")
                 raise SystemExit(0)
             if "-o" not in args:
@@ -163,9 +163,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 raise SystemExit(22)
             for fragment, body in served.items():
                 if fragment in url:
-                    destination.write_text(body, encoding="utf-8")
+                    destination.write_text(body, encoding="utf-8", newline="\n")
                     raise SystemExit(0)
-            destination.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8")
+            destination.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8", newline="\n")
             """,
         )
         self.write_executable(
@@ -183,7 +183,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             if "fetch-corpus" in args:
                 fixture = args[args.index("--fixture") + 1]
                 root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
-                with (root / ".fetch-calls").open("a", encoding="utf-8") as calls:
+                with (root / ".fetch-calls").open("a", encoding="utf-8", newline="\n") as calls:
                     calls.write(" ".join(args[args.index("fetch-corpus"):]) + "\n")
                 command = [
                     root / "scripts" / "fetch-corpus.sh",
@@ -220,7 +220,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             if os.environ.get("CROZIER_DIFF_SUMMARY_ONLY") != "1":
                 print("comparison did not request bounded summary mode")
                 raise SystemExit(9)
-            with (root / ".compare-calls").open("a", encoding="utf-8") as calls:
+            with (root / ".compare-calls").open("a", encoding="utf-8", newline="\n") as calls:
                 calls.write(fixture + "\n")
             known_failure = (
                 root / "tests" / "fixtures" / fixture / "known-fern-failure.json"
@@ -264,7 +264,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             expected = self.root / "tests" / "fixtures" / fixture / "expected"
             (expected / "src" / "fern").mkdir(parents=True)
             (expected / "src" / "fern" / "version.py").write_text(
-                f"prior-{fixture}\n", encoding="utf-8"
+                f"prior-{fixture}\n", encoding="utf-8", newline="\n"
             )
 
     def tearDown(self) -> None:
@@ -290,7 +290,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         | `not-a-row` | documentation only |
         """
         (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
-            textwrap.dedent(manifest), encoding="utf-8"
+            textwrap.dedent(manifest), encoding="utf-8", newline="\n"
         )
 
     def write_known_failure(self, fixture: str = "alpha", version: str = "5.20.0") -> Path:
@@ -311,19 +311,19 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
         path = self.root / "tests" / "fixtures" / fixture / "known-fern-failure.json"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
         return path
 
     def write_pin_manifest(self, *records: tuple[str, str, str, str]) -> None:
         (self.root / "tests" / "fixtures" / PIN_MANIFEST.name).write_text(
             "# Synthetic pin manifest.\n"
             + "".join("\t".join(record) + "\n" for record in sorted(records)),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
 
     @staticmethod
     def write_executable(path: Path, source: str) -> None:
-        path.write_text(textwrap.dedent(source).lstrip(), encoding="utf-8")
+        path.write_text(textwrap.dedent(source).lstrip(), encoding="utf-8", newline="\n")
         path.chmod(0o755)
 
     def environment(self, **updates: str) -> dict[str, str]:
@@ -376,7 +376,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
 
     def write_flat_goldens(self, *rows: str) -> None:
         (self.root / "tests" / "fixtures" / "flat-goldens.txt").write_text(
-            "# fixture|spec\n" + "".join(f"{row}\n" for row in rows), encoding="utf-8"
+            "# fixture|spec\n" + "".join(f"{row}\n" for row in rows), encoding="utf-8", newline="\n"
         )
 
     def tree(self, directory: Path) -> dict[str, bytes]:
@@ -424,7 +424,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(len(self.calls()), 3)
         self.assertTrue(self.calls()[-1].startswith("--layout flat alpha 4.9.0 "))
         self.assertEqual(
-            (self.root / ".local" / "fern-goldens" / "generated.txt").read_text(), "alpha\n"
+            (self.root / ".local" / "fern-goldens" / "generated.txt").read_text(encoding="utf-8"), "alpha\n"
         )
 
     def test_a_failed_flat_refresh_keeps_the_prior_flat_golden_and_the_new_packaged_one(self) -> None:
@@ -450,7 +450,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             # The packaged golden that did succeed is installed and reported.
             self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.10.0")
             self.assertEqual(
-                (self.root / ".local" / "fern-goldens" / "generated.txt").read_text(), "alpha\n"
+                (self.root / ".local" / "fern-goldens" / "generated.txt").read_text(encoding="utf-8"), "alpha\n"
             )
             (self.root / "tests" / "fixtures" / "alpha" / "expected" / STATE).unlink()
 
@@ -594,7 +594,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
     def test_a_row_with_pin_records_records_them_and_restages_when_one_moves(self) -> None:
         """The pins land in the state file, and moving one makes the row stale."""
         schema = "base:\n  type: string\n"
-        digest = hashlib.sha256(schema.encode()).hexdigest()
+        digest = hashlib.sha256(schema.encode("utf-8")).hexdigest()
         mutable = "https://example.test/schemas/base.yaml"
         first = "https://raw.githubusercontent.com/e/a/" + "a" * 40 + "/src/base.yaml"
         second = "https://raw.githubusercontent.com/e/a/" + "b" * 40 + "/src/base.yaml"
@@ -673,12 +673,12 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     indent=2,
                 )
                 + "\n"
-            ).encode(),
+            ).encode("utf-8"),
         )
 
     def test_empty_alias_registry_drives_generation_and_direct_resolution(self) -> None:
         aliases = self.root / "tests" / "fixtures" / ALIASES.name
-        aliases.write_text("# Source name<TAB>fixture directory aliases.\n", encoding="utf-8")
+        aliases.write_text("# Source name<TAB>fixture directory aliases.\n", encoding="utf-8", newline="\n")
         generated = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
         self.assertIn("generated alpha", generated.stdout)
         self.assertEqual("alpha", self.state("alpha")["corpus_spec_name"])
@@ -704,7 +704,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 if contents is None:
                     aliases.unlink(missing_ok=True)
                 else:
-                    aliases.write_text(contents, encoding="utf-8")
+                    aliases.write_text(contents, encoding="utf-8", newline="\n")
                 refused = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
                 self.assertNotEqual(0, refused.returncode, refused.stdout)
                 self.assertIn("alias", refused.stderr)
@@ -715,7 +715,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 )
                 self.assertNotEqual(0, resolved.returncode, resolved.stdout)
                 self.assertIn("alias", resolved.stderr)
-        aliases.write_text("# Source name<TAB>fixture directory aliases.\n", encoding="utf-8")
+        aliases.write_text("# Source name<TAB>fixture directory aliases.\n", encoding="utf-8", newline="\n")
         recovered = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
         self.assertIn("generated alpha", recovered.stdout)
         resolved = subprocess.run(
@@ -728,7 +728,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
     def test_authoritative_aliases_drive_python_workflow_and_bash_helper(self) -> None:
         (self.root / "tests" / "fixtures" / ALIASES.name).write_text(
             "# Source name<TAB>fixture directory aliases.\n"
-            "planet-window\talpha\nsignal-history\tbeta\n", encoding="utf-8"
+            "planet-window\talpha\nsignal-history\tbeta\n", encoding="utf-8", newline="\n"
         )
         aliases = self.fixture_aliases()
         rows = [
@@ -747,7 +747,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ]
         )
         (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
-            manifest, encoding="utf-8"
+            manifest, encoding="utf-8", newline="\n"
         )
 
         for name, fixture in aliases:
@@ -914,7 +914,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         }
         self.assertEqual(after, before)
         self.assertEqual(
-            (self.root / "tests" / "fixtures" / "beta" / "expected" / "src" / "fern" / "version.py").read_text(),
+            (self.root / "tests" / "fixtures" / "beta" / "expected" / "src" / "fern" / "version.py").read_text(encoding="utf-8"),
             "prior-beta\n",
         )
         self.assertFalse(
@@ -1274,7 +1274,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
         for key, value in (("user.name", "Writer"), ("user.email", "writer@example.test")):
             subprocess.run(["git", "config", key, value], cwd=writer, check=True)
-        (writer / "remote-advance.txt").write_text("advance\n", encoding="utf-8")
+        (writer / "remote-advance.txt").write_text("advance\n", encoding="utf-8", newline="\n")
         subprocess.run(["git", "add", "remote-advance.txt"], cwd=writer, check=True)
         subprocess.run(
             ["git", "commit", "-m", "test: advance remote"],
@@ -1325,11 +1325,11 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         spec_dir = root / "source specs"
         spec_dir.mkdir()
         spec = spec_dir / "open api.json"
-        spec.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8")
+        spec.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8", newline="\n")
         (expected / "src" / "fern" / "version.py").write_text(
-            "prior-valid-golden\n", encoding="utf-8"
+            "prior-valid-golden\n", encoding="utf-8", newline="\n"
         )
-        (expected / STATE).write_text("prior-valid-state\n", encoding="utf-8")
+        (expected / STATE).write_text("prior-valid-state\n", encoding="utf-8", newline="\n")
         before = {
             path.relative_to(expected).as_posix(): path.read_bytes()
             for path in expected.rglob("*")
@@ -1345,14 +1345,14 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             import sys
 
             if os.environ.get("EXPECT_TREE") == "1":
-                assert "path: openapi/spec/openapi.yaml" in pathlib.Path("generators.yml").read_text()
+                assert "path: openapi/spec/openapi.yaml" in pathlib.Path("generators.yml").read_text(encoding="utf-8")
                 assert pathlib.Path("openapi/spec/openapi.yaml").is_file()
-                assert pathlib.Path("openapi/spec/schemas/item.yaml").read_text() == "type: string\n"
+                assert pathlib.Path("openapi/spec/schemas/item.yaml").read_text(encoding="utf-8") == "type: string\n"
             arguments = sys.argv[1:]
             output = pathlib.Path(arguments[arguments.index("--output") + 1])
             generated = output / "fern-python-sdk" / "src" / "fern"
             generated.mkdir(parents=True)
-            (generated / "version.py").write_text("complete-fern-output\n", encoding="utf-8")
+            (generated / "version.py").write_text("complete-fern-output\n", encoding="utf-8", newline="\n")
             """,
         )
         self.write_executable(fake_bin / "docker", "#!/usr/bin/env bash\nexit 0\n")
@@ -1412,12 +1412,12 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         revision = "a" * 40
         base = f"https://raw.githubusercontent.com/example/api/{revision}/spec"
         (root / "tests" / "fixtures" / "CORPUS.md").write_text(
-            f"| 1 | `alpha` | github-raw | {base}/openapi.yaml | `{revision}` | MIT | link-ok | sibling |\n"
+            f"| 1 | `alpha` | github-raw | {base}/openapi.yaml | `{revision}` | MIT | link-ok | sibling |\n", encoding="utf-8", newline="\n"
         )
         (root / "tests" / "fixtures" / PIN_MANIFEST.name).write_text(
             "kind\tcorpus_name\tpath\tpinned_url\tsha256\n"
             + f"tree\talpha\tspec/openapi.yaml\t{base}/openapi.yaml\t{hashlib.sha256(root_bytes).hexdigest()}\n"
-            + f"tree\talpha\tspec/schemas/item.yaml\t{base}/schemas/item.yaml\t{hashlib.sha256(sibling_bytes).hexdigest()}\n"
+            + f"tree\talpha\tspec/schemas/item.yaml\t{base}/schemas/item.yaml\t{hashlib.sha256(sibling_bytes).hexdigest()}\n", encoding="utf-8", newline="\n"
         )
         tree_result = subprocess.run(
             self.script_command(scripts / "generate-fern-fixture.sh", "alpha", "4.35.0", str(tree / "openapi.yaml")),
@@ -1460,9 +1460,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             directory.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
         shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
-        (fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+        (fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8", newline="\n")
         (root / "tests" / "fixtures" / "fern-generator-config.txt").write_text(
-            "beta|public|true|AcmeClient|ignore\n", encoding="utf-8"
+            "beta|public|true|AcmeClient|ignore\n", encoding="utf-8", newline="\n"
         )
 
         self.write_executable(
@@ -1479,11 +1479,12 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             output = pathlib.Path(arguments[arguments.index("--output") + 1])
             generated = output / "fern-python-sdk" / "src" / "fern"
             generated.mkdir(parents=True)
-            (generated / "version.py").write_text("complete-fern-output\n", encoding="utf-8")
+            (generated / "version.py").write_text("complete-fern-output\n", encoding="utf-8", newline="\n")
             shutil.copy2("generators.yml", os.environ["GENERATOR_CONFIG_RECORD"])
             pathlib.Path(os.environ["INVOCATION_RECORD"]).write_text(
                 json.dumps({key: os.environ.get(key) for key in ("CI", "GITHUB_ACTIONS")}),
                 encoding="utf-8",
+                newline="\n",
             )
             """,
         )
@@ -1558,19 +1559,19 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         ):
             directory.mkdir(parents=True, exist_ok=True)
         (fixtures / "corpus-sources" / "zeta" / "openapi.yaml").write_text(
-            "openapi: 3.0.3 # zeta\n", encoding="utf-8"
+            "openapi: 3.0.3 # zeta\n", encoding="utf-8", newline="\n"
         )
         shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
         shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
         for fixture in ("beta", "delta"):
-            (fixtures / fixture / "openapi.yml").write_text(f"openapi: 3.0.3 # {fixture}\n", encoding="utf-8")
+            (fixtures / fixture / "openapi.yml").write_text(f"openapi: 3.0.3 # {fixture}\n", encoding="utf-8", newline="\n")
         (fixtures / "fern-generator-config.txt").write_text(
-            "beta||false|||acme\ngamma||false|AcmeClient||\nepsilon||false|||PetStore\n", encoding="utf-8"
+            "beta||false|||acme\ngamma||false|AcmeClient||\nepsilon||false|||PetStore\n", encoding="utf-8", newline="\n"
         )
         # `gamma` has no spec of its own and borrows `beta`'s; `epsilon` borrows
         # the committed corpus source of the row `zeta`; `delta` is undeclared.
         (fixtures / "flat-goldens.txt").write_text(
-            "# fixture|spec\nbeta|\ngamma|beta\nepsilon|zeta\n", encoding="utf-8"
+            "# fixture|spec\nbeta|\ngamma|beta\nepsilon|zeta\n", encoding="utf-8", newline="\n"
         )
         record = root / "fern-invocation.json"
         self.write_executable(
@@ -1586,24 +1587,24 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             pathlib.Path(os.environ["FERN_RECORD"]).write_text(json.dumps({
                 "arguments": arguments,
                 "token": os.environ.get("FERN_TOKEN"),
-                "config": json.loads(pathlib.Path("fern.config.json").read_text()),
-                "generators": pathlib.Path("generators.yml").read_text(),
-                "spec": pathlib.Path("openapi/openapi.yml").read_text(),
-            }))
+                "config": json.loads(pathlib.Path("fern.config.json").read_text(encoding="utf-8")),
+                "generators": pathlib.Path("generators.yml").read_text(encoding="utf-8"),
+                "spec": pathlib.Path("openapi/openapi.yml").read_text(encoding="utf-8"),
+            }), encoding="utf-8", newline="\n")
             if "--preview" in arguments:
                 output = pathlib.Path(arguments[arguments.index("--output") + 1])
                 generated = output / "fern-python-sdk" / "src" / "fern"
                 generated.mkdir(parents=True)
-                (generated / "__init__.py").write_text("packaged\n", encoding="utf-8")
+                (generated / "__init__.py").write_text("packaged\n", encoding="utf-8", newline="\n")
                 raise SystemExit(0)
             # The local-file-system path generators.yml names, relative to fern/.
             flat = pathlib.Path("..") / "generated" / "python"
             if os.environ.get("FLAT_WRITES_SRC") == "1":
                 (flat / "src").mkdir(parents=True)
             flat.mkdir(parents=True, exist_ok=True)
-            (flat / "__init__.py").write_text("flat-module-tree\n", encoding="utf-8")
+            (flat / "__init__.py").write_text("flat-module-tree\n", encoding="utf-8", newline="\n")
             (flat / ".fern").mkdir()
-            (flat / ".fern" / "metadata.json").write_text("{}\n", encoding="utf-8")
+            (flat / ".fern" / "metadata.json").write_text("{}\n", encoding="utf-8", newline="\n")
             """,
         )
         self.write_executable(fake_bin / "docker", "#!/usr/bin/env bash\nexit 0\n")
@@ -1731,7 +1732,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             ]
         )
         (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
-            manifest, encoding="utf-8"
+            manifest, encoding="utf-8", newline="\n"
         )
         generated = self.run_tool(
             "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
@@ -1959,8 +1960,8 @@ class FernOverlayGoldensTests(unittest.TestCase):
         for fixture in ("eos.local", "alpha", "beta"):
             expected = self.root / "tests" / "fixtures" / fixture / "expected"
             expected.mkdir(parents=True)
-            (expected / STATE).write_text(json.dumps(pin), encoding="utf-8")
-            (expected.parent / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+            (expected / STATE).write_text(json.dumps(pin), encoding="utf-8", newline="\n")
+            (expected.parent / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8", newline="\n")
         generator = scripts / "generate-fern-fixture.sh"
         generator.write_text(
             textwrap.dedent(
@@ -1976,7 +1977,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
                 [ "$fixture" != "${FAIL_INSTALL:-}" ] || chmod a-w "$(dirname "$destination")"
                 """
             ).lstrip(),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         generator.chmod(0o755)
 

@@ -893,7 +893,7 @@ def query(args: argparse.Namespace) -> int:
                             "file": "candidates.jsonl"})
         # Filed key by key, so a search stopped part-way keeps every key it finished.
         index_path.parent.mkdir(parents=True, exist_ok=True)
-        index_path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8")
+        index_path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8", newline="\n")
         mine = [r for r in new if r["key"] == key]
         kept = [r for r in read_records(source) if r["key"] == key and r["kind"] in ("screen", "candidate")]
         write_records(source, {key}, kept + _dedupe(mine))
@@ -1007,7 +1007,7 @@ def probe(args: argparse.Namespace) -> int:
     # A reached row's searched arm is read too; its profiles are cached apart,
     # since a cached run of the ledger's sites alone never read those regions.
     extra = sorted({spec for key in args.key for spec in probe_arms(key)} - set(all_sites))
-    tag = "." + hashlib.sha256("\n".join(extra).encode()).hexdigest()[:12] if extra else ""
+    tag = "." + hashlib.sha256("\n".join(extra).encode("utf-8")).hexdigest()[:12] if extra else ""
     all_sites += extra
     regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
                for spec in all_sites for site in [REACH.resolve_site(spec)]}
@@ -1117,7 +1117,7 @@ def _probe_one(
         merged = scratch_path / "merged.profdata"
         REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
         export = scratch_path / "export.json"
-        with export.open("w", encoding="utf-8") as sink:
+        with export.open("w", encoding="utf-8", newline="\n") as sink:
             REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", crozier,
                             *sources], stdout=sink)
         hit = executed_regions(export, {file for file, _found in regions.values()})
@@ -1174,7 +1174,7 @@ def append_probe_cache(build: str, digest: str, result: dict[str, Any]) -> None:
     path = probe_cache_path(build)
     path.parent.mkdir(parents=True, exist_ok=True)
     with exclusive_lock(CACHE / "probe-cache.lock"):
-        with path.open("a", encoding="utf-8") as handle:
+        with path.open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(json.dumps({"digest": digest, **result}, sort_keys=True) + "\n")
 
 
@@ -1242,7 +1242,7 @@ def file_probes_many(source: str, probed: dict[str, list[dict[str, Any]]]) -> No
         rows = kept + [row for key in probed for row in probed[key]
                        if not opaque_candidate(row["candidate"])]
         # llmlint: ignore-end[changed_behavior_has_e2e]
-        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
+        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8", newline="\n")
 
 
 def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
@@ -1313,7 +1313,7 @@ def file_screen(source: str, key: str, candidate: str, row: dict[str, Any]) -> N
         *({"key": key, "kind": "screen", "subject": f"{candidate} {name}", "result": row[name], "file": "screens.jsonl"}
           for name in SCREEN.SCREENS),
     ]
-    with (source_dir(source) / "screens.jsonl").open("a", encoding="utf-8") as handle:
+    with (source_dir(source) / "screens.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps({"key": key, "candidate": candidate, **row}, sort_keys=True) + "\n")
     others = [r for r in read_records(source)
               if not (r["key"] == key and r["kind"] in ("screen", "candidate")
@@ -1786,7 +1786,7 @@ def render(args: argparse.Namespace) -> int:
         lines += _dispositions(key, build)
         path = EVIDENCE / "searches" / f"{key}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return 0
 
 
@@ -1940,7 +1940,7 @@ def restate(args: argparse.Namespace) -> int:
             out.append("")
         restated_text = "\n".join(out)
         if restated_text != text:
-            path.write_text(restated_text, encoding="utf-8")
+            path.write_text(restated_text, encoding="utf-8", newline="\n")
             changed += 1
     print(f"golden-reach-search: {changed} record(s) restated")
     return 0
@@ -2191,7 +2191,7 @@ def local_copies(
     if fetch:
         path = CACHE / source / "candidate-documents.json"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8")
+        path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8", newline="\n")
         if acquirer is not None:
             record_guard_logs(source)
     return unread
@@ -2465,7 +2465,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             result.pop("logs")
             cache[digest] = result
             CACHE.mkdir(parents=True, exist_ok=True)
-            with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8") as handle:
+            with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8", newline="\n") as handle:
                 handle.write(json.dumps(result, sort_keys=True) + "\n")
     evidence = source_dir(args.source) / RESCREEN_FILE
     kept = [row for row in read_jsonl(evidence, ("sha256", "candidate"), "restore it from git")
@@ -2488,7 +2488,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             })
             filed += 1
     evidence.write_text("".join(json.dumps(r, sort_keys=True) + "\n"
-                                for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8")
+                                for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8", newline="\n")
     print(f"golden-reach-search: {args.source}: {len(wanted)} documents re-screened, {filed} screens re-filed, "
           f"{unsettled} left on their earlier screen by a timeout{opaque_summary(len(skipped))}")
     return 0

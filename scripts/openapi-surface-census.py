@@ -2450,7 +2450,7 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
     trace = set() if trace is None else trace
     folded = "".join(
         _ENUM_DEBURR_EXCEPTIONS[char] if char in _ENUM_DEBURR_EXCEPTIONS else
-        unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode()
+        unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8")
         if "\u00c0" <= char <= "\u017f" and unicodedata.normalize("NFKD", char).encode("ascii", "ignore")
         else char
         for char in value
@@ -2517,7 +2517,7 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
                 if int(significant) <= 9999:
                     spelled = numeric_enum_name(int(significant))
                     trace.add(_numeric_range(int(significant)))
-                elif len(folded.encode()) > digits:
+                elif len(folded.encode("utf-8")) > digits:
                     spelled = "undefined"
             elif len(number) <= 4 and (len(number) == 1 or number[0] != "0"):
                 spelled = numeric_enum_name(int(number))

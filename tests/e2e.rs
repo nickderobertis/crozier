@@ -9878,12 +9878,13 @@ from tests.fern_goldens_test import FernGoldensBoundaryTests, ALIASES
 case = FernGoldensBoundaryTests()
 case.setUp()
 try:
-    (case.root / 'tests/fixtures' / ALIASES.name).write_text(sys.argv[1], encoding='utf-8')
+    (case.root / 'tests/fixtures' / ALIASES.name).write_text(sys.argv[1], encoding='utf-8', newline='\n')
     name = sys.argv[2]
     (case.root / 'tests/fixtures/CORPUS.md').write_text(
         '| # | name | method | source | pinned ref | license | decision | shapes |\n'
         f'| 1 | `{name}` | test | https://example.test/alpha/openapi.yaml | `1` | MIT | link-ok | alias |\n',
         encoding='utf-8',
+        newline='\n',
     )
     generated = case.run_tool('generate', '--version', '4.9.0', '--fixture', name)
     fetched = subprocess.run(

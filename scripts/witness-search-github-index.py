@@ -104,7 +104,7 @@ def write_ledger(path: Path, text: str, limit: int | None = None) -> None:
     stale = ledger_parts(path)[max(len(chunks), 1):]
     for number, chunk in enumerate(chunks or [[]]):
         part = path if number == 0 else path.with_name(f"{path.stem}.{number:03d}{path.suffix}")
-        part.write_text("".join(chunk), encoding="utf-8")
+        part.write_text("".join(chunk), encoding="utf-8", newline="\n")
     for part in stale:
         part.unlink()
 
@@ -116,7 +116,7 @@ def append_ledger(path: Path, line: str, limit: int | None = None) -> None:
     encoded = len(line.encode("utf-8"))
     if target.is_file() and 0 < target.stat().st_size and target.stat().st_size + encoded > limit:
         target = path.with_name(f"{path.stem}.{len(parts):03d}{path.suffix}")
-    with target.open("a", encoding="utf-8") as output:
+    with target.open("a", encoding="utf-8", newline="\n") as output:
         output.write(line)
 
 
@@ -1059,7 +1059,7 @@ def main() -> int:
             if not index_target.is_file() or index_target.read_text(encoding="utf-8") != index_text:
                 changed.append(str(index_target))
         else:
-            index_target.write_text(index_text, encoding="utf-8")
+            index_target.write_text(index_text, encoding="utf-8", newline="\n")
         if args.check:
             changed.extend(search_index_failures(directory))
         for number, row in enumerate(rows, 2):
@@ -1094,10 +1094,10 @@ def main() -> int:
             return 1
         return 0
     write_ledger(target, expected, args.shard_bytes)
-    inventory.write_text(owed, encoding="utf-8")
+    inventory.write_text(owed, encoding="utf-8", newline="\n")
     for path, text in rederived_region_texts(args.evidence_root).items():
         if path.read_text(encoding="utf-8") != text:
-            path.write_text(text, encoding="utf-8")
+            path.write_text(text, encoding="utf-8", newline="\n")
     print(f"{target}: {len(central)} candidate records")
     return 0
 

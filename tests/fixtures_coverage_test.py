@@ -280,7 +280,7 @@ class RecipeEndToEndTests(unittest.TestCase):
     def test_a_malformed_coverage_export_is_refused_not_trusted(self) -> None:
         _report, out = self.scoped_run()
         broken = out / "broken.json"
-        broken.write_text('{"data": [{"functions": [{"regions": [[1, 1]]}]}]}', encoding="utf-8")
+        broken.write_text('{"data": [{"functions": [{"regions": [[1, 1]]}]}]}', encoding="utf-8", newline="\n")
         completed = self.run_reporter(
             "--tier",
             json.dumps(

@@ -1946,7 +1946,7 @@ def _main() -> int:
                 sort_keys=True,
             )
             + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
     if args.derive_only:
         print(f"derived {len(keys)} FIXTURE gap keys and handwritten keys")
@@ -2034,7 +2034,7 @@ def _main() -> int:
                 sort_keys=True,
             )
             + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         for publisher in publishers:
             try:
@@ -2132,7 +2132,7 @@ def _main() -> int:
         for identity, item in sorted(candidates.items(), key=candidate_priority):
             if identity in complete:
                 continue
-            digest = hashlib.sha256("\0".join(map(str, identity[1:])).encode()).digest()
+            digest = hashlib.sha256("\0".join(map(str, identity[1:])).encode("utf-8")).digest()
             if digest[0] % shards != shard:
                 continue
             documents.setdefault(identity[1:], []).append((identity[0], item))

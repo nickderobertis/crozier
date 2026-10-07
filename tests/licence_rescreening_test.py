@@ -192,7 +192,7 @@ class TheGateStillDiscriminates(unittest.TestCase):
         )
         for region in gate.REGIONS:
             text = body if region == "schemas" else "# probe\n\n" + ENTRIES
-            (surface / f"{region}.md").write_text(text, encoding="utf-8")
+            (surface / f"{region}.md").write_text(text, encoding="utf-8", newline="\n")
         rows = {}
         schemas = (surface / "schemas.md").read_text(encoding="utf-8").split("\n")
         for index, line in enumerate(schemas, start=1):
@@ -208,11 +208,11 @@ class TheGateStillDiscriminates(unittest.TestCase):
             + "\n"
             + "\n".join(rendered)
             + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         (root / "scripts").mkdir()
         script = root / "scripts" / SCRIPT.name
-        script.write_text(SCRIPT.read_text(encoding="utf-8"), encoding="utf-8")
+        script.write_text(SCRIPT.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
         return root
 
     def gate_over(self, ledger, lines, extra_region: str = ""):
@@ -396,10 +396,10 @@ class TheRecordIsWhereTheGateSaysItIs(unittest.TestCase):
         root = Path(tempfile.mkdtemp(prefix="licence-rescreening-probe-"))
         self.addCleanup(shutil.rmtree, root, ignore_errors=True)
         (root / "docs").mkdir(parents=True)
-        (root / RECORD).write_text("# probe\n\nno table here\n", encoding="utf-8")
+        (root / RECORD).write_text("# probe\n\nno table here\n", encoding="utf-8", newline="\n")
         (root / "scripts").mkdir()
         script = root / "scripts" / SCRIPT.name
-        script.write_text(SCRIPT.read_text(encoding="utf-8"), encoding="utf-8")
+        script.write_text(SCRIPT.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
         result = run_gate(root, script)
         self.assertEqual(result.returncode, 1)
         self.assertIn("records nothing", result.stderr)

@@ -130,7 +130,7 @@ def reference_methods(fixture: Fixture) -> list[str]:
     """Ordered, de-duplicated `sub.method` endpoint keys from a fixture's committed
     `reference.md` — the endpoint catalog, resolved at collection time so each
     endpoint is its own reported test case."""
-    text = committed_reference(fixture).read_text()
+    text = committed_reference(fixture).read_text(encoding="utf-8")
     return list(dict.fromkeys(_CALL_RE.findall(text)))
 
 

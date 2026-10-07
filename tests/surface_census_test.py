@@ -160,7 +160,7 @@ def rows(completed: subprocess.CompletedProcess) -> dict[tuple[str, str], int]:
 def write_fixture(root: Path, name: str, document: str) -> Path:
     directory = root / name
     directory.mkdir(parents=True)
-    (directory / "openapi.yml").write_text(textwrap.dedent(document), encoding="utf-8")
+    (directory / "openapi.yml").write_text(textwrap.dedent(document), encoding="utf-8", newline="\n")
     return directory
 
 
@@ -181,7 +181,7 @@ def write_golden_registry(fixtures: Path, *apis: str, residual: dict[str, list[s
             f"    assert_committed_corpus_matches(&ROW_{index});\n}}\n"
         )
         (fixtures / api / "expected").mkdir(parents=True, exist_ok=True)
-    (fixtures.parent / "e2e.rs").write_text("\n".join(blocks), encoding="utf-8")
+    (fixtures.parent / "e2e.rs").write_text("\n".join(blocks), encoding="utf-8", newline="\n")
 
 
 # --- the amended settlement rule -------------------------------------------
@@ -2115,11 +2115,11 @@ class ConfigGatedRecordTests(unittest.TestCase):
             directory.mkdir(parents=True)
             (directory / "records.tsv").write_text(
                 "key\tkind\tsubject\tresult\tfile\nother\tdocument\ta.yaml\tcensus 1\tenumeration.tsv.gz\n",
-                encoding="utf-8")
-            with gzip.open(directory / "enumeration.tsv.gz", "wt", encoding="utf-8") as handle:
+                encoding="utf-8", newline="\n")
+            with gzip.open(directory / "enumeration.tsv.gz", "wt", encoding="utf-8", newline="\n") as handle:
                 handle.write("walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\n"
                              f"tree\ta.yaml\t{'0' * 40}\t{'0' * 64}\tother\treadable\n")
-        (self.evidence / "queries.tsv").write_text("key\tsource\tphrasing\nother\tsourcegraph\tq\n", encoding="utf-8")
+        (self.evidence / "queries.tsv").write_text("key\tsource\tphrasing\nother\tsourcegraph\tq\n", encoding="utf-8", newline="\n")
         self.ledger = self.root / "docs" / "openapi-surface" / "handwritten-config-gates.tsv"
         self.ledger.parent.mkdir(parents=True)
         self.write_ledger(9, 0)
@@ -2129,7 +2129,7 @@ class ConfigGatedRecordTests(unittest.TestCase):
             "fixture\tkey\tsite\tsetting\tregions_executed\tregions\n"
             f"fx\t{self.KEY}\t{self.ARM}\t-\t{executed_without}\t9\n"
             f"fx\t{self.KEY}\t{self.ARM}\taudiences=public\t{executed_with}\t9\n",
-            encoding="utf-8")
+            encoding="utf-8", newline="\n")
 
     def record(self, executed_without: int = 0) -> str:
         def cited(source: str) -> str:
@@ -2199,17 +2199,17 @@ class ConfigGatedRecordTests(unittest.TestCase):
                             "must read `none`")
         self.assert_refused(self.record().replace(" `jentic/enumeration.tsv.gz`", " `jentic/missing.tsv`"),
                             "cites no `jentic/enumeration.tsv.gz`")
-        with (self.evidence / "jentic" / "records.tsv").open("a", encoding="utf-8") as handle:
+        with (self.evidence / "jentic" / "records.tsv").open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(f"{self.KEY}\tdocument\tb.yaml\tcensus 1\tenumeration.tsv.gz\n")
         self.assert_refused(self.record(), "`jentic/records.tsv` records a search for the key")
-        with (self.evidence / "queries.tsv").open("a", encoding="utf-8") as handle:
+        with (self.evidence / "queries.tsv").open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(f"{self.KEY}\tsourcegraph\tq\n")
         self.assert_refused(self.record(), "holds a `sourcegraph` phrasing for the key")
-        with gzip.open(self.evidence / "apis.guru" / "enumeration.tsv.gz", "at", encoding="utf-8") as handle:
+        with gzip.open(self.evidence / "apis.guru" / "enumeration.tsv.gz", "at", encoding="utf-8", newline="\n") as handle:
             handle.write(f"tree\tb.yaml\t{'0' * 40}\t{'0' * 64}\t{self.KEY}\treadable\n")
         self.assert_refused(self.record(), "matched documents for the key, so it was walked")
         script = self.root / "scripts" / "golden-reach-search.py"
-        script.write_text(script.read_text(encoding="utf-8") + "\n# --audience\n", encoding="utf-8")
+        script.write_text(script.read_text(encoding="utf-8") + "\n# --audience\n", encoding="utf-8", newline="\n")
         self.assert_refused(self.record(), "must pass no `--audience`")
 
 
@@ -2931,7 +2931,7 @@ class GrammarContractTests(unittest.TestCase):
                     exec {real} "$@"
                     """
                 ),
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             refuser.chmod(0o755)
             run = subprocess.run(
@@ -3500,7 +3500,7 @@ class ResolvingDescentTests(unittest.TestCase):
         compiled = {selector: census.compile_conjunction(selector) for selector in selectors}
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "openapi.yml"
-            path.write_text(self.document(schemas), encoding="utf-8")
+            path.write_text(self.document(schemas), encoding="utf-8", newline="\n")
             document = census.load_document(path)
         counted = census.census_document(document, compiled)
         return {selector: counted.get(selector, 0) for selector in selectors}
@@ -3794,7 +3794,7 @@ def write_json_fixture(root: Path, name: str, document: dict) -> None:
     directory = root / name
     directory.mkdir(parents=True)
     (directory / "openapi.json").write_text(
-        json.dumps(document, indent=2), encoding="utf-8"
+        json.dumps(document, indent=2), encoding="utf-8", newline="\n"
     )
 
 
@@ -5201,7 +5201,7 @@ class DocumentContextTests(unittest.TestCase):
                 "      patternProperties:\n"
                 "        '^x-':\n"
                 "          type: string\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         self.assertEqual(0, completed.returncode, completed.stderr)
@@ -6337,7 +6337,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             patched = root / "patched-census.py"
-            patched.write_text(patched_source, encoding="utf-8")
+            patched.write_text(patched_source, encoding="utf-8", newline="\n")
             shutil.copy2(SCRIPT.parent / "corpus_remote_ref_pins.py", root)
             spec = importlib.util.spec_from_file_location("patched_census", patched)
             module = importlib.util.module_from_spec(spec)
@@ -6361,7 +6361,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
                     {"Root": {"type": "array", "items": {"type": "string", "title": "t"}}},
                 ),
             )
-            (fixtures / "CORPUS.md").write_text("", encoding="utf-8")
+            (fixtures / "CORPUS.md").write_text("", encoding="utf-8", newline="\n")
             arguments = ["--vendored-only", "--fixtures-root", str(fixtures), "--json"]
             real = subprocess.run(
                 [sys.executable, str(SCRIPT), *arguments, "--selector", real_residual],
@@ -6652,12 +6652,12 @@ class PinnedTreeWalkTests(unittest.TestCase):
         (self.fixtures / "CORPUS.md").write_text(
             "| # | name | method | source | pinned ref | license | decision | shapes |\n"
             "|---:|---|---|---|---|---|---|---|\n"
-            f"| 1 | `tree-proof` | github-raw | {url} | `{sha}` | MIT | link-ok | refs |\n"
+            f"| 1 | `tree-proof` | github-raw | {url} | `{sha}` | MIT | link-ok | refs |\n", encoding="utf-8", newline="\n"
         )
         (self.fixtures / "corpus-remote-ref-pins.tsv").write_text(
             f"tree\ttree-proof\tnested/defs.yml\thttps://raw.githubusercontent.com/example/api/{sha}/nested/defs.yml\t{'0' * 64}\n"
             f"tree\ttree-proof\tnested/pathitem.yml\thttps://raw.githubusercontent.com/example/api/{sha}/nested/pathitem.yml\t{'0' * 64}\n"
-            f"tree\ttree-proof\topenapi.yml\t{url}\t{'0' * 64}\n"
+            f"tree\ttree-proof\topenapi.yml\t{url}\t{'0' * 64}\n", encoding="utf-8", newline="\n"
         )
         write_golden_registry(self.fixtures, "tree-proof")
 
@@ -6671,27 +6671,27 @@ class PinnedTreeWalkTests(unittest.TestCase):
 
     def test_a_declaration_reachable_only_across_a_document_boundary_is_counted(self) -> None:
         document = (self.tree / "openapi.yml")
-        text = document.read_text().replace(
+        text = document.read_text(encoding="utf-8").replace(
             "    Second:\n      $ref: nested/defs.yml#/components/schemas/Reachable\n", ""
         )
-        document.write_text(text)
+        document.write_text(text, encoding="utf-8", newline="\n")
         self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
         pins = self.fixtures / "corpus-remote-ref-pins.tsv"
         pins.write_text("".join(
-            line for line in pins.read_text().splitlines(keepends=True)
+            line for line in pins.read_text(encoding="utf-8").splitlines(keepends=True)
             if "\tnested/defs.yml\t" not in line
-        ))
+        ), encoding="utf-8", newline="\n")
         self.assertEqual(0, self.measure().get(("schema.properties:non-empty", "tree-proof"), 0))
 
     def test_two_references_to_one_declaration_count_it_once(self) -> None:
         self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
         # A distinct second written declaration must make the same selector 2.
         definitions = self.tree / "nested/defs.yml"
-        definitions.write_text(definitions.read_text() +
-            "    Another:\n      type: object\n      properties:\n        secondSite:\n          type: string\n")
+        definitions.write_text(definitions.read_text(encoding="utf-8") +
+            "    Another:\n      type: object\n      properties:\n        secondSite:\n          type: string\n", encoding="utf-8", newline="\n")
         root = self.tree / "openapi.yml"
-        root.write_text(root.read_text() +
-            "    Third:\n      $ref: nested/defs.yml#/components/schemas/Another\n")
+        root.write_text(root.read_text(encoding="utf-8") +
+            "    Third:\n      $ref: nested/defs.yml#/components/schemas/Another\n", encoding="utf-8", newline="\n")
         self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
 
     def test_a_reference_cannot_pull_in_an_unregistered_sibling(self) -> None:
@@ -6701,8 +6701,8 @@ class PinnedTreeWalkTests(unittest.TestCase):
         self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
         pins = self.fixtures / "corpus-remote-ref-pins.tsv"
         sha = "a" * 40
-        pins.write_text(pins.read_text() +
-            f"tree\ttree-proof\toutside.yml\thttps://raw.githubusercontent.com/example/api/{sha}/outside.yml\t{'0' * 64}\n")
+        pins.write_text(pins.read_text(encoding="utf-8") +
+            f"tree\ttree-proof\toutside.yml\thttps://raw.githubusercontent.com/example/api/{sha}/outside.yml\t{'0' * 64}\n", encoding="utf-8", newline="\n")
         self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
 
     def test_relative_path_item_reference_counts_at_its_writing_site(self) -> None:
@@ -6711,22 +6711,22 @@ class PinnedTreeWalkTests(unittest.TestCase):
         self.assertEqual(1, measured["operation.operationId", "tree-proof"])
 
         root = self.tree / "openapi.yml"
-        root.write_text(root.read_text().replace(
+        root.write_text(root.read_text(encoding="utf-8").replace(
             "nested/pathitem.yml", "/absolute/pathitem.yml"
-        ))
+        ), encoding="utf-8", newline="\n")
         measured = self.measure()
         self.assertEqual(0, measured.get(("pathItem.$ref:relative-file", "tree-proof"), 0))
         self.assertEqual(1, measured["pathItem.$ref", "tree-proof"])
 
     def test_a_sibling_reference_back_into_the_root_does_not_recount_it(self) -> None:
         root = self.tree / "openapi.yml"
-        root.write_text(root.read_text() +
-            "    Local:\n      type: object\n      properties:\n        inRoot:\n          type: string\n")
+        root.write_text(root.read_text(encoding="utf-8") +
+            "    Local:\n      type: object\n      properties:\n        inRoot:\n          type: string\n", encoding="utf-8", newline="\n")
         item = self.tree / "nested/pathitem.yml"
-        item.write_text(item.read_text().replace(
+        item.write_text(item.read_text(encoding="utf-8").replace(
             '    "204":\n      description: No content\n',
             '    "200":\n      description: OK\n      content:\n        application/json:\n          schema:\n            $ref: ../openapi.yml#/components/schemas/Local\n'
-        ))
+        ), encoding="utf-8", newline="\n")
         self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
 
 
@@ -6756,8 +6756,8 @@ class GoldenSourcePopulationTests(unittest.TestCase):
                     f"| {number} | `{name}` | api-guru | https://example.test/{name}.yml | `1` | MIT | committed | t |"
                 )
                 (corpus / name).mkdir(parents=True)
-                (corpus / name / "openapi.yml").write_text(self.DOCUMENT, encoding="utf-8")
-            (fixtures / "CORPUS.md").write_text("\n".join(rows_md) + "\n", encoding="utf-8")
+                (corpus / name / "openapi.yml").write_text(self.DOCUMENT, encoding="utf-8", newline="\n")
+            (fixtures / "CORPUS.md").write_text("\n".join(rows_md) + "\n", encoding="utf-8", newline="\n")
             write_golden_registry(fixtures, "compared", "residual", residual={"residual": ["reference.md"]})
             # A golden tree with no test comparing it is not a registration either.
             (fixtures / "uncompared" / "expected").mkdir(parents=True)
@@ -6858,7 +6858,7 @@ class SourceSelectionTests(unittest.TestCase):
             (expected / "openapi.yml").write_text(
                 "openapi: 3.1.0\npaths:\n  /x:\n    trace:\n      responses:\n"
                 '        "200": {description: ok}\n',
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         payload = json.loads(completed.stdout)
@@ -7029,7 +7029,7 @@ class CorpusManifestAgreementTests(unittest.TestCase):
             fixtures = root / "tests" / "fixtures"
             fixtures.mkdir(parents=True)
             (fixtures / "corpus-aliases.tsv").write_text(
-                "planet-window\talpha\nsignal-history\tbeta\n", encoding="utf-8"
+                "planet-window\talpha\nsignal-history\tbeta\n", encoding="utf-8", newline="\n"
             )
             aliases = census.corpus_aliases(fixtures)
             self.assertEqual({"planet-window": "alpha", "signal-history": "beta"}, aliases)
@@ -7038,7 +7038,7 @@ class CorpusManifestAgreementTests(unittest.TestCase):
                 f"| {number} | `{name}` | test | https://example.test/{name}.yaml "
                 "| `1` | MIT | link-ok | alias |"
                 for number, name in enumerate(names, start=1)
-            ) + "\n", encoding="utf-8")
+            ) + "\n", encoding="utf-8", newline="\n")
             for name in names:
                 completed = subprocess.run(
                     [scripts / "fetch-corpus.sh", "--dry-run", "--fixture", aliases.get(name, name)],
@@ -7059,7 +7059,7 @@ class YamlSubsetTests(unittest.TestCase):
     def load(self, document: str):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "openapi.yml"
-            path.write_text(textwrap.dedent(document), encoding="utf-8")
+            path.write_text(textwrap.dedent(document), encoding="utf-8", newline="\n")
             return census.load_document(path)
 
     def refusal(self, document: str) -> str:
@@ -7259,9 +7259,9 @@ class YamlSubsetTests(unittest.TestCase):
     def test_a_json_source_is_read_as_json(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "openapi.json"
-            path.write_text('{"openapi": "3.1.0"}', encoding="utf-8")
+            path.write_text('{"openapi": "3.1.0"}', encoding="utf-8", newline="\n")
             self.assertEqual({"openapi": "3.1.0"}, census.load_document(path))
-            path.write_text("{oops", encoding="utf-8")
+            path.write_text("{oops", encoding="utf-8", newline="\n")
             with self.assertRaises(census.DocumentError) as raised:
                 census.load_document(path)
             self.assertIn("is not valid JSON", str(raised.exception))
@@ -7327,7 +7327,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 "enum: [urn:ietf:params:oauth:client-assertion-type:jwt-bearer]\n"
                 "pairs: [a:b, c]\n"
                 "urls: {url: http://example.test/x, key: v}\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             self.assertEqual(
                 {
@@ -7338,7 +7338,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 census.load_document(path),
             )
             path.write_text("pairs: [x: y, z, {w: 1}]\nexamples: [\n  example: 1702353706\n]\n",
-                            encoding="utf-8")
+                            encoding="utf-8", newline="\n")
             self.assertEqual({"pairs": [{"x": "y"}, "z", {"w": 1}], "examples": [{"example": 1702353706}]},
                              census.load_document(path))
 
@@ -7369,7 +7369,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 '    "json events"\n'
                 "    }\n"
                 "  }\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             self.assertEqual(
                 {
@@ -7400,7 +7400,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
             path = Path(directory) / "openapi.yml"
             path.write_text(
                 'info: {\n  "title": "a [bracket\n  and ] more",\n  "version": "1" }\nopenapi: 3.0.0\n',
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             self.assertEqual(
                 {"info": {"title": "a [bracket and ] more", "version": "1"}, "openapi": "3.0.0"},
@@ -7418,7 +7418,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         document = {"openapi": "3.0.0", "info": {"title": "T", "version": "1"}, "paths": paths}
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "openapi.yaml"
-            path.write_text(json.dumps(document, indent=2), encoding="utf-8")
+            path.write_text(json.dumps(document, indent=2), encoding="utf-8", newline="\n")
             started = time.monotonic()
             self.assertEqual(document, census.load_document(path))
         self.assertLess(time.monotonic() - started, 30)
@@ -7432,7 +7432,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         """
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "openapi.yml"
-            path.write_text("info: {a]\n", encoding="utf-8")
+            path.write_text("info: {a]\n", encoding="utf-8", newline="\n")
             with self.assertRaises(census.DocumentError) as raised:
                 census.load_document(path)
         self.assertIn("stalls", str(raised.exception))
@@ -7443,7 +7443,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         for text in ("info: {{ .Values.title }}\n", "info: {[a]: b}\n", "tags: [{a}: b]\n"):
             with self.subTest(text=text), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / "openapi.yml"
-                path.write_text(text, encoding="utf-8")
+                path.write_text(text, encoding="utf-8", newline="\n")
                 with self.assertRaises(census.DocumentError) as raised:
                     census.load_document(path)
                 self.assertIn("a flow collection is used as a mapping key", str(raised.exception))
@@ -9166,7 +9166,7 @@ class RankedBacklogTests(unittest.TestCase):
                     )
                 elif cells[3] == "gap":
                     self.assertEqual("UNREACHABLE", self.settlement_of(cells))
-                metadata = json.loads((REPO / artifact / ".fern/metadata.json").read_text())
+                metadata = json.loads((REPO / artifact / ".fern/metadata.json").read_text(encoding="utf-8"))
                 for text in (cells[4], *ledger_rows):
                     for label, version, field in (
                         ("Fern CLI", metadata["cliVersion"], "cliVersion"),
@@ -10020,8 +10020,8 @@ class RegionFixture:
         root = Path(directory)
         (root / "openapi-surface").mkdir()
         region = root / "openapi-surface" / "sample.md"
-        region.write_text(self.REGION.format(entry=entry, search=search), encoding="utf-8")
-        (root / "fern-limitations.md").write_text(ledger, encoding="utf-8")
+        region.write_text(self.REGION.format(entry=entry, search=search), encoding="utf-8", newline="\n")
+        (root / "fern-limitations.md").write_text(ledger, encoding="utf-8", newline="\n")
         text = region.read_text(encoding="utf-8")
         rows = RankedBacklogTests.region_rows(text)
         self.assertEqual(1, len(rows), "the sample region file no longer parses as one entry row")
@@ -10546,7 +10546,7 @@ class FinishedStateGateTests(unittest.TestCase):
         path = self.root / relative
         text = path.read_text(encoding="utf-8")
         self.assertIn(old, text, f"{relative} no longer carries the line this case edits")
-        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+        path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
 
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
@@ -10556,7 +10556,7 @@ class FinishedStateGateTests(unittest.TestCase):
             "| `sample-unproven` | both | Schema Object.sample | gap | none | "
             "`src/ir.rs::sample` | sample | **FIXTURE** — no witness found |\n"
         )
-        with (self.root / "docs" / "openapi-surface" / "schemas.md").open("a", encoding="utf-8") as handle:
+        with (self.root / "docs" / "openapi-surface" / "schemas.md").open("a", encoding="utf-8", newline="\n") as handle:
             handle.write("\n" + row)
         self.assertEqual(
             ["sample-unproven: a `FIXTURE` gap row with neither a registered real witness "
@@ -10612,7 +10612,7 @@ class FinishedStateGateTests(unittest.TestCase):
         template = (searches / "format-duration.md").read_text(encoding="utf-8")
         (searches / f"{self.NAMED_KEY}.md").write_text(
             template.replace("format-duration", self.NAMED_KEY).replace("`search-incomplete`", "`exhausted`"),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         self.assertEqual(
             [f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
@@ -10667,7 +10667,7 @@ class FinishedStateGateTests(unittest.TestCase):
         fields = lines[1].split("\t")
         fields[6] = "unevaluated"
         lines[1] = "\t".join(fields)
-        path.write_text("".join(lines), encoding="utf-8")
+        path.write_text("".join(lines), encoding="utf-8", newline="\n")
         self.assertEqual(
             [f"{fields[0]}: docs/fern-refusals/classes.tsv leaves the class `unevaluated`; "
              "decide it `generate` or `refuse`"],
@@ -10712,10 +10712,10 @@ class CompletenessTierTests(unittest.TestCase):
             "|---|---|---|---|---|---|---|---|\n"
             f"| sample-shape | both | Schema Object.sample | {category} | {evidence} | none | — | {settlement} |\n"
             f"{record}",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         (root / "MANIFEST.tsv").write_text(
-            "key\tform\tverdict\tartifact\tcontrol\tdigest\n" + manifest, encoding="utf-8"
+            "key\tform\tverdict\tartifact\tcontrol\tdigest\n" + manifest, encoding="utf-8", newline="\n"
         )
         text = (root / "sample.md").read_text(encoding="utf-8")
         rows = RankedBacklogTests.region_rows(text)
@@ -10765,14 +10765,14 @@ class CompletenessTierTests(unittest.TestCase):
             original = evidence.read_text(encoding="utf-8")
             evidence.unlink()
             self.assertTrue(check(), "missing evidence accepted")
-            evidence.write_text(original.replace("integer-format-fallback", "uncovered-shape"), encoding="utf-8")
+            evidence.write_text(original.replace("integer-format-fallback", "uncovered-shape"), encoding="utf-8", newline="\n")
             self.assertTrue(check(), "a cover naming another key accepted")
-            evidence.write_text(original.replace("witness-search-integer-format/README.md", "missing-search.md"), encoding="utf-8")
+            evidence.write_text(original.replace("witness-search-integer-format/README.md", "missing-search.md"), encoding="utf-8", newline="\n")
             self.assertTrue(check(), "missing search accepted")
-            (root / "docs/openapi-surface/invalid-search.md").write_text("No search table.\n", encoding="utf-8")
-            evidence.write_text(original.replace("witness-search-integer-format/README.md", "invalid-search.md"), encoding="utf-8")
+            (root / "docs/openapi-surface/invalid-search.md").write_text("No search table.\n", encoding="utf-8", newline="\n")
+            evidence.write_text(original.replace("witness-search-integer-format/README.md", "invalid-search.md"), encoding="utf-8", newline="\n")
             self.assertTrue(check(), "unparsable search accepted")
-            evidence.write_text(original, encoding="utf-8")
+            evidence.write_text(original, encoding="utf-8", newline="\n")
             self.assertEqual([], check())
 
     def test_a_cited_proof_settles_a_limitations_row(self) -> None:
@@ -10920,7 +10920,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
             f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
             "| key | outcome | search | note |\n|---|---|---|---|\n"
             f"| `{self.KEY}` | `search-incomplete` | {'; '.join(segments)} | pending |\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         read = compact_search_lines(region.read_text(encoding="utf-8"))
         self.assertEqual([self.KEY], list(read))
@@ -11017,7 +11017,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
                 f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
                 "| key | outcome | search | note |\n|---|---|---|---|\n"
                 f"| `{self.KEY}` | `witness-found` | {'; '.join(segments)} | measured |\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             line = compact_search_lines(region.read_text(encoding="utf-8"))[self.KEY]
             return compact_record_failures(self.KEY, line, self.root, self.capabilities)
@@ -11151,14 +11151,14 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
                     status = "readable" if result.startswith("census ") else result
                     listing.append("\t".join((parsed[0], document, parsed[1], "0" * 64, matched, status)))
                 (self.root / f"witness-search-{source}" / "enumeration.tsv").write_text(
-                    "\n".join(listing) + "\n", encoding="utf-8"
+                    "\n".join(listing) + "\n", encoding="utf-8", newline="\n"
                 )
                 manifest = ["walk\tdocument\trevision\tsha256"]
                 manifest.extend("\t".join(line.split("\t")[:4]) for line in listing[1:])
                 (self.root / f"witness-search-{source}" / "acquisition-manifest.tsv").write_text(
-                    "\n".join(manifest) + "\n", encoding="utf-8"
+                    "\n".join(manifest) + "\n", encoding="utf-8", newline="\n"
                 )
-                with self.evidence(source).open("a", encoding="utf-8") as index:
+                with self.evidence(source).open("a", encoding="utf-8", newline="\n") as index:
                     index.write("\t".join((self.KEY, "walk", f"{parsed[0]}@{parsed[1]}",
                                            parsed[2], "acquisition-manifest.tsv")) + "\n")
 
@@ -11168,8 +11168,8 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         lines = ["key\tkind\tsubject\tresult\tfile"]
         for kind, subject, result, file in rows:
             lines.append("\t".join((self.KEY, kind, subject, result, file)))
-            (directory / file).write_text(f"{kind} {subject}\n", encoding="utf-8")
-        (directory / "records.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+            (directory / file).write_text(f"{kind} {subject}\n", encoding="utf-8", newline="\n")
+        (directory / "records.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
     def evidence(self, source: str) -> Path:
         return self.root / f"witness-search-{source}" / "records.tsv"
@@ -11186,7 +11186,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
             "| key | source | outcome | queries | walk | candidates | screens |\n"
             "|---|---|---|---|---|---|---|\n" + "\n".join(lines) + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         read = exhaustive_search_lines(region.read_text(encoding="utf-8"))
         self.assertEqual([self.KEY], list(read), "the sample table no longer parses")
@@ -11225,10 +11225,10 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
                             "declined": f"{search.FIXTURE_DECLINE} — `f/example` at `{self.COMMIT}`, `test/openapi.json`"})
             self.table["jentic"][2] += f"; `{unreaching}`; `{fixture}`"
             self.table["jentic"][3] += f"; `{fixture}` licence `passed` ref `passed` fern `passed`"
-        with self.evidence("jentic").open("a", encoding="utf-8") as index:
+        with self.evidence("jentic").open("a", encoding="utf-8", newline="\n") as index:
             index.writelines("\t".join(row) + "\n" for row in rows)
         for name, filed in (("probe.jsonl", probes), ("screens.jsonl", screens)):
-            with (directory / name).open("a", encoding="utf-8") as handle:
+            with (directory / name).open("a", encoding="utf-8", newline="\n") as handle:
                 handle.writelines(json.dumps(row) + "\n" for row in filed)
 
     def test_each_evidence_file_is_read_and_scanned_a_bounded_number_of_times_however_many_candidates(self) -> None:
@@ -11321,52 +11321,52 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
         text = census.read_text(encoding="utf-8")
         census.write_text(
-            text.replace("unreadable: duplicate mapping key", "skipped"), encoding="utf-8"
+            text.replace("unreadable: duplicate mapping key", "skipped"), encoding="utf-8", newline="\n"
         )
         self.refused("neither a census-selector output nor a recorded reason")
 
     def test_a_walked_document_absent_from_compact_census_is_refused(self) -> None:
         census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
         lines = census.read_text(encoding="utf-8").splitlines()
-        census.write_text("\n".join(lines[:-1]) + "\n", encoding="utf-8")
+        census.write_text("\n".join(lines[:-1]) + "\n", encoding="utf-8", newline="\n")
         self.refused("a document is absent")
 
     def test_a_duplicate_compact_census_document_is_refused(self) -> None:
         census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
         lines = census.read_text(encoding="utf-8").splitlines()
-        census.write_text("\n".join([*lines, lines[-1]]) + "\n", encoding="utf-8")
+        census.write_text("\n".join([*lines, lines[-1]]) + "\n", encoding="utf-8", newline="\n")
         self.refused("enumeration repeats a document")
 
     def test_a_fabricated_path_swapped_for_a_real_one_is_refused(self) -> None:
         census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
         text = census.read_text(encoding="utf-8")
         census.write_text(text.replace("APIs/b.example/1.0/openapi.yaml",
-                                       "APIs/invented.example/1.0/openapi.yaml"), encoding="utf-8")
+                                       "APIs/invented.example/1.0/openapi.yaml"), encoding="utf-8", newline="\n")
         self.refused("enumeration path set differs from pinned acquisition manifest")
 
     def test_a_census_digest_disagreeing_with_acquisition_is_refused(self) -> None:
         census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
         text = census.read_text(encoding="utf-8")
-        census.write_text(text.replace("0" * 64, "1" * 64, 1), encoding="utf-8")
+        census.write_text(text.replace("0" * 64, "1" * 64, 1), encoding="utf-8", newline="\n")
         self.refused("differs from pinned acquisition digest or revision")
 
     def test_a_matched_census_row_without_its_positive_record_is_refused(self) -> None:
         index = self.evidence("jentic")
         lines = index.read_text(encoding="utf-8").splitlines()
         index.write_text("\n".join(line for line in lines if "\tdocument\t" not in line) + "\n",
-                         encoding="utf-8")
+                         encoding="utf-8", newline="\n")
         self.refused("matched in enumeration.tsv but has no one positive records.tsv row")
 
     def test_a_positive_record_without_its_census_match_is_refused(self) -> None:
         census = self.root / "witness-search-jentic" / "enumeration.tsv"
         census.write_text(census.read_text(encoding="utf-8").replace(f"\t{self.KEY}\treadable", "\t\treadable"),
-                          encoding="utf-8")
+                          encoding="utf-8", newline="\n")
         self.refused("records.tsv claims apis/openapi/c.example/openapi.json without an enumeration.tsv match")
 
     def test_a_candidate_with_no_census_confirmation_is_refused(self) -> None:
         text = self.evidence("github-code-search").read_text(encoding="utf-8")
         self.evidence("github-code-search").write_text(
-            text.replace("census 0", "keyword match"), encoding="utf-8"
+            text.replace("census 0", "keyword match"), encoding="utf-8", newline="\n"
         )
         self.refused("records no census confirmation for candidate `d-org/d-repo/openapi.yaml`")
 
@@ -11376,7 +11376,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         for result in ("parse-failure: duplicate mapping key",
                        "acquisition-failure: HTTP 503 after attempt budget"):
             with self.subTest(result=result):
-                path.write_text(original.replace("census 0", result), encoding="utf-8")
+                path.write_text(original.replace("census 0", result), encoding="utf-8", newline="\n")
                 self.outcome = "search-incomplete"
                 self.assertEqual([], self.failures())
                 self.outcome = "exhausted"
@@ -11394,7 +11394,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         path = self.evidence("jentic")
         # Filed as the arm search files a screen: its records name screens.jsonl.
         path.write_text(path.read_text(encoding="utf-8").replace("failed: AGPL-3.0", "passed")
-                        .replace("\tscreens.md", "\tscreens.jsonl"), encoding="utf-8")
+                        .replace("\tscreens.md", "\tscreens.jsonl"), encoding="utf-8", newline="\n")
         (self.root / "witness-search-jentic" / "screens.md").unlink()
         self.refused("keeps `apis/openapi/c.example/openapi.json`, which passes all three screens")
         spec = importlib.util.spec_from_file_location("search", REPO / "scripts" / "golden-reach-search.py")
@@ -11409,7 +11409,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             (f"{search.FIXTURE_DECLINE} — `c/example` at `{self.COMMIT}`, `test/openapi.json`", True),
         ):
             with self.subTest(declined=declined):
-                filed.write_text(json.dumps(dict(row, declined=declined)) + "\n", encoding="utf-8")
+                filed.write_text(json.dumps(dict(row, declined=declined)) + "\n", encoding="utf-8", newline="\n")
                 if accepted:
                     self.assertEqual([], self.failures())
                 else:
@@ -11419,18 +11419,18 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.table["jentic"][3] = "`apis/openapi/c.example/openapi.json` licence `passed` ref `passed` fern `passed`"
         path = self.evidence("jentic")
         original = path.read_text(encoding="utf-8").replace("failed: AGPL-3.0", "passed")
-        path.write_text(original, encoding="utf-8")
+        path.write_text(original, encoding="utf-8", newline="\n")
         self.refused("which passes all three screens")
         note = golden_reach_search().NOT_REACHING.format(build="4828cc2b93f0")
         path.write_text(original.replace("\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3",
                                          f"\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3 — {note}"),
-                        encoding="utf-8")
+                        encoding="utf-8", newline="\n")
         self.refused("which witness-search-jentic/probe.jsonl does not carry")
         probes = self.root / "witness-search-jentic" / "probe.jsonl"
         probe = {"key": self.KEY, "candidate": "apis/openapi/c.example/openapi.json", "build": "4828cc2b93f0"}
-        probes.write_text(json.dumps(dict(probe, reached=["src/ir.rs::f"])) + "\n", encoding="utf-8")
+        probes.write_text(json.dumps(dict(probe, reached=["src/ir.rs::f"])) + "\n", encoding="utf-8", newline="\n")
         self.refused("which witness-search-jentic/probe.jsonl does not carry")
-        probes.write_text(json.dumps(dict(probe, reached=[])) + "\n", encoding="utf-8")
+        probes.write_text(json.dumps(dict(probe, reached=[])) + "\n", encoding="utf-8", newline="\n")
         # `probe.jsonl` is a layout file of a golden-arm evidence directory, which
         # this sample is not; everything said about the candidate itself is settled.
         self.assertEqual([], [f for f in self.failures() if "c.example" in f])
@@ -11450,10 +11450,10 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.refused("which witness-search-jentic/records.tsv does not carry")
 
     def test_evidence_the_table_does_not_account_for_is_refused(self) -> None:
-        with self.evidence("sourcegraph").open("a", encoding="utf-8") as index:
+        with self.evidence("sourcegraph").open("a", encoding="utf-8", newline="\n") as index:
             index.write(f"{self.KEY}\tquery\t`third phrasing`\t2\tacquisition.json\n")
         self.refused("carries query ``third phrasing`` that the table accounts for nowhere")
-        (self.root / "witness-search-sourcegraph" / "stray.json").write_text("{}\n", encoding="utf-8")
+        (self.root / "witness-search-sourcegraph" / "stray.json").write_text("{}\n", encoding="utf-8", newline="\n")
         self.refused("witness-search-sourcegraph/stray.json is evidence the table accounts for nowhere")
 
     def test_a_named_ledgers_shards_are_accounted_for_and_a_strays_are_not(self) -> None:
@@ -11463,10 +11463,10 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         parts are exempt; a part of a file no row names is still a stray.
         """
         directory = self.root / "witness-search-sourcegraph"
-        (directory / "acquisition.001.json").write_text("{}\n", encoding="utf-8")
+        (directory / "acquisition.001.json").write_text("{}\n", encoding="utf-8", newline="\n")
         self.assertEqual([], self.failures())
-        (directory / "stray.json").write_text("{}\n", encoding="utf-8")
-        (directory / "stray.001.json").write_text("{}\n", encoding="utf-8")
+        (directory / "stray.json").write_text("{}\n", encoding="utf-8", newline="\n")
+        (directory / "stray.001.json").write_text("{}\n", encoding="utf-8", newline="\n")
         self.refused("witness-search-sourcegraph/stray.001.json is evidence the table accounts for nowhere")
 
     def test_an_undeclared_source_counted_as_answered_is_refused(self) -> None:
@@ -12141,7 +12141,7 @@ class NamingMirrorTests(unittest.TestCase):
                 entries = re.findall(r"\('(.+?)', \"(.+?)\"\)", body)
                 exceptions = {
                     char: folded for char, folded in entries
-                    if unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode() != folded
+                    if unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8") != folded
                 }
                 self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
             else:

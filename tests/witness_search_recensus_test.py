@@ -100,7 +100,7 @@ def keys_file(directory: Path) -> None:
     (directory / "keys.json").write_text(json.dumps({"keys": {
         KEY: {"region": "schemas", "selector": SELECTOR, "selector_status": "available"},
         OTHER: {"region": "schemas", "selector": "schema.oneOf>schema.anyOf", "selector_status": "available"},
-    }}), encoding="utf-8")
+    }}), encoding="utf-8", newline="\n")
 
 
 def run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -142,7 +142,7 @@ class OpaqueContinuationTest(unittest.TestCase):
                     historical["supersedes"] = prior
                     repeated = {k: v for k, v in historical.items() if k != "supersedes"}
                     original = "".join(json.dumps(row) + "\n" for row in (earlier, historical, repeated))
-                    ledger.write_text(original, encoding="utf-8")
+                    ledger.write_text(original, encoding="utf-8", newline="\n")
                     cache = Path(tmp) / stage
                     options = ("--source", source, "--cache", str(cache)) if stage == "full-yaml" else (
                         "--cache-dir", str(cache), "--again")
@@ -154,11 +154,11 @@ class OpaqueContinuationTest(unittest.TestCase):
                     self.assertFalse((cache / "documents").exists())
                     self.assertFalse((evidence / "raw-github-calls.jsonl").exists())
                     self.assertEqual([], server.paths)
-                    ledger.write_text(original.replace(":v2:", ":v3:"), encoding="utf-8")
+                    ledger.write_text(original.replace(":v2:", ":v3:"), encoding="utf-8", newline="\n")
                     rejected = run("--evidence-root", str(root), stage, *options, env=env)
                     self.assertEqual(1, rejected.returncode)
                     self.assertIn("unsupported opaque identity version v3", rejected.stderr)
-                    ledger.write_text(original, encoding="utf-8")
+                    ledger.write_text(original, encoding="utf-8", newline="\n")
                     recovered = run("--evidence-root", str(root), stage, *options, env=env)
                     self.assertEqual(0, recovered.returncode, recovered.stderr)
                     self.assertEqual(original, ledger.read_text(encoding="utf-8"))
@@ -183,7 +183,7 @@ class FullYamlTest(unittest.TestCase):
                              "disposition": "parse-failure", "diagnostic": "the stdlib loader refused it"})
             other = {**rows[0], "key": OTHER, "selector": "schema.oneOf>schema.anyOf"}
             (evidence / "candidates.jsonl").write_text(
-                "".join(json.dumps(r) + "\n" for r in [*rows, other]), encoding="utf-8")
+                "".join(json.dumps(r) + "\n" for r in [*rows, other]), encoding="utf-8", newline="\n")
 
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                             "--cache", str(cache), "--jobs", "2", "--key", KEY)
@@ -241,7 +241,7 @@ class FullYamlTest(unittest.TestCase):
                              "path": f"{name}.yaml", "commit": "c" * 40, "blob": git_blob(data),
                              "sha256": digest, "status": "parse-failure",
                              "diagnostic": "the stdlib loader refused it"})
-            (evidence / "documents.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            (evidence / "documents.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
 
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "github-publisher-trees",
                             "--cache", str(cache), "--key", OTHER)
@@ -290,7 +290,7 @@ class FullYamlTest(unittest.TestCase):
                     "loader": "ruamel.yaml 0.19.1 (YAML 1.2)", "recensus_of": "parse-failure",
                     "selector_counts": {KEY: 1}}
             (evidence / "documents.jsonl").write_text(json.dumps(first) + "\n" + json.dumps(read) + "\n",
-                                                      encoding="utf-8")
+                                                      encoding="utf-8", newline="\n")
             owed = {row["key"]: row for row in INDEX.source_rows(root, "github-publisher-trees")}
             self.assertEqual("outstanding", owed[OTHER]["disposition"])
             self.assertIn("never counted this key", owed[OTHER]["census"])
@@ -326,7 +326,7 @@ class FullYamlTest(unittest.TestCase):
             (cache / "documents" / f"{digest}.yaml").write_bytes(data)
             row = {"source": "sourcegraph", "key": KEY, "repository": "github.com/example/huge", "path": "a.yaml",
                    "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"}
-            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                             "--cache", str(cache), "--timeout", "1")
             self.assertEqual(0, completed.returncode, completed.stderr)
@@ -353,12 +353,12 @@ class FullYamlTest(unittest.TestCase):
             (cache / "documents").mkdir(parents=True)
             rows = []
             for name, text in (("bomb", bomb), ("chain", chain)):
-                data = ("\n".join(text) + "\n").encode()
+                data = ("\n".join(text) + "\n").encode("utf-8")
                 digest = hashlib.sha256(data).hexdigest()
                 (cache / "documents" / f"{digest}.yaml").write_bytes(data)
                 rows.append({"source": "sourcegraph", "key": KEY, "repository": f"github.com/example/{name}",
                              "path": "a.yaml", "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"})
-            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                             "--cache", str(cache), "--timeout", "2")
             self.assertEqual(0, completed.returncode, completed.stderr)
@@ -379,7 +379,7 @@ class FullYamlTest(unittest.TestCase):
             keys_file(evidence)
             row = {"source": "sourcegraph", "key": KEY, "repository": "github.com/example/api", "path": "a.yaml",
                    "commit": "c" * 40, "sha256": "a" * 64, "disposition": "parse-failure"}
-            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
             missing = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                           "--cache", str(Path(tmp) / "empty"))
             self.assertEqual(1, missing.returncode)
@@ -412,7 +412,7 @@ class FullYamlTest(unittest.TestCase):
                    "disposition": "parse-failure", "diagnostic": "the stdlib loader refused it"}
             ledger = evidence / "candidates.jsonl"
             ledger.write_text(json.dumps({**row, "repository": "github.com/example/tampered"}) + "\n",
-                              encoding="utf-8")
+                              encoding="utf-8", newline="\n")
             refused = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                           "--cache", str(cache), env=env)
             self.assertEqual(1, refused.returncode)
@@ -422,7 +422,7 @@ class FullYamlTest(unittest.TestCase):
             self.assertEqual(1, len(ledger.read_text(encoding="utf-8").splitlines()))
             self.assertEqual([], list((cache / "documents").glob("*")) if (cache / "documents").is_dir() else [])
 
-            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                             "--cache", str(cache), env=env)
             self.assertEqual(0, completed.returncode, completed.stderr)
@@ -433,7 +433,7 @@ class FullYamlTest(unittest.TestCase):
 
             # A source that no longer serves the document leaves it unread, naming the repair.
             gone = {**row, "repository": "github.com/example/gone", "sha256": "b" * 64, "document": f"{'b' * 64}.yaml"}
-            ledger.write_text(json.dumps(gone) + "\n", encoding="utf-8")
+            ledger.write_text(json.dumps(gone) + "\n", encoding="utf-8", newline="\n")
             unserved = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                            "--cache", str(cache), env=env)
             self.assertEqual(1, unserved.returncode)
@@ -445,7 +445,7 @@ class FullYamlTest(unittest.TestCase):
             default = REPO / ".local" / "witness-search-cache" / "documents" / f"{digest}.yaml"
             if not default.exists():
                 self.addCleanup(default.unlink, missing_ok=True)
-            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
             defaulted = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph", env=env)
             self.assertEqual(0, defaulted.returncode, defaulted.stderr)
             self.assertEqual(DECLARER, default.read_bytes())
@@ -473,7 +473,7 @@ class FullYamlTest(unittest.TestCase):
                    "document": f"{digest}.yaml", "disposition": "parse-failure",
                    "diagnostic": "the stdlib loader refused it"}
             ledger = evidence / "candidates.jsonl"
-            ledger.write_text(json.dumps({**row, "repository": "example/tampered"}) + "\n", encoding="utf-8")
+            ledger.write_text(json.dumps({**row, "repository": "example/tampered"}) + "\n", encoding="utf-8", newline="\n")
             refused = run("--evidence-root", str(root), "full-yaml", "--source", "github-code-search",
                           "--cache", str(cache), env=env)
             self.assertEqual(1, refused.returncode)
@@ -482,7 +482,7 @@ class FullYamlTest(unittest.TestCase):
                           refused.stderr)
             self.assertFalse((cache / "documents").is_dir() and any((cache / "documents").iterdir()))
 
-            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            ledger.write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "github-code-search",
                             "--cache", str(cache), env=env)
             self.assertEqual(0, completed.returncode, completed.stderr)
@@ -502,7 +502,7 @@ class FullYamlTest(unittest.TestCase):
             (cache / "documents" / f"{digest}.yaml").write_bytes(DUPLICATE)
             row = {"source": "sourcegraph", "key": KEY, "repository": "github.com/example/api", "path": "a.yaml",
                    "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"}
-            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph", "--cache", str(cache))
             self.assertEqual(1, completed.returncode)
             self.assertIn("does not hash to the pinned sha256", completed.stderr)
@@ -519,7 +519,7 @@ class Upstream(BaseHTTPRequestHandler):
         pass
 
     def reply(self, status: int, body: bytes | dict) -> None:
-        data = body if isinstance(body, bytes) else json.dumps(body).encode()
+        data = body if isinstance(body, bytes) else json.dumps(body).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
@@ -597,7 +597,7 @@ class ReacquireHeadTest(unittest.TestCase):
                      "blob": git_blob(DECLARER), "disposition": "acquisition-failure", "status": 404,
                      "diagnostic": "404: Not Found"}
                     for name in ("kept", "mirrored", "gone", "moved", "dropped", "headless", "unlisted")]
-            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
 
             completed = run("--evidence-root", str(root), "reacquire-head", "--cache-dir", str(Path(tmp) / "cache"),
                             env={"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url,
@@ -680,7 +680,7 @@ class MirrorHashTest(unittest.TestCase):
             row = {"source": "github-code-search", "key": KEY, "selector": SELECTOR, "repository": "example/tampered",
                    "path": "openapi.yaml", "commit": PINNED, "blob": git_blob(DECLARER),
                    "disposition": "acquisition-failure", "status": 404, "diagnostic": "404: Not Found"}
-            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
             completed = run("--evidence-root", str(root), "reacquire-head", "--cache-dir", str(Path(tmp) / "cache"),
                             env={"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url,
                                  "CROZIER_SOURCEGRAPH_URL": url, "GITHUB_TOKEN": "offline-test-token"})
@@ -712,7 +712,7 @@ class ReacquireNamesakeTest(unittest.TestCase):
                     for name in ("forked", "orphan", "unsearched", "stale")]
             # A 404 `reacquire-head` has not requested yet is not this stage's to seek.
             rows.append({**rows[1], "repository": "example/unrequested", "reacquired_at_head": False})
-            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
 
             completed = run("--evidence-root", str(root), "reacquire-namesake",
                             "--cache-dir", str(Path(tmp) / "cache"), env=env)

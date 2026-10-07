@@ -212,13 +212,13 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
     (workspace / "openapi").mkdir(parents=True, exist_ok=True)
     (workspace / "openapi" / "openapi.yml").write_bytes(document.read_bytes())
     config, generators = fern_workspace_files()
-    (workspace / "fern.config.json").write_text(config, encoding="utf-8")
-    (workspace / "generators.yml").write_text(generators, encoding="utf-8")
+    (workspace / "fern.config.json").write_text(config, encoding="utf-8", newline="\n")
+    (workspace / "generators.yml").write_text(generators, encoding="utf-8", newline="\n")
     cli, _name, version, _config = corpus_fern_pins()
     row: dict[str, Any] = {"sha256": digest, "fern_cli": cli, "generator": version}
     status, output = _fern_run(["fern", "check"], workspace, timeout)
     check_log = redact(output, scratch)
-    row.update(check_exit=status, check_log_sha256=hashlib.sha256(check_log.encode()).hexdigest(),
+    row.update(check_exit=status, check_log_sha256=hashlib.sha256(check_log.encode("utf-8")).hexdigest(),
                check_diagnostic=fern_diagnostic(output))
     logs = {"check": check_log}
     if status == "0":
@@ -229,7 +229,7 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
         files = sum(1 for path in package.rglob("*.py")) if package.is_dir() else 0
         unparsed = next((line.strip() for line in output.splitlines() if UNPARSED.search(line)), "")
         logs["generate"] = redact(output, scratch)
-        row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(logs["generate"].encode()).hexdigest(),
+        row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(logs["generate"].encode("utf-8")).hexdigest(),
                    generate_python_files=files,
                    generate_diagnostic=(unparsed or fern_diagnostic(output)).replace("; ", ", ").replace("`", "'")[:400])
     row["logs"] = logs
@@ -393,7 +393,7 @@ def raw_url(base: str, repository: str, commit: str, path: str) -> str:
 
 def write_log(logs: Path, base: Path, sha256: str, screen: str, text: str) -> tuple[str, str]:
     """Commit one redacted log by its own digest; its path relative to `base` and that digest."""
-    data = text.encode()
+    data = text.encode("utf-8")
     digest = hashlib.sha256(data).hexdigest()
     path = logs / f"{sha256[:12]}.{screen}.{digest[:12]}.log"
     logs.mkdir(parents=True, exist_ok=True)
@@ -457,7 +457,7 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     ref = clean(ref)
     ref_log = redact(f"GET {url}\nHTTP {status}\n{len(data)} bytes, sha256 {sha256 or '-'}\n"
                      f"pinned sha256 {expected_sha256 or '(none)'}\noutcome: {ref}\n")
-    key = sha256 or hashlib.sha256(url.encode()).hexdigest()
+    key = sha256 or hashlib.sha256(url.encode("utf-8")).hexdigest()
     log, digest = write_log(logs, base, key, "ref", ref_log)
     record["ref"] = {"outcome": ref, "exit": str(status),
                      "pins": {"repository": repository, "commit": commit, "path": path, "url": url,
@@ -713,7 +713,7 @@ def legacy_screen(args: argparse.Namespace) -> int:
            "sha256": document["sha256"], "keys": args.key, "license": record["licence"]["outcome"],
            "ref": record["ref"]["outcome"], "fern": record["fern"]["outcome"], "disposition": disposition,
            "screened_at": record["screened_at"], "measured": record}
-    with (directory / "screens.jsonl").open("a", encoding="utf-8") as handle:
+    with (directory / "screens.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps(row, sort_keys=True) + "\n")
     print(f"witness-screen: {args.source}: {args.repository}:{args.path} — licence "
           f"{row['license'].split(':', 1)[0]}, ref {row['ref'].split(':', 1)[0]}, "
