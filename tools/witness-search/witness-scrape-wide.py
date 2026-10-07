@@ -9,6 +9,7 @@ import concurrent.futures
 import gzip
 import tempfile
 import hashlib
+import http.client
 import importlib.util
 import json
 import re
@@ -63,6 +64,9 @@ ROWS = load(
     "wide_rows", REPO / "tools/surface-census/tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows
 REGION_KEYS = load("wide_region_keys", REPO / "tools/surface-census/witness-search-region-keys.py")
+# What "an OpenAPI 3 document" means is the GitHub search's reading, so a
+# document one tier screens in the other does not screen out.
+OPENAPI_VERSION = load("wide_github", REPO / "tools/witness-search/witness-search-github.py").OPENAPI_VERSION
 
 
 def shard_outcomes(contract: Path) -> dict[str, str]:
@@ -274,8 +278,8 @@ def acquire_one(job) -> dict:
         atomic_bytes(path, data)
         try:
             doc = LOCAL.CENSUS.load_document(path)
-            if not isinstance(doc, dict) or not re.fullmatch(
-                r"3\.[01]\.\d+(?:[-+].*)?", str(doc.get("openapi", ""))
+            if not isinstance(doc, dict) or not OPENAPI_VERSION.fullmatch(
+                str(doc.get("openapi", ""))
             ):
                 row.update(
                     status="excluded",
@@ -295,8 +299,10 @@ def acquire_one(job) -> dict:
             row.update(status="unreadable", diagnostic=str(error))
     except (ValueError, UnicodeError) as error:
         row.update(status="unreadable", diagnostic=str(error))
-    except OSError as error:
-        row.update(status="inaccessible", diagnostic=str(error))
+    except (OSError, http.client.HTTPException) as error:
+        # A refusal, a transport failure, or a transfer interrupted short of its
+        # declared length: no complete bytes were acquired.
+        row.update(status="inaccessible", diagnostic=str(error) or type(error).__name__)
     return row
 
 

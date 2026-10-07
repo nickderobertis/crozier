@@ -1211,6 +1211,117 @@ class WideWitnessTests(unittest.TestCase):
         missing.write_text(self.candidate.replace(self.key, key), encoding='utf-8')
         self.assertEqual(0, run(missing_args).returncode)
 
+    def test_http_acquisition_records_success_refusal_and_interrupted_transfer(self) -> None:
+        import hashlib
+        import http.server
+        import threading
+        document = json.dumps({'openapi': '3.0.3', 'info': {'title': 'Réseau', 'version': '1'},
+                               'paths': {}}).encode()
+        served: list[str] = []
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self) -> None:
+                served.append(self.path)
+                if self.path == '/refused.json':
+                    self.send_response(403)
+                    self.send_header('Content-Length', '9')
+                    self.end_headers()
+                    self.wfile.write(b'Forbidden')
+                    return
+                self.send_response(200)
+                if self.path == '/interrupted.json':
+                    # The headers promise the whole document; the connection
+                    # drops after its first ten bytes.
+                    self.send_header('Content-Length', str(len(document)))
+                    self.end_headers()
+                    self.wfile.write(document[:10])
+                    self.wfile.flush()
+                    self.close_connection = True
+                    return
+                self.send_header('Content-Length', str(len(document)))
+                self.end_headers()
+                self.wfile.write(document)
+
+            def log_message(self, *_args) -> None:
+                pass
+
+        server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f'http://127.0.0.1:{server.server_port}'
+        inventory = self.work / 'inventory.json'
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [
+            {'artifact': f'{url}/ok.json'}, {'artifact': f'{url}/refused.json'},
+            {'artifact': f'{url}/interrupted.json'}]}), encoding='utf-8')
+        cache = self.work / 'cache'
+        output = self.work / 'acquisition.json'
+        args = ('acquire', '--inventory', inventory, '--cache', cache,
+                '--contract', self.report / 'keys.md', '--output', output)
+        run = self.cli(*args)
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertEqual(sorted(served), ['/interrupted.json', '/ok.json', '/refused.json'])
+        ok, refused, interrupted = json.loads(output.read_text(encoding='utf-8'))['sources']
+        sha = hashlib.sha256(document).hexdigest()
+        self.assertEqual(('readable', 'newly-fetched', sha), (ok['status'], ok['acquisition'], ok['sha256']))
+        self.assertEqual(document, (cache / 'documents' / ok['document']).read_bytes())
+        self.assertEqual(('inaccessible', 'HTTP Error 403: Forbidden'), (refused['status'], refused['diagnostic']))
+        self.assertEqual('inaccessible', interrupted['status'])
+        self.assertIn('IncompleteRead', interrupted['diagnostic'])
+        # Neither failure left bytes in the cache: only the complete document's.
+        self.assertEqual([sha], sorted(path.name for path in cache.iterdir() if path.is_file()))
+        self.assertEqual([ok['document']], [path.name for path in (cache / 'documents').iterdir()])
+        self.assertEqual(0, json.loads(output.read_text(encoding='utf-8'))['census_exit'])
+        # The cached digest authorizes reuse; nothing is fetched again.
+        served.clear()
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [
+            {'artifact': f'{url}/ok.json', 'sha256': sha}]}), encoding='utf-8')
+        reused = self.cli(*args)
+        self.assertEqual(0, reused.returncode, reused.stderr)
+        self.assertEqual('verified-reuse', json.loads(output.read_text(encoding='utf-8'))['sources'][0]['acquisition'])
+        self.assertEqual([], served)
+
+    def test_openapi_3_is_read_alike_by_wide_acquisition_github_search_and_local_census(self) -> None:
+        # The wide tier hands every document it reads as OpenAPI 3 to the local
+        # census, and screens by the GitHub search's version expression: a
+        # version each reader judges differently would fail here.
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('wide_version_github', REPO / 'tools/witness-search/witness-search-github.py')
+        github = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = github
+        spec.loader.exec_module(github)
+        versions = ('3.0.0', '3.0.3', '3.1.0', '3.1.1', '3.2.0', '3.0.0-rc1', '3.1.0+build',
+                    '3.0', '3', '2.0', '4.0.0', '30.0.0', ' 3.0.3', '')
+        documents = self.work / 'versions'
+        documents.mkdir()
+        rows = []
+        for index, version in enumerate(versions):
+            path = documents / f'v{index}.json'
+            path.write_text(json.dumps({'openapi': version, 'info': {'title': 'V', 'version': '1'}, 'paths': {}}),
+                            encoding='utf-8')
+            rows.append({'artifact': path.as_uri()})
+        inventory = self.work / 'inventory.json'
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': rows}), encoding='utf-8')
+        output = self.work / 'acquisition.json'
+        run = self.cli('acquire', '--inventory', inventory, '--cache', self.work / 'cache',
+                       '--contract', self.report / 'keys.md', '--output', output)
+        self.assertEqual(0, run.returncode, run.stderr)
+        wide = {version: row['status'] == 'readable' for version, row in
+                zip(versions, json.loads(output.read_text(encoding='utf-8'))['sources'], strict=True)}
+        census = subprocess.run(
+            [sys.executable, str(REPO / 'tools/witness-search/witness-search-local-census.py'),
+             '--contract', str(self.report / 'keys.md'), '--documents', f'local={documents}',
+             '--all-documents-jsonl'], cwd=REPO, capture_output=True, encoding='utf-8')
+        local = {Path(row['document']).name: row['classification'] == 'openapi-3'
+                 for row in map(json.loads, census.stdout.splitlines())}
+        for index, version in enumerate(versions):
+            with self.subTest(version=version):
+                self.assertEqual(bool(github.OPENAPI_VERSION.fullmatch(version)), wide[version])
+                if wide[version]:
+                    self.assertTrue(local[f'v{index}.json'], 'the local census would not census it')
+        self.assertTrue(wide['3.2.0'])
+        self.assertFalse(wide['2.0'])
+
     def test_acquisition_uses_real_files_cache_and_census_with_failure_recovery(self) -> None:
         (self.report / 'ranking.tsv').write_text(self.rank_header, encoding='utf-8')
         (self.report / 'candidates.md').write_text('\n'.join(self.candidate.splitlines()[:2]) + '\n', encoding='utf-8')
