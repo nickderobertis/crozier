@@ -15072,6 +15072,7 @@ fn head_request_body_refuses_then_recovers() {
             "{}",
             run.stderr
         );
+        assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
     }
     let temp = tempfile::tempdir().unwrap();
     let control = temp.path().join("control.yml");
