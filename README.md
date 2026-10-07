@@ -287,11 +287,12 @@ crozier generate python
 The command surface is a small set of `just` recipes:
 
 ```sh
-just bootstrap   # set up from a clean clone (toolchain + dev tools)
-just check       # full gate — must pass before any commit or PR
-just test        # fast tests with coverage enforced (95%)
+just bootstrap   # set up from a clean clone (toolchain, the pinned Nx, dev tools)
+just check       # the gate over what your change reaches — must pass before any commit or PR
+just check --sweep  # the gate over everything (what the release pull request runs)
+just test        # affected tests, then the 95% coverage floor
 just test-e2e    # drive the compiled binary and byte-compare against fixtures
-just format      # rustfmt in place
+just format      # format every project in place
 just upgrade     # cargo update, then re-run the gate
 ```
 

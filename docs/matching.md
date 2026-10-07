@@ -2321,7 +2321,8 @@ the method a Markdown one.
 
 ## Coverage note
 
-The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which
+The gate measures coverage with `cargo llvm-cov` (`crozier:test` writes the
+profiles; `workspace:coverage` reports them with `--fail-under-lines 95`), which
 runs on every CI platform. It cannot run in every sandbox (some restrict the
 linker features the LLVM profile runtime needs, and ptrace-based tools need
 privileges those sandboxes withhold); when developing in such an environment, run
