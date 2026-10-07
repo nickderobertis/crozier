@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""`demo-gif.py` refuses a `crozier generate` that failed or said nothing.
+"""`demo-gif.py` renders the session the real crozier produces, and refuses a
+`crozier generate` that failed or said nothing.
 
 The GIF replays the real summary line crozier prints, so a binary that exits
 non-zero, or prints nothing, must stop the render with the fix rather than a
-traceback or a GIF of an error. Each case runs the real script against a stub
-binary standing in for a broken build. Needs Pillow (the script's renderer):
-run it as the `screenshots` project's `test` target, which installs it with uv.
+traceback or a GIF of an error; those cases run the real script against a stub
+binary standing in for a broken build. The render itself is driven with the
+freshly built crozier (`crozier:build` runs first). Needs Pillow (the script's
+renderer): run it as the `screenshots` project's `test` target, which installs
+it with uv.
 """
 from __future__ import annotations
 
@@ -66,6 +69,31 @@ class AFailedGenerateStopsTheRender(unittest.TestCase):
         self.assertIn("generate` exited 0 and printed nothing", run.stderr)
         self.assertNotIn("Traceback", run.stderr)
         self.assertFalse(out.exists())
+
+
+class TheRealBinaryRendersTheSession(unittest.TestCase):
+    def test_a_successful_generate_renders_an_animated_gif_of_every_frame(self) -> None:
+        from PIL import Image
+
+        binary = REPO / "target" / "debug" / ("crozier.exe" if os.name == "nt" else "crozier")
+        self.assertTrue(binary.is_file(), f"no {binary}; run `just nx run crozier:build`")
+        with tempfile.TemporaryDirectory() as scratch:
+            out = Path(scratch) / "demo.gif"
+            run = subprocess.run(
+                [sys.executable, str(SCRIPT)],
+                env={**os.environ, "CROZIER_BIN": str(binary), "DEMO_GIF_OUT": str(out)},
+                capture_output=True, text=True, timeout=300,
+            )
+            self.assertEqual(0, run.returncode, run.stderr)
+            frames = int(run.stderr.rsplit("(", 1)[1].split(" frames)")[0])
+            self.assertGreater(frames, 10, run.stderr)
+            with Image.open(out) as gif:
+                self.assertEqual("GIF", gif.format)
+                self.assertTrue(gif.is_animated)
+                # The encoder folds identical consecutive frames into one.
+                self.assertLessEqual(gif.n_frames, frames)
+                self.assertGreater(gif.n_frames, 10)
+                self.assertGreater(gif.size[0] * gif.size[1], 0)
 
 
 if __name__ == "__main__":

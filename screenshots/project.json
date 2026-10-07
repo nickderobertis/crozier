@@ -40,6 +40,14 @@
       "cache": false,
       "inputs": [
         "default"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
       ]
     },
     "lint": {

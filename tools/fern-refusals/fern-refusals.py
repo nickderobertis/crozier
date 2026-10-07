@@ -194,6 +194,15 @@ def enumeration(source: str) -> dict[str, dict[str, str]]:
         missing = [column for column in ENUMERATION_COLUMNS if column not in (reader.fieldnames or [])]
     if missing:
         fail(f"{rel(path)}: the header lacks {', '.join(missing)}; restore it from git, or re-walk the source")
+    for number, row in enumerate(rows, 2):
+        # A short row leaves trailing columns None and a long one files its
+        # surplus under None; the columns read here must each be text.
+        if None in row or any(not isinstance(row.get(column), str) for column in ENUMERATION_COLUMNS):
+            fail(f"{rel(path)} line {number} is not one cell per column of its header; restore it from git, "
+                 "or re-walk the source")
+        if source == "vendor-portals" and "/" not in row["document"]:
+            fail(f"{rel(path)} line {number}: vendor-portals document {row['document']!r} is not "
+                 "`<owner>--<repo>/<path>`; restore it from git, or re-walk the source")
     seen: dict[str, int] = {}
     for row in rows:
         seen[row["document"]] = seen.get(row["document"], 0) + 1
@@ -272,6 +281,13 @@ def population() -> list[Entry]:
                                 "locator": raw_url(row["repository"], row["commit"], row["path"]),
                                 "revision": row["commit"], "records": {record}, "verdict": row["fern"],
                                 "logs": logs})
+            elif not isinstance(row["candidate"], str) or not row["candidate"]:
+                fail(f"{record} line {number} has candidate {row['candidate']!r}, not a candidate name; "
+                     "restore it from git")
+            elif source not in enumerations and source not in candidates:
+                fail(f"{record} line {number} is a screen filed under {source!r}, which is neither an enumerated source "
+                     f"({', '.join(ENUMERATED)}) nor a searched one ({', '.join(SEARCHED)}); move the ledger "
+                     "under its source's directory, or register the source")
             elif source in enumerations:
                 hit = enumerations[source].get(row["candidate"])
                 if hit is None:

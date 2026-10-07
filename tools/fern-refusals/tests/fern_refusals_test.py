@@ -355,6 +355,12 @@ class MalformedInputs(unittest.TestCase):
                                                  '"fern_logs": "check.log"}'))
         self.assertIn("has fern_logs 'check.log', not a list of log paths; restore it from git", result.stderr)
 
+    def test_a_screen_candidate_that_is_no_name_or_under_no_source_is_refused(self) -> None:
+        result = self.select_over((self.SCREENS, '{"fern": "failed: check", "candidate": ["a.yml"]}'))
+        self.assertIn("has candidate ['a.yml'], not a candidate name; restore it from git", result.stderr)
+        result = self.select_over((self.SCREENS, '{"fern": "failed: check", "candidate": "a.yml"}'))
+        self.assertIn("is a screen filed under 'scratch-search', which is neither an enumerated source", result.stderr)
+
     def test_a_record_that_is_not_json_names_the_line(self) -> None:
         result = self.select_over((self.SCREENS, "{not json"))
         self.assertIn("is not JSON", result.stderr)
