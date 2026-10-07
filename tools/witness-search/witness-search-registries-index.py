@@ -207,11 +207,18 @@ def main() -> int:
         print(f"witness-search-registries-index: {error}; repair the ledger it names", file=sys.stderr)
         return 1
     for output, text in expected.items():
-        if not args.check:
-            output.write_text(text, encoding="utf-8")
-        elif not output.is_file() or output.read_text(encoding="utf-8") != text:
-            print(f"witness-search-registries-index: {output} is stale; rerun without --check",
-                  file=sys.stderr)
+        try:
+            if not args.check:
+                output.write_text(text, encoding="utf-8")
+            elif not output.is_file() or output.read_text(encoding="utf-8") != text:
+                print(f"witness-search-registries-index: {output} is stale; rerun without --check",
+                      file=sys.stderr)
+                return 1
+        except OSError as error:
+            verb, fix = ("read", f"make {output} readable") if args.check else \
+                ("write", f"make {directory} a writable directory")
+            print(f"witness-search-registries-index: cannot {verb} {output} ({error.strerror or error}); "
+                  f"{fix}, then rerun", file=sys.stderr)
             return 1
     return 0
 

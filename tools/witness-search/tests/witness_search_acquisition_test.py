@@ -788,8 +788,30 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30)
             self.assertEqual(stale.returncode, 1)
             self.assertIn("rerun without --check", stale.stderr)
+            registries = root / "witness-search-registries"
+            if os.name != "nt" and os.geteuid() != 0:
+                # A directory it cannot write, then an index it cannot read: each named with its fix.
+                registries.chmod(0o555)
+                try:
+                    unwritable = subprocess.run(command, capture_output=True, text=True, timeout=30)
+                finally:
+                    registries.chmod(0o755)
+                self.assertEqual(unwritable.returncode, 1, unwritable.stderr)
+                self.assertNotIn("Traceback", unwritable.stderr)
+                self.assertIn(f"cannot write {registries / 'candidates.tsv'} (Permission denied); make "
+                              f"{registries} a writable directory, then rerun", unwritable.stderr)
             self.assertEqual(subprocess.run(command, timeout=30).returncode, 0)
             self.assertEqual(subprocess.run([*command, "--check"], timeout=30).returncode, 0)
+            if os.name != "nt" and os.geteuid() != 0:
+                (registries / "candidates.tsv").chmod(0)
+                try:
+                    unreadable = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30)
+                finally:
+                    (registries / "candidates.tsv").chmod(0o644)
+                self.assertEqual(unreadable.returncode, 1, unreadable.stderr)
+                self.assertNotIn("Traceback", unreadable.stderr)
+                self.assertIn(f"cannot read {registries / 'candidates.tsv'} (Permission denied); make "
+                              f"{registries / 'candidates.tsv'} readable, then rerun", unreadable.stderr)
             with (root / "witness-search-registries/outstanding.tsv").open(newline="") as handle:
                 rows = list(csv.DictReader(handle, dialect="excel-tab"))
             with (root / "witness-search-registries/candidates.tsv").open(newline="") as handle:
