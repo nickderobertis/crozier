@@ -344,6 +344,59 @@ class GitHubCapTests(GuardTestCase):
                 guard.record(response)
         self.assertEqual(guard.waits(), [])
 
+    def test_rejecting_a_graphql_response_releases_the_acquired_bucket(self) -> None:
+        guard = self.guard()
+        guard.acquire("core")
+        request = urllib.request.Request(f"{self.url}/graphql", data=b"", method="POST")
+        with urllib.request.urlopen(request, timeout=10) as response:
+            with self.assertRaises(UnsupportedBucket):
+                guard.record(response)
+        # The reservation closed with the refusal: this thread acquires again,
+        # and another thread is not left blocked on the bucket's lock.
+        self.assertEqual(self.call(guard, "core", "/repos/o/r/contents")[1], 200)
+        other: list[int] = []
+        thread = threading.Thread(target=lambda: other.append(self.call(guard, "core", "/repos/o/r/contents")[1]))
+        thread.start()
+        thread.join(timeout=10)
+        self.assertEqual(other, [200])
+
+    def test_an_api_root_off_github_https_or_loopback_http_is_refused_before_any_call(self) -> None:
+        for root in ("http://example.invalid", "https://example.invalid", "ftp://127.0.0.1:9",
+                     f"https://127.0.0.1:{self.server.server_address[1]}", "not a url"):
+            with self.subTest(root=root):
+                os.environ["CROZIER_GITHUB_API_URL"] = root
+                guard = self.guard()
+                with self.assertRaises(ValueError) as raised:
+                    guard.acquire("core")
+                self.assertIn("CROZIER_GITHUB_API_URL must use https://api.github.com", str(raised.exception))
+                self.assertEqual(self.fixture.served, [])
+                # The refusal reserved nothing: a valid root still admits.
+                os.environ["CROZIER_GITHUB_API_URL"] = self.url
+                self.assertEqual(self.call(guard, "core", "/repos/o/r/contents")[1], 200)
+                with self.fixture.lock:
+                    self.fixture.served.clear()
+
+    def test_rate_limit_figures_that_are_not_nonnegative_integers_are_refused(self) -> None:
+        reset = int(time.time()) + 3600
+        for figures in ({"limit": 100, "used": -1000, "reset": reset},
+                        {"limit": 100, "used": "5", "reset": reset},
+                        {"limit": 100, "used": 5.5, "reset": reset},
+                        {"limit": 100, "used": True, "reset": reset},
+                        {"limit": -100, "used": 0, "reset": reset},
+                        {"limit": 100, "used": 0, "remaining": -1, "reset": reset},
+                        {"limit": 100, "used": 0, "reset": None}):
+            with self.subTest(figures=figures):
+                self.fixture.rate_limit_body = json.dumps({"resources": {"core": figures}}).encode()
+                guard = self.guard()
+                with self.assertRaises(RuntimeError) as raised:
+                    guard.acquire("core")
+                self.assertIn("malformed figures for bucket 'core'", str(raised.exception))
+                self.assertEqual(self.fixture.requests("/repos/o/r/contents"), [])
+                self.assertEqual(guard.waits(), [])
+        # Nothing stays reserved: a well-formed reading admits the next call.
+        self.fixture.rate_limit_body = None
+        self.assertEqual(self.call(guard, "core", "/repos/o/r/contents")[1], 200)
+
     def test_record_without_acquire_and_double_acquire_are_loud(self) -> None:
         guard = self.guard()
         with urllib.request.urlopen(f"{self.url}/repos/o/r/contents", timeout=10) as response:
@@ -619,6 +672,14 @@ class QuotaStatusTests(GuardTestCase):
                 self.assertEqual(result.returncode, 1)
                 self.assertIn("no `resources` object", result.stderr)
                 self.assertNotIn("Traceback", result.stderr)
+
+    def test_an_api_root_off_github_https_or_loopback_http_fails_with_a_next_action(self) -> None:
+        result = self.status("http://example.invalid")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("CROZIER_GITHUB_API_URL must use https://api.github.com or a loopback HTTP URL", result.stderr)
+        self.assertIn("unset it or point it at the GitHub REST API", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertNotIn(SECRET, result.stdout + result.stderr)
 
     def test_usage_error_exits_2(self) -> None:
         result = subprocess.run([sys.executable, str(SCRIPT)], capture_output=True, text=True, timeout=30)

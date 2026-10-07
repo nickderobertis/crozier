@@ -100,7 +100,9 @@ Interface
 
 The token is read from ``GITHUB_TOKEN`` (then ``GH_TOKEN``) and never
 written anywhere. ``CROZIER_GITHUB_API_URL`` overrides the API root, which is
-how the offline tests point the guard at a local server.
+how the offline tests point the guard at a local server; it must name
+``https://api.github.com`` or a loopback HTTP server, so the credential never
+leaves for another host or crosses the network in clear.
 
 ``python3 tools/witness-search/rate_limit_guard.py status`` (``just quota-status``) prints
 each GitHub bucket's live figures from one free ``/rate_limit`` read and the
@@ -190,9 +192,29 @@ def _token() -> str | None:
     return os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or None
 
 
+LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+
+
+def checked_service_url(value: str, name: str, expected_host: str) -> str:
+    """Allow the intended HTTPS host and local HTTP servers used by the offline tier."""
+    parsed = urllib.parse.urlsplit(value)
+    if not parsed.hostname or (
+        not (parsed.scheme == "https" and parsed.hostname == expected_host)
+        and not (parsed.scheme == "http" and parsed.hostname in LOOPBACK_HOSTS)
+    ):
+        raise ValueError(f"{name} must use https://{expected_host} or a loopback HTTP URL")
+    return value
+
+
 def github_api_url() -> str:
-    """The GitHub REST API root the guard reads and callers should call."""
-    return os.environ.get("CROZIER_GITHUB_API_URL", GITHUB_API_URL).rstrip("/")
+    """The GitHub REST API root the guard reads and callers should call.
+
+    Raises ``ValueError`` for an override that is neither the GitHub API over
+    HTTPS nor a loopback HTTP server, before any credential is attached."""
+    return checked_service_url(
+        os.environ.get("CROZIER_GITHUB_API_URL", GITHUB_API_URL), "CROZIER_GITHUB_API_URL",
+        urllib.parse.urlsplit(GITHUB_API_URL).hostname or "",
+    ).rstrip("/")
 
 
 def read_rate_limit() -> dict[str, dict[str, int]]:
@@ -324,13 +346,15 @@ class RateLimitGuard:
 
     def record(self, response: Any) -> None:
         """Close this thread's reservation with the call's response; see the module docstring."""
+        with self._meta:
+            reservation = self._pending.pop(threading.get_ident(), None)
         if self.host == "github" and _is_graphql(response):
+            if reservation is not None:
+                reservation.lock.release()
             raise UnsupportedBucket(
                 "a GitHub GraphQL response reached the guard: this repository makes no GraphQL "
                 "call (see tools/witness-search/rate_limit_guard.py); make the REST call instead"
             )
-        with self._meta:
-            reservation = self._pending.pop(threading.get_ident(), None)
         if reservation is None:
             raise RuntimeError("record called without a matching acquire on this thread")
         try:
@@ -366,7 +390,14 @@ class RateLimitGuard:
         figures = resources.get(bucket)
         if not isinstance(figures, dict) or not {"limit", "used", "reset"} <= figures.keys():
             raise UnsupportedBucket(f"GET /rate_limit reports no figures for bucket {bucket!r}")
-        return {key: int(figures[key]) for key in ("limit", "used", "remaining", "reset") if key in figures}
+        reading = {key: figures[key] for key in ("limit", "used", "remaining", "reset") if key in figures}
+        if not all(isinstance(value, int) and not isinstance(value, bool) and value >= 0
+                   for value in reading.values()):
+            raise RuntimeError(
+                f"GET /rate_limit reported malformed figures for bucket {bucket!r}: {figures!r} — "
+                "each must be a nonnegative integer; check CROZIER_GITHUB_API_URL points at the GitHub REST API"
+            )
+        return reading
 
     def _admit(self, bucket: str, cost: int) -> dict[str, int]:
         waiting = False
@@ -518,9 +549,14 @@ class RateLimitGuard:
 def status() -> int:
     """Print every bucket's live figures from one free read; never wait."""
     try:
+        api_url = github_api_url()
+    except ValueError as error:
+        print(f"quota-status: {error} — unset it or point it at the GitHub REST API", file=sys.stderr)
+        return 1
+    try:
         resources = read_rate_limit()
     except (OSError, RuntimeError, ValueError) as error:
-        print(f"quota-status: could not read {github_api_url()}/rate_limit: {error}", file=sys.stderr)
+        print(f"quota-status: could not read {api_url}/rate_limit: {error}", file=sys.stderr)
         print("quota-status: check network access, and set GITHUB_TOKEN to read the token's own buckets", file=sys.stderr)
         return 1
     lines = []

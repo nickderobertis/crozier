@@ -44,6 +44,7 @@ from rate_limit_guard import (  # noqa: E402 - importable only once this directo
     WAITS_FILE,
     RateLimitGuard,
     SecondaryLimit,
+    checked_service_url,
     github_api_url,
 )
 
@@ -205,17 +206,6 @@ def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
                 ),
             }
     return dict(sorted(keys.items()))
-
-
-def checked_service_url(value: str, name: str, expected_host: str) -> str:
-    """Allow the intended HTTPS host and local HTTP servers used by the offline tier."""
-    parsed = urllib.parse.urlsplit(value)
-    if not parsed.hostname or (
-        not (parsed.scheme == "https" and parsed.hostname == expected_host)
-        and not (parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"})
-    ):
-        raise ValueError(f"{name} must use https://{expected_host} or a loopback HTTP URL")
-    return value
 
 
 def ingredients(selector: str) -> list[str]:
