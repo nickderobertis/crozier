@@ -391,7 +391,9 @@ class CommittedScreenTests(unittest.TestCase):
         surface = REPO / "docs" / "openapi-surface"
         measured = []
         for screens in sorted(surface.glob("**/screens.jsonl")):
-            legacy = screens.parent.name.startswith("witness-search-")
+            # A key-scoped search files its legacy rows one level down, under
+            # `witness-search-<key>/<source>/`, in the same row shape.
+            legacy = screens.relative_to(surface).parts[0].startswith("witness-search-")
             fields = INDEX.SCREEN_FIELDS if legacy else {name: name for name in SCREEN.SCREENS}
             for number, line in enumerate(screens.read_text(encoding="utf-8").splitlines(), 1):
                 row = json.loads(line)
