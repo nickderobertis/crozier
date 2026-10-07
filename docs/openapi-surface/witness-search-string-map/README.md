@@ -31,7 +31,7 @@ screens are under [`github-publisher-trees/`](github-publisher-trees/).
 | `request-body-string-map` | `registered` | `confluent-kafka-connect` (corpus row 331) |
 
 The registered publisher document supersedes the independently authored
-`signal-cabinet-labels` fixture. Both execute the plain-map lowering site; the
+fixture. Both execute the plain-map lowering site; the
 registered golden also proves the declared configuration example. The broader
 field-search population remains only partially screened; registration settles
 this shape without claiming that population was exhausted.
