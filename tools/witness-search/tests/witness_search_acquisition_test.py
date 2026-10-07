@@ -68,6 +68,18 @@ def pyyaml_importable(interpreter_flags: list[str]) -> bool:
     ).returncode == 0
 
 
+def load_rate_limit_guard():
+    """The guard module the acquisition CLI loads, read from the same file."""
+    spec = importlib.util.spec_from_file_location(
+        "acquisition_test_guard", REPO / "tools/witness-search/rate_limit_guard.py"
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 class WitnessSearchAcquisitionTest(unittest.TestCase):
     """Registry, portal, Postman and local-tree acquisition driven through the real CLIs."""
 
@@ -872,6 +884,11 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             )
             self.assertEqual(invalid_bucket.returncode, 2)
             self.assertIn("invalid choice", invalid_bucket.stderr)
+            # The CLI's choices are the guard's covered buckets, not a copy of them.
+            offered = re.search(r"choose from (.*?)\)", invalid_bucket.stderr)
+            self.assertIsNotNone(offered, invalid_bucket.stderr)
+            self.assertEqual(set(re.findall(r"'?([a-z_]+)'?", offered[1])),
+                             set(load_rate_limit_guard().GITHUB_BUCKETS))
             self.assertFalse((root / "invalid").exists())
 
             probe_failure = subprocess.run(
@@ -884,6 +901,114 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertIn("rate-limit guard refused acquisition", probe_failure.stderr)
             self.assertFalse((root / "unprobed").exists())
             self.assertEqual(state["downloads"], 1)
+
+    def test_guarded_acquisition_succeeds_only_once_the_transfer_completes(self) -> None:
+        served: list[str] = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                served.append(self.path)
+                if self.path == "/rate_limit":
+                    body = json.dumps({"resources": {"core": {
+                        "limit": 100, "used": 0, "remaining": 100, "reset": int(time.time()) + 60,
+                    }}}).encode()
+                    self.send_response(200)
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
+                self.send_response(200)
+                if self.path == "/truncated.tar.gz":
+                    # The status line and headers promise 1000 bytes; the
+                    # connection drops after 10.
+                    self.send_header("x-ratelimit-resource", "core")
+                    self.send_header("Content-Length", "1000")
+                    self.end_headers()
+                    self.wfile.write(b"0123456789")
+                    self.wfile.flush()
+                    self.close_connection = True
+                    return
+                body = b"real local tree archive bytes"
+                # A 200 the guard refuses after the body is written: it was
+                # spent in a bucket other than the one acquired.
+                bucket = "search" if self.path == "/other-bucket.tar.gz" else "core"
+                self.send_header("x-ratelimit-resource", bucket)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_port}"
+        env = {**os.environ, "CROZIER_GITHUB_API_URL": url, "GITHUB_TOKEN": "local-test-token"}
+
+        def acquire(root: Path, path: str, output: Path, **overrides: str) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                [sys.executable, str(GITHUB_ACQUIRE), path if "://" in path else f"{url}{path}",
+                 str(output), "--evidence-dir", str(root / "evidence")],
+                cwd=REPO, env={**env, **overrides}, capture_output=True, text=True, timeout=30,
+            )
+
+        def records(root: Path, name: str) -> list[dict]:
+            return [json.loads(line) for line in (root / "evidence" / name).read_text().splitlines()]
+
+        cases = [("interrupted transfer", "/truncated.tar.gz", "IncompleteRead"),
+                 ("bucket refused after the body", "/other-bucket.tar.gz", "spent in 'search'")]
+        if Path("/dev/full").exists():
+            cases.append(("destination write fails", "/tree.tar.gz", "No space left on device"))
+        for name, path, error in cases:
+            with self.subTest(name), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                output = root / "tree.tar.gz"
+                partial = root / "tree.tar.gz.part"
+                if name == "destination write fails":
+                    # Every write to the staging file fails as a full disk does.
+                    partial.symlink_to("/dev/full")
+                completed = acquire(root, path, output)
+                self.assertEqual(completed.returncode, 1, completed.stdout + completed.stderr)
+                self.assertNotIn("Traceback", completed.stderr)
+                self.assertNotIn("saved", completed.stdout)
+                self.assertIn(error, completed.stderr)
+                self.assertIn("retry the recorded source when available", completed.stderr)
+                self.assertFalse(os.path.lexists(output))
+                self.assertFalse(os.path.lexists(partial))
+                [record] = records(root, "acquisitions.jsonl")
+                self.assertEqual(record["status"], 200)
+                self.assertIn(error, record["error"])
+                self.assertNotIn("bytes", record)
+                self.assertNotIn("sha256", record)
+                # The reservation was closed: the next acquisition on the same
+                # evidence runs, and a complete transfer still succeeds.
+                again = acquire(root, "/tree.tar.gz", root / "again.tar.gz")
+                self.assertEqual(again.returncode, 0, again.stderr)
+                self.assertEqual((root / "again.tar.gz").read_bytes(), b"real local tree archive bytes")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            served.clear()
+            for target, overrides, message in (
+                ("http://example.invalid/tree.tar.gz", {},
+                 "must be an https:// URL on api.github.com, codeload.github.com, raw.githubusercontent.com"),
+                ("https://example.invalid/tree.tar.gz", {}, "must be an https:// URL on"),
+                ("file:///etc/passwd", {}, "must be an https:// URL on"),
+                ("/tree.tar.gz", {"CROZIER_GITHUB_API_URL": "http://example.invalid"},
+                 "CROZIER_GITHUB_API_URL must use https://api.github.com or a loopback HTTP URL"),
+            ):
+                with self.subTest(target=target, overrides=overrides):
+                    refused = acquire(root, target, root / "refused", **overrides)
+                    self.assertEqual(refused.returncode, 2, refused.stdout + refused.stderr)
+                    self.assertIn(message, refused.stderr)
+                    self.assertNotIn("local-test-token", refused.stdout + refused.stderr)
+                    self.assertFalse((root / "refused").exists())
+            # Refused before the guard read a bucket or anything was fetched.
+            self.assertEqual(served, [])
+            self.assertFalse((root / "evidence").exists())
 
     def test_all_documents_tsv_names_unreadable_document(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

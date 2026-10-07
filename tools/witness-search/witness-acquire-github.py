@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import importlib.util
 import json
 import os
@@ -28,18 +29,38 @@ def load_guard():
 
 GUARD = load_guard()
 
+DOWNLOAD_HOSTS = ("api.github.com", "codeload.github.com", "raw.githubusercontent.com")
+"""The GitHub services a pinned tree or document is downloaded from."""
+
+
+def download_url(value: str) -> str:
+    """Accept a GitHub download over HTTPS, or a loopback HTTP server (the offline tier)."""
+    parsed = urllib.parse.urlsplit(value)
+    if not parsed.hostname or not (
+        (parsed.scheme == "https" and parsed.hostname in DOWNLOAD_HOSTS)
+        or (parsed.scheme == "http" and parsed.hostname in GUARD.LOOPBACK_HOSTS)
+    ):
+        raise argparse.ArgumentTypeError(
+            f"{value!r} must be an https:// URL on {', '.join(DOWNLOAD_HOSTS)} or a loopback HTTP URL"
+        )
+    return value
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("url")
+    parser.add_argument("url", type=download_url)
     parser.add_argument("output", type=Path)
     parser.add_argument("--evidence-dir", type=Path, required=True)
-    parser.add_argument("--bucket", choices=("core", "search", "code_search"), default="core")
+    parser.add_argument("--bucket", choices=sorted(GUARD.GITHUB_BUCKETS), default="core")
     args = parser.parse_args()
+    try:
+        api_root = urllib.parse.urlsplit(GUARD.github_api_url())
+    except ValueError as error:
+        parser.error(str(error))
     guard = GUARD.RateLimitGuard("github", evidence_dir=args.evidence_dir)
     headers = {"User-Agent": "crozier-witness-acquisition/1"}
-    api_root = os.environ.get("CROZIER_GITHUB_API_URL", "https://api.github.com")
-    if urllib.parse.urlsplit(args.url).netloc == urllib.parse.urlsplit(api_root).netloc:
+    target = urllib.parse.urlsplit(args.url)
+    if (target.scheme, target.netloc) == (api_root.scheme, api_root.netloc):
         token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
         if token:
             headers["Authorization"] = f"Bearer {token}"
@@ -48,6 +69,9 @@ def main() -> int:
     temporary = args.output.with_suffix(args.output.suffix + ".part")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()
+    # Success is a completed acquisition: every byte read and written, the
+    # reservation closed and the file published. An HTTP 200 alone is not one.
+    transferred = acquired = False
     try:
         guard.acquire(args.bucket, cost=1)
         try:
@@ -57,25 +81,34 @@ def main() -> int:
                     while chunk := response.read(1024 * 1024):
                         handle.write(chunk)
                         digest.update(chunk)
+                if response.length:
+                    # read(amt) ends quietly when the connection drops short of
+                    # the declared Content-Length; the bytes it never sent are
+                    # an interrupted transfer, not the end of the file.
+                    raise http.client.IncompleteRead(b"", response.length)
                 guard.record(response)
+                transferred = True
         except urllib.error.HTTPError as response:
             guard.record(response)
             record["status"] = response.code
             record["error"] = response.read(500).decode("utf-8", errors="replace")
-        except (OSError, urllib.error.URLError) as error:
-            # Transport errors have no HTTP response. Close the reservation and
-            # retain the measured error instead of treating the source as empty.
+        except (OSError, urllib.error.URLError, http.client.HTTPException) as error:
+            # Transport errors have no HTTP response, and a transfer or write
+            # interrupted after the status line has no complete one. Close the
+            # reservation and retain the measured error instead of treating the
+            # source as empty or its partial bytes as acquired.
             class TransportFailure:
                 status = 503
                 headers: dict[str, str] = {}
                 url = args.url
 
             guard.record(TransportFailure())
-            record["error"] = str(error)
-        if record.get("status") == 200:
+            record["error"] = str(error) or type(error).__name__
+        if transferred and record.get("status") == 200:
             temporary.replace(args.output)
             record["sha256"] = digest.hexdigest()
             record["bytes"] = args.output.stat().st_size
+            acquired = True
         else:
             temporary.unlink(missing_ok=True)
     except (GUARD.SecondaryLimit, GUARD.UnsupportedBucket, OSError, RuntimeError,
@@ -86,7 +119,7 @@ def main() -> int:
         args.evidence_dir.mkdir(parents=True, exist_ok=True)
         with (args.evidence_dir / "acquisitions.jsonl").open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
-    if record.get("status") != 200:
+    if not acquired:
         print(f"witness-acquire-github: {args.url}: {record.get('status', 'transport error')}: "
               f"{record.get('error', 'request failed')}; inspect {args.evidence_dir / 'acquisitions.jsonl'} "
               "and retry the recorded source when available", file=sys.stderr)
