@@ -28,6 +28,8 @@ KEYS = REPO / "tools/surface-census/witness-search-region-keys.py"
 TRACKED_KEYS = REPO / "docs/openapi-surface/witness-search-keys.tsv"
 POSTMAN = REPO / "tools/witness-search/witness-search-postman.py"
 PORTAL_TREES = REPO / "tools/witness-search/witness-search-portal-trees.py"
+# The hit kinds each Postman index's answer counts, as the real API reports them.
+POSTMAN_KINDS = ("team", "collection", "api", "apiDefinition", "specification")
 
 
 def run_explicit_key_census(interpreter_flags: list[str]) -> tuple[int, dict]:
@@ -319,7 +321,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     payload = b"Forbidden"
                 else:
                     self.send_response(200)
-                    payload = json.dumps({"data": {}, "meta": {"total": {"api": 0}}}).encode()
+                    payload = json.dumps({"data": {}, "meta": {"total": dict.fromkeys(POSTMAN_KINDS, 0)}}).encode()
                 self.end_headers()
                 self.wfile.write(payload)
 
@@ -378,7 +380,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     index = body["body"]["queryIndices"][0]
                     count = 26 if index == "apinetwork.team" else 0
                     payload = json.dumps({"data": {}, "meta": {"total": {
-                        "team": count, "collection": 0, "api": 0,
+                        **dict.fromkeys(POSTMAN_KINDS, 0), "team": count,
                     }}}).encode()
                     self.send_response(200)
                 self.end_headers()
@@ -460,9 +462,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     return
                 self.send_response(200)
                 self.end_headers()
-                self.wfile.write(json.dumps({"data": {}, "meta": {"total": {
-                    "team": 0, "collection": 0, "api": 0,
-                }}}).encode())
+                self.wfile.write(json.dumps({"data": {}, "meta": {"total": dict.fromkeys(POSTMAN_KINDS, 0)}}).encode())
 
             def log_message(self, *_args):
                 pass
@@ -490,6 +490,119 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertIsNone(rows[0]["status"])
             self.assertTrue(rows[0]["response"])
             self.assertTrue(all(row["classification"] == "answered" for row in rows[1:]))
+
+    def test_postman_totals_must_be_reported_nonnegative_integer_counts(self) -> None:
+        answers: list[dict] = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                index = body["body"]["queryIndices"][0]
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(json.dumps({"data": {}, "meta": {"total": answers[0][index]}}).encode())
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        counted = dict.fromkeys(POSTMAN_KINDS, 0)
+        for totals, error in (
+            ({**counted, "team": "40"}, "meta.total.team is '40', not a nonnegative integer count"),
+            ({**counted, "collection": 30.5}, "meta.total.collection is 30.5, not a nonnegative integer count"),
+            ({**counted, "api": -1}, "meta.total.api is -1, not a nonnegative integer count"),
+            ({**counted, "specification": True}, "meta.total.specification is True"),
+            ({key: 0 for key in counted if key != "team"}, "meta.total has no count for team"),
+            ({key: 0 for key in counted if key != "apiDefinition"}, "meta.total has no count for apiDefinition"),
+        ):
+            # Every index answers the same malformed totals; the one it counts
+            # is what refuses the answer.
+            bad = next(kind for kind in POSTMAN_KINDS if kind not in totals or totals[kind] != 0)
+            index = {"team": "apinetwork.team", "collection": "runtime.collection"}.get(bad, "adp.api")
+            answers[:] = [{name: totals if name == index else counted
+                           for name in ("apinetwork.team", "runtime.collection", "adp.api")}]
+            with self.subTest(totals=totals), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                keys = root / "keys.tsv"
+                keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+                evidence = root / "postman"
+                completed = subprocess.run(
+                    [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(evidence),
+                     "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
+                    cwd=REPO, capture_output=True, text=True, timeout=60,
+                )
+                self.assertEqual(completed.returncode, 0, completed.stderr)
+                rows = [json.loads(line) for line in (evidence / "queries.jsonl").read_text().splitlines()]
+                self.assertEqual(len(rows), 6)
+                refused = [row for row in rows if row["index"] == index]
+                self.assertEqual([row["classification"] for row in refused], ["source-error"] * 2)
+                self.assertTrue(all(error in row["error"] for row in refused), refused)
+                self.assertTrue(all("totals" not in row for row in refused))
+                self.assertTrue(all(row["classification"] == "answered" for row in rows if row["index"] != index))
+
+    def test_postman_key_derivation_rows_are_validated_before_any_request(self) -> None:
+        received = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                received.append(self.path)
+                self.send_response(500)
+                self.end_headers()
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        header = "key\tselector\tregion\tcensus_status\n"
+        good = "array-item\tschema.items\tschemas.md\tsupported\n"
+        for text, error in (
+            (header + good + "\tschema.items\tschemas.md\tsupported\n", "line 3 has an empty key or selector"),
+            (header + good + "empty-selector\t\tschemas.md\tsupported\n", "line 3 has an empty key or selector"),
+            (header + good + "short\tschema.items\n", "line 3 does not have the header's 4 cells"),
+            (header + good + "long\tschema.items\tschemas.md\tsupported\textra\n",
+             "line 3 does not have the header's 4 cells"),
+            (header + good + good, "line 3 repeats key 'array-item'"),
+            (header + good + "invented\tschema.bogus:nope\tschemas.md\tsupported\n",
+             "line 3 (invented): 'schema.bogus:nope' is not one of the predicate selectors"),
+            (header + "unsupported\tsecurityScheme:$ref\tsecurity.md\tunsupported-by-census\n",
+             "it has no supported key rows"),
+            ("name\tvalue\narray-item\tschema.items\n", "it has no key and selector columns"),
+        ):
+            with self.subTest(error=error), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                keys = root / "keys.tsv"
+                keys.write_text(text, encoding="utf-8")
+                completed = subprocess.run(
+                    [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(root / "postman"),
+                     "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
+                    cwd=REPO, capture_output=True, text=True, timeout=30,
+                )
+                self.assertEqual(completed.returncode, 2, completed.stderr)
+                self.assertIn("--keys must be the region-key derivation TSV", completed.stderr)
+                self.assertIn(error, completed.stderr)
+                self.assertIn("regenerate the region-key derivation", completed.stderr)
+                self.assertFalse((root / "postman").exists())
+        self.assertEqual(received, [])
+        # A row the derivation marks unsupported is skipped, not refused, and the
+        # committed derivation reads.
+        spec = importlib.util.spec_from_file_location("postman_keys", POSTMAN)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        census = module.load_census()
+        with tempfile.TemporaryDirectory() as temporary:
+            keys = Path(temporary) / "keys.tsv"
+            keys.write_text(header + good + "unsupported\tsecurityScheme:$ref\tsecurity.md\tunsupported-by-census\n",
+                            encoding="utf-8")
+            self.assertEqual([row["key"] for row in module.read_keys(keys, census)], ["array-item"])
+        self.assertTrue(module.read_keys(TRACKED_KEYS, census))
 
     def test_postman_missing_key_derivation_gives_repair_action(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

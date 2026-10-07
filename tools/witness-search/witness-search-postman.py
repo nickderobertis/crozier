@@ -150,6 +150,51 @@ def classify_body(status: int | None, content_type: str, body: bytes,
             "document_kind": "postman-collection" if "getpostman.com" in str(schema) else "other-json"}
 
 
+def read_keys(path: Path, census) -> list[dict]:
+    """The supported rows of the region-key derivation TSV, refused unless every one is well formed.
+
+    Each row has exactly the header's cells, a nonempty key named once, and a
+    selector the census evaluates; rows the derivation marks unsupported are
+    not asked about."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, dialect="excel-tab")
+        if not {"key", "selector"} <= set(reader.fieldnames or ()):
+            raise ValueError("it has no key and selector columns")
+        keys, seen = [], set()
+        for row in reader:
+            line = reader.line_num
+            if None in row or None in row.values():
+                raise ValueError(f"line {line} does not have the header's {len(reader.fieldnames)} cells")
+            if row.get("census_status", "supported") != "supported":
+                continue
+            key, selector = row["key"], row["selector"]
+            if not key or not selector:
+                raise ValueError(f"line {line} has an empty key or selector")
+            if key in seen:
+                raise ValueError(f"line {line} repeats key {key!r}")
+            seen.add(key)
+            error = census.selector_error(selector)
+            if error is not None:
+                raise ValueError(f"line {line} ({key}): {error}")
+            keys.append(row)
+    if not keys:
+        raise ValueError("it has no supported key rows")
+    return keys
+
+
+def counted_total(totals: object, kinds: tuple[str, ...]) -> int:
+    """The hits an index reports for `kinds`, each a nonnegative integer count it must report."""
+    if not isinstance(totals, dict):
+        raise ValueError("meta.total is not an object")
+    for kind, value in totals.items():
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            raise ValueError(f"meta.total.{kind} is {value!r}, not a nonnegative integer count")
+    missing = [kind for kind in kinds if kind not in totals]
+    if missing:
+        raise ValueError(f"meta.total has no count for {', '.join(missing)}")
+    return sum(totals[kind] for kind in kinds)
+
+
 def acquire_hits(args: argparse.Namespace, keys: list[dict]) -> int:
     queries = args.evidence_dir / "queries.jsonl"
     try:
@@ -214,13 +259,12 @@ def main() -> int:
     parser.add_argument("--api-base", default=DEFAULT_API)
     args = parser.parse_args()
     try:
-        with args.keys.open(encoding="utf-8", newline="") as handle:
-            keys = [row for row in csv.DictReader(handle, dialect="excel-tab")
-                    if row.get("census_status", "supported") == "supported"]
+        keys = read_keys(args.keys, load_census())
     except OSError as error:
         parser.error(f"cannot read --keys {args.keys}: {error}; regenerate the region-key derivation")
-    if not keys or not {"key", "selector"} <= keys[0].keys():
-        parser.error("--keys must be the region-key derivation TSV")
+    except (UnicodeError, ValueError, csv.Error) as error:
+        parser.error(f"--keys must be the region-key derivation TSV: {args.keys}: {error}; "
+                     "regenerate the region-key derivation")
     if args.acquire_hits:
         return acquire_hits(args, keys)
     args.evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -254,16 +298,14 @@ def main() -> int:
                     try:
                         payload = json.loads(body)
                         totals = payload["meta"]["total"]
-                        if not isinstance(totals, dict):
-                            raise ValueError("meta.total is not an object")
+                        kinds = ("team",) if index == "apinetwork.team" else (
+                            "collection",) if index == "runtime.collection" else (
+                            "api", "apiDefinition", "specification")
+                        count = counted_total(totals, kinds)
                         result["totals"] = totals
                         result["data"] = payload.get("data", {})
                         result["classification"] = "answered"
                         rows.append(result)
-                        kinds = ("team",) if index == "apinetwork.team" else (
-                            "collection",) if index == "runtime.collection" else (
-                            "api", "apiDefinition", "specification")
-                        count = sum(int(totals.get(kind, 0)) for kind in kinds)
                         if offset + 25 >= count:
                             break
                         offset += 25
