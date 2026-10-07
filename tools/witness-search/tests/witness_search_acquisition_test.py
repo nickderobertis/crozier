@@ -224,6 +224,89 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertIn("unsafe archive path", unsafe.stderr)
             self.assertFalse(manifest.exists())
 
+    def test_portal_archive_names_and_plan_identities_cannot_escape_the_tree(self) -> None:
+        pin = "a" * 40
+        body = b'{"openapi":"3.0.0"}'
+        # Each escapes the extraction root on some host of the release matrix:
+        # an absolute name, a Windows drive, or backslash traversal.
+        for name in ("/abs-root/escape.json", f"api-{pin}/C:/escape.json",
+                     f"api-{pin}/..\\..\\escape.json", f"api-{pin}\\..\\escape.json",
+                     f"../api-{pin}/escape.json"):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                archives = root / "archives"
+                archives.mkdir()
+                with tarfile.open(archives / "example--api.tar.gz", "w:gz") as handle:
+                    info = tarfile.TarInfo(name)
+                    info.size = len(body)
+                    handle.addfile(info, io.BytesIO(body))
+                plan = root / "plan.tsv"
+                plan.write_text(f"repository\tpinned_ref\nexample/api\t{pin}\n", encoding="utf-8")
+                completed = subprocess.run(
+                    [sys.executable, str(PORTAL_TREES), "--plan", str(plan), "--archives", str(archives),
+                     "--tree", str(root / "tree"), "--manifest", str(root / "manifest.tsv")],
+                    cwd=REPO, capture_output=True, text=True, timeout=30,
+                )
+                self.assertEqual(completed.returncode, 1, completed.stderr)
+                self.assertIn("unsafe archive path", completed.stderr)
+                self.assertIn("check the plan and pinned archives before retrying", completed.stderr)
+                self.assertFalse((root / "tree").exists())
+                self.assertFalse((root / "manifest.tsv").exists())
+
+        # A pinned row names a GitHub owner/name at a full hexadecimal commit;
+        # a repository of `..` would otherwise write beside the tree.
+        for repository, revision, message in (
+            ("..", pin, "is not a GitHub owner/name"),
+            ("example/..", pin, "is not a GitHub owner/name"),
+            ("example", pin, "is not a GitHub owner/name"),
+            ("example/api/extra", pin, "is not a GitHub owner/name"),
+            ("example/a pi", pin, "is not a GitHub owner/name"),
+            ("example/api", "g" * 40, "is not a full lowercase hexadecimal commit SHA"),
+            ("example/api", "A" * 40, "is not a full lowercase hexadecimal commit SHA"),
+        ):
+            with self.subTest(repository=repository, revision=revision), \
+                    tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                archives = root / "archives"
+                archives.mkdir()
+                with tarfile.open(archives / f"{repository.replace('/', '--')}.tar.gz", "w:gz") as handle:
+                    info = tarfile.TarInfo(f"api-{pin}/escape.json")
+                    info.size = len(body)
+                    handle.addfile(info, io.BytesIO(body))
+                plan = root / "plan.tsv"
+                plan.write_text(f"repository\tpinned_ref\n{repository}\t{revision}\n", encoding="utf-8")
+                tree = root / "work" / "tree"
+                completed = subprocess.run(
+                    [sys.executable, str(PORTAL_TREES), "--plan", str(plan), "--archives", str(archives),
+                     "--tree", str(tree), "--manifest", str(root / "manifest.tsv")],
+                    cwd=REPO, capture_output=True, text=True, timeout=30,
+                )
+                self.assertEqual(completed.returncode, 1, completed.stderr)
+                self.assertIn(message, completed.stderr)
+                self.assertFalse((root / "work").exists())
+                self.assertFalse((root / "manifest.tsv").exists())
+
+        with tempfile.TemporaryDirectory() as temporary:
+            plan = Path(temporary) / "plan.tsv"
+            plan.write_text("repository\tpinned_ref\nexample/api\n", encoding="utf-8")
+            short = subprocess.run(
+                [sys.executable, str(PORTAL_TREES), "--plan", str(plan), "--archives", temporary,
+                 "--tree", str(Path(temporary) / "tree"), "--manifest", str(Path(temporary) / "m.tsv")],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(short.returncode, 1, short.stderr)
+            self.assertIn("lacks a repository or pinned_ref cell", short.stderr)
+            self.assertNotIn("Traceback", short.stderr)
+
+        # Every row of the committed plan still reads: pinned rows validate, and
+        # the rows recording why no immutable ref exists are skipped as before.
+        spec = importlib.util.spec_from_file_location("portal_trees_plan", PORTAL_TREES)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with (REPO / "docs/openapi-surface/witness-search-portal-plan.tsv").open(encoding="utf-8", newline="") as handle:
+            committed = list(csv.DictReader(handle, dialect="excel-tab"))
+        self.assertEqual(sum(map(module.pinned, committed)), len(committed) - 3)
+
     def test_postman_search_records_queries_and_refusal_without_zero(self) -> None:
         received = []
 
