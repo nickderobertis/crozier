@@ -1002,6 +1002,36 @@ class SpawnBoundTest(unittest.TestCase):
                     self.assertEqual(1, died.returncode, died.stderr)
                     self.assertIn("without a verdict; inspect the ledger and cache named and rerun", died.stderr)
 
+    def test_a_lenient_reading_past_the_bound_records_the_strict_refusal_and_the_lenient_timeout(self) -> None:
+        # The strict reading refuses the first document's tag at once; only the
+        # lenient one reads on, into a second document too large for the bound.
+        data = b"--- !unknown {a: 1}\n---\n" + b"".join(b"k%d: [a, {b: c}]\n" % n for n in range(400_000))
+        digest = hashlib.sha256(data).hexdigest()
+        with tempfile.TemporaryDirectory() as tmp:
+            for branch, env in (("alarm", dict(os.environ)), ("spawned reader", without_sigalrm(tmp))):
+                with self.subTest(branch):
+                    root = Path(tmp) / branch / "evidence"
+                    evidence = root / "witness-search-sourcegraph"
+                    keys_file(evidence)
+                    cache = Path(tmp) / branch / "cache"
+                    (cache / "documents").mkdir(parents=True)
+                    (cache / "documents" / f"{digest}.yaml").write_bytes(data)
+                    (evidence / "candidates.jsonl").write_text(json.dumps({
+                        "source": "sourcegraph", "key": KEY, "repository": "github.com/example/tagged", "path": "a.yaml",
+                        "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"}) + "\n", encoding="utf-8")
+                    completed = subprocess.run(
+                        [sys.executable, str(SCRIPT), "--evidence-root", str(root), "full-yaml", "--source",
+                         "sourcegraph", "--cache", str(cache), "--timeout", "1"],
+                        capture_output=True, text=True, env=env, timeout=120)
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    [read] = [r for _, r in INDEX.jsonl(evidence / "candidates.jsonl") if r.get("loader")]
+                    self.assertEqual("census-refused", read["disposition"])
+                    strict, lenient = read["diagnostic"].split("; ruamel.yaml 0.19.1 (YAML 1.2), duplicate keys", 1)
+                    self.assertTrue(strict.startswith("ruamel.yaml 0.19.1 (YAML 1.2): ConstructorError: "), strict)
+                    self.assertIn("!unknown", strict)
+                    self.assertTrue(lenient.startswith(" last-wins, unrecognised tags read untagged: parse exceeded 1 s; "
+                                                       f"sha256 {digest}"), lenient)
+
 
 if __name__ == "__main__":
     unittest.main()
