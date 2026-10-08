@@ -29,8 +29,10 @@ cargo build --release --locked --bin crozier >&2
 
 # Cached venv with the generated SDK's runtime deps (httpx, pydantic), the test
 # runner (pytest), and a YAML parser for the request-relaxer (pyyaml). Rebuilt only
-# when missing or incomplete; lives under the gitignored scratch dir.
-venv="$root/.crozier-tmp/live-e2e-venv"
+# when missing or incomplete; lives under the gitignored scratch dir unless
+# CROZIER_LIVE_E2E_VENV names another (test_runner.py's, so a forced failure
+# never touches the venv this suite is running in).
+venv="${CROZIER_LIVE_E2E_VENV:-$root/.crozier-tmp/live-e2e-venv}"
 py="$venv/bin/python"
 if [ ! -x "$py" ] || ! "$py" -c "import httpx, pydantic, pytest, yaml" 2>/dev/null; then
   uv venv "$venv" >&2 || {
