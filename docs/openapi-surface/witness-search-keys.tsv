@@ -44,6 +44,5 @@ schema-example-temporal-duplicate-element	schema.example:temporal-duplicate-elem
 schema-example-union-ref-sentinel	schema.example:union-ref-sentinel	schemas.md	supported
 sdk-variable-parameter-extension	parameter.x-fern-sdk-variable	parameters.md	supported
 sdk-variables-extension	openapi.x-fern-sdk-variables	parameters.md	supported
-single-operation-required-header	parameter.schema:single-required-header	parameters.md	supported
 type-misspelled-scalar	schema.type:misspelled-scalar	schemas.md	supported
 unread-date-time-example	schema.example:unread-date-time	schemas.md	supported
