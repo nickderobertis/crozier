@@ -2328,6 +2328,8 @@ components:
         for field, value, message in (
             ("repository", "../escape", "repository '../escape' is no `owner/name`"),
             ("path", "../../etc/passwd", "path '../../etc/passwd' is not a path inside its repository"),
+            ("path", "C:/escape.yaml", "path 'C:/escape.yaml' is not a path inside its repository"),
+            ("path", "C:escape.yaml", "path 'C:escape.yaml' is not a path inside its repository"),
             ("commit", "main", "commit 'main' is no commit SHA"),
             ("supersedes", 7, "supersedes 7 is no 40-hex object id"),
             ("sha256", "abc", "sha256 'abc' is no SHA-256 digest"),

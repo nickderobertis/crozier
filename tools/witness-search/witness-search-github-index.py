@@ -137,7 +137,8 @@ def identity_failure(row: dict[str, Any]) -> str | None:
     if not LEDGER_REPOSITORY.fullmatch(row["repository"]) or {".", ".."} & set(row["repository"].split("/")):
         return f"repository {row['repository']!r} is no `owner/name`"
     path = row["path"]
-    if path.startswith("/") or "\\" in path or ".." in path.split("/"):
+    # Repository-relative on every host: no root, drive (`C:/x`, `C:x`), backslash or `..`.
+    if path.startswith("/") or re.match(r"[A-Za-z]:", path) or "\\" in path or ".." in path.split("/"):
         return f"path {path!r} is not a path inside its repository"
     if row.get("commit") is not None and not (isinstance(row["commit"], str) and LEDGER_SHA1.fullmatch(row["commit"])):
         return f"commit {row['commit']!r} is no commit SHA"

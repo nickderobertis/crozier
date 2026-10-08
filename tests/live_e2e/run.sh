@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
-# Spec-driven live e2e: boot a Prism OpenAPI mock server from each fixture's spec
-# and drive the *generated* SDK through every documented endpoint, asserting a
-# value of the method's declared return type comes back over real HTTP. This is
-# the runtime complement to the byte-diff e2e (proves the source) and the wire
-# tests (prove request/response shaping vs Fern): it proves the compiled client
-# round-trips against a spec-shaped server. See tests/live_e2e/AGENTS.md.
+# The live e2e runner: the generated SDK driven against a Prism mock of each
+# fixture's spec. What the suite proves is tests/live_e2e/AGENTS.md's.
 #
 # Quiet on success. The `live-e2e` project's `test`: promoted out of the affected
 # tier (`just check --sweep` runs it); CI runs it as its own required leg.
