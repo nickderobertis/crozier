@@ -8500,18 +8500,26 @@ fn compact_module(tag: &str) -> String {
 
 /// Whether an operation should be grouped by its `group_method` operationId prefix
 /// rather than by its tag. True when the operation has no tag (the prefix is all we
-/// have), or when the prefix *is* the tag — the operationId genuinely encodes the
-/// group (`parcelRouting_dispatch…` under tag `ParcelRouting`, `warehouse_labels_…`
-/// under `WarehouseLabels`). False when a tag is present but the prefix is
-/// unrelated to it (bunq's `CREATE_…`/`READ_…` verbs under resource tags), where Fern
-/// groups by the tag and keeps the whole operationId as the method. Comparison is on
-/// the alphanumeric-only lowercasing of each, so `parcelrouting` ≡ `ParcelRouting`
-/// and `warehouse_labels` ≡ `WarehouseLabels` but `create` ≢ `attachment-public`.
+/// have), or when the prefix *is* the tag: its words, split at every character
+/// other than a letter or digit, are the tag's own words as Fern's
+/// `getEndpointLocation` splits a tag ([`fern_location_tokens`]), compared
+/// lowercase. So `documents_documenttype_get` under `Documents/DocumentType`,
+/// `parcelRouting_dispatch` under `ParcelRouting` and `warehouse_labels_get` under
+/// `warehouseLabels` are grouped, while `q_x_schedule` under `QX`,
+/// `warehouse_labels_list` under `WarehouseLabels` and `parcelRouting_dispatch`
+/// under `Parcel-Routing` keep the tag as the group and the whole id as the method,
+/// as do bunq's `CREATE_…`/`READ_…` verbs under resource tags.
 fn group_prefix_is_tag(op: &Operation, id: &str) -> bool {
-    match first_tag(op) {
-        None => true,
-        Some(tag) => alnum_lower(&module_from_grouped_id(id)) == alnum_lower(tag),
-    }
+    let Some(tag) = first_tag(op) else {
+        return true;
+    };
+    let prefix = id.rsplit_once('_').map_or(id, |(prefix, _)| prefix);
+    let prefix_words: Vec<String> = prefix
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|word| !word.is_empty())
+        .map(str::to_ascii_lowercase)
+        .collect();
+    prefix_words == fern_location_tokens(tag)
 }
 
 fn first_segment_is_tag(op: &Operation, id: &str) -> bool {
@@ -15132,6 +15140,29 @@ mod tests {
             endpoint_method_name(&o, "GET", "/v2/catalog/info"),
             "catalog_info"
         );
+    }
+
+    #[test]
+    fn a_prefix_groups_only_when_its_words_are_the_tags_words() {
+        use super::{endpoint_method_name, endpoint_module};
+        // An all-capitals tag spelled letter for letter by a split prefix keeps
+        // the tag as the module and the whole id as the method.
+        let o = op("q_x_schedule", "QX");
+        assert_eq!(endpoint_module(&o, "/x"), "qx");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "q_x_schedule");
+        let o = op("parcelRouting_dispatch", "Parcel-Routing");
+        assert_eq!(endpoint_module(&o, "/x"), "parcel_routing");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/x"),
+            "parcel_routing_dispatch"
+        );
+        // Word for word, the prefix is the group.
+        let o = op("documents_documenttype_get", "Documents/DocumentType");
+        assert_eq!(endpoint_module(&o, "/x"), "documents_documenttype");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "get");
+        let o = op("warehouse_labels_get", "warehouseLabels");
+        assert_eq!(endpoint_module(&o, "/x"), "warehouse_labels");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "get");
     }
 
     #[test]

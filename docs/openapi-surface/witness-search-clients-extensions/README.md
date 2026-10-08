@@ -57,6 +57,26 @@ The shape: a tagged operation whose `operationId` is `<prefix>-<method>`, one hy
 |---|---|---|
 | `operation-id-hyphenated-tag-method` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## All-caps tag spelled by a split prefix
+
+The shape: a tagged operation whose all-capitals first tag (`QX`) is spelled letter for letter, but not word for word as Fern splits the tag, by the several `_` segments of its operationId prefix (`q_x_schedule`) (`operation.operationId:all-caps-tag-split-prefix`). Fern names the module from the tag (`qx/`, `QxClient`) and keeps the whole id as the method.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-id-all-caps-tag-split-prefix` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+The same walk counted the broader form, any tag a prefix spells letter for
+letter but not word for word (`operation.operationId:tag-spelled-split-prefix`,
+key `operation-id-tag-spelled-split-prefix`). Three documents declare it, and
+each is a partial candidate: none has an all-capitals tag, the missing portion
+of this trigger.
+
+| partial candidate | sites | example | missing portion |
+|---|---:|---|---|
+| `APIs/digitalocean.com/2.0/openapi.yaml` | 24 | `sshKeys_list` under `SSH Keys` | an all-capitals tag |
+| `APIs/docker.com/hub/beta/openapi.yaml` | 2 | `AuditLogs_GetAuditLogs` under `audit-logs` | an all-capitals tag |
+| `APIs/windows.net/graphrbac/1.6/openapi.yaml` | 2 | `DeletedApplications_List` under `deletedApplications` | an all-capitals tag |
+
 ## Results
 
 | key | result | fixture |
@@ -64,3 +84,4 @@ The shape: a tagged operation whose `operationId` is `<prefix>-<method>`, one hy
 | `schema-name-builtin-complex` | `none-registrable` | `impedance-complex-reading` |
 | `operation-id-untagged-list-or-set` | `none-registrable` | `depot-bin-ledger` |
 | `operation-id-hyphenated-tag-method` | `none-registrable` | `ferry-berth-desk` |
+| `operation-id-all-caps-tag-split-prefix` | `none-registrable` | `rfid-door-panel` |

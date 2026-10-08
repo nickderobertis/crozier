@@ -1205,6 +1205,17 @@ PREDICATES = {
         "or `.`, the prefix spelling its first tag and the method camel-cased, so "
         "Fern's lowercased method differs from its snake-cased one"
     ),
+    "operation.operationId:tag-spelled-split-prefix": (
+        "one per tagged Operation Object under the Paths Object with no SDK group- or "
+        "method-name extension whose operationId `<prefix>_<method>`, no `.`, has a "
+        "prefix spelling its first tag letter for letter but not word for word as "
+        "Fern splits the tag (`q_x_schedule` under `QX`), so the tag names the module "
+        "and the whole id the method"
+    ),
+    "operation.operationId:all-caps-tag-split-prefix": (
+        "one per Operation Object `operation.operationId:tag-spelled-split-prefix` "
+        "counts whose first tag is all capitals, several of them (`QX`)"
+    ),
     "operation.operationId:untagged-list-or-set": (
         "one per Operation Object under the Paths Object with no tag and no SDK "
         "method-name extension whose operationId is exactly `list` or `set`, the "
@@ -2665,7 +2676,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "fbd23a878bfe34af",
+    "endpoint_method_name": "b82b29d5d9a26d4c",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -2676,7 +2687,7 @@ METHOD_NAME_PORT_DIGESTS = {
     "stripped_suffix_has_acronym": "2fc2a5586fdf1c7d",
     "fastapi_endpoint_name": "00ebd39bf3393e58",
     "method_from_grouped_id": "9a11a75c28c3f3a0",
-    "group_prefix_is_tag": "f1defc0f47feecb2",
+    "group_prefix_is_tag": "78ed5d765ae5f67f",
     "first_segment_is_tag": "bf92317b81b95eff",
     "fern_location_tokens": "e26dd8f74b3d5c03",
     "is_fern_camel_case": "7d911765a9cc2c34",
@@ -2730,6 +2741,13 @@ def _alnum_lower(text: str) -> str:
 def _module_from_grouped_id(text: str) -> str:
     prefix = text.rsplit("_", 1)[0] if "_" in text else text
     return to_snake_case(prefix) if "_" in prefix else prefix.lower()
+
+
+def _group_prefix_is_tag(text: str, tag: str) -> bool:
+    """`group_prefix_is_tag` for a tagged id: the prefix's words are the tag's tokens."""
+    prefix = text.rsplit("_", 1)[0] if "_" in text else text
+    words = [word.lower() for word in re.split(r"[^A-Za-z0-9]", prefix) if word]
+    return words == _fern_location_tokens(tag)
 
 
 def _fern_camel(name: str) -> bool:
@@ -2797,6 +2815,29 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     ident, prefixed = _sanitized(method)
     reserved = is_reserved(ident) and ident not in {"list", "set"}
     return (f"{ident}_" if reserved else ident), prefixed
+
+
+def tag_spelled_split_prefix(operation: dict[Any, Any]) -> bool:
+    """`operation.operationId:tag-spelled-split-prefix`: see its PREDICATES entry."""
+    if any(key in operation for key in (
+        "x-fern-sdk-method-name", "x-crozier-sdk-method-name",
+        "x-fern-sdk-group-name", "x-crozier-sdk-group-name",
+    )):
+        return False
+    operation_id = operation.get("operationId")
+    tag = _first_tag(operation)
+    if not isinstance(operation_id, str) or tag is None:
+        return False
+    text = operation_id.strip()
+    if "." in text or "_" not in text:
+        return False
+    prefix = text.rsplit("_", 1)[0]
+    first = text.split("_", 1)
+    return (
+        not ("_" in first[1] and _alnum_lower(first[0]) == _alnum_lower(tag))
+        and _alnum_lower(prefix) == _alnum_lower(tag)
+        and not _group_prefix_is_tag(text, tag)
+    )
 
 
 def hyphenated_tag_method(operation: dict[Any, Any]) -> bool:
@@ -2886,7 +2927,7 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
             remainder = id_words[len(tag_words):]
             camel = remainder[0] + "".join(word[:1].upper() + word[1:] for word in remainder[1:])
             return _sanitized(to_snake_case(camel))
-        if _alnum_lower(_module_from_grouped_id(text)) == _alnum_lower(tag):
+        if _group_prefix_is_tag(text, tag):
             group, _, rest = text.rpartition("_")
             return _sanitized(to_snake_case(text) if "_" in group else rest.lower())
         return _sanitized(to_snake_case(text))
@@ -4431,6 +4472,10 @@ class Census:
                 )
             ):
                 found.append("operation.operationId:untagged-list-or-set")
+            if tag_spelled_split_prefix(node):
+                found.append("operation.operationId:tag-spelled-split-prefix")
+                if re.fullmatch(r"[A-Z][A-Z0-9]+", _first_tag(node) or ""):
+                    found.append("operation.operationId:all-caps-tag-split-prefix")
             if hyphenated_tag_method(node):
                 found.append("operation.operationId:hyphenated-tag-method")
             if self.wildcard_binary_response(node):

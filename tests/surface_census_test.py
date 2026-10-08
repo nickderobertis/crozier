@@ -4622,6 +4622,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
            "components.schemas:complex-module-name",
            "operation.operationId:untagged-list-or-set",
            "operation.operationId:hyphenated-tag-method",
+           "operation.operationId:tag-spelled-split-prefix",
+           "operation.operationId:all-caps-tag-split-prefix",
            "components.schemas:fields-reach-cycles-unsorted",
            "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
            "schema.type:misspelled-scalar",
@@ -13075,6 +13077,49 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "lower"): 1}, rows(completed))
+
+    def test_tag_spelled_split_prefix_has_a_positive_and_decoys(self) -> None:
+        selector = "operation.operationId:tag-spelled-split-prefix"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, (tag, operation_id) in {
+                "positive": ("QX", "q_x_schedule"),
+                "lower-tag": ("multiword", "multi_word_run"),
+                "split-tag": ("Parcel-Routing", "parcelRouting_dispatch"),
+                "word-for-word": ("Documents/DocumentType", "documents_documenttype_get"),
+                "one-segment": ("ParcelRouting", "parcelRouting_dispatch"),
+                "camel-tag": ("warehouseLabels", "warehouse_labels_get"),
+                "other-prefix": ("QX", "c_d_schedule"),
+            }.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {"/q": {"get": {"tags": [tag], "operationId": operation_id,
+                                             "responses": {"204": {"description": "ok"}}}}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1, (selector, "lower-tag"): 1,
+                          (selector, "split-tag"): 1}, rows(completed))
+
+    def test_all_caps_tag_split_prefix_counts_only_an_all_caps_tag(self) -> None:
+        selector = "operation.operationId:all-caps-tag-split-prefix"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, (tag, operation_id) in {
+                "positive": ("QX", "q_x_schedule"), "digits": ("A1B", "a_1_b_run"),
+                "mixed": ("Qx", "q_x_run"), "one-letter": ("Q", "q_run"),
+                "grouped": ("QX", "qx_schedule"),
+            }.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {"/q": {"get": {"tags": [tag], "operationId": operation_id,
+                                             "responses": {"204": {"description": "ok"}}}}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1, (selector, "digits"): 1}, rows(completed))
 
     def test_hyphenated_tag_method_has_a_positive_and_decoys(self) -> None:
         selector = "operation.operationId:hyphenated-tag-method"

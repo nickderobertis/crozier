@@ -1942,6 +1942,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
         &["--enum-type", "literals"],
     ),
+    (
+        "rfid-door-panel-literals",
+        "docs/openapi-surface/handwritten/rfid-door-panel/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
 ];
 
 /// The naming tickets' (#350, #354, #357) authored probes are the case
