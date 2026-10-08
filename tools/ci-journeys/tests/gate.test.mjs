@@ -236,8 +236,10 @@ test("a failing target's whole output reaches a slow reader before the gate exit
   delete env.NX_SKIP_NX_CACHE;
   const slow = spawnSync("sh", ["-c", "just check --projects=a 2>&1 >/dev/null | { sleep 2; cat; }"], { cwd: root, env, encoding: "utf8" });
   assert.ok(slow.stdout.length > 128 * 1024, `${slow.stdout.length} bytes reached the reader`);
-  assert.match(slow.stdout, /Failed tasks:\s*\n\s*- a:test/);
-  assert.match(slow.stdout, /gate: a target failed/);
+  // Nx colours its summary under GitHub Actions; read the text alone.
+  const text = slow.stdout.replace(/\x1b\[[0-9;]*m/g, "");
+  assert.match(text, /Failed tasks:\s*\n\s*- a:test/);
+  assert.match(text, /gate: a target failed/);
 });
 
 test("--projects=tag:<tag> selects that tag's carriers and --exclude drops one, in either tier", (t) => {
