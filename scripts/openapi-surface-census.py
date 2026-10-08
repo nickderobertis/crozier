@@ -1230,6 +1230,72 @@ PREDICATES = {
         "one per Operation Object under the Paths Object declaring a non-blank SDK "
         "group name (either spelling) and no SDK method name, which Fern then ignores"
     ),
+    "securityScheme.x-fern-header:named": (
+        "one per header `apiKey` Security Scheme Object whose `x-fern-header` (or `x-crozier-header`, which wins) names the credential"
+    ),
+    "securityScheme.x-fern-bearer:named": (
+        "one per `http` `bearer` Security Scheme Object whose `x-fern-bearer` (or `x-crozier-bearer`) names the credential"
+    ),
+    "securityScheme.x-fern-basic:named-or-env": (
+        "one per `http` `basic` Security Scheme Object whose `x-fern-basic` (or `x-crozier-basic`) gives its username or password a `name` or an `env`"
+    ),
+    "securityScheme.x-fern-token-variable-name:bearer": (
+        "one per `http` `bearer` Security Scheme Object declaring a non-blank `x-fern-token-variable-name` (or `x-crozier-token-variable-name`) that is the document's first scheme of a kind Fern supports, so it is the credential Fern names"
+    ),
+    "components.securitySchemes:duplicate-api-key-header": (
+        "one per header `apiKey` Security Scheme Object naming, case-insensitively, the same header as an earlier one, a header whose name stems to `api_key` (`X-Api-Key`), with both schemes offered by the document's `security`"
+    ),
+    "securityScheme.scheme:capitalised-http": (
+        "one per `http` Security Scheme Object whose `scheme` is `bearer` or `basic` spelled with a capital"
+    ),
+    "operation.x-fern-pagination:cursor": (
+        "one per path Operation Object whose pagination extension (either spelling) is a mapping with `cursor` and `next_cursor`"
+    ),
+    "operation.x-fern-pagination:offset": (
+        "one per path Operation Object whose pagination extension (either spelling) is a mapping with `offset` and no `cursor`"
+    ),
+    "operation.x-fern-pagination:boolean-over-root": (
+        "one per path Operation Object whose pagination extension is `true` in a document whose root declares a pagination mapping"
+    ),
+    "operation.x-fern-pagination:nullable-response": (
+        "one per path Operation Object with a pagination mapping whose 200 `application/json` schema references a component declared `nullable: true`"
+    ),
+    "operation.tags:empty-string": (
+        "one per path Operation Object whose only tag is the empty string, that declares no SDK group name and whose operationId does not begin with `.` (which names the `_` group itself)"
+    ),
+    "operation.x-fern-sdk-group-name:types-beside-child-group": (
+        "one per path Operation Object declaring an SDK group and method name whose group is a proper prefix of another operation's declared group and whose inline request body has an inline `enum` property"
+    ),
+    "operation.x-fern-idempotent:with-root-headers": (
+        "one per path Operation Object marked `x-fern-idempotent: true` (either spelling) in a document whose root declares idempotency headers"
+    ),
+    "operation.x-fern-retries:disabled": (
+        "one per path Operation Object whose retries extension (either spelling) is a mapping with `disabled: true`"
+    ),
+    "operation.servers:named-beside-document-server": (
+        "one per path Operation Object whose `servers` are one named (`x-fern-server-name`, either spelling) URL other than the document's single server's"
+    ),
+    "server.x-fern-default-url:templated": (
+        "one per document Server Object with a templated `url` that declares `x-fern-default-url` (either spelling)"
+    ),
+    "server.x-fern-server-name:several-undescribed": (
+        "one per document Server Object naming itself by `x-fern-server-name` (either spelling) without a `description`, in a document with two or more such servers"
+    ),
+    "schema.x-fern-sdk-group-name:component": (
+        "one per `components.schemas` entry declaring an SDK group name (either spelling)"
+    ),
+    "schema.x-tags:component": (
+        "one per `components.schemas` entry declaring a non-empty `x-tags` list"
+    ),
+    "schema.x-fern-type-name:inline-property": (
+        "one per inline property Schema Object, not a `components.schemas` entry, declaring `x-fern-type-name` (either spelling)"
+    ),
+    "openapi.webhooks:inline-json-body-named": (
+        "one per `webhooks` Operation Object whose `application/json` request body is an inline schema and that declares an SDK group or method name"
+    ),
+    "operation.x-fern-webhook:true": (
+        "one per path Operation Object marked `x-fern-webhook: true` (either spelling)"
+    ),
     "operation.operationId:untagged-list-or-set": (
         "one per Operation Object under the Paths Object with no tag and no SDK "
         "method-name extension whose operationId is exactly `list` or `set`, the "
@@ -1505,6 +1571,28 @@ DOCUMENT_COMPARING_PREDICATES = (
     "components.schemas:fields-reach-cycles-unsorted",
     "components.schemas:cycle-into-cycle",
     "mediaType.schema:closed-empty-object-property",
+    "securityScheme.x-fern-header:named",
+    "securityScheme.x-fern-bearer:named",
+    "securityScheme.x-fern-basic:named-or-env",
+    "securityScheme.x-fern-token-variable-name:bearer",
+    "components.securitySchemes:duplicate-api-key-header",
+    "securityScheme.scheme:capitalised-http",
+    "operation.x-fern-pagination:cursor",
+    "operation.x-fern-pagination:offset",
+    "operation.x-fern-pagination:boolean-over-root",
+    "operation.x-fern-pagination:nullable-response",
+    "operation.tags:empty-string",
+    "operation.x-fern-sdk-group-name:types-beside-child-group",
+    "operation.x-fern-idempotent:with-root-headers",
+    "operation.x-fern-retries:disabled",
+    "operation.servers:named-beside-document-server",
+    "server.x-fern-default-url:templated",
+    "server.x-fern-server-name:several-undescribed",
+    "schema.x-fern-sdk-group-name:component",
+    "schema.x-tags:component",
+    "schema.x-fern-type-name:inline-property",
+    "openapi.webhooks:inline-json-body-named",
+    "operation.x-fern-webhook:true",
 )
 
 # The closed list of *conjunction* selectors, the fourth kind — a shape that is a
@@ -2873,6 +2961,180 @@ def sdk_method_name_sequence(operation: dict[Any, Any]) -> bool:
             named = operation[extension]
             return isinstance(named, list) and bool(named) and all(isinstance(item, str) for item in named)
     return False
+
+
+def clients_extensions_selectors() -> list[str]:
+    """The predicates `clients_extensions_sites` emits, in declaration order."""
+    start = list(PREDICATES).index("securityScheme.x-fern-header:named")
+    end = list(PREDICATES).index("operation.x-fern-webhook:true")
+    return list(PREDICATES)[start:end + 1]
+
+
+def _extension(node: Any, base: str) -> Any:
+    """The `x-crozier-<base>` value of a node, else its `x-fern-<base>` (crozier wins)."""
+    if not isinstance(node, dict):
+        return None
+    return node.get(f"x-crozier-{base}", node.get(f"x-fern-{base}"))
+
+
+def clients_extensions_sites(document: dict[Any, Any]) -> list[str]:
+    """The client- and package-construction shapes, read off the whole document."""
+    found: list[str] = []
+    components = document.get("components") if isinstance(document.get("components"), dict) else {}
+    schemes = components.get("securitySchemes") if isinstance(components.get("securitySchemes"), dict) else {}
+    headers_seen: set[str] = set()
+    supported = [
+        scheme for scheme in schemes.values() if isinstance(scheme, dict) and (
+            (scheme.get("type") == "apiKey" and scheme.get("in") == "header")
+            or (scheme.get("type") == "http" and str(scheme.get("scheme") or "").lower() in ("bearer", "basic"))
+            or scheme.get("type") in ("oauth2", "openIdConnect"))
+    ]
+    for scheme in schemes.values():
+        if not isinstance(scheme, dict):
+            continue
+        kind, http = scheme.get("type"), str(scheme.get("scheme") or "")
+        if kind == "apiKey" and scheme.get("in") == "header":
+            header = _extension(scheme, "header")
+            if isinstance(header, dict) and isinstance(header.get("name"), str) and header["name"].strip():
+                found.append("securityScheme.x-fern-header:named")
+            name = str(scheme.get("name") or "").lower()
+            offered = {
+                scheme_name
+                for requirement in document.get("security") or [] if isinstance(requirement, dict)
+                for scheme_name in requirement
+            } if isinstance(document.get("security"), list) else set()
+            if name in headers_seen and name.removeprefix("x-").replace("-", "_") == "api_key" \
+                    and sum(1 for key, other in schemes.items() if key in offered and isinstance(other, dict)
+                            and str(other.get("name") or "").lower() == name) >= 2:
+                found.append("components.securitySchemes:duplicate-api-key-header")
+            headers_seen.add(name)
+        if kind == "http" and http.lower() in ("bearer", "basic") and http != http.lower():
+            found.append("securityScheme.scheme:capitalised-http")
+        if kind == "http" and http.lower() == "bearer":
+            bearer = _extension(scheme, "bearer")
+            if isinstance(bearer, dict) and isinstance(bearer.get("name"), str) and bearer["name"].strip():
+                found.append("securityScheme.x-fern-bearer:named")
+            variable = _extension(scheme, "token-variable-name")
+            if isinstance(variable, str) and variable.strip() and supported and supported[0] is scheme:
+                found.append("securityScheme.x-fern-token-variable-name:bearer")
+        if kind == "http" and http.lower() == "basic":
+            basic = _extension(scheme, "basic")
+            if isinstance(basic, dict) and any(
+                isinstance(part, dict) and any(isinstance(part.get(key), str) and part[key].strip()
+                                               for key in ("name", "env"))
+                for part in (basic.get("username"), basic.get("password"))
+            ):
+                found.append("securityScheme.x-fern-basic:named-or-env")
+    schemas = components.get("schemas") if isinstance(components.get("schemas"), dict) else {}
+    for schema in schemas.values():
+        if not isinstance(schema, dict):
+            continue
+        if _extension(schema, "sdk-group-name") not in (None, "", []):
+            found.append("schema.x-fern-sdk-group-name:component")
+        if isinstance(schema.get("x-tags"), list) and schema["x-tags"]:
+            found.append("schema.x-tags:component")
+
+    def inline_type_names(schema: Any, depth: int = 0) -> int:
+        if not isinstance(schema, dict) or depth > 40:
+            return 0
+        count = 0
+        properties = schema.get("properties")
+        for value in (properties.values() if isinstance(properties, dict) else []):
+            if isinstance(value, dict) and "$ref" not in value:
+                if _extension(value, "type-name") not in (None, ""):
+                    count += 1
+                count += inline_type_names(value, depth + 1)
+        for key in ("items", "additionalProperties"):
+            count += inline_type_names(schema.get(key), depth + 1)
+        for key in ("allOf", "oneOf", "anyOf"):
+            members = schema.get(key)
+            for member in members if isinstance(members, list) else []:
+                count += inline_type_names(member, depth + 1)
+        return count
+
+    for schema in schemas.values():
+        found += ["schema.x-fern-type-name:inline-property"] * inline_type_names(schema)
+    servers = [server for server in document.get("servers") or [] if isinstance(server, dict)] \
+        if isinstance(document.get("servers"), list) else []
+    for server in servers:
+        if "{" in str(server.get("url") or "") and _extension(server, "default-url") not in (None, ""):
+            found.append("server.x-fern-default-url:templated")
+    named = [server for server in servers
+             if _extension(server, "server-name") not in (None, "") and not server.get("description")]
+    if len(named) >= 2:
+        found += ["server.x-fern-server-name:several-undescribed"] * len(named)
+    root_pagination = isinstance(_extension(document, "pagination"), dict)
+    root_idempotency = bool(_extension(document, "idempotency-headers"))
+    paths = document.get("paths") if isinstance(document.get("paths"), dict) else {}
+    operations = [
+        operation
+        for item in paths.values() if isinstance(item, dict)
+        for method, operation in item.items()
+        if method in ("get", "put", "post", "delete", "options", "head", "patch", "trace")
+        and isinstance(operation, dict)
+    ]
+    groups = [sdk_group_segments(operation) for operation in operations]
+    for operation, group in zip(operations, groups):
+        pagination = _extension(operation, "pagination")
+        if isinstance(pagination, dict):
+            if "cursor" in pagination and "next_cursor" in pagination:
+                found.append("operation.x-fern-pagination:cursor")
+            if "offset" in pagination and "cursor" not in pagination:
+                found.append("operation.x-fern-pagination:offset")
+            success = ((operation.get("responses") or {}).get("200") or {}) \
+                if isinstance(operation.get("responses"), dict) else {}
+            media = ((success.get("content") or {}).get("application/json") or {}) \
+                if isinstance(success, dict) and isinstance(success.get("content"), dict) else {}
+            reference = (media.get("schema") or {}).get("$ref") if isinstance(media, dict) \
+                and isinstance(media.get("schema"), dict) else None
+            if isinstance(reference, str) and reference.startswith("#/components/schemas/"):
+                target = schemas.get(reference.rsplit("/", 1)[1])
+                if isinstance(target, dict) and target.get("nullable") is True:
+                    found.append("operation.x-fern-pagination:nullable-response")
+        if pagination is True and root_pagination:
+            found.append("operation.x-fern-pagination:boolean-over-root")
+        if operation.get("tags") == [""] and not group \
+                and not str(operation.get("operationId") or "").strip().startswith("."):
+            found.append("operation.tags:empty-string")
+        if _extension(operation, "idempotent") is True and root_idempotency:
+            found.append("operation.x-fern-idempotent:with-root-headers")
+        retries = _extension(operation, "retries")
+        if isinstance(retries, dict) and retries.get("disabled") is True:
+            found.append("operation.x-fern-retries:disabled")
+        own = operation.get("servers") if isinstance(operation.get("servers"), list) else []
+        if len(servers) == 1 and len(own) == 1 and isinstance(own[0], dict) \
+                and _extension(own[0], "server-name") not in (None, "") \
+                and own[0].get("url") != servers[0].get("url"):
+            found.append("operation.servers:named-beside-document-server")
+        if _extension(operation, "webhook") is True:
+            found.append("operation.x-fern-webhook:true")
+        if group and sdk_method_named(operation) and any(
+            len(other) > len(group) and other[:len(group)] == group for other in groups
+        ):
+            body = ((operation.get("requestBody") or {}).get("content") or {}).get("application/json") \
+                if isinstance(operation.get("requestBody"), dict) else None
+            schema = body.get("schema") if isinstance(body, dict) else None
+            properties = schema.get("properties") if isinstance(schema, dict) and "$ref" not in schema else None
+            if isinstance(properties, dict) and any(
+                isinstance(value, dict) and "$ref" not in value and isinstance(value.get("enum"), list)
+                for value in properties.values()
+            ):
+                found.append("operation.x-fern-sdk-group-name:types-beside-child-group")
+    webhooks = document.get("webhooks") if isinstance(document.get("webhooks"), dict) else {}
+    for item in webhooks.values():
+        if not isinstance(item, dict):
+            continue
+        for method, operation in item.items():
+            if method not in ("get", "put", "post", "delete", "patch") or not isinstance(operation, dict):
+                continue
+            body = ((operation.get("requestBody") or {}).get("content") or {}).get("application/json") \
+                if isinstance(operation.get("requestBody"), dict) else None
+            schema = body.get("schema") if isinstance(body, dict) else None
+            if isinstance(schema, dict) and "$ref" not in schema and (
+                sdk_group_segments(operation) or sdk_method_named(operation)
+            ):
+                found.append("openapi.webhooks:inline-json-body-named")
+    return found
 
 
 def tag_spelled_split_prefix(operation: dict[Any, Any]) -> bool:
@@ -4898,6 +5160,8 @@ class Census:
         if kind_name == "info" and isinstance(node.get("title"), str):
             if any(ord(char) > 127 for char in node["title"]):
                 found.append("info.title:non-ascii")
+        if kind_name == "openapi":
+            found += clients_extensions_sites(node)
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))

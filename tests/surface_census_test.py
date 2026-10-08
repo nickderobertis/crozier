@@ -2600,6 +2600,28 @@ class GrammarContractTests(unittest.TestCase):
         "components.schemas:fields-reach-cycles-unsorted",
         "components.schemas:cycle-into-cycle",
         "mediaType.schema:closed-empty-object-property",
+        "securityScheme.x-fern-header:named",
+        "securityScheme.x-fern-bearer:named",
+        "securityScheme.x-fern-basic:named-or-env",
+        "securityScheme.x-fern-token-variable-name:bearer",
+        "components.securitySchemes:duplicate-api-key-header",
+        "securityScheme.scheme:capitalised-http",
+        "operation.x-fern-pagination:cursor",
+        "operation.x-fern-pagination:offset",
+        "operation.x-fern-pagination:boolean-over-root",
+        "operation.x-fern-pagination:nullable-response",
+        "operation.tags:empty-string",
+        "operation.x-fern-sdk-group-name:types-beside-child-group",
+        "operation.x-fern-idempotent:with-root-headers",
+        "operation.x-fern-retries:disabled",
+        "operation.servers:named-beside-document-server",
+        "server.x-fern-default-url:templated",
+        "server.x-fern-server-name:several-undescribed",
+        "schema.x-fern-sdk-group-name:component",
+        "schema.x-tags:component",
+        "schema.x-fern-type-name:inline-property",
+        "openapi.webhooks:inline-json-body-named",
+        "operation.x-fern-webhook:true",
     })
 
     def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
@@ -4628,6 +4650,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
            "operation.x-fern-sdk-group-name:leading-underscore",
            "operation.x-fern-sdk-group-name:without-method-name",
            "operation.x-fern-sdk-method-name:sequence",
+           *census.clients_extensions_selectors(),
            "components.schemas:fields-reach-cycles-unsorted",
            "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
            "schema.type:misspelled-scalar",
@@ -13138,6 +13161,126 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "lower-tag"): 1,
                           (selector, "split-tag"): 1}, rows(completed))
+
+    def test_clients_extensions_sites_have_a_positive_and_a_decoy_each(self) -> None:
+        """Each document-level client-construction predicate counts its shape alone."""
+        ok = {"204": {"description": "ok"}}
+        page = {"200": {"description": "ok", "content": {"application/json": {
+            "schema": {"$ref": "#/components/schemas/Page"}}}}}
+
+        def doc(**fields: object) -> dict:
+            return {"openapi": "3.1.0", "info": {"title": "t", "version": "1"},
+                    "paths": {}, **fields}
+
+        def schemes(**entries: object) -> dict:
+            return {"components": {"securitySchemes": entries}}
+
+        def ops(*operations: dict, **fields: object) -> dict:
+            return doc(paths={f"/p{n}": {"post": {"responses": ok, **op}}
+                              for n, op in enumerate(operations)}, **fields)
+
+        cases = {
+            "securityScheme.x-fern-header:named": (
+                doc(**schemes(K={"type": "apiKey", "in": "header", "name": "X-K",
+                                 "x-fern-header": {"name": "meter", "prefix": "M"}})),
+                doc(**schemes(K={"type": "apiKey", "in": "header", "name": "X-K",
+                                 "x-fern-header": {"prefix": "M"}}))),
+            "securityScheme.x-fern-bearer:named": (
+                doc(**schemes(B={"type": "http", "scheme": "bearer", "x-crozier-bearer": {"name": "pass"}})),
+                doc(**schemes(B={"type": "http", "scheme": "basic", "x-fern-bearer": {"name": "pass"}}))),
+            "securityScheme.x-fern-basic:named-or-env": (
+                doc(**schemes(B={"type": "http", "scheme": "basic",
+                                 "x-fern-basic": {"password": {"env": "PASS"}}})),
+                doc(**schemes(B={"type": "http", "scheme": "basic", "x-fern-basic": {}}))),
+            "securityScheme.x-fern-token-variable-name:bearer": (
+                doc(**schemes(B={"type": "http", "scheme": "bearer", "x-fern-token-variable-name": "apiKey"})),
+                doc(**schemes(O={"type": "oauth2"},
+                              B={"type": "http", "scheme": "bearer", "x-fern-token-variable-name": "apiKey"}))),
+            "components.securitySchemes:duplicate-api-key-header": (
+                doc(security=[{"A": []}, {"B": []}],
+                    **schemes(A={"type": "apiKey", "in": "header", "name": "X-Api-Key"},
+                              B={"type": "apiKey", "in": "header", "name": "x-api-key"})),
+                doc(security=[{"A": []}],
+                    **schemes(A={"type": "apiKey", "in": "header", "name": "X-Api-Key"},
+                              B={"type": "apiKey", "in": "header", "name": "X-Api-Key"}))),
+            "securityScheme.scheme:capitalised-http": (
+                doc(**schemes(B={"type": "http", "scheme": "Bearer"})),
+                doc(**schemes(B={"type": "http", "scheme": "bearer"}))),
+            "operation.x-fern-pagination:cursor": (
+                ops({"x-fern-pagination": {"cursor": "$request.c", "next_cursor": "$response.n"}}),
+                ops({"x-fern-pagination": {"cursor": "$request.c"}})),
+            "operation.x-fern-pagination:offset": (
+                ops({"x-crozier-pagination": {"offset": "$request.o", "results": "$response.r"}}),
+                ops({"x-fern-pagination": {"offset": "$request.o", "cursor": "$request.c"}})),
+            "operation.x-fern-pagination:boolean-over-root": (
+                ops({"x-fern-pagination": True}, **{"x-fern-pagination": {"offset": "$request.o"}}),
+                ops({"x-fern-pagination": True})),
+            "operation.x-fern-pagination:nullable-response": (
+                ops({"x-fern-pagination": {"cursor": "$request.c", "next_cursor": "$response.n"},
+                     "responses": page},
+                    components={"schemas": {"Page": {"type": "object", "nullable": True}}}),
+                ops({"x-fern-pagination": {"cursor": "$request.c", "next_cursor": "$response.n"},
+                     "responses": page},
+                    components={"schemas": {"Page": {"type": "object"}}})),
+            "operation.tags:empty-string": (
+                ops({"tags": [""], "operationId": "listBeacons"}),
+                ops({"tags": [""], "operationId": ".GetBeacons"})),
+            "operation.x-fern-sdk-group-name:types-beside-child-group": (
+                ops({"x-fern-sdk-group-name": ["yard"], "x-fern-sdk-method-name": "book",
+                     "requestBody": {"content": {"application/json": {"schema": {
+                         "type": "object", "properties": {"slot": {"type": "string", "enum": ["a"]}}}}}}},
+                    {"x-fern-sdk-group-name": ["yard", "cranes"], "x-fern-sdk-method-name": "lift"}),
+                ops({"x-fern-sdk-group-name": ["yard"], "x-fern-sdk-method-name": "book",
+                     "requestBody": {"content": {"application/json": {"schema": {
+                         "type": "object", "properties": {"slot": {"type": "string", "enum": ["a"]}}}}}}})),
+            "operation.x-fern-idempotent:with-root-headers": (
+                ops({"x-fern-idempotent": True}, **{"x-fern-idempotency-headers": [{"header": "X-I"}]}),
+                ops({"x-fern-idempotent": True})),
+            "operation.x-fern-retries:disabled": (
+                ops({"x-fern-retries": {"disabled": True}}), ops({"x-fern-retries": {"disabled": False}})),
+            "operation.servers:named-beside-document-server": (
+                ops({"servers": [{"url": "https://a", "x-fern-server-name": "archive"}]},
+                    servers=[{"url": "https://b"}]),
+                ops({"servers": [{"url": "https://b", "x-fern-server-name": "base"},
+                                 {"url": "https://a", "x-fern-server-name": "archive"}]},
+                    servers=[{"url": "https://b"}])),
+            "server.x-fern-default-url:templated": (
+                doc(servers=[{"url": "https://{r}.x", "x-fern-default-url": "https://x"}]),
+                doc(servers=[{"url": "https://x", "x-fern-default-url": "https://x"}])),
+            "server.x-fern-server-name:several-undescribed": (
+                doc(servers=[{"url": "https://a", "x-fern-server-name": "main"},
+                             {"url": "https://b", "x-fern-server-name": "backup"}]),
+                doc(servers=[{"url": "https://a", "x-fern-server-name": "main"},
+                             {"url": "https://b", "x-fern-server-name": "backup", "description": "B"}])),
+            "schema.x-fern-sdk-group-name:component": (
+                doc(components={"schemas": {"P": {"type": "object", "x-fern-sdk-group-name": "g"}}}),
+                doc(components={"schemas": {"P": {"type": "object"}}})),
+            "schema.x-tags:component": (
+                doc(components={"schemas": {"P": {"type": "object", "x-tags": ["T"]}}}),
+                doc(components={"schemas": {"P": {"type": "object", "x-tags": []}}})),
+            "schema.x-fern-type-name:inline-property": (
+                doc(components={"schemas": {"P": {"type": "object", "properties": {
+                    "m": {"type": "string", "enum": ["a"], "x-fern-type-name": "Mode"}}}}}),
+                doc(components={"schemas": {"P": {"type": "object", "x-fern-type-name": "Mode"}}})),
+            "openapi.webhooks:inline-json-body-named": (
+                doc(webhooks={"w": {"post": {"x-fern-sdk-method-name": "delivered", "responses": ok,
+                    "requestBody": {"content": {"application/json": {"schema": {"type": "object"}}}}}}}),
+                doc(webhooks={"w": {"post": {"responses": ok,
+                    "requestBody": {"content": {"application/json": {"schema": {"type": "object"}}}}}}})),
+            "operation.x-fern-webhook:true": (
+                ops({"x-crozier-webhook": True}), ops({"x-fern-webhook": False})),
+        }
+        self.assertEqual(set(census.clients_extensions_selectors()), set(cases))
+        for selector, (positive, decoy) in cases.items():
+            with self.subTest(selector=selector), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                write_fixture(root, "positive", json.dumps(positive))
+                write_fixture(root, "decoy", json.dumps(decoy))
+                completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                self.assertEqual({(selector, "positive"): rows(completed).get((selector, "positive"), 0)},
+                                 rows(completed))
+                self.assertGreaterEqual(rows(completed).get((selector, "positive"), 0), 1)
 
     def test_sdk_method_name_sequence_reads_the_winning_spelling(self) -> None:
         selector = "operation.x-fern-sdk-method-name:sequence"

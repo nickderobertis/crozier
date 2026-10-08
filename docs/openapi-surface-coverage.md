@@ -444,7 +444,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-116, declared in `scripts/openapi-surface-census.py` and restated here, with a
+138, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` has a non-empty
@@ -720,6 +720,63 @@ drift gate over the pair:
 - `operation.x-fern-sdk-group-name:without-method-name` — one per Operation Object under
   the Paths Object declaring a non-blank SDK group name (either spelling) and no SDK
   method name, which Fern then ignores
+- `securityScheme.x-fern-header:named` — one per header `apiKey` Security Scheme Object
+  whose `x-fern-header` (or `x-crozier-header`, which wins) names the credential
+- `securityScheme.x-fern-bearer:named` — one per `http` `bearer` Security Scheme Object
+  whose `x-fern-bearer` (or `x-crozier-bearer`) names the credential
+- `securityScheme.x-fern-basic:named-or-env` — one per `http` `basic` Security Scheme
+  Object whose `x-fern-basic` (or `x-crozier-basic`) gives its username or password a
+  `name` or an `env`
+- `securityScheme.x-fern-token-variable-name:bearer` — one per `http` `bearer` Security
+  Scheme Object declaring a non-blank `x-fern-token-variable-name` (or `x-crozier-token-
+  variable-name`) that is the document's first scheme of a kind Fern supports, so it is
+  the credential Fern names
+- `components.securitySchemes:duplicate-api-key-header` — one per header `apiKey`
+  Security Scheme Object naming, case-insensitively, the same header as an earlier one,
+  a header whose name stems to `api_key` (`X-Api-Key`), with both schemes offered by the
+  document's `security`
+- `securityScheme.scheme:capitalised-http` — one per `http` Security Scheme Object whose
+  `scheme` is `bearer` or `basic` spelled with a capital
+- `operation.x-fern-pagination:cursor` — one per path Operation Object whose pagination
+  extension (either spelling) is a mapping with `cursor` and `next_cursor`
+- `operation.x-fern-pagination:offset` — one per path Operation Object whose pagination
+  extension (either spelling) is a mapping with `offset` and no `cursor`
+- `operation.x-fern-pagination:boolean-over-root` — one per path Operation Object whose
+  pagination extension is `true` in a document whose root declares a pagination mapping
+- `operation.x-fern-pagination:nullable-response` — one per path Operation Object with a
+  pagination mapping whose 200 `application/json` schema references a component declared
+  `nullable: true`
+- `operation.tags:empty-string` — one per path Operation Object whose only tag is the
+  empty string, that declares no SDK group name and whose operationId does not begin
+  with `.` (which names the `_` group itself)
+- `operation.x-fern-sdk-group-name:types-beside-child-group` — one per path Operation
+  Object declaring an SDK group and method name whose group is a proper prefix of
+  another operation's declared group and whose inline request body has an inline `enum`
+  property
+- `operation.x-fern-idempotent:with-root-headers` — one per path Operation Object marked
+  `x-fern-idempotent: true` (either spelling) in a document whose root declares
+  idempotency headers
+- `operation.x-fern-retries:disabled` — one per path Operation Object whose retries
+  extension (either spelling) is a mapping with `disabled: true`
+- `operation.servers:named-beside-document-server` — one per path Operation Object whose
+  `servers` are one named (`x-fern-server-name`, either spelling) URL other than the
+  document's single server's
+- `server.x-fern-default-url:templated` — one per document Server Object with a
+  templated `url` that declares `x-fern-default-url` (either spelling)
+- `server.x-fern-server-name:several-undescribed` — one per document Server Object
+  naming itself by `x-fern-server-name` (either spelling) without a `description`, in a
+  document with two or more such servers
+- `schema.x-fern-sdk-group-name:component` — one per `components.schemas` entry
+  declaring an SDK group name (either spelling)
+- `schema.x-tags:component` — one per `components.schemas` entry declaring a non-empty
+  `x-tags` list
+- `schema.x-fern-type-name:inline-property` — one per inline property Schema Object, not
+  a `components.schemas` entry, declaring `x-fern-type-name` (either spelling)
+- `openapi.webhooks:inline-json-body-named` — one per `webhooks` Operation Object whose
+  `application/json` request body is an inline schema and that declares an SDK group or
+  method name
+- `operation.x-fern-webhook:true` — one per path Operation Object marked `x-fern-
+  webhook: true` (either spelling)
 - `operation.operationId:untagged-list-or-set` — one per Operation Object under the
   Paths Object with no tag and no SDK method-name extension whose operationId is exactly
   `list` or `set`, the builtins Fern leaves unsuffixed as method names
@@ -866,7 +923,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Seventy-nine of the 116 are node-local**, which is what makes them one family:
+**Seventy-nine of the 138 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -875,7 +932,7 @@ fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further, and `schema.example:unread-date-time`, which reads one node's `format`
 and selected example. The other
-thirty-seven — `operation.operationId:duplicate`, `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`, `schema.$ref:undeclared-component-head`, `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`, `schema.anyOf:discriminated-union`, `schema.discriminator:inheritance-union`, `parameter.schema:subset-header-string-default`, `operation.operationId:digit-leading-method`, `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`, `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`, `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`, `schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`, `operation.requestBody:body-prefixed-single-use`, `operation.requestBody:titled-inline-container-oas-three-zero`, `operation.responses:empty-schema-success-oas-three-zero`, `operation.responses:schemaless-text-success`, `operation.responses:schemaless-download-success`, `operation.responses:suffixed-status-key`, `operation.requestBody:schemaless-json`, `operation.responses:schemaless-wav-success`, `operation.responses:space-suffixed-status-key`, `operation.requestBody:blank-description-optional-object`, `operation.requestBody:described-inline-scalar`, `operation.requestBody:plain-string-map`, `operation.responses:contentless-two-hundred-with-created`, `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`, `mediaType.example:deprecated-property`, `components.schemas:fields-reach-cycles-unsorted`, `components.schemas:cycle-into-cycle`, `mediaType.schema:closed-empty-object-property` — read the document beyond the
+fifty-nine — `operation.operationId:duplicate`, `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`, `schema.$ref:undeclared-component-head`, `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`, `schema.anyOf:discriminated-union`, `schema.discriminator:inheritance-union`, `parameter.schema:subset-header-string-default`, `operation.operationId:digit-leading-method`, `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`, `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`, `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`, `schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`, `operation.requestBody:body-prefixed-single-use`, `operation.requestBody:titled-inline-container-oas-three-zero`, `operation.responses:empty-schema-success-oas-three-zero`, `operation.responses:schemaless-text-success`, `operation.responses:schemaless-download-success`, `operation.responses:suffixed-status-key`, `operation.requestBody:schemaless-json`, `operation.responses:schemaless-wav-success`, `operation.responses:space-suffixed-status-key`, `operation.requestBody:blank-description-optional-object`, `operation.requestBody:described-inline-scalar`, `operation.requestBody:plain-string-map`, `operation.responses:contentless-two-hundred-with-created`, `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`, `mediaType.example:deprecated-property`, `components.schemas:fields-reach-cycles-unsorted`, `components.schemas:cycle-into-cycle`, `mediaType.schema:closed-empty-object-property`, `securityScheme.x-fern-header:named`, `securityScheme.x-fern-bearer:named`, `securityScheme.x-fern-basic:named-or-env`, `securityScheme.x-fern-token-variable-name:bearer`, `components.securitySchemes:duplicate-api-key-header`, `securityScheme.scheme:capitalised-http`, `operation.x-fern-pagination:cursor`, `operation.x-fern-pagination:offset`, `operation.x-fern-pagination:boolean-over-root`, `operation.x-fern-pagination:nullable-response`, `operation.tags:empty-string`, `operation.x-fern-sdk-group-name:types-beside-child-group`, `operation.x-fern-idempotent:with-root-headers`, `operation.x-fern-retries:disabled`, `operation.servers:named-beside-document-server`, `server.x-fern-default-url:templated`, `server.x-fern-server-name:several-undescribed`, `schema.x-fern-sdk-group-name:component`, `schema.x-tags:component`, `schema.x-fern-type-name:inline-property`, `openapi.webhooks:inline-json-body-named`, `operation.x-fern-webhook:true` — read the document beyond the
 node, and say so in their own sentence. The first nine and the two cycle
 readings compare one document's own values against each other; the next
 twenty-two read where the node stands (an operation's route, a request body's
