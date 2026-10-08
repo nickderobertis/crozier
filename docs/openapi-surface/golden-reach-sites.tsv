@@ -257,7 +257,7 @@ format-int64	schema.format=int64	src/ir.rs::int_prim,src/ir.rs::number_prim[=Som
 format-float	schema.format=float	src/ir.rs::number_prim[=_ => Prim::Float]	
 format-double	schema.format=double	src/ir.rs::number_prim[=_ => Prim::Float]	
 format-password	schema.format=password	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	
-format-byte	schema.format=byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)],src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-byte	schema.format=byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)],src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::has_byte_text_response[=^ {16}return true;$]	
 format-binary	schema.format=binary	src/ir.rs::base_type_ref[=Some\("binary"\)],src/ir.rs::is_binary_response,src/ir.rs::has_binary_schema_response,src/ir.rs::has_wildcard_binary_response,src/ir.rs::resolve_request_body[let binary_media = \x7cmedia_type],src/ir.rs::hoist_form_object[let binary_scalar = \x7cschema: &Schema\x7c \{],src/ir.rs::Builder::variant_ref[match base_type_ref\(variant\) \{]	
 content-encoding	schema.contentEncoding	none	
 content-media-type	schema.contentMediaType	none	

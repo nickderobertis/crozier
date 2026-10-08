@@ -4453,7 +4453,8 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
             })
             .is_some_and(|media_type| is_download_media_type(media_type));
         code.starts_with('2')
-            && (download_first && !resp.content.contains_key("application/json")
+            && ((has_byte_text_response(doc, resp) || download_first)
+                && !resp.content.contains_key("application/json")
                 // A binary *schema* wins either way: apicurio's `application/zip`
                 // names one beside an `application/json` and streams.
                 || resp.content.values().any(|media| {
@@ -4468,6 +4469,27 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
                     })
                 }))
     })
+}
+
+/// A byte-formatted text representation is downloaded rather than decoded as text.
+fn has_byte_text_response(doc: &OpenApi, response: &Response) -> bool {
+    response
+        .content
+        .get("text/plain")
+        .and_then(|media| media.schema.as_ref())
+        .is_some_and(|schema| {
+            let schema = schema
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref(doc, reference))
+                .unwrap_or(schema);
+            if schema.ty.as_ref().and_then(TypeField::primary) == Some("string")
+                && schema.format.as_deref() == Some("byte")
+            {
+                return true;
+            }
+            false
+        })
 }
 
 /// Whether a success media type is one Fern streams back as bytes whatever its
@@ -19024,6 +19046,21 @@ mod tests {
         let doc: OpenApi =
             serde_json::from_value(serde_json::json!({ "openapi": "3.0.3" })).expect("document");
         for (content, binary) in [
+            (
+                serde_json::json!({ "text/plain": { "schema": { "type": "string", "format": "byte" } } }),
+                true,
+            ),
+            (
+                serde_json::json!({ "text/plain": { "schema": { "type": "integer", "format": "byte" } } }),
+                false,
+            ),
+            (
+                serde_json::json!({
+                    "text/plain": { "schema": { "type": "string", "format": "byte" } },
+                    "application/json": { "schema": { "type": "string" } }
+                }),
+                false,
+            ),
             (serde_json::json!({ "audio/mpeg": {} }), true),
             (
                 serde_json::json!({ "audio/mpeg": { "schema": { "type": "string" } } }),
@@ -19095,6 +19132,23 @@ mod tests {
         )
         .expect("the config is well formed");
         super::build(&doc, &config)
+    }
+
+    #[test]
+    fn byte_text_response_resolves_a_component_and_leaves_errors_unstreamed() {
+        for status in ["200", "400"] {
+            let ir = build_document(serde_json::json!({
+                "openapi": "3.0.3",
+                "info": { "title": "Lantern Export", "version": "1" },
+                "paths": { "/export": { "get": {
+                    "responses": { status: { "description": "export", "content": {
+                        "text/plain": { "schema": { "$ref": "#/components/schemas/Export" } }
+                    } } }
+                } } },
+                "components": { "schemas": { "Export": { "type": "string", "format": "byte" } } }
+            }));
+            assert_eq!(ir.endpoints[0].binary_response, status == "200");
+        }
     }
 
     #[test]

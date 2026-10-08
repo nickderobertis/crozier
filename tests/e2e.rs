@@ -803,6 +803,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
+        ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -2401,6 +2402,149 @@ fn handwritten_fixtures_match_fern_goldens() {
          (docs/openapi-surface/handwritten/AGENTS.md):\n{}",
         failures.join("\n")
     );
+}
+
+/// A byte-formatted text response streams in either enum mode. The complete
+/// certified tree is compared in both directions, and an unexplained change
+/// to the method remains a parity failure.
+#[test]
+fn byte_text_response_matches_certified_output_in_both_enum_modes() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let golden = "docs/openapi-surface/handwritten/byte-text-response/fern-expected";
+    let fixture = root.join("docs/openapi-surface/handwritten/byte-text-response");
+    for (mode, golden) in [
+        ("python-enums", golden),
+        (
+            "literals",
+            "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected",
+        ),
+    ] {
+        let expected = root.join(golden);
+        if mode == "literals" {
+            let evidence = std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                .expect("literals evidence");
+            let declared = evidence
+                .split_once("Canonical tree SHA-256: `")
+                .expect("a declared canonical digest")
+                .1
+                .split('`')
+                .next()
+                .expect("the digest");
+            assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+        }
+        let ledger = departure_ledger()
+            .golden(golden, &[])
+            .expect("golden ledger");
+        let out = tempfile::tempdir().expect("output");
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(fixture.join("openapi.yml"))
+            .arg("--output")
+            .arg(out.path())
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+                "--enum-type",
+                mode,
+            ])
+            .assert()
+            .success();
+        let failures =
+            golden_tree_failures(mode, "byte text response", &ledger, &expected, out.path());
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        let client = out.path().join("src/fern/client.py");
+        let text = std::fs::read_to_string(&client).expect("generated client");
+        assert!(text.contains("def export_lanterns("), "{text}");
+        std::fs::write(
+            &client,
+            text.replace("def export_lanterns(", "def unexplained_export("),
+        )
+        .unwrap();
+        let failures = golden_tree_failures(
+            mode,
+            "induced unexplained mismatch",
+            &ledger,
+            &expected,
+            out.path(),
+        );
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure.contains("src/fern/client.py")),
+            "{}",
+            failures.join("\n")
+        );
+    }
+}
+
+/// Resolving a byte-text component selects streaming; changing that component
+/// to an ordinary string restores the regular response method through the CLI.
+#[test]
+fn referenced_byte_text_response_streams_and_plain_text_recovers() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("openapi.yml");
+    let document = r#"openapi: 3.0.3
+info: {title: Lantern Export, version: '1'}
+paths:
+  /exports:
+    get:
+      operationId: export_lanterns
+      responses:
+        '200':
+          description: Lantern export
+          content:
+            text/plain:
+              schema: {$ref: '#/components/schemas/Export'}
+components:
+  schemas:
+    Export: {type: string, format: byte}
+"#;
+    for (format, streaming) in [("byte", true), ("uuid", false)] {
+        std::fs::write(
+            &spec,
+            document.replace("format: byte", &format!("format: {format}")),
+        )
+        .unwrap();
+        let out = dir.path().join(format);
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&out)
+            .args(["--package-name", "fern"])
+            .assert()
+            .success();
+        let raw = std::fs::read_to_string(out.join("src/fern/raw_client.py")).unwrap();
+        assert_eq!(
+            raw.contains("self._client_wrapper.httpx_client.stream("),
+            streaming,
+            "{raw}"
+        );
+        assert_eq!(raw.contains("_response.iter_bytes("), streaming, "{raw}");
+        assert_eq!(
+            raw.contains("self._client_wrapper.httpx_client.request("),
+            !streaming,
+            "{raw}"
+        );
+    }
+}
+
+/// The certified controls hold the JSON alternative's precedence and the
+/// non-string guard through the real binary, with complete file-set equality.
+#[test]
+fn byte_text_response_dispatch_controls_match_certified_output() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixture = root.join("docs/openapi-surface/handwritten/byte-text-response-controls");
+    let failures = filtered_tree_failures(
+        "byte text response controls",
+        "docs/openapi-surface/handwritten/byte-text-response-controls/fern-expected",
+        &fixture.join("openapi.yml"),
+        &fixture.join("fern-expected"),
+        &[],
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
 /// Every `date-time` value crozier's worked examples write over the

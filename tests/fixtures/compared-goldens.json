@@ -1,6 +1,7 @@
 {
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
+    "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},
@@ -52,6 +53,8 @@
     "docs/openapi-surface/handwritten/array-item-inheritance-union/fern-expected": {},
     "docs/openapi-surface/handwritten/array-item-pointer-walk-oneof/fern-expected": {},
     "docs/openapi-surface/handwritten/base-path-client-argument/fern-expected": {},
+    "docs/openapi-surface/handwritten/byte-text-response-controls/fern-expected": {},
+    "docs/openapi-surface/handwritten/byte-text-response/fern-expected": {},
     "docs/openapi-surface/handwritten/chained-reference-cycles/fern-expected": {},
     "docs/openapi-surface/handwritten/closed-empty-inline-objects/fern-expected": {},
     "docs/openapi-surface/handwritten/composition-index-pointer/fern-expected": {},

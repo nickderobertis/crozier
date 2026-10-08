@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "d26ef84ba7884a435ae1e2bd3b0e8d6a8a1823d0f988386efee8ea611a9ae9fe"
+
+[[covers]]
+key = "format-byte"
+arm = 'src/ir.rs::has_byte_text_response[=^ {16}return true;$]'
+search = "docs/openapi-surface/witness-search-byte-text-response/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-byte-text-response/README.md"
