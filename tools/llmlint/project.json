@@ -8,6 +8,9 @@
   ],
   "targets": {
     "test-plugins": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 5 s (measured with `just nx run llmlint-tooling:test-plugins --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
       "executor": "nx:run-commands",
       "options": {
         "command": "python3 tools/llmlint/tests/llmlint_plugins_test.py"
@@ -20,6 +23,9 @@
       ]
     },
     "test-diff": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 2 s (measured with `just nx run llmlint-tooling:test-diff --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
       "executor": "nx:run-commands",
       "options": {
         "command": "python3 tools/llmlint/tests/llmlint_diff_test.py"

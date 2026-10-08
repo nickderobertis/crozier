@@ -9,6 +9,9 @@
   ],
   "targets": {
     "test-census": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 219 s (measured with `just nx run surface-census:test-census --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
       "executor": "nx:run-commands",
       "options": {
         "commands": [
@@ -44,6 +47,9 @@
       ]
     },
     "test-reach": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 89 s (measured with `just nx run surface-census:test-reach --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
       "executor": "nx:run-commands",
       "options": {
         "command": "python3 tools/surface-census/tests/golden_reach_test.py"
@@ -76,6 +82,9 @@
       ]
     },
     "test-reach-portable": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 102 s (measured with `just nx run surface-census:test-reach-portable --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
       "executor": "nx:run-commands",
       "options": {
         "command": "python3 tools/surface-census/tests/golden_reach_test.py",
