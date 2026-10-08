@@ -2309,7 +2309,9 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             '[ -z "${FAIL_GENERATE:-}" ] || { echo "generate-fern-fixture: simulated failure" >&2; exit 9; }\n'
             'echo "generate-fern-fixture: wrote 1 files to tests/fixtures/$1/expected" >&2\n'
             # A log of its output the caller can no longer read.
-            '[ -z "${HIDE_LOG:-}" ] || chmod 0 "$(readlink /proc/$$/fd/2)"\n',
+            '[ -z "${HIDE_LOG:-}" ] || chmod 0 "$(readlink /proc/$$/fd/2)"\n'
+            # A log whose directory no longer lets the caller remove it.
+            '[ -z "${LOCK_LOG_DIR:-}" ] || chmod 0555 "$(dirname "$(readlink /proc/$$/fd/2)")"\n',
             encoding="utf-8",
         )
         generator.chmod(0o755)
@@ -2451,6 +2453,28 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         self.assertIn("generate-corpus-fixtures: generated alpha, but could not read the generator's summary "
                       "from ", result.stderr)
         self.assertIn("review tests/fixtures/alpha/expected, then wire it into the e2e manifest", result.stderr)
+
+    def test_a_log_it_cannot_create_generates_nothing_and_names_tmpdir(self) -> None:
+        missing = self.base / "no-such-tmp"
+        calls = self.base / "calls"
+        result = self.run_script("--only", "alpha", TMPDIR=str(missing), GENERATOR_CALLS=str(calls))
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn(f"generate-corpus-fixtures: cannot create a temporary log under {missing} — point "
+                      "TMPDIR at a writable directory, then re-run", result.stderr)
+        self.assertFalse(calls.exists(), "the generator ran without a log to keep its output in")
+
+    @unittest.skipIf(not Path("/proc/self/fd").is_dir() or os.geteuid() == 0,
+                     "the stand-in locks its log's directory through /proc, against a remover file modes deny")
+    def test_a_log_it_cannot_remove_is_named_and_the_generation_still_succeeds(self) -> None:
+        scratch = self.base / "tmp"
+        scratch.mkdir()
+        self.addCleanup(scratch.chmod, 0o755)
+        result = self.run_script("--only", "alpha", TMPDIR=str(scratch), LOCK_LOG_DIR="1")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("generate-fern-fixture: wrote 1 files to tests/fixtures/alpha/expected", result.stderr)
+        self.assertIn(f"generate-corpus-fixtures: could not remove {scratch}/generate-corpus-fixtures.",
+                      result.stderr)
+        self.assertIn("delete it by hand", result.stderr)
 
     def test_a_batch_reports_one_line_for_every_fixture_it_generated(self) -> None:
         beta = self.root / "tests" / "fixtures" / "beta"
