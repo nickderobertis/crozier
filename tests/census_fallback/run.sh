@@ -40,7 +40,10 @@ pinned() {
 
 case "${1:-}" in
   samples|parsers)
-    [ "$#" -eq 1 ] || { echo "usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2; exit 2; }
+    [ "$#" -eq 1 ] || {
+      echo "census-fallback: $1 takes no arguments, got: ${*:2} — usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2
+      exit 2
+    }
     ;;
 esac
 case "${1:-}" in
@@ -59,11 +62,18 @@ case "${1:-}" in
       python3 tools/witness-search/tests/witness_search_recensus_test.py
     ;;
   pin)
-    [ "$#" -eq 2 ] || { echo "usage: tests/census_fallback/run.sh pin SCRIPT" >&2; exit 2; }
+    [ "$#" -eq 2 ] || {
+      echo "census-fallback: pin takes exactly one SCRIPT, got $(($# - 1)) — usage: tests/census_fallback/run.sh pin SCRIPT" >&2
+      exit 2
+    }
     pinned "$2"
     ;;
+  "")
+    echo "census-fallback: no subcommand given — usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2
+    exit 2
+    ;;
   *)
-    echo "usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2
+    echo "census-fallback: unknown subcommand '$1' — usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2
     exit 2
     ;;
 esac

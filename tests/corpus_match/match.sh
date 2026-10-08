@@ -21,7 +21,7 @@ cd "$(dirname "$0")/../.." || {
   exit 1
 }
 
-[ "$#" -le 1 ] || { echo "usage: tests/corpus_match/match.sh [--strict]" >&2; exit 2; }
+[ "$#" -le 1 ] || { echo "corpus-match: takes at most one argument, got $# — usage: tests/corpus_match/match.sh [--strict]" >&2; exit 2; }
 case "${1:-}" in
   "") ;;
   --strict)
@@ -34,7 +34,7 @@ case "${1:-}" in
     }
     ;;
   *)
-    echo "usage: tests/corpus_match/match.sh [--strict]" >&2
+    echo "corpus-match: unknown argument '$1' — usage: tests/corpus_match/match.sh [--strict]" >&2
     exit 2
     ;;
 esac

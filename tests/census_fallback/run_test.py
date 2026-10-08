@@ -82,11 +82,16 @@ class ThePinIsRequired(unittest.TestCase):
         self.assertNotIn("declares no single pinned dependency", result.stderr)
 
     def test_an_invocation_it_cannot_read_exits_two_with_the_usage(self) -> None:
-        for args in (["pin"], ["pin", "a.py", "b.py"], ["sideways"], [], ["samples", "extra"], ["parsers", "--all"]):
+        for args, named in ((["pin"], "pin takes exactly one SCRIPT, got 0"),
+                            (["pin", "a.py", "b.py"], "pin takes exactly one SCRIPT, got 2"),
+                            (["sideways"], "unknown subcommand 'sideways'"),
+                            ([], "no subcommand given"),
+                            (["samples", "extra"], "samples takes no arguments, got: extra"),
+                            (["parsers", "--all"], "parsers takes no arguments, got: --all")):
             with self.subTest(args=args):
                 result = subprocess.run(["bash", str(RUNNER), *args], cwd=REPO, capture_output=True, text=True)
                 self.assertEqual(2, result.returncode, result.stderr)
-                self.assertIn("usage: tests/census_fallback/run.sh", result.stderr)
+                self.assertIn(f"census-fallback: {named} — usage: tests/census_fallback/run.sh", result.stderr)
 
     def test_pin_prints_the_one_exact_pin_the_stages_install(self) -> None:
         printed = subprocess.run(["bash", str(RUNNER), "pin", "tools/surface-census/golden-reach-search.py"],
