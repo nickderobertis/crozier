@@ -1016,7 +1016,9 @@ fn closed_empty_object_example_line(_: &Pair<'_>, fern: &str, crozier: &str) -> 
 
 /// Require every occurrence of the candidate line to be in an example. The
 /// line-rule interface does not carry an occurrence index, so a duplicated
-/// runtime line must conservatively prevent normalization too.
+/// runtime line must conservatively prevent normalization too. The public-API
+/// integration control is `tests/generation.rs::narrowed_enum_departure_requires_source_validity_and_rejects_other_changes`;
+/// it checks missing source, non-Python fences and duplicated runtime lines.
 fn documented_example_line(rel: &str, lines: &[&str], candidate: &str) -> bool {
     let mut in_doc = false;
     let mut example = false;
