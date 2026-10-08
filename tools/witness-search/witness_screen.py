@@ -58,6 +58,7 @@ import tempfile
 import urllib.parse
 from collections import Counter
 from collections.abc import Callable
+from enum import Enum
 from pathlib import Path, PurePosixPath
 from types import ModuleType
 from typing import Any
@@ -196,10 +197,10 @@ def redact(text: str, *paths: Path) -> str:
 def _fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, str]:
     """One Fern command in a scratch workspace: its exit status (or `timeout`) and its output."""
     env = dict(os.environ, FERN_TOKEN=os.environ.get("FERN_TOKEN", "preview-only-no-publish"),
-               CI="true", GITHUB_ACTIONS="true")
+               CI="true", GITHUB_ACTIONS="true", PYTHONUTF8="1")
     try:
         run = subprocess.run(command, cwd=workspace, env=env, capture_output=True, text=True,
-                             errors="replace", timeout=timeout)
+                             errors="replace", timeout=timeout, encoding="utf-8")
     except subprocess.TimeoutExpired as expired:
         out = expired.stdout or ""
         return "timeout", out if isinstance(out, str) else out.decode("utf-8", "replace")
@@ -231,14 +232,14 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
     (workspace / "openapi").mkdir(parents=True, exist_ok=True)
     (workspace / "openapi" / "openapi.yml").write_bytes(document.read_bytes())
     config, generators = fern_workspace_files()
-    (workspace / "fern.config.json").write_text(config, encoding="utf-8")
-    (workspace / "generators.yml").write_text(generators, encoding="utf-8")
+    (workspace / "fern.config.json").write_text(config, encoding="utf-8", newline="\n")
+    (workspace / "generators.yml").write_text(generators, encoding="utf-8", newline="\n")
     cli, _name, version, _config = corpus_fern_pins()
     row: dict[str, Any] = {"sha256": digest, "fern_cli": cli, "generator": version}
     status, output = _fern_run(["fern", "check"], workspace, timeout)
     check_log = redact(output, scratch)
     # Diagnostics are read off the redacted log: they are committed in the row too.
-    row.update(check_exit=status, check_log_sha256=hashlib.sha256(check_log.encode()).hexdigest(),
+    row.update(check_exit=status, check_log_sha256=hashlib.sha256(check_log.encode("utf-8")).hexdigest(),
                check_diagnostic=fern_diagnostic(check_log))
     logs = {"check": check_log}
     if status == "0":
@@ -249,7 +250,7 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
         files = sum(1 for path in package.rglob("*.py")) if package.is_dir() else 0
         logs["generate"] = redact(output, scratch)
         unparsed = next((line.strip() for line in logs["generate"].splitlines() if UNPARSED.search(line)), "")
-        row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(logs["generate"].encode()).hexdigest(),
+        row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(logs["generate"].encode("utf-8")).hexdigest(),
                    generate_python_files=files,
                    generate_diagnostic=(unparsed or fern_diagnostic(logs["generate"])).replace("; ", ", ")
                    .replace("`", "'")[:400])
@@ -455,7 +456,7 @@ def raw_url(base: str, repository: str, commit: str, path: str) -> str:
 
 def write_log(logs: Path, base: Path, sha256: str, screen: str, text: str) -> tuple[str, str]:
     """Commit one redacted log by its own digest; its path relative to `base` and that digest."""
-    data = text.encode()
+    data = text.encode("utf-8")
     digest = hashlib.sha256(data).hexdigest()
     path = logs / f"{sha256[:12]}.{screen}.{digest[:12]}.log"
     logs.mkdir(parents=True, exist_ok=True)
@@ -463,6 +464,28 @@ def write_log(logs: Path, base: Path, sha256: str, screen: str, text: str) -> tu
     # committed log would then no longer carry the digest recorded for it.
     path.write_bytes(data)
     return path.relative_to(base).as_posix(), digest
+
+
+class ScreeningMode(Enum):
+    MEASURE = "measure"
+    SCREENED_HISTORY = "screened-history"
+
+
+def screening_mode_or_fail(repository: str, commit: str, path: str, sha256: str = "") -> ScreeningMode:
+    """Return the screening mode, exiting through SystemExit on invalid or excluded input."""
+    index = _load("witness_screen_identity", REPO / "tools" / "witness-search" / "witness-search-github-index.py")
+    try:
+        if index.opaque_identity(path):
+            row = {"repository": repository, "commit": commit, "path": path}
+            if sha256:
+                row["sha256"] = sha256
+            index.validate_opaque_values(row)
+            return ScreeningMode.SCREENED_HISTORY
+    except ValueError as error:
+        fail(f"{error}; restore valid {index.OPAQUE_PREFIX.split(':')[1]} evidence from git and rerun")
+    if index.excluded_repository(repository):
+        fail(f"{repository}: excluded by the repository rule; use the specification publisher's repository")
+    return ScreeningMode.MEASURE
 
 
 def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: str,
@@ -473,6 +496,8 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     `fetch(url, subject)` is the guarded acquirer's exact-commit raw route; it
     answers `(status, bytes)`. Logs land in `logs`, recorded relative to `base`.
     """
+    if screening_mode_or_fail(repository, commit, path, expected_sha256) is ScreeningMode.SCREENED_HISTORY:
+        fail("opaque history cannot be measured again; resume through the screening CLI to retain it unchanged")
     if not repository_name(repository):
         fail(f"{repository!r} is no `<owner>/<name>` repository; pass the one the candidate was acquired from")
     if not repository_path(path):
@@ -501,7 +526,7 @@ def measure(*, repository: str, commit: str, path: str, fetch: Fetch, raw_base: 
     request = f"GET {url}\nHTTP {status}" if COMMIT.fullmatch(commit) else f"not fetched: {commit!r} is no commit SHA"
     ref_log = redact(f"{request}\n{len(data)} bytes, sha256 {sha256 or '-'}\n"
                      f"pinned sha256 {expected_sha256 or '(none)'}\noutcome: {ref}\n")
-    key = sha256 or hashlib.sha256(url.encode()).hexdigest()
+    key = sha256 or hashlib.sha256(url.encode("utf-8")).hexdigest()
     log, digest = write_log(logs, base, key, "ref", ref_log)
     record["ref"] = {"outcome": ref, "exit": str(status) if COMMIT.fullmatch(commit) else "not-fetched",
                      "pins": {"repository": repository, "commit": commit, "path": path, "url": url,
@@ -865,6 +890,9 @@ def legacy_screen(args: argparse.Namespace) -> int:
     if args.fern is not None:
         fail("`--fern` is no longer a measurement: this stage runs pinned Fern itself and records its exit "
              "status and log — drop `--fern`")
+    if screening_mode_or_fail(args.repository, args.commit, args.path, args.sha256) is ScreeningMode.SCREENED_HISTORY:
+        print(f"witness-screen: {args.source}: opaque input screened by repository rule; history retained")
+        return 0
     directory = args.evidence_root / f"witness-search-{args.source}"
     if not directory.is_dir():
         fail(f"{directory} does not exist; acquire {args.source} through its witness-search script first")
@@ -920,7 +948,7 @@ def legacy_screen(args: argparse.Namespace) -> int:
            "sha256": document["sha256"], "keys": args.key, "license": record["licence"]["outcome"],
            "ref": record["ref"]["outcome"], "fern": record["fern"]["outcome"], "disposition": disposition,
            "screened_at": record["screened_at"], "measured": record}
-    with (directory / "screens.jsonl").open("a", encoding="utf-8") as handle:
+    with (directory / "screens.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps(row, sort_keys=True) + "\n")
     print(f"witness-screen: {args.source}: {args.repository}:{args.path} — licence "
           f"{row['license'].split(':', 1)[0]}, ref {row['ref'].split(':', 1)[0]}, "

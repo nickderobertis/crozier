@@ -1,0 +1,7 @@
+key	repository	path	commit	sha256	selector_count	shape_count	disposition
+format-uuid	github.com/betorbr/betor-catalog	docs/betor-openapi.json	1c5efd3d5b53bd445972d88894bd4e1a285afe9f	c1320dd0c7dff0317b70544ef19c3f55f159d2be290042c8ad78a044642dd921	0	0	does-not-declare-request-shape
+format-byte	github.com/openai/orchard	api/openapi.yaml	f101ade5d8fdcad5e9c346472698649e7107a715	08cc2c61827f505a0b872110df2da4b06676da2f5fc3e1ca2d870e758776a519	3	0	does-not-declare-request-shape
+format-date	github.com/openai/orchard	api/openapi.yaml	f101ade5d8fdcad5e9c346472698649e7107a715	08cc2c61827f505a0b872110df2da4b06676da2f5fc3e1ca2d870e758776a519	0	0	does-not-declare-request-shape
+format-uuid	github.com/kubernetes/kubernetes	api/openapi-spec/v3/apis__apps__v1_openapi.json	4c05e667d61d4fac56887b51f27242384c006d33	e9f81979f2ee9636a1058b5441536539ccc2c194a97622d22664034b0a70946b	0	0	does-not-declare-request-shape
+format-byte	github.com/kubernetes/kubernetes	api/openapi-spec/v3/apis__apps__v1_openapi.json	4c05e667d61d4fac56887b51f27242384c006d33	e9f81979f2ee9636a1058b5441536539ccc2c194a97622d22664034b0a70946b	0	0	does-not-declare-request-shape
+format-date	github.com/kubernetes/kubernetes	api/openapi-spec/v3/apis__apps__v1_openapi.json	4c05e667d61d4fac56887b51f27242384c006d33	e9f81979f2ee9636a1058b5441536539ccc2c194a97622d22664034b0a70946b	0	0	does-not-declare-request-shape

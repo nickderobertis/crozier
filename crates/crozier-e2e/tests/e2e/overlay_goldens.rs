@@ -46,10 +46,9 @@ const KINDS: &[Kind] = &[
     // `enum-type: literals` against Fern with `pydantic_config.enum_type` unset
     // (fern-python-sdk's `literals` default). The corpora together reach every
     // enum shape crozier generates:
-    // - `exhaustive`: named component enums, inline enums inside union variants,
-    //   an enum request body and response, and the dropped `core/enum.py`;
     // - `enum-name-sanitization`: values that need sanitizing into member names
     //   (`"0: Active"`) and an inline query-parameter enum of numeric strings;
+    // - `groupe-psa`: inline enum variants in composed properties;
     // - `enum-query-param`: an inline query-parameter enum on a nested resource;
     // - `enum-receiver-collision`: members whose names collide with `visit`'s
     //   receiver;
@@ -61,8 +60,8 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
-            "exhaustive",
             "enum-name-sanitization",
+            "groupe-psa",
             "enum-query-param",
             "enum-receiver-collision",
             "openfigi.com",
@@ -278,28 +277,30 @@ fn overlay_goldens_are_exactly_the_targeted_sets() {
     }
 }
 
+// llmlint: ignore-block[tests_mirror_real_usage] `read_overlay` and `materialize` are this e2e binary's overlay-golden gate, not crozier code: the CLI and src/ expose no entry point to them, so the test calls them directly to hold the rebuilt tree to its rule.
 /// An overlay golden is `expected/` minus the manifest's removed files, with the
 /// overlay laid over it: Fern's literal enum modules replace the classes, and
 /// every file the overlay does not carry is `expected/`'s own.
 #[test]
 fn the_literals_golden_is_expected_minus_removed_plus_overlay() {
-    let (kind, api) = (&KINDS[0], "exhaustive");
+    let (kind, api) = (&KINDS[0], "openfigi.com");
     assert_eq!(kind.dir, "expected-literals");
     let overlay = read_overlay(kind, api)
-        .expect("valid exhaustive overlay")
-        .expect("exhaustive has an overlay");
+        .expect("valid publisher overlay")
+        .expect("publisher has an overlay");
     assert_eq!(overlay.removed, ["src/fern/core/enum.py"]);
     let tree = materialize(kind, api, &overlay);
     assert!(!tree.path().join("src/fern/core/enum.py").exists());
     assert!(!tree.path().join(MANIFEST).exists());
-    let weather =
-        std::fs::read_to_string(tree.path().join("src/fern/types/types_weather_report.py"))
+    let state =
+        std::fs::read_to_string(tree.path().join("src/fern/types/mapping_job_state_code.py"))
             .expect("overlaid enum module");
     assert!(
-        weather.contains(
-            "typing.Literal[\"SUNNY\", \"CLOUDY\", \"RAINING\", \"SNOWING\"], typing.Any"
-        ),
-        "{weather}"
+        state.contains("typing.Literal[")
+            && state.contains("\"AB\"")
+            && state.contains("\"AC\"")
+            && state.contains("typing.Any"),
+        "{state}"
     );
     // Unchanged files come from expected/ untouched.
     assert_eq!(
@@ -307,6 +308,7 @@ fn the_literals_golden_is_expected_minus_removed_plus_overlay() {
         std::fs::read(fixture_dir(api).join("expected/pyproject.toml")).unwrap()
     );
 }
+// llmlint: ignore-end[tests_mirror_real_usage]
 
 /// Fern's `default_max_retries: 0` changes only the root client's fallback and
 /// documented default and the client wrappers' parameter default (plus the

@@ -149,10 +149,18 @@ def _load(name: str, path: Path) -> ModuleType:
 REACH = _load("golden_reach", REPO / "tools" / "surface-census" / "golden-reach.py")
 CENSUS = _load("openapi_surface_census", REPO / "tools" / "surface-census" / "openapi-surface-census.py")
 SCREEN = _load("witness_screen", REPO / "tools" / "witness-search" / "witness_screen.py")
+INDEX = _load("witness_search_index_for_reach", REPO / "tools" / "witness-search" / "witness-search-github-index.py")
 
 
 def fail(message: str) -> None:
     raise SystemExit(f"golden-reach-search: {message}")
+
+
+def opaque_candidate(value: str) -> str | None:
+    try:
+        return INDEX.opaque_subject(value)
+    except ValueError as error:
+        fail(f"{error}; restore valid v2 evidence from git and rerun the command")
 
 
 def read_tsv(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[str, str]]:
@@ -203,6 +211,10 @@ def read_jsonl(
             if not isinstance(value, kind) or (kind is list and not all(isinstance(v, str) for v in value)):
                 shape = "a list of strings" if kind is list else f"a {kind.__name__}"
                 fail(f"{path}:{number} has `{field}` {value!r}, not {shape}; {remedy}")
+        try:
+            INDEX.validate_opaque_values(row)
+        except ValueError as error:
+            fail(f"{path}:{number}: {error}; {remedy}")
         rows.append(row)
     return rows
 
@@ -387,8 +399,11 @@ def read_records(source: str) -> list[dict[str, str]]:
     path = source_dir(source) / "records.tsv"
     if not path.is_file():
         return []
-    return read_exact_tsv(path, RECORD_FIELDS, f"restore it from git (`git checkout -- {path}`) "
+    rows = read_exact_tsv(path, RECORD_FIELDS, f"restore it from git (`git checkout -- {path}`) "
                           "or re-file the source's stages")
+    for row in rows:
+        opaque_candidate(row["subject"].split(" ", 1)[0])
+    return rows
 
 
 def write_records(source: str, keys: set[str], rows: list[dict[str, str]]) -> None:
@@ -459,7 +474,7 @@ def committed_bytes(path: Path) -> bytes:
     git = ["git", "-C", str(path.parent)]
     literal = {**os.environ, "GIT_LITERAL_PATHSPECS": "1"}
     staged = subprocess.run([*git, "ls-files", "--stage", "--", path.name],
-                            capture_output=True, text=True, env=literal)
+                            capture_output=True, text=True, env=literal, encoding="utf-8")
     fields = staged.stdout.split() if staged.returncode == 0 else []
     if len(fields) < 2 or fields[1] == git_blob(data):
         return data
@@ -764,11 +779,16 @@ def fetch_pins(args: argparse.Namespace) -> int:
     target = args.root / "fetched"
     target.mkdir(parents=True, exist_ok=True)
     shared = SURFACE / f"witness-search-{source}" / "documents.jsonl"
-    resolved, fetched, missing = [], 0, 0
+    resolved, fetched, missing, screened = [], 0, 0, 0
     seen: set[tuple[str, str, str]] = set()
     pins = read_jsonl(shared, ("repository", "path", "commit", "blob"),
                       "restore it from git; it is the publisher trees' committed pin list")
     for pin in pins:
+        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_fetch_pins_skips_opaque_history_and_refuses_invalid_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+        if INDEX.opaque_identity(pin["path"]):
+            screened += 1
+            continue
+        # llmlint: ignore-end[changed_behavior_has_e2e]
         # The shared pin lists a few documents twice over, word for word; a walk
         # reads each document once.
         identity = (pin["repository"], pin["path"], pin["commit"])
@@ -798,7 +818,8 @@ def fetch_pins(args: argparse.Namespace) -> int:
         writer.writeheader()
         writer.writerows(resolved)
     record_guard_logs(source)
-    print(f"golden-reach-search: {source}: {len(resolved)} pins, {fetched} fetched, {missing} unresolved")
+    suffix = f"; {screened} opaque v2 record(s) screened by repository rule" if screened else ""
+    print(f"golden-reach-search: {source}: {len(resolved)} pins, {fetched} fetched, {missing} unresolved{suffix}")
     return 0
 
 
@@ -902,7 +923,9 @@ def query(args: argparse.Namespace) -> int:
             new.append({"key": key, "kind": "query", "subject": phrasing, "result": str(total),
                         "file": "queries.jsonl"})
             for document in fetched:
-                candidate = f"{document.get('repository')}:{document.get('path')}@{document.get('commit')}"
+                # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_query_and_screen_skip_opaque_inputs_and_reject_unknown_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+                candidate = f"{INDEX.candidate_name(document)}@{INDEX.candidate_revision(document)}"
+                # llmlint: ignore-end[changed_behavior_has_e2e]
                 if document.get("document"):
                     index[candidate] = document["document"]
                 readable = ("declares", "does-not-declare", "excluded-non-openapi-3")
@@ -924,13 +947,15 @@ def query(args: argparse.Namespace) -> int:
                             result = unreadable_reason(error, candidate)
                     if count is not None:
                         result = f"census {count}"
+                elif document.get("disposition") == INDEX.RAW_EXCLUDED:
+                    result = INDEX.EXCLUDED_CENSUS
                 else:
                     result = f"acquisition-failure: {document.get('disposition')}"
                 new.append({"key": key, "kind": "document", "subject": candidate, "result": result,
                             "file": "candidates.jsonl"})
         # Filed key by key, so a search stopped part-way keeps every key it finished.
         index_path.parent.mkdir(parents=True, exist_ok=True)
-        index_path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8")
+        index_path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8", newline="\n")
         mine = [r for r in new if r["key"] == key]
         kept = [r for r in read_records(source) if r["key"] == key and r["kind"] in ("screen", "candidate")]
         write_records(source, {key}, kept + _dedupe(mine))
@@ -983,6 +1008,8 @@ def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]
         }
     for row in read_records(source):
         if row["key"] != key or row["kind"] != "document":
+            continue
+        if opaque_candidate(row["subject"]):
             continue
         if not row["result"].startswith("census ") or row["result"] == "census 0":
             continue
@@ -1048,7 +1075,7 @@ def probe(args: argparse.Namespace) -> int:
     # A reached row's searched arm is read too; its profiles are cached apart,
     # since a cached run of the ledger's sites alone never read those regions.
     extra = sorted({spec for key in args.key for spec in probe_arms(key)} - set(all_sites))
-    tag = "." + hashlib.sha256("\n".join(extra).encode()).hexdigest()[:12] if extra else ""
+    tag = "." + hashlib.sha256("\n".join(extra).encode("utf-8")).hexdigest()[:12] if extra else ""
     all_sites += extra
     regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
                for spec in all_sites for site in [REACH.resolve_site(spec)]}
@@ -1148,7 +1175,7 @@ def _probe_one(
             run = subprocess.run(
                 [crozier, "generate", "--spec", path, "--output", str(scratch_path / "out"),
                  "--package-name", "fern", "--project-name", "default_package_name"],
-                capture_output=True, text=True, timeout=timeout, env=env,
+                capture_output=True, text=True, timeout=timeout, env=env, encoding="utf-8",
             )
         except subprocess.TimeoutExpired:
             return digest, {"status": f"timeout after {timeout}s", "reached": []}
@@ -1158,7 +1185,7 @@ def _probe_one(
         merged = scratch_path / "merged.profdata"
         REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
         export = scratch_path / "export.json"
-        with export.open("w", encoding="utf-8") as sink:
+        with export.open("w", encoding="utf-8", newline="\n") as sink:
             REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", crozier,
                             *sources], stdout=sink)
         hit = executed_regions(export, {file for file, _found in regions.values()})
@@ -1224,7 +1251,7 @@ def append_probe_cache(build: str, digest: str, result: dict[str, Any]) -> None:
     path = probe_cache_path(build)
     path.parent.mkdir(parents=True, exist_ok=True)
     with exclusive_lock(CACHE / "probe-cache.lock"):
-        with path.open("a", encoding="utf-8") as handle:
+        with path.open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(json.dumps({"digest": digest, **result}, sort_keys=True) + "\n")
 
 
@@ -1286,9 +1313,13 @@ def file_probes_many(source: str, probed: dict[str, list[dict[str, Any]]]) -> No
     path = source_dir(source) / "probe.jsonl"
     CACHE.mkdir(parents=True, exist_ok=True)
     with exclusive_lock(CACHE / f"{source}.probe.lock"):
-        kept = [row for row in read_probes(source) if row["key"] not in probed]
-        rows = kept + [row for key in probed for row in probed[key]]
-        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
+        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_probe_publication_preserves_opaque_history_while_replacing_current_rows`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+        kept = [row for row in read_probes(source)
+                if row["key"] not in probed or opaque_candidate(row["candidate"])]
+        rows = kept + [row for key in probed for row in probed[key]
+                       if not opaque_candidate(row["candidate"])]
+        # llmlint: ignore-end[changed_behavior_has_e2e]
+        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8", newline="\n")
 
 
 def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
@@ -1299,14 +1330,7 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     candidates are exactly the ones carrying their three screens, and an
     arm-reaching declarer nobody screened stays visible here as outstanding.
     """
-    path = source_dir(source) / "probe.jsonl"
-    # Probes of other keys of this source may be filing at the same time; the
-    # read-modify-write is theirs to wait for, not to interleave with.
-    CACHE.mkdir(parents=True, exist_ok=True)
-    with exclusive_lock(CACHE / f"{source}.probe.lock"):
-        kept = [row for row in read_probes(source) if row["key"] != key]
-        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in kept + probed), encoding="utf-8")
-
+    file_probes_many(source, {key: probed})
 
 
 
@@ -1366,7 +1390,7 @@ def file_screen(source: str, key: str, candidate: str, row: dict[str, Any]) -> N
         *({"key": key, "kind": "screen", "subject": f"{candidate} {name}", "result": row[name], "file": "screens.jsonl"}
           for name in SCREEN.SCREENS),
     ]
-    with (source_dir(source) / "screens.jsonl").open("a", encoding="utf-8") as handle:
+    with (source_dir(source) / "screens.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps({"key": key, "candidate": candidate, **row}, sort_keys=True) + "\n")
     others = [r for r in read_records(source)
               if not (r["key"] == key and r["kind"] in ("screen", "candidate")
@@ -1384,6 +1408,11 @@ def screen(args: argparse.Namespace) -> int:
     the caller: `--measured` files a record that stage measured earlier, and is
     refused unless it is whole.
     """
+    # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_query_and_screen_skip_opaque_inputs_and_reject_unknown_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+    if opaque_candidate(args.candidate):
+        print(f"golden-reach-search: {args.source}: {args.candidate} screened by repository rule")
+        return 0
+    # llmlint: ignore-end[changed_behavior_has_e2e]
     stated = [flag for flag, value in (("--licence", args.licence), ("--ref", args.ref), ("--fern", args.fern))
               if value is not None]
     if stated:
@@ -1490,7 +1519,8 @@ def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
         return [(document_subject(row, repeated), row["status"], row["sha256"])
                 for row in rows if row["status"] != "readable"]
     return [(r["subject"], r["result"], "") for r in read_records(source)
-            if r["key"] == key and r["kind"] == "document" and not r["result"].startswith("census ")]
+            if r["key"] == key and r["kind"] == "document"
+            and r["result"] != INDEX.EXCLUDED_CENSUS and not r["result"].startswith("census ")]
 
 
 def read_refused(source: str) -> dict[str, dict[str, str]]:
@@ -1500,7 +1530,10 @@ def read_refused(source: str) -> dict[str, dict[str, str]]:
         return {}
     rows = read_exact_tsv(path, REFUSED_FIELDS, f"restore it from git or re-run `refuse --source {source}`")
     for row in rows:
-        if row["verdict"] not in REFUSED_VERDICTS or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+        if row["verdict"] not in REFUSED_VERDICTS or not (
+                (opaque_candidate(row["document"]) and opaque_candidate(row["sha256"])
+                 and "@" not in row["sha256"])
+                or re.fullmatch(r"[0-9a-f]{64}", row["sha256"])):
             fail(f"{path}: `{row['document']}` is not a {'/'.join(REFUSED_VERDICTS)} verdict over a SHA-256; "
                  f"re-run `refuse --source {source}`")
     return {row["document"]: row for row in rows}
@@ -1653,7 +1686,7 @@ def src_commits_since(build: str) -> list[str]:
     same history would render differently in a clone that has fetched more.
     """
     run = subprocess.run(["git", "log", "--format=%H", f"{build}..HEAD", "--", *SRC_PATHSPEC],
-                         cwd=REPO, capture_output=True, text=True)
+                         cwd=REPO, capture_output=True, text=True, encoding="utf-8")
     if run.returncode != 0:
         fail(f"cannot read src/'s history since {build}: {run.stderr.strip()} — "
              "fetch that commit, or re-run `just golden-reach` on this checkout")
@@ -1682,7 +1715,7 @@ SEARCHED_FOR = "The unreached handling site(s) searched for: "
 def probed_build(commit: str) -> str:
     """The short commit of an earlier build whose probes a record is rendered as of."""
     run = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{commit}^{{commit}}"],
-                         cwd=REPO, capture_output=True, text=True)
+                         cwd=REPO, capture_output=True, text=True, encoding="utf-8")
     if run.returncode != 0:
         fail(f"--build {commit} names no commit in this checkout; pass the build a record's probes "
              "were counted on, as its `build of commit` line spells it")
@@ -1824,7 +1857,7 @@ def render(args: argparse.Namespace) -> int:
         lines += _dispositions(key, build)
         path = EVIDENCE / "searches" / f"{key}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return 0
 
 
@@ -1978,7 +2011,7 @@ def restate(args: argparse.Namespace) -> int:
             out.append("")
         restated_text = "\n".join(out)
         if restated_text != text:
-            path.write_text(restated_text, encoding="utf-8")
+            path.write_text(restated_text, encoding="utf-8", newline="\n")
             changed += 1
     print(f"golden-reach-search: {changed} record(s) restated")
     return 0
@@ -2141,8 +2174,14 @@ def _one_line(text: str) -> str:
     return " ".join(text.split())
 
 
+def opaque_summary(count: int) -> str:
+    version = INDEX.OPAQUE_PREFIX.split(":")[1]
+    return f"; {count} opaque {version} record(s) screened by repository rule" if count else ""
+
+
 def local_copies(
-    source: str, root: Path | None, fetch: bool, every: bool = False, timed_out: bool = False
+    source: str, root: Path | None, fetch: bool, every: bool = False, timed_out: bool = False,
+    screened: set[str] | None = None,
 ) -> dict[str, tuple[Path, str]]:
     """Local copies of one source's documents to read again, each with its pinned digest.
 
@@ -2180,13 +2219,22 @@ def local_copies(
     ledger = source_dir(source) / "candidates.jsonl"
     if ledger.is_file():
         for row in read_jsonl(ledger, ("repository", "path", "commit"), "restore it from git"):
+            if INDEX.opaque_identity(row["path"]):
+                continue
             if row.get("document"):
                 fetched.setdefault(f"{row['repository']}:{row['path']}@{row['commit']}", row)
     acquirer = None
     index = candidate_index(source)
-    for record in read_records(source):
+    records = read_records(source)
+    skipped = screened if screened is not None else set()
+    for record in records:
         if record["kind"] != "document":
             continue
+        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_continuations_preserve_opaque_history_without_fetching`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+        if opaque_candidate(record["subject"]):
+            skipped.add(record["subject"])
+            continue
+        # llmlint: ignore-end[changed_behavior_has_e2e]
         if not (every and record["result"].startswith("census ")) and not record["result"].startswith(
                 ("acquisition-failure: parse-failure", "unreadable: ")):
             continue
@@ -2213,7 +2261,7 @@ def local_copies(
     if fetch:
         path = CACHE / source / "candidate-documents.json"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8")
+        path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8", newline="\n")
         if acquirer is not None:
             record_guard_logs(source)
     return unread
@@ -2253,7 +2301,8 @@ def recensus(args: argparse.Namespace) -> int:
     source = args.source
     # A query source's census was taken when each document was fetched, so a
     # loader repair since reaches it only by counting every cached copy again.
-    copies = local_copies(source, args.root, fetch=True, every=source not in WALKS, timed_out=True)
+    skipped: set[str] = set()
+    copies = local_copies(source, args.root, fetch=True, every=source not in WALKS, timed_out=True, screened=skipped)
     refused = read_refused(source)
     readings: dict[str, tuple[dict[str, int], Any, str, str]] = {}
     for document, (local, sha256) in sorted(copies.items()):
@@ -2321,7 +2370,7 @@ def recensus(args: argparse.Namespace) -> int:
         writer.writerows(filed[document] for document in sorted(filed))
     fallback = sum(1 for _counts, _parsed, loader, _digest in readings.values() if loader)
     print(f"golden-reach-search: {source}: {len(readings)} of {len(copies)} documents counted, "
-          f"{fallback} through {YAML_LOADER}")
+          f"{fallback} through {YAML_LOADER}{opaque_summary(len(skipped))}")
     return 0
 
 
@@ -2335,8 +2384,11 @@ def refuse(args: argparse.Namespace) -> int:
     out: the census alone failed on it, and it stays outstanding.
     """
     source = args.source
-    unread = local_copies(source, args.root, fetch=False)
-    rows, kept = [], 0
+    skipped: set[str] = set()
+    unread = local_copies(source, args.root, fetch=False, screened=skipped)
+    rows = [row for document, row in read_refused(source).items() if opaque_candidate(document)]
+    historical = len(rows)
+    kept = 0
     for document, (local, sha256) in sorted(unread.items()):
         if not local.is_file():
             continue
@@ -2356,7 +2408,8 @@ def refuse(args: argparse.Namespace) -> int:
         writer.writeheader()
         writer.writerows(rows)
     print(f"golden-reach-search: {source}: {len(unread)} unread, {len(rows)} census-refused, "
-          f"{kept} read by the full parser (still outstanding), {len(unread) - len(rows) - kept} without local bytes")
+          f"{kept} read by the full parser (still outstanding), {len(unread) - (len(rows) - historical) - kept} without local bytes"
+          f"{opaque_summary(len(skipped))}")
     return 0
 
 RESCREEN_FILE = "fern-rescreen.jsonl"
@@ -2440,6 +2493,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
                               if record_build(p.read_text(encoding="utf-8"), p) == build)
     wanted: dict[str, list[tuple[str, str, dict[str, Any]]]] = defaultdict(list)
     paths: dict[str, Path] = {}
+    skipped = set()
     for key in keys:
         reaching = _reaching(key, args.source, build)
         latest: dict[str, dict[str, Any]] = {}
@@ -2450,6 +2504,11 @@ def fern_rescreen(args: argparse.Namespace) -> int:
                     latest[row["candidate"]] = row
         located = dict(declarers(args.source, key, args.root)) if reaching else {}
         for candidate in sorted(reaching):
+            # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_continuations_preserve_opaque_history_without_fetching`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+            if opaque_candidate(candidate):
+                skipped.add(candidate)
+                continue
+            # llmlint: ignore-end[changed_behavior_has_e2e]
             row = latest.get(candidate)
             # A refusal already measured here stands; only one filed without
             # Fern's exit status is taken again.
@@ -2463,6 +2522,9 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
             wanted[digest].append((key, candidate, row))
             paths.setdefault(digest, path)
+    if skipped and not wanted:
+        print(f"golden-reach-search: {args.source}: no documents re-screened{opaque_summary(len(skipped))}")
+        return 0
     cache_path = CACHE / RESCREEN_CACHE
     cache: dict[str, dict[str, Any]] = {}
     if cache_path.is_file():
@@ -2478,7 +2540,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             result.pop("logs")
             cache[digest] = result
             CACHE.mkdir(parents=True, exist_ok=True)
-            with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8") as handle:
+            with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8", newline="\n") as handle:
                 handle.write(json.dumps(result, sort_keys=True) + "\n")
     evidence = source_dir(args.source) / RESCREEN_FILE
     kept = [row for row in read_jsonl(evidence, ("sha256", "candidate"), "restore it from git")
@@ -2501,9 +2563,9 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             })
             filed += 1
     evidence.write_text("".join(json.dumps(r, sort_keys=True) + "\n"
-                                for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8")
+                                for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8", newline="\n")
     print(f"golden-reach-search: {args.source}: {len(wanted)} documents re-screened, {filed} screens re-filed, "
-          f"{unsettled} left on their earlier screen by a timeout")
+          f"{unsettled} left on their earlier screen by a timeout{opaque_summary(len(skipped))}")
     return 0
 
 

@@ -16,6 +16,7 @@ extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	r
 generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	refuse	thing_level5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	1/1
 generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	refuse	are both Event_UserAccountDeleted	11/11
 generator-missing-type	documents	generate	1	KeyError: <…>	1	refuse	Api-Version	1/1
+head-request-body	documents	check	1	Endpoint is a HEAD, so it cannot have a request body.	1	refuse	HEAD /patina	1/1
 heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memory	2	refuse	components/schemas/Tool/properties/composition	2/2
 list-default-not-array	documents	check	1	Default value for list type must be an array	7	refuse	Thing/properties/tags	7/7
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	refuse	GET /pets response 200 components/schemas/Pet discriminator kind	13/13
@@ -24,7 +25,7 @@ object-extends-non-object	documents	check	1	Objects can only extend other object
 object-property-name-collision	names	check	1	Object has multiple properties named <…>:	41	refuse	#/components/schemas/FileConflict property "sha1"	41/41
 path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	29	refuse	GET /things parameter id	29/29
 path-without-leading-slash	documents	check	1	Path must start with a slash.	4	refuse	paths/things	4/4
-request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	29	refuse	GET /accounts parameters "account_id" and "accountId"	29/29
+request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	30	refuse	GET /accounts parameters "account_id" and "accountId"	30/30
 request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	296	refuse	PATCH /repos/{name} body property "name"	296/296
 sdk-method-collision	names	check	1	SDK method <…> already exists (x-fern-sdk-group-name: <…>, x-fern-sdk-method-name: <…>)	2	refuse	SDK method analytics.create	2/2
 service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	refuse	security/session	26/26

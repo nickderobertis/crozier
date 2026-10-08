@@ -24,6 +24,10 @@ import unittest.mock
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "witness-search" / "witness_screen.py"
 COMMIT = "c" * 40
@@ -53,7 +57,7 @@ FERN = """\
             sys.exit(0)
         package = pathlib.Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk"
         package.mkdir(parents=True)
-        (package / "client.py").write_text("class Client: ...\\n")
+        (package / "client.py").write_text("class Client: ...\\n", encoding="utf-8", newline="\\n")
     """
 
 
@@ -77,6 +81,7 @@ class _Raw(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self) -> None:
+        self.server.requests.append(self.path)
         files = {
             f"/acme/shop/{COMMIT}/openapi.yaml": DOCUMENT,
             f"/acme/shop/{COMMIT}/LICENSE": b"MIT License\n\nCopyright (c) acme\n",
@@ -118,12 +123,14 @@ class LegacyScreenCliTests(unittest.TestCase):
             "key\tselector\tregion\tcensus_status\nsample-shape\tschema:x\tschemas.md\tsupported\n",
             encoding="utf-8")
         server = ThreadingHTTPServer(("127.0.0.1", 0), _Raw)
+        server.requests = []
+        self.server = server
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
         fake_bin = self.scratch / "bin"
         fake_bin.mkdir()
-        (fake_bin / "fern").write_text(f"#!{sys.executable}\n" + textwrap.dedent(FERN), encoding="utf-8")
+        (fake_bin / "fern").write_text(f"#!{sys.executable}\n" + textwrap.dedent(FERN), encoding="utf-8", newline="\n")
         os.chmod(fake_bin / "fern", 0o755)
         self.env = {**os.environ, "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}", "FERN_STUB": "pass",
                     "GITHUB_TOKEN": SECRET, "CROZIER_RAW_GITHUB_URL": f"http://127.0.0.1:{server.server_port}"}
@@ -133,13 +140,65 @@ class LegacyScreenCliTests(unittest.TestCase):
             [sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "sample-shape",
              "--repository", repository, "--commit", COMMIT, "--path", "openapi.yaml",
              "--evidence-root", str(self.root), "--timeout", "60", *args],
-            env={**self.env, **env}, capture_output=True, text=True, cwd=REPO, timeout=300)
+            env={**self.env, **env}, capture_output=True, text=True, cwd=REPO, timeout=300, encoding="utf-8")
 
     def rows(self) -> list[dict[str, object]]:
         path = self.evidence / "screens.jsonl"
         if not path.is_file():
             return []
         return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+    def test_excluded_repositories_fail_before_fetching_or_filing(self) -> None:
+        for repository in sorted(INDEX.EXCLUDED_REPOSITORIES):
+            with self.subTest(repository=repository):
+                rejected = self.screen(repository=repository)
+                self.assertNotEqual(0, rejected.returncode)
+                self.assertIn("excluded by the repository rule", rejected.stderr)
+                self.assertIn("specification publisher's repository", rejected.stderr)
+                self.assertEqual([], self.server.requests)
+                self.assertEqual([], list(self.evidence.iterdir()))
+        recovered = self.screen("--disposition", "witness-found")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertTrue(self.server.requests)
+        self.assertEqual(1, len(self.rows()))
+
+    def test_measure_refuses_opaque_history_before_its_real_fetch_boundary(self) -> None:
+        load("rate_limit_guard", REPO / "tools/witness-search/rate_limit_guard.py")
+        github = load("witness_screen_acquirer_for_test", REPO / "tools/witness-search/witness-search-github.py")
+        acquirer = github.Acquirer(self.evidence, cache=self.scratch / "cache",
+                                   raw_github_url=self.env["CROZIER_RAW_GITHUB_URL"])
+        token = INDEX.make_opaque_identity("d" * 32, 1)
+        logs = self.evidence / "measurement-logs"
+        with self.assertRaisesRegex(SystemExit, "opaque history cannot be measured again"):
+            SCREEN.measure(repository="example/copied-input", commit=token, path=token,
+                           expected_sha256=token,
+                           fetch=lambda url, subject: acquirer.raw_github_get(url, "sample-shape", subject),
+                           raw_base=acquirer.raw_github_url, logs=logs, base=self.evidence)
+        self.assertEqual([], self.server.requests)
+        self.assertFalse(logs.exists())
+        self.assertEqual([], self.rows())
+
+    def test_opaque_history_is_skipped_and_unknown_versions_fail_without_writes(self) -> None:
+        def token(number: int) -> str:
+            return INDEX.make_opaque_identity("b" * 32, number)
+        arguments = ["--path", token(1), "--commit", token(2), "--sha256", token(3)]
+        skipped = self.screen(*arguments, repository="example/copied-input")
+        self.assertEqual(0, skipped.returncode, skipped.stderr)
+        self.assertIn("screened by repository rule", skipped.stdout)
+        self.assertEqual(1, len(skipped.stdout.splitlines()))
+        self.assertEqual([], self.server.requests)
+        self.assertEqual([], list(self.evidence.iterdir()))
+        invalid = [arg.replace(":v2:", ":v3:") for arg in arguments]
+        rejected = self.screen(*invalid, repository="example/copied-input")
+        self.assertNotEqual(0, rejected.returncode)
+        self.assertIn("unsupported opaque identity version v3", rejected.stderr)
+        self.assertIn("restore valid v2 evidence", rejected.stderr)
+        self.assertEqual([], self.server.requests)
+        self.assertEqual([], list(self.evidence.iterdir()))
+        recovered = self.screen(*arguments, repository="example/copied-input")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual([], self.server.requests)
+        self.assertEqual([], list(self.evidence.iterdir()))
 
     def test_a_candidate_passing_every_screen_is_filed_with_its_measured_record(self) -> None:
         # Passing every screen owes a disposition; nothing is filed without one.
@@ -167,7 +226,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             self.assertTrue(record[name]["log"].startswith("screens/"))
             self.assertEqual(record[name]["log_sha256"], hashlib.sha256(log.read_bytes()).hexdigest())
             self.assertNotIn(SECRET, log.read_text(encoding="utf-8"))
-        self.assertIn("token in use: [GITHUB_TOKEN redacted]", (self.evidence / record["fern"]["log"]).read_text())
+        self.assertIn("token in use: [GITHUB_TOKEN redacted]", (self.evidence / record["fern"]["log"]).read_text(encoding="utf-8"))
         # The reads went through the acquirer's raw lane, which logs each call.
         calls = [json.loads(line) for line in
                  (self.evidence / "raw-github-calls.jsonl").read_text(encoding="utf-8").splitlines()]
@@ -203,7 +262,7 @@ class LegacyScreenCliTests(unittest.TestCase):
                         command[command.index(flag) + 1] = value
                     else:
                         command += [flag, value]
-                done = subprocess.run(command, env=self.env, capture_output=True, text=True, cwd=REPO, timeout=300)
+                done = subprocess.run(command, env=self.env, capture_output=True, text=True, cwd=REPO, timeout=300, encoding="utf-8")
                 self.assertEqual(0, done.returncode, done.stderr)
                 [row] = self.rows()
                 self.assertEqual(ref, row["ref"])
@@ -268,7 +327,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             broken = json.loads(json.dumps(record))
             mutate(broken)
             path = self.scratch / "broken.json"
-            path.write_text(json.dumps(broken), encoding="utf-8")
+            path.write_text(json.dumps(broken), encoding="utf-8", newline="\n")
             with self.subTest(missing=missing):
                 refused = self.screen("--measured", str(path), "--disposition", "witness-found")
                 self.assertEqual(1, refused.returncode)
@@ -293,7 +352,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             broken = json.loads(json.dumps(record))
             broken["fern"]["log"] = log
             path = self.scratch / "outside.json"
-            path.write_text(json.dumps(broken), encoding="utf-8")
+            path.write_text(json.dumps(broken), encoding="utf-8", newline="\n")
             with self.subTest(log=log):
                 refused = self.screen("--measured", str(path), "--disposition", "witness-found")
                 self.assertEqual(1, refused.returncode, refused.stderr)
@@ -330,13 +389,13 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertEqual(1, missing.returncode)
         self.assertIn("pass the JSON file a measurement wrote, or drop --measured", missing.stderr)
         garbled = self.scratch / "garbled.json"
-        garbled.write_text("{not json", encoding="utf-8")
+        garbled.write_text("{not json", encoding="utf-8", newline="\n")
         refused = self.screen("--measured", str(garbled))
         self.assertEqual(1, refused.returncode)
         self.assertIn("is not JSON", refused.stderr)
         zero = subprocess.run([sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "k",
                                "--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml",
-                               "--timeout", "0"], capture_output=True, text=True, cwd=REPO)
+                               "--timeout", "0"], capture_output=True, text=True, cwd=REPO, encoding="utf-8")
         self.assertEqual(2, zero.returncode)
         self.assertIn("0 is not a positive number of seconds", zero.stderr)
         self.assertEqual([], self.rows())
@@ -425,7 +484,7 @@ class LegacyScreenCliTests(unittest.TestCase):
                 refused = subprocess.run(
                     [sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "sample-shape",
                      "--repository", "acme/shop", "--commit", COMMIT, "--path", path,
-                     "--evidence-root", str(self.root)], env=self.env, capture_output=True, text=True, cwd=REPO)
+                     "--evidence-root", str(self.root)], env=self.env, capture_output=True, text=True, encoding="utf-8", cwd=REPO)
                 self.assertEqual(1, refused.returncode, refused.stderr)
                 self.assertIn(f"{path!r} is no path inside a repository", refused.stderr)
         for repository in ("../acme", "acme/..", "./shop"):
@@ -436,7 +495,7 @@ class LegacyScreenCliTests(unittest.TestCase):
         mutable = subprocess.run(
             [sys.executable, str(SCRIPT), "screen", "--source", "sourcegraph", "--key", "sample-shape",
              "--repository", "acme/shop", "--commit", "main", "--path", "openapi.yaml",
-             "--evidence-root", str(self.root)], env=self.env, capture_output=True, text=True, cwd=REPO)
+             "--evidence-root", str(self.root)], env=self.env, capture_output=True, text=True, encoding="utf-8", cwd=REPO)
         self.assertEqual(0, mutable.returncode, mutable.stderr)
         self.assertEqual("failed: 'main' is no full commit SHA, so the ref is mutable", self.rows()[-1]["ref"])
         self.assertEqual("not-fetched", self.rows()[-1]["measured"]["ref"]["exit"])
@@ -533,7 +592,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             broken = json.loads(json.dumps(record))
             mutate(broken)
             path = self.scratch / "broken.json"
-            path.write_text(json.dumps(broken), encoding="utf-8")
+            path.write_text(json.dumps(broken), encoding="utf-8", newline="\n")
             with self.subTest(missing=missing):
                 refused = self.screen("--measured", str(path), "--disposition", "witness-found")
                 self.assertEqual(1, refused.returncode, refused.stderr)
@@ -589,7 +648,7 @@ class GoldenFernPinsTests(unittest.TestCase):
                      "--source", "sourcegraph", "--key", "sample-shape", "--repository", "acme/shop",
                      "--commit", COMMIT, "--path", "openapi.yaml", "--evidence-root", str(surface),
                      "--measured", str(measured), "--disposition", "witness-found"],
-                    capture_output=True, text=True, timeout=120)
+                    capture_output=True, text=True, encoding="utf-8", timeout=120)
                 self.assertEqual(1, refused.returncode, refused.stderr)
                 self.assertIn(message, refused.stderr)
                 self.assertNotIn("Traceback", refused.stderr)
@@ -634,7 +693,7 @@ class HistoricalRowTests(unittest.TestCase):
         scratch = tempfile.TemporaryDirectory(prefix="witness-screen-history-")
         self.addCleanup(scratch.cleanup)
         path = Path(scratch.name) / "screens.jsonl"
-        path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
         return path
 
     def test_a_row_predating_the_stage_is_read_and_labelled_historical(self) -> None:
@@ -682,7 +741,7 @@ class HistoricalRowTests(unittest.TestCase):
         refused = subprocess.run(
             [sys.executable, str(REPO / "tools" / "witness-search" / "witness-search-github-index.py"),
              "--check", "--evidence-root", str(root)],
-            capture_output=True, text=True, cwd=REPO, timeout=60)
+            capture_output=True, text=True, encoding="utf-8", cwd=REPO, timeout=60)
         self.assertEqual(1, refused.returncode, refused.stderr)
         self.assertIn("file it through `tools/witness-search/witness_screen.py`", refused.stderr)
         self.assertTrue((REPO / "tools" / "witness-search" / "witness_screen.py").is_file())
@@ -702,7 +761,9 @@ class CommittedScreenTests(unittest.TestCase):
         surface = REPO / "docs" / "openapi-surface"
         measured = []
         for screens in sorted(surface.glob("**/screens.jsonl")):
-            legacy = screens.parent.name.startswith("witness-search-")
+            # A key-scoped search files its legacy rows one level down, under
+            # `witness-search-<key>/<source>/`, in the same row shape.
+            legacy = screens.relative_to(surface).parts[0].startswith("witness-search-")
             fields = INDEX.SCREEN_FIELDS if legacy else {name: name for name in SCREEN.SCREENS}
             for number, line in enumerate(screens.read_text(encoding="utf-8").splitlines(), 1):
                 row = json.loads(line)

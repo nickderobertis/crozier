@@ -62,8 +62,8 @@ affected tier and runs in CI's own required `live-e2e` leg.
 - **A placeholder snippet is resolved, never skipped.** Fern writes a worked
   example only where it can synthesize the arguments; otherwise `reference.md` gets
   an abbreviated `client.<sub>.<method>(...)` with no constructed client (a raw
-  `application/octet-stream` body has no example bytes to invent — `exhaustive`'s
-  `endpoints_params_upload_with_path` since Fern 5.20). crozier reproduces that
+  `application/octet-stream` body has no example bytes to invent — Qakka's
+  `queues.send_message_binary`). crozier reproduces that
   placeholder byte-for-byte, so the driver *resolves* it: it lifts the client
   construction from a worked example in the same reference
   (`_driver.client_preamble`), fills the required parameters from the method's own
@@ -77,18 +77,14 @@ affected tier and runs in CI's own required `live-e2e` leg.
   cannot coexist in one interpreter; `_driver.py` runs as a subprocess per fixture
   (as `tests/runtime/_recorder.py` does), printing its recording as JSON.
 
-## Two corpus kinds
+## Committed publisher sources
 
-- **Vendored synthetic seeds** (`exhaustive`, …): the spec is committed at
-  `tests/fixtures/<name>/openapi.yml`. `exhaustive` is the deliberately
-  complicated seed.
-- **Committed real-world corpus** (`apideck.com-crm`; `bunq.com`, the at-scale
-  target and the one fixture that sets `strict_coverage=False`): a real API from
-  `tests/fixtures/CORPUS.md`. Both the source and Fern golden are committed.
-  The `Fixture.spec_url` points at the pinned upstream URL, and the harness
-  reads the committed source at run time. This is the proof that crozier's
-  parameter/response `$ref` resolution and Fern-matching method naming hold up on
-  a messy real-world document, not just curated seeds.
+Every live fixture is a publisher source registered in `tests/fixtures/CORPUS.md`,
+never an authored seed, so the sweep proves crozier on real documents; the harness
+reads the committed source and Fern golden at run time, and `conftest.FIXTURES` is
+the roster. `strict_coverage=False` is for a fixture whose sub-client grouping
+crozier does not yet match: it is swept in aggregate, and its structural parity is
+left to the byte-diff gate.
 
 How big a fixture is isn't written down here. `conftest.reference_methods()` reads
 the endpoint and sub-client catalog out of that fixture's committed
@@ -98,8 +94,8 @@ the endpoint and sub-client catalog out of that fixture's committed
 
 Add a `Fixture(...)` to `conftest.FIXTURES` — the generation flags are the runtime
 analog of the byte-diff `Corpus` in `crates/crozier-e2e/tests/e2e.rs`; the package must generate as
-`fern` so the reference snippets import. For a real-world corpus entry, set
-`spec_url` to its CORPUS.md row and commit the Fern golden `expected/` (the
+`fern` so the reference snippets import. For a registered publisher source, set
+`registered_source=True` and commit the Fern golden `expected/` (the
 `reference.md` drives collection). Everything else — endpoint discovery, fetch, the
 mock, the assertions — is automatic. Pick corpora whose *Fern* output generates
 cleanly (a spec Fern itself rejects is not a valid target) and whose crozier output

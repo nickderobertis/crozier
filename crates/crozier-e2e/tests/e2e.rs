@@ -91,112 +91,6 @@ struct Corpus {
     unmatched: &'static [&'static str],
 }
 
-/// Files committed in Fern's seed repository but absent from packaged
-/// `fern generate --preview` SDKs. This is a comparison-scope boundary, not an
-/// open generator gap. Each path is reverse-checked as absent from Crozier.
-const QUERY_PARAMETERS_REPOSITORY_SCAFFOLDING: &[&str] = &[
-    ".github/workflows/ci.yml",
-    ".gitignore",
-    "poetry.lock",
-    "snippet.json",
-    "tests/custom/test_client.py",
-    "tests/utils/__init__.py",
-    "tests/utils/assets/models/__init__.py",
-    "tests/utils/assets/models/circle.py",
-    "tests/utils/assets/models/color.py",
-    "tests/utils/assets/models/object_with_defaults.py",
-    "tests/utils/assets/models/object_with_optional_field.py",
-    "tests/utils/assets/models/shape.py",
-    "tests/utils/assets/models/square.py",
-    "tests/utils/assets/models/undiscriminated_shape.py",
-    "tests/utils/test_http_client.py",
-    "tests/utils/test_query_encoding.py",
-    "tests/utils/test_serialization.py",
-];
-
-/// Exact raw-byte expectations for Crozier's packaged form of files whose Fern
-/// seed-repository form embeds local publication settings or local-generator
-/// snippet policy unavailable from the OpenAPI input. Length plus FNV-1a pins the
-/// whole emitted file: a change to any byte fails instead of passing merely
-/// because the result still differs from the seed golden.
-struct PackagedExpectation {
-    path: &'static str,
-    len: usize,
-    fnv1a64: u64,
-}
-
-const QUERY_PARAMETERS_PACKAGED_EXPECTATIONS: &[PackagedExpectation] = &[
-    PackagedExpectation {
-        path: ".fern/metadata.json",
-        len: 246,
-        fnv1a64: 0x5b7bf894b0008e9f,
-    },
-    PackagedExpectation {
-        path: "README.md",
-        len: 5_619,
-        fnv1a64: 0x4bbcc6a0d1e02f8c,
-    },
-    PackagedExpectation {
-        path: "pyproject.toml",
-        len: 2_628,
-        fnv1a64: 0xbed857a7b5dc639f,
-    },
-    PackagedExpectation {
-        path: "reference.md",
-        len: 2_276,
-        fnv1a64: 0xb8a326b121319e24,
-    },
-    PackagedExpectation {
-        path: "src/seed/client.py",
-        len: 16_653,
-        fnv1a64: 0x8163a174ff7d9f68,
-    },
-    PackagedExpectation {
-        path: "src/seed/core/client_wrapper.py",
-        len: 4_889,
-        fnv1a64: 0x6fb4f6254ede7d58,
-    },
-];
-
-/// Packaged 5.20 runtime files absent from this locally generated seed tree.
-const QUERY_PARAMETERS_PACKAGED_ONLY: &[&str] = &["src/seed/core/enum.py"];
-
-fn repository_scaffolding(c: &Corpus) -> &'static [&'static str] {
-    if c.api == QUERY_PARAMETERS.api {
-        QUERY_PARAMETERS_REPOSITORY_SCAFFOLDING
-    } else {
-        &[]
-    }
-}
-
-fn packaged_expectations(c: &Corpus) -> &'static [PackagedExpectation] {
-    if c.api == QUERY_PARAMETERS.api {
-        QUERY_PARAMETERS_PACKAGED_EXPECTATIONS
-    } else {
-        &[]
-    }
-}
-
-fn is_packaged_expectation(c: &Corpus, path: &str) -> bool {
-    packaged_expectations(c)
-        .iter()
-        .any(|expectation| expectation.path == path)
-}
-
-fn fnv1a64(bytes: &[u8]) -> u64 {
-    bytes.iter().fold(0xcbf29ce484222325, |hash, byte| {
-        (hash ^ u64::from(*byte)).wrapping_mul(0x100000001b3)
-    })
-}
-
-fn packaged_only_files(c: &Corpus) -> &'static [&'static str] {
-    if c.api == QUERY_PARAMETERS.api {
-        QUERY_PARAMETERS_PACKAGED_ONLY
-    } else {
-        &[]
-    }
-}
-
 /// Files crozier emits that this corpus's Fern golden does not carry — the
 /// file-set half of a declared residual, the mirror of `Corpus::unmatched`.
 ///
@@ -369,32 +263,6 @@ const WEBFLOW_V2_CROZIER_ONLY: &[&str] = &[
     "src/fern/types/post_site_publish_payload_payload.py",
     "src/fern/types/post_site_publish_payload.py",
 ];
-
-/// Fern's OpenAPI-sourced `query-parameters-openapi` seed (offline corpus).
-const QUERY_PARAMETERS: Corpus = Corpus {
-    api: "query-parameters-openapi",
-    package_name: "seed",
-    project_name: "fern_query-parameters-openapi",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
-/// The broad `exhaustive` target: Fern 5.20.0 output over the vendored OpenAPI
-/// document (see tools/fern-goldens/generate-fern-fixture.sh). All 111 files match — the
-/// widest single proof of parity in the corpus. See docs/matching.md.
-const EXHAUSTIVE: Corpus = Corpus {
-    api: "exhaustive",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
 
 /// Feature-coverage target specs: hand-authored OpenAPI documents that each pin
 /// one shape (see docs/matching.md) — auth schemes beyond bearer, inline
@@ -984,26 +852,14 @@ fn corpus_carve_outs(c: &Corpus) -> Vec<(&'static str, Vec<&'static str>)> {
     vec![
         ("unmatched", c.unmatched.to_vec()),
         ("crozier-only", crozier_only_files(c).to_vec()),
-        (
-            "pinned",
-            packaged_expectations(c)
-                .iter()
-                .map(|expectation| expectation.path)
-                .collect(),
-        ),
-        ("scaffolding", repository_scaffolding(c).to_vec()),
     ]
 }
 
-/// [`corpus_carve_outs`] as the inventory records them: only the kinds that
-/// cover a file, and never repository scaffolding — repository-only files
-/// crozier never emits, so an entry naming one already fails at every
-/// comparison (crozier wrote no such file) and at the corpus gate's own
-/// carve-out check, without the inventory restating their paths.
+/// Nonempty corpus carve-outs, as recorded in the inventory.
 fn recorded_carve_outs(c: &Corpus) -> std::collections::BTreeMap<String, Vec<String>> {
     corpus_carve_outs(c)
         .into_iter()
-        .filter(|(slug, files)| *slug != "scaffolding" && !files.is_empty())
+        .filter(|(_, files)| !files.is_empty())
         .map(|(slug, files)| {
             (
                 slug.to_string(),
@@ -1292,15 +1148,8 @@ fn assert_generated_tree_matches(
 ) {
     let context = Context::from_trees(expected_root, out);
     let mut observed = Vec::new();
-    let repository_scaffolding = repository_scaffolding(c);
-    let packaged_expectations = packaged_expectations(c);
     for rel in walk_files(expected_root) {
-        if c.unmatched.contains(&rel.as_str())
-            || repository_scaffolding.contains(&rel.as_str())
-            || packaged_expectations
-                .iter()
-                .any(|expectation| expectation.path == rel)
-        {
+        if c.unmatched.contains(&rel.as_str()) {
             continue;
         }
         let generated = std::fs::read_to_string(out.join(&rel))
@@ -1328,65 +1177,11 @@ fn assert_generated_tree_matches(
     let failures = ledger.check(&observed, &|_| true);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 
-    for rel in repository_scaffolding {
-        assert!(
-            expected_root.join(rel).is_file(),
-            "repository-scaffolding path is not in the Fern seed fixture: {rel}"
-        );
-        assert!(
-            !out.join(rel).exists(),
-            "{rel} is now emitted by Crozier and must move back into the byte comparison"
-        );
-    }
-    let mut packaged_mismatches = Vec::new();
-    for expectation in packaged_expectations {
-        let rel = expectation.path;
-        let expected = std::fs::read_to_string(expected_root.join(rel)).unwrap_or_else(|e| {
-            panic!("packaged-expectation path is not in the Fern fixture: {rel}: {e}")
-        });
-        let generated = std::fs::read(out.join(rel)).unwrap_or_else(|e| {
-            panic!("Crozier stopped emitting packaged-expectation path {rel}: {e}")
-        });
-        assert!(
-            !generated_matches_fixture(
-                &context,
-                rel,
-                std::str::from_utf8(&generated).expect("generated SDK files are UTF-8"),
-                &expected
-            ),
-            "{rel} now matches Fern's seed artifact — remove its explicit variant"
-        );
-        let actual = (generated.len(), fnv1a64(&generated));
-        if actual != (expectation.len, expectation.fnv1a64) {
-            packaged_mismatches.push(format!(
-                "{rel}: expected ({}, {:#018x}), got ({}, {:#018x})",
-                expectation.len, expectation.fnv1a64, actual.0, actual.1
-            ));
-        }
-    }
-    assert!(
-        packaged_mismatches.is_empty(),
-        "Crozier's pinned packaged output changed:\n{}",
-        packaged_mismatches.join("\n")
-    );
-    for rel in packaged_only_files(c) {
-        assert!(
-            !expected_root.join(rel).exists(),
-            "{rel} is now present in the seed golden and must enter byte comparison"
-        );
-        assert!(
-            out.join(rel).is_file(),
-            "Crozier stopped emitting packaged runtime file {rel}"
-        );
-    }
-
     // The comparison is bidirectional: a newly emitted Crozier file cannot hide
-    // merely because Fern's seed tree lacks it.
+    // merely because the golden lacks it.
     for rel in walk_files(out) {
         assert!(
-            expected_root.join(&rel).is_file()
-                || packaged_only_files(c).contains(&rel.as_str())
-                || crozier_only_files(c).contains(&rel.as_str()),
+            expected_root.join(&rel).is_file() || crozier_only_files(c).contains(&rel.as_str()),
             "Crozier emitted {rel}, but the Fern fixture has no corresponding file"
         );
     }
@@ -4458,16 +4253,6 @@ fn observed_in(rel: &str, compared: &parity::FileComparison) -> Vec<Observed> {
         .collect()
 }
 
-#[test]
-fn query_parameters_matches_fern_output_byte_for_byte() {
-    assert_corpus_matches(&QUERY_PARAMETERS);
-}
-
-#[test]
-fn exhaustive_matches_fern_output_byte_for_byte() {
-    assert_corpus_matches(&EXHAUSTIVE);
-}
-
 /// `apideck.com-crm`: a real-world committed corpus API (issue #77). Its OpenAPI
 /// spec is committed (`corpus_spec`); its full Fern golden is
 /// committed and reproduced byte-for-byte.
@@ -5120,8 +4905,6 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
-    &QUERY_PARAMETERS,
-    &EXHAUSTIVE,
     &APIDECK_CRM,
     &BUNQ,
     &BUNGIE,
@@ -5201,6 +4984,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENEPCIS_DPP_READY,
     &NDW_ACCESSIBILITY_MAP,
     &MARIMO,
+    &MARIMO_CLIENT_CLASS_NAME,
     &BLACKADI_OAUTH2,
     &MOSIP_ESIGNET,
     &OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG,
@@ -5323,6 +5107,7 @@ const CORPORA: &[&Corpus] = &[
     &FLASK_EXAMPLE_HEROKU,
     &OIP_WEB_API,
     &WAYLAY_QUERIES,
+    &CONFLUENT_KAFKA_CONNECT,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -6311,6 +6096,18 @@ const MARIMO: Corpus = Corpus {
     audiences: &[],
     audience_strict: false,
     client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Configured class names over the registered package-root API.
+const MARIMO_CLIENT_CLASS_NAME: Corpus = Corpus {
+    api: "marimo-client-class-name",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: Some("DispatchClient"),
     extra_fields: None,
     unmatched: &[],
 };
@@ -8335,6 +8132,17 @@ const WAYLAY_QUERIES: Corpus = Corpus {
     unmatched: &[],
 };
 
+const CONFLUENT_KAFKA_CONNECT: Corpus = Corpus {
+    api: "confluent-kafka-connect",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `millenium-falcon-challenge`: corpus row 319, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
@@ -8629,6 +8437,25 @@ fn eos_extra_fields_forbid_matches_fern_output() {
 #[test]
 fn med_anvisa_price_matches_fern_output() {
     assert_committed_corpus_matches(&MED_ANVISA_PRICE);
+    let spec = corpus_spec(MED_ANVISA_PRICE.api).expect("registered medication-price source");
+    let document: serde_yaml_ng::Value = serde_yaml_ng::from_str(
+        &std::fs::read_to_string(spec).expect("read medication-price source"),
+    )
+    .expect("parse medication-price source");
+    let parameter = &document["paths"]["/medication"]["get"]["parameters"][1];
+    assert_eq!(parameter["name"].as_str(), Some("value"));
+    assert!(parameter.get("schema").is_none());
+    assert!(parameter.get("content").is_none());
+    let out = generate_corpus(&MED_ANVISA_PRICE);
+    for path in ["client.py", "raw_client.py"] {
+        let source = std::fs::read_to_string(out.path().join("src/fern/medication").join(path))
+            .expect("generated medication query client");
+        assert_eq!(
+            source.matches("value: typing.Optional[str] = None").count(),
+            2,
+            "{path}"
+        );
+    }
 }
 
 #[test]
@@ -8689,6 +8516,28 @@ fn ndw_accessibility_map_matches_fern_output() {
 #[test]
 fn marimo_matches_fern_output() {
     assert_committed_corpus_matches(&MARIMO);
+}
+
+#[test]
+fn marimo_client_class_name_matches_fern_output() {
+    assert_committed_corpus_matches(&MARIMO_CLIENT_CLASS_NAME);
+    let out = generate_corpus(&MARIMO_CLIENT_CLASS_NAME);
+    for (path, classes) in [
+        (
+            "client.py",
+            ["class DispatchClient:", "class AsyncDispatchClient:"],
+        ),
+        (
+            "raw_client.py",
+            ["class RawDispatchClient:", "class AsyncRawDispatchClient:"],
+        ),
+    ] {
+        let source = std::fs::read_to_string(out.path().join("src/fern").join(path))
+            .expect("generated package-root client");
+        for class in classes {
+            assert!(source.contains(class), "{path} is missing {class}");
+        }
+    }
 }
 
 #[test]
@@ -9032,6 +8881,11 @@ fn sigstore_rekor_matches_fern_output() {
 }
 
 #[test]
+fn confluent_kafka_connect_matches_fern_output() {
+    assert_committed_corpus_matches(&CONFLUENT_KAFKA_CONNECT);
+}
+
+#[test]
 fn waylay_queries_matches_fern_output() {
     assert_committed_corpus_matches(&WAYLAY_QUERIES);
 }
@@ -9179,7 +9033,7 @@ struct FlatGolden {
 
 /// Every flat golden, one per row of `tests/fixtures/flat-goldens.txt` (held to
 /// it by `flat_goldens_are_the_declared_set`). Between them they exercise every
-/// setting that changes the flat tree: the default names (`exhaustive`), a
+/// setting that changes the flat tree: the default names (`swagger-petstore`), a
 /// client class name, audiences with strictness, a non-default `extra-fields`,
 /// a custom package and project name, and a mixed-case package name. Fern's
 /// `organization` is what names the module, client and README the way crozier's
@@ -9187,8 +9041,21 @@ struct FlatGolden {
 /// project name reaches no file of it (see docs/matching.md).
 const FLAT_GOLDENS: &[FlatGolden] = &[
     FlatGolden {
-        fixture: "exhaustive",
+        fixture: "swagger-petstore",
         corpus: None,
+    },
+    FlatGolden {
+        fixture: "swagger-petstore-distribution",
+        corpus: Some(&Corpus {
+            api: "swagger-petstore",
+            package_name: "acme",
+            project_name: "acme-dist",
+            audiences: &[],
+            audience_strict: false,
+            client_class_name: None,
+            extra_fields: None,
+            unmatched: &[],
+        }),
     },
     FlatGolden {
         fixture: "client-class-name",
@@ -9201,19 +9068,6 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
     FlatGolden {
         fixture: "eos.local-extra-fields-forbid",
         corpus: None,
-    },
-    FlatGolden {
-        fixture: "exhaustive-package-name",
-        corpus: Some(&Corpus {
-            api: "exhaustive",
-            package_name: "acme",
-            project_name: "acme-dist",
-            audiences: &[],
-            audience_strict: false,
-            client_class_name: None,
-            extra_fields: None,
-            unmatched: &[],
-        }),
     },
     // Fern's organization with an inner capital and no client class name: the
     // code names `PetStoreApi`, and so does crozier everywhere, where Fern's
@@ -9358,11 +9212,11 @@ macro_rules! flat_goldens {
 }
 
 flat_goldens! {
-    exhaustive_flat_matches_fern => "exhaustive",
+    swagger_petstore_flat_matches_fern => "swagger-petstore",
+    swagger_petstore_distribution_flat_matches_fern => "swagger-petstore-distribution",
     client_class_name_flat_matches_fern => "client-class-name",
     audience_filter_strict_flat_matches_fern => "audience-filter-strict",
     eos_extra_fields_forbid_flat_matches_fern => "eos.local-extra-fields-forbid",
-    exhaustive_package_name_flat_matches_fern => "exhaustive-package-name",
     swagger_petstore_organization_flat_matches_fern => "swagger-petstore-organization",
 }
 
@@ -9539,26 +9393,10 @@ fn report_fixture_gaps() {
             .collect();
         let divergent: Vec<&String> = expected_files
             .iter()
-            .filter(|rel| {
-                !confirmed.contains(rel.as_str())
-                    && !repository_scaffolding(corpus).contains(&rel.as_str())
-                    && !is_packaged_expectation(corpus, rel)
-            })
+            .filter(|rel| !confirmed.contains(rel.as_str()))
             .collect();
         println!("\n=== {} ===", corpus.api);
         println!("  {} expected file(s).", expected_files.len());
-        if !repository_scaffolding(corpus).is_empty() {
-            println!(
-                "  {} seed-repository scaffolding file(s) outside generated-SDK scope.",
-                repository_scaffolding(corpus).len()
-            );
-        }
-        if !packaged_expectations(corpus).is_empty() {
-            println!(
-                "  {} exact packaged-output expectation(s).",
-                packaged_expectations(corpus).len()
-            );
-        }
         if divergent.is_empty() {
             println!("  no unmatched files.");
         } else {
@@ -9574,11 +9412,6 @@ fn report_fixture_gaps() {
         // Once the measured lists are installed, these checks ensure both sides
         // of the opt-out contract remain truthful.
         for rel in &expected_files {
-            if repository_scaffolding(corpus).contains(&rel.as_str())
-                || is_packaged_expectation(corpus, rel)
-            {
-                continue;
-            }
             assert_eq!(
                 confirmed.contains(rel.as_str()),
                 !corpus.unmatched.contains(&rel.as_str()),
@@ -9901,11 +9734,10 @@ fn select_flat_goldens(requested: Option<&str>, filter: Option<&str>) -> Vec<&'s
 
 #[test]
 fn exact_comparison_scope_reports_unregistered_managed_fixtures() {
-    let (selected, failures) =
-        select_diff_corpora(Some("query-parameters-openapi,new-unregistered-fixture"));
+    let (selected, failures) = select_diff_corpora(Some("frankfurter,new-unregistered-fixture"));
     assert_eq!(
         selected.iter().map(|corpus| corpus.api).collect::<Vec<_>>(),
-        ["query-parameters-openapi"]
+        ["frankfurter"]
     );
     assert_eq!(failures.len(), 1, "{failures:?}");
     assert_eq!(failures[0].0, "new-unregistered-fixture");
@@ -10140,13 +9972,14 @@ fn safe_fixture_name(value: &str) -> bool {
 }
 
 fn corpus_fixture_aliases() -> Result<Vec<(&'static str, &'static str)>, String> {
+    parse_corpus_fixture_aliases(include_str!("../../../tests/fixtures/corpus-aliases.tsv"))
+}
+
+fn parse_corpus_fixture_aliases(input: &str) -> Result<Vec<(&str, &str)>, String> {
     let mut aliases = Vec::new();
     let mut sources = std::collections::HashSet::new();
     let mut fixtures = std::collections::HashSet::new();
-    for (index, line) in include_str!("../../../tests/fixtures/corpus-aliases.tsv")
-        .lines()
-        .enumerate()
-    {
+    for (index, line) in input.lines().enumerate() {
         if line.trim().is_empty() || line.trim_start().starts_with('#') {
             continue;
         }
@@ -10178,9 +10011,6 @@ fn corpus_fixture_aliases() -> Result<Vec<(&'static str, &'static str)>, String>
         }
         aliases.push((name, fixture));
     }
-    if aliases.is_empty() {
-        return Err("corpus-aliases.tsv contains no aliases".to_string());
-    }
     Ok(aliases)
 }
 
@@ -10190,6 +10020,84 @@ fn corpus_fixture_for<'a>(name: &'a str, aliases: &[(&'a str, &'a str)]) -> &'a 
         .find_map(|(source, fixture)| (*source == name).then_some(*fixture))
         .unwrap_or(name)
 }
+
+// llmlint: ignore-block[e2e_not_mocked, tests_mirror_real_usage] The readers under test are the real tools/fern-goldens/fern-goldens and tools/corpus/fetch-corpus.sh, copied unmodified into a temp repo by FernGoldensBoundaryTests (tools/fern-goldens-git/tests/fern_goldens_git_test.py), the harness `just test-fern-goldens` drives them through; its stand-in `curl`/`just` replace only the network fetch and the Fern run, external processes an offline gate cannot reach that act after the alias registry is read and validated. The third reader, `parse_corpus_fixture_aliases`/`corpus_fixture_for`, is this e2e binary's own fixture locator with no public entry point, so the test calls it directly to hold it to the two scripts.
+#[cfg(not(windows))]
+#[test]
+fn fixture_alias_readers_agree_on_validation_and_resolution() {
+    let python = python_interpreter().expect("Python is required for alias reader agreement");
+    let journey = r#"
+import json, subprocess, sys
+sys.path.insert(0, 'tools/fern-goldens-git/tests')
+from fern_goldens_git_test import FernGoldensBoundaryTests, ALIASES
+case = FernGoldensBoundaryTests()
+case.setUp()
+try:
+    (case.root / 'tests/fixtures' / ALIASES.name).write_text(sys.argv[1], encoding='utf-8', newline='\n')
+    name = sys.argv[2]
+    (case.root / 'tests/fixtures/CORPUS.md').write_text(
+        '| # | name | method | source | pinned ref | license | decision | shapes |\n'
+        f'| 1 | `{name}` | test | https://example.test/alpha/openapi.yaml | `1` | MIT | link-ok | alias |\n',
+        encoding='utf-8',
+        newline='\n',
+    )
+    generated = case.run_tool('generate', '--version', '4.9.0', '--fixture', name)
+    fetched = subprocess.run(
+        [case.root / 'tools/corpus/fetch-corpus.sh', '--dry-run', '--fixture', 'alpha'],
+        cwd=case.root, text=True, encoding='utf-8', capture_output=True,
+    )
+    if generated.returncode == 0:
+        case.assertEqual(name, case.state('alpha')['corpus_spec_name'])
+    if fetched.returncode == 0:
+        case.assertTrue(fetched.stdout.startswith(name + '\t'), fetched.stdout)
+    print(json.dumps({'python': generated.returncode, 'shell': fetched.returncode}))
+finally:
+    case.tearDown()
+"#;
+    for (input, requested, expected) in [
+        ("# aliases\n", "alpha", Some("alpha")),
+        (
+            "planet-window\talpha\nsignal-history\tbeta\n",
+            "planet-window",
+            Some("alpha"),
+        ),
+        ("../outside\talpha\n", "alpha", None),
+        ("only-one-cell\n", "alpha", None),
+        ("planet-window\talpha\nplanet-window\tbeta\n", "alpha", None),
+        (
+            "planet-window\talpha\nsignal-history\talpha\n",
+            "alpha",
+            None,
+        ),
+        ("alpha\talpha\n", "alpha", None),
+    ] {
+        let rust = parse_corpus_fixture_aliases(input);
+        assert_eq!(rust.is_ok(), expected.is_some(), "Rust reader: {input:?}");
+        if let Some(expected) = expected {
+            assert_eq!(corpus_fixture_for(requested, &rust.unwrap()), expected);
+        }
+        let output = std::process::Command::new(python)
+            .args(["-c", journey, input, requested])
+            .current_dir(repo_root())
+            .env("PYTHONUTF8", "1")
+            .output()
+            .expect("public alias workflows");
+        assert!(
+            output.status.success(),
+            "alias journey: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let statuses: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        for reader in ["python", "shell"] {
+            assert_eq!(
+                statuses[reader] == 0,
+                expected.is_some(),
+                "{reader}: {input:?}: {statuses}"
+            );
+        }
+    }
+}
+// llmlint: ignore-end[e2e_not_mocked, tests_mirror_real_usage]
 
 #[test]
 fn corpus_fixture_aliases_resolve_to_registered_goldens() {
@@ -10532,7 +10440,7 @@ fn runtime_python_env() -> Result<PathBuf, String> {
 /// hand-author the expected behavior, this derives it from Fern: the committed
 /// pytest suite ([`tests/runtime/test_wire.py`]) records the client's behavior
 /// (via an injected `httpx.MockTransport`) for **both** the committed Fern fixture
-/// SDK (`exhaustive/expected/src`, real runnable Fern output) and the
+/// SDK (`airbyte.local-config/expected/src`, generated from the registered API) and the
 /// crozier-generated SDK, and asserts — per journey — that the recordings match.
 ///
 /// Each journey captures the outgoing request (method, URL, headers, serialized
@@ -10542,17 +10450,14 @@ fn runtime_python_env() -> Result<PathBuf, String> {
 /// pydantic deserialization, and typed error raising, sync and async. The *only*
 /// allowed difference is the deliberate SDK-identity branding (`X-Crozier-*` vs
 /// `X-Fern-*`), which the recorder folds to a common prefix on both sides. It
-/// omits Fern 5.20's Runtime/Platform identity pair because the runnable
-/// `exhaustive` fixture predates them; managed 5.20 byte fixtures gate those lines
-/// exactly. This is the in-process analog of Fern's own WireMock
-/// wire tests (Docker/Enterprise-gated output crozier does not emit). This test
 /// drives the compiled binary and the compiled client, so it lives in the e2e
 /// binary, in its SDK Python-environment tier. See docs/matching.md.
+// llmlint: ignore-block[e2e_not_mocked] The double is `httpx.MockTransport` at the HTTP transport, the boundary tests/runtime and the refusal registry's wire tests double by convention: it records the real generated clients, crozier's and Fern's, through one transport so their requests and outcomes can be compared; crossing a real network is the live Prism tier's job (`just test-live-e2e`).
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_crozier_matches_fern_runtime_behavior() {
     let out = tempfile::tempdir().expect("tempdir");
-    let spec = fixture_dir("exhaustive").join("openapi.yml");
+    let spec = corpus_spec(AIRBYTE_CONFIG.api).expect("registered Airbyte source");
     crozier()
         .args(["generate", "--spec"])
         .arg(&spec)
@@ -10571,7 +10476,7 @@ fn sdk_env_crozier_matches_fern_runtime_behavior() {
         .unwrap_or_else(|reason| panic!("runtime wire tests require a Python env: {reason}"));
 
     let runtime_dir = repo_root().join("tests/runtime");
-    let fern_src = fixture_dir("exhaustive").join("expected/src");
+    let fern_src = fixture_dir(AIRBYTE_CONFIG.api).join("expected/src");
     let output = std::process::Command::new(&py)
         .args(["-m", "pytest", "-q", "-p", "no:cacheprovider"])
         .arg(&runtime_dir)
@@ -10590,6 +10495,7 @@ fn sdk_env_crozier_matches_fern_runtime_behavior() {
         String::from_utf8_lossy(&output.stderr),
     );
 }
+// llmlint: ignore-end[e2e_not_mocked]
 
 #[test]
 fn arbitrary_spec_generates_valid_python() {
@@ -12614,22 +12520,8 @@ fn missing_operation_id_generates_valid_python() {
 }
 
 #[test]
-fn exhaustive_output_is_valid_python() {
-    let fixtures = fixture_dir("exhaustive");
-    let out = tempfile::tempdir().expect("tempdir");
-    crozier()
-        .args(["generate", "--spec"])
-        .arg(fixtures.join("openapi.yml"))
-        .arg("--output")
-        .arg(out.path())
-        .args([
-            "--package-name",
-            "fern",
-            "--project-name",
-            "default_package_name",
-        ])
-        .assert()
-        .success();
+fn marimo_output_is_valid_python() {
+    let out = generate_corpus(&MARIMO);
     assert_valid_python(out.path());
 }
 
@@ -15327,6 +15219,49 @@ fn fern_refusal_classes_hold() {
         "{FERN_REFUSALS_DIR}/ does not hold:\n{}",
         failures.join("\n")
     );
+}
+
+/// A body-bearing HEAD fails before writing; removing the body recovers.
+#[test]
+fn head_request_body_refuses_then_recovers() {
+    let source = repo_root().join("docs/fern-refusals/head-request-body/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &source, strict).unwrap();
+        assert!(
+            refused_failures("head-request-body", &run, "HEAD /patina", strict).is_empty(),
+            "{}",
+            run.stderr
+        );
+        assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+    }
+    let temp = tempfile::tempdir().unwrap();
+    let control = temp.path().join("control.yml");
+    let text = std::fs::read_to_string(source).unwrap();
+    let start = text.find("      requestBody:").unwrap();
+    let end = text.find("      responses:").unwrap();
+    std::fs::write(&control, format!("{}{}", &text[..start], &text[end..])).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &control, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+    // An ignored HEAD generates nothing for its body, so it is not refused,
+    // under either spelling of the ignore extension.
+    for extension in ["x-crozier-ignore", "x-fern-ignore"] {
+        let ignored = temp.path().join(format!("{extension}.yml"));
+        let marked = text.replacen(
+            "      operationId: inspect_patina\n",
+            &format!("      operationId: inspect_patina\n      {extension}: true\n"),
+            1,
+        );
+        assert_ne!(marked, text, "the probe's HEAD operation moved");
+        std::fs::write(&ignored, marked).unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &ignored, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{extension}: {}", run.stderr);
+            assert!(!run.files.is_empty(), "{extension}: wrote nothing");
+        }
+    }
 }
 
 /// crozier#358's one refused use site: a required property whose pointer,

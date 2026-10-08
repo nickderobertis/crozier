@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/formancehq/ledger/d47ba1746cec2173d84eab8ec575be196eae0837/openapi.yaml
+HTTP 200
+166527 bytes, sha256 6ff73ac9a6bd3ebd71caf88c918e6b68e4a337e8c95d3c93d60234bf0943569f
+pinned sha256 6ff73ac9a6bd3ebd71caf88c918e6b68e4a337e8c95d3c93d60234bf0943569f
+outcome: passed: 166527 bytes read at the immutable commit d47ba1746cec2173d84eab8ec575be196eae0837, sha256 6ff73ac9a6bd3ebd71caf88c918e6b68e4a337e8c95d3c93d60234bf0943569f

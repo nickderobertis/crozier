@@ -82,13 +82,13 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
 
     def fetch(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run([corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), *args],
-                              cwd=self.root, capture_output=True, text=True, check=False)
+                              cwd=self.root, capture_output=True, text=True, encoding="utf-8", check=False)
 
     def test_both_manifest_readers_select_the_same_registered_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             result = subprocess.run(
                 [corpus_sources.bash(), str(REPO / "tools/corpus/fetch-corpus.sh"), "--dry-run", directory],
-                cwd=REPO, capture_output=True, text=True,
+                cwd=REPO, capture_output=True, text=True, encoding="utf-8",
             )
             self.assertEqual(0, result.returncode, result.stderr)
             fetched_rows = [tuple(line.split("\t")[:2]) for line in result.stdout.splitlines()]
@@ -101,7 +101,7 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
         self.addCleanup(manifest.chmod, 0o644)
         completed = subprocess.run(
             [corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), "--dry-run"],
-            cwd=self.root, capture_output=True, text=True, check=False,
+            cwd=self.root, capture_output=True, text=True, encoding="utf-8", check=False,
         )
         self.assert_refused(completed, f"could not read the numbered rows of {manifest}",
                             "git checkout -- tests/fixtures/CORPUS.md")
@@ -159,8 +159,8 @@ class TheRebuildToolingFetches(LoopbackRoot):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual(PLAIN, self.committed("plain/openapi.json").read_bytes())
         published = self.committed("remote/openapi.yaml").read_bytes()
-        self.assertIn(PINNED_URL.encode(), published)
-        self.assertNotIn(MUTABLE_URL.encode(), published)
+        self.assertIn(PINNED_URL.encode("utf-8"), published)
+        self.assertNotIn(MUTABLE_URL.encode("utf-8"), published)
         remote = self.committed(f"remote/remote/raw.githubusercontent.com/example/schemas/{PINNED_SHA}/block.yaml")
         self.assertEqual(BLOCK, remote.read_bytes())
         records = {record.path: record for record in corpus_sources.load_manifest(self.root)}
@@ -185,7 +185,7 @@ class TheRebuildToolingFetches(LoopbackRoot):
         fetched.mkdir()
         result = subprocess.run(
             [corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), "--fixture", "plain", str(fetched)],
-            cwd=self.root, capture_output=True, text=True,
+            cwd=self.root, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(0, result.returncode, result.stderr)
         requests = len(self.server.requests)
@@ -233,7 +233,7 @@ class TheCheckStillDiscriminates(LoopbackRoot):
         self.assert_refused(self.check(), "plain/openapi.json is recorded but missing")
 
     def test_an_unrecorded_file_is_refused(self) -> None:
-        self.committed("plain/notes.txt").write_text("stray\n", encoding="utf-8")
+        self.committed("plain/notes.txt").write_text("stray\n", encoding="utf-8", newline="\n")
         self.assert_refused(self.check(), "plain/notes.txt is not recorded")
 
     def test_a_fetch_only_row_is_refused(self) -> None:
@@ -249,26 +249,26 @@ class TheCheckStillDiscriminates(LoopbackRoot):
 
     def test_a_recorded_row_the_manifest_no_longer_registers_is_refused(self) -> None:
         corpus = self.fixtures / "CORPUS.md"
-        corpus.write_text(corpus.read_text(encoding="utf-8").replace("| committed | plain |", "| withdrawn | plain |"), encoding="utf-8")
+        corpus.write_text(corpus.read_text(encoding="utf-8").replace("| committed | plain |", "| withdrawn | plain |"), encoding="utf-8", newline="\n")
         self.assert_refused(self.check(), "plain: recorded in tests/fixtures/corpus-sources.tsv but is no canonical CORPUS.md row")
 
     def test_a_pinned_remote_document_left_uncommitted_is_refused(self) -> None:
         manifest = self.fixtures / "corpus-sources.tsv"
         manifest.write_text(
             "".join(line for line in manifest.read_text(encoding="utf-8").splitlines(keepends=True) if "block.yaml" not in line),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         shutil.rmtree(self.committed("remote/remote"))
         self.assert_refused(self.check(), f"remote: remote/raw.githubusercontent.com/example/schemas/{PINNED_SHA}/block.yaml is not committed")
 
     def test_a_record_disagreeing_with_the_pin_manifest_is_refused(self) -> None:
         pins = self.fixtures / "corpus-remote-ref-pins.tsv"
-        pins.write_text(pins.read_text(encoding="utf-8").replace(hashlib.sha256(BLOCK).hexdigest(), "0" * 64), encoding="utf-8")
+        pins.write_text(pins.read_text(encoding="utf-8").replace(hashlib.sha256(BLOCK).hexdigest(), "0" * 64), encoding="utf-8", newline="\n")
         self.assert_refused(self.check(), "corpus-remote-ref-pins.tsv pins " + "0" * 64)
 
     def test_manifest_structure_refuses_each_malformed_record(self) -> None:
         manifest = self.fixtures / "corpus-sources.tsv"
-        original = manifest.read_text()
+        original = manifest.read_text(encoding="utf-8")
         rows = [line for line in original.splitlines() if line and not line.startswith("#")]
         cases = (
             (rows[0] + "\textra\n", "expected 4 tab-separated cells"),
@@ -283,34 +283,34 @@ class TheCheckStillDiscriminates(LoopbackRoot):
         )
         for body, diagnostic in cases:
             with self.subTest(diagnostic=diagnostic):
-                manifest.write_text(body)
+                manifest.write_text(body, encoding="utf-8", newline="\n")
                 self.assert_refused(self.check(), diagnostic)
-        manifest.write_text(original)
+        manifest.write_text(original, encoding="utf-8", newline="\n")
         self.assertEqual(0, self.check().returncode)
 
     def test_prepare_refuses_duplicate_aliases_and_nonempty_staging(self) -> None:
         aliases = self.fixtures / "corpus-aliases.tsv"
-        original = aliases.read_text()
-        aliases.write_text("plain\tone\nplain\ttwo\n")
+        original = aliases.read_text(encoding="utf-8")
+        aliases.write_text("plain\tone\nplain\ttwo\n", encoding="utf-8", newline="\n")
         completed = run(self.root, "prepare", "--fixture", "plain", "--output", str(self.root / "staged"))
         self.assert_refused(completed, "duplicate alias")
-        aliases.write_text(original)
+        aliases.write_text(original, encoding="utf-8", newline="\n")
         staging = self.root / "staged"
         staging.mkdir()
-        (staging / "keep.txt").write_text("keep")
+        (staging / "keep.txt").write_text("keep", encoding="utf-8", newline="\n")
         completed = run(self.root, "prepare", "--fixture", "plain", "--output", str(staging))
         self.assert_refused(completed, "use a fresh directory")
-        self.assertEqual("keep", (staging / "keep.txt").read_text())
+        self.assertEqual("keep", (staging / "keep.txt").read_text(encoding="utf-8"))
 
     def test_unsafe_registered_names_are_refused_before_rebuild(self) -> None:
         corpus = self.fixtures / "CORPUS.md"
-        corpus.write_text(corpus.read_text().replace("`plain`", "`../outside`"))
+        corpus.write_text(corpus.read_text(encoding="utf-8").replace("`plain`", "`../outside`"), encoding="utf-8", newline="\n")
         self.assert_refused(self.vendor(), "unsafe corpus name")
         self.assertEqual(PLAIN, self.committed("plain/openapi.json").read_bytes())
 
     def test_prepare_refuses_forged_remote_provenance(self) -> None:
         manifest = self.fixtures / "corpus-sources.tsv"
-        original = manifest.read_text()
+        original = manifest.read_text(encoding="utf-8")
         for url in ("", "https://wrong.example/schema.yaml"):
             with self.subTest(url=url):
                 lines = original.splitlines()
@@ -319,24 +319,24 @@ class TheCheckStillDiscriminates(LoopbackRoot):
                         cells = line.split("\t")
                         cells[2] = url
                         lines[index] = "\t".join(cells)
-                manifest.write_text("\n".join(lines) + "\n")
+                manifest.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
                 completed = run(self.root, "prepare", "--fixture", "remote",
                                 "--output", str(self.root / "stage"))
                 self.assert_refused(completed, "provenance disagrees")
                 self.assertFalse((self.root / "stage").exists())
-        manifest.write_text(original)
+        manifest.write_text(original, encoding="utf-8", newline="\n")
 
     def test_a_malformed_digest_is_refused(self) -> None:
         manifest = self.fixtures / "corpus-sources.tsv"
         text = manifest.read_text(encoding="utf-8")
         digest = hashlib.sha256(PLAIN).hexdigest()
-        manifest.write_text(text.replace(digest, digest.upper()), encoding="utf-8")
+        manifest.write_text(text.replace(digest, digest.upper()), encoding="utf-8", newline="\n")
         self.assert_refused(self.check(), "is not 64 lowercase hexadecimal characters")
 
     def test_a_path_outside_its_row_is_refused(self) -> None:
         manifest = self.fixtures / "corpus-sources.tsv"
         text = manifest.read_text(encoding="utf-8")
-        manifest.write_text(text.replace("corpus-sources/plain/openapi.json", "corpus-sources/remote/../plain/openapi.json"), encoding="utf-8")
+        manifest.write_text(text.replace("corpus-sources/plain/openapi.json", "corpus-sources/remote/../plain/openapi.json"), encoding="utf-8", newline="\n")
         self.assert_refused(self.check(), "is not a file under tests/fixtures/corpus-sources/plain/")
 
 

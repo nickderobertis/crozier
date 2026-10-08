@@ -111,7 +111,7 @@ class TheDefaultCacheStaysIgnored(github.WitnessSearchGithubFixture, unittest.Te
         The document carries this test's temporary directory name, so its digest
         names a cache file no other run writes, and that one file is removed after.
         """
-        document = DOCUMENT + f"# {self.root.name}\n".encode()
+        document = DOCUMENT + f"# {self.root.name}\n".encode("utf-8")
         self.server.state["raw_document"] = document
         digest = hashlib.sha256(document).hexdigest()
         cached = REPO / ".local" / "witness-search-cache" / "documents" / f"{digest}.yaml"

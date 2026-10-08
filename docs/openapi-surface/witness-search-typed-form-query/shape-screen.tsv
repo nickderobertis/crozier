@@ -1,0 +1,3 @@
+key	repository	path	commit	sha256	selector_count	shape_count	disposition
+parameter-style-form-query-object	github.com/Dicklesworthstone/jeffreysprompts.com	apps/web/public/openapi.json	361d3fb786496c49b60a2ed6640bfe38c954ffc2	56d4bd8744ef304d07511074deca01b76c5b1fb5c42eced5a3df86efe50dbe0b	0	0	does-not-declare-request-shape
+parameter-style-form-query-object	github.com/payrouteshq/paykit-sdk	packages/bachs/openapi.json	c8f11bf8005ff0ca1a5821042731979774e266bc	800bee58d2fc570cf2e187ea56c51cc13d592d7108895537cb204614f38748c0	1	0	does-not-declare-request-shape

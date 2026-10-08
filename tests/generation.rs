@@ -1513,53 +1513,111 @@ fn empty_title_falls_back_to_client_package() {
     assert!(files.iter().any(|f| f.path.starts_with("src/client")));
 }
 
-/// Render the real exhaustive spec in-process so the endpoint/error/scaffolding
-/// branches (exercised only by the binary e2e, which coverage skips) are measured
-/// here too. Byte-exactness is the e2e's job; this asserts the shapes are present.
-#[test]
-fn renders_exhaustive_endpoint_layer_in_process() {
-    let spec = std::fs::read_to_string(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/exhaustive/openapi.yml"),
-    )
-    .expect("read exhaustive spec");
-    let files = render(&spec);
+fn render_registered_request_source(api: &str) -> HashMap<String, String> {
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/corpus-sources")
+        .join(api)
+        .join("openapi.json");
+    render(&std::fs::read_to_string(source).expect("read registered publisher source"))
+}
 
-    // Errors package + scaffolding.
+fn generated_python_method<'a>(raw: &'a str, operation: &str) -> &'a str {
+    raw.split_once(&format!("\n    def {operation}("))
+        .expect("registered operation is generated")
+        .1
+        .split("\n    def ")
+        .next()
+        .expect("method body")
+}
+
+#[test]
+fn renders_appwrite_functions_create_inline_fields() {
+    let files = render_registered_request_source("appwrite.io-server");
+    let create = generated_python_method(&files["src/acme/functions/raw_client.py"], "create");
+    assert!(create.contains("json={"));
+    assert!(create.contains("timeout: typing.Optional[int] = OMIT"));
+    assert!(create.contains("execute: typing.Sequence[str]"));
+    assert!(create.contains("events: typing.Optional[typing.Sequence[str]] = OMIT"));
+}
+
+#[test]
+fn renders_milvus_vector_insert_with_per_field_conversion() {
+    let files = render_registered_request_source("milvus-restful-v2-3");
+    let insert = generated_python_method(
+        &files["src/acme/vector_operations_v2/raw_client.py"],
+        "insert",
+    );
+    assert!(insert.contains("\"data\": convert_and_respect_annotation_metadata("));
+    assert!(insert.contains("object_=data, annotation=PostV2VectordbEntitiesInsertRequestData"));
+}
+
+#[test]
+fn renders_komga_book_metadata_batch_with_object_map_conversion() {
+    let files = render_registered_request_source("komga");
+    let raw = &files["src/acme/books/raw_client.py"];
+    let update = generated_python_method(raw, "update_book_metadata_by_batch");
+    assert!(update.contains("request: typing.Dict[str, BookMetadataUpdateDto]"));
+    assert!(update.contains("json=convert_and_respect_annotation_metadata("));
+    assert!(update.contains("annotation=typing.Dict[str, BookMetadataUpdateDto]"));
+}
+
+#[test]
+fn renders_komga_get_all_books_with_array_query_typing() {
+    let files = render_registered_request_source("komga");
+    let get = generated_python_method(
+        &files["src/acme/books/raw_client.py"],
+        "get_all_books_deprecated",
+    );
+    assert!(get.contains("library_id: typing.Optional[typing.Union[str, typing.Sequence[str]]]"));
+    assert!(get.contains("\"library_id\": library_id"));
+}
+
+#[test]
+fn renders_qakka_send_message_binary_with_its_queue_path() {
+    let files = render_registered_request_source("apache.org-qakka");
+    let send = generated_python_method(
+        &files["src/acme/queues/raw_client.py"],
+        "send_message_binary",
+    );
+    assert!(send.contains("queue_name: str"));
+    assert!(send.contains("encode_path_param(queue_name)"));
+    assert!(send.contains("content=request,"));
+    assert!(send.contains("\"content-type\": \"application/octet-stream\","));
+}
+
+#[test]
+fn renders_nextgen_care_team_post_with_a_required_unknown_body_and_typed_error() {
+    let files = render_registered_request_source("nextgen");
+    let post = generated_python_method(
+        &files["src/acme/care_team_members/raw_client.py"],
+        "post_base_url_persons_person_id_chart_care_team_members",
+    );
+    assert!(post.contains("request: typing.Any,"));
+    assert!(!post.contains("request: typing.Optional[typing.Any] = None"));
+    assert!(post.contains("json=request,"));
+    assert!(post.contains("if _response.status_code == 400:"));
+    assert!(post.contains("raise BadRequestError("));
     assert!(files.contains_key("src/acme/errors/bad_request_error.py"));
-    let errors_init = &files["src/acme/errors/__init__.py"];
-    assert!(errors_init.contains("_dynamic_imports"));
-    assert!(errors_init.contains("\"BadRequestError\""));
+    let errors = &files["src/acme/errors/__init__.py"];
+    assert!(errors.contains("_dynamic_imports"));
+    assert!(errors.contains("\"BadRequestError\""));
     assert!(files["pyproject.toml"].contains("name = \"acme\""));
     assert!(files.contains_key("requirements.txt"));
     assert!(files.contains_key(".fern/metadata.json"));
+}
 
-    // Inline object body: hoisted fields, `json={...}`, per-field convert.
-    let obj = &files["src/acme/endpoints_object/raw_client.py"];
-    assert!(obj.contains("json={"));
-    assert!(obj.contains("convert_and_respect_annotation_metadata"));
-    assert!(obj.contains("long_: typing.Optional[int] = OMIT"));
-    assert!(obj.contains("typing.Sequence[str]"));
-
-    // Container bodies: plain maps and the convert wrapper for maps of objects.
-    let container = &files["src/acme/endpoints_container/raw_client.py"];
-    assert!(container.contains("json=request,"));
-    assert!(container.contains("annotation=typing.Dict[str, TypesObjectWithRequiredField]"));
-
-    // Mixed path/body: bytes body via `content=` and an array query param.
-    let params = &files["src/acme/endpoints_params/raw_client.py"];
-    assert!(params.contains("content=request,"));
-    assert!(params.contains("\"content-type\": \"application/octet-stream\","));
-    assert!(params.contains("typing.Optional[typing.Union[str, typing.Sequence[str]]]"));
-
-    // Unknown body + a declared 400 raising the generated exception. The `{}` body
-    // is declared `required: true` and carries no `nullable`, so the argument is a
-    // required `typing.Any` — matching Fern's `noauth` client pair exactly.
-    let noauth = &files["src/acme/noauth/raw_client.py"];
-    assert!(noauth.contains("request: typing.Any,"), "{noauth}");
-    assert!(!noauth.contains("request: typing.Optional[typing.Any] = None"));
-    assert!(noauth.contains("if _response.status_code == 400:"));
-    assert!(noauth.contains("raise BadRequestError("));
+#[test]
+fn renders_kafka_connect_validation_with_a_plain_string_map() {
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/corpus-sources/confluent-kafka-connect/openapi.yaml");
+    let files =
+        render(&std::fs::read_to_string(source).expect("read Confluent Kafka Connect source"));
+    let apply = generated_python_method(
+        &files["src/acme/managed_connector_plugins_connect_v1/raw_client.py"],
+        "validate_connectv1connector_plugin",
+    );
+    assert!(apply.contains("request: typing.Dict[str, str],"));
+    assert!(apply.contains("json=request,"));
 }
 
 /// A non-2xx status crozier cannot name (a non-standard `460`) never suppresses the
@@ -13921,9 +13979,9 @@ fn aiohttp_hint_follows_ruffs_layout_for_the_name_length() {
     assert!(packaged("default_package_name").contains(&three_lines("default_package_name")));
 
     // A name too long even for the split call splits the string too.
-    let long = packaged("fern_query-parameters-openapi");
+    let long = packaged("navigation_instrument_archive");
     assert!(long.contains(
-        "                \"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install fern_query-parameters-openapi[aiohttp]\"\n"
+        "                \"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install navigation_instrument_archive[aiohttp]\"\n"
     ));
     assert!(long.lines().all(|line| line.len() <= 120));
 }

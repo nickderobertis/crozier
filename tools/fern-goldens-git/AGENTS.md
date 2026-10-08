@@ -1,8 +1,8 @@
 # fern-goldens-git
 
 - The Fern goldens tooling's suites that drive the real `git` — the lifecycle's
-  publication to a bare local remote, `fixtures-refresh.sh`'s sparse fetch,
-  `generate-corpus-fixtures.sh` over a local upstream — and the one that drives
+  publication to a bare local remote, `generate-corpus-fixtures.sh` over a
+  local upstream — and the one that drives
   the real `just`. They are a project of their own so an edit to an offline
   fern-goldens test never pays for them; a change to a script they exercise
   reaches them through their `{workspaceRoot}` inputs.

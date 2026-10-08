@@ -32,6 +32,7 @@ inline-oneof-variants	oneof-string-const-variant	src/ir.rs::InlineHoister::hoist
 inline-property-unions	annotated-ref-target-anyof	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	5	6
 inline-property-unions	property-sole-anyof-closed-object-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
 inline-property-unions	property-sole-anyof-struct-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
+meadow-tag-code	format-uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	2	3
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]	9	9
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-discriminated-unions	array-item-anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
@@ -40,6 +41,7 @@ nested-array-discriminated-unions	inheritance-discriminated-union	src/ir.rs::Bui
 nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
 nested-array-elements	items-oneof-element	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]	21	21
+ore-bin-screen	parameter-style-form-query-object	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30
 ref-pointer-ignored-head	ref-pointer-undeclared-component-head	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	1	1
 ref-pointer-walk	array-item-pointer-walk-allof	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	7	11
 ref-pointer-walk	array-item-pointer-walk-anyof	src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	7	11
@@ -52,4 +54,6 @@ ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::ref_to_class["items" => \{]
 ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	2	3
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::ref_to_class["properties" if index]	4	4
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6
+skyglass-observation-date	format-date	src/ir.rs::scalar_body[=Some\("date"\) =>]	2	2
+sonar-packet-envelope	format-byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	3	3
 x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2

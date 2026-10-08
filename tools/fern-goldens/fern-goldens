@@ -157,8 +157,6 @@ def load_fixture_aliases(root: Path) -> dict[str, str]:
             )
         aliases[name] = fixture
         fixtures.add(fixture)
-    if not aliases:
-        raise GoldensError(f"fixture alias file {path} has no aliases")
     return aliases
 
 
@@ -287,15 +285,19 @@ def run_command(
     stderr: int | io.TextIOBase = subprocess.PIPE,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    # Output is decoded as UTF-8 whatever the platform's locale, so every child
+    # writes UTF-8: Python children (behind `just` and the generator) via UTF-8 mode.
+    environment = {**(os.environ if env is None else env), "PYTHONUTF8": "1"}
     try:
         return subprocess.run(
             argv,
             cwd=cwd,
             check=False,
             text=True,
+            encoding="utf-8",
             stdout=stdout,
             stderr=stderr,
-            env=env,
+            env=environment,
         )
     except OSError as error:
         raise GoldensError(f"could not run {argv[0]!r}: {error}") from error
@@ -425,7 +427,7 @@ def expected_state(
     # it always had, so no packaged golden goes stale over this key.
     if layout == FLAT:
         state["layout"] = FLAT
-    return (json.dumps(state, indent=2) + "\n").encode()
+    return (json.dumps(state, indent=2) + "\n").encode("utf-8")
 
 
 def load_known_failure(
@@ -689,7 +691,7 @@ def write_patch(root: Path, report: Path) -> None:
         cwd=root,
     )
     if result.returncode == 0:
-        (report / "fern-goldens.patch").write_text(result.stdout or "", encoding="utf-8")
+        (report / "fern-goldens.patch").write_text(result.stdout or "", encoding="utf-8", newline="\n")
 
 
 def generate_flat(
@@ -703,7 +705,7 @@ def generate_flat(
     stage = Path(tempfile.mkdtemp(prefix=".fern-goldens-stage.", dir=fixture_dir))
     try:
         staged = stage / GOLDEN_DIRS[FLAT]
-        with log_path.open("w", encoding="utf-8") as log:
+        with log_path.open("w", encoding="utf-8", newline="\n") as log:
             result = run_command(
                 [
                     str(generator),
@@ -738,7 +740,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
     if report.exists():
         shutil.rmtree(report)
     (report / "generation-logs").mkdir(parents=True)
-    (report / "fern-version.txt").write_text(version + "\n", encoding="utf-8")
+    (report / "fern-version.txt").write_text(version + "\n", encoding="utf-8", newline="\n")
 
     generated: list[str] = []
     current: list[str] = []
@@ -763,14 +765,14 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
             packaged_generated = False
             if known_failure is None and is_current(root, row, version):
                 log_path.write_text(
-                    f"current: {row.fixture} at {GENERATOR}:{version}\n", encoding="utf-8"
+                    f"current: {row.fixture} at {GENERATOR}:{version}\n", encoding="utf-8", newline="\n"
                 )
             else:
                 fixture_dir.mkdir(parents=True, exist_ok=True)
                 stage = Path(tempfile.mkdtemp(prefix=".fern-goldens-stage.", dir=fixture_dir))
                 try:
                     staged_expected = stage / "expected"
-                    with log_path.open("w", encoding="utf-8") as log:
+                    with log_path.open("w", encoding="utf-8", newline="\n") as log:
                         result = run_command(
                             [
                                 str(generator),
@@ -829,7 +831,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                 if is_current(root, row, version, FLAT):
                     flat_log.write_text(
                         f"current: {row.fixture} (flat) at {GENERATOR}:{version}\n",
-                        encoding="utf-8",
+                        encoding="utf-8", newline="\n",
                     )
                 else:
                     generate_flat(root, generator, row, version, spec, flat_log)
@@ -848,23 +850,23 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                     pass
 
     (report / "generated.txt").write_text(
-        "".join(f"{fixture}\n" for fixture in generated), encoding="utf-8"
+        "".join(f"{fixture}\n" for fixture in generated), encoding="utf-8", newline="\n"
     )
     (report / "current.txt").write_text(
-        "".join(f"{fixture}\n" for fixture in current), encoding="utf-8"
+        "".join(f"{fixture}\n" for fixture in current), encoding="utf-8", newline="\n"
     )
     (report / "known-upstream-failures.txt").write_text(
-        "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8"
+        "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8", newline="\n"
     )
     (report / "generation-failures.txt").write_text(
-        "".join(f"{failure}\n" for failure in failures), encoding="utf-8"
+        "".join(f"{failure}\n" for failure in failures), encoding="utf-8", newline="\n"
     )
     summary = (
         f"Fern generation summary: {len(generated)} generated, {len(current)} current, "
         f"{len(failures)} failed, {len(known_upstream_failures)} exact known upstream "
         f"Fern failure(s) at {GENERATOR}:{version}.\n"
     )
-    (report / "generation-summary.txt").write_text(summary, encoding="utf-8")
+    (report / "generation-summary.txt").write_text(summary, encoding="utf-8", newline="\n")
     write_deterministic_archive(root, generated, report / "generated-goldens.tar.gz")
     write_patch(root, report)
     print(summary, end="")
@@ -887,7 +889,7 @@ def compare(root: Path) -> int:
         if (root / "tests" / "fixtures" / row.fixture / "expected").is_dir()
     ]
     comparison_log = report / "comparison.log"
-    comparison_log.write_text("", encoding="utf-8")
+    comparison_log.write_text("", encoding="utf-8", newline="\n")
     differences = 0
     generation_failures = 0
     processing_failures = 0
@@ -907,7 +909,7 @@ def compare(root: Path) -> int:
             processing_failures += 1
             failure = f"{row.fixture}: invalid known upstream failure: {error}"
             process_failures.append(failure)
-            with comparison_log.open("a", encoding="utf-8") as log:
+            with comparison_log.open("a", encoding="utf-8", newline="\n") as log:
                 log.write(f"\n=== {row.fixture} ===\n  Comparison processing failed: {error}\n")
             print(f"fern-goldens: failed {progress}: invalid known failure", flush=True)
             continue
@@ -916,7 +918,7 @@ def compare(root: Path) -> int:
         except (GoldensError, OSError) as error:
             failure = f"{row.fixture}: {error}"
             fetch_failures.append(failure)
-            with comparison_log.open("a", encoding="utf-8") as log:
+            with comparison_log.open("a", encoding="utf-8", newline="\n") as log:
                 log.write(f"\n=== {row.fixture} ===\n  Spec fetch failed: {error}\n")
             print(f"fern-goldens: skipped {progress}: spec fetch failed", flush=True)
             continue
@@ -941,13 +943,13 @@ def compare(root: Path) -> int:
             processing_failures += 1
             failure = f"{row.fixture}: could not start comparison: {error}"
             process_failures.append(failure)
-            with comparison_log.open("a", encoding="utf-8") as log:
+            with comparison_log.open("a", encoding="utf-8", newline="\n") as log:
                 log.write(f"\n=== {row.fixture} ===\n  Comparison processing failed: {error}\n")
             print(f"fern-goldens: failed {progress}: comparison could not start", flush=True)
             continue
 
         output = (command.stdout or "") + (command.stderr or "")
-        with comparison_log.open("a", encoding="utf-8") as log:
+        with comparison_log.open("a", encoding="utf-8", newline="\n") as log:
             log.write(output)
             if output and not output.endswith("\n"):
                 log.write("\n")
@@ -1030,15 +1032,15 @@ def compare(root: Path) -> int:
         f"{len(fetch_failures)} spec fetch failures, "
         f"{len(known_upstream_failures)} exact known upstream Fern failure(s).\n"
     )
-    (report / "comparison-summary.txt").write_text(summary, encoding="utf-8")
+    (report / "comparison-summary.txt").write_text(summary, encoding="utf-8", newline="\n")
     (report / "comparison-fetch-failures.txt").write_text(
-        "".join(f"{failure}\n" for failure in fetch_failures), encoding="utf-8"
+        "".join(f"{failure}\n" for failure in fetch_failures), encoding="utf-8", newline="\n"
     )
     (report / "comparison-processing-failures.txt").write_text(
-        "".join(f"{failure}\n" for failure in process_failures), encoding="utf-8"
+        "".join(f"{failure}\n" for failure in process_failures), encoding="utf-8", newline="\n"
     )
     (report / "comparison-known-upstream-failures.txt").write_text(
-        "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8"
+        "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8", newline="\n"
     )
     print(summary, end="")
     if fetch_failures:

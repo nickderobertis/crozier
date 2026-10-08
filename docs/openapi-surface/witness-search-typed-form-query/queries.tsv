@@ -1,0 +1,2 @@
+key	query	outcome	result_count
+parameter-style-form-query-object	"file:(openapi|swagger).*\.(yaml|yml|json)$ content:""style"" content:""form"" content:""query"" content:""object"" count:100 type:file"	answered	2

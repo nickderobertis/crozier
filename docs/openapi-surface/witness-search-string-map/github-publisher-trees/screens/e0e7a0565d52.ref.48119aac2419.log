@@ -1,0 +1,5 @@
+GET https://raw.githubusercontent.com/confluentinc/schema-registry/4262e9db6f88502a3cb4b651bef3559ed64740ad/core/generated/swagger-ui/schema-registry-api-spec.yaml
+HTTP 200
+133557 bytes, sha256 e0e7a0565d524c4225d4d82ddb3329aa15ad1d40aae50f780d9582ac406e5e49
+pinned sha256 e0e7a0565d524c4225d4d82ddb3329aa15ad1d40aae50f780d9582ac406e5e49
+outcome: passed: 133557 bytes read at the immutable commit 4262e9db6f88502a3cb4b651bef3559ed64740ad, sha256 e0e7a0565d524c4225d4d82ddb3329aa15ad1d40aae50f780d9582ac406e5e49

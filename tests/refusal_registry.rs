@@ -134,6 +134,58 @@ fn refusing_class<'a>(
     }
 }
 
+/// Unevaluated classes promise only a pinned, measured input record.
+fn unevaluated_record_failures(root: &Path, id: &str) -> Vec<String> {
+    let dir = root.join(id);
+    let mut failures = Vec::new();
+    if !dir.join("probe.yml").is_file() {
+        failures.push(format!("{id}: probe.yml is missing"));
+    }
+    match std::fs::read_to_string(dir.join("fern-refusal.txt")) {
+        Ok(record) => {
+            for field in [
+                "fern_cli_version: 5.67.1",
+                "fern_python_sdk_version: 5.20.0",
+            ] {
+                if !record.lines().any(|line| line == field) {
+                    failures.push(format!("{id}: fern-refusal.txt lacks `{field}`"));
+                }
+            }
+            if !record.lines().any(|line| {
+                line.strip_prefix("diagnostic:")
+                    .is_some_and(|value| !value.trim().is_empty())
+            }) {
+                failures.push(format!("{id}: fern-refusal.txt has no diagnostic"));
+            }
+        }
+        Err(error) => failures.push(format!("{id}: fern-refusal.txt: {error}")),
+    }
+    failures
+}
+
+#[test]
+fn unevaluated_records_require_the_probe_and_pinned_diagnostic() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("pending-shape");
+    std::fs::create_dir(&dir).unwrap();
+    std::fs::write(
+        dir.join("fern-refusal.txt"),
+        "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ndiagnostic: measured refusal\n",
+    )
+    .unwrap();
+    assert_eq!(
+        unevaluated_record_failures(root.path(), "pending-shape"),
+        ["pending-shape: probe.yml is missing"]
+    );
+    std::fs::write(dir.join("probe.yml"), "not yet evaluated").unwrap();
+    assert!(unevaluated_record_failures(root.path(), "pending-shape").is_empty());
+    std::fs::write(dir.join("fern-refusal.txt"), "diagnostic: \n").unwrap();
+    assert_eq!(
+        unevaluated_record_failures(root.path(), "pending-shape").len(),
+        3
+    );
+}
+
 #[test]
 fn every_class_probe_is_refused_as_its_registry_row_states() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
@@ -142,6 +194,14 @@ fn every_class_probe_is_refused_as_its_registry_row_states() {
     let mut failures = Vec::new();
     for (id, class) in &registry {
         let probe = root.join(id).join("probe.yml");
+        if class.status == "unevaluated" {
+            failures.extend(unevaluated_record_failures(&root, id));
+            continue;
+        }
+        if !matches!(class.status.as_str(), "generate" | "refuse") {
+            failures.push(format!("{id}: unknown status `{}`", class.status));
+            continue;
+        }
         for strict in [false, true] {
             let mode = if strict { "strict" } else { "default" };
             match (class.status.as_str(), render(&probe, strict)) {
@@ -177,20 +237,18 @@ fn every_class_probe_is_refused_as_its_registry_row_states() {
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
-#[test]
-fn every_registry_document_obeys_the_strict_mode_contract() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
-    let registry = classes(&root);
-    let documents = documents(&root);
-    // Each class directory holds its probe; most hold measured side probes
-    // and controls besides, which is what reaches the detectors' branches.
-    assert!(
-        documents.len() > registry.len(),
-        "{} documents",
-        documents.len()
-    );
+fn document_contract_failures(root: &Path) -> Vec<String> {
+    let registry = classes(root);
+    let documents = documents(root);
     let mut failures = Vec::new();
     for (dir, spec) in &documents {
+        if registry
+            .get(dir)
+            .is_some_and(|class| class.status == "unevaluated")
+        {
+            failures.extend(unevaluated_record_failures(root, dir));
+            continue;
+        }
         let name = format!("{dir}/{}", spec.file_name().unwrap().to_string_lossy());
         let default = render(spec, false);
         let strict = render(spec, true);
@@ -242,5 +300,50 @@ fn every_registry_document_obeys_the_strict_mode_contract() {
             (Ok(_), Ok(_)) => {}
         }
     }
+    failures
+}
+
+#[test]
+fn unevaluated_documents_are_checked_without_rendering() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("pending-shape");
+    std::fs::create_dir(&dir).unwrap();
+    let header = "class\tstatus\tcrozier_diagnostic\n";
+    let row = "pending-shape\tunevaluated\t—\n";
+    std::fs::write(root.path().join("classes.tsv"), format!("{header}{row}")).unwrap();
+    std::fs::write(dir.join("probe.yml"), "not yet evaluated\n").unwrap();
+    std::fs::copy(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/head-request-body/fern-refusal.txt"),
+        dir.join("fern-refusal.txt"),
+    )
+    .unwrap();
+    assert!(document_contract_failures(root.path()).is_empty());
+    std::fs::write(
+        root.path().join("classes.tsv"),
+        format!("{header}{}", row.replace("unevaluated", "refuse")),
+    )
+    .unwrap();
+    assert!(!document_contract_failures(root.path()).is_empty());
+    std::fs::write(root.path().join("classes.tsv"), format!("{header}{row}")).unwrap();
+    std::fs::remove_file(dir.join("probe.yml")).unwrap();
+    assert_eq!(
+        unevaluated_record_failures(root.path(), "pending-shape"),
+        ["pending-shape: probe.yml is missing"]
+    );
+}
+
+#[test]
+fn every_registry_document_obeys_the_strict_mode_contract() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
+    let registry = classes(&root);
+    let documents = documents(&root);
+    // Side probes and controls measure the detectors beyond their main probes.
+    assert!(
+        documents.len() > registry.len(),
+        "{} documents",
+        documents.len()
+    );
+    let failures = document_contract_failures(&root);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }

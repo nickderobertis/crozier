@@ -27,7 +27,9 @@ RAW_OUTSTANDING = frozenset({
 RAW_ZERO = frozenset({"does-not-declare", "excluded-non-openapi-3"})
 # Every parser available refused the document: decided, with the refusal as its reason.
 RAW_REFUSED = "census-refused"
-RAW_STATUSES = RAW_DECLARING | RAW_OUTSTANDING | RAW_ZERO | {RAW_REFUSED}
+RAW_EXCLUDED = "excluded-repository"
+EXCLUDED_CENSUS = "not-run: screened by repository rule"
+RAW_STATUSES = RAW_DECLARING | RAW_OUTSTANDING | RAW_ZERO | {RAW_REFUSED, RAW_EXCLUDED}
 FIELDS = (
     "source",
     "key",
@@ -101,7 +103,7 @@ def write_ledger(path: Path, text: str, limit: int | None = None) -> None:
     stale = ledger_parts(path)[max(len(chunks), 1):]
     for number, chunk in enumerate(chunks or [[]]):
         part = path if number == 0 else path.with_name(f"{path.stem}.{number:03d}{path.suffix}")
-        part.write_text("".join(chunk), encoding="utf-8")
+        part.write_text("".join(chunk), encoding="utf-8", newline="\n")
     for part in stale:
         part.unlink()
 
@@ -113,7 +115,7 @@ def append_ledger(path: Path, line: str, limit: int | None = None) -> None:
     encoded = len(line.encode("utf-8"))
     if target.is_file() and 0 < target.stat().st_size and target.stat().st_size + encoded > limit:
         target = path.with_name(f"{path.stem}.{len(parts):03d}{path.suffix}")
-    with target.open("a", encoding="utf-8") as output:
+    with target.open("a", encoding="utf-8", newline="\n") as output:
         output.write(line)
 
 
@@ -239,6 +241,10 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
             not isinstance(row["duration_s"], (int, float)) or isinstance(row["duration_s"], bool)
         ):
             raise ValueError(f"{path}:{number}: duration_s is not a number")
+        try:
+            validate_opaque_values(row)
+        except ValueError as error:
+            raise ValueError(f"{path}:{number}: {error}") from error
         rows.append((number, row))
     return rows
 
@@ -266,12 +272,94 @@ SCREEN_FIELDS = {"licence": "license", "ref": "ref", "fern": "fern"}
 HISTORICAL_SCREEN = "historical screen: filed before scripts/witness_screen.py, with no measured record"
 
 
+OPAQUE_PREFIX = "screened-nonpublic-input:v2:"
+EXCLUDED_REPOSITORY = "fern-api/fern"
+EXCLUDED_REPOSITORIES = frozenset((EXCLUDED_REPOSITORY, "khulnasoft/RapidDocs"))
+OPAQUE_LOCATORS = ("name", "url", "raw_url", "sha", "blob", "sha256", "document", "commit", "revision")
+
+
+def excluded_repository(repository: str) -> bool:
+    return normalize_repo(repository).lower() in {repo.lower() for repo in EXCLUDED_REPOSITORIES}
+
+
+def make_opaque_identity(invocation: str, number: int) -> str:
+    token = f"{OPAQUE_PREFIX}{invocation}:{number}"
+    opaque_identity(token)
+    return token
+
+
+def opaque_identity(value: Any) -> str | None:
+    """Recognize the versioned identity contract in the search records' README."""
+    if not isinstance(value, str) or not value.startswith("screened-nonpublic-input:"):
+        return None
+    parts = value.split(":")
+    version = parts[1] if len(parts) > 1 else ""
+    if version != OPAQUE_PREFIX.split(":")[1]:
+        raise ValueError(f"unsupported opaque identity version {version}")
+    if not re.fullmatch(re.escape(OPAQUE_PREFIX) + r"[0-9a-f]{32}:[1-9][0-9]*", value):
+        raise ValueError("invalid opaque identity: expected an invocation ID and a positive assigned integer")
+    return value
+
+
+def opaque_subject(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    parts = value.split("@", 1)
+    token = opaque_identity(parts[0])
+    if token and len(parts) == 2 and not opaque_identity(parts[1]):
+        raise ValueError("opaque subject requires an opaque revision token")
+    return value if token else None
+
+
+def validate_opaque_values(value: Any) -> None:
+    """Validate nested query results as well as top-level candidate fields."""
+    if isinstance(value, dict):
+        if (value.get("disposition") or value.get("status")) == RAW_EXCLUDED:
+            if not opaque_identity(value.get("path")):
+                raise ValueError("excluded-repository requires an opaque identity")
+            if "selector_count" in value or "selector_counts" in value:
+                raise ValueError("excluded-repository cannot carry measured selector counts")
+        if "repository" in value and "path" in value:
+            name = candidate_name(value)
+            if opaque_identity(name) or any(opaque_identity(value.get(field)) for field in OPAQUE_LOCATORS):
+                if not opaque_identity(value["path"]):
+                    raise ValueError("opaque locator path must carry an opaque revision")
+                for field in (*OPAQUE_LOCATORS, "supersedes"):
+                    if field not in value:
+                        continue
+                    locator = opaque_identity(value[field])
+                    if not locator:
+                        raise ValueError(f"opaque locator {field} must carry an opaque revision; "
+                                         "restore valid v2 evidence from git and rerun the command")
+        for item in value.values():
+            validate_opaque_values(item)
+    elif isinstance(value, list):
+        for item in value:
+            validate_opaque_values(item)
+    else:
+        opaque_subject(value)
+
+
 def normalize_repo(value: str) -> str:
     return value.removeprefix("github.com/")
 
 
 def candidate_name(row: dict[str, Any]) -> str:
+    path = opaque_identity(row["path"])
+    if path:
+        return path
+    opaque_identity(row["repository"])
     return f"{normalize_repo(row['repository'])}:{row['path']}"
+
+
+def candidate_revision(row: dict[str, Any]) -> str:
+    if opaque_identity(candidate_name(row)):
+        return row.get("commit") or row.get("blob") or row.get("sha") or "unresolved"
+    return row.get("commit") or f"blob:{row.get('blob') or row.get('sha') or 'unresolved'}"
+
+
+def superseded_row(row: dict[str, Any]) -> dict[str, Any]:
+    return {**row, "commit": row["supersedes"]}
 
 
 def screen_value(value: str) -> str:
@@ -301,9 +389,7 @@ def classify(
     closed: bool = False,
 ) -> dict[str, str]:
     name = candidate_name(row)
-    revision = (
-        row.get("commit") or f"blob:{row.get('blob') or row.get('sha') or 'unresolved'}"
-    )
+    revision = candidate_revision(row)
     digest = row.get("sha256") or "not-fetched"
     count = row.get("selector_count", row.get("selector_counts", {}).get(key, 0))
     status = row.get("disposition") or row.get("status") or "acquisition-outstanding"
@@ -344,6 +430,10 @@ def classify(
                 else "not-run: declaration screen outstanding"
             )
             disposition = "not-owed" if closed else "outstanding"
+    elif status == RAW_EXCLUDED:
+        census = EXCLUDED_CENSUS
+        licence = ref = fern = "not-run: repository excluded"
+        disposition = "rejected"
     elif status in RAW_OUTSTANDING:
         # The ledger row keeps the parser's whole diagnostic; the record cites it.
         diagnostic = str(row.get("diagnostic") or "document not yet fetched")
@@ -407,7 +497,8 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
             latest[(key, result["candidate"], result["revision"])] = result
             # A re-acquisition at a later commit replaces the row it re-requested.
             if row.get("supersedes"):
-                latest.pop((key, result["candidate"], row["supersedes"]), None)
+                prior = superseded_row(row)
+                latest.pop((key, candidate_name(prior), prior["commit"]), None)
             if source == "github-code-search" and row.get("blob"):
                 resolved_blobs.add((key, result["candidate"], row["blob"]))
     if source == "github-publisher-trees":
@@ -440,9 +531,7 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
             closed = (directory / f"closure-{key}.json").is_file()
             for item in query.get("results", []):
                 name = candidate_name(item)
-                revision = (
-                    item.get("commit") or f"blob:{item.get('sha') or 'unresolved'}"
-                )
+                revision = candidate_revision(item)
                 identity = (key, name, revision)
                 if identity in latest:
                     continue
@@ -999,7 +1088,7 @@ def main() -> int:
             if not index_target.is_file() or index_target.read_text(encoding="utf-8") != index_text:
                 changed.append(str(index_target))
         else:
-            index_target.write_text(index_text, encoding="utf-8")
+            index_target.write_text(index_text, encoding="utf-8", newline="\n")
         if args.check:
             changed.extend(search_index_failures(directory))
         for number, row in enumerate(rows, 2):
@@ -1034,10 +1123,10 @@ def main() -> int:
             return 1
         return 0
     write_ledger(target, expected, args.shard_bytes)
-    inventory.write_text(owed, encoding="utf-8")
+    inventory.write_text(owed, encoding="utf-8", newline="\n")
     for path, text in rederived_region_texts(args.evidence_root).items():
         if path.read_text(encoding="utf-8") != text:
-            path.write_text(text, encoding="utf-8")
+            path.write_text(text, encoding="utf-8", newline="\n")
     print(f"{target}: {len(central)} candidate records")
     return 0
 

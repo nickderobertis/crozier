@@ -16,7 +16,6 @@
       "inputs": [
         "default",
         "{workspaceRoot}/tools/fern-goldens/fern-goldens",
-        "{workspaceRoot}/tools/fern-goldens/fixtures-refresh.sh",
         "{workspaceRoot}/tools/fern-goldens/generate-corpus-fixtures.sh",
         "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
         "{workspaceRoot}/tools/fern-goldens/tests/fern_goldens_test.py",

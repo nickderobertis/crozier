@@ -614,15 +614,13 @@ class PinMechanismTests(unittest.TestCase):
                     "git checkout -- tests/fixtures/corpus-aliases.tsv",
                 )
 
-    def test_an_empty_alias_file_names_how_to_restore_it(self) -> None:
+    def test_an_alias_file_with_no_aliases_resolves_each_row_to_its_own_directory(self) -> None:
         (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").write_text(
             "# no aliases left\n", encoding="utf-8"
         )
-        self.assert_refused_without_a_path(
-            self.fetch("plain-row"),
-            "has no aliases",
-            "git checkout -- tests/fixtures/corpus-aliases.tsv",
-        )
+        result = self.fetch("plain-row")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.published("plain-row").read_bytes(), self.roots["plain-row"])
 
     def test_a_failed_download_names_the_row_and_what_to_check(self) -> None:
         self.add_repository_row("absent-row", self.spec_url("absent-row"), "HEAD")

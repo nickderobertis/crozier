@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 209 of the 242 registered sources live in `corpus-sources/` (a split
+  and 211 of the 242 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1145,6 +1145,12 @@ PREDICATES = {
         "one per Operation Object whose request body's content holds only JSON "
         "media types and none of them declares a `schema`: the body "
         "`request_body_ignored` of `src/ir.rs` sends nothing for"
+    ),
+    "operation.requestBody:plain-string-map": (
+        "one per Operation Object whose JSON-like request content declares a "
+        "top-level object without named properties and with an unformatted, "
+        "non-enum, non-nullable string additionalProperties schema; local "
+        "component references are followed with cycle protection"
     ),
     "operation.responses:schemaless-wav-success": (
         "one per Operation Object whose success response holds an `audio/wav` "
@@ -2442,7 +2448,7 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
     trace = set() if trace is None else trace
     folded = "".join(
         _ENUM_DEBURR_EXCEPTIONS[char] if char in _ENUM_DEBURR_EXCEPTIONS else
-        unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode()
+        unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8")
         if "\u00c0" <= char <= "\u017f" and unicodedata.normalize("NFKD", char).encode("ascii", "ignore")
         else char
         for char in value
@@ -2509,7 +2515,7 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
                 if int(significant) <= 9999:
                     spelled = numeric_enum_name(int(significant))
                     trace.add(_numeric_range(int(significant)))
-                elif len(folded.encode()) > digits:
+                elif len(folded.encode("utf-8")) > digits:
                     spelled = "undefined"
             elif len(number) <= 4 and (len(number) == 1 or number[0] != "0"):
                 spelled = numeric_enum_name(int(number))
@@ -2584,7 +2590,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "0c8fb4b28591803a",
+    "endpoint_method_name": "92a25efcc00ca5a9",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -4513,6 +4519,38 @@ class Census:
         content = body.get("content") if isinstance(body, dict) else None
         media = content.get("application/json") if isinstance(content, dict) else None
         schema = media.get("schema") if isinstance(media, dict) else None
+        map_body = body
+        seen_bodies: set[str] = set()
+        while isinstance(map_body, dict) and isinstance(map_body.get("$ref"), str):
+            reference = map_body["$ref"]
+            if reference in seen_bodies:
+                map_body = None
+                break
+            seen_bodies.add(reference)
+            target = self.local_component("requestBodies", map_body)
+            if target is map_body:
+                map_body = None
+                break
+            map_body = target
+        map_content = map_body.get("content") if isinstance(map_body, dict) else None
+        for media_type, value in map_content.items() if isinstance(map_content, dict) else ():
+            if not isinstance(media_type, str) or not is_json_like_media_type(media_type) or not isinstance(value, dict):
+                continue
+            map_schema = self.resolved_schema(value.get("schema"))
+            if not isinstance(map_schema, dict) or primary_type(map_schema.get("type")) != "object" or map_schema.get("properties"):
+                continue
+            additional = self.resolved_schema(map_schema.get("additionalProperties"))
+            if not isinstance(additional, dict):
+                continue
+            additional_type = additional.get("type")
+            if (
+                primary_type(additional_type) == "string"
+                and additional.get("format") is None and additional.get("enum") is None
+                and not additional.get("nullable")
+                and not (isinstance(additional_type, list) and "null" in additional_type)
+            ):
+                found.append("operation.requestBody:plain-string-map")
+                break
         if isinstance(schema, dict):
             reference = schema.get("$ref")
             name = reference[len(_COMPONENT_SCHEMAS_PREFIX):] if (

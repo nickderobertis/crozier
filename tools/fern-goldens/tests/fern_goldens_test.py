@@ -21,6 +21,10 @@ import unittest.mock
 from pathlib import Path
 
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 REPO = Path(__file__).resolve().parents[3]
 TOOL = REPO / "tools" / "fern-goldens" / "fern-goldens"
 
@@ -133,7 +137,7 @@ class SharedLibraryTests(unittest.TestCase):
                 root = Path(scratch)
                 mirror(root, script, "tools/corpus/corpus-lib.sh")
                 (root / "tests" / "fixtures").mkdir(parents=True)
-                result = subprocess.run([str(root / script), "shapes"], capture_output=True, text=True, check=False)
+                result = subprocess.run([str(root / script), "shapes"], capture_output=True, text=True, encoding="utf-8", check=False)
                 self.assertEqual(1, result.returncode, result.stderr)
                 self.assertIn(f"cannot load {root}/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh",
                               result.stderr)
@@ -155,7 +159,7 @@ class FixtureNewTests(unittest.TestCase):
 
     def scaffold(self, name: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run([str(self.root / "tools" / "fern-goldens" / "fixture-new.sh"), name],
-                              capture_output=True, text=True, check=False)
+                              capture_output=True, text=True, encoding="utf-8", check=False)
 
     def test_a_fixture_is_scaffolded_with_its_wiring_steps(self) -> None:
         done = self.scaffold("shapes")
@@ -170,7 +174,7 @@ class FixtureNewTests(unittest.TestCase):
                               (["a", "b"], "usage: tools/fern-goldens/fixture-new.sh <name>"),
                               (["../escape"], "invalid name '../escape'")):
             with self.subTest(args=args):
-                refused = subprocess.run([script, *args], capture_output=True, text=True, check=False)
+                refused = subprocess.run([script, *args], capture_output=True, text=True, encoding="utf-8", check=False)
                 self.assertEqual(2, refused.returncode, refused.stderr)
                 self.assertIn(message, refused.stderr)
         self.assertEqual([], list(self.fixtures.iterdir()))
@@ -196,7 +200,7 @@ class FixtureNewTests(unittest.TestCase):
         # creating it succeeds and writing its openapi.yml fails.
         refused = subprocess.run(["sh", "-c", 'umask 0277 && exec "$0" shapes',
                                   str(self.root / "tools" / "fern-goldens" / "fixture-new.sh")],
-                                 capture_output=True, text=True, check=False)
+                                 capture_output=True, text=True, encoding="utf-8", check=False)
         self.assertEqual(1, refused.returncode, refused.stderr)
         self.assertIn("could not create", refused.stderr)
         self.assertNotIn("could not remove", refused.stderr)
@@ -222,7 +226,7 @@ class GoldenOverlayReductionTests(unittest.TestCase):
 
     def reduce(self, tree: Path, provenance: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run([sys.executable, str(self.SCRIPT), "reduce", str(self.base), str(tree), provenance],
-                              capture_output=True, text=True, check=False)
+                              capture_output=True, text=True, encoding="utf-8", check=False)
 
     def test_the_overlay_keeps_only_what_differs_and_names_what_it_lacks(self) -> None:
         done = self.reduce(self.tree, '{"enum_type": "literals", "base": "expected"}')
@@ -264,8 +268,8 @@ class FernOverlayGoldensTests(unittest.TestCase):
         for fixture in ("eos.local", "alpha", "beta"):
             expected = self.root / "tests" / "fixtures" / fixture / "expected"
             expected.mkdir(parents=True)
-            (expected / STATE).write_text(json.dumps(pin), encoding="utf-8")
-            (expected.parent / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+            (expected / STATE).write_text(json.dumps(pin), encoding="utf-8", newline="\n")
+            (expected.parent / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8", newline="\n")
         generator = self.root / "tools/fern-goldens/generate-fern-fixture.sh"
         generator.write_text(
             textwrap.dedent(
@@ -282,7 +286,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
                 [ "$fixture" != "${FAIL_INSTALL:-}" ] || chmod a-w "$(dirname "$destination")"
                 """
             ).lstrip(),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         generator.chmod(0o755)
 
@@ -300,7 +304,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
             ],
             env={**os.environ, "FAIL_INSTALL": fail_install, "FAIL_GENERATE": fail_generate, **extra},
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
             check=False,
         )
         for stage in (self.root / "tests" / "fixtures").glob("*/.fern-overlay-stage.*"):
@@ -382,7 +386,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         result = subprocess.run(
             [str(self.root / "tools" / "fern-goldens" / "fern-overlay-goldens.sh"), "--enum-type", "literals", "pinned"],
             env={**os.environ, "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}"},
-            capture_output=True, text=True, check=False,
+            capture_output=True, text=True, encoding="utf-8", check=False,
         )
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertIn("pinned: just fetch-corpus failed: fetch-corpus: the pinned commit is gone", result.stderr)

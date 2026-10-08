@@ -19,7 +19,8 @@
         "crateSource",
         "e2eSource",
         "{workspaceRoot}/tests/runtime/**/*",
-        "{workspaceRoot}/tests/fixtures/exhaustive/**/*",
+        "{workspaceRoot}/tests/fixtures/airbyte.local-config/**/*",
+        "{workspaceRoot}/tests/fixtures/corpus-sources/airbyte.local-config/**/*",
         "generator",
         "default"
       ],

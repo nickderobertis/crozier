@@ -43,8 +43,6 @@ esac
 # which one, after cargo's own error.
 trap 'status=$?; echo "corpus-match: \`$BASH_COMMAND\` exited $status — fix the build or corpus failure above (a first build fetches crates, so it needs network once), then re-run" >&2' ERR
 cargo build --locked --quiet -p crozier --bin crozier
-CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e query_parameters_matches_fern_output_byte_for_byte
-CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e exhaustive_matches_fern_output_byte_for_byte
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e crozier_sdk_extensions_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e crozier_property_name_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e auth_schemes_matches_fern_output
@@ -76,10 +74,10 @@ CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e pydantic_
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e recursive_types_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e nested_core_imports_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e malformed_property_schema_matches_fern_output
-CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e exhaustive_flat_matches_fern
+CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e swagger_petstore_flat_matches_fern
+CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e swagger_petstore_distribution_flat_matches_fern
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e client_class_name_flat_matches_fern
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e audience_filter_strict_flat_matches_fern
-CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e exhaustive_package_name_flat_matches_fern
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e overlay_goldens_match_fern_output
 python3 tools/corpus/corpus_sources.py check
 sh scripts/census-python.sh tests/corpus_match/corpus_surface_census_test.py
@@ -163,6 +161,7 @@ CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e eozilla_m
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e openepcis_dpp_ready_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e ndw_accessibility_map_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e marimo_matches_fern_output
+CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e marimo_client_class_name_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e blackadi_oauth2_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e mosip_esignet_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e openbankingproject_ch_kundenbeziehung_matches_fern_output
@@ -281,6 +280,7 @@ CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e cphos_ai_
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e flask_example_heroku_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e oip_web_api_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e waylay_queries_matches_fern_output
+CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e confluent_kafka_connect_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e breizhsport_catalogue_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e protoform_conformance_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e ere_ps_app_matches_fern_output

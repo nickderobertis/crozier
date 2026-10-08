@@ -38,7 +38,7 @@ class ResidualAttributionTests(unittest.TestCase):
         self.assertTrue(BINARY.is_file(), f"no {BINARY.relative_to(REPO)}; run `just nx run crozier:build`")
         self.assertIsNotNone(shutil.which("ruff"), "no ruff on PATH; install it with `just bootstrap`")
         completed = subprocess.run(
-            [sys.executable, str(SCRIPT)], cwd=REPO, capture_output=True, text=True, timeout=1800,
+            [sys.executable, str(SCRIPT)], cwd=REPO, capture_output=True, text=True, timeout=1800, encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         measured = {

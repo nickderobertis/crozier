@@ -1,0 +1,72 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 12 errors
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> countTransactions
+        issue: Multiple request properties resolve to the same generated name startTime after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "startTime" (name: "startTime")
+  - Query Parameter "start_time" (name: "start_time")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> countTransactions
+        issue: Multiple request properties resolve to the same generated name endTime after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "endTime" (name: "endTime")
+  - Query Parameter "end_time" (name: "end_time")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> listAccounts
+        issue: Multiple request properties resolve to the same generated name pageSize after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "pageSize" (name: "pageSize")
+  - Query Parameter "page_size" (name: "page_size")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> listAccounts
+        issue: Multiple request properties resolve to the same generated name balanceOperator after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "balanceOperator" (name: "balanceOperator")
+  - Query Parameter "balance_operator" (name: "balance_operator")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> listLogs
+        issue: Multiple request properties resolve to the same generated name pageSize after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "pageSize" (name: "pageSize")
+  - Query Parameter "page_size" (name: "page_size")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> listLogs
+        issue: Multiple request properties resolve to the same generated name startTime after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "startTime" (name: "startTime")
+  - Query Parameter "start_time" (name: "start_time")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> listLogs
+        issue: Multiple request properties resolve to the same generated name endTime after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "endTime" (name: "endTime")
+  - Query Parameter "end_time" (name: "end_time")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> listTransactions
+        issue: Multiple request properties resolve to the same generated name pageSize after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "pageSize" (name: "pageSize")
+  - Query Parameter "page_size" (name: "page_size")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> listTransactions
+        issue: Multiple request properties resolve to the same generated name startTime after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "startTime" (name: "startTime")
+  - Query Parameter "start_time" (name: "start_time")
+
+    [error]
+        path: ledgerV1.yml -> service -> endpoints -> listTransactions
+        issue: Multiple request properties resolve to the same generated name endTime after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "endTime" (name: "endTime")
+  - Query Parameter "end_time" (name: "end_time")
+
+    [error]
+        path: ledgerV2.yml -> service -> endpoints -> v2CountAccounts
+        issue: Endpoint is a HEAD, so it cannot have a request body.
+
+    [error]
+        path: ledgerV2.yml -> service -> endpoints -> v2CountTransactions
+        issue: Endpoint is a HEAD, so it cannot have a request body.
+
+Found 12 errors and 25 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

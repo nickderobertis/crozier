@@ -227,8 +227,8 @@ golden, and `crates/crozier-e2e/tests/e2e.rs::FLAT_GOLDENS` must list exactly it
   its `FLAT_GOLDENS` entry and `flat_goldens!` test in `crates/crozier-e2e/tests/e2e.rs`, run the
   script's flat mode at the pin, then measure with `just fixtures-gaps
   <fixture>`. A flat golden whose directory has no spec names the fixture whose
-  vendored `openapi.yml` it uses in its row's second column
-  (`exhaustive-package-name|exhaustive`).
+  source it uses in its row's second column
+  (`swagger-petstore-organization|swagger-petstore`).
 - **Route B and the schedule** refresh the flat golden of every declared
   `CORPUS.md` row in the same generation step as its packaged one, from the same
   fetched spec. The flat golden has its own currency check. A row whose

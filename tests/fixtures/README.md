@@ -1,17 +1,15 @@
 # Fixtures
 
-These fixtures are the golden target crozier is verified against. They are
-**Fern's own output and test specs**, vendored under the Apache License 2.0.
+These fixtures hold Fern-generated SDK goldens that crozier byte-compares.
+Inputs are independently authored OpenAPI documents or registered publisher
+specifications; their provenance lives in [`CORPUS.md`](CORPUS.md) and the
+per-golden metadata.
 
-- **Source:** The legacy offline seed is vendored from
-  [fern-api/fern](https://github.com/fern-api/fern), commit
-  `3a471b03d4778f291849adc03bacfcd40340fc26`. Every *other* vendored-spec
-  fixture's `expected/` tree is generated from its own `openapi.yml` by
-  `tools/fern-goldens/generate-fern-fixture.sh`; each records the exact generator in its
-  provenance file. Numbered
-  real-world corpus sources and refs live in [`CORPUS.md`](CORPUS.md). The
+- **Generation:** Each local fixture's `expected/` tree is generated from its
+  own `openapi.yml` by `tools/fern-goldens/generate-fern-fixture.sh`. Numbered publisher
+  sources and immutable references live in [`CORPUS.md`](CORPUS.md). The
   **Fern goldens** workflow checks the latest stable generator from `main`
-  weekly; each managed golden records its current exact version in provenance.
+  weekly; each managed golden records its exact version in provenance.
 - **License / attribution:** [`../../licenses/fern-APACHE-2.0.txt`](../../licenses/fern-APACHE-2.0.txt)
   and [`../../NOTICE`](../../NOTICE) (with the statement of changes required by
   Apache-2.0 §4). Keep them; regeneration must preserve them.
@@ -21,8 +19,7 @@ These fixtures are the golden target crozier is verified against. They are
 Each `<api>/` directory holds:
 
 - `openapi.yml` for vendored fixtures, or a numbered `CORPUS.md` row whose source
-  is committed under `corpus-sources/` and recorded in `corpus-sources.tsv`. Fern's own *definition* files
-  are intentionally excluded — crozier reads only OpenAPI.
+  is committed under `corpus-sources/` and recorded in `corpus-sources.tsv`.
 - `expected/` — Fern's Python SDK output for that spec, **comment-stripped** (a
   string-safe removal of `#` comments, the only change from Fern's output). The
   same stripper normalizes crozier's output before the byte comparison, so
@@ -41,7 +38,7 @@ Each `<api>/` directory holds:
   `CORPUS.md` row, by the Fern goldens workflow beside its packaged golden). It
   follows the same comment-stripping and provenance rules as `expected/`, and its
   `.crozier-fern-golden.json` adds `"layout": "flat"`. A flat golden may sit in a
-  directory with no spec of its own (`exhaustive-package-name/`), generating from
+  directory with no spec of its own (`swagger-petstore-distribution/`), generating from
   the fixture its `flat-goldens.txt` row names. See
   [`../../docs/matching.md`](../../docs/matching.md#the-flat-layout).
 - `known-fern-failure.json` only when an exact generator/version/spec-bound
@@ -58,18 +55,13 @@ goldens. See [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md) for the
 event/input contract, expected-red upgrade branches, best-effort publication,
 known failures, provenance, and the final green/no-change rerun.
 
-- **`query-parameters-openapi/`** — legacy offline seed; its source and committed
-  `expected/` snapshot came directly from Fern's repository.
-- **`exhaustive/`** — the broad target. `openapi.yml` (+ the source
-  `generators.yml.source`, for reference) is vendored; its `expected/` tree is
-  packaged Fern Python output generated from that OpenAPI document.
-- **Feature-coverage targets** — 29 hand-authored specs pinning one shape each,
+- **Feature-coverage targets** — hand-authored specs pinning one shape each,
   all matched in full (the shape-by-shape rationale is in
   [`../../docs/matching.md`](../../docs/matching.md)). `FEATURE_TARGETS` in
   `crates/crozier-e2e/tests/e2e.rs` is the list; those entries also provide compile/smoke coverage
   independently of the byte comparison.
 
-Five fixtures also carry a flat golden (`FLAT_GOLDENS` in `crates/crozier-e2e/tests/e2e.rs`, one
+Declared fixtures also carry a flat golden (`FLAT_GOLDENS` in `crates/crozier-e2e/tests/e2e.rs`, one
 `*_flat_matches_fern` test each), chosen so that between them they exercise every
 setting that changes the flat tree.
 

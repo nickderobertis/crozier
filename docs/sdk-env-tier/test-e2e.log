@@ -140,16 +140,16 @@ cargo nextest run --locked -E 'binary(e2e)'
         PASS [   0.029s] (135/416) crozier::e2e fern_refusal_classes_hold
         PASS [   4.422s] (136/416) crozier::e2e deepsearch_ds_v2_matches_fern_output
         PASS [   0.583s] (137/416) crozier::e2e fern_refusal_gate_accepts_a_registry_whose_classes_hold
-        PASS [   1.445s] (138/416) crozier::e2e exhaustive_flat_matches_fern
+        PASS [   1.445s] (138/416) crozier::e2e <redacted>
         PASS [   0.240s] (139/416) crozier::e2e fern_refusal_gate_reports_a_refusal_that_wrote_output
         PASS [   0.720s] (140/416) crozier::e2e fern_refusal_gate_names_each_class_and_condition_it_breaks
-        PASS [   1.448s] (141/416) crozier::e2e exhaustive_package_name_flat_matches_fern
-        PASS [   1.643s] (142/416) crozier::e2e exhaustive_output_is_valid_python
+        PASS [   1.448s] (141/416) crozier::e2e <redacted>
+        PASS [   1.643s] (142/416) crozier::e2e <redacted>
         PASS [   0.023s] (143/416) crozier::e2e flat_goldens_are_the_declared_set
         PASS [   0.621s] (144/416) crozier::e2e fern_strict_resolves_through_every_layer_through_the_binary
         PASS [   0.436s] (145/416) crozier::e2e file_only_multipart_requests_include_empty_data
         PASS [   3.036s] (146/416) crozier::e2e every_registered_corpus_is_wired_into_the_gate
-        PASS [   2.100s] (147/416) crozier::e2e exhaustive_matches_fern_output_byte_for_byte
+        PASS [   2.100s] (147/416) crozier::e2e <redacted>
         PASS [   0.512s] (148/416) crozier::e2e first_referenced_request_example_drives_typed_worked_examples
         PASS [   5.846s] (149/416) crozier::e2e daniweb_connect_matches_fern_output
         PASS [   0.415s] (150/416) crozier::e2e form_bodies_matches_fern_output

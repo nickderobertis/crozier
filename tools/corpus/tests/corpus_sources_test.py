@@ -30,6 +30,10 @@ SCRIPT = REPO / "tools" / "corpus" / "corpus_sources.py"
 sys.path.insert(0, str(SCRIPT.parent))
 import corpus_sources  # noqa: E402 - the production script's directory must be on sys.path first
 
+# Every child these tests start has its output decoded as UTF-8, so a Python
+# child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
+os.environ["PYTHONUTF8"] = "1"
+
 # Repository-relative, and copied to the same path under the synthetic root, so
 # each script finds its neighbours where the real tree keeps them.
 COPIED_SCRIPTS = (
@@ -52,7 +56,7 @@ REMOTE_ROOT = (
     "paths: {}\n"
     "components:\n  schemas:\n    Block:\n"
     f"      $ref: '{MUTABLE_URL}#/block'\n"
-).encode()
+).encode("utf-8")
 
 
 def run(root: Path, *args: str, **environment: str) -> subprocess.CompletedProcess[str]:
@@ -60,7 +64,7 @@ def run(root: Path, *args: str, **environment: str) -> subprocess.CompletedProce
     env.update(environment)
     return subprocess.run(
         [sys.executable, str(root / "tools" / "corpus" / "corpus_sources.py"), *args],
-        cwd=root, env=env, text=True, capture_output=True, check=False,
+        cwd=root, env=env, text=True, capture_output=True, check=False, encoding="utf-8",
     )
 
 
@@ -104,13 +108,13 @@ class TheCommittedTreeHolds(unittest.TestCase):
                             "--output", str(staged))
             self.assertEqual(0, completed.returncode, completed.stderr)
             source = Path(completed.stdout.strip())
-            self.assertNotIn("https://raw.githubusercontent.com", source.read_text())
+            self.assertNotIn("https://raw.githubusercontent.com", source.read_text(encoding="utf-8"))
             self.assertTrue(list((staged / "remote").rglob("*.yaml")))
             self.assertEqual(0, run(REPO, "check").returncode)
 
     def test_prepare_rejects_unsafe_names(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            completed = run(REPO, "prepare", "--fixture", "../exhaustive", "--output", directory)
+            completed = run(REPO, "prepare", "--fixture", "../outside-source", "--output", directory)
             self.assertEqual(1, completed.returncode)
             self.assertIn("unsafe fixture name", completed.stderr)
 
@@ -149,7 +153,7 @@ class SyntheticRoot(unittest.TestCase):
         (self.fixtures / "corpus-remote-ref-pins.tsv").write_text(
             "# Synthetic pins.\n"
             f"remote\t{MUTABLE_URL}\t{PINNED_URL}\t{hashlib.sha256(BLOCK).hexdigest()}\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
 
     def write_corpus(self, decision: str, *, extra: str = "", remote: bool = True) -> None:
@@ -160,7 +164,7 @@ class SyntheticRoot(unittest.TestCase):
             "|---:|---|---|---|---|---|---|---|\n"
             f"| 1 | `plain` | test | {self.origin}/specs/plain.json | `HEAD` | MIT | {decision} | plain |\n"
             f"{remote_row if remote else ''}{extra}",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
 
     def commit_plain_without_fetching(self) -> None:
@@ -192,7 +196,7 @@ class TheOfflineCommandsRunEverywhere(SyntheticRoot):
 
     def test_prepare_rejects_malformed_aliases(self) -> None:
         self.commit_plain_without_fetching()
-        (self.fixtures / "corpus-aliases.tsv").write_text("broken-row\n", encoding="utf-8")
+        (self.fixtures / "corpus-aliases.tsv").write_text("broken-row\n", encoding="utf-8", newline="\n")
         completed = run(self.root, "prepare", "--fixture", "plain",
                         "--output", str(self.root / "staged"))
         self.assertEqual(1, completed.returncode)

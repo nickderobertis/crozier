@@ -134,13 +134,6 @@ upgrade:
     cargo update
     @just check
 
-# Legacy reproduction aid for the offline seed; pass `exhaustive` to reproduce
-# that historical container-generated target too. Numbered corpus maintenance
-# uses the Fern goldens workflow; see docs/fern-goldens.md.
-fixtures-refresh *args:
-    ./tools/fern-goldens/fixtures-refresh.sh {{args}}
-
-
 # Rebuild-only: fetch pinned corpus sources into .local/corpus or a supplied
 # destination. Routine checks use committed copies; this is Fern maintenance.
 fetch-corpus *args:
@@ -250,7 +243,7 @@ fixtures-coverage *args:
 golden-reach:
     python3 tools/corpus/corpus_sources.py check
     python3 tools/surface-census/golden-reach.py measure
-    "$(./scripts/census-python.sh)" ./tools/surface-census/openapi-surface-census.py --json > .local/golden-reach/census.json
+    "$(bash ./scripts/census-python.sh)" ./tools/surface-census/openapi-surface-census.py --json > .local/golden-reach/census.json
     python3 tools/surface-census/golden-reach.py report --write
 
 # Re-join the last `just golden-reach` measurement after the site table changes.
@@ -284,7 +277,7 @@ handwritten-reach *args:
 # (selector, fixture, count). Reads the committed source copies. The script's own flags pass straight through, e.g.
 # `just surface-census --selector pathItem.trace --json`.
 surface-census *args:
-    "$(./scripts/census-python.sh)" ./tools/surface-census/openapi-surface-census.py "$@"
+    "$(bash ./scripts/census-python.sh)" ./tools/surface-census/openapi-surface-census.py "$@"
 
 # Boundary coverage for `surface-census`: drives the REAL script over the REAL
 # vendored source documents, offline, so the gate keeps the instrument honest
@@ -295,7 +288,7 @@ test-surface-census:
 
 # Screen every APIs.guru catalogue version for the owned surface-gap selectors.
 apis-guru-gap-screen *args:
-    "$(./scripts/census-python.sh)" ./tools/surface-census/apis-guru-gap-screen.py {{args}}
+    "$(bash ./scripts/census-python.sh)" ./tools/surface-census/apis-guru-gap-screen.py {{args}}
 
 # The corpus's admissible-licence rule is stated in ONE file,
 # docs/corpus-licensing.md. This fails when any other tracked Markdown document
@@ -498,11 +491,11 @@ test-witness-screen:
 # Take one legacy witness-search candidate's licence, ref and Fern screens, measured.
 # Network (the guarded raw route) and Fern (`just setup-fern`).
 witness-screen *args:
-    @"$(./scripts/census-python.sh)" ./tools/witness-search/witness_screen.py "$@"
+    @"$(bash ./scripts/census-python.sh)" ./tools/witness-search/witness_screen.py "$@"
 
 # Canonical reproduction entry point; archived evidence retains original commands.
 witness-search-local-census *args:
-    @"$(./scripts/census-python.sh)" ./tools/witness-search/witness-search-local-census.py "$@"
+    @"$(bash ./scripts/census-python.sh)" ./tools/witness-search/witness-search-local-census.py "$@"
 
 # Drives the real module against a local HTTP server serving authored responses.
 # Offline tier for the GitHub/Postman/Sourcegraph rate-limit guard.
@@ -513,4 +506,4 @@ test-rate-limit-guard:
 # it stays out of `check`. Rule and interface: tools/witness-search/rate_limit_guard.py.
 # Live GitHub REST bucket figures from one free /rate_limit read, plus paced-host spacing.
 quota-status:
-    @"$(./scripts/census-python.sh)" tools/witness-search/rate_limit_guard.py status
+    @"$(bash ./scripts/census-python.sh)" tools/witness-search/rate_limit_guard.py status

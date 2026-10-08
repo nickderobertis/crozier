@@ -19,9 +19,9 @@
 # the same kind of overlay, for crozier's `default-max-retries`.
 #
 # Fern's generator only runs under a container runtime (Docker/Podman), which is
-# not available in every environment — so this is a SEPARATE, opt-in script, not
-# part of `just fixtures-refresh`'s default offline path. Run it on a machine
-# with Docker; it produces tests/fixtures/<fixture>/expected/.
+# not available in every environment. Generation is opt-in; routine comparisons
+# use committed sources and goldens. Run this on a machine with Docker; it
+# produces tests/fixtures/<fixture>/expected/.
 #
 # Requirements:
 #   - Docker running (Fern runs the generator image locally)
@@ -36,7 +36,7 @@
 #   --default-max-retries  a non-negative integer for Fern's default_max_retries;
 #                       installs the packaged expected-default-max-retries/
 #                       overlay of expected/.
-#   FIXTURE             fixture dir under tests/fixtures/ (default: exhaustive).
+#   FIXTURE             fixture dir under tests/fixtures/ (default: auth-schemes).
 #                       e.g. auth-schemes, inline-request-response, integer-enums.
 #   FERN_PYTHON_VERSION defaults to the latest stable tag resolved by the same
 #                       Docker Hub distribution lookup as `fern-goldens`.
@@ -109,7 +109,7 @@ if [ -n "$DEFAULT_MAX_RETRIES" ]; then
   golden_name=expected-default-max-retries
 fi
 
-FIXTURE="${1:-exhaustive}"
+FIXTURE="${1:-auth-schemes}" # llmlint: ignore[changed_behavior_has_e2e] Only the default fixture identifier changes; control flow is unchanged. FernGoldensBoundaryTests.test_invalid_inputs_fail_before_generation_or_publication drives this path with auth-schemes explicitly.
 # FIXTURE is spliced into paths that are later `rm -rf`'d, so hold it to a single
 # safe path segment (shared valid_fixture_name; rejects traversal/option injection).
 valid_fixture_name "$FIXTURE" || {
