@@ -61,6 +61,13 @@ class ThePinIsRequired(unittest.TestCase):
                                   result.stderr)
                     self.assertIn("then re-run", result.stderr)
 
+    def test_a_pin_outside_the_pep_723_block_is_no_pin(self) -> None:
+        # The search script's header declares none; a later comment that looks like one does not count.
+        result = self.run_over("", "parsers", search='# requires-python = ">=3.11"\n# ///\n'
+                                                     '# dependencies = ["ruamel.yaml==0.19.1"]\n# /// script\n')
+        self.assertNotEqual(result.returncode, 0, result.stderr)
+        self.assertIn(f"{self.SEARCH} declares no single pinned dependency", result.stderr)
+
     def test_the_recensus_pin_is_held_after_the_search_pin_is_taken(self) -> None:
         result = self.run_over(self.PIN, "parsers", recensus='# dependencies = ["ruamel.yaml"]\n')
         self.assertNotEqual(result.returncode, 0, result.stderr)

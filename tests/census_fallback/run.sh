@@ -20,7 +20,10 @@ cd "$(dirname "$0")/../.."
 pinned() {
   local pin
   # A command substitution does not inherit errexit, so a read that fails is caught here.
-  pin="$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' "$1")" || {
+  # Only the PEP 723 block (`# /// script` … `# ///`) declares it; a comment elsewhere is not a pin.
+  pin="$(awk '/^# \/\/\/ script$/ { inside = 1; next }
+              inside && /^# \/\/\/$/ { inside = 0; next }
+              inside && match($0, /^# dependencies = \[".*"\]$/) { print substr($0, 20, length($0) - 21) }' "$1")" || {
     echo "census-fallback: cannot read $1 — restore it (git checkout -- $1) and make it readable, then re-run" >&2
     return 1
   }
