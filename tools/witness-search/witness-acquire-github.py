@@ -42,7 +42,7 @@ DOWNLOAD_HOSTS = ("api.github.com", "codeload.github.com", "raw.githubuserconten
 def is_download_url(value: str) -> bool:
     """A GitHub download over HTTPS, or a loopback HTTP server (the offline tier)."""
     parsed = urllib.parse.urlsplit(value)
-    return bool(parsed.hostname) and (
+    return GUARD.valid_port(parsed) and bool(parsed.hostname) and (
         (parsed.scheme == "https" and parsed.hostname in DOWNLOAD_HOSTS)
         or (parsed.scheme == "http" and parsed.hostname in GUARD.LOOPBACK_HOSTS)
     )

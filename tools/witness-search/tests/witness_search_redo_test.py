@@ -1364,10 +1364,11 @@ class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
         self.assertEqual('verified-reuse', json.loads(output.read_text(encoding='utf-8'))['sources'][0]['acquisition'])
         self.assertEqual([], served)
 
-    def test_openapi_3_is_read_alike_by_wide_acquisition_github_search_and_local_census(self) -> None:
-        # The wide tier hands every document it reads as OpenAPI 3 to the local
-        # census, and screens by the GitHub search's version expression: a
-        # version each reader judges differently would fail here.
+    def test_wide_acquisition_reads_openapi_3_as_github_search_does_and_the_local_census_takes_all_of_it(self) -> None:
+        # The wide tier screens by the GitHub search's version expression, so the
+        # two agree on every version; and it hands every document it reads as
+        # OpenAPI 3 to the local census, which must census each one. The census
+        # may read more (`3.0`), which only the wide tier's own reading gates.
         import importlib.util
         spec = importlib.util.spec_from_file_location('wide_version_github', REPO / 'tools/witness-search/witness-search-github.py')
         github = importlib.util.module_from_spec(spec)

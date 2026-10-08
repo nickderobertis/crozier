@@ -195,10 +195,19 @@ def _token() -> str | None:
 LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 
 
+def valid_port(parsed: urllib.parse.SplitResult) -> bool:
+    """Whether a URL's port, when it names one, is a TCP port (urllib reads it only on use)."""
+    try:
+        port = parsed.port
+    except ValueError:
+        return False
+    return port is None or port > 0
+
+
 def checked_service_url(value: str, name: str, expected_host: str) -> str:
     """Allow the intended HTTPS host and local HTTP servers used by the offline tier."""
     parsed = urllib.parse.urlsplit(value)
-    if not parsed.hostname or (
+    if not valid_port(parsed) or not parsed.hostname or (
         not (parsed.scheme == "https" and parsed.hostname == expected_host)
         and not (parsed.scheme == "http" and parsed.hostname in LOOPBACK_HOSTS)
     ):

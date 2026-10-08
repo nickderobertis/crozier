@@ -1380,6 +1380,11 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 ("file:///etc/passwd", {}, "must be an https:// URL on"),
                 ("/tree.tar.gz", {"CROZIER_GITHUB_API_URL": "http://example.invalid"},
                  "CROZIER_GITHUB_API_URL must use https://api.github.com or a loopback HTTP URL"),
+                # A port that names no TCP port is refused here, not by the HTTP client later.
+                ("http://127.0.0.1:bogus/tree.tar.gz", {}, "must be an https:// URL on"),
+                ("http://127.0.0.1:99999/tree.tar.gz", {}, "must be an https:// URL on"),
+                ("/tree.tar.gz", {"CROZIER_GITHUB_API_URL": "http://127.0.0.1:0"},
+                 "CROZIER_GITHUB_API_URL must use https://api.github.com or a loopback HTTP URL"),
             ):
                 with self.subTest(target=target, overrides=overrides):
                     refused = acquire(root, target, root / "refused", **overrides)
