@@ -646,8 +646,10 @@ def query_state(
     ):
         return "complete", last, []
     limit = index_limit(query, mine)
-    if refusal or limit:
-        return "incomplete", last, refusal or [limit]
+    if refusal:
+        return "incomplete", last, refusal
+    if limit:
+        return "incomplete", last, [limit]
     read = answered[-1] if answered else last
     reported, served = read.get("result_count", 0), read.get("retrieved_total", 0)
     short = (
@@ -766,7 +768,7 @@ def outstanding_rows(root: Path, records: dict[str, list[dict[str, str]]]) -> li
                 state, last, found = query_state(queries, source, key, query)
                 if state == "complete":
                     answered += 1
-                elif state == "unissued":
+                elif state == "unissued" or last is None:
                     unissued.append(query)
                 else:
                     incomplete.append(

@@ -33,7 +33,9 @@ import tempfile
 import threading
 import time
 import unittest
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 MANIFEST_NAME = "corpus-remote-ref-pins.tsv"
@@ -92,10 +94,22 @@ def root_document(title: str, *, refs: dict[str, str], link: str | None = None) 
     ).encode()
 
 
+class FixtureServer(http.server.ThreadingHTTPServer):
+    """The loopback server, carrying the documents it serves and its request log."""
+
+    documents: dict[str, bytes]
+    requests: list[str]
+    throttles: dict[str, int]
+    throttle_retry_after: dict[str, str]
+    success_retry_after: dict[str, str]
+    on_request: dict[str, Callable[[], object]]
+
+
 class RecordingHandler(http.server.BaseHTTPRequestHandler):
     """Serves the registered documents and appends every request path to a log."""
 
     protocol_version = "HTTP/1.1"
+    server: FixtureServer
 
     def do_GET(self) -> None:
         self.server.requests.append(self.path)
@@ -120,7 +134,7 @@ class RecordingHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, *args: object) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         """Quiet: the request log is the assertion surface, not stderr."""
 
 
@@ -141,7 +155,7 @@ class PinMechanismTests(unittest.TestCase):
             self.root / "tests" / "fixtures" / "corpus-aliases.tsv",
         )
 
-        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), RecordingHandler)
+        self.server = FixtureServer(("127.0.0.1", 0), RecordingHandler)
         self.server.documents = {}
         self.server.requests = []
         self.server.throttles = {}

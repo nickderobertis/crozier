@@ -50,7 +50,7 @@ import unittest
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
@@ -403,7 +403,7 @@ _search_spec = importlib.util.spec_from_file_location(
     "golden_reach_search", REPO / "tools" / "surface-census" / "golden-reach-search.py"
 )
 assert _search_spec and _search_spec.loader
-golden_reach_search = importlib.util.module_from_spec(_search_spec)
+golden_reach_search: Any = importlib.util.module_from_spec(_search_spec)
 sys.modules["golden_reach_search"] = golden_reach_search
 _search_spec.loader.exec_module(golden_reach_search)
 
@@ -959,9 +959,11 @@ class FernRescreenVerdictTests(unittest.TestCase):
         self.assertEqual("Fern CLI 5.67.1 / python-sdk 5.20.0", golden_reach_search.fern_label())
         default = re.search(r'FERN_CLI_VERSION="\$\{FERN_CLI_VERSION:-([^}]+)\}"', script)
         self.assertIsNotNone(default, "generate-fern-fixture.sh no longer defaults its Fern CLI version")
+        assert default is not None
         self.assertEqual(cli, default.group(1))
         heredoc = re.search(r'cat > "\$workdir/fern/generators\.yml" <<YAML\n(.*?)\nYAML\n', script, re.S)
         self.assertIsNotNone(heredoc, "generate-fern-fixture.sh no longer writes generators.yml from a heredoc")
+        assert heredoc is not None
         body = heredoc.group(1)
         # The blocks are the script's defaults: an `expected/` golden's
         # python_enums enum type, with no extra-fields or default-max-retries setting.
@@ -1243,14 +1245,14 @@ class ArmSearchStageTests(_StageScratch):
 
     def test_probe_publication_preserves_opaque_history_while_replacing_current_rows(self) -> None:
         token = golden_reach_search.INDEX.make_opaque_identity("f" * 32, 81)
-        history = {
+        history: dict[str, object] = {
             "key": self.KEY,
             "candidate": f"{token}@{token}",
             "status": "ok",
             "reached": ["historical-arm"],
             "build": self.head[:12],
         }
-        current = {
+        current: dict[str, object] = {
             "key": self.KEY,
             "candidate": f"example/metering:flow.yaml@{self.REVISION}",
             "status": "ok",
@@ -2703,12 +2705,20 @@ class ArmSearchStageTests(_StageScratch):
         self.assertIn("re-run `just golden-reach`", str(refused.exception))
 
 
+class _LoopbackServer(ThreadingHTTPServer):
+    """The loopback's server, with the state a test hands its handler and reads back."""
+
+    requests: list[str]
+    extra_items: list[dict[str, Any]]
+
+
 class _Loopback(BaseHTTPRequestHandler):
     """GitHub's REST search, contents and rate-limit routes, and its exact-commit raw route."""
 
     COMMIT = "b" * 40
+    server: _LoopbackServer
 
-    def log_message(self, *args: object) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         pass
 
     def do_GET(self) -> None:
@@ -2789,7 +2799,7 @@ class ArmSearchNetworkStageTests(_StageScratch):
 
     def setUp(self) -> None:
         super().setUp()
-        server = ThreadingHTTPServer(("127.0.0.1", 0), _Loopback)
+        server = _LoopbackServer(("127.0.0.1", 0), _Loopback)
         self.loopback = server
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)

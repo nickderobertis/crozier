@@ -34,7 +34,7 @@ import urllib.parse
 import urllib.request
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 # The guard sits beside this module; callers in other projects load this file by
 # path, so its directory is not otherwise on sys.path.
@@ -546,7 +546,9 @@ class Acquirer:
             guard.record(error)
             raise
         guard.record(response)
-        return response.status, body, response.headers
+        # typeshed types HTTPError.status as int | None and its headers as Message; urllib's HTTPError always
+        # carries the int code and the response's http.client.HTTPMessage, as a successful response does.
+        return response.status, body, response.headers  # ty: ignore[invalid-return-type]
 
     def wait_for_index_pacing(self, host: str, bucket: str) -> None:
         """Space index calls across process restarts and cool after refusals."""
@@ -889,7 +891,7 @@ class Acquirer:
             return None
         if answered and answered[0].get("result_count", 0) > 1000:
             return self._partition_window(key, query, lower, upper, answered[0]["result_count"])
-        if answered and answered[-1].get("retrieved_total") >= answered[-1].get("result_count"):
+        if answered and answered[-1]["retrieved_total"] >= answered[-1]["result_count"]:
             return [item for row in answered for item in row["results"]]
         if answered and (answered[-1].get("page_count") == 0 or len(answered) >= CODE_SEARCH_PAGE_CAP):
             split = self._split_truncated(
@@ -1059,7 +1061,7 @@ class Acquirer:
         upper: int | None,
         reported: int,
         retrieved: int,
-    ) -> list[dict[str, Any]] | None | bool:
+    ) -> list[dict[str, Any]] | None | Literal[False]:
         """Split a truncated window by size, or say it cannot be split now.
 
         Returns False when splitting is off or this run's budget is spent, so the
@@ -1273,7 +1275,9 @@ class Acquirer:
             "path": path,
             "commit": commit,
         }
-        if any(not isinstance(value, str) or not value for value in (repo, path, commit)):
+        if not (
+            isinstance(repo, str) and repo and isinstance(path, str) and path and isinstance(commit, str) and commit
+        ):
             record = {
                 **identity,
                 "disposition": "acquisition-failure",
@@ -1390,7 +1394,8 @@ class Acquirer:
                 },
             )
             if status not in (429, 503):
-                return status, data
+                # typeshed types HTTPError.status as int | None; urllib's HTTPError always carries the int code.
+                return status, data  # ty: ignore[invalid-return-type]
             refusals += 1
             if refusals >= 5:
                 raise SearchStopped(f"raw GitHub refused {subject} five times (HTTP {status})")
@@ -1573,6 +1578,8 @@ class Acquirer:
                 diagnostic=f"census engine does not accept {selector}",
             )
         else:
+            if not isinstance(value, dict):
+                raise EvidenceError(f"census verdict for sha256 {digest} carries no selector counts")
             count = value.get(selector, 0)
             record.update(
                 disposition="declares" if count else "does-not-declare",
@@ -1686,7 +1693,10 @@ class Acquirer:
         same acquisition failure with the key it was recorded under.
         """
         if INDEX.opaque_identity(fetched.get("path")):
-            return self.record_excluded_candidate(fetched["source"], key, selector, fetched)
+            excluded = self.record_excluded_candidate(fetched["source"], key, selector, fetched)
+            # An opaque path survives opaque_record, so the candidate is always recorded as excluded.
+            if excluded is not None:
+                return excluded
         identity = {
             **{
                 field: fetched[field]
@@ -1948,7 +1958,11 @@ def _main() -> int:
                 (
                     row.get("outcome") == "answered"
                     and not row.get("incomplete_results")
-                    and (args.source == "sourcegraph" or row.get("retrieved_total") >= row.get("result_count"))
+                    and (
+                        args.source == "sourcegraph"
+                        # Untyped ledger JSON: a row missing a count must still fail as main's TypeError, unchanged.
+                        or row.get("retrieved_total") >= row.get("result_count")  # ty: ignore[unsupported-operator]
+                    )
                 )
                 or (args.first_page_only and row.get("outcome") in ("answered", "partitioned"))
             )

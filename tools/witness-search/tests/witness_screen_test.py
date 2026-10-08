@@ -23,7 +23,7 @@ import unittest
 import unittest.mock
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -77,10 +77,16 @@ INDEX = load(
 )
 
 
+class _RawServer(ThreadingHTTPServer):
+    requests: list[str]
+
+
 class _Raw(BaseHTTPRequestHandler):
     """raw.githubusercontent.com's exact-commit route, serving each candidate repository's file below."""
 
-    def log_message(self, *args: object) -> None:
+    server: _RawServer
+
+    def log_message(self, format: str, *args: Any) -> None:
         pass
 
     def do_GET(self) -> None:
@@ -127,7 +133,7 @@ class LegacyScreenCliTests(unittest.TestCase):
         (self.root / "witness-search-keys.tsv").write_text(
             "key\tselector\tregion\tcensus_status\nsample-shape\tschema:x\tschemas.md\tsupported\n", encoding="utf-8"
         )
-        server = ThreadingHTTPServer(("127.0.0.1", 0), _Raw)
+        server = _RawServer(("127.0.0.1", 0), _Raw)
         server.requests = []
         self.server = server
         threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -175,7 +181,7 @@ class LegacyScreenCliTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def rows(self) -> list[dict[str, object]]:
+    def rows(self) -> list[dict[str, Any]]:
         path = self.evidence / "screens.jsonl"
         if not path.is_file():
             return []

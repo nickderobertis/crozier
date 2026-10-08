@@ -58,7 +58,7 @@ from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any, NamedTuple, TypedDict
+from typing import Any, NamedTuple, NoReturn, TypedDict
 
 REPO = Path(__file__).resolve().parents[2]
 # The tests point this at a scratch copy to show `check` failing on drift.
@@ -137,7 +137,7 @@ SEARCHED = ("github-code-search", "sourcegraph")
 ENUMERATION_COLUMNS = ("walk", "document", "revision", "sha256")
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     print(f"fern-refusals: {message}", file=sys.stderr)
     raise SystemExit(1)
 
@@ -732,7 +732,7 @@ def measure(args: argparse.Namespace) -> int:
         digest = hashlib.sha256(data).hexdigest()
         path = documents / f"{digest}{suffix_of(entry['locator'])}"
         path.write_bytes(data)
-        row = {} if args.again else dict(done.get(entry["key"], {}))
+        row: dict[str, str] = {} if args.again else dict(done.get(entry["key"], {}))
         row.update(key=entry["key"], digest=digest, unretrievable="")
         needed = (
             missing_measurements(row)
@@ -740,11 +740,8 @@ def measure(args: argparse.Namespace) -> int:
             else {"check", "crozier", "crozier-strict"}
         )
         if "check" in needed:
-            row.update(
-                committed_check(entry)
-                if not row.get("check_exit") and committed_check(entry)
-                else fern_check(path, digest, args.timeout)
-            )
+            committed = None if row.get("check_exit") else committed_check(entry)
+            row.update(committed or fern_check(path, digest, args.timeout))
             if not row.get("generate_files") and not check_blocks(row):
                 needed.add("generate")
         if "generate" in needed:
@@ -974,7 +971,7 @@ def tables() -> tuple[dict[str, str], list[str]]:
         records = ";".join(sorted(entry["records"]))
         result = measured.get(entry["key"])
         missing = missing_measurements(result) - {"crozier-strict"} if result is not None else {"any"}
-        if missing:
+        if missing or result is None:
             problems.append(
                 f"{entry['key']}: not measured ({', '.join(sorted(missing))}); run `just fern-refusals-measure`"
             )

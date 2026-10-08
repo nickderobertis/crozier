@@ -80,11 +80,11 @@ import time
 import types
 import urllib.parse
 from collections import Counter, defaultdict
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Generator, Iterable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, Literal, NoReturn
 
 try:
     import fcntl
@@ -152,7 +152,7 @@ SCREEN = _load("witness_screen", REPO / "tools" / "witness-search" / "witness_sc
 INDEX = _load("witness_search_index_for_reach", REPO / "tools" / "witness-search" / "witness-search-github-index.py")
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     raise SystemExit(f"golden-reach-search: {message}")
 
 
@@ -374,7 +374,7 @@ def source_dir(source: str) -> Path:
     return path
 
 
-def read_enumeration(path: Path, remedy: str, quoting: int = csv.QUOTE_NONE) -> list[dict[str, str]]:
+def read_enumeration(path: Path, remedy: str, quoting: Literal[0, 1, 2, 3] = csv.QUOTE_NONE) -> list[dict[str, str]]:
     """A walk's `enumeration.tsv.gz`: its header exactly `WALK_FIELDS`, every row as
     wide as it, and each row naming its walk and document."""
     with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
@@ -1421,7 +1421,7 @@ def read_probes(source: str) -> list[dict[str, Any]]:
 
 
 @contextlib.contextmanager
-def exclusive_lock(path: Path) -> Iterator[None]:
+def exclusive_lock(path: Path) -> Generator[None, None, None]:
     """Hold an inter-process lock on `path` for the body, waiting as long as it is held.
 
     `fcntl.flock` where the platform has it and `msvcrt.locking` on Windows,
@@ -1435,6 +1435,8 @@ def exclusive_lock(path: Path) -> Iterator[None]:
                 fcntl.flock(handle, fcntl.LOCK_EX)
                 yield
                 return
+            # The test above leaves only Windows' `msvcrt` here.
+            assert msvcrt is not None and sys.platform == "win32"
             handle.seek(0)
             while True:
                 try:
@@ -1549,7 +1551,7 @@ def file_screen(source: str, key: str, candidate: str, row: dict[str, Any]) -> N
         fail(
             f"{candidate} is no declarer of {key} in {source}'s records; `walk` or `query` {source} for {key} first, or check the candidate's spelling"
         )
-    rows = [
+    rows: list[dict[str, str]] = [
         {"key": key, "kind": "candidate", "subject": candidate, "result": census, "file": "probe.jsonl"},
         *(
             {
@@ -2402,7 +2404,9 @@ YAML_LOADER = f"ruamel.yaml {RUAMEL_YAML_PIN} (YAML 1.2)"
 def _ruamel_yaml() -> ModuleType:
     """ruamel.yaml at the pinned version, or a refusal naming how to run with it."""
     try:
-        import ruamel.yaml
+        # A PEP 723 script: ty resolves it in the header's own environment, where the
+        # project's `allowed-unresolved-imports` entry for ruamel does not reach.
+        import ruamel.yaml  # ty: ignore[unresolved-import]
     except ModuleNotFoundError:
         fail(
             f"this stage reads YAML with ruamel.yaml {RUAMEL_YAML_PIN}, a full YAML 1.2 parser; run it as "

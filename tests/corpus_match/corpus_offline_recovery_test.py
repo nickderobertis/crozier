@@ -32,6 +32,7 @@ class OfflineCacheRecovery(unittest.TestCase):
         spec = importlib.util.spec_from_file_location(
             "offline_cache_recovery", REPO / "tests/corpus_match/corpus_offline_test.py"
         )
+        assert spec and spec.loader
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         if getattr(module.OfflineCorpusRecipes, "__unittest_skip__", False):

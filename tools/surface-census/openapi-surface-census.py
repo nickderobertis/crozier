@@ -58,7 +58,7 @@ from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 from urllib.parse import unquote
 
 # The corpus project owns the remote-ref pins; its directory is not on sys.path
@@ -140,7 +140,7 @@ class _YamlReader:
         self.pos = 0
         self.anchors: dict[str, Any] = {}
 
-    def fail(self, index: int, message: str) -> None:
+    def fail(self, index: int, message: str) -> NoReturn:
         raise DocumentError(self.path, index + 1, message)
 
     @staticmethod
@@ -2399,6 +2399,14 @@ def descent_field(member: str) -> str | None:
     return field or None
 
 
+def compiled_descent(member: str, operator: str) -> tuple[str, str]:
+    """The descent a group's operator takes: the field its last member names."""
+    field = descent_field(member)
+    if field is None:
+        raise ValueError(f"{operator!r} binds to {member!r}, which names no field to descend through")
+    return field, operator
+
+
 def group_halves(members: Iterable[str]) -> tuple[frozenset[str], frozenset[str]]:
     """One group's members as the set that must hold and the set that must not."""
     positive = {member for member in members if not member.startswith(NEGATION)}
@@ -2418,7 +2426,7 @@ def compile_conjunction(text: str) -> CompiledConjunction:
     return tuple(
         (
             group_halves(members),
-            None if operator is None else (descent_field(members[-1]), operator),
+            None if operator is None else compiled_descent(members[-1], operator),
         )
         for members, operator in conjunction_parts(text)
     )
@@ -2496,6 +2504,8 @@ def residual_selector(function: str, residual: Case) -> str:
     with the same consequence: the residual counts what that case claims, and the
     hole is a row of the table saying so.
     """
+    # Every residual arm is filed under the block whose cases it complements.
+    assert residual.block is not None
     block = BLOCKS[residual.block]
     negated = set()
     for case in CASES[function]:
@@ -2528,7 +2538,11 @@ def case_verdict(function: str, case: Case) -> str:
     """What the case analysis's third column says for one case of the table."""
     if case.residual is not None:
         return RESIDUAL_SELECTORS[(function, case.number)]
-    return case.selector if case.hole is None else case.hole
+    if case.hole is not None:
+        return case.hole
+    # A case is a residual, a hole, or a selector; the first two returned above.
+    assert case.selector is not None
+    return case.selector
 
 
 # Declared conjunctions no case of the table is read off any more, each with why

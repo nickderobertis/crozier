@@ -22,6 +22,7 @@ import socket
 import subprocess
 import sys
 import time
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -271,7 +272,7 @@ def _drive(python: str, sdk_src: Path, reference: Path, base_url: str) -> dict:
 
 
 @pytest.fixture(scope="session")
-def recordings(tmp_path_factory) -> dict[str, dict]:
+def recordings(tmp_path_factory) -> Iterator[dict[str, dict]]:
     """Build every fixture's live recording once: generate the SDK, relax the spec,
     boot Prism, and drive all endpoints. Returns `{fixture_name: {method: obs}}`."""
     crozier = _require("the crozier binary (set CROZIER_BIN or build it)", _crozier_bin())

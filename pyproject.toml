@@ -137,6 +137,26 @@ allowed-confusables = ["–", "×"]
 [tool.ty.environment]
 # The same 3.11 floor the source keeps for the host's bare `python3`.
 python-version = "3.11"
+# Directories whose modules other projects import by putting them on sys.path
+# at run time (a script's helpers, a suite's shared fixtures), so ty resolves
+# those imports the way the interpreter does.
+extra-paths = [
+    "tools/corpus",
+    "tools/corpus/tests",
+    "tools/fern-goldens/tests",
+    "tools/fern-refusals/tests",
+    "tools/llmlint/tests",
+    "tools/surface-census/tests",
+    "tools/witness-search/tests",
+]
+
+[tool.ty.analysis]
+# Imported only where they exist at run time, and deliberately absent from the
+# workspace venv: ruamel.yaml is the census fallback's parser pin, installed by
+# `uv run --script` from a script's PEP 723 header (a suite asserts the refusal
+# when it is missing), and `fern` is the SDK the runtime suite generates and
+# puts on sys.path itself.
+allowed-unresolved-imports = ["ruamel.**", "fern.**"]
 
 [tool.ty.src]
 exclude = [

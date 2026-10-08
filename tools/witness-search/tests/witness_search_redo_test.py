@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "witness-search" / "witness-search-redo.py"
@@ -54,11 +55,13 @@ class WitnessSearchRedoTests(unittest.TestCase):
         target.write_text(text.replace(old, new, 1), encoding="utf-8")
         return target
 
-    def contract_keys(self) -> list[tuple[str, str]]:
+    @staticmethod
+    def contract_keys() -> list[tuple[str, str]]:
         keys = []
         for line in CONTRACT.read_text(encoding="utf-8").splitlines():
             if line.startswith("| `") and line.count("|") == 3:
-                keys.append(tuple(cell.strip().strip("`") for cell in line.split("|")[1:3]))
+                key, selector = (cell.strip().strip("`") for cell in line.split("|")[1:3])
+                keys.append((key, selector))
         return keys
 
     def completed_documents(self) -> tuple[list[Path], Path]:
@@ -536,7 +539,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         for row in rows:
             artifact, keys, redistribution, publisher, fern, retention, verdict, evidence = row
             pin = re.search(r"[0-9a-f]{40}", artifact)
-            self.assertIsNotNone(pin, artifact)
+            assert pin is not None, artifact
             filename = artifact.split(" at ", 1)[0].split()[-1] if " at " in artifact else artifact.rsplit("/", 1)[1]
             matches = [
                 (index, record)
@@ -570,7 +573,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 self.assertEqual(expected, verdict, artifact)
                 if accepted:
                     self.assertTrue(all(cell.startswith("passed:") for cell in row[2:6]), artifact)
-                    count = re.search(r"(\d+) files", record[8])[1]
+                    files = re.search(r"(\d+) files", record[8])
+                    assert files is not None, record[8]
+                    count = files[1]
                     self.assertIn(f"{count} files", fern)
                     for version in re.findall(r"\b5\.\d+\.\d+\b", record[8]):
                         self.assertIn(version, fern)
@@ -601,7 +606,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
         rows = self.document_rows(choices)
         self.assertTrue(rows)
         for key, link, proof in rows:
-            url = re.search(r"\((https://raw.githubusercontent.com/[^)]+)\)", link)[1]
+            found = re.search(r"\((https://raw.githubusercontent.com/[^)]+)\)", link)
+            assert found is not None, link
+            url = found[1]
             owner, repo, pin, path = url.removeprefix("https://raw.githubusercontent.com/").split("/", 3)
             artifact = f"{owner}/{repo}@{pin}/{path}"
             if owner == "jentic":
@@ -963,10 +970,17 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 self.assertIn(message, self.reconcile_documents(completed, bad_schemas).stderr)
 
 
-class WideWitnessFixture:
+# The fixture is only ever mixed into a unittest.TestCase; the checker sees that base, the runtime does not.
+if TYPE_CHECKING:
+    _FixtureBase = unittest.TestCase
+else:
+    _FixtureBase = object
+
+
+class WideWitnessFixture(_FixtureBase):
     """A scratch report and contract, and the wide-witness CLI run over them."""
 
-    contract_keys = WitnessSearchRedoTests.contract_keys
+    contract_keys = staticmethod(WitnessSearchRedoTests.contract_keys)
     completed_documents = WitnessSearchRedoTests.completed_documents
 
     def setUp(self) -> None:

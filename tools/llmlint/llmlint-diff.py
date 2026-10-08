@@ -30,6 +30,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 # The largest judged input measured to come back with a verdict was 3.8 MB (a
 # 22-file code batch); an 8 MB one never did. The default leaves headroom below
@@ -37,7 +38,7 @@ from pathlib import Path
 DEFAULT_BUDGET = 3_000_000
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     """Stop with exit 2, the status a judge error takes: the run could not be made,
     which is never the same answer as a rule failing (exit 1)."""
     print(f"llmlint-diff: {message}", file=sys.stderr)

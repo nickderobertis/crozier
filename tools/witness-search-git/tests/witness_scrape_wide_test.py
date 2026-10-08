@@ -17,6 +17,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "witness-search" / "tests"))
 
@@ -569,7 +570,7 @@ class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(document)
 
-            def log_message(self, *_args) -> None:
+            def log_message(self, format: str, *args: Any) -> None:
                 pass
 
         server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -639,6 +640,7 @@ class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
         spec = importlib.util.spec_from_file_location(
             "wide_version_github", REPO / "tools/witness-search/witness-search-github.py"
         )
+        assert spec is not None and spec.loader is not None
         github = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = github
         spec.loader.exec_module(github)
@@ -1036,7 +1038,7 @@ class PostFreezeGapRowTests(unittest.TestCase):
         # A `handwritten` row keeps the selector its search ran on only here.
         shutil.copyfile(REPO / "docs/openapi-surface/witness-search-keys.tsv", self.regions / "witness-search-keys.tsv")
         self.schemas = self.regions / "schemas.md"
-        self.frozen = dict(redo.WitnessSearchRedoTests.contract_keys(self))
+        self.frozen = dict(redo.WitnessSearchRedoTests.contract_keys())
 
     def cli(self, *args) -> subprocess.CompletedProcess[str]:
         return subprocess.run(

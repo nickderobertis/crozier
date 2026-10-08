@@ -445,7 +445,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 "generator returned success without a flat module tree",
             ),
         ):
-            failed = self.run_tool("generate", "--version", "4.10.0", "--fixture", "alpha", **variables)
+            failed = self.run_tool("generate", "--version", "4.10.0", "--fixture", "alpha", check=False, **variables)
             self.assertEqual(failed.returncode, 1, failed.stdout)
             self.assertIn(f"alpha: {message}", failed.stderr)
             self.assertEqual(self.tree(flat), before)
@@ -505,7 +505,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             self.assertIn(message, result.stderr)
         self.assertEqual(len(self.calls()), 1)
 
-    def fixture_aliases(self) -> list[tuple[str, str]]:
+    def fixture_aliases(self) -> list[tuple[str, ...]]:
         return [
             tuple(line.split("\t"))
             for line in (self.root / "tests" / "fixtures" / ALIASES.name).read_text(encoding="utf-8").splitlines()
@@ -2092,6 +2092,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
     def test_just_recipes_preserve_untrusted_arguments_without_shell_evaluation(self) -> None:
         just = shutil.which("just", path=os.environ.get("PATH"))
         self.assertIsNotNone(just)
+        assert just is not None
         marker = Path(self.temporary.name) / "dispatch-injection"
         injected_version = f"latest; : > {marker}; #"
         generation = subprocess.run(

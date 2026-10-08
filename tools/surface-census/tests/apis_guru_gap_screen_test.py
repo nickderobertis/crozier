@@ -15,6 +15,7 @@ import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from region_flip import flipped_regions
@@ -301,6 +302,8 @@ components:
         ).encode()
 
         class Handler(BaseHTTPRequestHandler):
+            server: ThreadingHTTPServer
+
             def do_GET(self):
                 if self.path == "/list.json":
                     payload = json.dumps(
@@ -331,7 +334,7 @@ components:
                 self.end_headers()
                 self.wfile.write(payload)
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -380,6 +383,8 @@ components:
         requested: list[str] = []
 
         class Handler(BaseHTTPRequestHandler):
+            server: ThreadingHTTPServer
+
             def do_GET(self):
                 requested.append(self.path)
                 port = self.server.server_port
@@ -399,7 +404,7 @@ components:
                 self.end_headers()
                 self.wfile.write(payload)
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -478,7 +483,7 @@ components:
                 self.end_headers()
                 self.wfile.write(b'{"swagger":"2.0","paths":{}}' if self.path == "/old.json" else b'{"openapi":')
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -1019,6 +1024,7 @@ components:
         # refusal names whichever comes first; each lost its selector.
         named = re.search(r"handwritten row '([a-z0-9-]+)' has no selector in witness-search-keys\.tsv", refused.stderr)
         self.assertIsNotNone(named, refused.stderr)
+        assert named is not None
         self.assertTrue(
             any(
                 line.startswith(f"| {named[1]} |") and "| handwritten |" in line

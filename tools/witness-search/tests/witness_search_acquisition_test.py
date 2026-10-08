@@ -20,6 +20,7 @@ import time
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -403,6 +404,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         # Every row of the committed plan still reads: pinned rows validate, and
         # the rows recording why no immutable ref exists are skipped as before.
         spec = importlib.util.spec_from_file_location("portal_trees_plan", PORTAL_TREES)
+        assert spec is not None and spec.loader is not None
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         with (REPO / "docs/openapi-surface/witness-search-portal-plan.tsv").open(
@@ -429,7 +431,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(payload)
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -512,7 +514,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(payload)
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -562,7 +564,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(b'{"meta":{}}')
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -614,7 +616,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     json.dumps({"data": {}, "meta": {"total": dict.fromkeys(POSTMAN_KINDS, 0)}}).encode("utf-8")
                 )
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -662,7 +664,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(json.dumps({"data": {}, "meta": {"total": answers[0][index]}}).encode())
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -729,7 +731,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.send_response(500)
                 self.end_headers()
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -801,6 +803,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         # A row the derivation marks unsupported is skipped, not refused, and the
         # committed derivation reads.
         spec = importlib.util.spec_from_file_location("postman_keys", POSTMAN)
+        assert spec is not None and spec.loader is not None
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         census = module.load_census()
@@ -847,7 +850,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(b"refused")
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -932,7 +935,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(body)
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -1265,7 +1268,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(b"refused")
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -1385,6 +1388,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         spec = importlib.util.spec_from_file_location(
             "registries_index", REPO / "tools/witness-search/witness-search-registries-index.py"
         )
+        assert spec is not None and spec.loader is not None
         index = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(index)
         readme = (REPO / "docs/openapi-surface/witness-search-registries/README.md").read_text(encoding="utf-8")
@@ -1568,7 +1572,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(body)
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -1678,7 +1682,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertIn("invalid choice", invalid_bucket.stderr)
             # The CLI's choices are the guard's covered buckets, not a copy of them.
             offered = re.search(r"choose from (.*?)\)", invalid_bucket.stderr)
-            self.assertIsNotNone(offered, invalid_bucket.stderr)
+            assert offered is not None, invalid_bucket.stderr
             self.assertEqual(set(re.findall(r"'?([a-z_]+)'?", offered[1])), set(load_rate_limit_guard().GITHUB_BUCKETS))
             self.assertFalse((root / "invalid").exists())
 
@@ -1708,8 +1712,10 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         redirect_rate_limit = threading.Event()
 
         class Handler(BaseHTTPRequestHandler):
+            server: ThreadingHTTPServer
+
             def do_GET(self):
-                port = self.server.server_address[1]
+                port = self.server.server_port
                 if self.path == "/rate_limit" and redirect_rate_limit.is_set():
                     self.redirect("http://example.invalid/rate_limit")
                 elif self.path == "/rate_limit":
@@ -1750,7 +1756,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(body)
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -1846,7 +1852,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 self.end_headers()
                 self.wfile.write(body)
 
-            def log_message(self, *_args):
+            def log_message(self, format: str, *_args: Any) -> None:
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)

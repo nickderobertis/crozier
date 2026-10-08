@@ -148,7 +148,7 @@ class GuardTestCase(unittest.TestCase):
 
             do_POST = do_GET
 
-            def log_message(self, *args: Any) -> None:
+            def log_message(self, format: str, *args: Any) -> None:
                 pass
 
         self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -318,7 +318,7 @@ class GitHubCapTests(GuardTestCase):
         self.assertGreaterEqual(len(before), 1)
         self.assertGreaterEqual(len(after), 1)
         # Reading charged the bucket nothing.
-        self.assertTrue(all(r.reading["core"]["used"] == 100 for r in before))
+        self.assertTrue(all(r.reading is not None and r.reading["core"]["used"] == 100 for r in before))
         self.assertTrue(all(r.authorization == f"Bearer {SECRET}" for r in reads))
         calls = self.fixture.requests("/repos/o/r/contents")
         self.assertEqual(len(calls), 1)

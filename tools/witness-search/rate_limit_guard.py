@@ -146,7 +146,7 @@ RESET_MARGIN_S = 1.0
 SECONDARY_BACKOFF_BASE_S = 60.0
 """First secondary-limit backoff when no ``Retry-After`` asks for longer."""
 
-SECONDARY_ATTEMPT_BUDGET = 5
+SECONDARY_ATTEMPT_BUDGET: int = 5
 """Consecutive refusals of one bucket or lane before ``SecondaryLimit``."""
 
 

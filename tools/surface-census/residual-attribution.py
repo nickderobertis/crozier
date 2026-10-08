@@ -43,8 +43,11 @@ def _census():
     spec = importlib.util.spec_from_file_location(
         "openapi_surface_census", REPO / "tools" / "surface-census" / "openapi-surface-census.py"
     )
+    if spec is None or spec.loader is None:
+        raise SystemExit(
+            "residual-attribution: cannot load tools/surface-census/openapi-surface-census.py; restore it from git"
+        )
     module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     sys.modules.setdefault("openapi_surface_census", module)
     spec.loader.exec_module(module)
     return module

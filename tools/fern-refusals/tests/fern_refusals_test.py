@@ -34,6 +34,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "fern-refusals" / "fern-refusals.py"
@@ -99,6 +100,7 @@ def stub_fern(directory: Path) -> Path:
 def load_script(name: str) -> ModuleType:
     """The REAL script as a module, for the readers its subcommands share."""
     spec = importlib.util.spec_from_file_location(name, SCRIPT)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -574,7 +576,8 @@ class MeasurementsAndArguments(unittest.TestCase):
 
     def test_a_measurement_field_that_is_not_text_is_refused_naming_its_line(self) -> None:
         spec = importlib.util.spec_from_file_location("fern_refusals_measurements", SCRIPT)
-        module = importlib.util.module_from_spec(spec)
+        assert spec is not None and spec.loader is not None
+        module: Any = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         with tempfile.TemporaryDirectory() as scratch:
             module.EVIDENCE = Path(scratch)
@@ -588,7 +591,7 @@ class MeasurementsAndArguments(unittest.TestCase):
             self.assertEqual("1", module.read_measurements()["k"]["check_exit"])
 
     def test_a_measured_value_outside_its_grammar_is_refused_naming_its_line(self) -> None:
-        module = load_script("fern_refusals_grammar")
+        module: Any = load_script("fern_refusals_grammar")
         with tempfile.TemporaryDirectory() as scratch:
             module.EVIDENCE = Path(scratch)
             path = Path(scratch) / "measurements.jsonl"

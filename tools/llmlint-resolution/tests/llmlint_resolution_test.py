@@ -114,9 +114,10 @@ class ResolvesWithTheOriginUnreachable(unittest.TestCase):
     """Drive the real binary with the plugin origin refused from this process."""
 
     def setUp(self) -> None:
-        self.llmlint = llmlint_binary()
-        if self.llmlint is None:
+        llmlint = llmlint_binary()
+        if llmlint is None:
             self.fail("CROZIER_REQUIRE_LLMLINT=1 but llmlint is not installed — run `just setup-llmlint`")
+        self.llmlint = llmlint
         self.temporary = tempfile.TemporaryDirectory()
         self.scratch = Path(self.temporary.name)
         self.addCleanup(self.temporary.cleanup)

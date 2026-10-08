@@ -157,7 +157,7 @@ class LlmlintDiffTests(unittest.TestCase):
         self.assertEqual(2, run.returncode, "so is the single plain invocation")
 
     def test_every_changed_file_is_judged_in_exactly_one_batch(self) -> None:
-        files = {f"d{n}/f{n}.md": "x" * (200 * n) for n in range(1, 9)}
+        files: dict[str, str] = {f"d{n}/f{n}.md": "x" * (200 * n) for n in range(1, 9)}
         self.commit(files)
         self.assertEqual(0, self.run_script("--budget", "2500").returncode)
         named = [path for call in self.calls() for path in call[4:]]

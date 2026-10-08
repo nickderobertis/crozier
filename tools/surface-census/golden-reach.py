@@ -53,7 +53,7 @@ import tempfile
 import threading
 from collections import defaultdict
 from pathlib import Path
-from typing import IO, Any, NamedTuple
+from typing import IO, Any, NamedTuple, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS_DIR = REPO / "docs" / "openapi-surface"
@@ -72,8 +72,11 @@ def _report_module():
     spec = importlib.util.spec_from_file_location(
         "fixtures_coverage_report", REPO / "tools" / "surface-census" / "fixtures-coverage-report.py"
     )
+    if spec is None or spec.loader is None:
+        raise SystemExit(
+            "golden-reach: cannot load tools/surface-census/fixtures-coverage-report.py; restore it from git"
+        )
     module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
 
@@ -81,7 +84,7 @@ def _report_module():
 REPORT = _report_module()
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     raise SystemExit(f"golden-reach: {message}")
 
 
@@ -89,8 +92,11 @@ def _region_keys_module():
     spec = importlib.util.spec_from_file_location(
         "golden_reach_region_keys", REPO / "tools" / "surface-census" / "witness-search-region-keys.py"
     )
+    if spec is None or spec.loader is None:
+        raise SystemExit(
+            "golden-reach: cannot load tools/surface-census/witness-search-region-keys.py; restore it from git"
+        )
     module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
 
@@ -273,7 +279,10 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
         )
     first = hits[0]
     if line_only:
-        column = pattern.search(lines[first - 1]).start() + 1
+        found = pattern.search(lines[first - 1])
+        # `hits` holds only the lines the pattern matches.
+        assert found is not None
+        column = found.start() + 1
         return Site(spec, match.group("file"), first, first, column, 1 << 30)
     opening = _opening_line(lines, first, end)
     if opening is None:
@@ -449,7 +458,7 @@ def measure(args: argparse.Namespace) -> int:
         if line.endswith(": test") and golden_test.search(line)
     )
     if args.tests:
-        selected = re.compile(args.tests)
+        selected: re.Pattern[str] = re.compile(args.tests)
         tests = [t for t in tests if selected.search(t)]
     if not tests:
         fail(
@@ -804,8 +813,11 @@ def _census_module():
     spec = importlib.util.spec_from_file_location(
         "openapi_surface_census", REPO / "tools" / "surface-census" / "openapi-surface-census.py"
     )
+    if spec is None or spec.loader is None:
+        raise SystemExit(
+            "golden-reach: cannot load tools/surface-census/openapi-surface-census.py; restore it from git"
+        )
     module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     sys.modules.setdefault("openapi_surface_census", module)
     spec.loader.exec_module(module)
     return module

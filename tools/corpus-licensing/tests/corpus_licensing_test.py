@@ -39,6 +39,7 @@ RULE = "docs/corpus-licensing.md"
 def load_gate():
     """The gate as a module, for the cases that read its path constants."""
     spec = importlib.util.spec_from_file_location("corpus_licensing_drift", SCRIPT)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

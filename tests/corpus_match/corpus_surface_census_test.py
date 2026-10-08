@@ -33,6 +33,7 @@ CENSUS_TIMEOUT = 60
 def load_census():
     """Load the authoritative source registry from the production census."""
     spec = importlib.util.spec_from_file_location("openapi_surface_census_corpus", SCRIPT)
+    assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)

@@ -47,6 +47,7 @@ def load_goldens_tool():
     is named explicitly rather than inferred from the path."""
     loader = importlib.machinery.SourceFileLoader("fern_goldens", str(TOOL))
     spec = importlib.util.spec_from_loader("fern_goldens", loader)
+    assert spec is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules["fern_goldens"] = module
     loader.exec_module(module)

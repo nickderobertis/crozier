@@ -41,6 +41,7 @@ OFFLINE_SCOPE = f"test(={OFFLINE_GOLDEN}) or test(={JOURNEY}) or test(={UNIT})"
 
 def load_reporter():
     spec = importlib.util.spec_from_file_location("fixtures_coverage_report", REPORTER)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

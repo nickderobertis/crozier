@@ -23,6 +23,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "corpus" / "tests"))
@@ -39,7 +40,16 @@ from corpus_sources_test import (  # noqa: E402 - the offline suite's directory 
 )
 
 
+class FixtureServer(http.server.ThreadingHTTPServer):
+    """The loopback server, carrying the documents it serves and its request log."""
+
+    documents: dict[str, bytes]
+    requests: list[str]
+
+
 class Handler(http.server.BaseHTTPRequestHandler):
+    server: FixtureServer
+
     def do_GET(self) -> None:
         self.server.requests.append(self.path)
         body = self.server.documents.get(self.path)
@@ -51,7 +61,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, *args: object) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         """Quiet: the request log is the assertion surface."""
 
 
@@ -60,7 +70,7 @@ class LoopbackRoot(SyntheticRoot):
 
     def setUp(self) -> None:
         super().setUp()
-        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.server = FixtureServer(("127.0.0.1", 0), Handler)
         self.server.requests = []
         self.server.documents = {
             "/specs/plain.json": PLAIN,

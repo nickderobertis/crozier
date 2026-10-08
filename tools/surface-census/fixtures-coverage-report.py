@@ -37,7 +37,7 @@ import textwrap
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, NoReturn
 
 # LLVM's coverage export encodes a region as
 # [line_start, col_start, line_end, col_end, count, file_id, expanded_file_id, kind]
@@ -211,7 +211,7 @@ def _char_literal_width(line: str, position: int) -> int:
     return 0  # `'a` — a lifetime, whose following token must still be scanned
 
 
-def _refuse_export(path: Path, detail: str) -> None:
+def _refuse_export(path: Path, detail: str) -> NoReturn:
     """Refuse a coverage export whose shape is not llvm.coverage.json.export 3.x."""
     raise SystemExit(
         f"fixtures-coverage: {path} is not the llvm-cov export this report "

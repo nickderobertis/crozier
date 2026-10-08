@@ -61,7 +61,7 @@ from collections.abc import Callable
 from enum import Enum
 from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import Any
+from typing import Any, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 RULE = REPO / "docs" / "corpus-licensing.md"
@@ -92,7 +92,7 @@ LEGACY_SOURCES = ("apis.guru", "jentic", "github-code-search", "github-publisher
 Fetch = Callable[[str, str], tuple[int, bytes]]
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     raise SystemExit(f"witness-screen: {message}")
 
 
@@ -431,7 +431,7 @@ def licence_screen(
     file_name, file_status, file_bytes = next(((n, s, b) for n, s, b in files if s == 200), ("", 0, b""))
     head = "\n".join(line for line in file_bytes.decode("utf-8", "replace").splitlines() if line.strip())
     head = "\n".join(head.splitlines()[:LICENCE_HEAD_LINES])
-    doc_family = recognise(document_text) if document_text else None
+    doc_family = recognise(document_text) if isinstance(document_text, str) and document_text else None
     file_family = recognise(head) if file_name else None
     if malformed:
         outcome = (

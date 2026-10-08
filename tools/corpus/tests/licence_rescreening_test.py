@@ -97,6 +97,7 @@ def record_line(
 
 def load_gate():
     spec = importlib.util.spec_from_file_location("licence_rescreening_check", SCRIPT)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

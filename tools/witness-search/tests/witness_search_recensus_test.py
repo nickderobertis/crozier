@@ -36,6 +36,7 @@ import time
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -134,7 +135,7 @@ def run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedPr
 
 class OpaqueContinuationTest(unittest.TestCase):
     def test_each_continuation_skips_opaque_history_and_refuses_unknown_versions(self) -> None:
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server = UpstreamServer(("127.0.0.1", 0), Upstream)
         server.paths = []
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
@@ -595,7 +596,7 @@ class FullYamlTest(unittest.TestCase):
 
     def test_a_copy_no_cache_holds_is_reacquired_at_its_commit_and_refused_if_it_differs(self) -> None:
         """A parse failure whose bytes no cache holds is read from its recorded source, verified first."""
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server = UpstreamServer(("127.0.0.1", 0), Upstream)
         server.paths = []
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
@@ -676,7 +677,7 @@ class FullYamlTest(unittest.TestCase):
 
     def test_a_copy_read_from_the_mirror_is_reacquired_from_the_mirror(self) -> None:
         """A GitHub row the mirror served is read from the mirror again, under its host, verified first."""
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server = UpstreamServer(("127.0.0.1", 0), Upstream)
         server.paths = []
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
@@ -782,11 +783,17 @@ PINNED = "e" * 40
 OLDER = "f" * 40
 
 
+class UpstreamServer(ThreadingHTTPServer):
+    paths: list[str]
+
+
 class Upstream(BaseHTTPRequestHandler):
-    def log_message(self, *args: object) -> None:
+    server: UpstreamServer
+
+    def log_message(self, format: str, *args: Any) -> None:
         pass
 
-    def reply(self, status: int, body: bytes | dict) -> None:
+    def reply(self, status: int, body: bytes | dict | list) -> None:
         data = body if isinstance(body, bytes) else json.dumps(body).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Length", str(len(data)))
@@ -902,7 +909,7 @@ class Upstream(BaseHTTPRequestHandler):
 
 class ReacquireHeadTest(unittest.TestCase):
     def test_each_404_is_requested_at_head_then_at_the_mirror(self) -> None:
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server = UpstreamServer(("127.0.0.1", 0), Upstream)
         server.paths = []
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
@@ -1045,7 +1052,7 @@ class ReacquireHeadTest(unittest.TestCase):
 
 class MirrorHashTest(unittest.TestCase):
     def test_a_mirror_blob_of_another_hash_is_not_the_candidate(self) -> None:
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server = UpstreamServer(("127.0.0.1", 0), Upstream)
         server.paths = []
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
@@ -1093,7 +1100,7 @@ class MirrorHashTest(unittest.TestCase):
 
 class ReacquireNamesakeTest(unittest.TestCase):
     def test_each_refused_candidate_is_sought_in_its_namesakes(self) -> None:
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server = UpstreamServer(("127.0.0.1", 0), Upstream)
         server.paths = []
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
@@ -1193,8 +1200,8 @@ class ReacquireNamesakeTest(unittest.TestCase):
             self.assertIn("3 refused candidate(s) sought in namesake repositories: 3 acquisition-failure", again.stdout)
 
 
-def serve_upstream(test: unittest.TestCase) -> tuple[ThreadingHTTPServer, str]:
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+def serve_upstream(test: unittest.TestCase) -> tuple[UpstreamServer, str]:
+    server = UpstreamServer(("127.0.0.1", 0), Upstream)
     server.paths = []
     threading.Thread(target=server.serve_forever, daemon=True).start()
     test.addCleanup(server.server_close)

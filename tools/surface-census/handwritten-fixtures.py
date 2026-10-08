@@ -728,6 +728,8 @@ def measure(args: argparse.Namespace) -> int:
             return len(regions & {tuple(r) for r in hit.get(site.file, [])}), len(regions)
 
         for name, cover in planned:
+            # `planned` holds the arm-level covers alone.
+            assert cover.arm is not None
             rows.append((name, cover.key, cover.arm, *reached(runs[name], cover.arm)))
             if name in controls:
                 gate_rows.append(

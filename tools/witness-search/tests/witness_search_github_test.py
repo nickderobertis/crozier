@@ -18,8 +18,10 @@ import threading
 import time
 import unittest
 import urllib.parse
+from collections.abc import Mapping
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parents[3]
@@ -537,7 +539,7 @@ class LedgerShardTests(unittest.TestCase):
         }
         ledger = root / "witness-search-sourcegraph/candidates.jsonl"
 
-        def write(row: dict[str, object]) -> None:
+        def write(row: Mapping[str, object]) -> None:
             ledger.write_text(json.dumps(ordinary) + "\n" + json.dumps(row) + "\n", encoding="utf-8", newline="\n")
 
         command = [
@@ -823,8 +825,16 @@ class LedgerShardTests(unittest.TestCase):
         self.assertIn("--shard-bytes must be positive", refused.stderr)
 
 
+class FixtureServer(ThreadingHTTPServer):
+    """The loopback server, carrying the scripted state its handler reads and the tests steer."""
+
+    state: dict[str, Any]
+
+
 class LocalServer(BaseHTTPRequestHandler):
-    def log_message(self, *args: object) -> None:
+    server: FixtureServer
+
+    def log_message(self, format: str, *args: Any) -> None:
         pass
 
     def do_GET(self) -> None:
@@ -1036,13 +1046,21 @@ class LocalServer(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-class WitnessSearchGithubFixture:
+# The fixture is a mixin over `unittest.TestCase`; the checker sees that base,
+# while at runtime only the concrete test classes inherit it.
+if TYPE_CHECKING:
+    _FixtureBase = unittest.TestCase
+else:
+    _FixtureBase = object
+
+
+class WitnessSearchGithubFixture(_FixtureBase):
     """A loopback GitHub, Sourcegraph and raw host, and an acquirer pointed at them."""
 
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), LocalServer)
+        self.server = FixtureServer(("127.0.0.1", 0), LocalServer)
         self.server.state = {
             "reads": 0,
             "cap": False,
@@ -1988,6 +2006,7 @@ class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
             git_only.mkdir()
             git_binary = shutil.which("git")
             self.assertIsNotNone(git_binary)
+            assert git_binary is not None
             (git_only / "git").symlink_to(git_binary)
             no_credential_env = {**env, "PATH": str(git_only), "GITHUB_TOKEN": "", "GH_TOKEN": ""}
             no_credential = subprocess.run(
@@ -4315,6 +4334,7 @@ components:
         readme = (REPO / "docs/openapi-surface/witness-search-github/README.md").read_text(encoding="utf-8")
         stated = re.search(r"as `(key kind subject result file|[a-z ]+)` rows", readme.replace("\n", " "))
         self.assertIsNotNone(stated, "the README no longer states the search-index.tsv columns")
+        assert stated is not None
         self.assertEqual(" ".join(SEARCH.INDEX.SEARCH_INDEX_FIELDS), stated.group(1))
 
     def test_committed_index_matches_per_source_evidence(self) -> None:
@@ -4375,6 +4395,7 @@ class HandwrittenKeyDerivationTest(unittest.TestCase):
                 r"([a-z0-9-]+)/([a-z0-9-]+): handwritten, and no selector in witness-search-keys\.tsv", refused.stderr
             )
             self.assertIsNotNone(named, refused.stderr)
+            assert named is not None
             self.assertTrue(
                 any(
                     line.replace("`", "").startswith(f"| {named[2]} |") and "| handwritten |" in line

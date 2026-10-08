@@ -79,7 +79,7 @@ class AFailedGenerateStopsTheRender(unittest.TestCase):
 
 class TheRealBinaryRendersTheSession(unittest.TestCase):
     def test_a_successful_generate_renders_an_animated_gif(self) -> None:
-        from PIL import Image
+        from PIL import GifImagePlugin, Image
 
         binary = REPO / "target" / "debug" / ("crozier.exe" if os.name == "nt" else "crozier")
         self.assertTrue(binary.is_file(), f"no {binary}; run `just nx run crozier:build`")
@@ -97,6 +97,7 @@ class TheRealBinaryRendersTheSession(unittest.TestCase):
             self.assertGreater(frames, 10, run.stderr)
             with Image.open(out) as gif:
                 self.assertEqual("GIF", gif.format)
+                assert isinstance(gif, GifImagePlugin.GifImageFile)
                 self.assertTrue(gif.is_animated)
                 # The encoder folds identical consecutive frames into one.
                 self.assertLessEqual(gif.n_frames, frames)

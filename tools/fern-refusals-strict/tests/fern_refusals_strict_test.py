@@ -23,6 +23,7 @@ import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "fern-refusals" / "tests"))
 
@@ -239,7 +240,7 @@ class _Served(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body or b"")
 
-    def log_message(self, *_args: object) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         pass
 
 
@@ -287,7 +288,7 @@ class FetchedAndMeasured(ScratchCheckout):
             ],
         )
 
-    def measured(self, *args: str) -> dict[str, str]:
+    def measured(self, *args: str) -> dict[str, dict[str, str]]:
         result = self.script("measure", "--jobs", "1", "--root", str(self.root / "documents"), *args, **self.fern)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         return {row["key"]: row for row in map(json.loads, self.measurements.read_text(encoding="utf-8").splitlines())}

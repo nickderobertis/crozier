@@ -15,6 +15,7 @@ import gzip
 import hashlib
 import http.client
 import importlib.util
+import io
 import json
 import re
 import subprocess
@@ -675,6 +676,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     # The CLI emits UTF-8 even when a Windows pipe defaults to a legacy codec.
-    sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
-    sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     raise SystemExit(main())

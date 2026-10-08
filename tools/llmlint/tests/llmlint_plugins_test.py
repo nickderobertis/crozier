@@ -26,6 +26,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 LOCK = REPO / "llmlint-plugins" / "lock.json"
@@ -274,7 +275,16 @@ class AMalformedLlmlintAnswerIsRefused(unittest.TestCase):
                 self.assertNotIn("Traceback", run.stderr)
 
 
+class _PluginServer(http.server.ThreadingHTTPServer):
+    """The loopback server, carrying the documents it serves and its request log."""
+
+    documents: dict[str, bytes]
+    requests: list[str]
+
+
 class _Plugins(http.server.BaseHTTPRequestHandler):
+    server: _PluginServer
+
     def do_GET(self) -> None:
         body = self.server.documents.get(self.path)
         self.server.requests.append(self.path)
@@ -283,7 +293,7 @@ class _Plugins(http.server.BaseHTTPRequestHandler):
         if body is not None:
             self.wfile.write(body)
 
-    def log_message(self, *_args: object) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         pass
 
 
@@ -326,7 +336,7 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
                 ],
             }
         )
-        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Plugins)
+        self.server = _PluginServer(("127.0.0.1", 0), _Plugins)
         self.server.documents = {"/rules/base.llmlint.yml": self.DOCUMENT}
         self.server.requests = []
         thread = threading.Thread(target=self.server.serve_forever, daemon=True)

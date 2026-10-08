@@ -43,7 +43,7 @@ from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
-from typing import ClassVar
+from typing import Any, ClassVar
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -81,6 +81,13 @@ def grep_speaks_pcre() -> bool:
         ["grep", "-oP", r"a\Kb(?=c)"], input="abc\n", capture_output=True, text=True, encoding="utf-8"
     )
     return probe.returncode == 0 and probe.stdout.strip() == "b"
+
+
+def matched(match: re.Match[str] | None) -> re.Match[str]:
+    """The match a case's pattern must find, so a miss fails the case instead of reading `None`."""
+    if match is None:
+        raise AssertionError("an expected pattern did not match")
+    return match
 
 
 def recipe_body(name: str) -> list[str]:
@@ -125,6 +132,7 @@ SCRIPT = script_under_test()
 def load_census():
     """Import the script as a module for the loader's own unit cases."""
     spec = importlib.util.spec_from_file_location("openapi_surface_census", SCRIPT)
+    assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     # Registered before execution because the module defines dataclasses, whose
     # type resolution reads the module out of sys.modules.
@@ -1756,7 +1764,7 @@ def exhaustive_line_failures(
                     f"{key}: asserts `{candidate}`'s {screen} screen `{outcome}` for "
                     f"`{source}`, which {where} does not carry"
                 )
-    table = {("query", q, r) for q, r in queries}
+    table: set[tuple[str, str, str | None]] = {("query", q, r) for q, r in queries}
     for tree, ref, count in walks:
         table.add(("walk", f"{tree}@{ref}", count))
     for candidate in candidates:
@@ -1796,7 +1804,7 @@ def exhaustive_line_failures(
                 f"in `{source}` — the census decides a declaration, never a keyword"
             )
             continue
-        if int(confirmed[0].group(1)) == 0:
+        if int(matched(confirmed[0]).group(1)) == 0:
             continue
         done = screens.get(candidate, {})
         if len(set(done) & set(SCREENS)) < len(SCREENS):
@@ -2295,6 +2303,7 @@ class GrammarContractTests(unittest.TestCase):
             text,
         )
         self.assertIsNotNone(stated, "the grammar no longer states how many predicates there are")
+        assert stated is not None
         self.assertEqual(len(census.PREDICATES), int(stated.group(1)))
 
     def test_the_documented_member_only_readings_are_the_ones_the_script_declares(self) -> None:
@@ -2314,6 +2323,7 @@ class GrammarContractTests(unittest.TestCase):
         self.assertEqual(set(census.MEMBER_ONLY_PREDICATES), documented)
         stated = re.search(r"They are a\s+closed list of (\d+)", body)
         self.assertIsNotNone(stated, "the section no longer states how many there are")
+        assert stated is not None
         self.assertEqual(len(census.MEMBER_ONLY_PREDICATES), int(stated.group(1)))
 
     def test_no_member_only_reading_is_also_a_declared_selector(self) -> None:
@@ -2421,10 +2431,12 @@ class GrammarContractTests(unittest.TestCase):
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text)
         self.assertIsNotNone(stated, "the grammar no longer states its node-local count")
+        assert stated is not None
         self.assertEqual(len(census.PREDICATES), int(stated.group(2)))
         body = text.split(stated.group(0), 1)[1].split("\n\nA predicate selector", 1)[0]
         other = re.search(r"The other\n?([a-z-]+) —", body)
         self.assertIsNotNone(other, "the grammar no longer counts the other family")
+        assert other is not None
         node_local = words[stated.group(1)]
         comparing = words[other.group(1)]
         self.assertEqual(
@@ -2510,6 +2522,7 @@ class GrammarContractTests(unittest.TestCase):
         self.assertEqual(census.CONJUNCTIONS, self.documented_conjunctions())
         stated = re.search(r"closed list of (\d+), declared in", self.DOC.read_text(encoding="utf-8"))
         self.assertIsNotNone(stated, "the grammar no longer states how many conjunctions there are")
+        assert stated is not None
         self.assertEqual(len(census.CONJUNCTIONS), int(stated.group(1)))
 
     def test_every_conjunction_is_spelled_in_its_one_canonical_order(self) -> None:
@@ -2541,6 +2554,7 @@ class GrammarContractTests(unittest.TestCase):
                     if hole:
                         self.assertIn(hole.group(1), holes)
                     else:
+                        assert selector is not None
                         # A conjunction, or — where the arm reads one Paths Object
                         # key and opens no schema — the predicate that reads it.
                         self.assertIn(
@@ -2551,7 +2565,7 @@ class GrammarContractTests(unittest.TestCase):
     def test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region(self) -> None:
         """The list is bounded by the generator's branches, not by what `&` can spell."""
         derived = {
-            re.fullmatch(r"`(.+)`", cells[2]).group(1)
+            matched(re.fullmatch(r"`(.+)`", cells[2])).group(1)
             for rows_of in self.case_rows().values()
             for cells in rows_of
             if re.fullmatch(r"`(.+)`", cells[2])
@@ -2625,7 +2639,7 @@ class GrammarContractTests(unittest.TestCase):
                     cells[0],
                     cells[2].strip("`")
                     if cells[2].startswith("`")
-                    else re.fullmatch(r"\*\*(H-[a-z-]+)\*\*", cells[2]).group(1),
+                    else matched(re.fullmatch(r"\*\*(H-[a-z-]+)\*\*", cells[2])).group(1),
                 )
                 for cells in rows_of
             ]
@@ -2774,6 +2788,7 @@ class GrammarContractTests(unittest.TestCase):
             self.DOC.read_text(encoding="utf-8"),
         )
         self.assertIsNotNone(stated, "the exactness rule no longer states its own totals")
+        assert stated is not None
         self.assertEqual(
             (words[len(selectors)], words[len(rows_of)], words[len(holes)]),
             tuple(group.lower() for group in stated.groups()),
@@ -2783,6 +2798,7 @@ class GrammarContractTests(unittest.TestCase):
             self.DOC.read_text(encoding="utf-8"),
         )
         self.assertIsNotNone(kinds, "the case analysis no longer states its hole-kind count")
+        assert kinds is not None
         self.assertEqual(words[len(self.documented_holes())], kinds.group(1))
 
     def test_each_region_file_repeats_the_index_s_boundary_verbatim(self) -> None:
@@ -2814,10 +2830,12 @@ class GrammarContractTests(unittest.TestCase):
         doc = self.DOC.read_text(encoding="utf-8")
         stated = re.search(r"the (\d+) original\n`tests/fixtures/<name>/openapi\.\*` documents", doc)
         self.assertIsNotNone(stated, "the instrument section no longer states the corpus split")
+        assert stated is not None
         self.assertEqual(counts[0], int(stated.group(1)))
         script = SCRIPT.read_text(encoding="utf-8")
         in_script = re.search(r"and (\d+) of the (\d+) registered sources live in `corpus-sources/`", script)
         self.assertIsNotNone(in_script, "the script's docstring no longer states the corpus split")
+        assert in_script is not None
         self.assertEqual((counts[1], counts[2]), (int(in_script.group(1)), int(in_script.group(2))))
 
     def test_the_verdict_vocabulary_is_the_one_fern_limitations_defines(self) -> None:
@@ -2840,6 +2858,7 @@ class GrammarContractTests(unittest.TestCase):
         doc = self.DOC.read_text(encoding="utf-8")
         pattern = re.search(r"^grep -oP '(.+)' docs/fern-limitations\.md", doc, re.M)
         self.assertIsNotNone(pattern, "the index no longer documents the join command")
+        assert pattern is not None
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
         # The same expression with PCRE's \K — which Python's re does not have —
         # rewritten as the capture group it is shorthand for.
@@ -5078,6 +5097,7 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
             re.DOTALL,
         )
         self.assertIsNotNone(body, "`preserve_const_discriminant` is no longer a `matches!` over string literals")
+        assert body is not None
         self.assertEqual(
             set(re.findall(r'"([^"]+)"', body.group(1))),
             set(census._PRESERVED_CONST_DISCRIMINANTS),
@@ -6326,6 +6346,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             (root / "tools" / "corpus").mkdir(parents=True)
             shutil.copy2(REPO / "tools" / "corpus" / "corpus_remote_ref_pins.py", root / "tools" / "corpus")
             spec = importlib.util.spec_from_file_location("patched_census", patched)
+            assert spec and spec.loader
             module = importlib.util.module_from_spec(spec)
             sys.modules["patched_census"] = module
             spec.loader.exec_module(module)
@@ -6832,6 +6853,7 @@ class GoldenSourcePopulationTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location(
             "golden_reach_population", REPO / "tools" / "surface-census" / "golden-reach.py"
         )
+        assert spec and spec.loader
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
         try:
@@ -7955,7 +7977,7 @@ class EscalationRestatementTests(unittest.TestCase):
         for key, rows in self.refused.items():
             with self.subTest(key=key):
                 note = self.lines[key][3]
-                self.assertEqual(len(rows), int(self.STAYS_OPEN.search(note)[1]))
+                self.assertEqual(len(rows), int(matched(self.STAYS_OPEN.search(note))[1]))
                 for row in rows:
                     self.assertIn(f"`{row['candidate']}` at `{row['revision']}`", note)
                     self.assertIn(row["census"].removeprefix("acquisition-failure: "), note)
@@ -8030,6 +8052,7 @@ class EscalationRestatementTests(unittest.TestCase):
             with self.subTest(pattern=pattern):
                 found = re.search(pattern, text)
                 self.assertIsNotNone(found, pattern)
+                assert found is not None
                 self.assertEqual(expected[name], self.number(found[1]))
 
 
@@ -8090,7 +8113,8 @@ class RankedBacklogTests(unittest.TestCase):
                 continue
             measured = [int(value) for value in re.findall(r"\*\*(\d+)\*\*", line)]
             self.assertEqual(4, len(measured), f"{row.group(2)} does not publish four measured criteria")
-            out.append((int(row.group(1)), row.group(2), tuple(measured), line))
+            first, second, third, fourth = measured
+            out.append((int(row.group(1)), row.group(2), (first, second, third, fourth), line))
         self.assertEqual(
             bool(self.gaps("FIXTURE")),
             bool(out),
@@ -8122,6 +8146,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(len(keys), len(set(keys)), "a feature key appears in two rows")
         stated = re.search(r"The (\d+) rows carry (\d+) distinct\s+keys", self.doc)
         self.assertIsNotNone(stated, "the reconciliation no longer states the row count")
+        assert stated is not None
         self.assertEqual(
             [len(keys), len(set(keys))],
             [int(stated.group(1)), int(stated.group(2))],
@@ -8146,6 +8171,7 @@ class RankedBacklogTests(unittest.TestCase):
             self.section("### What the walk enumerated", "The walk enumerated"),
         )
         self.assertIsNotNone(totals, "the summary table no longer carries a total row")
+        assert totals is not None
         self.assertEqual(
             [sum(column) for column in zip(*stated.values(), strict=False)],
             [int(totals.group(n)) for n in range(1, 9)],
@@ -8171,6 +8197,7 @@ class RankedBacklogTests(unittest.TestCase):
         """
         stated = re.search(r"^\| `category` \| exactly one of ((?:`[a-z]+`(?:, )?)+) \|$", self.doc, re.M)
         self.assertIsNotNone(stated, "the entry table no longer states the category vocabulary")
+        assert stated is not None
         documented = tuple(re.findall(r"`([a-z]+)`", stated.group(1)))
         rules = re.findall(
             r"^\d+\. \*\*`([a-z]+)`\*\*", self.section("## The category rules", "## The settlement classes"), re.M
@@ -8273,6 +8300,7 @@ class RankedBacklogTests(unittest.TestCase):
             headline,
         )
         self.assertIsNotNone(stated, "the headline no longer states its four numbers")
+        assert stated is not None
         unproven = fixture + residual_gap + no_witness
         expected = [
             len(rows),
@@ -8335,6 +8363,7 @@ class RankedBacklogTests(unittest.TestCase):
             headline,
         )
         self.assertIsNotNone(arms_stated, "the headline no longer states the three-way arm split")
+        assert arms_stated is not None
         reached = len(arms) - len(unreached)
         named = set(named_gap_arms(REPO)) & unreached
         self.assertEqual(
@@ -8439,6 +8468,7 @@ class RankedBacklogTests(unittest.TestCase):
         """The keys the index's own documented join reports, run here."""
         pattern = re.search(r"^grep -oP '(.+)' docs/fern-limitations\.md", self.doc, re.M)
         self.assertIsNotNone(pattern, "the index no longer documents the join command")
+        assert pattern is not None
         before, _, after = pattern.group(1).partition("\\K")
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
         return set(re.findall(f"{before}({after})", ledger, re.M))
@@ -8452,6 +8482,7 @@ class RankedBacklogTests(unittest.TestCase):
         flat = " ".join(self.section("**Each feature is classified exactly once.**", "**Nothing is left").split())
         stated = re.search(r"(\w+) spec locations carry more than one row", flat)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the shared locations")
+        assert stated is not None
         self.assertEqual(len(shared), {"Fifteen": 15}.get(stated.group(1)))
         named = 0
         for location, count in sorted(shared.items()):
@@ -8461,6 +8492,7 @@ class RankedBacklogTests(unittest.TestCase):
             with self.subTest(location=location):
                 follows = re.search(rf"`{re.escape(location)}`(?: heads)? (\d+)", flat)
                 self.assertIsNotNone(follows, f"{location} is named without its row count")
+                assert follows is not None
                 self.assertEqual(count, int(follows.group(1)))
         self.assertEqual(3, named, "the reconciliation no longer names three locations by size")
 
@@ -8472,6 +8504,7 @@ class RankedBacklogTests(unittest.TestCase):
         text = self.section("**Every ledger key is accounted for.**", "**The one correction")
         stated = re.search(r"canonical join reports (\d+) keys, of\nwhich (\d+) are a region row's key verbatim", text)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the join")
+        assert stated is not None
         self.assertEqual((len(keys), len(verbatim)), (int(stated.group(1)), int(stated.group(2))))
         unaccounted = sorted(keys - verbatim)
         self.assertEqual(
@@ -8483,6 +8516,7 @@ class RankedBacklogTests(unittest.TestCase):
             self.assertIn(f"| `{key}` |", text, f"{key} has no row saying how it is accounted for")
         yielded = re.search(r"The join's real yield is (\d+)\.", text)
         self.assertIsNotNone(yielded, "the reconciliation no longer states the join's real yield")
+        assert yielded is not None
         self.assertEqual(len(keys) - 1, int(yielded.group(1)), "one key is the non-feature label")
 
     def test_the_ranked_backlog_is_every_fixture_gap_in_rubric_order(self) -> None:
@@ -8497,6 +8531,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(sorted(sortable), sortable, "the ranked table is not in rubric order")
         stated = re.search(r"All (\d+) `FIXTURE` gaps", self.doc)
         self.assertIsNotNone(stated, "the ranked backlog no longer states its own size")
+        assert stated is not None
         self.assertEqual(len(ranked), int(stated.group(1)))
 
     def test_the_ranked_table_names_each_keys_owning_region(self) -> None:
@@ -8562,6 +8597,7 @@ class RankedBacklogTests(unittest.TestCase):
             blind[len(blind) // 2] if len(blind) % 2 else (blind[len(blind) // 2 - 1] + blind[len(blind) // 2]) // 2
         )
         self.assertIsNotNone(stated, "the ranked backlog no longer publishes its median")
+        assert stated is not None
         self.assertEqual(median, int(stated.group(1)))
 
     def test_each_ranked_row_reads_its_blind_spot_count_off_the_join_table(self) -> None:
@@ -8592,7 +8628,7 @@ class RankedBacklogTests(unittest.TestCase):
                 pointing[name] = pointing.get(name, 0) + 1
         for name, (_printed, _by_tier, cell) in sorted(self.blind_spot_table().items()):
             with self.subTest(file=name):
-                stated = 0 if cell.startswith("none") else int(re.match(r"(\d+)", cell).group(1))
+                stated = 0 if cell.startswith("none") else int(matched(re.match(r"(\d+)", cell)).group(1))
                 self.assertEqual(pointing.get(name, 0), stated)
 
     def test_the_join_table_is_the_coverage_reports_own_blind_spot_block(self) -> None:
@@ -8611,6 +8647,7 @@ class RankedBacklogTests(unittest.TestCase):
         out_dir = re.search(r'^out_dir="\$repo_root/([^"]+)"', recipe, re.M)
         golden = re.search(r"^  --golden-tier (\S+)", recipe, re.M)
         self.assertTrue(out_dir and golden, "fixtures-coverage.sh no longer names its exports")
+        assert out_dir is not None and golden is not None
         exports = REPO / out_dir.group(1)
         names = re.findall(r'--output-path "\$out_dir/([a-z0-9-]+)\.json"', recipe)
         self.assertIn(golden.group(1), names, "the golden tier has no export in the recipe")
@@ -8621,6 +8658,7 @@ class RankedBacklogTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location(
             "fixtures_coverage_report", REPO / "tools" / "surface-census" / "fixtures-coverage-report.py"
         )
+        assert spec and spec.loader
         report = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(report)
         tiers = {name: report.load_tier(exports / f"{name}.json", REPO) for name in order}
@@ -8669,6 +8707,7 @@ class RankedBacklogTests(unittest.TestCase):
         flat = " ".join(self.doc.split())
         stated = re.search(r"together ([\d,]+) of the block's ([\d,]+) printed regions", flat)
         self.assertIsNotNone(stated, "the join no longer states the two largest files' share")
+        assert stated is not None
         self.assertEqual(
             (largest, sum(count for count, _tier, _cell in table.values())),
             tuple(int(value.replace(",", "")) for value in stated.groups()),
@@ -8930,6 +8969,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(set(), listed & {key for _n, key, _m, _l in self.ranked_rows()})
         stated = re.search(r"The other (\d+) `gap` rows", self.doc)
         self.assertIsNotNone(stated, "the probe backlog no longer states its own size")
+        assert stated is not None
         self.assertEqual(len(listed), int(stated.group(1)))
 
     def test_the_documented_witness_supply_derivation_is_the_region_files_own(self) -> None:
@@ -8960,8 +9000,9 @@ class RankedBacklogTests(unittest.TestCase):
             re.M,
         )
         self.assertIsNotNone(command, "the probe backlog no longer documents its derivation")
+        assert command is not None
 
-        marker = re.search(r"grep -h '([^']+)'", command.group(0)).group(1)
+        marker = matched(re.search(r"grep -h '([^']+)'", command.group(0))).group(1)
         derived = {key for key, (_region, cells) in self.entries.items() if re.search(marker, cells[7])}
 
         if not grep_speaks_pcre():
@@ -9270,6 +9311,7 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertEqual(expected, listed, f"{heading} is not the rows whose cells say {kind}")
                 stated = re.match(r"\s*\*\*(\d+) rows?\.\*\*", body)
                 self.assertIsNotNone(stated, f"{heading} no longer states its own size")
+                assert stated is not None
                 self.assertEqual(len(expected), int(stated.group(1)))
 
     def test_the_stated_registered_and_golden_source_counts_are_measured(self) -> None:
@@ -9285,6 +9327,7 @@ class RankedBacklogTests(unittest.TestCase):
             self.doc,
         )
         self.assertIsNotNone(stated, "the section no longer states the source counts")
+        assert stated is not None
         self.assertEqual((len(sources), golden), (int(stated.group(1)), int(stated.group(2))))
 
     # ------------------------------------------------------------------
@@ -9441,7 +9484,7 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertEqual("golden", cells[3].strip("`"))
                 self.assertFalse(self.DEMOTED.search(cells[4]))
                 self.assertIn(
-                    self.SETTLED_AFTER_DEMOTION.search(cells[4]).group(1),
+                    matched(self.SETTLED_AFTER_DEMOTION.search(cells[4])).group(1),
                     ("implements", "unmeasured"),
                 )
                 self.assertRegex(
@@ -9452,7 +9495,7 @@ class RankedBacklogTests(unittest.TestCase):
         for key, cells in sorted(demoted.items()):
             with self.subTest(key=key):
                 self.assertEqual("gap", cells[3].strip("`"))
-                verdict = self.DEMOTED.search(cells[4]).group(1)
+                verdict = matched(self.DEMOTED.search(cells[4])).group(1)
                 self.assertIn(verdict, ("implements", "unmeasured"))
                 self.assertFalse(self.PROOF_OUTSTANDING.search(cells[4]))
                 self.assertIn("now needs", cells[4], f"{key}: says not what it now needs")
@@ -9500,7 +9543,11 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertTrue(committed, f"{cells[0]}: promoted without the proof it kept")
                 counts["promoted"] += 1
             elif category == "limitations" and (form or committed):
-                proof_form = form.group(1) if form else manifest[committed.group(1)]
+                if form:
+                    proof_form = form.group(1)
+                else:
+                    assert committed is not None
+                    proof_form = manifest[committed.group(1)]
                 counts["differential" if proof_form == "differential" else "artifact"] += 1
             elif demoted:
                 counts[demoted.group(1)] += 1
@@ -9523,6 +9570,7 @@ class RankedBacklogTests(unittest.TestCase):
         total = re.search(r"\| \*\*total\*\* \| \*\*(\d+)\*\*", body)
         population = re.search(r"The (\d+) rows that read `limitations` before", body)
         self.assertTrue(total and population, "the classification states no total")
+        assert total is not None and population is not None
         self.assertEqual(sum(counts.values()), int(total.group(1)))
         self.assertEqual(int(total.group(1)), int(population.group(1)))
 
@@ -9709,6 +9757,7 @@ class RankedBacklogTests(unittest.TestCase):
                     self.assertIsNone(stated, "a cell states outstanding items its record does not owe")
                     continue
                 self.assertIsNotNone(stated, "a record owing items reads incomplete in its cell, with its tally")
+                assert stated is not None
                 self.assertEqual(sum(owing.values()), int(stated.group(1).replace(",", "")))
                 self.assertEqual(
                     owing,
@@ -9741,7 +9790,7 @@ class RankedBacklogTests(unittest.TestCase):
         )
         for path in records:
             text = path.read_text(encoding="utf-8")
-            build = re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1)
+            build = matched(re.search(r"(?m)^build `([0-9a-f]+)` only\.", text)).group(1)
             self.assertEqual({build}, {r["build"] for r in rows if r["key"] == path.stem} or {build})
             for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", text, re.M):
                 counted += 1
@@ -9806,7 +9855,7 @@ class RankedBacklogTests(unittest.TestCase):
                             "fern-rescreen.jsonl",
                             f"{golden_reach_search().SCREEN.LOG_DIR}/",
                         ),
-                        measured_build=re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1),
+                        measured_build=matched(re.search(r"(?m)^build `([0-9a-f]+)` only\.", text)).group(1),
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"
@@ -10015,6 +10064,7 @@ class RankedBacklogTests(unittest.TestCase):
         fields = re.search(r"const REFUSAL_FIELDS: \[&str; \d+\] = \[(.*?)\];", gate, re.S)
         stated = re.search(r"holding five fields in this order and\s+spelling: (.*?)\. ", self.doc, re.S)
         self.assertTrue(fields and stated, "a restatement of the refusal fields no longer parses")
+        assert stated is not None and fields is not None
         self.assertEqual(
             re.findall(r"`([a-z_]+)`", stated.group(1)),
             re.findall(r'"([a-z_]+)"', fields.group(1)),
@@ -10033,6 +10083,7 @@ class RankedBacklogTests(unittest.TestCase):
         refused = re.search(r"is not one Contract A admits \\\s*\((.*?)\)", gate, re.S)
         vocabulary = re.search(r"`verdict` admits exactly six values: (.*?)\. ", " ".join(self.doc.split()))
         self.assertTrue(admitted and refused and vocabulary, "a restatement of the verdicts no longer parses")
+        assert admitted is not None and refused is not None and vocabulary is not None
         admitted_verdicts = re.findall(r'"([a-z]+)"', admitted.group(1))
         self.assertEqual(6, len(admitted_verdicts))
         self.assertEqual(
@@ -10053,6 +10104,7 @@ class RankedBacklogTests(unittest.TestCase):
         )
         header = re.search(r'const PROBE_MANIFEST_HEADER: &str = "(.*?)";', gate)
         self.assertTrue(header, "the gate's manifest header no longer parses")
+        assert header is not None
         self.assertIn(
             "\n" + header.group(1).replace("\\t", "\t") + "\n",
             self.doc,
@@ -10072,6 +10124,7 @@ class RankedBacklogTests(unittest.TestCase):
         ]
         sixth = re.search(r"\*\*The outcome vocabulary gains a sixth word:\*\* \*\*`([a-z-]+)`\*\*", self.doc)
         self.assertTrue(stated and sixth, "the index's outcome vocabulary no longer parses")
+        assert sixth is not None
         self.assertEqual(
             [*stated, sixth.group(1)], list(SEARCH_OUTCOMES), "SEARCH_OUTCOMES is not the index's outcome vocabulary"
         )
@@ -10094,15 +10147,17 @@ class RankedBacklogTests(unittest.TestCase):
         for line in ledger.splitlines():
             for found in annotation.finditer(line):
                 seen += 1
-                key = re.match(r"\| `([^`]+)` \|", line).group(1)
+                key = matched(re.match(r"\| `([^`]+)` \|", line)).group(1)
                 with self.subTest(key=key):
                     entry = self.entries.get(key)
                     self.assertIsNotNone(entry, f"{key}: the annotation names no region row")
+                    assert entry is not None
                     region, cells = entry
                     self.assertEqual(found.group(2), region, f"{key}: links the wrong region file")
                     self.assertEqual("golden", cells[3].strip("`"), f"{key}: its region row is not `golden`")
                     declarers = re.search(r"declaration sites? in (\d+) golden-bearing registered sources?", cells[4])
                     self.assertTrue(declarers, f"{key}: its region row states no declarer count")
+                    assert declarers is not None
                     self.assertEqual(
                         declarers.group(1),
                         found.group(1),
@@ -10174,6 +10229,10 @@ class RegionFixture:
     what they exercise is the reconciliation over region-file content rather than
     a hand-built cell list.
     """
+
+    # Supplied by the `unittest.TestCase` each suite mixes this into.
+    addCleanup: Callable[..., None]
+    assertEqual: Callable[..., None]
 
     REGION = """\
 # OpenAPI surface coverage — a sample region
@@ -11470,7 +11529,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         reads: Counter[str] = Counter()
         read_text = Path.read_text
 
-        def counted(path: Path, *args: object, **kwargs: object) -> str:
+        def counted(path: Path, *args: Any, **kwargs: Any) -> str:
             if path.is_relative_to(self.root) and path.parent != self.root:
                 reads[path.relative_to(self.root).as_posix()] += 1
             return read_text(path, *args, **kwargs)
@@ -12229,6 +12288,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             self.text,
         )
         self.assertIsNotNone(stated, "document-paths.md no longer states its snapshot digest")
+        assert stated is not None
         original = sum(1 for source in self.payload["sources"] if source["origin"] == "vendored")
         self.assertEqual(
             (len(self.payload["sources"]), original, len(self.payload["sources"]) - original),
@@ -12255,6 +12315,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         index = (REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
         join = re.search(r"grep -oP '([^']+)' docs/fern-limitations\.md", index)
         self.assertIsNotNone(join, "the index no longer documents the canonical ledger join")
+        assert join is not None
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
         # The documented join is a `grep -P` pattern; `\K` drops what precedes it
         # from the match, which a group around what follows it reproduces.
@@ -12275,6 +12336,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
                     None,
                 )
                 self.assertIsNotNone(row, f"no five-column docs/fern-limitations.md row for {key}")
+                assert row is not None
                 cells = [cell.strip().replace("**", "") for cell in row.split("|")[1:-1]]
                 self.assertEqual(verdict, cells[3], f"verdict drift for {key}")
 
@@ -12336,6 +12398,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             rows["multi-tagged-operation"][4],
         )
         self.assertIsNotNone(stated, "multi-tagged-operation no longer states its measurement")
+        assert stated is not None
         self.assertEqual(
             (sum(multi.values()), len(multi), multi),
             (int(stated.group(1)), int(stated.group(2)), {n: int(c) for n, c in pair.findall(stated.group(3))}),
@@ -12370,6 +12433,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             )
             with self.subTest(key=key):
                 self.assertIsNotNone(stated, f"{key} no longer states its measurement")
+                assert stated is not None
                 self.assertEqual((sum(reported.values()), len(reported)), (int(stated.group(1)), int(stated.group(2))))
                 largest = dict(sorted(reported.items(), key=lambda item: (-item[1], item[0]))[:size])
                 self.assertEqual(largest, {n: int(c) for n, c in pair.findall(stated.group(3))})
@@ -12389,6 +12453,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             self.text,
         )
         self.assertIsNotNone(stated, "document-paths no longer states the counts this check reconciles")
+        assert stated is not None
         self.assertEqual((census_rows, ledger_keys, gaps), tuple(int(g) for g in stated.groups()))
 
     def test_extension_tail_joins_and_counts_match_the_registered_source_walk(self) -> None:
@@ -12421,6 +12486,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
                 cell = rows[key][4]
                 stated = re.search(r": (\d+) declarations across (\d+) registered golden sources;", cell)
                 self.assertIsNotNone(stated, f"{key} must state its measured counts")
+                assert stated is not None
                 self.assertEqual(
                     (sum(witnesses.values()), len(witnesses)), tuple(int(value) for value in stated.groups())
                 )
@@ -12505,6 +12571,7 @@ class NamingMirrorTests(unittest.TestCase):
                     None,
                 )
                 self.assertIsNotNone(start, f"src/naming.rs declares no fn {name}")
+                assert start is not None
                 depth, started = 0, False
                 for end in range(start, len(lines)):
                     for char in lines[end]:
@@ -12561,6 +12628,7 @@ class NamingMirrorTests(unittest.TestCase):
                 (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
             )
             self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            assert start is not None
             depth, started = 0, False
             for end in range(start, len(lines)):
                 for char in lines[end]:
@@ -12595,6 +12663,7 @@ class NamingMirrorTests(unittest.TestCase):
                 (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
             )
             self.assertIsNotNone(start, f"{path} declares no fn {name}")
+            assert start is not None
             depth, started = 0, False
             for end in range(start, len(lines)):
                 for char in lines[end]:
@@ -12629,6 +12698,7 @@ class NamingMirrorTests(unittest.TestCase):
                 (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
             )
             self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            assert start is not None
             depth, started = 0, False
             for end in range(start, len(lines)):
                 for char in lines[end]:
@@ -12663,6 +12733,7 @@ class NamingMirrorTests(unittest.TestCase):
                 (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
             )
             self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            assert start is not None
             depth, started = 0, False
             for end in range(start, len(lines)):
                 for char in lines[end]:
@@ -12697,6 +12768,7 @@ class NamingMirrorTests(unittest.TestCase):
                 (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
             )
             self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
+            assert start is not None
             depth, started = 0, False
             for end in range(start, len(lines)):
                 for char in lines[end]:

@@ -23,6 +23,7 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
@@ -70,7 +71,9 @@ class AMissingWitnessSource(unittest.TestCase):
     def test_a_case_whose_witness_has_no_committed_source_names_the_fix(self) -> None:
         """The script's own refusal, before it builds anything over a source that is not there."""
         spec = importlib.util.spec_from_file_location("residual_attribution_missing", SCRIPT)
-        module = importlib.util.module_from_spec(spec)
+        assert spec is not None and spec.loader is not None
+        # The script's globals are reassigned below, which a plain `ModuleType` does not declare.
+        module: Any = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         module.CROZIER = Path(sys.executable)
         module.CASES = {"some-row": ("no-such-witness", lambda document: 1)}

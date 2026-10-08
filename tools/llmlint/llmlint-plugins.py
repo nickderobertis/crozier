@@ -32,7 +32,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 # Every vendored plugin document lives here; the lock may name nothing outside it.
@@ -54,7 +54,7 @@ ORIGIN_ENV = "CROZIER_LLMLINT_PLUGINS_ORIGIN"
 LOOPBACK_ORIGIN = re.compile(r"http://(?:127\.0\.0\.1|localhost):([0-9]{1,5})")
 
 
-def fail(message: str, remedy: str) -> None:
+def fail(message: str, remedy: str) -> NoReturn:
     print(f"llmlint-plugins: {message}", file=sys.stderr)
     print(f"llmlint-plugins: {remedy}", file=sys.stderr)
     raise SystemExit(1)

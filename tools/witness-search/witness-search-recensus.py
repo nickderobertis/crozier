@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.11"
 # dependencies = ["ruamel.yaml==0.19.1"]
 # ///
 """Decide the witness-search candidates the first acquisition left undecided.
@@ -59,7 +59,7 @@ import urllib.parse
 from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "scripts"))
@@ -88,7 +88,7 @@ GITHUB = _load("witness_search_github", REPO / "tools" / "witness-search" / "wit
 INDEX = GITHUB.INDEX
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     raise SystemExit(f"witness-search-recensus: {message}")
 
 

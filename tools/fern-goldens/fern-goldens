@@ -8,7 +8,6 @@ import ast
 import contextlib
 import gzip
 import importlib.util
-import io
 import json
 import os
 import re
@@ -19,6 +18,7 @@ import tarfile
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
+from typing import IO
 from urllib.parse import urlsplit
 
 GENERATOR = "fernapi/fern-python-sdk"
@@ -254,8 +254,8 @@ def run_command(
     argv: list[str],
     *,
     cwd: Path,
-    stdout: int | io.TextIOBase = subprocess.PIPE,
-    stderr: int | io.TextIOBase = subprocess.PIPE,
+    stdout: int | IO[str] = subprocess.PIPE,
+    stderr: int | IO[str] = subprocess.PIPE,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     # Output is decoded as UTF-8 whatever the platform's locale, so every child
@@ -890,8 +890,10 @@ def compare(root: Path) -> int:
             r"(?m)^(\d+) comparison processing failure\(s\) across the reported corpora\.$",
             output,
         )
-        summaries_present = all(match is not None for match in (difference_match, generation_match, processing_match))
-        if summaries_present:
+        summaries_present = (
+            difference_match is not None and generation_match is not None and processing_match is not None
+        )
+        if difference_match is not None and generation_match is not None and processing_match is not None:
             fixture_differences = int(difference_match.group(1))
             fixture_generation_failures = int(generation_match.group(1))
             fixture_processing_failures = int(processing_match.group(1))
