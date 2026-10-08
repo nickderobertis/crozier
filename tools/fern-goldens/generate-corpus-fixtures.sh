@@ -5,9 +5,17 @@
 # specs do not need to be vendored just to refresh generated output.
 set -euo pipefail
 
-script_dir="$(cd "$(dirname "$0")" && pwd)"
-. "$script_dir/../corpus/corpus-lib.sh"
-repo_root="$(cd "$script_dir/../.." && pwd)"
+script_dir="$(cd "$(dirname "$0")" && pwd)" && repo_root="$(cd "$script_dir/../.." && pwd)" || {
+  echo "generate-corpus-fixtures: cannot resolve the checkout from $0 — run it by its path from a readable" \
+       "checkout, then re-run" >&2
+  exit 1
+}
+# shellcheck source=../corpus/corpus-lib.sh
+. "$script_dir/../corpus/corpus-lib.sh" || {
+  echo "generate-corpus-fixtures: cannot load $script_dir/../corpus/corpus-lib.sh — restore it with" \
+       "git checkout -- tools/corpus/corpus-lib.sh, then re-run" >&2
+  exit 1
+}
 manifest="$repo_root/tests/fixtures/CORPUS.md"
 mode=all
 dry_run=0
@@ -24,7 +32,9 @@ Usage: tools/fern-goldens/generate-corpus-fixtures.sh [--all|--committed] [--onl
   --only NAME  Generate one manifest row, matching either its CORPUS.md name or
                its fixture directory name.
   --dry-run    Print the generation plan, including source/discovered spec, without
-               running Fern or writing fixture output.
+               running Fern or writing fixture output. A row with no committed
+               spec is still fetched into the --fetch-root cache: its spec is
+               found by searching what was fetched.
   --fetch-root DIR
                Cache direct specs and source repositories under DIR (default .local/corpus).
 USAGE

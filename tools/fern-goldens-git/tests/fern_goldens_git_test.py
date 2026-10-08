@@ -2363,6 +2363,35 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         # (git's own note that a local clone ignores --filter precedes it.)
         self.assertEqual(result.stderr.splitlines()[-1], "generate-fern-fixture: wrote 1 files to tests/fixtures/delta/expected")
 
+    def test_a_dry_run_fetches_to_discover_and_prints_the_plan_without_generating(self) -> None:
+        self.upstream_row("delta", {"spec/openapi.yaml": "openapi: 3.0.3\ninfo: {title: d, version: '1'}\n"})
+        calls = self.base / "calls"
+        cache = self.base / "cache"
+        result = self.run_script("--only", "delta", "--dry-run", "--fetch-root", str(cache), GENERATOR_CALLS=str(calls))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"delta\t{cache / 'delta' / 'spec' / 'openapi.yaml'}\n")
+        # What the plan names is in the cache the dry run fetched into, and nothing was generated.
+        self.assertTrue((cache / "delta" / "spec" / "openapi.yaml").is_file())
+        self.assertFalse(calls.exists(), "a dry run ran the generator")
+        self.assertFalse((self.root / "tests" / "fixtures" / "delta").exists())
+
+    @unittest.skipIf(os.geteuid() == 0, "root reads a file whatever its mode")
+    def test_an_unreadable_alias_file_names_itself_and_how_to_restore_it(self) -> None:
+        aliases = self.root / "tests" / "fixtures" / ALIASES.name
+        aliases.chmod(0)
+        self.addCleanup(aliases.chmod, 0o644)
+        result = self.run_script("--only", "alpha", "--dry-run")
+        self.assertNotEqual(result.returncode, 0, result.stderr)
+        self.assertIn("corpus: cannot read the fixture alias file", result.stderr)
+        self.assertIn("git checkout -- tests/fixtures/corpus-aliases.tsv", result.stderr)
+
+    def test_a_missing_corpus_library_names_how_to_restore_it(self) -> None:
+        (self.root / "tools" / "corpus" / "corpus-lib.sh").unlink()
+        result = self.run_script("--dry-run")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("generate-corpus-fixtures: cannot load", result.stderr)
+        self.assertIn("git checkout -- tools/corpus/corpus-lib.sh", result.stderr)
+
     def test_a_fetched_repository_with_several_openapi_documents_generates_nothing(self) -> None:
         self.upstream_row("epsilon", {"v1/openapi.yml": "openapi: 3.0.3\n", "v2/openapi.json": '{"openapi": "3.1.0"}\n'})
         calls = self.base / "calls"

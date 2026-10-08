@@ -90,6 +90,11 @@ corpus_fixture_for() {
          "git checkout -- tests/fixtures/corpus-aliases.tsv, then re-run" >&2
     return 1
   }
+  [ -r "$aliases" ] || {
+    echo "corpus: cannot read the fixture alias file $aliases — make it readable (chmod u+r $aliases)" \
+         "or restore it with git checkout -- tests/fixtures/corpus-aliases.tsv, then re-run" >&2
+    return 1
+  }
   awk -F '\t' -v requested="$1" '
     function valid_fixture(value) {
       return value ~ /^[A-Za-z0-9][A-Za-z0-9._-]*$/ \
