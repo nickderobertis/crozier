@@ -119,6 +119,10 @@ a node carries both, the alias wins
 ([dual-header policy](matching.md#fern-compatible-extension-policy)). An
 extension not listed here does not change crozier's output.
 
+The ignore, enum and type rows are reconciled with real CLI output by
+`property_extensions_accept_aliases_and_crozier_precedence` in
+[tests/e2e.rs](../tests/e2e.rs).
+
 | Fern | crozier alias | On | Effect |
 | --- | --- | --- | --- |
 | `x-fern-audiences` | `x-crozier-audiences` | operation | The audience labels the `audiences` setting filters on. |
