@@ -11,7 +11,10 @@
 # runs both in its live-e2e leg, and corpus-match's offline proof runs the
 # samples with sockets denied.
 set -euo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || {
+  echo "census-fallback: cannot enter the checkout above $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
 
 # The parser pin, read from a script's PEP 723 `dependencies` line: exactly one
 # `package==version`, or the run stops naming the script, since an empty or

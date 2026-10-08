@@ -2880,15 +2880,16 @@ fn handwritten_check_answer(code: Option<i32>, stdout: &[u8], stderr: &[u8]) -> 
             parsed["failures"]
         ));
     };
-    let evidence = parsed["fixtures"]
-        .as_object()
-        .map(|fixtures| {
-            fixtures
-                .iter()
-                .map(|(name, declared)| (name.clone(), declared.clone()))
-                .collect()
-        })
-        .unwrap_or_default();
+    let Some(fixtures) = parsed["fixtures"].as_object() else {
+        return refused(format!(
+            "the hand-written fixture check printed no `fixtures` object: {}",
+            parsed["fixtures"]
+        ));
+    };
+    let evidence = fixtures
+        .iter()
+        .map(|(name, declared)| (name.clone(), declared.clone()))
+        .collect();
     (evidence, failures)
 }
 
@@ -2929,6 +2930,16 @@ fn a_handwritten_check_answer_that_is_malformed_is_one_failure() {
             "failed (exit Some(2)): boom",
         ),
         (Some(0), "not json", "failed (exit Some(0)): boom"),
+        (
+            Some(0),
+            r#"{"failures": []}"#,
+            "printed no `fixtures` object: null",
+        ),
+        (
+            Some(1),
+            r#"{"fixtures": [], "failures": ["a"]}"#,
+            "printed no `fixtures` object: []",
+        ),
     ] {
         let (evidence, failures) = answer(code, stdout);
         assert!(evidence.is_empty(), "{stdout}");

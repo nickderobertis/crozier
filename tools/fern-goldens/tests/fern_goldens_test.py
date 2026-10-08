@@ -252,7 +252,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         generator.chmod(0o755)
 
     def run_overlay(
-        self, *fixtures: str, fail_install: str = "", fail_generate: str = ""
+        self, *fixtures: str, fail_install: str = "", fail_generate: str = "", **extra: str
     ) -> subprocess.CompletedProcess[str]:
         result = subprocess.run(
             [
@@ -263,7 +263,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
                 "literals",
                 *fixtures,
             ],
-            env={**os.environ, "FAIL_INSTALL": fail_install, "FAIL_GENERATE": fail_generate},
+            env={**os.environ, "FAIL_INSTALL": fail_install, "FAIL_GENERATE": fail_generate, **extra},
             capture_output=True,
             text=True,
             check=False,
@@ -365,6 +365,16 @@ class FernOverlayGoldensTests(unittest.TestCase):
             "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17,"
             " beta/expected-literals at fernapi/fern-python-sdk:4.4.0\n",
         )
+
+    def test_a_refused_traversal_name_is_never_read_as_a_result(self) -> None:
+        # The results directory is made under TMPDIR; `../planted` would name a file beside it.
+        scratch = self.root / "tmp"
+        scratch.mkdir()
+        (scratch / "planted").write_text("9.9.9\n", encoding="utf-8")
+        result = self.run_overlay("../planted", "alpha", TMPDIR=str(scratch))
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("../planted: invalid fixture name", result.stderr)
+        self.assertEqual(result.stdout, "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
 
     def test_each_refused_fixture_names_its_fix_and_the_rest_still_generate(self) -> None:
         fixtures = self.root / "tests" / "fixtures"

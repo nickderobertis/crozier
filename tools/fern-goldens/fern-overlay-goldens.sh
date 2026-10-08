@@ -165,7 +165,8 @@ printf '%s\n' "$@" | xargs -P "$jobs" -I{} bash -c 'set -euo pipefail; arm_failu
 # has already named its own fix on stderr.
 names="" pinned="" versions=""
 for fixture in "$@"; do
-  [ -f "$results/$fixture" ] || continue
+  # A name its worker refused names no result; it is never read as a path.
+  valid_fixture_name "$fixture" && [ -f "$results/$fixture" ] || continue
   version="$(cat "$results/$fixture")"
   names+="${names:+, }$fixture/$golden"
   pinned+="${pinned:+, }$fixture/$golden at fernapi/fern-python-sdk:$version"

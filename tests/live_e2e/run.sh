@@ -17,8 +17,10 @@
 # can never silently no-op in the gate.
 set -euo pipefail
 
-root="$(cd "$(dirname "$0")/../.." && pwd)"
-cd "$root"
+root="$(cd "$(dirname "$0")/../.." && pwd)" && cd "$root" || {
+  echo "live-e2e: cannot enter the checkout above $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "live-e2e: $1 not found — $2" >&2; exit 1; }; }
 need cargo "install Rust via https://rustup.rs"

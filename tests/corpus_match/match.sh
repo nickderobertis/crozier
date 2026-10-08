@@ -16,7 +16,10 @@
 # test is missing here fails it, and so does a line naming a test no registered
 # corpus owns, so a renamed test cannot drop a corpus silently.
 set -euo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || {
+  echo "corpus-match: cannot enter the checkout above $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
 
 case "${1:-}" in
   "") ;;
