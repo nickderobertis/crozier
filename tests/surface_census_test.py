@@ -3183,7 +3183,9 @@ class ConjunctionCensusTests(unittest.TestCase):
         },
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
+        "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties": {},
+        "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties": {},
         "schema.properties>schema.allOf:annotated-ref": {
             "groupe-psa": 5
@@ -4397,6 +4399,24 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
                 "anyOf": [{**STRUCT, "additionalProperties": False}]
             }}}),
             "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false",
+            "slug": "historical-closed-oneof",
+            "branch": "historical closed-member witness search",
+            "select": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"oneOf": [{"type": "object", "additionalProperties": True}]}}}),
+            "overlap": ("schema", {"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
+        },
+        {
+            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false",
+            "slug": "historical-closed-anyof",
+            "branch": "historical closed-member witness search",
+            "select": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"anyOf": [{"type": "object", "additionalProperties": True}]}}}),
+            "overlap": ("schema", {"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
         },
     )
 

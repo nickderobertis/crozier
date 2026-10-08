@@ -1516,7 +1516,9 @@ CONJUNCTIONS = {
     "schema.properties>schema.type:primary=array": "one per Schema Object one of whose properties declares `array` as its primary type",
     "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member declares a non-empty `properties` map",
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares a non-empty `properties` map",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member writes `additionalProperties: false`, whether or not it writes `properties`",
     "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member writes both `additionalProperties: false` and `properties`, including an empty map",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member writes `additionalProperties: false`, whether or not it writes `properties`",
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member writes both `additionalProperties: false` and `properties`, including an empty map",
     "schema.properties>schema.allOf:annotated-ref": "one per Schema Object one of whose properties is an annotated `$ref` — an `allOf` of at least two members, exactly one a Reference Object and every other declaring nothing",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares a string-valued `enum`",
@@ -2118,6 +2120,16 @@ def case_verdict(function: str, case: Case) -> str:
 # read; its conjunction stays while a region row's key, and the witness search
 # that key ran, are spelled by it.
 RETIRED_CASE_CONJUNCTIONS = {
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": (
+        "`prop_type_ref`'s closed-member search before cases 12c and 12d were "
+        "narrowed to members writing `properties`; the frozen witness search "
+        "keeps this broader spelling and its original counts"
+    ),
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": (
+        "`prop_type_ref`'s closed-member search before cases 12c and 12d were "
+        "narrowed to members writing `properties`; the frozen witness search "
+        "keeps this broader spelling and its original counts"
+    ),
     "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": (
         "`hoist_union_variant`'s case 11, removed with the arm it read once Fern was "
         "shown to type every bare object member a map (the hand-written "

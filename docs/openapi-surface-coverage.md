@@ -1176,7 +1176,12 @@ can express. Three conventions that derivation applies, stated once:
 A case earns a selector when every property its own condition reads is one the
 grammar can name — a field written, a member of a closed value set, or one of the
 node-local predicates above — and those members compose into one conjunction.
-The conjunctions are themselves a closed list of 94, declared in
+The frozen closed-member witness searches retain their original selectors,
+which count members with or without `properties`. Cases 12c and 12d use the
+stricter selectors requiring that field; the historical search counts do not
+measure those stricter cases.
+
+The conjunctions are themselves a closed list of 96, declared in
 `scripts/openapi-surface-census.py` beside the predicate table and restated here,
 with a drift gate over the pair:
 
@@ -1287,9 +1292,17 @@ with a drift gate over the pair:
 - `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty` —
   one per Schema Object one of whose properties declares a one-member `anyOf`
   whose member declares a non-empty `properties` map.
+- `schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false` — one per Schema Object one of whose properties
+  declares a one-member `oneOf` whose member writes `additionalProperties: false`,
+  whether or not it writes `properties`.
+
 - `schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties` —
   one per Schema Object one of whose properties declares a one-member `oneOf`
   whose member writes both `additionalProperties: false` and `properties`, including an empty map.
+- `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false` — one per Schema Object one of whose properties
+  declares a one-member `anyOf` whose member writes `additionalProperties: false`,
+  whether or not it writes `properties`.
+
 - `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties` —
   one per Schema Object one of whose properties declares a one-member `anyOf`
   whose member writes both `additionalProperties: false` and `properties`, including an empty map.
