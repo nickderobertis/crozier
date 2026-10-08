@@ -34,5 +34,5 @@ def test_the_project_inputs_name_exactly_the_driven_fixtures():
              and entry != "{workspaceRoot}/tests/fixtures/*.*"}
     expected = {f"{{workspaceRoot}}/tests/fixtures/{fixture.name}/**/*" for fixture in FIXTURES}
     expected |= {f"{{workspaceRoot}}/tests/fixtures/corpus-sources/{fixture.name}/**/*"
-                 for fixture in FIXTURES if fixture.spec_url is not None}
+                 for fixture in FIXTURES if fixture.registered_source}
     assert named == expected
