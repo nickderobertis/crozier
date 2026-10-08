@@ -164,6 +164,20 @@ class FixtureNewTests(unittest.TestCase):
         self.assertIn("copy an existing FEATURE_TARGETS entry", done.stderr)
         self.assertIn("tools/fern-goldens/generate-fern-fixture.sh shapes", done.stderr)
 
+    def test_a_name_it_cannot_take_exits_two_and_creates_nothing(self) -> None:
+        script = str(self.root / "tools" / "fern-goldens" / "fixture-new.sh")
+        for args, message in (([], "usage: tools/fern-goldens/fixture-new.sh <name>"),
+                              (["a", "b"], "usage: tools/fern-goldens/fixture-new.sh <name>"),
+                              (["../escape"], "invalid name '../escape'")):
+            with self.subTest(args=args):
+                refused = subprocess.run([script, *args], capture_output=True, text=True, check=False)
+                self.assertEqual(2, refused.returncode, refused.stderr)
+                self.assertIn(message, refused.stderr)
+        self.assertEqual([], list(self.fixtures.iterdir()))
+        # One that exists already is an operational refusal, not an invocation error.
+        (self.fixtures / "shapes").mkdir()
+        self.assertEqual(1, self.scaffold("shapes").returncode)
+
     def test_a_fixture_it_cannot_write_is_left_absent_with_the_fix(self) -> None:
         if os.geteuid() == 0:
             self.skipTest("root writes through a read-only directory")

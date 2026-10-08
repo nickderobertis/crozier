@@ -81,6 +81,13 @@ class ThePinIsRequired(unittest.TestCase):
         self.assertIn(f"census-fallback: cannot read {self.RECENSUS}", result.stderr)
         self.assertNotIn("declares no single pinned dependency", result.stderr)
 
+    def test_an_invocation_it_cannot_read_exits_two_with_the_usage(self) -> None:
+        for args in (["pin"], ["pin", "a.py", "b.py"], ["sideways"], []):
+            with self.subTest(args=args):
+                result = subprocess.run(["bash", str(RUNNER), *args], cwd=REPO, capture_output=True, text=True)
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertIn("usage: tests/census_fallback/run.sh", result.stderr)
+
     def test_pin_prints_the_one_exact_pin_the_stages_install(self) -> None:
         printed = subprocess.run(["bash", str(RUNNER), "pin", "tools/surface-census/golden-reach-search.py"],
                                  cwd=REPO, capture_output=True, text=True)

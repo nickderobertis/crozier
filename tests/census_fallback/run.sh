@@ -54,7 +54,8 @@ case "${1:-}" in
       python3 tools/witness-search/tests/witness_search_recensus_test.py
     ;;
   pin)
-    pinned "${2:?usage: tests/census_fallback/run.sh pin SCRIPT}"
+    [ "$#" -eq 2 ] || { echo "usage: tests/census_fallback/run.sh pin SCRIPT" >&2; exit 2; }
+    pinned "$2"
     ;;
   *)
     echo "usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2

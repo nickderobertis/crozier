@@ -10,6 +10,8 @@
 # grow `matched` with `just fixtures-candidates`. See tests/fixtures/AGENTS.md.
 #
 # Usage:  tools/fern-goldens/fixture-new.sh <name>
+# Exit status: 0 once the placeholder is written; 2 for a missing or invalid
+# name; 1 when the fixture exists already or cannot be created.
 #
 # llmlint: ignore-file[tool_output_is_signal] this is a scaffolder: its success
 # output — the created path plus the wiring steps — IS the deliverable, the way
@@ -28,13 +30,13 @@ repo_root="$(cd "$(dirname "$0")/../.." && pwd)" || {
 }
 
 name="${1:-}"
-[ -n "$name" ] || { echo "fixture-new: usage: tools/fern-goldens/fixture-new.sh <name>" >&2; exit 1; }
+[ "$#" -eq 1 ] && [ -n "$name" ] || { echo "fixture-new: usage: tools/fern-goldens/fixture-new.sh <name>" >&2; exit 2; }
 
 # Hold the name to a single safe path segment (shared valid_fixture_name): rejects
 # traversal and keeps it a valid dir under tests/fixtures/.
 valid_fixture_name "$name" || {
   echo "fixture-new: invalid name '$name' — must match [A-Za-z0-9][A-Za-z0-9._-]*" >&2
-  exit 1
+  exit 2
 }
 
 dir="$repo_root/tests/fixtures/$name"
