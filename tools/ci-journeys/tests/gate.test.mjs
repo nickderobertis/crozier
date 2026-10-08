@@ -37,6 +37,46 @@ test("NX_BASE set to a commit SHA is the affected base", (t) => {
   assert.ok(ran(root, "b") && !ran(root, "a"), run.output);
 });
 
+test("NX_BASE set to a branch name is the affected base", (t) => {
+  const root = scratchWorkspace(t);
+  const afterA = commitChange(root, "a/src.txt", "a changed\n");
+  git(root, "branch", "release/base", afterA);
+  commitChange(root, "b/src.txt", "b changed\n");
+
+  const run = just(root, ["check"], { NX_BASE: "release/base" });
+
+  assert.equal(run.status, 0, run.output);
+  assert.match(run.stdout, new RegExp(`affected tier against ${afterA.slice(0, 12)} \\(NX_BASE=release/base\\)`));
+  assert.match(run.stdout, /gate: projects: b\n/);
+  assert.ok(ran(root, "b") && !ran(root, "a"), run.output);
+});
+
+test("a change not yet committed, staged or not, or a new file, is affected too", (t) => {
+  const root = scratchWorkspace(t);
+  write(root, { "a/src.txt": "a edited, unstaged\n" });
+  const unstaged = just(root, ["check"], { NX_BASE: undefined });
+  assert.equal(unstaged.status, 0, unstaged.output);
+  assert.match(unstaged.stdout, /gate: projects: a\n/);
+  assert.ok(ran(root, "a") && !ran(root, "b"), unstaged.output);
+
+  git(root, "checkout", "--", "a/src.txt");
+  rmSync(join(root, "ran-a"), { force: true });
+  write(root, { "b/new.txt": "untracked\n" });
+  const untracked = just(root, ["check"], { NX_BASE: undefined });
+  assert.equal(untracked.status, 0, untracked.output);
+  assert.match(untracked.stdout, /gate: projects: b\n/);
+  assert.ok(ran(root, "b") && !ran(root, "a"), untracked.output);
+
+  rmSync(join(root, "b", "new.txt"));
+  rmSync(join(root, "ran-b"), { force: true });
+  write(root, { "a/src.txt": "a edited, staged\n" });
+  git(root, "add", "a/src.txt");
+  const staged = just(root, ["check"], { NX_BASE: undefined });
+  assert.equal(staged.status, 0, staged.output);
+  assert.match(staged.stdout, /gate: projects: a\n/);
+  assert.ok(ran(root, "a") && !ran(root, "b"), staged.output);
+});
+
 test("an inherited NX_HEAD never moves the affected tier's head off the checkout", (t) => {
   const root = scratchWorkspace(t);
   const afterA = commitChange(root, "a/src.txt", "a changed\n");
@@ -199,14 +239,17 @@ test("an Nx answer of the wrong shape stops the gate before any target runs", { 
 
 test("a project name that is no name --projects takes stops the gate before any target runs", { skip: process.platform === "win32" }, (t) => {
   // It would reach Nx's command line, which Windows runs through a shell.
-  const root = scratchWorkspace(t);
-  commitChange(root, "a/src.txt", "a changed\n");
-  standInNx(root, { nodes: { "a&calc": { data: { root: "a", tags: [] } } }, dependencies: {} }, ["a"]);
-  const run = just(root, ["check"], { NX_BASE: undefined });
-  assert.equal(run.status, 1, run.output);
-  assert.match(run.stderr, /names project\(s\) \["a&calc"\], which are not project names/);
-  assert.match(run.stderr, /rename the project in its project.json/);
-  assert.ok(!ran(root, "a") && !ran(root, "b"));
+  // A tag selector is list syntax, never a project's name.
+  for (const name of ["a&calc", "tag:x", "a,b"]) {
+    const root = scratchWorkspace(t);
+    commitChange(root, "a/src.txt", "a changed\n");
+    standInNx(root, { nodes: { [name]: { data: { root: "a", tags: [] } } }, dependencies: {} }, ["a"]);
+    const run = just(root, ["check"], { NX_BASE: undefined });
+    assert.equal(run.status, 1, run.output);
+    assert.match(run.stderr, new RegExp(`names project\\(s\\) \\[${JSON.stringify(name)}\\], which are not project names`));
+    assert.match(run.stderr, /rename the project in its project.json/);
+    assert.ok(!ran(root, "a") && !ran(root, "b"));
+  }
 });
 
 test("a missing Nx or a failing target exits 1, apart from an invocation error's 2", (t) => {
@@ -251,19 +294,26 @@ test("--projects=tag:<tag> selects that tag's carriers and --exclude drops one, 
   });
   git(root, "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "--quiet", "-am", "tag a and b");
 
-  const tagged = just(root, ["check", "--sweep", "--projects=tag:lang:python"]);
-  assert.equal(tagged.status, 0, tagged.output);
-  assert.match(tagged.stdout, /gate: projects: b\n/);
-  assert.ok(ran(root, "b") && !ran(root, "a"), tagged.output);
+  // Both projects changed since origin/main, so the affected tier reaches both
+  // and the selection alone decides what runs, as it does under --sweep.
+  for (const tier of [[], ["--sweep"]]) {
+    for (const name of ["a", "b"]) rmSync(join(root, `ran-${name}`), { force: true });
+    const tagged = just(root, ["check", ...tier, "--projects=tag:lang:python"], { NX_BASE: undefined });
+    assert.equal(tagged.status, 0, tagged.output);
+    assert.match(tagged.stdout, tier.length ? /gate: broader tier/ : /gate: affected tier against/);
+    assert.match(tagged.stdout, /gate: projects: b\n/);
+    assert.ok(ran(root, "b") && !ran(root, "a"), tagged.output);
 
-  const excluded = just(root, ["check", "--sweep", "--exclude=b"]);
-  assert.equal(excluded.status, 0, excluded.output);
-  assert.match(excluded.stdout, /gate: projects: a\n/);
-  assert.ok(ran(root, "a"), excluded.output);
+    rmSync(join(root, "ran-b"), { force: true });
+    const excluded = just(root, ["check", ...tier, "--exclude=b"], { NX_BASE: undefined });
+    assert.equal(excluded.status, 0, excluded.output);
+    assert.match(excluded.stdout, /gate: projects: a\n/);
+    assert.ok(ran(root, "a") && !ran(root, "b"), excluded.output);
 
-  const none = just(root, ["check", "--sweep", "--projects=tag:lang:go"]);
-  assert.equal(none.status, 2, none.output);
-  assert.match(none.stderr, /no project carries the tag 'lang:go'/);
+    const none = just(root, ["check", ...tier, "--projects=tag:lang:go"], { NX_BASE: undefined });
+    assert.equal(none.status, 2, none.output);
+    assert.match(none.stderr, /no project carries the tag 'lang:go'/);
+  }
 });
 
 test("--sweep reruns a target the affected tier replays from cache, nested Nx included", (t) => {

@@ -61,8 +61,10 @@ const USAGE = `usage: just check|test|lint [--sweep] [--projects=p,q] [--exclude
 // A project or target name, or `tag:<tag>` for every project carrying it:
 // what project.json allows, and nothing a shell or an Nx pattern would read as
 // syntax.
-const LIST_ITEM = String.raw`(?:tag:[a-z0-9][a-z0-9:-]*|[a-z0-9][a-z0-9-]*)`;
+const PROJECT = String.raw`[a-z0-9][a-z0-9-]*`;
+const LIST_ITEM = String.raw`(?:tag:[a-z0-9][a-z0-9:-]*|${PROJECT})`;
 const NAME_LIST = new RegExp(`^${LIST_ITEM}(,${LIST_ITEM})*$`);
+const PROJECT_NAME = new RegExp(`^${PROJECT}$`);
 
 // The one command a recipe may hand over: `nx run-many --targets=<names>`.
 const COMMAND = /^--targets=(.+)$/;
@@ -209,7 +211,7 @@ function projectTags() {
       die("'nx graph' wrote a graph whose nodes are not projects with string tags", "run 'just bootstrap' to reinstall the pinned Nx, then rerun");
     }
     // A project name reaches Nx's command line, through a shell on Windows: it is held to the names --projects takes.
-    const unnamed = Object.keys(nodes).filter((name) => !NAME_LIST.test(name) || name.includes(","));
+    const unnamed = Object.keys(nodes).filter((name) => !PROJECT_NAME.test(name));
     if (unnamed.length > 0) {
       die(`'nx graph' names project(s) ${JSON.stringify(unnamed)}, which are not project names (lower-case letters, digits and '-')`,
         "rename the project in its project.json, then rerun");

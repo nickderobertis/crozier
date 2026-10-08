@@ -477,6 +477,18 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertIn("'cargo llvm-cov --version' said:\nerror: the llvm-tools component is broken",
                       completed.stderr)
 
+    def test_a_report_it_cannot_write_fails_naming_it_and_keeps_the_exports(self) -> None:
+        """Measurement done, the report's own write failing still fails the run, saying where to look."""
+        out = Path(self.enterContext(tempfile.TemporaryDirectory())) / "out"
+        (out / "report.txt").mkdir(parents=True)
+        completed = self.run_script("--no-fetch", "--out", str(out), OFFLINE_SCOPE)
+        self.assertNotEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        self.assertIn(f"rendering the report into {out / 'report.txt'} failed", completed.stderr)
+        self.assertIn(f"The per-tier llvm-cov exports are in {out}", completed.stderr)
+        self.assertNotIn("wrote the report", completed.stderr)
+        for tier in ("golden-only", "all-e2e", "non-e2e"):
+            self.assertTrue((out / f"{tier}.json").is_file(), f"the {tier} export is gone")
+
     def test_a_missing_committed_corpus_is_a_hard_failure(self) -> None:
         """The committed-source preflight refuses missing inputs before measurement.
 
