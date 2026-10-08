@@ -2985,7 +2985,7 @@ struct ParamRow {
     suffix: String,
 }
 
-fn reference_param_suffix(description: Option<&str>) -> String {
+pub(crate) fn reference_param_suffix(description: Option<&str>) -> String {
     match description {
         // Importers sometimes retain leading blank lines around a one-line
         // description. Fern still renders those through the ordinary em-dash
@@ -3301,7 +3301,7 @@ fn reference_list_annotation(annotation: &str) -> String {
     annotation.replace("typing.Sequence[", "typing.List[")
 }
 
-fn reference_param_annotation(annotation: &str) -> String {
+pub(crate) fn reference_param_annotation(annotation: &str) -> String {
     let mut annotation = annotation.replace("dt.", "datetime.");
     if let Some(inner) = annotation
         .strip_prefix("typing.Optional[typing.Optional[")

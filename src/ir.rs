@@ -3483,6 +3483,19 @@ fn build_endpoint(
         })
         .map(|parameter| parameter.name.clone())
         .collect();
+    // The flattened alias takes the model's fields, so its reference must document
+    // those arguments rather than advertise a whole request the method cannot take.
+    let aliased_inline_request = matches!(&request_body, Some(RequestBody::Inline(fields))
+        if !fields.is_empty() && fields.iter().all(|field| field.py_name != "request"))
+        && op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .filter(|(media_type, _)| *media_type == "application/json")
+            .and_then(|(_, media)| media.schema.as_ref())
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|target| target.reference.is_some());
     Endpoint {
         openapi_31: doc.openapi.starts_with("3.1"),
         module,
@@ -3539,6 +3552,7 @@ fn build_endpoint(
                             && target.additional_properties.is_none()
                     })
             })
+            .filter(|_| !aliased_inline_request)
             .map(ref_to_class)
             .map(TypeRef::Named),
         request_body_doc: op
@@ -5272,6 +5286,11 @@ fn resolve_request_body(
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
+        let target = if target.reference.is_some() {
+            resolve_form_object_alias(target, Some(&doc.components.schemas), types)
+        } else {
+            target
+        };
         let class = ref_to_class(reference);
         if target.properties.declared()
             && target.properties.is_empty()
@@ -17402,6 +17421,65 @@ mod tests {
             .endpoints
             .iter()
             .any(|endpoint| endpoint.module == "vault" && endpoint.method_name == "list_bundles"));
+    }
+
+    #[test]
+    fn alias_object_request_flattens_without_losing_the_models_or_advertising_request() {
+        let doc = crate::openapi::load(
+            &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/openapi-surface/handwritten/request-alias/openapi.yml"),
+        )
+        .unwrap();
+        let config = crate::config::GenerateConfig::new(
+            "openapi.yml".into(),
+            "out".into(),
+            Some("api".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Cabinet",
+        )
+        .unwrap();
+        let ir = super::build(&doc, &config);
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|ep| ep.method_name == "retitle_manifest")
+            .unwrap();
+        assert!(endpoint.emittable && endpoint.reference_body_type.is_none());
+        let Some(RequestBody::Inline(fields)) = &endpoint.request_body else {
+            panic!("alias object did not flatten");
+        };
+        assert_eq!(fields.len(), 2);
+        assert!(fields
+            .iter()
+            .any(|field| field.py_name == "ticket" && !field.optional));
+        assert!(fields.iter().any(|field| field.py_name == "caption"
+            && field.optional
+            && field.docstring.as_deref() == Some("Shown on cabinet labels.")));
+        assert!(ir.types.iter().any(|decl| decl.name() == "TitleAlias"));
+        assert!(ir.types.iter().any(|decl| decl.name() == "Title"));
+    }
+
+    #[test]
+    fn alias_reference_correction_is_scoped_to_nonempty_flattened_fields_without_request() {
+        let source = include_str!("../docs/openapi-surface/handwritten/request-alias/openapi.yml");
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(source).unwrap();
+        document["components"]["schemas"]["Title"]["properties"] = serde_json::json!({
+            "request": { "type": "string" }
+        });
+        document["components"]["schemas"]["Title"]["required"] = serde_json::json!([]);
+        let ir = build_document(document.clone());
+        assert_eq!(
+            ir.endpoints[0].reference_body_type,
+            Some(TypeRef::Named("TitleAlias".into()))
+        );
+        document["components"]["schemas"]["Title"]["properties"] = serde_json::json!({});
+        let ir = build_document(document);
+        assert_eq!(
+            ir.endpoints[0].reference_body_type,
+            Some(TypeRef::Named("TitleAlias".into()))
+        );
     }
 
     #[test]

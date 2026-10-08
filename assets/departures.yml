@@ -201,6 +201,14 @@
     contradicts the generated code: the import fails, so the snippet cannot run.
   evidence: docs/departures/evidence/readme-client-class-casing.md
 
+- id: request-alias-reference-parameters
+  kind: fern-defect
+  trigger: An aliased object JSON body is flattened into method arguments but reference.md advertises a whole request argument.
+  fern: The reference parameter is request with the alias type, although the generated method has no request argument.
+  crozier: The reference lists the actual flattened arguments and their types and descriptions; generated code and usage examples remain matched.
+  reason: Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
+  evidence: docs/departures/evidence/request-alias-reference-parameters.md
+
 - id: sdk-identity-header-prefix
   kind: branding
   trigger: >-

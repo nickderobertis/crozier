@@ -432,10 +432,118 @@ impl Context {
 #[derive(Debug, Default)]
 struct RequestExampleContext {
     binary_json_methods: BTreeSet<(String, String)>,
+    alias_fields: std::collections::BTreeMap<String, BTreeSet<String>>,
+    method_parameters: std::collections::BTreeMap<
+        (String, String),
+        std::collections::BTreeMap<String, GeneratedParameter>,
+    >,
+    json_object_methods: BTreeSet<(String, String)>,
     object_aliases: BTreeSet<String>,
     encoded_fields: std::collections::BTreeMap<(String, String), BTreeSet<String>>,
     wire_fields:
         std::collections::BTreeMap<(String, String), std::collections::BTreeMap<String, String>>,
+}
+
+#[derive(Debug, Default)]
+struct GeneratedParameter {
+    annotation: String,
+    description: Vec<String>,
+}
+
+/// Read actual raw signatures and their parameter documentation, never examples.
+fn generated_method_parameters(
+    text: &str,
+) -> std::collections::BTreeMap<String, std::collections::BTreeMap<String, GeneratedParameter>> {
+    let mut out = std::collections::BTreeMap::new();
+    let mut method = None;
+    let mut signature = String::new();
+    let mut in_signature = false;
+    let mut in_doc = false;
+    let mut parameters = false;
+    let mut parameter = None;
+    for line in text.lines() {
+        if let Some(name) = python_method_name(line) {
+            method = Some(name.to_string());
+            signature.clear();
+            in_signature = true;
+            in_doc = false;
+            parameters = false;
+            parameter = None;
+        }
+        let Some(method) = method.as_ref() else {
+            continue;
+        };
+        if in_signature {
+            signature.push_str(line.trim());
+            if line.trim_end().ends_with(':') {
+                in_signature = false;
+                if let Some((open, close)) = signature.find('(').zip(signature.rfind(')')) {
+                    if open <= close {
+                        let call = format!("method{}", &signature[open..=close]);
+                        if let Some((_, arguments)) = example_call_arguments(&call) {
+                            let fields = out
+                                .entry(method.clone())
+                                .or_insert_with(std::collections::BTreeMap::new);
+                            for argument in arguments {
+                                if let Some((name, annotation)) = argument.trim().split_once(':') {
+                                    if python_identifier(name) {
+                                        fields.insert(
+                                            name.to_string(),
+                                            GeneratedParameter {
+                                                annotation: annotation
+                                                    .trim()
+                                                    .split(" = ")
+                                                    .next()
+                                                    .unwrap_or_default()
+                                                    .to_string(),
+                                                description: Vec::new(),
+                                            },
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+        if line.trim() == "\"\"\"" {
+            in_doc = !in_doc;
+            parameters = false;
+            continue;
+        }
+        if !in_doc {
+            continue;
+        }
+        if line == "        Parameters" {
+            parameters = true;
+            continue;
+        }
+        if line == "        Returns" || line == "        Yields" {
+            parameters = false;
+        }
+        if !parameters {
+            continue;
+        }
+        if let Some((name, _)) = line
+            .strip_prefix("        ")
+            .and_then(|line| line.split_once(" : "))
+        {
+            if python_identifier(name) {
+                parameter = Some(name.to_string());
+                continue;
+            }
+        }
+        if let (Some(name), Some(description)) =
+            (parameter.as_ref(), line.strip_prefix("            "))
+        {
+            if let Some(field) = out.get_mut(method).and_then(|fields| fields.get_mut(name)) {
+                field.description.push(description.replace("\\\\", "\\"));
+            }
+        }
+    }
+    out
 }
 
 fn python_identifier(value: &str) -> bool {
@@ -490,6 +598,48 @@ fn request_example_context<'a>(
             current = next;
         }
     }
+    let mut model_fields: std::collections::BTreeMap<String, BTreeSet<String>> =
+        std::collections::BTreeMap::new();
+    for (_, text) in &sources {
+        let mut model = None;
+        for line in text.lines() {
+            if let Some(name) = line
+                .strip_prefix("class ")
+                .and_then(|line| line.split_once('(').map(|(name, _)| name))
+            {
+                model = Some(name.to_string());
+            }
+            if let (Some(model), Some((name, annotation))) = (
+                model.as_ref(),
+                line.strip_prefix("    ")
+                    .and_then(|line| line.split_once(": ")),
+            ) {
+                if python_identifier(name) && !annotation.starts_with("typing.ClassVar[") {
+                    model_fields
+                        .entry(model.clone())
+                        .or_default()
+                        .insert(name.to_string());
+                }
+            }
+        }
+    }
+    for (name, target) in &aliases {
+        let mut current = *target;
+        let mut seen = BTreeSet::new();
+        while seen.insert(current) {
+            if let Some(fields) = model_fields
+                .get(current)
+                .filter(|fields| !fields.is_empty())
+            {
+                out.alias_fields.insert((*name).to_string(), fields.clone());
+                break;
+            }
+            let Some(next) = aliases.get(current) else {
+                break;
+            };
+            current = next;
+        }
+    }
     let mut bytes_methods = BTreeSet::new();
     let mut json_methods = BTreeSet::new();
     let mut json_headers = BTreeSet::new();
@@ -497,6 +647,10 @@ fn request_example_context<'a>(
         .iter()
         .filter(|(rel, _)| *rel == "raw_client.py" || rel.ends_with("/raw_client.py"))
     {
+        for (method, fields) in generated_method_parameters(text) {
+            out.method_parameters
+                .insert(((*rel).to_string(), method), fields);
+        }
         let mut method = None;
         let mut signature = false;
         for line in text.lines() {
@@ -517,6 +671,9 @@ fn request_example_context<'a>(
             }
             if line.trim_end().ends_with(':') {
                 signature = false;
+            }
+            if line.trim() == "json={" {
+                out.json_object_methods.insert(key.clone());
             }
             if line.trim() == "json=request," {
                 json_methods.insert(key.clone());
@@ -877,6 +1034,15 @@ fn binary_json_example_lines(
 }
 
 fn binary_json_body_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != "reference.md"
+        && pair.rel != "README.md"
+        && !pair
+            .rel
+            .strip_suffix("client.py")
+            .is_some_and(|prefix| prefix.is_empty() || prefix.ends_with('/'))
+    {
+        return Ok(None);
+    }
     let context = pair.context.request_examples();
     let Some((reference, _)) = binary_json_example_lines(pair.fern, pair.rel, context, false)
     else {
@@ -888,6 +1054,143 @@ fn binary_json_body_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         return Ok(None);
     };
     Ok((changed && reference == corrected)
+        .then(|| differing_window(pair.fern, pair.crozier))
+        .flatten())
+}
+
+fn reference_method_key(line: &str) -> Option<(String, String)> {
+    let (_, after) = line.split_once("<details><summary><code>client.")?;
+    let (_, after) = after.split_once("<a href=\"")?;
+    let (path, after) = after.split_once("\">")?;
+    let (name, _) = after.split_once("</a>")?;
+    let prefix = path.strip_suffix("client.py")?;
+    Some((format!("{prefix}raw_client.py"), name.to_string()))
+}
+
+/// One parameter's complete HTML block, including its description and separator.
+fn reference_parameter_block<'a>(
+    lines: &'a [&'a str],
+    index: usize,
+) -> Option<(&'a str, &'a str, usize, usize)> {
+    if lines.get(index..index + 3)? != ["<dl>", "<dd>", ""] {
+        return None;
+    }
+    let header = lines.get(index + 3)?.strip_prefix("**")?;
+    let (name, after) = header.split_once(":** `")?;
+    if !python_identifier(name) {
+        return None;
+    }
+    let (annotation, _) = after.split_once('`')?;
+    let close = (index + 4..lines.len()).find(|&i| lines[i] == "</dd>")?;
+    if lines.get(close + 1)? != &"</dl>" {
+        return None;
+    }
+    let end = close + 2 + usize::from(lines.get(close + 2) == Some(&""));
+    Some((name, annotation, close, end))
+}
+
+fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != "reference.md" {
+        return Ok(None);
+    }
+    let context = pair.context.request_examples();
+    let mut method = None;
+    let mut targets = std::collections::BTreeMap::new();
+    let mut reference = Vec::new();
+    let mut index = 0;
+    while index < pair.fern.len() {
+        let line = pair.fern[index];
+        if let Some(key) = reference_method_key(line) {
+            method = Some(key);
+        }
+        if let Some((name, alias, close, end)) = reference_parameter_block(pair.fern, index) {
+            if name == "request" {
+                if let Some((key, fields, parameters, wires)) = method.as_ref().and_then(|key| {
+                    Some((
+                        key,
+                        context.alias_fields.get(alias)?,
+                        context.method_parameters.get(key)?,
+                        context.wire_fields.get(key)?,
+                    ))
+                }) {
+                    let plain = pair.fern[index + 3] == format!("**request:** `{alias}` ")
+                        && pair.fern[index + 4..close]
+                            .iter()
+                            .all(|line| line.trim().is_empty());
+                    if plain
+                        && !parameters.contains_key("request")
+                        && context.json_object_methods.contains(key)
+                        && fields.iter().all(|field| {
+                            parameters.contains_key(field) && wires.contains_key(field)
+                        })
+                    {
+                        if targets.insert(key.clone(), fields.clone()).is_some() {
+                            return Ok(None);
+                        }
+                        reference.push("<flattened-alias-parameters>".to_string());
+                        index = end;
+                        continue;
+                    }
+                }
+            }
+        }
+        reference.push(line.to_string());
+        index += 1;
+    }
+    if targets.is_empty() {
+        return Ok(None);
+    }
+    let mut corrected = Vec::new();
+    let mut seen: std::collections::BTreeMap<(String, String), BTreeSet<String>> =
+        std::collections::BTreeMap::new();
+    method = None;
+    index = 0;
+    while index < pair.crozier.len() {
+        let line = pair.crozier[index];
+        if let Some(key) = reference_method_key(line) {
+            method = Some(key);
+        }
+        if let Some((name, annotation, close, end)) = reference_parameter_block(pair.crozier, index)
+        {
+            if let Some((key, parameter)) = method.as_ref().and_then(|key| {
+                let fields = targets.get(key)?;
+                if !fields.contains(name) {
+                    return None;
+                }
+                Some((key, context.method_parameters.get(key)?.get(name)?))
+            }) {
+                if annotation != crate::emit::reference_param_annotation(&parameter.annotation) {
+                    return Ok(None);
+                }
+                let mut description = parameter.description.join("\n");
+                while description.ends_with('\n') {
+                    description.pop();
+                }
+                let description = (!description.is_empty()).then_some(description.as_str());
+                let suffix = crate::emit::reference_param_suffix(description);
+                let expected = format!("**{name}:** `{annotation}`{suffix}\n    ");
+
+                if pair.crozier[index + 3..close].join("\n") != expected {
+                    return Ok(None);
+                }
+                let fields = seen.entry(key.clone()).or_default();
+                if !fields.insert(name.to_string()) {
+                    return Ok(None);
+                }
+                if fields.len() == 1 {
+                    corrected.push("<flattened-alias-parameters>".to_string());
+                }
+                index = end;
+                continue;
+            }
+        }
+        corrected.push(line.to_string());
+        index += 1;
+    }
+    if seen != targets {
+        return Ok(None);
+    }
+    Ok((reference == corrected)
         .then(|| differing_window(pair.fern, pair.crozier))
         .flatten())
 }
@@ -1074,7 +1377,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 13] = [
+pub const RULE_IDS: [&str; 14] = [
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
@@ -1086,6 +1389,7 @@ pub const RULE_IDS: [&str; 13] = [
     "multipart-object-required-file-example",
     "nullable-items-docs",
     "readme-client-class-casing",
+    "request-alias-reference-parameters",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
 ];
@@ -1115,6 +1419,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         "binary-json-body-example" => Rule {
             region: Some(binary_json_body_example),
             ..Rule::default()
+        },
+        "request-alias-reference-parameters" => Rule {
+            region: Some(alias_reference_parameters),
+            ..none
         },
         "multipart-object-required-file-example" => Rule {
             region: Some(multipart_object_required_file_example),
@@ -2550,6 +2858,67 @@ mod tests {
             context,
         })
         .unwrap()
+    }
+
+    #[test]
+    fn alias_reference_correction_requires_the_actual_alias_signature_json_and_descriptions() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/openapi-surface/handwritten/request-alias/fern-expected");
+        let fern = std::fs::read_to_string(root.join("reference.md")).unwrap();
+        let before = "<dl>\n<dd>\n\n**request:** `TitleAlias` \n    \n</dd>\n</dl>";
+        let after = "<dl>\n<dd>\n\n**ticket:** `int` \n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**caption:** `typing.Optional[str]` — Shown on cabinet labels.\n    \n</dd>\n</dl>";
+        assert!(fern.contains(before));
+        let corrected = fern.replace(before, after);
+        let sources = python_sources(&root);
+        let context = Context::from_sources(
+            [],
+            sources
+                .iter()
+                .map(|(path, text)| (path.as_str(), text.as_str())),
+        );
+        let rule: RegionRule = alias_reference_parameters;
+        assert!(region_of(rule, "reference.md", &fern, &corrected, &context).is_some());
+        for wrong in [
+            corrected.replace("**ticket:** `int`", "**ticket:** `str`"),
+            corrected.replace("Shown on cabinet labels.", "Wrong description."),
+            corrected.replace("**caption:**", "**unknown:**"),
+            corrected.replace("**ticket:** `int`", "**request:** `int`"),
+            corrected.replace("#### 🔌 Usage", "Unexplained heading"),
+            corrected.replace("**request_options:**", "**extra:**"),
+        ] {
+            assert!(
+                region_of(rule, "reference.md", &fern, &wrong, &context).is_none(),
+                "{wrong}"
+            );
+        }
+        for (from, to) in [
+            ("json={", "data={"),
+            ("ticket: int", "ticket: str"),
+            ("TitleAlias = Title", "TitleAlias = str"),
+            ("\"caption\": caption,", "\"caption\": missing,"),
+        ] {
+            let changed: Vec<_> = sources
+                .iter()
+                .map(|(path, text)| (path.clone(), text.replace(from, to)))
+                .collect();
+            let context = Context::from_sources(
+                [],
+                changed
+                    .iter()
+                    .map(|(path, text)| (path.as_str(), text.as_str())),
+            );
+            assert!(
+                region_of(rule, "reference.md", &fern, &corrected, &context).is_none(),
+                "{from}"
+            );
+        }
+        assert!(region_of(rule, "client.py", &fern, &corrected, &context).is_none());
+        assert!(region_of(rule, "reference.md", &fern, &corrected, &Context::default()).is_none());
+        assert!(
+            reference_parameter_block(&["<dl>", "<dd>", "", "**request:** `TitleAlias` "], 0)
+                .is_none()
+        );
+        assert!(generated_method_parameters("unrelated text").is_empty());
     }
 
     #[test]

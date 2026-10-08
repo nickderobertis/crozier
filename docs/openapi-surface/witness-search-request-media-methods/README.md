@@ -2,7 +2,10 @@
 
 ## Witness search
 
-At `c2807ce53`, a renewed offline walk parsed all 314 acquired source records
+Only corpus sources and committed remote-tree fragments are recorded here;
+local test inputs are excluded from real-witness evidence.
+
+At `c2807ce53`, a renewed offline walk parsed all 283 acquired source records
 and previously enumerated committed remote-tree fragments without errors.
 [sources.tsv](sources.tsv) records hashes computed from the committed bytes.
 The screen required an application/json request representation carrying a

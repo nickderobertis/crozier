@@ -162,7 +162,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 9 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 10 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -266,6 +266,15 @@ when the two differ.
 - **crozier writes:** The class names the package defines (`LanternHarborApi`, `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`).
 - **Why:** An example that imports a class the generated package does not define contradicts the generated code: the import fails, so the snippet cannot run.
 - **Evidence:** [`docs/departures/evidence/readme-client-class-casing.md`](../../docs/departures/evidence/readme-client-class-casing.md)
+
+### `request-alias-reference-parameters`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An aliased object JSON body is flattened into method arguments but reference.md advertises a whole request argument.
+- **Fern writes:** The reference parameter is request with the alias type, although the generated method has no request argument.
+- **crozier writes:** The reference lists the actual flattened arguments and their types and descriptions; generated code and usage examples remain matched.
+- **Why:** Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
+- **Evidence:** [`docs/departures/evidence/request-alias-reference-parameters.md`](../../docs/departures/evidence/request-alias-reference-parameters.md)
 
 ### `sdk-identity-header-prefix`
 

@@ -2,7 +2,10 @@
 
 ## Witness search
 
-At `7f7f31b79`, a renewed offline walk parsed 314 acquired source records,
+Only corpus sources and committed remote-tree fragments are recorded here;
+local test inputs are excluded from real-witness evidence.
+
+At `7f7f31b79`, a renewed offline walk parsed 283 acquired source records,
 including previously enumerated committed remote-tree fragments. Every record
 in [sources.tsv](sources.tsv) carries the SHA-256 of its committed bytes; there
 were no parse errors. It screened inline JSON error responses for a sole inline

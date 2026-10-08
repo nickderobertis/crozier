@@ -2,9 +2,12 @@
 
 ## Witness search
 
+Only corpus sources and committed remote-tree fragments are recorded here;
+local test inputs are excluded from real-witness evidence.
+
 At `27de039f4`, a renewed offline walk inspected the acquired source documents
 and the previously enumerated committed remote-tree fragments. The shared census
-loader parsed all 314 source records; each record's SHA-256 was computed from
+loader parsed all 283 source records; each record's SHA-256 was computed from
 its actual committed bytes. [sources.tsv](sources.tsv) records the results.
 
 The exact conjunctions inspected were: a referenced allOf object with no own

@@ -65,6 +65,13 @@ docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-e
 docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	reference.md	39	request-alias-reference-parameters
+docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -562,6 +569,12 @@ docs/openapi-surface/handwritten/ref-pointer-walk/fern-expected	src/fern/core/cl
 docs/openapi-surface/handwritten/ref-pointer-walk/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ref-pointer-walk/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ref-pointer-walk/fern-expected	src/fern/types/__init__.py	18	init-type-checking-import-order
+docs/openapi-surface/handwritten/request-alias/fern-expected	reference.md	39	request-alias-reference-parameters
+docs/openapi-surface/handwritten/request-alias/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-alias/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-alias/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-alias/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-alias/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/request-example-deprecated/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/request-example-deprecated/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/request-example-deprecated/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
