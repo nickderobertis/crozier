@@ -222,8 +222,7 @@ corpus_fetch_source() {
   local tree_root
   tree_root="$(corpus_tree_root "$name")" || return 1
   if [ -n "$tree_root" ]; then
-    python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" \
-      fetch-tree "$name" "$fetch_root/$name"
+    corpus_pins fetch-tree "$name" "$fetch_root/$name"
     return
   fi
   if corpus_is_direct_spec_url "$url"; then

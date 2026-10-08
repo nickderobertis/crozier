@@ -679,7 +679,8 @@ class PinMechanismTests(unittest.TestCase):
     @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "root enters a directory whatever its mode")
     def test_a_library_directory_it_cannot_enter_stops_the_pin_step_with_its_fix(self) -> None:
         library = self.root / "tools" / "corpus"
-        for step in ('corpus_pin_apply plain-row "$2" openapi.yaml', 'corpus_tree_root plain-row'):
+        for step in ('corpus_pin_apply plain-row "$2" openapi.yaml', 'corpus_tree_root plain-row',
+                     'corpus_fetch_source "$2" plain-row https://example.test/openapi.yaml HEAD'):
             with self.subTest(step=step):
                 result = subprocess.run(
                     ["bash", "-c", f'. "$1/corpus-lib.sh" && chmod 0 "$1" && {{ {step}; status=$?; '
