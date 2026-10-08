@@ -1,0 +1,15 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "c19771fecd6f03d03253fc6b71780fd5c3d32e74a430db4860212598557db0ba"
+
+[[covers]]
+key = "operation-idempotent-with-root-headers"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#idempotent-operation"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+
+[[covers]]
+key = "operation-retries-disabled"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#retries-disabled"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

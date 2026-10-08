@@ -176,6 +176,22 @@ The shape: two or more document servers naming themselves by `x-fern-server-name
 |---|---|---|
 | `server-name-several` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Idempotent operation
+
+The shape: an operation marked `x-fern-idempotent: true` (or `x-crozier-idempotent`) in a document declaring `x-fern-idempotency-headers` (`operation.x-fern-idempotent:with-root-headers`). Fern gives the method an optional argument per header after its body fields (`X-Dedupe-Token` is `dedupe_token`) and sends it.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-idempotent-with-root-headers` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Retries disabled
+
+The shape: an operation whose `x-fern-retries` (or `x-crozier-retries`) is a mapping with `disabled: true` (`operation.x-fern-retries:disabled`). Fern sends its request with the caller's options and `max_retries` set to 0.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-retries-disabled` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -195,3 +211,5 @@ The shape: two or more document servers naming themselves by `x-fern-server-name
 | `security-scheme-capitalised-http` | `none-registrable` | `tide-gauge-sessions` |
 | `server-default-url-templated` | `none-registrable` | `harbour-pilot-regions` |
 | `server-name-several` | `none-registrable` | `orbit-ground-stations` |
+| `operation-idempotent-with-root-headers` | `none-registrable` | `parcel-courier-desk` |
+| `operation-retries-disabled` | `none-registrable` | `parcel-courier-desk` |

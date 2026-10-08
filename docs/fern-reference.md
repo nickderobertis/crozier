@@ -135,6 +135,9 @@ extension not listed here does not change crozier's output.
 | `x-fern-basic` | `x-crozier-basic` | http `basic` security scheme | The `username` and `password` parameters' `name` and `env`. |
 | `x-fern-server-name` | `x-crozier-server-name` | server | The environment member's name (`primary` is `PRIMARY`); every server naming itself is a member, the first the default. |
 | `x-fern-default-url` | `x-crozier-default-url` | server | The environment member's value, in place of the expanded `url`. |
+| `x-fern-idempotency-headers` | `x-crozier-idempotency-headers` | document | The headers (`[{header: X-Dedupe-Token}]`) an idempotent operation takes. |
+| `x-fern-idempotent` | `x-crozier-idempotent` | operation | Gives the method an optional argument per idempotency header after its body fields (`dedupe_token`), sent as that header. |
+| `x-fern-retries` | `x-crozier-retries` | operation | `{disabled: true}` sends the request with `max_retries` 0, whatever the caller's options say. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
 
 ## The script

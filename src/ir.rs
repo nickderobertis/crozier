@@ -283,7 +283,7 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
                     .map(str::to_ascii_uppercase)
             });
         if let Some(name) = name {
-            named.entry(name).or_insert(server);
+            named.insert(name, server);
         }
     }
     let mut named = named.into_iter();
@@ -1276,6 +1276,9 @@ pub struct Endpoint {
     pub query_params: Vec<QueryParam>,
     /// Header parameters, in declaration order.
     pub header_params: Vec<HeaderParam>,
+    /// The operation-level extensions that shape only its method: idempotency
+    /// arguments and the retry policy.
+    pub extensions: EndpointExtensions,
     /// String headers with schema defaults, sent on every request but omitted
     /// from the public method signature.
     pub constant_headers: Vec<(String, String)>,
@@ -1531,6 +1534,20 @@ impl QueryParam {
     pub fn argument_required(&self) -> bool {
         self.required && !self.nullable
     }
+}
+
+/// An endpoint's operation-level extensions (`x-fern-idempotent` with the
+/// document's `x-fern-idempotency-headers`, and `x-fern-retries`), each in
+/// either spelling. Empty by default.
+#[derive(Debug, Default)]
+pub struct EndpointExtensions {
+    /// The idempotency headers an idempotent operation takes: optional `str`
+    /// arguments after its body fields (`X-Dedupe-Token` is `dedupe_token`),
+    /// sent in its `headers`.
+    pub idempotency_headers: Vec<HeaderParam>,
+    /// Whether the operation sends its request with retries off
+    /// (`x-fern-retries: {disabled: true}`).
+    pub retries_disabled: bool,
 }
 
 /// A resolved header parameter, rendered as a keyword-only method argument and a
@@ -3543,6 +3560,25 @@ fn build_endpoint(
         pagination: endpoint_pagination(doc, op, &query_params),
         query_params,
         header_params,
+        extensions: EndpointExtensions {
+            idempotency_headers: if op.idempotent() {
+                doc.idempotency_headers()
+                    .into_iter()
+                    .map(|header| HeaderParam {
+                        wire_name: header.to_string(),
+                        py_name: naming::field_name(header_param_stem(header)),
+                        type_ref: TypeRef::Primitive(Prim::Str),
+                        required: false,
+                        docstring: None,
+                        example: None,
+                        enum_value: false,
+                    })
+                    .collect()
+            } else {
+                Vec::new()
+            },
+            retries_disabled: op.retries_disabled(),
+        },
         header_order,
         constant_headers,
         request_body,

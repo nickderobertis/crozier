@@ -11,6 +11,7 @@
     "docs/fern-measurements/clients-extensions/locker-bank-claims-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/meter-reader-gateway-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/orbit-ground-stations-literals/fern-expected": {},
+    "docs/fern-measurements/clients-extensions/parcel-courier-desk-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/rfid-door-panel-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/signal-box-relays-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/ski-lift-gates-literals/fern-expected": {},
@@ -97,6 +98,7 @@
     "docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected": {},
     "docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected": {},
     "docs/openapi-surface/handwritten/ore-bin-screen/fern-expected": {},
+    "docs/openapi-surface/handwritten/parcel-courier-desk/fern-expected": {},
     "docs/openapi-surface/handwritten/property-sole-anyof-composed-member/fern-expected": {},
     "docs/openapi-surface/handwritten/property-sole-anyof-empty-object-member/fern-expected": {},
     "docs/openapi-surface/handwritten/property-sole-oneof-composed-member/fern-expected": {},
@@ -765,7 +767,6 @@
           "src/fern/types/post_site_publish_payload.py"
         ],
         "unmatched": [
-          "README.md",
           "reference.md",
           "src/fern/__init__.py",
           "src/fern/analyze/__init__.py",

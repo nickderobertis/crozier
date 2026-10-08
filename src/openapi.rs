@@ -48,6 +48,12 @@ pub struct OpenApi {
     /// The `openapi` version string (e.g. `3.0.1`).
     #[serde(default)]
     pub openapi: String,
+    /// `x-crozier-idempotency-headers` / `x-fern-idempotency-headers`: the headers
+    /// an idempotent operation takes. Read through [`OpenApi::idempotency_headers`].
+    #[serde(rename = "x-crozier-idempotency-headers", default)]
+    pub(crate) idempotency_headers_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-idempotency-headers", default)]
+    pub(crate) idempotency_headers_fern: Option<serde_json::Value>,
     /// Document metadata.
     #[serde(default)]
     pub info: Info,
@@ -198,6 +204,27 @@ impl BasePath {
 }
 
 impl OpenApi {
+    /// The idempotency headers an idempotent operation takes, each its wire
+    /// name: `x-crozier-idempotency-headers` over `x-fern-idempotency-headers`, a
+    /// list of `{header: …}` entries; an entry without a string `header` is
+    /// skipped.
+    #[must_use]
+    pub fn idempotency_headers(&self) -> Vec<&str> {
+        self.idempotency_headers_crozier
+            .as_ref()
+            .or(self.idempotency_headers_fern.as_ref())
+            .and_then(serde_json::Value::as_array)
+            .map(|entries| {
+                entries
+                    .iter()
+                    .filter_map(|entry| entry.get("header")?.as_str())
+                    .map(str::trim)
+                    .filter(|header| !header.is_empty())
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     /// The document's base path: `x-crozier-base-path` when present, else
     /// `x-fern-base-path` (the [dual-header policy](self#fern-compatible-extensions)).
     #[must_use]
@@ -638,6 +665,18 @@ pub struct Operation {
     /// [`Operation::sdk_group_name`]).
     #[serde(rename = "x-fern-sdk-group-name", default)]
     sdk_group_name_fern: Option<SdkGroupName>,
+    /// `x-crozier-idempotent` / `x-fern-idempotent`: whether the operation takes
+    /// the document's idempotency headers. Read through [`Operation::idempotent`].
+    #[serde(rename = "x-crozier-idempotent", default)]
+    pub(crate) idempotent_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-idempotent", default)]
+    pub(crate) idempotent_fern: Option<serde_json::Value>,
+    /// `x-crozier-retries` / `x-fern-retries`: the operation's retry policy.
+    /// Read through [`Operation::retries_disabled`].
+    #[serde(rename = "x-crozier-retries", default)]
+    pub(crate) retries_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-retries", default)]
+    pub(crate) retries_fern: Option<serde_json::Value>,
     /// `x-crozier-sdk-method-name`: the generated method's name, overriding the one
     /// derived from `operationId`/summary/route (canonical spelling). Read via
     /// [`Operation::sdk_method_name`], which also honours the
@@ -789,6 +828,28 @@ impl Operation {
             .filter(|segment| !segment.is_empty())
             .collect();
         (!segments.is_empty()).then_some(segments)
+    }
+
+    /// Whether the operation is idempotent (`x-crozier-idempotent` over
+    /// `x-fern-idempotent`, see the [dual-header
+    /// policy](self#fern-compatible-extensions)): only the boolean `true` is.
+    #[must_use]
+    pub fn idempotent(&self) -> bool {
+        self.idempotent_crozier
+            .as_ref()
+            .or(self.idempotent_fern.as_ref())
+            == Some(&serde_json::Value::Bool(true))
+    }
+
+    /// Whether the operation disables retries: `x-crozier-retries` over
+    /// `x-fern-retries` is a mapping whose `disabled` is `true`.
+    #[must_use]
+    pub fn retries_disabled(&self) -> bool {
+        self.retries_crozier
+            .as_ref()
+            .or(self.retries_fern.as_ref())
+            .and_then(|retries| retries.get("disabled"))
+            == Some(&serde_json::Value::Bool(true))
     }
 
     /// The declared method-name override, canonicalizing on the
@@ -3571,6 +3632,29 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn idempotency_and_retry_extensions_canonicalize_on_the_crozier_spelling() {
+        let op: Operation = serde_json::from_value(serde_json::json!({
+            "x-fern-idempotent": false,
+            "x-crozier-idempotent": true,
+            "x-fern-retries": {"disabled": true},
+            "x-crozier-retries": {"disabled": false},
+        }))
+        .expect("an operation");
+        assert!(op.idempotent());
+        assert!(!op.retries_disabled());
+        let op: Operation =
+            serde_json::from_value(serde_json::json!({"x-fern-retries": {"disabled": true}}))
+                .expect("an operation");
+        assert!(op.retries_disabled() && !op.idempotent());
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "x-fern-idempotency-headers": [{"header": "X-Fern"}],
+            "x-crozier-idempotency-headers": [{"header": " X-Dedupe "}, {"name": "no-header"}, 7],
+        }))
+        .expect("a document");
+        assert_eq!(doc.idempotency_headers(), vec!["X-Dedupe"]);
+    }
 
     #[test]
     fn server_extensions_canonicalize_on_the_crozier_spelling() {

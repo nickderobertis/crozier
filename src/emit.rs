@@ -3097,7 +3097,16 @@ fn reference_entry(
     } else {
         mp.body
     };
-    let mut reference_body = reference_body;
+    // Fern's reference writer does not document an idempotency argument.
+    let mut reference_body: Vec<DocParam> = reference_body
+        .into_iter()
+        .filter(|param| {
+            !ep.extensions
+                .idempotency_headers
+                .iter()
+                .any(|header| header.py_name == param.name)
+        })
+        .collect();
     if let Some(RequestBody::Inline(fields)) = &ep.request_body {
         reference_body.sort_by_key(|param| {
             fields
@@ -5026,6 +5035,17 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             })
             .collect(),
     };
+    // An idempotent operation's idempotency headers follow its body, optional
+    // `str` arguments with no description (Fern's `dedupe_token`).
+    let mut body = body;
+    body.extend(ep.extensions.idempotency_headers.iter().map(|hp| {
+        optional_arg(
+            raw_type_str_ctx(&hp.type_ref, imports, true),
+            hp.required,
+            hp.docstring.clone(),
+            hp.py_name.clone(),
+        )
+    }));
 
     MethodParams {
         inner,
@@ -5368,9 +5388,10 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     } else {
         imports.core_local("http_response", "HttpResponse")
     };
-    let mut lines: Vec<String> = vec![format!(
+    let mut lines: Vec<String> = retries_disabled_preamble(ep);
+    lines.push(format!(
         "        _response = {await_}self._client_wrapper.httpx_client.request("
-    )];
+    ));
     if ep.path != "/" {
         lines.push(format!("            {},", url_arg(ep, imports)));
     }
@@ -5454,6 +5475,20 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
 /// `request_options`, and the `omit`/`force_multipart` sentinels. Shared by the
 /// buffered `.request(...)` path ([`raw_body`]) and the streaming `.stream(...)`
 /// path ([`raw_stream_body`]) so both serialize a body identically.
+/// The request options an operation with `x-fern-retries: {disabled: true}`
+/// sends in place of the caller's: theirs with `max_retries` set to 0, written
+/// ahead of the request call; nothing for any other operation.
+fn retries_disabled_preamble(ep: &Endpoint) -> Vec<String> {
+    if !ep.extensions.retries_disabled {
+        return Vec::new();
+    }
+    vec![
+        "        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (".to_string(),
+        "            {**request_options, \"max_retries\": 0} if request_options is not None else {\"max_retries\": 0}".to_string(),
+        "        )".to_string(),
+    ]
+}
+
 fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mut Imports) {
     // Query parameters map wire name to the Python argument in a `params` dict. An
     // object/union-typed parameter serializes through the convert wrapper (Fern
@@ -5932,7 +5967,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         }
         _ => None,
     };
-    if content_type.is_some() || !ep.header_params.is_empty() || !ep.constant_headers.is_empty() {
+    if content_type.is_some()
+        || !ep.header_params.is_empty()
+        || !ep.constant_headers.is_empty()
+        || !ep.extensions.idempotency_headers.is_empty()
+    {
         lines.push("            headers={".to_string());
         if let Some(value) = content_type {
             lines.push(format!("                \"content-type\": \"{value}\","));
@@ -5971,9 +6010,21 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 .unwrap_or(usize::MAX)
         });
         lines.extend(headers.into_iter().map(|(_, line)| line));
+        // The idempotency headers follow the operation's own, in the order the
+        // document lists them.
+        lines.extend(ep.extensions.idempotency_headers.iter().map(|hp| {
+            format!(
+                "                \"{}\": str({1}) if {1} is not None else None,",
+                hp.wire_name, hp.py_name
+            )
+        }));
         lines.push("            },".to_string());
     }
-    lines.push("            request_options=request_options,".to_string());
+    lines.push(if ep.extensions.retries_disabled {
+        "            request_options=_request_options_with_retries_disabled,".to_string()
+    } else {
+        "            request_options=request_options,".to_string()
+    });
     // A request body passes the `OMIT` sentinel so unset optionals drop out.
     if ep.request_body.is_some() {
         lines.push("            omit=OMIT,".to_string());
@@ -6072,9 +6123,10 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = raw_stream_docstring(ep, &mp, &return_type);
 
-    let mut call: Vec<String> = vec![format!(
+    let mut call: Vec<String> = retries_disabled_preamble(ep);
+    call.push(format!(
         "        {async_with} self._client_wrapper.httpx_client.stream("
-    )];
+    ));
     if ep.path != "/" {
         call.push(format!("            {},", url_arg(ep, imports)));
     }
@@ -6227,9 +6279,10 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = raw_binary_stream_docstring(ep, &mp, &return_type);
 
-    let mut call: Vec<String> = vec![format!(
+    let mut call: Vec<String> = retries_disabled_preamble(ep);
+    call.push(format!(
         "        {async_with} self._client_wrapper.httpx_client.stream("
-    )];
+    ));
     if ep.path != "/" {
         call.push(format!("            {},", url_arg(ep, imports)));
     }
@@ -12134,6 +12187,45 @@ mod tests {
         assert_eq!(w.assign, "        self.api_key = api_key\n");
     }
 
+    #[test]
+    fn endpoint_extensions_add_an_idempotency_argument_and_disable_retries() {
+        let mut ep = endpoint("/parcels", Vec::new(), None);
+        ep.http_method = "POST";
+        ep.extensions = crate::ir::EndpointExtensions {
+            idempotency_headers: vec![HeaderParam {
+                wire_name: "X-Dedupe-Token".to_string(),
+                py_name: "dedupe_token".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                required: false,
+                docstring: None,
+                example: None,
+                enum_value: false,
+            }],
+            retries_disabled: true,
+        };
+        let out = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            out.contains("dedupe_token: typing.Optional[str] = None"),
+            "{out}"
+        );
+        assert!(
+            out.contains(
+                "\"X-Dedupe-Token\": str(dedupe_token) if dedupe_token is not None else None,"
+            ),
+            "{out}"
+        );
+        assert!(out.contains(
+            "_request_options_with_retries_disabled: typing.Optional[RequestOptions] = ("
+        ));
+        assert!(out.contains("request_options=_request_options_with_retries_disabled,"));
+        let plain = raw_method(
+            &endpoint("/parcels", Vec::new(), None),
+            false,
+            &mut Imports::default(),
+        );
+        assert!(!plain.contains("retries_disabled") && !plain.contains("dedupe_token"));
+    }
+
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
         Endpoint {
             openapi_31: false,
@@ -12148,6 +12240,7 @@ mod tests {
             client_path_params: Vec::new(),
             query_params: Vec::new(),
             header_params: Vec::new(),
+            extensions: crate::ir::EndpointExtensions::default(),
             constant_headers: Vec::new(),
             header_order: Vec::new(),
             request_body: None,

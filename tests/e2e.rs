@@ -1978,6 +1978,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "parcel-courier-desk-literals",
+        "docs/openapi-surface/handwritten/parcel-courier-desk/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "rfid-door-panel-literals",
         "docs/openapi-surface/handwritten/rfid-door-panel/openapi.yml",
         &["--enum-type", "literals"],
@@ -16838,6 +16843,139 @@ print("ok")
         String::from_utf8_lossy(&run.stderr)
     );
     assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
+}
+
+/// An idempotent operation sends the idempotency header its caller gives and
+/// leaves it off when not given, and an operation whose `x-fern-retries` is
+/// `{disabled: true}` makes one attempt against a server answering `503` where
+/// its neighbour, with the default policy, makes three. Driven through the
+/// generated client of the `parcel-courier-desk` hand-written fixture against a
+/// local server.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_idempotency_headers_and_disabled_retries_behave_as_declared() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/parcel-courier-desk/openapi.yml");
+    let script = r#"
+import http.server
+import json
+import threading
+
+from fern import FernApi
+from fern.core.api_error import ApiError
+
+seen = []
+
+
+class Desk(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        self.rfile.read(int(self.headers["Content-Length"]))
+        seen.append(("POST", self.headers.get("X-Dedupe-Token")))
+        body = json.dumps("C-1").encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def unavailable(self):
+        seen.append((self.command, None))
+        self.send_response(503)
+        self.send_header("Retry-After", "0")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    do_DELETE = unavailable
+    do_GET = unavailable
+
+    def log_message(self, *args):
+        pass
+
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Desk)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+client = FernApi(base_url=f"http://127.0.0.1:{server.server_port}")
+assert client.ship_parcel(weight=2.5, dedupe_token="t-1") == "C-1"
+assert client.ship_parcel(weight=2.5) == "C-1"
+
+
+def attempts(call):
+    before = len(seen)
+    try:
+        call()
+    except ApiError as error:
+        assert error.status_code == 503, error
+    else:
+        raise AssertionError("a 503 did not raise")
+    return len(seen) - before
+
+
+print(seen[:2], attempts(lambda: client.cancel_parcel("p-1")), attempts(lambda: client.track_parcel("p-1")))
+"#;
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+    let run = std::process::Command::new(&py)
+        .args(["-c", script])
+        .current_dir(sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("drive the generated client");
+    assert!(
+        run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&run.stdout).trim(),
+        "[('POST', 't-1'), ('POST', None)] 1 3"
+    );
+}
+
+/// The idempotency and retry extensions read crozier's spelling on its own and
+/// win over a conflicting Fern spelling: the document's idempotency headers,
+/// an operation's idempotent mark, and its retry policy.
+#[test]
+fn idempotency_and_retry_extensions_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("desk.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Desk, version: '1'}\nx-fern-idempotency-headers: [{header: X-Fern-Token}]\nx-crozier-idempotency-headers: [{header: X-Crozier-Token}]\npaths:\n  /parcels:\n    post:\n      operationId: shipParcel\n      x-fern-idempotent: false\n      x-crozier-idempotent: true\n      responses: {'204': {description: ok}}\n    delete:\n      operationId: cancelParcels\n      x-crozier-retries: {disabled: true}\n      responses: {'204': {description: ok}}\n    get:\n      operationId: listParcels\n      x-fern-retries: {disabled: true}\n      x-crozier-retries: {disabled: false}\n      responses: {'204': {description: ok}}\n",
+    )
+    .expect("write spec");
+    let out = dir.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let raw = std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client");
+    assert!(
+        raw.contains("crozier_token: typing.Optional[str] = None"),
+        "{raw}"
+    );
+    assert!(raw.contains(
+        "\"X-Crozier-Token\": str(crozier_token) if crozier_token is not None else None"
+    ));
+    assert!(!raw.contains("fern_token"));
+    // Only the crozier-spelled `disabled: true` turns retries off.
+    assert_eq!(
+        raw.matches("request_options=_request_options_with_retries_disabled")
+            .count(),
+        2
+    );
+    let list = raw.split("def list_parcels").nth(1).expect("list_parcels");
+    let list = list.split("def ").next().unwrap_or(list);
+    assert!(
+        !list.contains("_request_options_with_retries_disabled"),
+        "{list}"
+    );
 }
 
 /// `default-max-retries` decides how many times a generated client retries a
