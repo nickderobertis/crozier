@@ -444,6 +444,10 @@ fn source_enum_examples(source: Option<&crate::openapi::OpenApi>) -> Vec<SourceE
     let Some(source) = source else {
         return Vec::new();
     };
+    // The constructor only rejects unsafe package names. The fixed "parity"
+    // segment is valid, and supplied names bypass title-derived defaults, so a
+    // loaded document cannot make this config fail. Keep defensive abstention
+    // if the constructor gains another validation condition in the future.
     let Ok(config) = crate::config::GenerateConfig::new(
         std::path::PathBuf::new(),
         std::path::PathBuf::new(),

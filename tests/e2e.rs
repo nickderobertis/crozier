@@ -2648,6 +2648,43 @@ fn remaining_model_shapes_match_the_certified_fern_trees() {
 
 #[test]
 fn property_extensions_accept_aliases_and_crozier_precedence() {
+    let reference_doc = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-reference.md"),
+    )
+    .unwrap();
+    for (extension, placement, effect) in [
+        (
+            "ignore",
+            "operation, component schema, object property",
+            "Leaves the node out of the SDK.",
+        ),
+        (
+            "enum",
+            "string enum schema",
+            "The member name and, in Python-enums mode, description for each value.",
+        ),
+        (
+            "type",
+            "boolean schema",
+            "`literal<true>` and `literal<false>` preserve a boolean literal annotation.",
+        ),
+    ] {
+        let fern = format!("`x-fern-{extension}`");
+        let canonical = format!("`x-crozier-{extension}`");
+        let rows: Vec<_> = reference_doc
+            .lines()
+            .filter(|line| line.starts_with(&format!("| {fern} |")))
+            .map(|line| {
+                line.split('|')
+                    .skip(1)
+                    .take(4)
+                    .map(str::trim)
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+        assert_eq!(rows, vec![vec![fern.as_str(), canonical.as_str(), placement, effect]],
+            "vendor-extension table drift: restore the documented {extension} contract or update its real-binary proof");
+    }
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
     for (fixture, extension, conflict, module, expected) in [
         ("verified-seal", "type", "          x-crozier-type: literal<false>\n", "seal", "verified: typing.Optional[typing.Literal[False]]"),
@@ -2674,6 +2711,70 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
                 let ledger = departure_ledger().golden(&golden, &[]).unwrap();
                 let failures = golden_tree_failures(fixture, &source.display().to_string(), &ledger, &reference, &out);
                 assert!(failures.is_empty(), "{}", failures.join("\n"));
+            }
+        }
+    }
+    // Each table placement and literal value is exercised through the same CLI
+    // boundary as the aliases above, including names and descriptions together.
+    for spelling in ["fern", "crozier"] {
+        for fixture in [
+            "gauge-public-fields",
+            "compass-member-notes",
+            "verified-seal",
+        ] {
+            let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+            let mut document: serde_json::Value = serde_yaml_ng::from_str(&original).unwrap();
+            let prefix = format!("x-{spelling}");
+            let (module, expected) = match fixture {
+                "gauge-public-fields" => {
+                    document["components"]["schemas"]["Gauge"]["properties"]["calibration_note"] =
+                        serde_json::json!({"type":"string", format!("{prefix}-ignore"):true});
+                    document["components"]["schemas"]["HiddenGauge"] = serde_json::json!({
+                        "type":"object", format!("{prefix}-ignore"):true,
+                        "properties":{"hidden":{"type":"string"}}
+                    });
+                    document["paths"]["/hidden-records"] = serde_json::json!({"get":{
+                        "operationId":"read_hidden_records", format!("{prefix}-ignore"):true,
+                        "responses":{"204":{"description":"Hidden"}}
+                    }});
+                    ("gauge", "display: typing.Optional[str]")
+                }
+                "compass-member-notes" => {
+                    document["components"]["schemas"]["Compass"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("x-fern-enum");
+                    document["components"]["schemas"]["Compass"][format!("{prefix}-enum")] = serde_json::json!({"south":{"name":"southern", "description":"Towards the southern horizon."}});
+                    ("compass", "SOUTHERN = \"south\"")
+                }
+                "verified-seal" => {
+                    document["components"]["schemas"]["Seal"]["properties"]["verified"] = serde_json::json!({"type":"boolean", format!("{prefix}-type"):"literal<false>"});
+                    ("seal", "verified: typing.Optional[typing.Literal[False]]")
+                }
+                _ => unreachable!(),
+            };
+            let dir = tempfile::tempdir().unwrap();
+            let spec = dir.path().join("openapi.yml");
+            std::fs::write(&spec, document.to_string()).unwrap();
+            let out = dir.path().join("sdk");
+            probe_command(&spec, &out).assert().success();
+            let model =
+                std::fs::read_to_string(out.join(format!("src/fern/types/{module}.py"))).unwrap();
+            assert!(model.contains(expected), "{fixture}/{spelling}: {model}");
+            match fixture {
+                "gauge-public-fields" => {
+                    assert!(!model.contains("calibration_note"));
+                    assert!(!out.join("src/fern/types/hidden_gauge.py").exists());
+                    assert!(!std::fs::read_to_string(out.join("src/fern/client.py"))
+                        .unwrap()
+                        .contains("read_hidden_records"));
+                }
+                "compass-member-notes" => {
+                    assert!(model.contains("Towards the southern horizon."));
+                    assert!(!model.contains("    SOUTH = "));
+                }
+                "verified-seal" => assert!(model.contains("ordinary: typing.Optional[bool]")),
+                _ => unreachable!(),
             }
         }
     }
