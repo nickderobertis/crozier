@@ -45,6 +45,105 @@ fn render(spec: &str) -> HashMap<String, String> {
 }
 
 #[test]
+fn composed_models_keep_flat_fields_aliases_and_eager_superclasses() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    let cases = [
+        (
+            "circuit-readings",
+            "reading",
+            "class Reading(UniversalBaseModel):",
+        ),
+        ("garden-crown", "flower", "class Flower(Crown):"),
+        (
+            "artefact-catalogue",
+            "artifact",
+            "class Artifact(UniversalBaseModel):",
+        ),
+        ("mineral-sample", "pebble", "Pebble = Rock"),
+        (
+            "nullable-store",
+            "vacant_store",
+            "VacantStore = typing.Optional[Store]",
+        ),
+        (
+            "sampling-branches",
+            "reading",
+            "rate: typing.Optional[int] = pydantic.Field(default=None)",
+        ),
+    ];
+    for (fixture, module, expected) in cases {
+        let spec = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        let files = render(&spec);
+        let model = &files[&format!("src/acme/types/{module}.py")];
+        assert!(model.contains(expected), "{fixture}:\n{model}");
+        if fixture == "garden-crown" {
+            assert!(
+                model.find("from .crown import Crown").unwrap()
+                    < model.find("class Flower").unwrap()
+            );
+            assert!(!model.contains("update_forward_refs"));
+        } else if fixture == "circuit-readings" {
+            assert!(model.contains("update_forward_refs(Reading, Circuit=Circuit)"));
+        } else if fixture == "artefact-catalogue" {
+            assert_eq!(model.matches("mark: ").count(), 1);
+            assert!(model.contains("height: typing.Optional[int]"));
+            assert!(model.contains("drawer: typing.Optional[str]"));
+        } else if fixture == "sampling-branches" {
+            assert!(model.contains("Recorded sampling rate."));
+            let changed = spec.replace(
+                "rate:\n              not: {}",
+                "rate:\n              type: string",
+            );
+            assert_ne!(
+                changed, spec,
+                "the positive redeclaration control must change the schema"
+            );
+            let changed_files = render(&changed);
+            assert!(
+                changed_files["src/acme/types/reading.py"].contains("rate: typing.Optional[str]")
+            );
+        }
+    }
+}
+
+#[test]
+fn flattened_cyclic_parent_reach_is_retained_only_for_that_shape() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    for (fixture, name, expected) in [
+        ("circuit-readings", "Reading", vec!["Circuit"]),
+        ("garden-crown", "Flower", vec![]),
+        ("artefact-catalogue", "Artifact", vec![]),
+    ] {
+        let spec = root.join(fixture).join("openapi.yml");
+        let doc = crozier::openapi::load(&spec).unwrap();
+        let config = crozier::config::GenerateConfig::new(
+            spec,
+            PathBuf::from("unused"),
+            Some("acme".into()),
+            Some("acme".into()),
+            None,
+            crozier::settings::ExtraFields::Allow,
+            &doc.info.title,
+        )
+        .unwrap();
+        let ir = crozier::ir::build(&doc, &config);
+        let model = ir
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                crozier::ir::TypeDecl::Object(model) if model.name == name => Some(model),
+                _ => None,
+            })
+            .expect("declared model");
+        assert_eq!(model.reach_refs, expected);
+        let files = crozier::emit::generate(&ir).unwrap();
+        assert!(files
+            .iter()
+            .any(|file| file.contents.contains(&format!("class {name}("))));
+    }
+}
+
+#[test]
 fn material_register_formats_keep_their_certified_scalar_types() {
     let spec = include_str!("../docs/openapi-surface/handwritten/material-register/openapi.yml");
     let files = render(spec);

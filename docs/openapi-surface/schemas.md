@@ -1728,3 +1728,15 @@ now `golden` on.
 | remote-document-local-pointer-resolved-against-root | both | External document component schema identity | handwritten | handwritten-e2e: tests/e2e/fixtures/models-refs-remote/library-records; test: remote_model_components_match_the_certified_fern_tree; evidence: [note](../fern-measurements/models-refs-remote/library-records/evidence.md); search: search-incomplete ([record](witness-search-models-refs/README.md#remote-component-identities)) |  |  |  |
 
 | remote-ref-at-use-site-inlined | both | External document component schema identity | handwritten | handwritten-e2e: tests/e2e/fixtures/models-refs-remote/library-records; test: remote_model_components_match_the_certified_fern_tree; evidence: [note](../fern-measurements/models-refs-remote/library-records/evidence.md); search: search-incomplete ([record](witness-search-models-refs/README.md#remote-component-identities)) |  |  |  |
+
+| allof-base-in-cycle-imported-after-class | both | Composed object schema | handwritten | handwritten: circuit-readings; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |
+
+| allof-child-of-cyclic-base-imports-base-deferred | both | Composed object schema | handwritten | handwritten: garden-crown; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |
+
+| allof-overlapping-ref-parents-flattened | both | Composed object schema | handwritten | handwritten: artefact-catalogue; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |
+
+| allof-single-ref-empty-properties-alias | both | Composed object schema | handwritten | handwritten: mineral-sample; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |
+
+| nullable-single-allof-ref-component-not-optional | both | Composed object schema | handwritten | handwritten: nullable-store; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |
+
+| allof-union-branch-not-schema-overrides-property | both | Composed object schema | handwritten | handwritten: sampling-branches; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |

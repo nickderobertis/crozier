@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "fb6eb40df91d019a385953373301088da3eacc9f059668eda3ec9a74c145e2e7"
+
+[[covers]]
+key = "allof-overlapping-ref-parents-flattened"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

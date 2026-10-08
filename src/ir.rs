@@ -1821,6 +1821,8 @@ pub struct ObjectType {
     /// Base classes. Empty means `UniversalBaseModel`; non-empty comes from an
     /// `allOf` whose `$ref` members become superclasses.
     pub bases: Vec<String>,
+    /// Cyclic parents flattened into fields, retained only for import/repair reach.
+    pub reach_refs: Vec<String>,
     /// Fields, in document order.
     pub fields: Vec<Field>,
     /// Wire names explicitly present in this object's schema-level example.
@@ -6065,6 +6067,7 @@ impl InlineHoister<'_> {
             fields.extend(inherited);
         }
         self.out.push(TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: name.to_string(),
             module: naming::module_name(name),
             bases,
@@ -9748,22 +9751,26 @@ impl Builder<'_> {
             return;
         }
 
-        // An `allOf` holding one `$ref` and NOTHING else is an annotated
+        // An `allOf` holding one `$ref` and no fields is an annotated
         // reference rather than inheritance: SFTPGo's `AdminTOTPConfig` is
         // `allOf: [$ref BaseTOTPConfig]` alone and its golden is
         // `AdminTotpConfig = BaseTotpConfig`, not a subclass. A sibling of any
-        // kind makes it a model that inherits — declared properties, an explicit
-        // `type: object`, or the `additionalProperties` that makes Strapi's
+        // kind makes it a model that inherits — nonempty declared properties, an explicit
+        // `type: object` without a properties map, or the `additionalProperties` that makes Strapi's
         // `Entry` a `class Entry(DocumentMeta)`.
         if schema.properties.is_empty()
             && schema.additional_properties.is_none()
-            && !is_object_type(schema)
+            && (!is_object_type(schema) || schema.properties.declared())
         {
             if let Some(reference) = single_all_of_ref(schema) {
                 self.push_alias(
                     name,
                     module,
-                    TypeRef::Named(ref_to_class(reference)),
+                    if schema.explicitly_nullable() {
+                        optional_type_ref(TypeRef::Named(ref_to_class(reference)))
+                    } else {
+                        TypeRef::Named(ref_to_class(reference))
+                    },
                     docstring,
                 );
                 return;
@@ -10052,7 +10059,17 @@ impl Builder<'_> {
         // A nullability-only member inlines every base (see
         // [`is_nullable_annotation`]).
         let nullable_annotation = schema.all_of.iter().flatten().any(is_nullable_annotation);
-        let collides = nullable_annotation
+        let mut parent_properties = std::collections::HashSet::new();
+        let overlapping_parents = base_refs.iter().any(|(_, base)| {
+            base.properties
+                .keys()
+                .any(|field| !parent_properties.insert(field))
+        });
+        let cyclic_parent = raw_bases
+            .iter()
+            .any(|base| schema_reaches_type(base, name, schemas));
+        let flatten_all = nullable_annotation || overlapping_parents || cyclic_parent;
+        let collides = flatten_all
             || base_refs.iter().any(|(_, base)| {
                 base.properties
                     .keys()
@@ -10083,7 +10100,9 @@ impl Builder<'_> {
                     let mut merged = Schema::default();
                     for branch in branches {
                         for (prop, prop_schema) in &branch.properties {
-                            merged.properties.insert(prop.clone(), prop_schema.clone());
+                            if !prop_schema.negative_only() {
+                                merged.properties.insert(prop.clone(), prop_schema.clone());
+                            }
                         }
                     }
                     if !merged.properties.is_empty() {
@@ -10152,7 +10171,7 @@ impl Builder<'_> {
                 inherited_by_base.push(inherited);
             }
             fields.retain(|field| !restated.contains(&field.wire_name));
-            overridden |= nullable_annotation;
+            overridden |= flatten_all;
         }
         let mut bases = Vec::new();
         if !overridden {
@@ -10174,7 +10193,7 @@ impl Builder<'_> {
             // A nullability-only member is the exception: the model is a flat
             // copy of every base, each read with its whole `allOf` chain, and
             // extends nothing (see [`is_nullable_annotation`]).
-            let inlined_by_base = if nullable_annotation {
+            let inlined_by_base = if flatten_all {
                 inherited_by_base
             } else {
                 let mut extended = Vec::new();
@@ -10235,6 +10254,12 @@ impl Builder<'_> {
             }
         }
         self.types.push(TypeDecl::Object(ObjectType {
+            reach_refs: base_refs
+                .iter()
+                .zip(&raw_bases)
+                .filter(|(_, base)| schema_reaches_type(base, name, schemas))
+                .map(|((base_name, _), _)| base_name.clone())
+                .collect(),
             name: name.to_string(),
             module,
             bases,
@@ -12395,6 +12420,38 @@ fn restates_without_conflict(own: &Field, field: &Field) -> bool {
         && own.docstring == field.docstring
 }
 
+/// A base reaching its prospective child cannot be imported as a superclass:
+/// the two modules must instead declare flat models and repair their fields.
+fn schema_reaches_type<'a>(
+    schema: &'a Schema,
+    target: &str,
+    schemas: &'a IndexMap<String, Schema>,
+) -> bool {
+    let mut pending = vec![schema];
+    let mut visited = std::collections::HashSet::new();
+    while let Some(node) = pending.pop() {
+        if let Some(reference) = node.reference.as_deref() {
+            if ref_to_class(reference) == target {
+                return true;
+            }
+            if visited.insert(reference) {
+                if let Some(resolved) = resolve_ref_from_schemas(schemas, reference) {
+                    pending.push(resolved);
+                }
+            }
+        }
+        pending.extend(node.properties.values());
+        pending.extend(node.items.iter().map(Box::as_ref));
+        pending.extend(node.all_of.iter().flatten());
+        pending.extend(node.one_of.iter().flatten());
+        pending.extend(node.any_of.iter().flatten());
+        if let Some(AdditionalProperties::Schema(value)) = &node.additional_properties {
+            pending.push(value);
+        }
+    }
+    false
+}
+
 /// `schema` with the properties and `required` of its whole `allOf` chain merged
 /// into its own, `$ref`s resolved, and the `allOf` itself dropped. A schema with
 /// no `allOf` comes back unchanged.
@@ -13722,6 +13779,7 @@ mod tests {
         let primitive = TypeRef::Primitive(Prim::Str);
         let types = vec![
             TypeDecl::Object(ObjectType {
+                reach_refs: Vec::new(),
                 name: "GrandBase".to_string(),
                 module: "grand_base".to_string(),
                 bases: Vec::new(),
@@ -13733,6 +13791,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Object(ObjectType {
+                reach_refs: Vec::new(),
                 name: "Base".to_string(),
                 module: "base".to_string(),
                 bases: vec!["GrandBase".to_string()],
@@ -13744,6 +13803,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Object(ObjectType {
+                reach_refs: Vec::new(),
                 name: "Child".to_string(),
                 module: "child".to_string(),
                 bases: vec!["Base".to_string()],

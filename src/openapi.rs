@@ -1044,6 +1044,9 @@ pub struct Schema {
     /// `allOf` members.
     #[serde(rename = "allOf", default, deserialize_with = "de_composition")]
     pub all_of: Option<Vec<Schema>>,
+    /// A negative-only union branch does not redeclare a positive property.
+    #[serde(rename = "not", default)]
+    pub(crate) not_schema: Option<serde_json::Value>,
     /// Human description; becomes a docstring.
     #[serde(default)]
     pub description: Option<String>,
@@ -1187,6 +1190,24 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+
+    /// The empty negative schema used to exclude a sibling union branch's field.
+    pub(crate) fn negative_only(&self) -> bool {
+        self.not_schema
+            .as_ref()
+            .and_then(serde_json::Value::as_object)
+            .is_some_and(serde_json::Map::is_empty)
+            && self.reference.is_none()
+            && self.ty.is_none()
+            && self.properties.is_empty()
+            && self.items.is_none()
+            && self.additional_properties.is_none()
+            && self.enum_values.is_none()
+            && self.const_value.is_none()
+            && self.all_of.is_none()
+            && self.one_of.is_none()
+            && self.any_of.is_none()
     }
 
     /// The declared Python name of the property this node is the value of,

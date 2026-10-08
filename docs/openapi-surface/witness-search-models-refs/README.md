@@ -85,3 +85,51 @@ departures. Remote acquisition does not introduce a new configuration setting.
 |---|---|---|
 | `remote-document-local-pointer-resolved-against-root` | `none-registrable` | No complete trigger in the committed-source renewal; independently authored Library Records multi-file HTTP proof. |
 | `remote-ref-at-use-site-inlined` | `none-registrable` | No complete trigger in the committed-source renewal; independently authored Library Records multi-file HTTP proof. |
+
+## Composition models
+
+The bounded APIs.guru screen at full revision
+`f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` found no accepted complete
+witnesses for these compositions. Nexmo Reports 2.2.2 declares overlapping
+parents, but Fern's whole-document generation refuses a date example. Komga's
+`SearchOperatorIsNotNullT` and `SearchOperatorIsNullT` are partial: their
+parents are discriminated unions carrying an `operator` field, rather than the
+ordinary object parents required by the trigger. Neither substitutes for an
+accepted complete witness. The remaining shapes had no complete candidate in
+that bounded screen.
+
+The 2026-10-08 renewal walks the 282 committed corpus documents, follows local
+schema references through their properties, arrays and compositions, and checks
+each complete trigger. The per-source hashes, counts and declaration paths are
+retained in `model-shapes.tsv`. These six triggers have no complete declaration
+in that population. Searches outside it remain incomplete. Fresh standalone
+fixtures recreate only the stated compositions. They are handwritten proofs,
+never publisher witnesses. Their complete certified trees use Fern CLI 5.67.1
+and `fernapi/fern-python-sdk` 5.20.0 with
+`pydantic_config.enum_type: python_enums`.
+
+| key | verdict | proof |
+|---|---|---|
+| `allof-base-in-cycle-imported-after-class` | `search-incomplete` | Independently authored `circuit-readings`; complete trigger absent from the committed-source renewal. |
+| `allof-child-of-cyclic-base-imports-base-deferred` | `search-incomplete` | Independently authored `garden-crown`; complete trigger absent from the committed-source renewal. |
+| `allof-overlapping-ref-parents-flattened` | `search-incomplete` | Independently authored `artefact-catalogue`; complete trigger absent from the committed-source renewal. |
+| `allof-single-ref-empty-properties-alias` | `search-incomplete` | Independently authored `mineral-sample`; complete trigger absent from the committed-source renewal. |
+| `nullable-single-allof-ref-component-not-optional` | `search-incomplete` | Independently authored `nullable-store`; complete trigger absent from the committed-source renewal. |
+| `allof-union-branch-not-schema-overrides-property` | `search-incomplete` | Independently authored `sampling-branches`; complete trigger absent from the committed-source renewal. |
+
+## Renewed composition search
+
+| key | result | proof |
+|---|---|---|
+| `allof-base-in-cycle-imported-after-class` | `none-registrable` | Committed-source renewal; independent `circuit-readings` proof. |
+| `allof-child-of-cyclic-base-imports-base-deferred` | `none-registrable` | Committed-source renewal; independent `garden-crown` proof. |
+| `allof-overlapping-ref-parents-flattened` | `none-registrable` | Committed-source renewal; independent `artefact-catalogue` proof. |
+| `allof-single-ref-empty-properties-alias` | `none-registrable` | Committed-source renewal; independent `mineral-sample` proof. |
+| `nullable-single-allof-ref-component-not-optional` | `none-registrable` | Committed-source renewal; independent `nullable-store` proof. |
+| `allof-union-branch-not-schema-overrides-property` | `none-registrable` | Committed-source renewal; independent `sampling-branches` proof. |
+
+The scoped composed-models real-binary test also compares every fixture under
+default literals mode against a separately certified complete tree under
+`docs/fern-measurements/models-refs-literals/<fixture>/fern-expected`. The
+source and pins are identical; only the enum setting differs. No enum declaration
+is substituted to make a mode pass.

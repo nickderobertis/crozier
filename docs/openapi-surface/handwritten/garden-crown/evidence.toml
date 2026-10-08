@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "a434f9514c74a2f9d27defdd8d7d476ec3de2158c952c437f8dbad3bb8f5ea09"
+
+[[covers]]
+key = "allof-child-of-cyclic-base-imports-base-deferred"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

@@ -970,6 +970,7 @@ fn decl_refs(decl: &TypeDecl) -> Vec<String> {
     match decl {
         TypeDecl::Object(o) => {
             out.extend(o.bases.iter().cloned());
+            out.extend(o.reach_refs.iter().cloned());
             for f in &o.fields {
                 collect_named_refs(&f.type_ref, &mut out);
             }
@@ -1004,6 +1005,7 @@ fn decl_annotation_refs(decl: &TypeDecl) -> Vec<String> {
     match decl {
         TypeDecl::Object(object) => {
             out.extend(object.bases.iter().cloned());
+            out.extend(object.reach_refs.iter().cloned());
             for field in &object.fields {
                 collect_named_refs(&field.type_ref, &mut out);
             }
@@ -1095,6 +1097,11 @@ fn forward_ref_map(
             !matches!(decl, TypeDecl::Alias(_) | TypeDecl::DiscriminatedUnion(_));
         let mut forward = HashSet::new();
         for r in decl_refs(decl) {
+            // A superclass must already be bound when Python executes the class
+            // statement; its own module repairs its recursive annotations.
+            if matches!(decl, TypeDecl::Object(object) if object.bases.contains(&r)) {
+                continue;
+            }
             // Render `r` as a string forward reference (deferred import) when it
             // closes a cycle back to this type, OR when `r` is itself recursive (in a
             // cycle of its own). Importing a recursive type eagerly can trip its
@@ -4104,6 +4111,7 @@ fn render_type_decl(
             // references and skip/defer their imports (issue #84).
             imports.forward = forward.clone();
             imports.forward.extend(repair.names.iter().cloned());
+            imports.forward.retain(|name| !obj.bases.contains(name));
             imports.cur_module = obj.module.clone();
             // A model's own pydantic `class Config` holds the name `Config`, so a
             // component of that name is imported under its package path: Hasura's
@@ -12841,6 +12849,7 @@ mod tests {
 
     fn object_of(name: &str, fields: Vec<(&str, TypeRef)>) -> TypeDecl {
         TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: name.to_string(),
             module: crate::naming::module_name(name),
             bases: Vec::new(),
@@ -13234,6 +13243,7 @@ mod tests {
     #[test]
     fn example_context_covers_composite_examples_and_type_matching_edges() {
         let payload = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Payload".to_string(),
             module: "payload".to_string(),
             bases: Vec::new(),
@@ -13247,6 +13257,7 @@ mod tests {
         let types = vec![
             payload,
             TypeDecl::Object(ObjectType {
+                reach_refs: Vec::new(),
                 name: "Event".to_string(),
                 module: "event".to_string(),
                 bases: Vec::new(),
@@ -13560,6 +13571,7 @@ mod tests {
     #[test]
     fn a_path_object_renders_measured_field_kinds_and_refuses_the_rest() {
         let inner = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Inner".to_string(),
             module: "inner".to_string(),
             bases: Vec::new(),
@@ -13586,6 +13598,7 @@ mod tests {
             docstring: None,
         });
         let base = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Base".to_string(),
             module: "base".to_string(),
             bases: Vec::new(),
@@ -13594,6 +13607,7 @@ mod tests {
             docstring: None,
         });
         let probe = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "ProbeParam".to_string(),
             module: "probe_param".to_string(),
             bases: vec!["Base".to_string()],
@@ -13637,6 +13651,7 @@ mod tests {
         // A required field that is itself a generated model is the one kind Fern
         // was measured dropping the whole example for.
         let nested = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Nested".to_string(),
             module: "nested".to_string(),
             bases: Vec::new(),
@@ -13675,6 +13690,7 @@ mod tests {
     #[test]
     fn an_endpoint_is_documented_unless_a_path_object_field_is_unrenderable() {
         let inner = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Inner".to_string(),
             module: "inner".to_string(),
             bases: Vec::new(),
@@ -13683,6 +13699,7 @@ mod tests {
             docstring: None,
         });
         let renderable = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Renderable".to_string(),
             module: "renderable".to_string(),
             bases: Vec::new(),
@@ -13691,6 +13708,7 @@ mod tests {
             docstring: None,
         });
         let unrenderable = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Unrenderable".to_string(),
             module: "unrenderable".to_string(),
             bases: Vec::new(),
@@ -13737,6 +13755,7 @@ mod tests {
     #[test]
     fn rendering_without_recording_leaves_the_import_set_untouched() {
         let probe = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "ProbeParam".to_string(),
             module: "probe_param".to_string(),
             bases: Vec::new(),
@@ -13774,6 +13793,7 @@ mod tests {
         let mut base_id = model_field("id", TypeRef::Primitive(Prim::Int), true);
         base_id.example = Some("7".to_string());
         let base = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Base".to_string(),
             module: "base".to_string(),
             bases: Vec::new(),
@@ -13792,6 +13812,7 @@ mod tests {
             true,
         );
         let child = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Child".to_string(),
             module: "child".to_string(),
             bases: vec!["Base".to_string()],

@@ -2480,6 +2480,48 @@ fn material_register_scalar_controls_reject_an_unexplained_mismatch() {
     );
 }
 
+#[test]
+fn composed_model_shapes_match_the_certified_fern_trees() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut all_failures = Vec::new();
+    for name in [
+        "circuit-readings",
+        "garden-crown",
+        "artefact-catalogue",
+        "mineral-sample",
+        "nullable-store",
+        "sampling-branches",
+    ] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
+        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let failures = filtered_tree_failures(
+            name,
+            &golden,
+            &fixture.join("openapi.yml"),
+            &fixture.join("fern-expected"),
+            &[],
+        );
+        all_failures.extend(failures);
+        let out = tempfile::tempdir().expect("composed literals SDK");
+        probe_command(&fixture.join("openapi.yml"), out.path())
+            .args(["--enum-type", "literals"])
+            .assert()
+            .success();
+        let literal_golden = format!("{MODELS_REFS_LITERALS_DIR}/{name}/fern-expected");
+        let ledger = departure_ledger()
+            .golden(&literal_golden, &[])
+            .expect("composed literals golden");
+        all_failures.extend(golden_tree_failures(
+            name,
+            &fixture.join("openapi.yml").display().to_string(),
+            &ledger,
+            &root.join(&literal_golden),
+            out.path(),
+        ));
+    }
+    assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
+}
+
 /// Every `date-time` value crozier's worked examples write over the
 /// `unread-date-time-examples` hand-written fixture is an instant
 /// `datetime.datetime.fromisoformat` reads: a UTC `YYYY-MM-DD[T ]HH:MM:SS+00:00`
