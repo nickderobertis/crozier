@@ -22,7 +22,7 @@ renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
 
 [[covers]]
 key = "parameter-in-query"
-arm = 'src/ir.rs::build_endpoint[default: p\.sdk_default]'
+arm = 'src/emit.rs::method_params[if let Some\(default\) = &qp\.default]'
 search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
