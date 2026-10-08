@@ -1,4 +1,9 @@
-"""Bind advertised arguments and execute actual flattened alias body methods."""
+# llmlint: ignore[new_code_lands_in_a_project] This certified-output proof is invoked by the Cargo e2e SDK-environment gate; crozier uses Cargo and just, with no Nx projects.
+"""Bind advertised arguments and execute actual flattened alias body methods.
+
+Exit 0 prints one JSON proof result; exit 1 means the proof or SDK import failed;
+exit 2 reports invalid CLI arguments on stderr.
+"""
 
 from __future__ import annotations
 
@@ -20,7 +25,7 @@ parser.add_argument("--expected", choices=("invalid", "valid"), required=True)
 args = parser.parse_args()
 sys.path.insert(0, str(args.sdk.resolve()))
 sdk = importlib.import_module("fern")
-parameters = re.findall(r"\*\*([a-z_]+):\*\* `([^`]+)`", args.reference.read_text())
+parameters = re.findall(r"\*\*([a-z_]+):\*\* `([^`]+)`", args.reference.read_text(encoding="utf-8"))
 parameters = [(name, annotation) for name, annotation in parameters if name != "request_options"]
 expected = [("request", "TitleAlias")] if args.expected == "invalid" else [("caption", "typing.Optional[str]"), ("ticket", "int")]
 parameters.sort()

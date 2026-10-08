@@ -2641,6 +2641,7 @@ fn multipart_object_encoding_matches_certified_output_in_both_enum_modes() {
     }
 }
 
+// llmlint: ignore[e2e_not_mocked] The real compiled CLI and actual emitted sync/async SDK are the boundary under test. httpx.MockTransport records their serialized HTTP requests and supplies responses, replacing only the external server as in the repository's SDK wire tier.
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
@@ -2690,7 +2691,173 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
     }
 }
 
-/// Named request representations match their complete certified tree.
+// llmlint: ignore[e2e_not_mocked] The real compiled CLI and actual emitted sync/async SDK are the boundary under test. httpx.MockTransport records their serialized HTTP requests and supplies responses, replacing only the external server as in the repository's SDK wire tier.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_multipart_json_module_survives_path_query_and_header_parameters() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let original: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            root.join("docs/openapi-surface/handwritten/multipart-alias-object/openapi.yml"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    for location in ["path", "query", "header"] {
+        for mode in ["python-enums", "literals"] {
+            let mut source = original.clone();
+            let paths = source["paths"].as_object_mut().unwrap();
+            let mut item = paths.remove("/plans").unwrap();
+            item["post"]["parameters"] = serde_json::json!([{
+                "name": "json", "in": location, "required": true,
+                "schema": { "type": "string" }
+            }]);
+            paths.insert(
+                if location == "path" {
+                    "/plans/{json}"
+                } else {
+                    "/plans"
+                }
+                .to_string(),
+                item,
+            );
+            if location == "header" {
+                paths.insert(
+                    "/health".to_string(),
+                    serde_json::json!({
+                        "get": { "operationId": "health", "responses": {
+                            "204": { "description": "Healthy" }
+                        }}
+                    }),
+                );
+            }
+            let input = tempfile::tempdir().unwrap();
+            let spec = input.path().join("openapi.json");
+            std::fs::write(&spec, serde_json::to_vec_pretty(&source).unwrap()).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            Command::new(&python)
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .arg(
+                    root.join("docs/departures/evidence/multipart-object-required-file-example.py"),
+                )
+                .arg(out.path().join("src"))
+                .args([
+                    "alias",
+                    "--examples",
+                    "valid",
+                    "--wire",
+                    "--json-parameter",
+                    location,
+                ])
+                .assert()
+                .success();
+        }
+    }
+}
+
+#[test]
+fn mixed_named_request_media_keep_the_single_operation_through_the_cli() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let original = std::fs::read_to_string(
+        root.join("docs/openapi-surface/handwritten/request-media-methods/openapi.yml"),
+    )
+    .unwrap();
+    for (omitted, blank_canonical) in [
+        ("append_card_note", false),
+        ("append_card_scan", false),
+        ("append_card_note", true),
+        ("append_card_scan", true),
+    ] {
+        let source = original.replace(
+            &format!("            x-fern-sdk-method-name: {omitted}\n"),
+            &if blank_canonical {
+                format!("            x-fern-sdk-method-name: {omitted}\n            x-crozier-sdk-method-name: \"   \"\n")
+            } else { String::new() },
+        );
+        let input = tempfile::tempdir().unwrap();
+        let spec = input.path().join("openapi.yml");
+        std::fs::write(&spec, source).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(out.path())
+            .args(["--package-name", "fern"])
+            .assert()
+            .success();
+        let client = std::fs::read_to_string(out.path().join("src/fern/raw_client.py")).unwrap();
+        assert!(client.contains("def append_card("), "{omitted}: {client}");
+        assert!(!client.contains("def append_card_note("), "{omitted}");
+        assert!(!client.contains("def append_card_scan("), "{omitted}");
+        assert!(client.contains("content=request,"), "{omitted}");
+    }
+}
+
+#[test]
+fn alias_reference_scope_controls_keep_their_reference_body_through_the_cli() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let original: serde_json::Value = serde_yaml_ng::from_str(
+        &std::fs::read_to_string(
+            root.join("docs/openapi-surface/handwritten/request-alias/openapi.yml"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    for properties in [
+        serde_json::json!({}),
+        serde_json::json!({"request": {"type": "string"}}),
+    ] {
+        let mut source = original.clone();
+        source["components"]["schemas"]["Title"]["properties"] = properties.clone();
+        source["components"]["schemas"]["Title"]
+            .as_object_mut()
+            .unwrap()
+            .remove("required");
+        let input = tempfile::tempdir().unwrap();
+        let spec = input.path().join("openapi.json");
+        std::fs::write(&spec, serde_json::to_vec_pretty(&source).unwrap()).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(out.path())
+            .args(["--package-name", "fern"])
+            .assert()
+            .success();
+        let client = std::fs::read_to_string(out.path().join("src/fern/raw_client.py")).unwrap();
+        assert!(
+            client.contains("def retitle_manifest("),
+            "{properties}: {client}"
+        );
+        if !properties.as_object().unwrap().is_empty() {
+            assert!(client.contains("request: typing.Optional[str]"), "{client}");
+        }
+        let reference = std::fs::read_to_string(out.path().join("reference.md")).unwrap();
+        assert!(
+            reference.contains("**request:** `TitleAlias`"),
+            "{properties}: {reference}"
+        );
+    }
+}
+
 #[test]
 fn named_request_media_match_certified_output_and_canonical_extensions() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -2717,13 +2884,27 @@ fn named_request_media_match_certified_output_and_canonical_extensions() {
                 assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
             }
             let ledger = departure_ledger().golden(&golden, &[]).unwrap();
-            for spelling in ["fern", "crozier", "conflicting"] {
+            for spelling in [
+                "fern",
+                "crozier",
+                "conflicting",
+                "fern-padded",
+                "crozier-padded",
+            ] {
                 let source = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
                 let source = match spelling {
                     "crozier" => source.replace("x-fern-sdk-method-name", "x-crozier-sdk-method-name"),
                     "conflicting" => source
                         .replace("x-fern-sdk-method-name: append_card_note", "x-fern-sdk-method-name: ignored_json\n            x-crozier-sdk-method-name: append_card_note")
                         .replace("x-fern-sdk-method-name: append_card_scan", "x-fern-sdk-method-name: ignored_scan\n            x-crozier-sdk-method-name: append_card_scan"),
+                    "fern-padded" | "crozier-padded" => {
+                        let padded = source
+                            .replace(": append_card_note", ": \"  append_card_note  \"")
+                            .replace(": append_card_scan", ": \"  append_card_scan  \"");
+                        if spelling == "crozier-padded" {
+                            padded.replace("x-fern-sdk-method-name", "x-crozier-sdk-method-name")
+                        } else { padded }
+                    }
                     _ => source,
                 };
                 let input = tempfile::tempdir().unwrap();
@@ -2766,6 +2947,14 @@ fn named_request_media_match_certified_output_and_canonical_extensions() {
                     "{failures:?}"
                 );
                 let invalid = source
+                    .replace(
+                        "x-crozier-sdk-method-name: \"  append_card_note  \"",
+                        "x-crozier-sdk-method-name: [invalid]",
+                    )
+                    .replace(
+                        "x-fern-sdk-method-name: \"  append_card_note  \"",
+                        "x-fern-sdk-method-name: [invalid]",
+                    )
                     .replace(
                         "x-crozier-sdk-method-name: append_card_note",
                         "x-crozier-sdk-method-name: [invalid]",
@@ -2885,11 +3074,18 @@ fn multipart_nullable_and_array_body_shapes_match_certified_output_in_both_enum_
     }
 }
 
+// llmlint: ignore[e2e_not_mocked] The real compiled CLI and actual emitted sync/async SDK are the boundary under test. httpx.MockTransport records their serialized HTTP requests and supplies responses, replacing only the external server as in the repository's SDK wire tier.
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let python = runtime_python_env().expect("SDK runtime environment");
+    let script = root.join("tests/e2e/multipart_nullable_wire.py");
+    Command::new(&python)
+        .arg(&script)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains("required: sdk_src"));
     for mode in ["python-enums", "literals"] {
         let out = tempfile::tempdir().unwrap();
         crozier_clean_env()
@@ -2908,8 +3104,16 @@ fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
             .assert()
             .success();
         Command::new(&python)
+            .arg(&script)
+            .arg(out.path().join("missing-sdk"))
+            .assert()
+            .code(2)
+            .stderr(predicate::str::contains(
+                "must contain the generated fern package",
+            ));
+        Command::new(&python)
             .env("PYTHONDONTWRITEBYTECODE", "1")
-            .arg(root.join("tests/e2e/multipart_nullable_wire.py"))
+            .arg(&script)
             .arg(out.path().join("src"))
             .assert()
             .success();
@@ -3057,6 +3261,7 @@ fn alias_object_request_matches_certified_output_in_both_enum_modes() {
     }
 }
 
+// llmlint: ignore[e2e_not_mocked] The real compiled CLI and actual emitted sync/async SDK are the boundary under test. httpx.MockTransport records their serialized HTTP requests and supplies responses, replacing only the external server as in the repository's SDK wire tier.
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_alias_body_reference_matches_the_actual_flattened_signature() {
@@ -3237,6 +3442,7 @@ fn json_request_shapes_match_certified_output_in_both_enum_modes() {
     }
 }
 
+// llmlint: ignore[e2e_not_mocked] The real compiled CLI and actual emitted sync/async SDK are the boundary under test. httpx.MockTransport records their serialized HTTP requests and supplies responses, replacing only the external server as in the repository's SDK wire tier.
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {

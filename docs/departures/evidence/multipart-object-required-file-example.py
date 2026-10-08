@@ -1,4 +1,9 @@
-"""Bind generated examples and drive actual multipart methods at HTTP transport."""
+# llmlint: ignore[new_code_lands_in_a_project] This certified-output proof is invoked by the Cargo e2e SDK-environment gate; crozier uses Cargo and just, with no Nx projects.
+"""Bind generated examples and drive actual multipart methods at HTTP transport.
+
+Exit 0 prints one JSON proof result; exit 1 means the proof or SDK import failed;
+exit 2 reports invalid CLI arguments on stderr.
+"""
 
 from __future__ import annotations
 
@@ -14,7 +19,7 @@ from email import policy
 from email.parser import BytesParser
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable
+from typing import Callable
 
 import httpx
 
@@ -50,16 +55,23 @@ def examples(sdk: ModuleType, method: str, expected: str) -> dict[str, str]:
     return results
 
 
-def wire(sdk: ModuleType, shape: str) -> None:
+def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None) -> None:
     recorded: list[httpx.Request] = []
     payload = b"cartography payload\x00\xff"
     file = ("payload.bin", payload, "application/octet-stream")
     method = "store_plan" if shape == "alias" else "store_survey"
     field = "plan" if shape == "alias" else "json"
     model = getattr(sdk, "PlanAlias" if shape == "alias" else "StoreSurveyRequestJson")
+    parameters = {"json": "parameter-value"} if json_parameter is not None else {}
 
     def handle(request: httpx.Request) -> httpx.Response:
         recorded.append(request)
+        if json_parameter == "path":
+            assert request.url.path == "/plans/parameter-value"
+        elif json_parameter == "query":
+            assert request.url.params["json"] == "parameter-value"
+        elif json_parameter == "header":
+            assert request.headers["json"] == "parameter-value"
         content_type = request.headers["content-type"]
         assert content_type.startswith("multipart/form-data; boundary=")
         message = BytesParser(policy=policy.default).parsebytes(
@@ -79,10 +91,10 @@ def wire(sdk: ModuleType, shape: str) -> None:
             assert parts["attachment"].get_payload(decode=True) == payload
         return httpx.Response(204)
 
-    def missing_file(function: Callable[..., Any]) -> None:
+    def missing_file(function: Callable[..., None]) -> None:
         before = len(recorded)
         try:
-            function(**{field: model(bearing=73)})
+            function(**{field: model(bearing=73)}, **parameters)
         except TypeError as error:
             assert "attachment" in str(error)
         else:
@@ -93,7 +105,7 @@ def wire(sdk: ModuleType, shape: str) -> None:
         client = getattr(sdk, "FernApi")(base_url="https://wire.example.test", httpx_client=transport)
         function = getattr(client, method)
         missing_file(function)
-        assert function(**{field: model(bearing=73), "attachment": file}) is None
+        assert function(**{field: model(bearing=73), "attachment": file}, **parameters) is None
         if shape == "json":
             assert client.store_metadata(metadata=getattr(sdk, "StoreMetadataRequestMetadata")(bearing=82)) is None
 
@@ -103,13 +115,13 @@ def wire(sdk: ModuleType, shape: str) -> None:
             function = getattr(client, method)
             before = len(recorded)
             try:
-                await function(**{field: model(bearing=73)})
+                await function(**{field: model(bearing=73)}, **parameters)
             except TypeError as error:
                 assert "attachment" in str(error)
             else:
                 raise AssertionError("an async required file was silently omitted")
             assert len(recorded) == before
-            assert await function(**{field: model(bearing=73), "attachment": file}) is None
+            assert await function(**{field: model(bearing=73), "attachment": file}, **parameters) is None
             if shape == "json":
                 value = getattr(sdk, "StoreMetadataRequestMetadata")(bearing=82)
                 assert await client.store_metadata(metadata=value) is None
@@ -124,17 +136,23 @@ def main() -> None:
     parser.add_argument("shape", choices=("alias", "json"))
     parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
     parser.add_argument("--wire", action="store_true")
+    parser.add_argument("--json-parameter", choices=("path", "query", "header"))
     args = parser.parse_args()
+    if args.json_parameter is not None and (args.shape != "alias" or not args.wire):
+        parser.error("--json-parameter requires the alias shape and --wire")
     if not (args.sdk_src / "fern" / "__init__.py").is_file():
         parser.error("sdk_src must contain the generated fern package")
     sys.path.insert(0, str(args.sdk_src.resolve()))
     sdk = importlib.import_module("fern")
     if args.wire:
-        wire(sdk, args.shape)
+        wire(sdk, args.shape, args.json_parameter)
     results = examples(sdk, "store_plan" if args.shape == "alias" else "store_survey", args.examples)
     if args.shape == "json":
         results.update(examples(sdk, "store_metadata", "valid"))
-    print(json.dumps({"shape": args.shape, "wire": args.wire, "examples": results}, sort_keys=True))
+    result = {"shape": args.shape, "wire": args.wire, "examples": results}
+    if args.json_parameter is not None:
+        result["json_parameter"] = args.json_parameter
+    print(json.dumps(result, sort_keys=True))
 
 
 if __name__ == "__main__":

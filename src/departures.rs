@@ -429,19 +429,30 @@ impl Context {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct MethodKey {
+    raw_client_path: String,
+    method_name: String,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ExampleSide {
+    Reference,
+    Corrected,
+}
+
 #[derive(Debug, Default)]
 struct RequestExampleContext {
-    binary_json_methods: BTreeSet<(String, String)>,
+    binary_json_methods: BTreeSet<MethodKey>,
     alias_fields: std::collections::BTreeMap<String, BTreeSet<String>>,
     method_parameters: std::collections::BTreeMap<
-        (String, String),
+        MethodKey,
         std::collections::BTreeMap<String, GeneratedParameter>,
     >,
-    json_object_methods: BTreeSet<(String, String)>,
+    json_object_methods: BTreeSet<MethodKey>,
     object_aliases: BTreeSet<String>,
-    encoded_fields: std::collections::BTreeMap<(String, String), BTreeSet<String>>,
-    wire_fields:
-        std::collections::BTreeMap<(String, String), std::collections::BTreeMap<String, String>>,
+    encoded_fields: std::collections::BTreeMap<MethodKey, BTreeSet<String>>,
+    wire_fields: std::collections::BTreeMap<MethodKey, std::collections::BTreeMap<String, String>>,
 }
 
 #[derive(Debug, Default)]
@@ -648,8 +659,13 @@ fn request_example_context<'a>(
         .filter(|(rel, _)| *rel == "raw_client.py" || rel.ends_with("/raw_client.py"))
     {
         for (method, fields) in generated_method_parameters(text) {
-            out.method_parameters
-                .insert(((*rel).to_string(), method), fields);
+            out.method_parameters.insert(
+                MethodKey {
+                    raw_client_path: (*rel).to_string(),
+                    method_name: method,
+                },
+                fields,
+            );
         }
         let mut method = None;
         let mut signature = false;
@@ -661,7 +677,10 @@ fn request_example_context<'a>(
             let Some(method) = method else {
                 continue;
             };
-            let key = ((*rel).to_string(), method.to_string());
+            let key = MethodKey {
+                raw_client_path: (*rel).to_string(),
+                method_name: method.to_string(),
+            };
             if signature
                 && compact_python(&[line])
                     .split(',')
@@ -772,7 +791,7 @@ fn multipart_example_lines<'a>(
     lines: &'a [&'a str],
     raw_rel: &str,
     context: &RequestExampleContext,
-    remove_files: bool,
+    side: ExampleSide,
 ) -> Option<(Vec<String>, bool)> {
     let mut kept = Vec::new();
     let mut signature = Vec::new();
@@ -801,7 +820,10 @@ fn multipart_example_lines<'a>(
                         python_identifier(name).then_some((name, annotation))
                     })
                     .collect();
-                let key = (raw_rel.to_string(), method.to_string());
+                let key = MethodKey {
+                    raw_client_path: raw_rel.to_string(),
+                    method_name: method.to_string(),
+                };
                 if let (Some(encoded), Some(wires)) = (
                     context.encoded_fields.get(&key),
                     context.wire_fields.get(&key),
@@ -855,7 +877,7 @@ fn multipart_example_lines<'a>(
                     let args: Vec<_> = arguments
                         .into_iter()
                         .filter(|argument| {
-                            if remove_files && allowed.contains(*argument) {
+                            if side == ExampleSide::Corrected && allowed.contains(*argument) {
                                 removed = true;
                                 false
                             } else {
@@ -889,10 +911,13 @@ fn multipart_object_required_file_example(pair: &Pair<'_>) -> Result<Option<Regi
     }
     let raw_rel = format!("{prefix}raw_client.py");
     let context = pair.context.request_examples();
-    let Some((reference, _)) = multipart_example_lines(pair.fern, &raw_rel, context, false) else {
+    let Some((reference, _)) =
+        multipart_example_lines(pair.fern, &raw_rel, context, ExampleSide::Reference)
+    else {
         return Ok(None);
     };
-    let Some((corrected, removed)) = multipart_example_lines(pair.crozier, &raw_rel, context, true)
+    let Some((corrected, removed)) =
+        multipart_example_lines(pair.crozier, &raw_rel, context, ExampleSide::Corrected)
     else {
         return Ok(None);
     };
@@ -907,7 +932,7 @@ fn binary_json_example_lines(
     lines: &[&str],
     rel: &str,
     context: &RequestExampleContext,
-    corrected: bool,
+    side: ExampleSide,
 ) -> Option<(Vec<String>, bool)> {
     let reference = rel == "reference.md";
     let readme = rel == "README.md";
@@ -935,8 +960,10 @@ fn binary_json_example_lines(
                         after.split_once("</a>").map(|(name, _)| (path, name))
                     })
                     .and_then(|(path, name)| {
-                        path.strip_suffix("client.py")
-                            .map(|prefix| (format!("{prefix}raw_client.py"), name.to_string()))
+                        path.strip_suffix("client.py").map(|prefix| MethodKey {
+                            raw_client_path: format!("{prefix}raw_client.py"),
+                            method_name: name.to_string(),
+                        })
                     })
                     .filter(|key| context.binary_json_methods.contains(key));
             }
@@ -944,7 +971,10 @@ fn binary_json_example_lines(
             if let Some(name) = python_method_name(line) {
                 method = raw
                     .as_ref()
-                    .map(|raw| (raw.clone(), name.to_string()))
+                    .map(|raw| MethodKey {
+                        raw_client_path: raw.clone(),
+                        method_name: name.to_string(),
+                    })
                     .filter(|key| context.binary_json_methods.contains(key));
                 doc = false;
                 example = false;
@@ -966,8 +996,9 @@ fn binary_json_example_lines(
                 context
                     .binary_json_methods
                     .iter()
-                    .find(|(raw, name)| {
-                        let prefix = raw
+                    .find(|key| {
+                        let prefix = key
+                            .raw_client_path
                             .strip_suffix("raw_client.py")
                             .unwrap_or("")
                             .trim_end_matches('/');
@@ -978,9 +1009,9 @@ fn binary_json_example_lines(
                             })
                             .replace('/', ".");
                         let expected = if module.is_empty() {
-                            name.clone()
+                            key.method_name.clone()
                         } else {
-                            format!("{module}.{name}")
+                            format!("{module}.{}", key.method_name)
                         };
                         qualified == expected
                     })
@@ -994,7 +1025,7 @@ fn binary_json_example_lines(
         if (reference || readme || doc && example)
             && method
                 .as_ref()
-                .is_some_and(|(_, name)| call_method == Some(name))
+                .is_some_and(|key| call_method == Some(key.method_name.as_str()))
         {
             let mut end = index;
             loop {
@@ -1003,7 +1034,7 @@ fn binary_json_example_lines(
                     let arguments: Vec<_> = arguments
                         .into_iter()
                         .map(|argument| {
-                            if corrected && argument == "request=b\"string\"" {
+                            if side == ExampleSide::Corrected && argument == "request=b\"string\"" {
                                 changed = true;
                                 "request=\"string\""
                             } else {
@@ -1021,7 +1052,11 @@ fn binary_json_example_lines(
                 }
             }
         } else {
-            if reference && method.is_some() && corrected && line.trim() == "**request:** `bytes`" {
+            if reference
+                && method.is_some()
+                && side == ExampleSide::Corrected
+                && line.trim() == "**request:** `bytes`"
+            {
                 kept.push(line.replace("**request:** `bytes`", "**request:** `str`"));
                 changed = true;
             } else {
@@ -1044,12 +1079,13 @@ fn binary_json_body_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         return Ok(None);
     }
     let context = pair.context.request_examples();
-    let Some((reference, _)) = binary_json_example_lines(pair.fern, pair.rel, context, false)
+    let Some((reference, _)) =
+        binary_json_example_lines(pair.fern, pair.rel, context, ExampleSide::Reference)
     else {
         return Ok(None);
     };
     let Some((corrected, changed)) =
-        binary_json_example_lines(pair.crozier, pair.rel, context, true)
+        binary_json_example_lines(pair.crozier, pair.rel, context, ExampleSide::Corrected)
     else {
         return Ok(None);
     };
@@ -1058,13 +1094,16 @@ fn binary_json_body_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         .flatten())
 }
 
-fn reference_method_key(line: &str) -> Option<(String, String)> {
+fn reference_method_key(line: &str) -> Option<MethodKey> {
     let (_, after) = line.split_once("<details><summary><code>client.")?;
     let (_, after) = after.split_once("<a href=\"")?;
     let (path, after) = after.split_once("\">")?;
     let (name, _) = after.split_once("</a>")?;
     let prefix = path.strip_suffix("client.py")?;
-    Some((format!("{prefix}raw_client.py"), name.to_string()))
+    Some(MethodKey {
+        raw_client_path: format!("{prefix}raw_client.py"),
+        method_name: name.to_string(),
+    })
 }
 
 /// One parameter's complete HTML block, including its description and separator.
@@ -1141,7 +1180,7 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
         return Ok(None);
     }
     let mut corrected = Vec::new();
-    let mut seen: std::collections::BTreeMap<(String, String), BTreeSet<String>> =
+    let mut seen: std::collections::BTreeMap<MethodKey, BTreeSet<String>> =
         std::collections::BTreeMap::new();
     method = None;
     index = 0;

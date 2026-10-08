@@ -1,4 +1,9 @@
-"""Check example types against actual generated SDK annotations and JSON transport."""
+# llmlint: ignore[new_code_lands_in_a_project] This certified-output proof is invoked by the Cargo e2e SDK-environment gate; crozier uses Cargo and just, with no Nx projects.
+"""Check example types against actual generated SDK annotations and JSON transport.
+
+Exit 0 prints one JSON proof result; exit 1 means the proof or SDK import failed;
+exit 2 reports invalid CLI arguments on stderr.
+"""
 from __future__ import annotations
 
 import argparse
