@@ -39,6 +39,9 @@ case "${1:-}" in
     ;;
 esac
 
+# Every build and corpus run below stops the stage on its own failure; this names
+# which one, after cargo's own error.
+trap 'status=$?; echo "corpus-match: \`$BASH_COMMAND\` exited $status — fix the build or corpus failure above (a first build fetches crates, so it needs network once), then re-run" >&2' ERR
 cargo build --locked --quiet -p crozier --bin crozier
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e query_parameters_matches_fern_output_byte_for_byte
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e exhaustive_matches_fern_output_byte_for_byte

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -27,6 +28,18 @@ class MatchUsage(unittest.TestCase):
                 self.assertEqual(2, result.returncode, result.stderr)
                 self.assertEqual(f"corpus-match: {named} — usage: tests/corpus_match/match.sh [--strict]\n",
                                  result.stderr)
+
+    def test_a_build_that_fails_is_named_after_cargos_own_error(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            # The real cargo, told to build into a path that is a regular file.
+            blocker = Path(scratch) / "not-a-directory"
+            blocker.write_text("", encoding="utf-8")
+            result = subprocess.run(["bash", str(REPO / "tests" / "corpus_match" / "match.sh")],
+                                    capture_output=True, text=True, timeout=600,
+                                    env={**os.environ, "CARGO_TARGET_DIR": str(blocker)})
+        self.assertEqual(101, result.returncode, result.stderr)
+        self.assertIn("corpus-match: `cargo build --locked --quiet -p crozier --bin crozier` exited 101", result.stderr)
+        self.assertIn("then re-run", result.stderr)
 
 
 if __name__ == "__main__":

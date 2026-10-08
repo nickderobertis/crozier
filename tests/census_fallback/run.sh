@@ -38,6 +38,19 @@ pinned() {
   printf '%s\n' "$pin"
 }
 
+# One fallback suite under its pinned parser; uv's own error, or the suite's, is
+# printed above this line.
+suite() {
+  local pin="$1"
+  shift
+  uv run --no-project --with "$pin" "$@" || {
+    local status=$?
+    echo "census-fallback: $* exited $status under $pin — if uv could not install $pin, check" \
+         "that PyPI is reachable; otherwise fix the failing test above, then re-run" >&2
+    exit "$status"
+  }
+}
+
 case "${1:-}" in
   samples|parsers)
     [ "$#" -eq 1 ] || {
@@ -50,16 +63,13 @@ case "${1:-}" in
   samples)
     search_pin="$(pinned tools/surface-census/golden-reach-search.py)"
     python3 tools/corpus/corpus_sources.py check
-    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$search_pin" \
-      python3 tests/census_fallback/golden_reach_census_fallback_test.py
+    CROZIER_REQUIRE_CORPUS=1 suite "$search_pin" python3 tests/census_fallback/golden_reach_census_fallback_test.py
     ;;
   parsers)
     search_pin="$(pinned tools/surface-census/golden-reach-search.py)"
     recensus_pin="$(pinned tools/witness-search/witness-search-recensus.py)"
-    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$search_pin" \
-      python3 tools/surface-census/tests/golden_reach_test.py
-    uv run --no-project --with "$recensus_pin" \
-      python3 tools/witness-search/tests/witness_search_recensus_test.py
+    CROZIER_REQUIRE_CORPUS=1 suite "$search_pin" python3 tools/surface-census/tests/golden_reach_test.py
+    suite "$recensus_pin" python3 tools/witness-search/tests/witness_search_recensus_test.py
     ;;
   pin)
     [ "$#" -eq 2 ] || {
