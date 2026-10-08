@@ -7763,7 +7763,7 @@ fn success_response_schema(op: &Operation) -> Option<&Schema> {
 }
 
 /// Whether a response declares at least one media type that names both a type and
-/// a subtype (or declares no body at all). Eozilla puts `executeProcess`'s `200`
+/// a subtype, a JSON-like suffix, or no body at all. Eozilla puts `executeProcess`'s `200`
 /// under the malformed media type `/*`, which nothing can dispatch on: Fern skips
 /// that response entirely and types the operation from the next `2xx` — the `201`
 /// carrying `JobInfo`, description and all — rather than reading it as a bodyless
@@ -7771,6 +7771,9 @@ fn success_response_schema(op: &Operation) -> Option<&Schema> {
 fn has_dispatchable_media(response: &Response) -> bool {
     response.content.is_empty()
         || response.content.keys().any(|media| {
+            if !media.contains('/') && is_json_like_media_type(media) {
+                return true;
+            }
             media
                 .split_once('/')
                 .is_some_and(|(ty, subtype)| !ty.is_empty() && !subtype.is_empty())
@@ -19132,6 +19135,27 @@ mod tests {
         )
         .expect("the config is well formed");
         super::build(&doc, &config)
+    }
+
+    #[test]
+    fn slashless_json_media_dispatches_but_an_untyped_key_does_not() {
+        for (media, dispatches) in [
+            ("vnd.observatory+json;version=2", true),
+            ("readings", false),
+        ] {
+            let ir = build_document(serde_json::json!({
+                "openapi": "3.0.3", "info": { "title": "Observatory", "version": "1" },
+                "paths": { "/latest": { "get": { "operationId": "latest",
+                    "responses": { "200": { "description": "latest", "content": {
+                        media: { "schema": { "$ref": "#/components/schemas/Observation" } }
+                    } } }
+                } } },
+                "components": { "schemas": { "Observation": {
+                    "type": "object", "properties": { "reading": { "type": "integer" } }
+                } } }
+            }));
+            assert_eq!(ir.endpoints[0].response.is_some(), dispatches, "{media}");
+        }
     }
 
     #[test]

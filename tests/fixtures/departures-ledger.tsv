@@ -22,6 +22,12 @@ docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expecte
 docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	README.md	40	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	reference.md	20	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -490,6 +496,11 @@ docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected	src/fer
 docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/slashless-json-response/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/slashless-json-response/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/slashless-json-response/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/slashless-json-response/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/slashless-json-response/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/sonar-packet-envelope/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/sonar-packet-envelope/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/sonar-packet-envelope/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

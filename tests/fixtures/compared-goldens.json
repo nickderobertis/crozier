@@ -2,6 +2,7 @@
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
     "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},
@@ -87,6 +88,7 @@
     "docs/openapi-surface/handwritten/request-example-nulls/fern-expected": {},
     "docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected": {},
     "docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected": {},
+    "docs/openapi-surface/handwritten/slashless-json-response/fern-expected": {},
     "docs/openapi-surface/handwritten/sonar-packet-envelope/fern-expected": {},
     "docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected": {},
     "docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected": {},

@@ -2547,6 +2547,33 @@ fn byte_text_response_dispatch_controls_match_certified_output() {
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
+#[test]
+fn slashless_json_response_matches_certified_output_in_both_enum_modes() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixture = root.join("docs/openapi-surface/handwritten/slashless-json-response");
+    for (mode, golden) in [
+        ("python-enums", "docs/openapi-surface/handwritten/slashless-json-response/fern-expected"),
+        ("literals", "docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected"),
+    ] {
+        let expected = root.join(golden);
+        if mode == "literals" {
+            let evidence = std::fs::read_to_string(expected.parent().unwrap().join("evidence.md")).unwrap();
+            let declared = evidence.split_once("Canonical tree SHA-256: `").unwrap().1.split('`').next().unwrap();
+            assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+        }
+        let ledger = departure_ledger().golden(golden, &[]).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(fixture.join("openapi.yml"))
+            .arg("--output").arg(out.path())
+            .args(["--package-name", "fern", "--project-name", "default_package_name", "--enum-type", mode])
+            .assert().success();
+        let failures = golden_tree_failures(mode, "slashless JSON response", &ledger, &expected, out.path());
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+}
+
 /// Every `date-time` value crozier's worked examples write over the
 /// `unread-date-time-examples` hand-written fixture is an instant
 /// `datetime.datetime.fromisoformat` reads: a UTC `YYYY-MM-DD[T ]HH:MM:SS+00:00`
