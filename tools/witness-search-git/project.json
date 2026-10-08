@@ -1,0 +1,41 @@
+{
+  "name": "witness-search-git",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh scripts/census-python.sh tools/witness-search-git/tests/witness_search_git_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/witness-search/**/*",
+        "{workspaceRoot}/.gitignore",
+        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/surface-census/*.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs witness-search-git"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

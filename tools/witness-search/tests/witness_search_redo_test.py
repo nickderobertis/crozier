@@ -879,8 +879,8 @@ class WitnessSearchRedoTests(unittest.TestCase):
                     message, self.reconcile_documents(completed, bad_schemas).stderr
                 )
 
-class WideWitnessTests(unittest.TestCase):
-    """Acquire pinned bytes and validate reports through the actual CLI boundary."""
+class WideWitnessFixture:
+    """A scratch report and contract, and the wide-witness CLI run over them."""
 
     contract_keys = WitnessSearchRedoTests.contract_keys
     completed_documents = WitnessSearchRedoTests.completed_documents
@@ -918,6 +918,11 @@ class WideWitnessTests(unittest.TestCase):
 
     def validate(self, *args) -> subprocess.CompletedProcess[str]:
         return self.cli('validate', '--report', self.report, *args)
+
+
+
+class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
+    """Acquire pinned bytes and validate reports through the actual CLI boundary."""
 
     def test_diagnostics_survive_legacy_child_encoding(self) -> None:
         inventory = self.work / 'inventaire-é.json'
@@ -1511,78 +1516,6 @@ class WideWitnessTests(unittest.TestCase):
         recovered = self.cli(*args)
         self.assertEqual(0, recovered.returncode, recovered.stderr)
         self.assertEqual(0, json.loads(output.read_text(encoding='utf-8'))['census_exit'])
-
-    def test_index_tree_joins_every_version_to_verified_git_bytes(self) -> None:
-        import hashlib
-        tree = self.work / 'tree'
-        tree.mkdir()
-        def git(*args):
-            return subprocess.run(['git', '-C', str(tree), *args], capture_output=True, errors="backslashreplace", encoding='utf-8', check=True)
-        git('init', '-q')
-        # The fixture represents literal publisher bytes, independent of the
-        # host's Git defaults. The CRLF rejection is exercised explicitly below.
-        git('config', 'core.autocrlf', 'false')
-        git('config', 'user.name', 'Witness test')
-        git('config', 'user.email', 'witness@example.invalid')
-        path = tree / 'APIs/publisher/1/openapi.yaml'
-        path.parent.mkdir(parents=True)
-        path.write_bytes('openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n'.encode('utf-8'))
-        git('add', 'APIs')
-        git('commit', '-qm', 'test: record publisher tree')
-        pin = git('rev-parse', 'HEAD').stdout.strip()
-        index = self.work / 'list.json'
-        index.write_text(json.dumps({'publisher': {'versions': {
-            '1': {'swaggerUrl': 'https://api.apis.guru/v2/specs/publisher/1/openapi.json', 'swaggerYamlUrl': 'https://api.apis.guru/v2/specs/publisher/1/openapi.yaml'},
-            '2': {'swaggerUrl': 'https://api.apis.guru/v2/specs/publisher/2/openapi.json'}
-        }}}), encoding='utf-8')
-        output = self.work / 'associated.json'
-        args = ('index-tree', '--index', index, '--index-sha256', hashlib.sha256(index.read_bytes()).hexdigest(),
-                '--tree', tree, '--ref', pin, '--prior-ref', pin, '--local-paths', '--output', output)
-        wrong_pin = list(args)
-        wrong_pin[wrong_pin.index('--ref') + 1] = '0' * 40
-        refused = self.cli(*wrong_pin)
-        self.assertNotEqual(0, refused.returncode)
-        self.assertIn('tree commit differs from the requested pin', refused.stderr)
-        self.assertFalse(output.exists())
-        result = self.cli(*args)
-        self.assertEqual(0, result.returncode, result.stderr)
-        measured = json.loads(output.read_text(encoding='utf-8'))
-        self.assertEqual(1, measured['schema_version'])
-        self.assertEqual(2, len(measured['sources']))
-        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), measured['sources'][0]['prior_sha256'])
-        self.assertIn('absent from pinned', measured['sources'][1]['tree_diagnostic'])
-        self.assertEqual(str(path.resolve()), measured['sources'][0].get('local_path'))
-        local_inventory = self.work / 'local-inventory.json'
-        local_inventory.write_text(json.dumps({'schema_version': 1, 'sources': [measured['sources'][0]]}), encoding='utf-8')
-        local_output = self.work / 'local-acquisition.json'
-        acquire = self.cli('acquire', '--inventory', local_inventory, '--cache', self.work / 'local-cache',
-                           '--contract', self.report / 'keys.md', '--output', local_output, '--workers', '2')
-        self.assertEqual(0, acquire.returncode, acquire.stderr)
-        acquired = json.loads(local_output.read_text(encoding='utf-8'))['sources'][0]
-        self.assertEqual('readable', acquired['status'])
-        self.assertEqual(measured['sources'][0]['sha256'], acquired['sha256'])
-        self.assertEqual(path.read_bytes(), (self.work / 'local-cache' / acquired['sha256']).read_bytes())
-        self.assertTrue(local_output.with_suffix('.census.tsv').read_text(encoding='utf-8').startswith('source\tkey\tselector'))
-        path.write_text('changed: bytes\n', encoding='utf-8')
-        refused = self.cli(*args)
-        self.assertNotEqual(0, refused.returncode)
-        self.assertIn('changed bytes', refused.stderr)
-        git('restore', 'APIs')
-        self.assertEqual(0, self.cli(*args).returncode)
-        original_bytes = path.read_bytes()
-        git('config', 'core.autocrlf', 'true')
-        path.write_bytes(original_bytes.replace(b'\n', b'\r\n'))
-        git('diff', '--quiet', 'HEAD', '--', 'APIs')
-        refused = self.cli(*args)
-        self.assertNotEqual(0, refused.returncode)
-        self.assertIn('changed literal bytes', refused.stderr)
-        git('config', 'core.autocrlf', 'false')
-        path.write_bytes(original_bytes)
-        self.assertEqual(0, self.cli(*args).returncode)
-        index.write_text('{}', encoding='utf-8')
-        refused = self.cli(*args)
-        self.assertNotEqual(0, refused.returncode)
-        self.assertIn('catalogue digest changed', refused.stderr)
 
     def test_committed_wide_report(self) -> None:
         root = REPO / 'docs/openapi-surface/witness-scrape-wide'

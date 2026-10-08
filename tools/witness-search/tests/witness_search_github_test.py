@@ -412,7 +412,9 @@ class LocalServer(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-class WitnessSearchGithubTests(unittest.TestCase):
+class WitnessSearchGithubFixture:
+    """A loopback GitHub, Sourcegraph and raw host, and an acquirer pointed at them."""
+
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
@@ -469,6 +471,23 @@ class WitnessSearchGithubTests(unittest.TestCase):
             sourcegraph_refusal_cooldown_s=0.05,
         )
 
+    def walk_cli(self, evidence: Path, *extra: str) -> subprocess.CompletedProcess[str]:
+        """One `--stage walk` of the local publisher through the acquisition CLI."""
+        publisher_file = self.root / "walk-publisher.json"
+        publisher_file.write_text(json.dumps({"publishers": [
+            {"repository": "example/api", "commit": "c" * 40, "scope": "", "derivation": "local API publisher"}
+        ]}), encoding="utf-8")
+        return subprocess.run(
+            [sys.executable, str(REPO / "tools/witness-search/witness-search-github.py"), *SOURCE_COMMIT,
+             "--evidence", str(evidence), "--source", "github-publisher-trees", "--stage", "walk",
+             "--publisher-file", str(publisher_file), *extra],
+            env={**os.environ, "CROZIER_GITHUB_API_URL": self.url, "CROZIER_RAW_GITHUB_URL": self.url,
+                 "GITHUB_TOKEN": "offline-test-token"},
+            capture_output=True, text=True,
+        )
+
+
+class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
     def test_key_derivation_and_both_serialization_query_plan(self) -> None:
         keys = SEARCH.derive_keys(REPO / "docs/openapi-surface")
         self.assertIn("annotated-ref-target-string-const", keys)
@@ -689,44 +708,6 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
         self.search.publisher_walk(publisher, grown)
         self.assertEqual(len(after), len(ledger.read_text(encoding="utf-8").splitlines()), "a counted key is not counted twice")
-
-    def walk_cli(self, evidence: Path, *extra: str) -> subprocess.CompletedProcess[str]:
-        """One `--stage walk` of the local publisher through the acquisition CLI."""
-        publisher_file = self.root / "walk-publisher.json"
-        publisher_file.write_text(json.dumps({"publishers": [
-            {"repository": "example/api", "commit": "c" * 40, "scope": "", "derivation": "local API publisher"}
-        ]}), encoding="utf-8")
-        return subprocess.run(
-            [sys.executable, str(REPO / "tools/witness-search/witness-search-github.py"), *SOURCE_COMMIT,
-             "--evidence", str(evidence), "--source", "github-publisher-trees", "--stage", "walk",
-             "--publisher-file", str(publisher_file), *extra],
-            env={**os.environ, "CROZIER_GITHUB_API_URL": self.url, "CROZIER_RAW_GITHUB_URL": self.url,
-                 "GITHUB_TOKEN": "offline-test-token"},
-            capture_output=True, text=True,
-        )
-
-    def test_cli_without_cache_keeps_fetched_documents_out_of_the_evidence_directory(self) -> None:
-        """With no `--cache`, fetched bytes land in the gitignored `.local` cache, not beside the ledgers.
-
-        The document carries this test's temporary directory name, so its digest
-        names a cache file no other run writes, and that one file is removed after.
-        """
-        document = DOCUMENT + f"# {self.root.name}\n".encode()
-        self.server.state["raw_document"] = document
-        digest = hashlib.sha256(document).hexdigest()
-        cached = REPO / ".local" / "witness-search-cache" / "documents" / f"{digest}.yaml"
-        self.addCleanup(cached.unlink, missing_ok=True)
-        evidence = self.root / "cli-default-cache"
-
-        walked = self.walk_cli(evidence)
-        self.assertEqual(0, walked.returncode, walked.stderr)
-        row = json.loads((evidence / "documents.jsonl").read_text(encoding="utf-8").splitlines()[0])
-        self.assertEqual(digest, row["sha256"])
-        self.assertFalse((evidence / "documents").exists(), "fetched bytes were written into the evidence directory")
-        self.assertEqual(document, cached.read_bytes())
-        ignored = subprocess.run(["git", "check-ignore", "--quiet", str(cached)], cwd=REPO)
-        self.assertEqual(0, ignored.returncode, f"{cached} is not gitignored")
-        self.assertEqual(cached.parent.parent, SEARCH.DEFAULT_CACHE)
 
     def test_cli_walk_reacquires_a_removed_cached_document_and_refuses_other_bytes(self) -> None:
         """A recount reads a ledger row's bytes at its recorded commit when the cache no longer holds them.
