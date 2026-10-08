@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { mkdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { spawnSync } from "node:child_process";
 import { commitChange, git, just, project, ran, scratchWorkspace, write } from "./support.mjs";
 
 test("with NX_BASE unset the affected tier keys off the merge base with origin/main", (t) => {
@@ -222,6 +223,21 @@ test("a missing Nx or a failing target exits 1, apart from an invocation error's
   assert.match(missing.stderr, /Nx is not installed/);
   assert.match(missing.stderr, /just bootstrap/);
   assert.ok(!ran(root, "a") && !ran(root, "b"));
+});
+
+test("a failing target's whole output reaches a slow reader before the gate exits", { skip: process.platform === "win32" }, (t) => {
+  // CI reads the gate through a pipe that holds one buffer (64 KiB on Linux).
+  // A reader slower than the gate must still get the whole replay, down to
+  // Nx's closing summary of which task failed, not the first buffer of it.
+  const root = scratchWorkspace(t);
+  const noisy = "node -e \"for (let i = 0; i < 4000; i++) console.log('line ' + i + ' ' + '.'.repeat(60)); process.exit(3)\"";
+  commitChange(root, "a/project.json", project("a", { targets: { test: { command: noisy } } }));
+  const env = { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true" };
+  delete env.NX_SKIP_NX_CACHE;
+  const slow = spawnSync("sh", ["-c", "just check --projects=a 2>&1 >/dev/null | { sleep 2; cat; }"], { cwd: root, env, encoding: "utf8" });
+  assert.ok(slow.stdout.length > 128 * 1024, `${slow.stdout.length} bytes reached the reader`);
+  assert.match(slow.stdout, /Failed tasks:\s*\n\s*- a:test/);
+  assert.match(slow.stdout, /gate: a target failed/);
 });
 
 test("--projects=tag:<tag> selects that tag's carriers and --exclude drops one, in either tier", (t) => {

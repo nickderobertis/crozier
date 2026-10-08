@@ -289,8 +289,13 @@ function main() {
   const run = spawnSync(nxBin(), args, { cwd: ROOT, env: NX_ENV, encoding: "utf8", maxBuffer: 1024 * 1024 * 1024, shell: process.platform === "win32" });
   writeFileSync(log, `$ nx ${args.join(" ")}\n${run.stdout ?? ""}${run.stderr ?? ""}`);
   if (run.status !== 0) {
-    process.stderr.write(readFileSync(log, "utf8"));
-    die(`a target failed (full output above and in ${log})`, "fix what it reports, then rerun the same recipe");
+    // Exit only once the replay has drained: a pipe takes one buffer's worth
+    // (64 KiB on Linux) and an exit drops the rest — the failing target's own
+    // message, which comes last.
+    process.stderr.write(readFileSync(log, "utf8"), () =>
+      die(`a target failed (full output above and in ${log})`, "fix what it reports, then rerun the same recipe"),
+    );
+    return;
   }
   console.log(`${TOOL}: ok (${options.targets.join(", ")}; output in ${log})`);
 }
