@@ -148,6 +148,8 @@ test("an Nx answer of the wrong shape stops the gate before any target runs", { 
   for (const [graph, affected, message] of [
     [{ nodes: { a: { data: { tags: [1] } } } }, ["a"], /nodes are not projects with string tags/],
     [{ nodes: "a" }, ["a"], /nodes are not projects with string tags/],
+    [{ nodes: { a: { data: { root: "a" } } } }, ["a"], /nodes are not projects with string tags/],
+    [{ nodes: { a: null } }, ["a"], /nodes are not projects with string tags/],
     [good, { a: true }, /answered \{"a":true\}, not a list of this graph's projects/],
     [good, ["a", "ghost"], /answered \["ghost"\], not a list of this graph's projects/],
     // A name that is not a string is refused, not coerced to the project it spells.

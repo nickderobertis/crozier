@@ -185,6 +185,8 @@ test("a project graph of the wrong shape is refused with the fix, not a TypeErro
     { nodes: { a: { data: { root: "a", tags: [1] } } }, dependencies: {} },
     { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: { a: "b" } },
     { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: { a: [{ source: "a" }] } },
+    // An edge out of a project the graph does not have.
+    { nodes: { a: { data: { root: "a", tags: ["type:tooling"] } } }, dependencies: { ghost: [{ target: "a" }] } },
     node({ targets: { test: "true" } }),
     node({ targets: { test: { dependsOn: "^build" } } }),
     node({ targets: { test: { dependsOn: [{ projects: ["b"] }] } } }),

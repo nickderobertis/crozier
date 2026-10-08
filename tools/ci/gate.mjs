@@ -193,7 +193,8 @@ function projectTags() {
     } catch (error) {
       die(`'nx graph' wrote no readable graph: ${error.message}`, "run 'just nx graph --file=graph.json' by hand to see why");
     }
-    const tagsOf = (node) => node?.data?.tags ?? [];
+    // Every node carries its tags, an empty list when it has none; one without them is no project.
+    const tagsOf = (node) => node?.data?.tags;
     if (
       nodes === null || typeof nodes !== "object" || Array.isArray(nodes) ||
       !Object.values(nodes).every((node) => Array.isArray(tagsOf(node)) && tagsOf(node).every((tag) => typeof tag === "string"))

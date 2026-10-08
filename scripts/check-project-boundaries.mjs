@@ -114,7 +114,9 @@ function nxGraph() {
       ) &&
       Object.values(graph.dependencies).every(
         (deps) => Array.isArray(deps) && deps.every((dep) => typeof dep?.target === "string"),
-      );
+      ) &&
+      // Every edge leaves a project the graph has: the rules read its tags.
+      Object.keys(graph.dependencies).every((source) => Object.hasOwn(graph.nodes, source));
     if (!shaped) throw new Error("its `nodes` / `dependencies` are not the shape this check reads");
     return graph;
   } catch (error) {

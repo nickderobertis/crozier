@@ -396,7 +396,7 @@ table [`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt)
 the audience list, Crozier strict-audience identity, Fern `client_class_name`,
 Fern `pydantic_config.extra_fields`, and the Fern workspace `organization` (the
 input that names the module, client and README the way crozier's
-`--package-name` does; see [`matching.md`](matching.md#the-flat-layout)). `tools/fern-goldens/generate-fern-fixture.sh` loads
+`--package-name` does). `tools/fern-goldens/generate-fern-fixture.sh` loads
 them by fixture name on both routes, so a `CORPUS.md` row is generated with them
 too — that is what lets a generator setting no OpenAPI document can express
 (`eos.local-extra-fields-forbid`, row 82) be pinned by a second row over an
