@@ -1,0 +1,65 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cartography Intake",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://maps.example.com"
+    }
+  ],
+  "paths": {
+    "/plans": {
+      "post": {
+        "operationId": "store_plan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "plan",
+                  "attachment"
+                ],
+                "properties": {
+                  "plan": {
+                    "$ref": "#/components/schemas/PlanAlias"
+                  },
+                  "attachment": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Stored"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Plan": {
+        "type": "object",
+        "required": [
+          "bearing"
+        ],
+        "properties": {
+          "bearing": {
+            "type": "integer"
+          }
+        }
+      },
+      "PlanAlias": {
+        "$ref": "#/components/schemas/Plan"
+      }
+    }
+  }
+}

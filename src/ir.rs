@@ -7005,6 +7005,38 @@ fn union_has_temporal_member<'a>(
     }
 }
 
+/// Resolve an object alias's encoding shape while retaining its declared type
+/// at the form-field call site.
+fn resolve_form_object_alias<'a>(
+    schema: &'a Schema,
+    schemas: Option<&'a IndexMap<String, Schema>>,
+    types: &[TypeDecl],
+) -> &'a Schema {
+    let mut resolved = schema;
+    let mut seen = std::collections::BTreeSet::new();
+    let mut target_name = None;
+    while let Some(reference) = resolved.reference.as_deref() {
+        if !seen.insert(reference) {
+            return schema;
+        }
+        let Some(next) = schemas.and_then(|schemas| resolve_ref_from_schemas(schemas, reference))
+        else {
+            return schema;
+        };
+        target_name = Some(ref_to_class(reference));
+        resolved = next;
+    }
+    if is_object_type(resolved)
+        || types.iter().any(|decl| {
+            matches!(decl, TypeDecl::Object(object) if Some(&object.name) == target_name.as_ref())
+        })
+    {
+        resolved
+    } else {
+        schema
+    }
+}
+
 /// Hoist a form body's properties into [`BodyField`]s, marking `format: binary`
 /// fields as file uploads. A file part never carries the convert wrapper, but a
 /// field whose schema is a named model does, exactly as a JSON body's would:
@@ -7047,6 +7079,11 @@ fn hoist_form_object(
                 .as_deref()
                 .and_then(|reference| hoister.schemas?.get(reference.rsplit('/').next()?))
                 .unwrap_or(prop_schema);
+            let resolved = if multipart && resolved.reference.is_some() {
+                resolve_form_object_alias(resolved, hoister.schemas, hoister.root_types)
+            } else {
+                resolved
+            };
             let form_json = multipart
                 && !is_file
                 && simple_nullable_primitive_member(resolved).is_none()
@@ -17056,6 +17093,95 @@ mod tests {
             declaration,
             TypeDecl::DiscriminatedUnion(union) if union.name == "MessagesResponseItem"
         )));
+    }
+
+    #[test]
+    fn multipart_object_aliases_keep_their_annotation_and_use_json_encoding() {
+        for multipart in [true, false] {
+            for inherited in [true, false] {
+                let model = if inherited {
+                    serde_json::json!({ "allOf": [{ "type": "object", "properties": {
+                        "bearing": { "type": "integer" }
+                    } }] })
+                } else {
+                    serde_json::json!({ "type": "object", "properties": {
+                        "bearing": { "type": "integer" }
+                    } })
+                };
+                let media = if multipart {
+                    "multipart/form-data"
+                } else {
+                    "application/x-www-form-urlencoded"
+                };
+                let ir = build_document(serde_json::json!({
+                    "openapi": "3.0.3", "info": { "title": "Cartography", "version": "1" },
+                    "paths": { "/plans": { "post": { "operationId": "store_plan",
+                        "requestBody": { "required": true, "content": { media: { "schema": {
+                            "type": "object", "required": ["plan", "attachment"], "properties": {
+                                "plan": { "$ref": "#/components/schemas/PlanAlias" },
+                                "attachment": { "type": "string", "format": "binary" }
+                            }
+                        } } } }, "responses": { "204": { "description": "Stored" } }
+                    } } },
+                    "components": { "schemas": { "Plan": model,
+                        "PlanAlias": { "$ref": "#/components/schemas/Plan" }
+                    } }
+                }));
+                let Some(RequestBody::Form(form)) = &ir.endpoints[0].request_body else {
+                    panic!("a form body")
+                };
+                let plan = form
+                    .fields
+                    .iter()
+                    .find(|field| field.wire_name == "plan")
+                    .unwrap();
+                assert_eq!(plan.type_ref, TypeRef::Named("PlanAlias".to_string()));
+                assert_eq!(plan.form_json, multipart);
+                assert!(
+                    form.fields
+                        .iter()
+                        .find(|field| field.wire_name == "attachment")
+                        .unwrap()
+                        .is_file
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn multipart_object_alias_resolution_recovers_from_unknown_and_cyclic_refs() {
+        let alias = schema(serde_json::json!({ "$ref": "#/components/schemas/B" }));
+        let mut schemas = indexmap::IndexMap::new();
+        schemas.insert("A".to_string(), alias.clone());
+        schemas.insert(
+            "B".to_string(),
+            schema(serde_json::json!({ "$ref": "#/components/schemas/A" })),
+        );
+        for source in [None, Some(&schemas)] {
+            assert_eq!(
+                super::resolve_form_object_alias(&alias, source, &[]).reference,
+                alias.reference
+            );
+        }
+        schemas.insert(
+            "B".to_string(),
+            schema(serde_json::json!({ "type": "string" })),
+        );
+        assert_eq!(
+            super::resolve_form_object_alias(&alias, Some(&schemas), &[]).reference,
+            alias.reference
+        );
+        schemas.insert(
+            "B".to_string(),
+            schema(serde_json::json!({ "type": "object", "properties": {
+            "bearing": { "type": "integer" }
+        } })),
+        );
+        assert!(
+            super::resolve_form_object_alias(&alias, Some(&schemas), &[])
+                .reference
+                .is_none()
+        );
     }
 
     #[test]

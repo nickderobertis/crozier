@@ -137,6 +137,24 @@
     2 were given`).
   evidence: docs/departures/evidence/lifted-base-path-positional-example.md
 
+- id: multipart-object-required-file-example
+  kind: fern-defect
+  trigger: >-
+    A multipart method with a required file beside a JSON-encoded object whose
+    type is a component alias, or whose argument is named json: its client
+    docstring example.
+  fern: >-
+    A call omitting the required file argument, although the generated method
+    requires it. The object encoding and json module alias remain valid.
+  crozier: >-
+    The same example with that required file placeholder, preserving every
+    other argument, the method signature, imports and request encoding.
+  reason: >-
+    Binding the documented call to the actual generated sync or async method
+    raises TypeError for a missing required argument. The correction makes the
+    example bind without changing valid generated SDK behavior.
+  evidence: docs/departures/evidence/multipart-object-required-file-example.md
+
 - id: nullable-items-docs
   kind: fern-defect
   trigger: >-

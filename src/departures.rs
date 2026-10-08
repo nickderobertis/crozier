@@ -287,6 +287,7 @@ pub struct Context {
     crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
     reference_nullable_items: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
+    multipart_examples: OnceLock<MultipartExampleContext>,
 }
 
 impl Context {
@@ -314,6 +315,7 @@ impl Context {
                     .map(|(_, text)| *text),
             )),
             crozier_project: OnceLock::from(project),
+            multipart_examples: OnceLock::from(multipart_example_context(crozier.iter().copied())),
         }
     }
 
@@ -396,6 +398,20 @@ impl Context {
             .as_deref()
     }
 
+    fn multipart_examples(&self) -> &MultipartExampleContext {
+        self.multipart_examples.get_or_init(|| {
+            let Some((_, root)) = &self.roots else {
+                return MultipartExampleContext::default();
+            };
+            let sources = python_sources(root);
+            multipart_example_context(
+                sources
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            )
+        })
+    }
+
     /// The classes of the tree `side` picks, or none without trees.
     fn tree_classes(
         &self,
@@ -411,6 +427,295 @@ impl Context {
                 .map(|(rel, text)| (rel.as_str(), text.as_str())),
         )
     }
+}
+
+#[derive(Debug, Default)]
+struct MultipartExampleContext {
+    object_aliases: BTreeSet<String>,
+    encoded_fields: std::collections::BTreeMap<(String, String), BTreeSet<String>>,
+    wire_fields:
+        std::collections::BTreeMap<(String, String), std::collections::BTreeMap<String, String>>,
+}
+
+fn python_identifier(value: &str) -> bool {
+    let mut chars = value.chars();
+    chars.next().is_some_and(|c| c == '_' || c.is_alphabetic())
+        && chars.all(|c| c == '_' || c.is_alphanumeric())
+}
+
+fn python_method_name(line: &str) -> Option<&str> {
+    line.strip_prefix("    def ")
+        .or_else(|| line.strip_prefix("    async def "))?
+        .split_once('(')
+        .map(|(name, _)| name)
+        .filter(|name| python_identifier(name))
+}
+
+fn optional_annotation(mut annotation: &str) -> &str {
+    while let Some(inner) = annotation
+        .strip_prefix("typing.Optional[")
+        .and_then(|s| s.strip_suffix(']'))
+    {
+        annotation = inner;
+    }
+    annotation
+}
+
+fn multipart_example_context<'a>(
+    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> MultipartExampleContext {
+    let sources: Vec<_> = sources.into_iter().collect();
+    let model_names = classes(sources.iter().copied());
+    let aliases: std::collections::BTreeMap<_, _> = sources
+        .iter()
+        .filter(|(rel, _)| rel.ends_with(".py"))
+        .flat_map(|(_, text)| text.lines())
+        .filter_map(|line| line.split_once(" = "))
+        .filter(|(name, _)| python_identifier(name))
+        .collect();
+    let mut out = MultipartExampleContext::default();
+    for (name, target) in &aliases {
+        let mut current = *target;
+        let mut seen = BTreeSet::new();
+        while seen.insert(current) {
+            current = optional_annotation(current);
+            if model_names.contains(current) || current.starts_with("typing.Dict[") {
+                out.object_aliases.insert((*name).to_string());
+                break;
+            }
+            let Some(next) = aliases.get(current) else {
+                break;
+            };
+            current = next;
+        }
+    }
+    for (rel, text) in sources
+        .iter()
+        .filter(|(rel, _)| *rel == "raw_client.py" || rel.ends_with("/raw_client.py"))
+    {
+        let mut method = None;
+        for line in text.lines() {
+            if let Some(name) = python_method_name(line) {
+                method = Some(name);
+            }
+            let Some(method) = method else {
+                continue;
+            };
+            let key = ((*rel).to_string(), method.to_string());
+            if let Some(field) = line
+                .split_once(".dumps(jsonable_encoder(")
+                .and_then(|(_, after)| after.split_once("))").map(|(field, _)| field))
+                .filter(|field| python_identifier(field))
+            {
+                out.encoded_fields
+                    .entry(key.clone())
+                    .or_default()
+                    .insert(field.to_string());
+            }
+            let Some((wire, value)) = line
+                .trim()
+                .strip_prefix('"')
+                .and_then(|s| s.split_once("\": "))
+            else {
+                continue;
+            };
+            let value = value.trim_end_matches(',');
+            let variable = value
+                .split_once("file=")
+                .and_then(|(_, rest)| rest.split_once(',').map(|(name, _)| name))
+                .unwrap_or(value);
+            if python_identifier(variable) {
+                out.wire_fields
+                    .entry(key)
+                    .or_default()
+                    .insert(variable.to_string(), wire.to_string());
+            }
+        }
+    }
+    out
+}
+
+/// A complete generated call, split only at outer argument commas. Quoted
+/// values and nested model/dictionary constructors remain byte-exact.
+fn example_call_arguments(call: &str) -> Option<(&str, Vec<&str>)> {
+    let (prefix, _) = call.split_once('(')?;
+    let open = prefix.len();
+    let mut depth = 0usize;
+    let mut quote = None;
+    let mut escaped = false;
+    let mut start = open + 1;
+    let mut arguments = Vec::new();
+    for (index, character) in call.char_indices().skip_while(|(index, _)| *index < open) {
+        if let Some(delimiter) = quote {
+            if escaped {
+                escaped = false;
+            } else if character == '\\' {
+                escaped = true;
+            } else if character == delimiter {
+                quote = None;
+            }
+            continue;
+        }
+        match character {
+            '\'' | '"' => quote = Some(character),
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    if character != ')' || index + 1 != call.len() {
+                        return None;
+                    }
+                    if start < index {
+                        arguments.push(&call[start..index]);
+                    }
+                    return Some((prefix, arguments));
+                }
+            }
+            ',' if depth == 1 => {
+                if start < index {
+                    arguments.push(&call[start..index]);
+                }
+                start = index + 1;
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+/// Canonicalize eligible example calls, removing only actual required-file
+/// placeholders on the corrected side. Everything outside the calls is exact.
+fn multipart_example_lines<'a>(
+    lines: &'a [&'a str],
+    raw_rel: &str,
+    context: &MultipartExampleContext,
+    remove_files: bool,
+) -> Option<(Vec<String>, bool)> {
+    let mut kept = Vec::new();
+    let mut signature = Vec::new();
+    let mut method = "";
+    let mut in_doc = false;
+    let mut in_example = false;
+    let mut allowed = BTreeSet::new();
+    let mut removed = false;
+    let mut index = 0;
+    while index < lines.len() {
+        let line = lines[index];
+        if let Some(name) = python_method_name(line) {
+            method = name;
+            signature.clear();
+            in_doc = false;
+            in_example = false;
+            allowed.clear();
+        }
+        if line.trim() == "\"\"\"" {
+            if !in_doc {
+                let signature = compact_python(&signature);
+                let fields: Vec<_> = signature
+                    .split(',')
+                    .filter_map(|part| {
+                        let (name, annotation) = part.split_once(':')?;
+                        python_identifier(name).then_some((name, annotation))
+                    })
+                    .collect();
+                let key = (raw_rel.to_string(), method.to_string());
+                if let (Some(encoded), Some(wires)) = (
+                    context.encoded_fields.get(&key),
+                    context.wire_fields.get(&key),
+                ) {
+                    let eligible = fields.iter().any(|(name, annotation)| {
+                        encoded.contains(*name)
+                            && (*name == "json"
+                                || context.object_aliases.contains(optional_annotation(
+                                    annotation.split('=').next().unwrap_or(annotation),
+                                )))
+                    });
+                    if eligible {
+                        for (name, annotation) in &fields {
+                            if annotation.contains('=') || !annotation.contains("core.File") {
+                                continue;
+                            }
+                            let Some(wire) = wires.get(*name) else {
+                                continue;
+                            };
+                            let value = if annotation.contains("Sequence[") {
+                                format!("[\"example_{wire}\"]")
+                            } else {
+                                format!("\"example_{wire}\"")
+                            };
+                            allowed.insert(format!("{name}={value}"));
+                        }
+                    }
+                }
+            }
+            in_doc = !in_doc;
+            in_example = false;
+        } else if !in_doc && allowed.is_empty() {
+            signature.push(line);
+        }
+        if in_doc && line.trim() == "Examples" {
+            in_example = true;
+        }
+        let call_head = line
+            .trim_start()
+            .strip_prefix("await ")
+            .unwrap_or(line.trim_start());
+        let is_method_call = call_head
+            .strip_prefix("client.")
+            .and_then(|s| s.split_once('('))
+            .is_some_and(|(name, _)| name.rsplit('.').next() == Some(method));
+        if in_doc && in_example && !allowed.is_empty() && is_method_call {
+            let mut end = index;
+            loop {
+                let compact = compact_python(&lines[index..=end]);
+                if let Some((prefix, arguments)) = example_call_arguments(&compact) {
+                    let args: Vec<_> = arguments
+                        .into_iter()
+                        .filter(|argument| {
+                            if remove_files && allowed.contains(*argument) {
+                                removed = true;
+                                false
+                            } else {
+                                true
+                            }
+                        })
+                        .collect();
+                    kept.push(format!("{prefix}({})", args.join(",")));
+                    index = end + 1;
+                    break;
+                }
+                end += 1;
+                if end >= lines.len() || lines[end].trim() == "\"\"\"" {
+                    return None;
+                }
+            }
+        } else {
+            kept.push(line.to_string());
+            index += 1;
+        }
+    }
+    Some((kept, removed))
+}
+
+fn multipart_object_required_file_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    let Some(prefix) = pair.rel.strip_suffix("client.py") else {
+        return Ok(None);
+    };
+    if !prefix.is_empty() && !prefix.ends_with('/') {
+        return Ok(None);
+    }
+    let raw_rel = format!("{prefix}raw_client.py");
+    let context = pair.context.multipart_examples();
+    let Some((reference, _)) = multipart_example_lines(pair.fern, &raw_rel, context, false) else {
+        return Ok(None);
+    };
+    let Some((corrected, removed)) = multipart_example_lines(pair.crozier, &raw_rel, context, true)
+    else {
+        return Ok(None);
+    };
+    Ok((removed && reference == corrected)
+        .then(|| differing_window(pair.fern, pair.crozier))
+        .flatten())
 }
 
 /// Every `.py` file under `root` as `(relative path, text)`; a module that
@@ -595,7 +900,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 11] = [
+pub const RULE_IDS: [&str; 12] = [
     "body-query-parameter-value",
     "closed-empty-object-example",
     "constant-header-docs-arguments",
@@ -603,6 +908,7 @@ pub const RULE_IDS: [&str; 11] = [
     "init-type-checking-import-order",
     "lifted-base-path-docs-examples",
     "lifted-base-path-positional-example",
+    "multipart-object-required-file-example",
     "nullable-items-docs",
     "readme-client-class-casing",
     "sdk-identity-header-prefix",
@@ -629,6 +935,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
+            ..none
+        },
+        "multipart-object-required-file-example" => Rule {
+            region: Some(multipart_object_required_file_example),
             ..none
         },
         "init-type-checking-import-order" => Rule {
@@ -2061,6 +2371,83 @@ mod tests {
             context,
         })
         .unwrap()
+    }
+
+    #[test]
+    fn multipart_required_file_examples_allow_only_the_proven_missing_argument() {
+        for (field, annotation, declaration) in [
+            (
+                "plan",
+                "PlanAlias",
+                "class Plan(Model):\n    pass\nPlanAlias = Plan\n",
+            ),
+            ("json", "Plan", "class Plan(Model):\n    pass\n"),
+        ] {
+            let raw = format!("    def upload(\n        self,\n    ):\n        data={{\n            \"{field}\": json.dumps(jsonable_encoder({field})),\n        }}\n        files={{\n            \"attachment\": attachment,\n        }}\n");
+            let context = Context::from_sources(
+                [],
+                [
+                    ("src/acme/raw_client.py", raw.as_str()),
+                    ("src/acme/types/plan.py", declaration),
+                ],
+            );
+            let fern = format!("    def upload(\n        self,\n        *,\n        {field}: {annotation},\n        attachment: core.File,\n    ) -> None:\n        \"\"\"\n        Examples\n        --------\n        client.upload(\n            {field}=Plan(bearing=1),\n        )\n        \"\"\"\n");
+            let corrected = fern.replace(
+                "        )\n",
+                "            attachment=\"example_attachment\",\n        )\n",
+            );
+            let rule: RegionRule = multipart_object_required_file_example;
+            assert!(region_of(rule, "src/acme/client.py", &fern, &corrected, &context).is_some());
+            for changed in [
+                corrected.replace("example_attachment", "other_file"),
+                corrected.replace("bearing=1", "bearing=2"),
+                corrected.replace("bearing=1", "bearing=1, attachment=\"example_attachment\""),
+                corrected.replace("client.upload", "client.other"),
+                corrected.replace("attachment: core.File", "attachment: core.File = None"),
+                corrected.replace("        Examples", "        Parameters"),
+                corrected.replace("        )\n", "            unknown=1,\n        )\n"),
+            ] {
+                assert!(
+                    region_of(rule, "src/acme/client.py", &fern, &changed, &context).is_none(),
+                    "{changed}"
+                );
+            }
+            assert!(
+                region_of(rule, "src/acme/raw_client.py", &fern, &corrected, &context).is_none()
+            );
+            assert!(region_of(
+                rule,
+                "src/acme/client.py",
+                &fern,
+                &corrected,
+                &Context::default()
+            )
+            .is_none());
+            let not_encoded = raw.replace("json.dumps(jsonable_encoder", "convert");
+            let context = Context::from_sources(
+                [],
+                [
+                    ("src/acme/raw_client.py", not_encoded.as_str()),
+                    ("src/acme/types/plan.py", declaration),
+                ],
+            );
+            assert!(region_of(rule, "src/acme/client.py", &fern, &corrected, &context).is_none());
+        }
+        assert!(example_call_arguments(
+            "client.upload(value=[\"a,b\", {\"x\": (1, 2)}], attachment=\"example_attachment\")"
+        )
+        .is_some());
+        for invalid in ["no_call", "call(", "call(\"unterminated)", "call(x))"] {
+            assert!(example_call_arguments(invalid).is_none(), "{invalid}");
+        }
+        let context = multipart_example_context([(
+            "types.py",
+            "class Plan(Model):\n    pass\nA = B\nB = typing.Optional[Plan]\nC = C\nD = str\n",
+        )]);
+        assert_eq!(
+            context.object_aliases,
+            BTreeSet::from(["A".to_string(), "B".to_string()])
+        );
     }
 
     #[test]

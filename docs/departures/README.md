@@ -162,7 +162,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 7 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 8 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -230,6 +230,15 @@ when the two differ.
 - **crozier writes:** The default passed by keyword, `FernApi(edition="v2",)`.
 - **Why:** The generated constructor is keyword-only, so the example call does not match its signature: it raises `TypeError` (`takes 1 positional argument but 2 were given`).
 - **Evidence:** [`docs/departures/evidence/lifted-base-path-positional-example.md`](../../docs/departures/evidence/lifted-base-path-positional-example.md)
+
+### `multipart-object-required-file-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A multipart method with a required file beside a JSON-encoded object whose type is a component alias, or whose argument is named json: its client docstring example.
+- **Fern writes:** A call omitting the required file argument, although the generated method requires it. The object encoding and json module alias remain valid.
+- **crozier writes:** The same example with that required file placeholder, preserving every other argument, the method signature, imports and request encoding.
+- **Why:** Binding the documented call to the actual generated sync or async method raises TypeError for a missing required argument. The correction makes the example bind without changing valid generated SDK behavior.
+- **Evidence:** [`docs/departures/evidence/multipart-object-required-file-example.md`](../../docs/departures/evidence/multipart-object-required-file-example.md)
 
 ### `nullable-items-docs`
 
