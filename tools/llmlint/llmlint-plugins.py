@@ -39,8 +39,11 @@ REPO = Path(__file__).resolve().parents[2]
 VENDOR_DIR = "llmlint-plugins"
 LOCK = REPO / VENDOR_DIR / "lock.json"
 FETCH_TIMEOUT_SECONDS = 30
-# The hand-edited fields of a lock entry; refresh generates the rest.
+# The hand-edited fields of a lock entry; refresh generates the rest. A plugin
+# llmlint ships (`"bundled": true`) is resolved from its URL and never vendored,
+# so it has no `file`.
 INPUT_FIELDS = ("name", "url", "pin", "file")
+BUNDLED_INPUT_FIELDS = ("name", "url", "pin")
 # A plugin config declares its version on a top-level `version:` line; that
 # declared version is what a consumer's `@pin` ranges over and what identifies a
 # cache entry, so it is the version the lock records.
@@ -70,15 +73,17 @@ def load_lock() -> dict[str, Any]:
     if not isinstance(lock, dict) or not isinstance(lock.get("plugins"), list) or not lock["plugins"]:
         fail(f"{LOCK.relative_to(REPO)} declares no plugins", "add a plugin entry")
     for index, plugin in enumerate(lock["plugins"]):
+        bundled = isinstance(plugin, dict) and plugin.get("bundled") is True
         missing = [
             key
-            for key in INPUT_FIELDS
+            for key in (BUNDLED_INPUT_FIELDS if bundled else INPUT_FIELDS)
             if not isinstance(plugin, dict) or not isinstance(plugin.get(key), str) or not plugin[key]
         ]
         if missing:
             fail(
                 f"{LOCK.relative_to(REPO)} plugin #{index + 1} lacks {', '.join(missing)}",
-                "give every plugin entry a non-empty name, url, pin and file (docs/llmlint-plugins.md)",
+                "give every plugin entry a non-empty name, url and pin, and every vendored one a file"
+                " (docs/llmlint-plugins.md)",
             )
         rules = plugin.get("rules", [])
         if not isinstance(rules, list) or not all(isinstance(rule, str) and rule for rule in rules):
@@ -91,6 +96,8 @@ def load_lock() -> dict[str, Any]:
                 f"{LOCK.relative_to(REPO)} plugin #{index + 1} has `bundled` {plugin['bundled']!r}, not a boolean",
                 'write `"bundled": true` for a plugin llmlint ships, or drop the field for a vendored one',
             )
+        if bundled:
+            continue
         file = PurePosixPath(plugin["file"])
         vendored = (REPO / VENDOR_DIR).resolve()
         # A relative path's first part is the vendor directory only when it is

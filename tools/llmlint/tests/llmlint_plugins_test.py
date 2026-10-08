@@ -151,7 +151,16 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
         run = self.refresh_over({"schema": 1, "plugins": [{"name": "base", "url": "", "pin": 1}]})
         self.assertEqual(1, run.returncode, run.stdout + run.stderr)
         self.assertIn("plugin #1 lacks url, pin, file", run.stderr)
-        self.assertIn("non-empty name, url, pin and file", run.stderr)
+        self.assertIn("non-empty name, url and pin, and every vendored one a file", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
+
+    def test_a_bundled_entry_needs_no_file_but_its_other_fields(self) -> None:
+        # llmlint ships a bundled plugin; nothing is vendored, so there is no file.
+        run = self.refresh_over(
+            {"schema": 1, "plugins": [{"name": "config-lint", "url": "", "pin": "1", "bundled": True}]}
+        )
+        self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+        self.assertIn("plugin #1 lacks url\n", run.stderr)
         self.assertNotIn("Traceback", run.stderr)
 
     def test_a_recorded_rule_list_that_is_not_names_is_refused(self) -> None:
@@ -229,11 +238,12 @@ class AMalformedLlmlintAnswerIsRefused(unittest.TestCase):
             lock = {
                 "schema": 1,
                 "plugins": [
+                    # As the committed lock records one: a bundled plugin has no
+                    # vendored file, and the refresh still reaches llmlint.
                     {
                         "name": "config-lint",
                         "url": "https://example.test/config_lint.yml",
                         "pin": "1",
-                        "file": "llmlint-plugins/config-lint.yml",
                         "bundled": True,
                     }
                 ],
