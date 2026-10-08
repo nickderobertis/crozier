@@ -14560,3 +14560,27 @@ fn global_header_constructor_names_are_checked_before_python_emission() {
         }
     }
 }
+
+#[path = "e2e/parameter_controls.rs"]
+mod parameter_controls;
+
+#[test]
+fn parameter_lifting_controls_render_through_the_public_boundary() {
+    for case in parameter_controls::CASES {
+        let files = render(&serde_json::to_string(&parameter_controls::document(case)).unwrap());
+        let client = &files["src/acme/client.py"];
+        match *case {
+            "promoted-header" | "security-header" => {
+                assert!(client.contains("station: str"), "{case}: {client}")
+            }
+            "missing-variable" => assert!(client.contains("self, station_code: str"), "{client}"),
+            "renamed-path" => assert!(client.contains("self, area_code: str"), "{client}"),
+            "repeated-variable" => assert!(client.contains("def list_readings("), "{client}"),
+            "base-collision" => assert!(
+                client.contains("cycle: typing.Optional[str] = \"night\""),
+                "{client}"
+            ),
+            _ => unreachable!(),
+        }
+    }
+}

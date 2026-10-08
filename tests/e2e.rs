@@ -12867,15 +12867,15 @@ fn multiline_path_parameter_docs_remain_indented() {
 }
 
 #[test]
-fn path_parameters_preserve_declaration_order() {
+fn path_parameters_follow_url_template_order() {
     let (_dir, out) = generate_ok(
         "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/{slug}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: slug, in: path, required: true, schema: { type: string } }\n        - { name: id, in: path, required: true, schema: { type: integer } }\n      responses:\n        '204': { description: Found }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("client is generated");
     assert!(
-        client.contains("self, slug: str, id: int,"),
-        "path arguments should preserve parameter declaration order: {client}"
+        client.contains("self, id: int, slug: str,"),
+        "path arguments should follow URL-template order: {client}"
     );
 }
 
@@ -21193,5 +21193,102 @@ fn sdk_env_body_query_collision_keeps_both_callers_values() {
             String::from_utf8_lossy(&run.stdout),
             String::from_utf8_lossy(&run.stderr)
         );
+    }
+}
+
+#[path = "e2e/parameter_controls.rs"]
+mod parameter_controls;
+
+#[test]
+#[ignore = "SDK Python-environment tier; run via just test-sdk-env"]
+fn sdk_env_parameter_lifting_controls_reach_the_wire() {
+    for case in parameter_controls::CASES {
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.json");
+        std::fs::write(
+            &spec,
+            serde_json::to_vec(&parameter_controls::document(case)).unwrap(),
+        )
+        .unwrap();
+        let sdk = dir.path().join("sdk");
+        probe_command(&spec, &sdk).assert().success();
+        let py = sdk_python_env(&sdk.join("pyproject.toml")).unwrap();
+        let script = format!(
+            "{}\n{}",
+            parameter_wire_server_python(),
+            r#"
+import inspect
+import os
+import httpx
+from fern import FernApi
+case = os.environ['PARAMETER_CONTROL']
+sent = []
+def answer(request):
+    sent.append(request)
+    return httpx.Response(200, json=['signal'])
+server, worker, base_url = start_wire_server(answer)
+ctor = dict(base_url=base_url, httpx_client=httpx.Client(trust_env=False))
+if case in ('promoted-header', 'security-header'):
+    ctor['station'] = 'north'
+if case == 'security-header':
+    ctor['api_key'] = 'primary-token'
+if case == 'repeated-variable':
+    ctor['station_code'] = 'north'
+if case == 'base-collision':
+    ctor['cycle'] = 'day'
+client = FernApi(**ctor)
+method = client.list_signals
+parameters = inspect.signature(method).parameters
+if case == 'missing-variable':
+    assert 'station_code' in parameters
+    assert 'station_code' not in inspect.signature(FernApi).parameters
+    assert method(station_code='north') == ['signal']
+elif case == 'renamed-path':
+    assert 'area_code' in parameters and 'station_code' not in parameters
+    assert method(area_code='north') == ['signal']
+else:
+    assert method() == ['signal']
+if case in ('promoted-header', 'security-header'):
+    assert 'station' not in parameters
+    assert sent[-1].headers['X-Station'] == 'north'
+    assert sent[-1].url.path == '/signals'
+    if case == 'security-header':
+        assert sent[-1].headers['X-Primary'] == 'primary-token'
+elif case == 'base-collision':
+    assert 'cycle' not in parameters
+    assert sent[-1].url.path == '/day/signals'
+else:
+    assert sent[-1].url.path == '/stations/north/signals'
+if case == 'repeated-variable':
+    assert 'station_code' not in parameters
+    assert client.list_readings() == ['signal']
+    assert sent[-1].url.path == '/stations/north/readings'
+try:
+    method(unexpected_argument='wrong')
+except TypeError:
+    pass
+else:
+    raise AssertionError('unexpected argument accepted')
+server.shutdown()
+server.server_close()
+worker.join(timeout=2)
+assert not worker.is_alive()
+print('ok')
+"#
+        );
+        let run = std::process::Command::new(&py)
+            .args(["-c", &script])
+            .current_dir(sdk.join("src"))
+            .env("PARAMETER_CONTROL", case)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .unwrap();
+        assert!(
+            run.status.success(),
+            "{case}: {}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
     }
 }

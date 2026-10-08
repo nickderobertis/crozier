@@ -1,5 +1,5 @@
 fixture	key	site	regions_executed	regions
-base-path-client-argument	parameter-in-path	src/ir.rs::base_path_client_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	4	4
+base-path-client-argument	parameter-in-path	src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	4	4
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	9	9
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
@@ -46,7 +46,7 @@ nested-array-elements	items-oneof-element	src/ir.rs::Builder::nested_array_eleme
 nullable-query-union-items	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]	2	2
 observatory-client-date	parameter-in-header	src/ir.rs::header_py_type[=^\s*HeaderType::Date]	1	1
 observatory-client-headers	parameter-in-header	src/ir.rs::global_headers[for header in doc\.global_header_extensions]	8	11
-observatory-client-variable	parameter-in-path	src/ir.rs::base_path_client_parameters[if let Some\(variable\) = parameter\.sdk_variable]	7	7
+observatory-client-variable	parameter-in-path	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	7	7
 observatory-query-extensions	parameter-in-query	src/emit.rs::method_params[if let Some\(default\) = &qp\.default]	2	2
 ore-bin-screen	parameter-style-form-query-object	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30
 query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]	2	2

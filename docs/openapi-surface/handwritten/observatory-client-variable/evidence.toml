@@ -16,7 +16,7 @@ renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
 
 [[covers]]
 key = "parameter-in-path"
-arm = 'src/ir.rs::base_path_client_parameters[if let Some\(variable\) = parameter\.sdk_variable]'
+arm = 'src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]'
 search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"

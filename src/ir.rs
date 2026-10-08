@@ -625,9 +625,9 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     headers
 }
 
-/// The client constructor arguments the document's base path lifts out of its
-/// methods: one per `{placeholder}` (see [`crate::openapi::BasePath::parameters`]).
-fn base_path_client_parameters(doc: &OpenApi) -> Vec<ClientPathParameter> {
+/// Client constructor arguments lifted from base-path and SDK-variable declarations,
+/// with one field per wire placeholder shared across methods.
+fn lifted_client_path_parameters(doc: &OpenApi) -> Vec<ClientPathParameter> {
     let mut parameters: Vec<ClientPathParameter> = doc
         .base_path()
         .map(crate::openapi::BasePath::parameters)
@@ -1473,7 +1473,7 @@ pub struct QueryParam {
     /// example still passes it as a required one's would.
     pub nullable: bool,
     /// A parameter extension default, rendered as a Python literal.
-    pub default: Option<String>,
+    pub default: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen IR String contract: the deserialized extension default is rendered through example_literal and passed through to match the certified pair.
     /// Whether the value serializes through `convert_and_respect_annotation_metadata`
     /// in the `params` dict — true for an object/union type carrying field aliases,
     /// as Fern wraps an object-typed query parameter.
@@ -2333,7 +2333,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         errors,
         auth: auth_model(doc),
         global_headers: global,
-        client_path_parameters: base_path_client_parameters(doc),
+        client_path_parameters: lifted_client_path_parameters(doc),
         environment,
         extra_fields: config.extra_fields,
         enum_type: config.enum_type,
@@ -2805,7 +2805,7 @@ fn build_endpoint(
         "{}{path}",
         base_path.map_or("", crate::openapi::BasePath::route_prefix)
     );
-    let client_path_params: Vec<ClientPathParameter> = base_path_client_parameters(doc)
+    let client_path_params: Vec<ClientPathParameter> = lifted_client_path_parameters(doc)
         .into_iter()
         .filter(|parameter| route.contains(&format!("{{{}}}", parameter.wire_name)))
         .collect();
@@ -3129,10 +3129,10 @@ fn build_endpoint(
         })
         .collect();
 
-    // crozier handles path, query, and header parameters, and drops `cookie`
-    // parameters (Fern omits them from the method signature entirely). Any other
-    // kind (an unknown location, or a `$ref` with no location) puts the operation
-    // outside the emittable subset. A missing location is ignored.
+    // crozier handles path, query, and header parameters. Cookie parameters
+    // and parameters without a location are omitted from the method signature,
+    // as Fern does. An unknown location puts the operation outside the
+    // emittable subset because its serialization is unsupported.
     let has_unsupported_params = op.parameters.iter().any(|p| {
         !matches!(
             p.location,
