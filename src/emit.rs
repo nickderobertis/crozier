@@ -10251,6 +10251,9 @@ fn build_example_inner(
                     (f.spec_required
                         || f.media_example
                         || ((related || reference) && f.is_file)
+                        || (documentation
+                            && f.is_file
+                            && matches!(f.type_ref, TypeRef::Optional(_)))
                         // A part that is a LIST of files is shown wherever the
                         // example is written, required or not: SFTPGo's optional
                         // `filenames` reaches `README.md` and the client docstring

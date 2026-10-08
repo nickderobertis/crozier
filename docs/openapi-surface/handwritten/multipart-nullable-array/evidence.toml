@@ -1,0 +1,24 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "082b2c78826f6addbab452df4c5a8a56c286029e10229c59bf3f12397819e395"
+
+[[covers]]
+key = "format-binary"
+arm = 'src/ir.rs::hoist_form_object[let nullable_binary = multipart]'
+search = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md"
+
+[[covers]]
+key = "description"
+arm = 'src/ir.rs::hoist_form_object[\(multipart && is_file\)]'
+search = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md"
+
+[[covers]]
+key = "format-binary"
+arm = 'src/emit.rs::build_example_inner[&& matches!\(f\.type_ref, TypeRef::Optional\(_\)\)]'
+search = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md"

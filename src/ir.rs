@@ -7146,7 +7146,11 @@ fn hoist_form_object(
             // `{type: array, items: {type: string, format: binary}}` on both its
             // multipart uploads, and Fern types it `Sequence[core.File]` and sends
             // it through `files=` rather than JSON-encoding it into `data=`.
+            let nullable_binary = multipart
+                && prop_schema.any_of.is_some()
+                && simple_nullable_member(prop_schema).is_some_and(binary_scalar);
             let is_file = binary_scalar(prop_schema)
+                || nullable_binary
                 || prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array")
                     && prop_schema.items.as_deref().is_some_and(binary_scalar);
             let resolved = prop_schema
@@ -7193,7 +7197,13 @@ fn hoist_form_object(
                 // a JSON body's does: Zulip's urlencoded `PATCH /streams/{stream_id}`
                 // `can_add_subscribers_group` is `allOf: [{description}, $ref …]`.
                 docstring: clean_doc(prop_schema.description.as_deref().or_else(|| {
-                    described_all_of_ref(prop_schema).and_then(|(_, description)| description)
+                    described_all_of_ref(prop_schema)
+                        .and_then(|(_, description)| description)
+                        .or_else(|| {
+                            (multipart && is_file)
+                                .then(|| prop_schema.items.as_deref()?.description.as_deref())
+                                .flatten()
+                        })
                 })),
                 convert,
                 is_file,
@@ -17363,6 +17373,49 @@ mod tests {
             .endpoints
             .iter()
             .any(|endpoint| endpoint.module == "vault" && endpoint.method_name == "list_bundles"));
+    }
+
+    #[test]
+    fn multipart_nullable_binary_is_a_file_and_array_items_document_the_part() {
+        let schema = schema(serde_json::json!({
+            "type": "object", "properties": {
+                "frames": { "type": "array", "items": {
+                    "type": "string", "format": "binary", "description": "Frame images."
+                } },
+                "page": { "anyOf": [
+                    { "type": "string", "format": "binary" }, { "type": "null" }
+                ] },
+                "caption": { "anyOf": [
+                    { "type": "string" }, { "type": "null" }
+                ] }
+            }
+        }));
+        let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
+            root_types: &[],
+            schemas: None,
+            out: Vec::new(),
+        };
+        let fields = super::hoist_form_object(
+            &schema,
+            &indexmap::IndexMap::new(),
+            &mut hoister,
+            "PreserveReelRequest",
+            true,
+        );
+        assert!(fields[0].is_file);
+        assert_eq!(fields[0].docstring.as_deref(), Some("Frame images."));
+        assert!(fields[1].is_file && fields[1].nullable && !fields[1].form_json);
+        assert!(!fields[2].is_file && !fields[2].form_json);
+        let fields = super::hoist_form_object(
+            &schema,
+            &indexmap::IndexMap::new(),
+            &mut hoister,
+            "PreserveReelRequest",
+            false,
+        );
+        assert!(!fields[1].is_file);
+        assert!(fields[0].docstring.is_none());
     }
 
     #[test]
