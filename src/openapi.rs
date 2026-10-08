@@ -2123,6 +2123,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
     normalize_declared_type_names(&mut doc);
+    normalize_inline_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
@@ -2780,6 +2781,85 @@ fn normalize_declared_type_names(doc: &mut OpenApi) {
         })
         .collect();
     rename_component_schemas(doc, &renames);
+}
+
+/// Lift every inline schema that declares a type name (`x-crozier-type-name`,
+/// or `x-fern-type-name`) into a component of that name, leaving a `$ref` where
+/// it stood: Fern names such a schema by the declaration wherever it sits — a
+/// response property's inline enum declaring `ShotSize` is `types/shot_size.py`,
+/// not `GetSettingsResponseMode` — exactly as it would a component. A name a
+/// component already holds is left inline, so nothing a document declares is
+/// overwritten.
+fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
+    fn lift(schema: &mut Schema, taken: &mut IndexMap<String, Option<Schema>>) {
+        let lift_child = |child: &mut Schema, taken: &mut IndexMap<String, Option<Schema>>| {
+            if child.reference.is_none() {
+                if let Some(key) = child.declared_type_name().map(declared_type_key) {
+                    if !taken.contains_key(&key) {
+                        let reference = Schema {
+                            reference: Some(format!("#/components/schemas/{key}")),
+                            ..Schema::default()
+                        };
+                        let mut lifted = std::mem::replace(child, reference);
+                        taken.insert(key.clone(), None);
+                        lift(&mut lifted, taken);
+                        taken.insert(key, Some(lifted));
+                        return;
+                    }
+                }
+            }
+            lift(child, taken);
+        };
+        for child in schema.properties.values_mut() {
+            lift_child(child, taken);
+        }
+        if let Some(items) = schema.items.as_deref_mut() {
+            lift_child(items, taken);
+        }
+        if let Some(AdditionalProperties::Schema(values)) = schema.additional_properties.as_mut() {
+            lift_child(values, taken);
+        }
+        for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of]
+            .into_iter()
+            .flatten()
+        {
+            for member in members {
+                lift_child(member, taken);
+            }
+        }
+    }
+    let mut taken: IndexMap<String, Option<Schema>> = doc
+        .components
+        .schemas
+        .keys()
+        .map(|key| (key.clone(), None))
+        .collect();
+    for schema in doc.components.schemas.values_mut() {
+        lift(schema, &mut taken);
+    }
+    for item in doc.paths.values_mut().chain(doc.webhooks.values_mut()) {
+        for op in item.operation_slots().into_iter().flatten() {
+            let bodies = op
+                .request_body
+                .iter_mut()
+                .flat_map(|body| body.content.values_mut())
+                .chain(
+                    op.responses
+                        .values_mut()
+                        .flat_map(|response| response.content.values_mut()),
+                );
+            for media in bodies {
+                if let Some(schema) = media.schema.as_mut() {
+                    lift(schema, &mut taken);
+                }
+            }
+        }
+    }
+    for (key, lifted) in taken {
+        if let Some(schema) = lifted {
+            doc.components.schemas.insert(key, schema);
+        }
+    }
 }
 
 /// The component key a declared type name is renamed to: the name itself, with
@@ -3632,6 +3712,48 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn an_inline_schema_declaring_a_type_name_is_lifted_to_that_component() {
+        let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "paths": {"/s": {"get": {"responses": {"200": {"description": "ok", "content": {
+                "application/json": {"schema": {"type": "object", "properties": {
+                    "mode": {"type": "string", "enum": ["a"], "x-fern-type-name": "ShotSize"},
+                    "taken": {"type": "string", "enum": ["b"], "x-crozier-type-name": "Camera"},
+                    "plain": {"type": "string", "enum": ["c"]},
+                }}}}}}}}},
+            "components": {"schemas": {"Camera": {"type": "object", "properties": {
+                "iso": {"type": "array", "items": {"type": "string", "enum": ["low"],
+                        "x-fern-type-name": "IsoBand"}},
+            }}}},
+        }))
+        .expect("a document");
+        normalize_inline_declared_type_names(&mut doc);
+        let keys: Vec<&String> = doc.components.schemas.keys().collect();
+        assert_eq!(keys, ["Camera", "IsoBand", "ShotSize"]);
+        let response = &doc.paths["/s"].get.as_ref().unwrap().responses["200"].content
+            ["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        assert_eq!(
+            response.properties["mode"].reference.as_deref(),
+            Some("#/components/schemas/ShotSize")
+        );
+        // A name a component already holds stays inline, as does an undeclared one.
+        assert!(response.properties["taken"].reference.is_none());
+        assert!(response.properties["plain"].reference.is_none());
+        assert_eq!(
+            doc.components.schemas["Camera"].properties["iso"]
+                .items
+                .as_ref()
+                .unwrap()
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/IsoBand")
+        );
+    }
 
     #[test]
     fn idempotency_and_retry_extensions_canonicalize_on_the_crozier_spelling() {

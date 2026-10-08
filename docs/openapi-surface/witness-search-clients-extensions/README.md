@@ -192,6 +192,14 @@ The shape: an operation whose `x-fern-retries` (or `x-crozier-retries`) is a map
 |---|---|---|
 | `operation-retries-disabled` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Type name on an inline schema
+
+The shape: an inline property schema, not a `components.schemas` entry, declaring `x-fern-type-name` (or `x-crozier-type-name`) (`schema.x-fern-type-name:inline-property`). Fern names the type it hoists by the declaration, as it would a component.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `schema-type-name-inline-property` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -213,3 +221,4 @@ The shape: an operation whose `x-fern-retries` (or `x-crozier-retries`) is a map
 | `server-name-several` | `none-registrable` | `orbit-ground-stations` |
 | `operation-idempotent-with-root-headers` | `none-registrable` | `parcel-courier-desk` |
 | `operation-retries-disabled` | `none-registrable` | `parcel-courier-desk` |
+| `schema-type-name-inline-property` | `none-registrable` | `film-shot-planner` |

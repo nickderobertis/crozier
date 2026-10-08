@@ -1943,6 +1943,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "film-shot-planner-literals",
+        "docs/openapi-surface/handwritten/film-shot-planner/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "grid-valve-console-literals",
         "docs/openapi-surface/handwritten/grid-valve-console/openapi.yml",
         &["--enum-type", "literals"],
