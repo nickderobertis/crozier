@@ -7999,10 +7999,32 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
             // whole id is the method (bunq's `CREATE_AttachmentPublic`).
             naming::sanitize_identifier(&naming::to_snake_case(id))
         }
+    } else if let Some(name) = method_from_hyphenated_tag_id(id, first_tag(op)) {
+        name
     } else {
         method_from_groupless_id(id, first_tag(op))
     };
     naming::escape_python_keyword(method)
+}
+
+/// The method name for a `<tag>-<method>` operationId: one hyphen, whose prefix
+/// spells the operation's tag. Fern reads it like the `.`/`_` group forms and
+/// lowercases the method segment verbatim (`gates-checkStatus` under `Gates` is
+/// `checkstatus`), then safe-names a reserved builtin (`fences-all` is `all_`).
+/// Two hyphens, a prefix naming something else, or no tag fall through to
+/// [`method_from_groupless_id`] (`locks-check-status` is `check_status`).
+fn method_from_hyphenated_tag_id(id: &str, tag: Option<&str>) -> Option<String> {
+    let (prefix, method) = id.split_once('-')?;
+    if method.is_empty() || method.contains('-') || !operation_id_matches_tag_spelling(prefix, tag?)
+    {
+        return None;
+    }
+    let ident = naming::sanitize_identifier(&method.to_ascii_lowercase());
+    Some(if naming::is_reserved_method(&ident) {
+        format!("{ident}_")
+    } else {
+        ident
+    })
 }
 
 /// A FastAPI operationId under a tag, with the `{path}_{method}` suffix FastAPI
@@ -13697,13 +13719,14 @@ mod tests {
         build_endpoint, build_enum, described_all_of_ref, discriminant_strips,
         document_discriminant_strips, endpoint_module, environment_model, extensible_enum,
         fern_imports_no_endpoint_example, full_type_ref_resolved, global_headers, hoist_fields,
-        int_prim, member_fields, method_from_grouped_id, module_from_grouped_id, module_identifier,
-        oauth_scope_enum, optional_type_ref, parameter_example, path_group, property_description,
-        query_parameter_example, ref_to_class, request_and_response_refs_match,
-        request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
-        sample_string_of_length, scalar_body, success_response_entry, synthesized_method_name,
-        title_from_tag, variant_class_name, AliasType, Auth, Builder, Field, InlineHoister,
-        ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
+        int_prim, member_fields, method_from_grouped_id, method_from_hyphenated_tag_id,
+        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
+        parameter_example, path_group, property_description, query_parameter_example, ref_to_class,
+        request_and_response_refs_match, request_schema_use_count, resolve_request_body,
+        resolve_schema_pointer, response_schema, sample_string_of_length, scalar_body,
+        success_response_entry, synthesized_method_name, title_from_tag, variant_class_name,
+        AliasType, Auth, Builder, Field, InlineHoister, ObjectType, Prim, RequestBody, TypeDecl,
+        TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
 
@@ -13721,6 +13744,41 @@ mod tests {
             deprecated: false,
             admits_only_empty_object: false,
         }
+    }
+
+    #[test]
+    fn hyphenated_tag_ids_lowercase_the_method_segment() {
+        let tag = Some("Gates");
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-checkStatus", tag).as_deref(),
+            Some("checkstatus")
+        );
+        assert_eq!(
+            method_from_hyphenated_tag_id("Gates-openAll", tag).as_deref(),
+            Some("openall")
+        );
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-all", tag).as_deref(),
+            Some("all_")
+        );
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-list", tag).as_deref(),
+            Some("list")
+        );
+        // Two hyphens, another prefix, no method or no tag are not this form.
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-check-status", tag),
+            None
+        );
+        assert_eq!(
+            method_from_hyphenated_tag_id("other-checkStatus", tag),
+            None
+        );
+        assert_eq!(method_from_hyphenated_tag_id("gates-", tag), None);
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-checkStatus", None),
+            None
+        );
     }
 
     #[test]

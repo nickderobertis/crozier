@@ -1,3 +1,4 @@
 key	selector	census_status
 schema-name-builtin-complex	components.schemas:complex-module-name	supported
 operation-id-untagged-list-or-set	operation.operationId:untagged-list-or-set	supported
+operation-id-hyphenated-tag-method	operation.operationId:hyphenated-tag-method	supported

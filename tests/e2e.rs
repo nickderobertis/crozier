@@ -1933,6 +1933,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "ferry-berth-desk-literals",
+        "docs/openapi-surface/handwritten/ferry-berth-desk/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "impedance-complex-reading-literals",
         "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
         &["--enum-type", "literals"],

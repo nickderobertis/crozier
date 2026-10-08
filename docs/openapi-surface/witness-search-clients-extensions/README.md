@@ -49,9 +49,18 @@ unsuffixed as method names.
 |---|---|---|
 | `operation-id-untagged-list-or-set` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Hyphenated tag method
+
+The shape: a tagged operation whose `operationId` is `<prefix>-<method>`, one hyphen and no `_` or `.`, the prefix spelling its first tag and the method camel-cased (`operation.operationId:hyphenated-tag-method`). Fern lowercases the method segment (`checkstatus`).
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-id-hyphenated-tag-method` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
 |---|---|---|
 | `schema-name-builtin-complex` | `none-registrable` | `impedance-complex-reading` |
 | `operation-id-untagged-list-or-set` | `none-registrable` | `depot-bin-ledger` |
+| `operation-id-hyphenated-tag-method` | `none-registrable` | `ferry-berth-desk` |

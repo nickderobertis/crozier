@@ -4621,6 +4621,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - {"components.schemas:nonidentifier-name", "components.schemas:same-primitive-union",
            "components.schemas:complex-module-name",
            "operation.operationId:untagged-list-or-set",
+           "operation.operationId:hyphenated-tag-method",
            "components.schemas:fields-reach-cycles-unsorted",
            "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
            "schema.type:misspelled-scalar",
@@ -13074,6 +13075,34 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "lower"): 1}, rows(completed))
+
+    def test_hyphenated_tag_method_has_a_positive_and_decoys(self) -> None:
+        selector = "operation.operationId:hyphenated-tag-method"
+
+        def operation(operation_id: str, **fields: object) -> dict:
+            return {"operationId": operation_id, "tags": ["Gates"],
+                    "responses": {"204": {"description": "ok"}}, **fields}
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, op in (
+                ("positive", operation("gates-checkStatus")),
+                ("lower", operation("gates-ping")),
+                ("two-hyphens", operation("gates-check-status")),
+                ("other-prefix", operation("other-checkStatus")),
+                ("underscore", operation("gates-check_Status")),
+                ("named", operation("gates-checkStatus", **{"x-crozier-sdk-method-name": "check"})),
+                ("untagged", {"operationId": "gates-checkStatus",
+                              "responses": {"204": {"description": "ok"}}}),
+            ):
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {"/gates": {"get": op}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1}, rows(completed))
 
     def test_untagged_list_or_set_has_a_positive_and_decoys(self) -> None:
         selector = "operation.operationId:untagged-list-or-set"

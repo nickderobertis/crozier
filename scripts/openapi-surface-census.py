@@ -1199,6 +1199,12 @@ PREDICATES = {
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
     ),
+    "operation.operationId:hyphenated-tag-method": (
+        "one per Operation Object under the Paths Object with no SDK method-name "
+        "extension whose operationId is `<prefix>-<method>`, one hyphen and no `_` "
+        "or `.`, the prefix spelling its first tag and the method camel-cased, so "
+        "Fern's lowercased method differs from its snake-cased one"
+    ),
     "operation.operationId:untagged-list-or-set": (
         "one per Operation Object under the Paths Object with no tag and no SDK "
         "method-name extension whose operationId is exactly `list` or `set`, the "
@@ -2659,12 +2665,13 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "eaf2eefd5b69c03b",
+    "endpoint_method_name": "fbd23a878bfe34af",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
     "method_from_dotted_id": "9b5cc4e4625b43d2",
     "method_from_groupless_id": "3ba287086971a152",
+    "method_from_hyphenated_tag_id": "4eb571e881d67d51",
     "operation_id_tag_prefix": "6b9d3e0baac71cd4",
     "stripped_suffix_has_acronym": "2fc2a5586fdf1c7d",
     "fastapi_endpoint_name": "00ebd39bf3393e58",
@@ -2792,6 +2799,22 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     return (f"{ident}_" if reserved else ident), prefixed
 
 
+def hyphenated_tag_method(operation: dict[Any, Any]) -> bool:
+    """`operation.operationId:hyphenated-tag-method`: see its PREDICATES entry."""
+    if any(key in operation for key in ("x-fern-sdk-method-name", "x-crozier-sdk-method-name")):
+        return False
+    operation_id = operation.get("operationId")
+    tag = _first_tag(operation)
+    if not isinstance(operation_id, str) or tag is None:
+        return False
+    text = operation_id.strip()
+    prefix, _, method = text.partition("-")
+    return (
+        bool(method) and not any(char in text for char in "_.{}/:") and "-" not in method
+        and _matches_tag_spelling(prefix, tag) and _ascii_lower(method) != to_snake_case(method)
+    )
+
+
 def operation_method_prefixed(operation: dict[Any, Any], method: str, url: str) -> bool:
     """Whether `endpoint_method_name` gives this operation's id the leading-digit `_`."""
     derived = operation_method_name(operation, method, url)
@@ -2867,7 +2890,20 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
             group, _, rest = text.rpartition("_")
             return _sanitized(to_snake_case(text) if "_" in group else rest.lower())
         return _sanitized(to_snake_case(text))
+    hyphenated = _hyphenated_tag_method(text, tag)
+    if hyphenated is not None:
+        return hyphenated
     return _groupless_method(text, tag)
+
+
+def _hyphenated_tag_method(text: str, tag: str | None) -> tuple[str, bool] | None:
+    """`method_from_hyphenated_tag_id`: `<tag>-<method>`, the method lowercased."""
+    prefix, _, method = text.partition("-")
+    if tag is None or not method or "-" in method or not _matches_tag_spelling(prefix, tag):
+        return None
+    ident, prefixed = _sanitized(_ascii_lower(method))
+    reserved = is_reserved(ident) and ident not in {"list", "set"}
+    return (f"{ident}_" if reserved else ident), prefixed
 
 
 def normalized_path(template: str) -> str:
@@ -4395,6 +4431,8 @@ class Census:
                 )
             ):
                 found.append("operation.operationId:untagged-list-or-set")
+            if hyphenated_tag_method(node):
+                found.append("operation.operationId:hyphenated-tag-method")
             if self.wildcard_binary_response(node):
                 found.append("operation.responses:wildcard-binary")
             found += self.body_and_response_predicates(node, method, url)
