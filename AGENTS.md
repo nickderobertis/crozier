@@ -81,10 +81,8 @@ and surfacing the rest as follow-ups:
 - **References composed:** base, shapes/cli, languages/rust, languages/bash, intersections/rust-cli, ci, project-graph, llmlint, releasing
 - **Excluded, and why:**
   - **Virtual root manifest** — the root `Cargo.toml` stays the `crozier`
-    package and also declares the workspace: `src/` is the path the committed
-    reach ledgers key on, and the install, maturin and release paths build the
-    root manifest. Its Nx project is rooted at `src/` instead; see
-    [`src/AGENTS.md`](src/AGENTS.md).
+    package and also declares the workspace; why, and why its Nx project is
+    rooted at `src/`: [`src/AGENTS.md`](src/AGENTS.md).
   - **MSRV pin / `just msrv`** — no MSRV is promised yet (pre-1.0, single
     maintainer); `rust-toolchain.toml` pins one stable channel and CI installs
     from it. Add an MSRV when external consumers appear.
