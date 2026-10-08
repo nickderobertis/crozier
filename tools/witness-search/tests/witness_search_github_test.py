@@ -2135,6 +2135,32 @@ components:
         self.assertIn("200000 characters; whole text in the ledger row", record["census"])
         self.assertEqual("outstanding", record["disposition"])
 
+    def test_a_historical_screen_cell_that_is_not_a_pass_is_recorded_as_failed(self) -> None:
+        """Only `passed` or `passed: ...` is a pass: a near miss such as `passed-invalid`
+        in a screen filed before the measured stage reaches records.tsv as a failure."""
+        root = self.root / "historical-screens"
+        for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
+            (root / f"witness-search-{source}").mkdir(parents=True)
+            (root / f"witness-search-{source}/keys.json").write_text(
+                json.dumps({"keys": {"shape": {"selector": "schema.additionalProperties=false"}}}), encoding="utf-8")
+        (root / "witness-search-github-publisher-trees/publisher-set.json").write_text(
+            json.dumps({"publishers": []}), encoding="utf-8")
+        found = {"repository": "example/api", "path": "openapi.yaml", "commit": "c" * 40, "sha256": "d" * 64}
+        (root / "witness-search-github-code-search/candidates.jsonl").write_text(json.dumps(
+            {"source": "github-code-search", "key": "shape", **found, "disposition": "declares",
+             "selector_count": 1}) + "\n", encoding="utf-8")
+        (root / "witness-search-github-code-search/screens.jsonl").write_text(json.dumps(
+            {"source": "github-code-search", "keys": ["shape"], **found, "license": "passed-invalid",
+             "ref": "passed", "fern": "passed: generated", "disposition": "witness-found"}) + "\n", encoding="utf-8")
+        done = subprocess.run([sys.executable, str(REPO / "tools/witness-search/witness-search-github-index.py"),
+                               "--evidence-root", str(root)], capture_output=True, text=True)
+        self.assertEqual(0, done.returncode, done.stderr)
+        with (root / "witness-search-github-code-search/records.tsv").open(encoding="utf-8") as stream:
+            record = next(csv.DictReader(stream, delimiter="\t"))
+        self.assertEqual("failed: passed-invalid", record["licence_screen"])
+        self.assertEqual(("pass", "pass"), (record["revision_screen"], record["fern_screen"]))
+        self.assertIn(SEARCH.INDEX.HISTORICAL_SCREEN, record["evidence"])
+
     def test_partition_windows_decide_completeness_and_report_their_refusals(self) -> None:
         """A partitioned query is complete only when every window is; a refused window is named."""
         root = self.root / "windows"
