@@ -15,9 +15,10 @@ corpus_rows() {
       failed = 1
       exit 1
     }
-    # CORPUS.md also holds status tables whose rows are not numbered; only a row
-    # whose first cell is a number is a manifest row, so prose and status cells
-    # are never read as fixture names and URLs.
+    # CORPUS.md also holds status tables below the manifest, numbered or not; a
+    # row is a manifest row only when its first cell is a number and its decision
+    # is link-ok or committed, so prose and status cells are never read as
+    # fixture names and URLs.
     $2 ~ /^[[:space:]]*[0-9]+[[:space:]]*$/ {
       number=$2; name=$3; url=$5; ref=$6; decision=$8;
       gsub(/[[:space:]]/, "", number);
@@ -25,7 +26,8 @@ corpus_rows() {
       gsub(/^[ ]+|[ ]+$/, "", url);
       gsub(/^[ `]+|[ `]+$/, "", ref);
       gsub(/^[ ]+|[ ]+$/, "", decision);
-      if (name == "" || (decision != "link-ok" && decision != "committed")) next;
+      if (decision != "link-ok" && decision != "committed") next;
+      # A registered row with no name is refused, never skipped.
       if (name !~ /^[A-Za-z0-9][A-Za-z0-9._-]*$/ || name ~ /\.\./)
         refuse("the name is not a fixture name (letters, digits, `.`, `_`, `-`; no `..`)");
       # https for a published source; loopback http and an absolute local path

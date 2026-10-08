@@ -37,6 +37,10 @@ Usage: tools/fern-goldens/generate-corpus-fixtures.sh [--all|--committed] [--onl
                found by searching what was fetched.
   --fetch-root DIR
                Cache direct specs and source repositories under DIR (default .local/corpus).
+
+Exit status: 0 when every selected row generated (or, with --dry-run, was
+planned); 2 for an invalid invocation; the failing step's own status, or 1,
+when a row cannot be read, fetched, discovered or generated.
 USAGE
 }
 
@@ -44,11 +48,11 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --all) mode=all ;;
     --committed) mode=committed ;;
-    --only) shift; only="${1:?--only needs a corpus name or fixture directory}" ;;
+    --only) shift; [ -n "${1:-}" ] || { echo "generate-corpus-fixtures: --only needs a corpus name or fixture directory" >&2; usage; exit 2; }; only="$1" ;;
     --dry-run) dry_run=1 ;;
-    --fetch-root) shift; fetch_root="${1:?--fetch-root needs a directory}" ;;
+    --fetch-root) shift; [ -n "${1:-}" ] || { echo "generate-corpus-fixtures: --fetch-root needs a directory" >&2; usage; exit 2; }; fetch_root="$1" ;;
     -h|--help) usage; exit 0 ;;
-    *) echo "generate-corpus-fixtures: unknown argument '$1'" >&2; usage; exit 1 ;;
+    *) echo "generate-corpus-fixtures: unknown argument '$1'" >&2; usage; exit 2 ;;
   esac
   shift
 done

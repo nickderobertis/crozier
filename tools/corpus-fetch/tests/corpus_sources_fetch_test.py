@@ -122,6 +122,8 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
         for label, row, problem in (
             ("traversing name", "| 3 | `../escape` | test | https://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",
              "the name is not a fixture name"),
+            ("unnamed row", "| 3 |  | test | https://example.test/a.yaml | `HEAD` | MIT | committed | x |\n",
+             "the name is not a fixture name"),
             ("plain http source", "| 3 | `third` | test | http://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",
              "the source is not an https URL"),
             ("option-like ref", "| 3 | `third` | test | https://example.test/a.yaml | `--upload-pack=x` | MIT | link-ok | x |\n",

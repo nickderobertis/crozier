@@ -6,7 +6,7 @@ fetched at its pinned revision in `tests/fixtures/corpus-sources.tsv`.
 `TheCommittedTreeHolds` holds the real tree to that: every row, every digest.
 `TheOfflineCommandsRunEverywhere` runs `prepare` and the fetch's bash
 resolution on every platform, Windows included, over a synthetic root whose
-loopback server must see no request. The suites that fetch through real `curl`
+origin is a port nothing listens on, so any request would fail it. The suites that fetch through real `curl`
 are `tools/corpus-fetch/tests/corpus_sources_fetch_test.py`, which imports the
 synthetic root from here.
 

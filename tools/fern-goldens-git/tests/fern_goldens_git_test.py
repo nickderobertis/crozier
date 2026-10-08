@@ -2363,6 +2363,17 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         # (git's own note that a local clone ignores --filter precedes it.)
         self.assertEqual(result.stderr.splitlines()[-1], "generate-fern-fixture: wrote 1 files to tests/fixtures/delta/expected")
 
+    def test_an_invalid_invocation_exits_two_with_the_usage(self) -> None:
+        for arguments, message in ((("--sideways",), "unknown argument '--sideways'"),
+                                   (("--only",), "--only needs a corpus name or fixture directory"),
+                                   (("--fetch-root",), "--fetch-root needs a directory")):
+            with self.subTest(arguments=arguments):
+                result = self.run_script(*arguments)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn(f"generate-corpus-fixtures: {message}", result.stderr)
+                self.assertIn("Usage: tools/fern-goldens/generate-corpus-fixtures.sh", result.stderr)
+                self.assertNotIn("generate-fern-fixture:", result.stderr)
+
     def test_a_dry_run_fetches_to_discover_and_prints_the_plan_without_generating(self) -> None:
         self.upstream_row("delta", {"spec/openapi.yaml": "openapi: 3.0.3\ninfo: {title: d, version: '1'}\n"})
         calls = self.base / "calls"
