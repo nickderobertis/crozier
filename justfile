@@ -119,7 +119,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audience_filter_strict_flat_matches_fern
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e overlay_goldens_match_fern_output
     python3 scripts/corpus_sources.py check
-    "$(./scripts/census-python.sh)" tests/corpus_surface_census_test.py
+    "$(bash ./scripts/census-python.sh)" tests/corpus_surface_census_test.py
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_crm_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bunq_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bungie_matches_fern_output
@@ -319,6 +319,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e flask_example_heroku_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oip_web_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e waylay_queries_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e confluent_kafka_connect_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e breizhsport_catalogue_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e protoform_conformance_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ere_ps_app_matches_fern_output
@@ -532,7 +533,7 @@ fixtures-coverage *args:
 golden-reach:
     python3 scripts/corpus_sources.py check
     python3 scripts/golden-reach.py measure
-    "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py --json > .local/golden-reach/census.json
+    "$(bash ./scripts/census-python.sh)" ./scripts/openapi-surface-census.py --json > .local/golden-reach/census.json
     python3 scripts/golden-reach.py report --write
 
 # Re-join the last `just golden-reach` measurement after the site table changes.
@@ -566,19 +567,19 @@ handwritten-reach *args:
 # (selector, fixture, count). Reads the committed source copies. The script's own flags pass straight through, e.g.
 # `just surface-census --selector pathItem.trace --json`.
 surface-census *args:
-    "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"
+    "$(bash ./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"
 
 # Boundary coverage for `surface-census`: drives the REAL script over the REAL
 # vendored source documents, offline, so the gate keeps the instrument honest
 # without the network the unscoped recipe needs. Part of `check` (the recipe
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
 test-surface-census:
-    "$(./scripts/census-python.sh)" tests/surface_census_test.py
-    "$(./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py
+    "$(bash ./scripts/census-python.sh)" tests/surface_census_test.py
+    "$(bash ./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py
 
 # Screen every APIs.guru catalogue version for the owned surface-gap selectors.
 apis-guru-gap-screen *args:
-    "$(./scripts/census-python.sh)" ./scripts/apis-guru-gap-screen.py {{args}}
+    "$(bash ./scripts/census-python.sh)" ./scripts/apis-guru-gap-screen.py {{args}}
 
 # The corpus's admissible-licence rule is stated in ONE file,
 # docs/corpus-licensing.md. This fails when any other tracked Markdown document
@@ -758,38 +759,38 @@ screenshots-bless: screenshots
 
 # Validate the witness ledger and its CLI against real temporary documents.
 test-witness-search-redo:
-    "$(./scripts/census-python.sh)" tests/witness_search_redo_test.py
+    "$(bash ./scripts/census-python.sh)" tests/witness_search_redo_test.py
 
 # Drive witness-search acquisition, census and ledger derivation through the real CLIs.
 test-witness-search-acquisition:
-    "$(./scripts/census-python.sh)" tests/witness_search_acquisition_test.py
+    "$(bash ./scripts/census-python.sh)" tests/witness_search_acquisition_test.py
 
 # Offline HTTP journey for the GitHub/Sourcegraph witness acquisition path.
 test-witness-search-github:
-    "$(./scripts/census-python.sh)" tests/witness_search_github_test.py
+    "$(bash ./scripts/census-python.sh)" tests/witness_search_github_test.py
 
 # The measured screening stage both witness-search families file screens through:
 # its CLI over a loopback raw-GitHub server and a stub `fern`, and the legacy
 # index reading what it files.
 test-witness-screen:
-    "$(./scripts/census-python.sh)" tests/witness_screen_test.py
+    "$(bash ./scripts/census-python.sh)" tests/witness_screen_test.py
 
 # Take one legacy witness-search candidate's licence, ref and Fern screens, measured.
 # Network (the guarded raw route) and Fern (`just setup-fern`).
 witness-screen *args:
-    @"$(./scripts/census-python.sh)" ./scripts/witness_screen.py "$@"
+    @"$(bash ./scripts/census-python.sh)" ./scripts/witness_screen.py "$@"
 
 # Canonical reproduction entry point; archived evidence retains original commands.
 witness-search-local-census *args:
-    @"$(./scripts/census-python.sh)" ./scripts/witness-search-local-census.py "$@"
+    @"$(bash ./scripts/census-python.sh)" ./scripts/witness-search-local-census.py "$@"
 
 # Drives the real module against a local HTTP server serving authored responses.
 # Offline tier for the GitHub/Postman/Sourcegraph rate-limit guard.
 test-rate-limit-guard:
-    "$(./scripts/census-python.sh)" tests/rate_limit_guard_test.py
+    "$(bash ./scripts/census-python.sh)" tests/rate_limit_guard_test.py
 
 # Needs network (and GITHUB_TOKEN for the token's own buckets); never waits, so
 # it stays out of `check`. Rule and interface: scripts/rate_limit_guard.py.
 # Live GitHub REST bucket figures from one free /rate_limit read, plus paced-host spacing.
 quota-status:
-    @"$(./scripts/census-python.sh)" scripts/rate_limit_guard.py status
+    @"$(bash ./scripts/census-python.sh)" scripts/rate_limit_guard.py status

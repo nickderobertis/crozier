@@ -2223,7 +2223,7 @@ class RecipeWiringTests(unittest.TestCase):
     def test_the_unscoped_recipe_censuses_committed_sources(self) -> None:
         self.assertEqual(
             [
-                '"$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"',
+                '"$(bash ./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"',
             ],
             recipe_body("surface-census"),
         )
@@ -2232,8 +2232,8 @@ class RecipeWiringTests(unittest.TestCase):
     def test_the_gate_runs_this_file_offline(self) -> None:
         self.assertEqual(
             [
-                f'"$(./scripts/census-python.sh)" tests/{Path(__file__).name}',
-                '"$(./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py',
+                f'"$(bash ./scripts/census-python.sh)" tests/{Path(__file__).name}',
+                '"$(bash ./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py',
             ],
             recipe_body("test-surface-census"),
         )
@@ -7453,11 +7453,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 self.assertIn("a flow collection is used as a mapping key", str(raised.exception))
 
 
-@unittest.skipIf(
-    os.name == "nt",
-    "the POSIX shell resolver's semantics are not reproduced by MSYS",
-)
-class CensusInterpreterTests(unittest.TestCase):
+class CensusInterpreterCase(unittest.TestCase):
     """Pin the census interpreter's repository provenance."""
 
     RESOLVER = REPO / "scripts" / "census-python.sh"
@@ -7495,11 +7491,49 @@ class CensusInterpreterTests(unittest.TestCase):
             timeout=CENSUS_TIMEOUT, encoding="utf-8",
         )
 
+
+class PortableCensusInterpreterTests(CensusInterpreterCase):
+    """Exercise resolver spellings on every platform with Bash available."""
+
+    # llmlint: ignore[shell_test_tiers_stay_split] Bash and Python are the census suite's required execution runtimes, not an additional host-tool tier; this offline resolver boundary test copies the installed runtime, installs nothing and opens no sockets, like the adjacent interpreter-provenance journeys.
+    def test_a_system_python_without_the_python3_spelling_is_usable(self) -> None:
+        """Windows Python installations need not install a python3 executable."""
+        with tempfile.TemporaryDirectory() as directory:
+            interpreter = Path(directory) / ("python.exe" if os.name == "nt" else "python")
+            shutil.copy2(Path(sys.executable).resolve(), interpreter)
+            if os.name == "nt":
+                # PATH is deliberately restricted, so retain the real runtime's
+                # adjacent DLLs as well as its executable.
+                runtime = Path(sys.executable).resolve().parent
+                for library in runtime.glob("*.dll"):
+                    shutil.copy2(library, Path(directory) / library.name)
+                # A copied Windows executable also needs its standard library
+                # when no installed Python directory remains on PATH.
+                shutil.copytree(runtime / "Lib", Path(directory) / "Lib",
+                                ignore=shutil.ignore_patterns("site-packages", "__pycache__"))
+            completed = self.resolve(path=self.shell_path(Path(directory)))
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            invoked = subprocess.run(
+                [self.shell(), "-c", '"$1" -c "$2"', "census-python",
+                 completed.stdout.strip(), "import sys; print(sys.version_info.major)"],
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
+            )
+            self.assertEqual(0, invoked.returncode, invoked.stderr)
+            self.assertEqual("3", invoked.stdout.strip())
+
+
+@unittest.skipIf(
+    os.name == "nt",
+    "the POSIX shell resolver's semantics are not reproduced by MSYS",
+)
+class CensusInterpreterTests(CensusInterpreterCase):
+    """Pin POSIX interpreter provenance and virtualenv selection."""
+
     def test_both_census_recipes_resolve_the_interpreter_through_the_resolver(self) -> None:
         for recipe in ("surface-census", "test-surface-census"):
             with self.subTest(recipe=recipe):
                 body = " ".join(recipe_body(recipe))
-                self.assertIn('"$(./scripts/census-python.sh)"', body)
+                self.assertIn('"$(bash ./scripts/census-python.sh)"', body)
                 self.assertNotRegex(body, r"(?<!census-)\bpython3 ")
 
     def test_the_resolver_names_a_real_interpreter_that_is_not_a_virtualenv(self) -> None:

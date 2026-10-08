@@ -507,3 +507,11 @@ Additional request-body collision specification:
     configured client name. CORPUS.md row 330 records its immutable source;
     docs/corpus-licensing.md records the redistribution grant. Only generated
     output is vendored, with Python comments stripped as described above.
+
+Additional string-map request specification:
+
+  * Confluent Kafka Connect API: the publisher's description at
+    https://raw.githubusercontent.com/confluentinc/ccloud-sdk-go-v2/8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2/connect/v1/api/openapi.yaml.
+    The repository's LICENSE at that revision grants Apache-2.0 redistribution;
+    corpus row 331 records the immutable reference. The unmodified source and
+    Fern-generated output are vendored, with Python comments stripped as above.

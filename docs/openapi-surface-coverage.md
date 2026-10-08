@@ -23,13 +23,13 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 593 features. By category, 492 are `golden`, 52
-`limitations`, 27 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 593 features. By category, 493 are `golden`, 52
+`limitations`, 26 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 593
 split four ways:
 
-- **490 carry byte-match evidence against a registered real-world
+- **491 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -38,7 +38,7 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
-- **27 rest on a hand-written fixture, a weaker proof than a real
+- **26 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
@@ -83,7 +83,7 @@ split four ways:
   converter example that fails publisher provenance.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  490 and never count as a real-specification match.
+  491 and never count as a real-specification match.
 - **10 remain unproven.** 8 are the `FIXTURE` `gap` rows. Each is a feature the
   naming and example predicates of #361 brought inside the census that no
   registered golden source declares, and none has had a witness search, so each
@@ -100,16 +100,16 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-490 + 66 + 27 + 10 = 593.
+491 + 66 + 26 + 10 = 593.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 492 `golden` rows declare 906 handling sites in
+same way. The 493 `golden` rows declare 908 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv), and
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv), measured at commit
-`e323f9144` over all 241 golden tests, with the records it links splits them
+`66cf684ab8cd` over all 242 golden tests, with the records it links splits them
 three ways:
 
-- **840 are reached by a registered real specification.** A golden-only
+- **842 are reached by a registered real specification.** A golden-only
   witness executes the arm and its golden byte-matches.
 - **58 are reached only by a hand-written fixture.** An arm-level cover
   in [the hand-written fixtures](openapi-surface/handwritten/AGENTS.md) executes
@@ -137,7 +137,7 @@ three ways:
   ([Unproven arms, named](#unproven-arms-named)). `format-duration`'s `scalar_body` arm is reached on this measurement by corpus row 308,
   `yourbrand-ticketing`.
 
-840 + 58 + 5 + 3 = 906. Fourteen sites left the table with the two functions
+842 + 58 + 5 + 3 = 908. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. No arm rests on a witness whose redistribution grant is
@@ -1620,14 +1620,14 @@ deciding and the last being a total tiebreak:
 The six region files, read as one body of work. Two measurements feed it:
 
 - **`just surface-census`**, for the classifications and for criterion 4. The
-  current walk is the **2026-10-03** one, pinned by digest (`d799a6a3…`) in
+  current walk is the **2026-10-07** one, pinned by digest (`f16ddf39…`) in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation),
   which `just check` now runs. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 258 sources (corpus rows through 330, after the withdrawals of rows
+  acquires 259 sources (corpus rows through 331, after the withdrawals of rows
   224 and 223, with the `crozier-property-name` feature target), and the walk
-  reads the **241** registered sources, of which
-  **241** carry a committed golden; the 17 others carry none and are acquisition
+  reads the **242** registered sources, of which
+  **242** carry a committed golden; the 17 others carry none and are acquisition
   evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -1667,14 +1667,14 @@ for either; each bullet below says where its number comes from.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 73 | 52 | 19 | 2 | 0 | 0 | 0 | 0 |
 | [`schemas`](openapi-surface/schemas.md) | 288 | 248 | 14 | 17 | 9 | 7 | 0 | 2 |
-| [`bodies-media`](openapi-surface/bodies-media.md) | 57 | 45 | 5 | 7 | 0 | 0 | 0 | 0 |
+| [`bodies-media`](openapi-surface/bodies-media.md) | 57 | 46 | 5 | 6 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 72 | 68 | 3 | 0 | 1 | 1 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 53 | 38 | 2 | 1 | 12 | 0 | 0 | 12 |
-| **total** | **593** | **492** | **52** | **27** | **22** | **8** | **0** | **14** |
+| **total** | **593** | **493** | **52** | **26** | **22** | **8** | **0** | **14** |
 
 The walk enumerated **593** features and landed each in exactly one category:
-**492** `golden`, **52** `limitations`, **27** `handwritten`, **22** `gap`. The `gap` column splits by
+**493** `golden`, **52** `limitations`, **26** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -2070,7 +2070,7 @@ region files are the run named in the ledger's first line.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **432** golden rows reach every handling site and tie below every row
+then key. **433** golden rows reach every handling site and tie below every row
 listed here; each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
 
@@ -2123,7 +2123,7 @@ unreached by any Fern-accepted document.
 | 6 | `anyof-oneof-variant` | `schemas` | **1** | **64** | **6** | owned — see the table below |
 | 7 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **41** | **1** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-anyof-item.md) |
 | 8 | `oneof-discriminated-union` | `schemas` | **1** | **36** | **39** | owned — see the table below |
-| 9 | `parameter-style-form-query-object` | `parameters` | **1** | **30** | **19** | open — independent fixture covers the arm; real-specification search remains bounded |
+| 9 | `parameter-style-form-query-object` | `parameters` | **1** | **30** | **20** | open — independent fixture covers the arm; real-specification search remains bounded |
 | 10 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **25** | **11** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-oneof-discriminated-union.md) |
 | 11 | `items-oneof-element` | `schemas` | **1** | **23** | **23** | owned — see the table below |
 | 12 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **22** | **9** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/array-item-anyof-discriminated-union.md) |
@@ -2155,8 +2155,8 @@ unreached by any Fern-accepted document.
 | 38 | `format-byte` | `schemas` | **1** | **3** | **13** | open — independent fixture covers the arm; real-specification search remains bounded |
 | 39 | `format-uuid` | `schemas` | **1** | **3** | **42** | open — independent fixture covers the arm; real-specification search remains bounded |
 | 40 | `format-date` | `schemas` | **1** | **2** | **35** | open — independent fixture covers the arm; real-specification search remains bounded |
-| 41 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **214** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/mutually-recursive-graph.md) |
-| 42 | `recursive-graph` | `schemas` | **1** | **2** | **214** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/recursive-graph.md) |
+| 41 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **215** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/mutually-recursive-graph.md) |
+| 42 | `recursive-graph` | `schemas` | **1** | **2** | **215** | open — searched by `thin-goldens-continue`: [arm search](openapi-surface/golden-reach-witnesses/searches/recursive-graph.md) |
 | 43 | `schema-example-object-on-map` | `schemas` | **1** | **2** | **11** | open — new with the example predicates of #361; `not searched`: no arm search has been run ([named](#unproven-arms-named)) |
 | 44 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — new with the example predicates of #361; `not searched`: no arm search has been run ([named](#unproven-arms-named)) |
 | 45 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — see the table below |
@@ -2274,7 +2274,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 #### Every unreached arm, and its search verdict
 
-The golden rows split in two. **432** reach every handling site their
+The golden rows split in two. **433** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **60** carry
 at least one handling site no golden-only witness executes: 66 unreached arms
 in all. Every one is named below with the verdict its linked arm-search record
@@ -2559,7 +2559,7 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**56** golden rows rest on one document: a single golden-only witness declares
+**57** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -2584,6 +2584,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `format-regex` | `schemas` | `eozilla` |
 | `format-time` | `schemas` | `maif.local-otoroshi` |
 | `format-uri-template` | `schemas` | `openlinksw-osdb` |
+| `request-body-string-map` | `bodies-media` | `confluent-kafka-connect` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
 | `property-oneof-nullable-pair` | `schemas` | `discord-com` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |

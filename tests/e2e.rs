@@ -4984,6 +4984,7 @@ const CORPORA: &[&Corpus] = &[
     &FLASK_EXAMPLE_HEROKU,
     &OIP_WEB_API,
     &WAYLAY_QUERIES,
+    &CONFLUENT_KAFKA_CONNECT,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -8012,6 +8013,17 @@ const WAYLAY_QUERIES: Corpus = Corpus {
     unmatched: &[],
 };
 
+const CONFLUENT_KAFKA_CONNECT: Corpus = Corpus {
+    api: "confluent-kafka-connect",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `millenium-falcon-challenge`: corpus row 319, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
@@ -8747,6 +8759,11 @@ fn free5gc_pdu_session_matches_fern_output() {
 #[test]
 fn sigstore_rekor_matches_fern_output() {
     assert_committed_corpus_matches(&SIGSTORE_REKOR);
+}
+
+#[test]
+fn confluent_kafka_connect_matches_fern_output() {
+    assert_committed_corpus_matches(&CONFLUENT_KAFKA_CONNECT);
 }
 
 #[test]

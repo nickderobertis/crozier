@@ -20,7 +20,6 @@ property-sole-oneof-empty-object-member	schema.properties>schema.oneOf:sole-memb
 query-array-items-union	parameter.schema:query-items-union	parameters.md	supported
 request-body-described-inline-scalar	operation.requestBody:described-inline-scalar	bodies-media.md	supported
 request-body-property-closed-empty-object	mediaType.schema:closed-empty-object-property	schemas.md	supported
-request-body-string-map	operation.requestBody:plain-string-map	bodies-media.md	supported
 request-example-deprecated-property	mediaType.example:deprecated-property	bodies-media.md	supported
 request-example-nested-null	mediaType.example:nested-null-member	bodies-media.md	supported
 response-contentless-200-with-created	operation.responses:contentless-two-hundred-with-created	bodies-media.md	supported

@@ -14683,6 +14683,41 @@ mod parameter_lowering_tests {
             .collect()
     }
 
+    #[test]
+    fn reference_string_map_body_uses_declared_example_or_placeholder() {
+        for example in [
+            Some(serde_json::json!({"cloud.provider": "aws", "tasks.max": "2"})),
+            None,
+        ] {
+            let mut media = serde_json::json!({
+                "schema": {"type": "object", "additionalProperties": {"type": "string"}}
+            });
+            if let Some(example) = example.as_ref() {
+                media["example"] = example.clone();
+            }
+            let generated = files(serde_json::json!({
+                "openapi": "3.0.0", "info": {"title": "Connector configuration", "version": "1"},
+                "paths": {"/config": {"put": {
+                    "operationId": "validateConfig",
+                    "requestBody": {"content": {"application/json": media}},
+                    "responses": {"200": {"description": "Validated"}}
+                }}}
+            }));
+            for reference in [&generated["reference.md"], &generated["src/api/client.py"]] {
+                if example.is_some() {
+                    assert!(
+                        reference.contains("\"cloud.provider\": \"aws\""),
+                        "{reference}"
+                    );
+                    assert!(reference.contains("\"tasks.max\": \"2\""), "{reference}");
+                    assert!(!reference.contains("\"key\": \"value\""), "{reference}");
+                } else {
+                    assert!(reference.contains("\"key\": \"value\""), "{reference}");
+                }
+            }
+        }
+    }
+
     /// A document of `GET` operations tagged `sky`, one per `(path, parameters)`.
     fn document(version: &str, operations: &[(&str, Value)]) -> Value {
         let mut paths = serde_json::Map::new();

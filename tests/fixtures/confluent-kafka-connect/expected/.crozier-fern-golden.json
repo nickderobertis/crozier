@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "confluent-kafka-connect",
+  "corpus_spec_ref": "8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2",
+  "corpus_spec_url": "https://raw.githubusercontent.com/confluentinc/ccloud-sdk-go-v2/8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2/connect/v1/api/openapi.yaml"
+}
