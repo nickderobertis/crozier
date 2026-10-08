@@ -472,6 +472,8 @@ impl GlobalHeader {
 pub enum HeaderType {
     /// `str`, written into the header as is.
     Str,
+    /// A date-valued header, serialized with `str`.
+    Date,
     /// `int`, from `type: integer`.
     Int,
     /// `float`, from `type: number`.
@@ -501,6 +503,7 @@ impl HeaderType {
     pub fn python(self) -> &'static str {
         match self {
             Self::Str => "str",
+            Self::Date => "dt.date",
             Self::Int => "int",
             Self::Float => "float",
             Self::Bool => "bool",
@@ -607,13 +610,26 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // avoids a duplicate while preserving Fern's grouping (ordinary headers,
     // then security headers).
     headers.extend(api_key_headers);
+    for header in doc.global_header_extensions() {
+        if !headers
+            .iter()
+            .any(|existing| existing.wire_name == header.header)
+        {
+            headers.push(GlobalHeader {
+                py_name: naming::field_name(&header.name),
+                wire_name: header.header.clone(),
+                presence: HeaderPresence::Required(HeaderType::Str),
+            });
+        }
+    }
     headers
 }
 
 /// The client constructor arguments the document's base path lifts out of its
 /// methods: one per `{placeholder}` (see [`crate::openapi::BasePath::parameters`]).
 fn base_path_client_parameters(doc: &OpenApi) -> Vec<ClientPathParameter> {
-    doc.base_path()
+    let mut parameters: Vec<ClientPathParameter> = doc
+        .base_path()
         .map(crate::openapi::BasePath::parameters)
         .unwrap_or_default()
         .into_iter()
@@ -622,13 +638,41 @@ fn base_path_client_parameters(doc: &OpenApi) -> Vec<ClientPathParameter> {
             wire_name: parameter.name,
             default: parameter.default,
         })
-        .collect()
+        .collect();
+    for item in doc.paths.values() {
+        for (_, operation) in item.operations() {
+            for parameter in &operation.parameters {
+                if parameter.location != Some(ParameterLocation::Path) {
+                    continue;
+                }
+                if let Some(variable) = parameter.sdk_variable().filter(|name| {
+                    doc.sdk_variables()
+                        .is_some_and(|variables| variables.contains_key(*name))
+                }) {
+                    if !parameters
+                        .iter()
+                        .any(|existing| existing.wire_name == parameter.name)
+                    {
+                        parameters.push(ClientPathParameter {
+                            py_name: naming::field_name(variable),
+                            wire_name: parameter.name.clone(),
+                            default: None,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    parameters
 }
 
 /// The Python type a promoted header's schema declares: its scalar, or a list of
 /// the scalar an array's inline `items` declare; `str` for anything else.
 fn header_py_type(schema: Option<&Schema>) -> HeaderType {
     match schema.and_then(|schema| schema.ty.as_ref()?.primary()) {
+        Some("string") if schema.and_then(|schema| schema.format.as_deref()) == Some("date") => {
+            HeaderType::Date
+        }
         Some("integer") => HeaderType::Int,
         Some("number") => HeaderType::Float,
         Some("boolean") => HeaderType::Bool,
@@ -1428,6 +1472,8 @@ pub struct QueryParam {
     /// optional argument to Fern, `Optional[str] = None`, though its worked
     /// example still passes it as a required one's would.
     pub nullable: bool,
+    /// A parameter extension default, rendered as a Python literal.
+    pub default: Option<String>,
     /// Whether the value serializes through `convert_and_respect_annotation_metadata`
     /// in the `params` dict — true for an object/union type carrying field aliases,
     /// as Fern wraps an object-typed query parameter.
@@ -2787,7 +2833,7 @@ fn build_endpoint(
             };
             PathParam {
                 wire_name: p.name.clone(),
-                py_name: naming::field_name(&p.name),
+                py_name: naming::field_name(p.sdk_name()),
                 // A path value that reaches nothing but scalars is interpolated as
                 // text, the same guard the query arm applies.
                 convert: hoister.needs_convert(&type_ref)
@@ -2843,22 +2889,11 @@ fn build_endpoint(
             convert: false,
         });
     }
-    if !doc.openapi.starts_with("3.1")
-        || op.path_level_parameters
-        || op.parameters.iter().any(|parameter| {
-            parameter.location == Some(ParameterLocation::Path)
-                && parameter
-                    .schema
-                    .as_ref()
-                    .is_some_and(|schema| schema.title.is_some())
-        })
-    {
-        path_params.sort_by(|a, b| {
-            path_param_position(path, &a.wire_name)
-                .cmp(&path_param_position(path, &b.wire_name))
-                .then_with(|| a.wire_name.cmp(&b.wire_name))
-        });
-    }
+    path_params.sort_by(|a, b| {
+        path_param_position(path, &a.wire_name)
+            .cmp(&path_param_position(path, &b.wire_name))
+            .then_with(|| a.wire_name.cmp(&b.wire_name))
+    });
 
     let query_params: Vec<QueryParam> = op
         .parameters
@@ -2968,6 +3003,7 @@ fn build_endpoint(
                         .and_then(|reference| resolve_ref(doc, reference))
                         .unwrap_or(schema);
                     schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                        && !schema.explicitly_nullable()
                 });
             let allow_multiple = schema.is_some_and(|schema| {
                 let schema = schema
@@ -3011,10 +3047,11 @@ fn build_endpoint(
                 });
             QueryParam {
                 wire_name: p.name.clone(),
-                py_name: naming::field_name(&p.name),
+                py_name: naming::field_name(p.sdk_name()),
                 type_ref,
                 required,
                 nullable: p.schema.as_ref().is_some_and(Schema::explicitly_nullable),
+                default: p.sdk_default().and_then(example_literal),
                 convert,
                 comma_separated,
                 allow_multiple,
@@ -3095,11 +3132,11 @@ fn build_endpoint(
     // crozier handles path, query, and header parameters, and drops `cookie`
     // parameters (Fern omits them from the method signature entirely). Any other
     // kind (an unknown location, or a `$ref` with no location) puts the operation
-    // outside the emittable subset.
+    // outside the emittable subset. A missing location is ignored.
     let has_unsupported_params = op.parameters.iter().any(|p| {
         !matches!(
             p.location,
-            Some(
+            None | Some(
                 ParameterLocation::Path
                     | ParameterLocation::Query
                     | ParameterLocation::Header

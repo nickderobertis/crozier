@@ -13565,6 +13565,35 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
 
+class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
+    """Exact authored shapes and neighboring non-triggers through the census CLI."""
+
+    def test_parameter_shape_predicates_select_only_the_complete_trigger(self) -> None:
+        cases = [
+            ("parameter.in:absent", {"name": "search", "schema": {"type": "string"}}, {"in": "query"}),
+            ("parameter.schema:nullable-array-explode-false", {"name": "tags", "in": "query", "explode": False, "schema": {"type": "array", "nullable": True, "items": {"type": "string"}}}, {"explode": True}),
+            ("parameter.schema:nullable-array-items-30", {"name": "tags", "in": "query", "schema": {"type": "array", "items": {"type": "string", "nullable": True}}}, {"schema": {"type": "array", "items": {"type": "string"}}}),
+            ("parameter.schema:required-nullable-scalar-30", {"name": "region", "in": "query", "required": True, "schema": {"type": "string", "nullable": True}}, {"required": False}),
+            ("parameter.schema:date-union-query-oneof", {"name": "since", "in": "query", "schema": {"oneOf": [{"type": "integer"}, {"type": "string", "format": "date"}]}}, {"schema": {"oneOf": [{"type": "integer"}, {"type": "string"}]}}),
+            ("parameter.schema:promoted-date-header", {"name": "X-Date", "in": "header", "schema": {"type": "string", "format": "date"}}, {"schema": {"type": "string"}}),
+            ("parameter.schema:single-required-header", {"name": "X-Key", "in": "header", "required": True, "schema": {"type": "string"}}, {"required": False}),
+        ]
+        for selector, parameter, near in cases:
+            with self.subTest(selector=selector):
+                documents = {}
+                for name, value in [("positive", parameter), ("near", {**parameter, **near})]:
+                    documents[name] = {"openapi": "3.0.3", "paths": {"/signals": {"get": self.operation(parameters=[value])}}}
+                self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+    def test_path_order_predicate_requires_31_and_operation_only_untitled_parameters(self) -> None:
+        parameters = [{"name": name, "in": "path", "required": True, "schema": {"type": "string"}} for name in ["sensor", "station"]]
+        operation = self.operation(parameters=parameters)
+        documents = {"positive": {"openapi": "3.1.0", "paths": {"/stations/{station}/sensors/{sensor}": {"get": operation}}},
+                     "near": {"openapi": "3.0.3", "paths": {"/stations/{station}/sensors/{sensor}": {"get": operation}}}}
+        selector = "operation.parameters:path-order-31"
+        self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+
 class ParityProofIndexTests(unittest.TestCase):
     """The public proof index names complete goldens and every catalogued defect once."""
 

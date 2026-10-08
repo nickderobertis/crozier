@@ -1,0 +1,284 @@
+Unexplained differing files: 5
+FILE: README.md
+      ⋮ (39 unchanged line(s))
+  client = FernApi()
+  
+  client.config.add_config(
+-     config_name="",
+-     owner="",
+-     config="",
+-     host="",
+-     parents="",
++     config_name={
++         "key": "value"
++     },
++     owner={
++         "key": "value"
++     },
++     config={
++         "key": "value"
++     },
++     host={
++         "key": "value"
++     },
++     parents={
++         "key": "value"
++     },
+  )
+  ```
+  
+      ⋮ (24 unchanged line(s))
+  
+  async def main() -> None:
+      await client.config.add_config(
+-         config_name="",
+-         owner="",
+-         config="",
+-         host="",
+-         parents="",
++         config_name={
++             "key": "value"
++         },
++         owner={
++             "key": "value"
++         },
++         config={
++             "key": "value"
++         },
++         host={
++             "key": "value"
++         },
++         parents={
++             "key": "value"
++         },
+      )
+  
+  
+      ⋮ (107 unchanged line(s))
+
+FILE: reference.md
+      ⋮ (112 unchanged line(s))
+  )
+  
+  client.config.add_config(
+-     config_name="",
+-     owner="",
+-     config="",
+-     host="",
+-     parents="",
++     config_name={"key": "value"},
++     owner={"key": "value"},
++     config={"key": "value"},
++     host={"key": "value"},
++     parents={"key": "value"},
+  )
+  
+  ```
+      ⋮ (253 unchanged line(s))
+      host_id="hostId",
+      config_id="configId",
+      config_name={"key": "value"},
++     requester={"key": "value"},
++     config={"key": "value"},
++     parents={"key": "value"},
+  )
+  
+  ```
+      ⋮ (107 unchanged line(s))
+  )
+  
+  client.audit.add_record(
+-     referer="",
+-     service="config-service",
+-     uri="/test",
+-     host="test.aeekay.io",
+-     operation="",
+-     auth="",
+-     entity="",
++     referer={"key": "value"},
++     service={"key": "value"},
++     uri={"key": "value"},
++     host={"key": "value"},
++     operation={"key": "value"},
++     auth={"key": "value"},
++     entity={"key": "value"},
+      request_type=AuditLogInRequestType.GET,
+-     protocol="tcp",
+-     headers=[{"X-Forwarded-For": "42.24.56.13"}],
++     protocol={"key": "value"},
++     headers={"key": "value"},
+  )
+  
+  ```
+      ⋮ (226 unchanged line(s))
+
+FILE: src/fern/audit/client.py
+      ⋮ (83 unchanged line(s))
+  
+          client = FernApi()
+          client.audit.add_record(
+-             referer="",
+-             service="config-service",
+-             uri="/test",
+-             host="test.aeekay.io",
+-             operation="",
+-             auth="",
+-             entity="",
++             referer={"key": "value"},
++             service={"key": "value"},
++             uri={"key": "value"},
++             host={"key": "value"},
++             operation={"key": "value"},
++             auth={"key": "value"},
++             entity={"key": "value"},
+              request_type=AuditLogInRequestType.GET,
+-             protocol="tcp",
+-             headers=[{"X-Forwarded-For": "42.24.56.13"}],
++             protocol={"key": "value"},
++             headers={"key": "value"},
+          )
+          """
+          _response = self._raw_client.add_record(
+      ⋮ (117 unchanged line(s))
+  
+          async def main() -> None:
+              await client.audit.add_record(
+-                 referer="",
+-                 service="config-service",
+-                 uri="/test",
+-                 host="test.aeekay.io",
+-                 operation="",
+-                 auth="",
+-                 entity="",
++                 referer={"key": "value"},
++                 service={"key": "value"},
++                 uri={"key": "value"},
++                 host={"key": "value"},
++                 operation={"key": "value"},
++                 auth={"key": "value"},
++                 entity={"key": "value"},
+                  request_type=AuditLogInRequestType.GET,
+-                 protocol="tcp",
+-                 headers=[{"X-Forwarded-For": "42.24.56.13"}],
++                 protocol={"key": "value"},
++                 headers={"key": "value"},
+              )
+  
+  
+      ⋮ (55 unchanged line(s))
+
+FILE: src/fern/config/client.py
+      ⋮ (101 unchanged line(s))
+  
+          client = FernApi()
+          client.config.add_config(
+-             config_name="",
+-             owner="",
+-             config="",
+-             host="",
+-             parents="",
++             config_name={"key": "value"},
++             owner={"key": "value"},
++             config={"key": "value"},
++             host={"key": "value"},
++             parents={"key": "value"},
+          )
+          """
+          _response = self._raw_client.add_config(
+      ⋮ (118 unchanged line(s))
+              host_id="hostId",
+              config_id="configId",
+              config_name={"key": "value"},
++             requester={"key": "value"},
++             config={"key": "value"},
++             parents={"key": "value"},
+          )
+          """
+          _response = self._raw_client.update_config_by_id(
+      ⋮ (111 unchanged line(s))
+  
+          async def main() -> None:
+              await client.config.add_config(
+-                 config_name="",
+-                 owner="",
+-                 config="",
+-                 host="",
+-                 parents="",
++                 config_name={"key": "value"},
++                 owner={"key": "value"},
++                 config={"key": "value"},
++                 host={"key": "value"},
++                 parents={"key": "value"},
+              )
+  
+  
+      ⋮ (142 unchanged line(s))
+                  host_id="hostId",
+                  config_id="configId",
+                  config_name={"key": "value"},
++                 requester={"key": "value"},
++                 config={"key": "value"},
++                 parents={"key": "value"},
+              )
+  
+  
+      ⋮ (12 unchanged line(s))
+
+FILE: src/fern/config/raw_client.py
+      ⋮ (60 unchanged line(s))
+              request_options=request_options,
+          )
+          try:
+-             if _response is None or not _response.text.strip():
+-                 return HttpResponse(response=_response, data=None)
+              if 200 <= _response.status_code < 300:
+                  _data = typing.cast(
+                      typing.Any,
+      ⋮ (369 unchanged line(s))
+              request_options=request_options,
+          )
+          try:
+-             if _response is None or not _response.text.strip():
+-                 return AsyncHttpResponse(response=_response, data=None)
+              if 200 <= _response.status_code < 300:
+                  _data = typing.cast(
+                      typing.Any,
+      ⋮ (330 unchanged line(s))
+
+Catalogued departures: [
+    AppliedDeparture {
+        file: ".fern/metadata.json",
+        line: 6,
+        id: "fern-metadata-generator-config",
+    },
+    AppliedDeparture {
+        file: "src/fern/__init__.py",
+        line: 21,
+        id: "init-type-checking-import-order",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 34,
+        id: "sdk-identity-header-prefix",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 35,
+        id: "sdk-identity-header-prefix",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 36,
+        id: "sdk-identity-header-prefix",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 37,
+        id: "sdk-identity-header-prefix",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 38,
+        id: "sdk-identity-header-prefix",
+    },
+]

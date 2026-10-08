@@ -43,6 +43,8 @@ enum Class {
     ExampleNotEnumValue,
     ExampleUnexpectedProperty,
     ExampleMissingRequiredProperty,
+    HeaderDefaultDiffersAcrossOperations,
+    VersionHeaderRedeclaredAsParameter,
 }
 
 impl Class {
@@ -76,6 +78,10 @@ impl Class {
             Self::ExampleNotEnumValue => "example-not-enum-value",
             Self::ExampleUnexpectedProperty => "example-unexpected-property",
             Self::ExampleMissingRequiredProperty => "example-missing-required-property",
+            Self::HeaderDefaultDiffersAcrossOperations => {
+                "header-default-differs-across-operations"
+            }
+            Self::VersionHeaderRedeclaredAsParameter => "version-header-redeclared-as-parameter",
         }
     }
 }

@@ -1,0 +1,28 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "26839b91ee446dba99906da2cf9cd39e4e37db1d218899ba0b0faf3f4d166e7a"
+
+[[covers]]
+key = "parameter-name-extension"
+search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+
+[[covers]]
+key = "parameter-default-extension"
+search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+
+[[covers]]
+key = "parameter-ignore-extension"
+search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+
+[[covers]]
+key = "parameter-in-query"
+arm = 'src/ir.rs::build_endpoint[default: p\.sdk_default]'
+search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"

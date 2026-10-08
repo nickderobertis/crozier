@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "4f1ca75ca621c62137dd158330ef2de1469dd6382668119a41d30e8e2aa8de63"
+
+[[covers]]
+key = "parameter-without-location"
+search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
