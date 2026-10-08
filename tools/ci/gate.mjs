@@ -32,7 +32,7 @@
 // left to their own legs), then one completion line. Nx's own output goes to a
 // log that is printed in full when a target fails.
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -301,4 +301,6 @@ function main() {
   console.log(`${TOOL}: ok (${options.targets.join(", ")}; output in ${log})`);
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+// Node names its main module by its real path, so the path it was started by is
+// resolved the same way: through macOS's /var -> /private/var, say.
+if (process.argv[1] && existsSync(process.argv[1]) && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) main();

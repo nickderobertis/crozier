@@ -19,6 +19,7 @@
 // `--print` prints the decision as JSON and runs nothing (the workflow-contract
 // test drives it that way); otherwise it runs `just check` with the decision.
 import { spawnSync } from "node:child_process";
+import { existsSync, realpathSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -105,4 +106,6 @@ function main() {
   process.exit(run.status ?? 1);
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+// Node names its main module by its real path, so the path it was started by is
+// resolved the same way: through macOS's /var -> /private/var, say.
+if (process.argv[1] && existsSync(process.argv[1]) && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) main();

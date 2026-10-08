@@ -272,7 +272,8 @@ test("a failing target's whole output reaches a slow reader before the gate exit
   // CI reads the gate through a pipe that holds one buffer (64 KiB on Linux).
   // A reader slower than the gate must still get the whole replay of the run's
   // log, not the first buffer of it. The target exits only once its own output
-  // has drained, so the log is past one buffer whatever the load.
+  // has drained, so the log is past one buffer whatever the load — and only
+  // just past it on macOS, where Nx kept 65,904 bytes of this run's log.
   const root = scratchWorkspace(t);
   const noisy = "node -e \"for (let i = 0; i < 4000; i++) console.log('line ' + i + ' ' + '.'.repeat(60)); setTimeout(() => process.exit(3), 500)\"";
   commitChange(root, "a/project.json", project("a", { targets: { test: { command: noisy } } }));
@@ -282,7 +283,7 @@ test("a failing target's whole output reaches a slow reader before the gate exit
   const log = /gate: a target failed \(full output above and in (\S+)\)/.exec(slow.stdout);
   assert.ok(log, slow.stdout.slice(-2000));
   const replay = readFileSync(log[1], "utf8");
-  assert.ok(replay.length > 128 * 1024, `the run's log holds ${replay.length} bytes`);
+  assert.ok(replay.length > 64 * 1024, `the run's log holds ${replay.length} bytes`);
   assert.ok(slow.stdout.startsWith(replay), `${slow.stdout.length} of the log's ${replay.length} bytes reached the reader`);
 });
 
