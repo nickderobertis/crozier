@@ -73,9 +73,12 @@ function nxGraph() {
     const manifest = require.resolve("nx/package.json");
     const nx = join(dirname(manifest), require(manifest).bin.nx);
     const file = join(scratch, "graph.json");
+    // Nx's built-in plugins load in this process, not in workers: every
+    // project's lint computes the graph at once, and on a loaded Windows runner
+    // a worker missed Nx's fixed 10-second load deadline. nx.json adds no plugin.
     execFileSync(process.execPath, [nx, "graph", `--file=${file}`], {
       cwd: root,
-      env: { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true" },
+      env: { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true", NX_ISOLATE_PLUGINS: "false" },
       stdio: ["ignore", "pipe", "pipe"],
       maxBuffer: 64 * 1024 * 1024,
     });

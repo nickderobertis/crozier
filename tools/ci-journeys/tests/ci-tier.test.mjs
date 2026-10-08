@@ -139,7 +139,9 @@ test("a gate argument carrying shell syntax is refused before anything runs", (t
     GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main",
   });
   assert.equal(refused.status, 2, refused.output);
-  assert.match(refused.output, /ci-tier: gate argument "--projects=a;touch\$\{IFS\}pwned" carries a character the gate never takes/);
+  // On Windows the argument reaches ci-tier through Git Bash's sh, which has
+  // dropped the braces by then; it is refused all the same.
+  assert.match(refused.output, /ci-tier: gate argument "--projects=a;touch\$\{?IFS\}?pwned" carries a character the gate never takes/);
   assert.ok(!existsSync(join(root, "pwned")) && !ran(root, "a"), refused.output);
 });
 
