@@ -444,7 +444,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-108, declared in `scripts/openapi-surface-census.py` and restated here, with a
+116, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -658,6 +658,31 @@ drift gate over the pair:
   quarters but not all of the document's operations and is neither a header the
   transport or an apiKey scheme owns nor `Authorization`: the header
   `global_headers` promotes as a one-value `Literal`.
+- `parameter.in:absent` — one per inline Parameter Object with a name and an
+  inline schema but no `in` field: the parameter `build_endpoint` skips.
+- `parameter.schema:nullable-array-explode-false` — one per optional form-style
+  query Parameter Object writing `explode: false` whose inline schema is a
+  `nullable: true` array of strings: the list sent unjoined.
+- `parameter.schema:nullable-array-items-oas-three-zero` — one per query Parameter Object
+  of an OpenAPI 3.0 document whose inline array schema's inline `items` is a
+  `nullable: true` scalar: the item nullability the query type drops.
+- `parameter.schema:required-nullable-scalar-oas-three-zero` — one per required query
+  Parameter Object of an OpenAPI 3.0 document whose inline scalar schema is
+  `nullable: true`: the required parameter lowered as optional.
+- `parameter.schema:date-union-query-oneof` — one per query Parameter Object
+  whose inline `oneOf` has an integer member and a `format: date` string
+  member: the union the query serializer converts.
+- `parameter.schema:promoted-date-header` — one per `format: date` header
+  Parameter Object whose name rides at least three quarters of the document's
+  operations and is neither a header the transport or an apiKey scheme owns nor
+  `Authorization`: the client field typed `dt.date`.
+- `parameter.schema:single-required-header` — one per required header
+  Parameter Object of a document with exactly one operation: the header
+  `global_headers` promotes to a required constructor field.
+- `operation.parameters:path-order-oas-three-one` — one per Operation Object of an
+  OpenAPI 3.1 document declaring two or more untitled path parameters in an
+  order other than its URL template's, with no path-level path parameter: the
+  signature `build_endpoint` orders by template position.
 - `mediaType.examples:named-beside-example` and `mediaType.examples:named-only`
   — one per request body's selected JSON media type writing a named example that
   resolves to a value, beside a non-null `example` (which `reference.md` then
@@ -876,7 +901,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Seventy-one of the 108 are node-local**, which is what makes them one family:
+**Seventy-four of the 116 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -885,13 +910,15 @@ fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further, and `schema.example:unread-date-time`, which reads one node's `format`
 and selected example. The other
-thirty-seven — `operation.operationId:duplicate`,
+forty-two — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
 `schema.anyOf:discriminated-union`,
 `schema.discriminator:inheritance-union`,
 `parameter.schema:subset-header-string-default`,
+`parameter.schema:promoted-date-header`,
+`parameter.schema:single-required-header`,
 `operation.operationId:digit-leading-method`,
 `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`,
 `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`,
@@ -910,14 +937,17 @@ thirty-seven — `operation.operationId:duplicate`,
 `operation.requestBody:described-inline-scalar`,
 `operation.requestBody:plain-string-map`,
 `operation.responses:contentless-two-hundred-with-created`,
+`parameter.schema:nullable-array-items-oas-three-zero`,
+`parameter.schema:required-nullable-scalar-oas-three-zero`,
+`operation.parameters:path-order-oas-three-one`,
 `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`,
 `mediaType.example:deprecated-property`,
 `components.schemas:fields-reach-cycles-unsorted`,
 `components.schemas:cycle-into-cycle` and
 `mediaType.schema:closed-empty-object-property` — read the document beyond the
-node, and say so in their own sentence. The first nine and the two cycle
+node, and say so in their own sentence. The first eleven and the two cycle
 readings compare one document's own values against each other; the next
-twenty-two read where the node stands (an operation's route, a request body's
+twenty-five read where the node stands (an operation's route, a request body's
 selected media type, the document's version) or resolve one local
 `#/components/...` reference; the last four read a request body's selected
 media type and resolve the `#/components/schemas/...` references reached by its
@@ -1521,8 +1551,8 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 33 rows are the 27 generator categories, the base-path and string-map
-example gaps, and the four additional scenarios the parameter fix closed.
+These 35 rows are the 27 generator categories, the base-path and string-map
+example gaps, and the six additional scenarios the parameter fix closed.
 Other scenarios remain in a separate follow-on plan and are not proof claims
 here. Each path is committed output from Fern CLI **5.67.1** with
 `fernapi/fern-python-sdk` **5.20.0**, compared by the named deterministic e2e
@@ -1570,6 +1600,8 @@ corrections the shared comparison engine applies. All other bytes must match.
 | required-and-nullable-query-param-made-optional | Required nullable query schema becomes an optional method argument | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected | `parameter_lowering_measurements_match_fern` | — |
 | query-array-nullable-items-optional | Nullable query-array items stripped from signature; incompatible documentation type/example corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected | `parameter_lowering_measurements_match_fern` | `nullable-items-docs` |
 | single-operation-required-header-promoted | Required header on a sole operation promoted to the client | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected | `parameter_lowering_measurements_match_fern` | — |
+| client-header-date-format-typed-str | Promoted date header typed `dt.date` on the client; invalid constructor example corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/observatory-client-date/fern-expected | `handwritten_fixtures_match_fern_goldens` | `date-header-constructor-example` |
+| sdk-variables-extension-ignored | SDK-variable path parameters lifted to the client; constructor and method documentation corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/observatory-client-variable/fern-expected | `handwritten_fixtures_match_fern_goldens` | `sdk-variable-docs-examples` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses

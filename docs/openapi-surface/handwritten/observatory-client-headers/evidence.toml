@@ -4,13 +4,13 @@ digest = "cf6030ba53d55f2d8920ac5d2311026d92f565a95a8b861b4dc15e33846f3d86"
 
 [[covers]]
 key = "global-headers-extension"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
 
 [[covers]]
 key = "parameter-in-header"
 arm = 'src/ir.rs::global_headers[for header in doc\.global_header_extensions]'
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"

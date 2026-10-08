@@ -4,25 +4,25 @@ digest = "26839b91ee446dba99906da2cf9cd39e4e37db1d218899ba0b0faf3f4d166e7a"
 
 [[covers]]
 key = "parameter-name-extension"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
 
 [[covers]]
 key = "parameter-default-extension"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
 
 [[covers]]
 key = "parameter-ignore-extension"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
 
 [[covers]]
 key = "parameter-in-query"
 arm = 'src/emit.rs::method_params[if let Some\(default\) = &qp\.default]'
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"

@@ -4,24 +4,24 @@ digest = "ea7ccb5d7b613f78a1f282483802e97c6f8aa74df70a47025dddc8cd51920e2f"
 
 [[covers]]
 key = "nullable-array-query-explode-false"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
 
 [[covers]]
 key = "nullable-query-array-items"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
 
 [[covers]]
 key = "required-nullable-query-scalar"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
 
 [[covers]]
 key = "query-date-union-oneof"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"

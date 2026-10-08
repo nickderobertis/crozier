@@ -2399,6 +2399,8 @@ class GrammarContractTests(unittest.TestCase):
         "schema.anyOf:discriminated-union",
         "schema.discriminator:inheritance-union",
         "parameter.schema:subset-header-string-default",
+        "parameter.schema:promoted-date-header",
+        "parameter.schema:single-required-header",
         # Read where the node stands, or resolve one local reference (#361).
         "operation.operationId:digit-leading-method",
         "operation.responses:wildcard-binary",
@@ -2422,6 +2424,10 @@ class GrammarContractTests(unittest.TestCase):
         "components.schemas:fields-reach-cycles-unsorted",
         "components.schemas:cycle-into-cycle",
         "mediaType.schema:closed-empty-object-property",
+        # Read the document's version, or an operation's route.
+        "parameter.schema:nullable-array-items-oas-three-zero",
+        "parameter.schema:required-nullable-scalar-oas-three-zero",
+        "operation.parameters:path-order-oas-three-one",
     })
 
     def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
@@ -2441,12 +2447,13 @@ class GrammarContractTests(unittest.TestCase):
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
             "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69, "Seventy": 70,
-            "Seventy-one": 71,
+            "Seventy-one": 71, "Seventy-four": 74,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
             "seventeen": 17, "eighteen": 18, "twenty": 20, "twenty-one": 21,
             "twenty-three": 23, "twenty-four": 24,
             "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
             "thirty-five": 35, "thirty-six": 36, "thirty-seven": 37,
+            "forty-two": 42,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -3861,6 +3868,20 @@ POINTER_FORM_PREDICATES = frozenset({
 })
 
 
+# The parameter-lowering shapes discriminated against their near misses by
+# `ParameterExtensionShapeSelectors` through the census CLI.
+PARAMETER_EXTENSION_SHAPE_PREDICATES = frozenset({
+    "parameter.in:absent",
+    "parameter.schema:nullable-array-explode-false",
+    "parameter.schema:nullable-array-items-oas-three-zero",
+    "parameter.schema:required-nullable-scalar-oas-three-zero",
+    "parameter.schema:date-union-query-oneof",
+    "parameter.schema:promoted-date-header",
+    "parameter.schema:single-required-header",
+    "operation.parameters:path-order-oas-three-one",
+})
+
+
 # The naming and example branches #361 brought inside the census, discriminated
 # by `NamingAndExampleBranchDiscriminationTests`: the enum_words and
 # numeric_enum_identifier arms, the operationId leading-digit prefix, and the
@@ -4450,6 +4471,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
            "schema.type:misspelled-scalar",
            "securityScheme:$ref", "parameter.schema:query-items-union",
            "parameter.schema:subset-header-string-default"} \
+        - PARAMETER_EXTENSION_SHAPE_PREDICATES \
         - BODY_AND_RESPONSE_PREDICATES \
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
 
@@ -13572,8 +13594,8 @@ class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
         cases = [
             ("parameter.in:absent", {"name": "search", "schema": {"type": "string"}}, {"in": "query"}),
             ("parameter.schema:nullable-array-explode-false", {"name": "tags", "in": "query", "explode": False, "schema": {"type": "array", "nullable": True, "items": {"type": "string"}}}, {"explode": True}),
-            ("parameter.schema:nullable-array-items-30", {"name": "tags", "in": "query", "schema": {"type": "array", "items": {"type": "string", "nullable": True}}}, {"schema": {"type": "array", "items": {"type": "string"}}}),
-            ("parameter.schema:required-nullable-scalar-30", {"name": "region", "in": "query", "required": True, "schema": {"type": "string", "nullable": True}}, {"required": False}),
+            ("parameter.schema:nullable-array-items-oas-three-zero", {"name": "tags", "in": "query", "schema": {"type": "array", "items": {"type": "string", "nullable": True}}}, {"schema": {"type": "array", "items": {"type": "string"}}}),
+            ("parameter.schema:required-nullable-scalar-oas-three-zero", {"name": "region", "in": "query", "required": True, "schema": {"type": "string", "nullable": True}}, {"required": False}),
             ("parameter.schema:date-union-query-oneof", {"name": "since", "in": "query", "schema": {"oneOf": [{"type": "integer"}, {"type": "string", "format": "date"}]}}, {"schema": {"oneOf": [{"type": "integer"}, {"type": "string"}]}}),
             ("parameter.schema:promoted-date-header", {"name": "X-Date", "in": "header", "schema": {"type": "string", "format": "date"}}, {"schema": {"type": "string"}}),
             ("parameter.schema:single-required-header", {"name": "X-Key", "in": "header", "required": True, "schema": {"type": "string"}}, {"required": False}),
@@ -13593,7 +13615,7 @@ class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
         documents["path-level"] = {"openapi": "3.1.0", "paths": {"/stations/{station}/sensors/{sensor}": {"parameters": [parameters[0]], "get": operation}}}
         titled = [{**parameter, "schema": {**parameter["schema"], "title": "Route value"}} for parameter in parameters]
         documents["titled"] = {"openapi": "3.1.0", "paths": {"/stations/{station}/sensors/{sensor}": {"get": self.operation(parameters=titled)}}}
-        selector = "operation.parameters:path-order-31"
+        selector = "operation.parameters:path-order-oas-three-one"
         self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
 
     def test_date_header_promotion_requires_frequency_and_unowned_header(self) -> None:
@@ -13615,7 +13637,7 @@ class ParityProofIndexTests(unittest.TestCase):
         section = index.split("## Parity repair proof index", 1)[1].split("### Handed-off real witnesses", 1)[0]
         rows = [cells for line in section.splitlines()
                 if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}]
-        self.assertEqual(33, len(rows))
+        self.assertEqual(35, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}

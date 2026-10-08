@@ -4,6 +4,6 @@ digest = "c440e9b01f844ec2ee108d2d6d62a7b4b7bb6b368ea18ea3a7ab18ad0beb23bb"
 
 [[covers]]
 key = "path-parameters-template-order-31"
-search = "docs/openapi-surface/witness-search-parameters-extensions.md#witness-search"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-parameters-extensions.md"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"

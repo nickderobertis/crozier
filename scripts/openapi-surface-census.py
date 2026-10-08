@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 212 of the 243 registered sources live in `corpus-sources/` (a split
+  and 213 of the 244 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1052,12 +1052,12 @@ PREDICATES = {
     ),
     "parameter.in:absent": "one per inline Parameter Object with a name and schema but no in field",
     "parameter.schema:nullable-array-explode-false": "one per optional form query string array with nullable true and explode false",
-    "parameter.schema:nullable-array-items-30": "one per OpenAPI 3.0 query array with inline nullable scalar items",
-    "parameter.schema:required-nullable-scalar-30": "one per required OpenAPI 3.0 query parameter with inline nullable scalar schema",
+    "parameter.schema:nullable-array-items-oas-three-zero": "one per OpenAPI 3.0 query array with inline nullable scalar items",
+    "parameter.schema:required-nullable-scalar-oas-three-zero": "one per required OpenAPI 3.0 query parameter with inline nullable scalar schema",
     "parameter.schema:date-union-query-oneof": "one per inline query oneOf with integer and date-formatted string members",
     "parameter.schema:promoted-date-header": "one per date header carried by at least three quarters of operations",
     "parameter.schema:single-required-header": "one per required header on a document's only operation",
-    "operation.parameters:path-order-31": "one per OpenAPI 3.1 operation with untitled operation path parameters in a different order from the template and no path-level path parameters",
+    "operation.parameters:path-order-oas-three-one": "one per OpenAPI 3.1 operation with untitled operation path parameters in a different order from the template and no path-level path parameters",
     "parameter.schema:subset-header-string-default": (
         "one per header Parameter Object declaring a non-empty string `default` whose name "
         "rides at least three quarters but not all of the document's operations and is "
@@ -3913,7 +3913,7 @@ UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie"
 # are: an edit there fails until the port is read again.
 PARAMETER_PORT_DIGESTS = {
     "hoist_param_enum": "c0c3d57f9ea6b36a",
-    "global_headers": "7ff243e98bd3c60e",
+    "global_headers": "67106ae1452fce15",
     "is_transport_managed_header": "c0b5057117ba1977",
     "is_transport_managed_parameter": "a3891f0bee5ebb90",
     "is_promotion_reserved_header": "b353ea53022d5e0f",
@@ -4362,7 +4362,7 @@ class Census:
             declared = [parameter.get("name") for parameter in path_parameters]
             template = re.findall(r"\{([^{}]+)\}", url)
             if self.openapi_version.startswith("3.1") and len(declared) > 1 and id(node) not in self.path_level_parameter_operations and all(not isinstance(parameter.get("schema"), dict) or "title" not in parameter["schema"] for parameter in path_parameters) and declared != [name for name in template if name in declared]:
-                found.append("operation.parameters:path-order-31")
+                found.append("operation.parameters:path-order-oas-three-one")
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
             if self.wildcard_binary_response(node):
@@ -4413,7 +4413,7 @@ class Census:
             found.append("parameter.in:absent")
         if location == "query":
             if self.openapi_version.startswith("3.0") and node.get("required") is True and schema.get("nullable") is True and primary_type(schema.get("type")) in {"string", "integer", "number", "boolean"}:
-                found.append("parameter.schema:required-nullable-scalar-30")
+                found.append("parameter.schema:required-nullable-scalar-oas-three-zero")
             members = schema.get("oneOf")
             if isinstance(members, list) and any(isinstance(member, dict) and member.get("type") == "integer" for member in members) and any(isinstance(member, dict) and member.get("type") == "string" and member.get("format") == "date" for member in members):
                 found.append("parameter.schema:date-union-query-oneof")
@@ -4422,7 +4422,7 @@ class Census:
                 if node.get("required") is not True and node.get("explode") is False and node.get("style", "form") == "form" and schema.get("nullable") is True and isinstance(items, dict) and items.get("type") == "string":
                     found.append("parameter.schema:nullable-array-explode-false")
                 if self.openapi_version.startswith("3.0") and isinstance(items, dict) and "$ref" not in items and items.get("nullable") is True and primary_type(items.get("type")) in {"string", "integer", "number", "boolean"}:
-                    found.append("parameter.schema:nullable-array-items-30")
+                    found.append("parameter.schema:nullable-array-items-oas-three-zero")
         if location == "header":
             name = node.get("name")
             if self.operation_total == 1 and node.get("required") is True:
