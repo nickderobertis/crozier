@@ -182,6 +182,8 @@ for item in "${plan[@]}"; do
   fixture="${item%%|*}"
   source_desc="${item#*|}"
   if [ "$dry_run" -eq 1 ]; then
+    # The plan is what --dry-run was asked for: one `fixture<TAB>source` row per
+    # selected fixture on stdout, the data its caller reads, not progress chatter.
     printf '%s\t%s\n' "$fixture" "$source_desc"
   else
     status=0
