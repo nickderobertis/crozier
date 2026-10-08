@@ -7266,7 +7266,8 @@ class YamlSubsetTests(unittest.TestCase):
                 completed = run("--vendored-only", "--fixtures-root", str(root))
                 self.assertNotEqual(0, completed.returncode, completed.stdout)
                 self.assertIn("malformed", completed.stderr)
-                self.assertIn(f"malformed/openapi.yml:{line}: ", completed.stderr)
+                # A source outside the repo is named by its own path, in the host's spelling.
+                self.assertIn(f"{Path('malformed', 'openapi.yml')}:{line}: ", completed.stderr)
                 self.assertIn(expected, completed.stderr)
                 self.assertNotIn("Traceback", completed.stderr)
 

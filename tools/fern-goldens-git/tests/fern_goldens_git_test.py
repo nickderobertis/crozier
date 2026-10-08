@@ -2284,7 +2284,7 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, f"delta\t{cache / 'delta' / 'spec' / 'openapi.yaml'}\n")
 
-    @unittest.skipIf(os.geteuid() == 0, "root reads a file whatever its mode")
+    @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "file modes do not deny this reader")
     def test_an_unreadable_alias_file_names_itself_and_how_to_restore_it(self) -> None:
         aliases = self.root / "tests" / "fixtures" / ALIASES.name
         aliases.chmod(0)

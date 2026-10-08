@@ -99,7 +99,7 @@ def fail(message: str) -> None:
 def _load(name: str, path: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
-        fail(f"cannot load {path.relative_to(REPO)}; restore it from git (`git checkout -- {path.relative_to(REPO)}`)")
+        fail(f"cannot load {path.relative_to(REPO).as_posix()}; restore it from git (`git checkout -- {path.relative_to(REPO).as_posix()}`)")
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
     spec.loader.exec_module(module)
@@ -116,19 +116,19 @@ def corpus_fern_pins() -> tuple[str, str, str, dict[str, Any]]:
     """
     counts: Counter[str] = Counter()
     for path in sorted((REPO / "tests" / "fixtures").glob("*/expected/.fern/metadata.json")):
-        remedy = f"restore {path.relative_to(REPO)} from git (it is the golden's Fern provenance)"
+        remedy = f"restore {path.relative_to(REPO).as_posix()} from git (it is the golden's Fern provenance)"
         try:
             meta = json.loads(path.read_text(encoding="utf-8"))
         except ValueError as error:
-            fail(f"{path.relative_to(REPO)} is not JSON ({error}); {remedy}")
+            fail(f"{path.relative_to(REPO).as_posix()} is not JSON ({error}); {remedy}")
         if not isinstance(meta, dict):
-            fail(f"{path.relative_to(REPO)} is not a JSON object; {remedy}")
+            fail(f"{path.relative_to(REPO).as_posix()} is not a JSON object; {remedy}")
         pins = [meta.get("cliVersion"), meta.get("generatorName"), meta.get("generatorVersion")]
         # A synthetic fixture's record may carry no generatorConfig; one that is
         # there is the mapping generators.yml is written from.
         config = meta.get("generatorConfig", {})
         if not all(isinstance(pin, str) and pin for pin in pins) or not isinstance(config, dict):
-            fail(f"{path.relative_to(REPO)} lacks a non-empty cliVersion, generatorName and generatorVersion, "
+            fail(f"{path.relative_to(REPO).as_posix()} lacks a non-empty cliVersion, generatorName and generatorVersion, "
                  f"or carries a generatorConfig that is no mapping; {remedy}")
         counts[json.dumps([*pins, config], sort_keys=True)] += 1
     if not counts:
@@ -285,13 +285,13 @@ def admissible_families(rule: Path = RULE) -> tuple[str, ...]:
     """
     text = rule.read_text(encoding="utf-8")
     if RULE_MARKER not in text:
-        fail(f"{rule.relative_to(REPO)} carries no `{RULE_MARKER}` marker; restore the rule from git")
+        fail(f"{rule.relative_to(REPO).as_posix()} carries no `{RULE_MARKER}` marker; restore the rule from git")
     sentence = text.split(RULE_MARKER, 1)[1].split("**Not admissible", 1)[0]
     listed = sentence.split(":", 1)[1].split("and other grants", 1)[0] if ":" in sentence else ""
     families = tuple(re.sub(r"^the | family$", "", name.strip()) for name in listed.replace("\n", " ").split(",")
                      if name.strip())
     if not families:
-        fail(f"{rule.relative_to(REPO)}'s admissible sentence names no licence; restore the rule from git")
+        fail(f"{rule.relative_to(REPO).as_posix()}'s admissible sentence names no licence; restore the rule from git")
     return families
 
 

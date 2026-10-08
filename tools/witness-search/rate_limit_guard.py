@@ -567,7 +567,12 @@ class RateLimitGuard:
     def _sleep(self, duration: float, entry: dict[str, Any]) -> None:
         started = time.monotonic()
         entry = {**entry, "started_at": _now_iso(), "planned_s": round(duration, 3)}
-        time.sleep(duration)
+        # Every deadline is set on the monotonic clock, so the wait ends when that
+        # clock reaches it: a coarse one (about 16 ms on Windows) can still read
+        # short of the deadline after `time.sleep` returns.
+        deadline = started + duration
+        while (remaining := deadline - time.monotonic()) > 0:
+            time.sleep(remaining)
         entry["duration_s"] = round(time.monotonic() - started, 3)
         self._log_wait(entry)
 

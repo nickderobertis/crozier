@@ -135,11 +135,11 @@ test("ci-check runs the gate in the tier it chose, with its base and the argumen
 test("a gate argument carrying shell syntax is refused before anything runs", (t) => {
   const root = scratchWorkspace(t);
   commitChange(root, "a/src.txt", "feature\n");
-  const refused = ciCheck(root, ["--projects=a;touch pwned"], {
+  const refused = ciCheck(root, ["--projects=a;touch${IFS}pwned"], {
     GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main",
   });
   assert.equal(refused.status, 2, refused.output);
-  assert.match(refused.output, /ci-tier: gate argument "--projects=a;touch pwned" carries a character the gate never takes/);
+  assert.match(refused.output, /ci-tier: gate argument "--projects=a;touch\$\{IFS\}pwned" carries a character the gate never takes/);
   assert.ok(!existsSync(join(root, "pwned")) && !ran(root, "a"), refused.output);
 });
 
