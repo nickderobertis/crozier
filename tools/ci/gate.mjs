@@ -22,6 +22,12 @@
 // promoted ones included, with the cache skipped: it exists to catch what
 // affected detection or a stale cache could miss.
 //
+// Exit status: 0 when every selected target passed (or none was selected); 2
+// for an invocation it does not take — an unknown flag, a list that is not
+// project names, a project or tag the graph lacks, an NX_BASE that is not a ref
+// name or SHA; 1 for everything else — a failed target, a base that names no
+// commit here, a missing or failing Nx.
+//
 // Quiet on success: the tier and the selected projects (and any promoted ones
 // left to their own legs), then one completion line. Nx's own output goes to a
 // log that is printed in full when a target fails.
@@ -36,7 +42,7 @@ const TOOL = "gate";
 const PROMOTED_TAG = "tier:promoted";
 const DEFAULT_BASE_REF = "origin/main";
 
-function die(message, action, code = 2) {
+function die(message, action, code = 1) {
   console.error(`${TOOL}: ${message}`);
   if (action) console.error(`${TOOL}: ${action}`);
   process.exit(code);
@@ -67,7 +73,7 @@ function parseArgs(argv) {
   const command = split < 0 ? [] : argv.slice(split + 1);
   const targets = command.length === 3 && command[0] === "nx" && command[1] === "run-many" && COMMAND.exec(command[2]);
   if (!targets || !NAME_LIST.test(targets[1]) || targets[1].includes("tag:")) {
-    die("the recipe must end its arguments with `-- nx run-many --targets=a,b`", USAGE);
+    die("the recipe must end its arguments with `-- nx run-many --targets=a,b`", USAGE, 2);
   }
   options.targets = targets[1].split(",");
   argv = argv.slice(0, split);
@@ -77,12 +83,12 @@ function parseArgs(argv) {
     const value = () => {
       const v = inline ?? argv[++i];
       if (v === undefined || !NAME_LIST.test(v)) {
-        die(`${flag} takes a comma-separated list of project or target names, not '${v ?? ""}'`, USAGE);
+        die(`${flag} takes a comma-separated list of project or target names, not '${v ?? ""}'`, USAGE, 2);
       }
       return v.split(",");
     };
     if ((flag === "--sweep" || flag === "--plan") && inline !== undefined) {
-      die(`${flag} takes no value, not '${inline}'`, USAGE);
+      die(`${flag} takes no value, not '${inline}'`, USAGE, 2);
     }
     switch (flag) {
       case "--sweep":
@@ -103,7 +109,7 @@ function parseArgs(argv) {
         process.exit(0);
         break;
       default:
-        die(`unknown argument '${arg}'`, USAGE);
+        die(`unknown argument '${arg}'`, USAGE, 2);
     }
   }
   return options;
@@ -128,6 +134,7 @@ export function resolveBase(env = process.env) {
       die(
         `NX_BASE '${raw}' is neither a plain ref name nor a commit SHA; no target ran`,
         "set NX_BASE to a branch, tag or commit SHA (e.g. NX_BASE=origin/main), or unset it to use the merge base with origin/main",
+        2,
       );
     }
     const commit = git(["rev-parse", "--verify", "--quiet", "--end-of-options", `${raw}^{commit}`]);
@@ -223,11 +230,11 @@ function main() {
       if (entry.startsWith("tag:")) {
         const tag = entry.slice("tag:".length);
         const carriers = Object.keys(tags).filter((name) => tags[name].includes(tag));
-        if (carriers.length === 0) die(`no project carries the tag '${tag}'`, USAGE);
+        if (carriers.length === 0) die(`no project carries the tag '${tag}'`, USAGE, 2);
         return carriers;
       }
       if (!Object.hasOwn(tags, entry)) {
-        die(`no project named '${entry}' (projects: ${Object.keys(tags).sort().join(", ")})`, USAGE);
+        die(`no project named '${entry}' (projects: ${Object.keys(tags).sort().join(", ")})`, USAGE, 2);
       }
       return [entry];
     });
@@ -283,7 +290,7 @@ function main() {
   writeFileSync(log, `$ nx ${args.join(" ")}\n${run.stdout ?? ""}${run.stderr ?? ""}`);
   if (run.status !== 0) {
     process.stderr.write(readFileSync(log, "utf8"));
-    die(`a target failed (full output above and in ${log})`, "fix what it reports, then rerun the same recipe", 1);
+    die(`a target failed (full output above and in ${log})`, "fix what it reports, then rerun the same recipe");
   }
   console.log(`${TOOL}: ok (${options.targets.join(", ")}; output in ${log})`);
 }

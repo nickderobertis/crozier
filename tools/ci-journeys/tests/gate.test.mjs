@@ -56,7 +56,7 @@ test("NX_BASE that is neither a ref name nor a SHA fails closed and runs no targ
 
   for (const hostile of ["main;touch pwned", "$(touch pwned)", "HEAD~1", "a b"]) {
     const run = just(root, ["check"], { NX_BASE: hostile });
-    assert.notEqual(run.status, 0, `${hostile}: ${run.output}`);
+    assert.equal(run.status, 2, `${hostile}: ${run.output}`);
     assert.match(run.stderr, /NX_BASE '.*' is neither a plain ref name nor a commit SHA; no target ran/);
   }
   assert.ok(!ran(root, "a") && !ran(root, "b"));
@@ -69,7 +69,7 @@ test("NX_BASE naming no commit in the checkout fails closed and runs no target",
 
   for (const missing of ["no-such-branch", "0123456789abcdef0123456789abcdef01234567"]) {
     const run = just(root, ["check"], { NX_BASE: missing });
-    assert.notEqual(run.status, 0, run.output);
+    assert.equal(run.status, 1, run.output);
     assert.match(run.stderr, new RegExp(`NX_BASE '${missing}' does not name a commit in this checkout; no target ran`));
   }
   assert.ok(!ran(root, "a") && !ran(root, "b"));
@@ -81,7 +81,7 @@ test("with no origin/main and no NX_BASE the affected tier refuses rather than g
 
   const run = just(root, ["check"], { NX_BASE: undefined });
 
-  assert.notEqual(run.status, 0, run.output);
+  assert.equal(run.status, 1, run.output);
   assert.match(run.stderr, /no merge base between HEAD and origin\/main/);
   assert.ok(!ran(root, "a") && !ran(root, "b"));
 });
@@ -132,7 +132,7 @@ test("an unknown argument or project is refused before anything runs", (t) => {
   const root = scratchWorkspace(t);
   for (const args of [["check", "--sweap"], ["check", "--projects=nope"], ["check", "--targets=te;st"]]) {
     const run = just(root, args);
-    assert.notEqual(run.status, 0, `${args}: ${run.output}`);
+    assert.equal(run.status, 2, `${args}: ${run.output}`);
   }
   assert.ok(!ran(root, "a") && !ran(root, "b"));
   // A switch given a value is refused, not read as set: `--plan=false` would
@@ -188,7 +188,7 @@ test("an Nx answer of the wrong shape stops the gate before any target runs", { 
     commitChange(root, "a/src.txt", "a changed\n");
     standInNx(root, graph, affected);
     const run = just(root, ["check"], { NX_BASE: undefined });
-    assert.notEqual(run.status, 0, run.output);
+    assert.equal(run.status, 1, run.output);
     assert.match(run.stderr, message);
     assert.match(run.stderr, /just bootstrap/);
     assert.doesNotMatch(run.stderr, /TypeError/);
@@ -202,9 +202,25 @@ test("a project name that is no name --projects takes stops the gate before any 
   commitChange(root, "a/src.txt", "a changed\n");
   standInNx(root, { nodes: { "a&calc": { data: { root: "a", tags: [] } } }, dependencies: {} }, ["a"]);
   const run = just(root, ["check"], { NX_BASE: undefined });
-  assert.notEqual(run.status, 0, run.output);
+  assert.equal(run.status, 1, run.output);
   assert.match(run.stderr, /names project\(s\) \["a&calc"\], which are not project names/);
   assert.match(run.stderr, /rename the project in its project.json/);
+  assert.ok(!ran(root, "a") && !ran(root, "b"));
+});
+
+test("a missing Nx or a failing target exits 1, apart from an invocation error's 2", (t) => {
+  const root = scratchWorkspace(t);
+  commitChange(root, "a/project.json", project("a", { targets: { test: { command: "node -e \"process.exit(3)\"" } } }));
+  const failed = just(root, ["check", "--projects=a"]);
+  assert.equal(failed.status, 1, failed.output);
+  assert.match(failed.stderr, /a target failed/);
+
+  // Unlink, never recurse: the link leads to this checkout's own install.
+  unlinkSync(join(root, "node_modules"));
+  const missing = just(root, ["check", "--sweep"]);
+  assert.equal(missing.status, 1, missing.output);
+  assert.match(missing.stderr, /Nx is not installed/);
+  assert.match(missing.stderr, /just bootstrap/);
   assert.ok(!ran(root, "a") && !ran(root, "b"));
 });
 
@@ -227,7 +243,7 @@ test("--projects=tag:<tag> selects that tag's carriers and --exclude drops one, 
   assert.ok(ran(root, "a"), excluded.output);
 
   const none = just(root, ["check", "--sweep", "--projects=tag:lang:go"]);
-  assert.notEqual(none.status, 0, none.output);
+  assert.equal(none.status, 2, none.output);
   assert.match(none.stderr, /no project carries the tag 'lang:go'/);
 });
 
