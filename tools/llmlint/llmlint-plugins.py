@@ -122,9 +122,14 @@ def fetch(url: str) -> str:
     request = urllib.request.Request(fetch_url(url), headers={"User-Agent": "crozier-llmlint-plugins"})
     try:
         with urllib.request.urlopen(request, timeout=FETCH_TIMEOUT_SECONDS) as response:
-            return response.read().decode("utf-8")
-    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError) as error:
+            data = response.read()
+    except (urllib.error.URLError, TimeoutError) as error:
         fail(f"could not fetch {url}: {error}", "check the network and the recorded URL, then re-run")
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError as error:
+        fail(f"{url} served a document that is not UTF-8 ({error})",
+             "check that the recorded URL names the rule document itself, or report it upstream")
     raise AssertionError("unreachable")
 
 
