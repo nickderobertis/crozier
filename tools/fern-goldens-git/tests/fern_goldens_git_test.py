@@ -2272,7 +2272,6 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         result = self.run_script("--only", "delta", "--dry-run", "--fetch-root", str(cache), GENERATOR_CALLS=str(calls))
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, f"delta\t{cache / 'delta' / 'spec' / 'openapi.yaml'}\n")
-        # What the plan names is in the cache the dry run fetched into, and nothing was generated.
         self.assertTrue((cache / "delta" / "spec" / "openapi.yaml").is_file())
         self.assertFalse(calls.exists(), "a dry run ran the generator")
         self.assertFalse((self.root / "tests" / "fixtures" / "delta").exists())
@@ -2372,7 +2371,7 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
                       result.stderr)
         self.assertIn("delete it by hand", result.stderr)
 
-    def test_a_batch_reports_one_line_for_every_fixture_it_generated(self) -> None:
+    def test_a_batch_reports_one_summary_line_naming_every_fixture_it_generated(self) -> None:
         beta = self.root / "tests" / "fixtures" / "beta"
         beta.mkdir()
         (beta / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")

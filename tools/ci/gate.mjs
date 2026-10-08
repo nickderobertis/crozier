@@ -224,7 +224,6 @@ function projectTags() {
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
-  // Validated before Nx runs at all.
   const base = options.sweep ? undefined : resolveBase();
   const tags = projectTags();
   const expand = (list) =>
