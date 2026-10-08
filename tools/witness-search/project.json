@@ -15,7 +15,9 @@
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/tools/surface-census/*.py",
         "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
@@ -33,7 +35,9 @@
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/tools/surface-census/*.py",
         "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
@@ -51,7 +55,9 @@
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/tools/surface-census/*.py",
         "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
@@ -69,7 +75,9 @@
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/tools/surface-census/*.py",
         "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
