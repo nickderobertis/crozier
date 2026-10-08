@@ -442,7 +442,7 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
         return keys, [f"{E2E_COVERS}: cannot read cover records: {error} — restore the registry or repair its TOML syntax"]
     if set(data) != {"version", "covers"} or type(data.get("version")) is not int or data.get("version") != 1 or not isinstance(data.get("covers"), list):
-        return keys, [f"{E2E_COVERS}: expected version = 1 and covers tables"]
+        return keys, [f"{E2E_COVERS}: invalid registry fields {sorted(data)}, version {data.get("version")!r} or covers type {type(data.get("covers")).__name__} — expected version = 1 and covers tables; repair the registry to contain only those fields"]
 
     def committed_path(value: str) -> Path | None:
         candidate = root / value
@@ -488,7 +488,7 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
         if cover["verdict"] not in VERDICTS:
             failures.append(f"{where}: invalid real-specification search verdict — cite one of {', '.join(VERDICTS)}")
         elif committed_path(cover["search"].partition("#")[0]) is None or committed_path(cover["renewed"]) is None:
-            failures.append(f"{where}: search paths must stay inside the repository")
+            failures.append(f"{where}: invalid search {cover["search"]!r} or renewed {cover["renewed"]!r} — replace it with a repository-relative path without parent traversal")
         else:
             failures += search_failures(root, where, Cover(key, None, cover["search"], cover["verdict"], cover["renewed"]))
         row = rows.get(key)
