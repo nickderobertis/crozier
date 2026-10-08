@@ -21,7 +21,7 @@ trap 'rm -rf "$scratch" || echo "departures-ledger: could not remove $scratch; d
 records="$scratch/records" log="$scratch/log"
 mkdir "$records" || fail "cannot create $records" "point TMPDIR at a writable directory and rerun"
 
-# llmlint: ignore[changed_behavior_has_e2e] this path runs the entire crozier-e2e suite and rewrites tests/fixtures/departures-ledger.tsv, so running it inside crozier-e2e's own tests would rebuild and rerun that suite inside itself; crates/crozier-e2e/tests/e2e/report_scripts.rs runs this real script with only the `cargo` boundary stood in, covering recording, the merge, a failing comparison, a refused merge and temp-file cleanup. The real path is `just departures-ledger`.
+# llmlint: ignore[changed_behavior_has_e2e] running the whole crozier-e2e suite from its own tests would recurse; crates/crozier-e2e/tests/e2e/report_scripts.rs drives this script with only `cargo` stood in.
 if ! CROZIER_REQUIRE_CORPUS=1 CROZIER_RECORD_DEPARTURES="$records" cargo nextest run --locked -p crozier-e2e \
   --no-fail-fast -E 'not test(/^departures_ledger_gate::/)' >"$log" 2>&1; then
   cat "$log" >&2 || echo "departures-ledger: could not read the run log $log" >&2
