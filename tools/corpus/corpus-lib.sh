@@ -278,8 +278,8 @@ corpus_fetch_source() {
     for stale in "$target_dir/openapi.json" "$target_dir/openapi.yaml" "$target_dir/openapi.yml"; do
       # A stale sibling may be a directory left by hand; the cache owns it either way.
       [ "$stale" = "$target" ] || rm -rf "$stale" || {
-        echo "corpus: could not remove the stale cached spec $stale for $name — delete it" \
-             "(rm -rf $stale), then re-run" >&2
+        echo "corpus: could not remove the stale cached spec $stale for $name — make it writable" \
+             "and delete it (chmod -R u+w $stale && rm -rf $stale), then re-run" >&2
         return 1
       }
     done

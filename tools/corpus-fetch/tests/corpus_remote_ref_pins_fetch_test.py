@@ -744,13 +744,27 @@ class PinMechanismTests(unittest.TestCase):
         # The stale sibling is removed only after a successful publication.
         self.assert_no_leftovers("plain-row", expected={"openapi.json"})
 
+    def test_a_stale_sibling_directory_is_cleared_once_the_spec_is_published(self) -> None:
+        stale = self.destination("plain-row") / "openapi.json"
+        stale.mkdir(parents=True)
+        (stale / "left").write_text("a directory the cache owns\n", encoding="utf-8")
+        result = self.fetch("plain-row")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assert_no_leftovers("plain-row", expected={"openapi.yaml"})
+
     def test_a_stale_sibling_that_cannot_be_removed_fails_the_fetch(self) -> None:
+        if os.geteuid() == 0:
+            self.skipTest("root removes a read-only directory's entries")
         blocking = self.destination("plain-row") / "openapi.json"
         blocking.mkdir(parents=True)
-        (blocking / "keep").write_text("a directory rm -f cannot remove\n", encoding="utf-8")
+        (blocking / "keep").write_text("held by a read-only directory\n", encoding="utf-8")
+        blocking.chmod(0o555)
+        self.addCleanup(blocking.chmod, 0o755)
         self.assert_refused_without_a_path(
-            self.fetch("plain-row"), "could not remove the stale cached spec", f"rm -rf {blocking}"
+            self.fetch("plain-row"), "could not remove the stale cached spec",
+            f"(chmod -R u+w {blocking} && rm -rf {blocking})"
         )
+        self.assertTrue((blocking / "keep").exists())
 
     def upstream_repository(self) -> tuple[Path, str]:
         """A real local git repository standing in for a repository-source row."""
