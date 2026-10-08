@@ -1,0 +1,277 @@
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (5505 unchanged line(s))
+  </details>
+  
+  ## ⚠️ Not supported yet
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">get_user_orders</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">get_user_orders</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (28 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.get_user_orders(
++ client.not_supported_yet.get_user_orders(
+      include="product_lines,product_lines.purchasable,product_lines.purchasable.product,product_lines.purchasable.product.thumbnail",
+  )
+  
+      ⋮ (31 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">get_user</a>()</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">get_user</a>()</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (28 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.get_user()
++ client.not_supported_yet.get_user()
+  
+  ```
+  </dd>
+      ⋮ (21 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">delete_temp_file</a>()</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">delete_temp_file</a>()</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (28 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.delete_temp_file()
++ client.not_supported_yet.delete_temp_file()
+  
+  ```
+  </dd>
+      ⋮ (21 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">upload_file</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">upload_file</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (28 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.upload_file(
++ client.not_supported_yet.upload_file(
+      file="example_file",
+  )
+  
+      ⋮ (31 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">forgot_password</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">forgot_password</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (22 unchanged line(s))
+  ```python
+  from fern import FernApi
+  from fern.environment import FernApiEnvironment
+- from fern.⚠️_not_supported_yet import ForgotPasswordRequestData, ForgotPasswordRequestDataAttributes
++ from fern.not_supported_yet import ForgotPasswordRequestData, ForgotPasswordRequestDataAttributes
+  
+  client = FernApi(
+      token="<token>",
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.forgot_password(
++ client.not_supported_yet.forgot_password(
+      data=ForgotPasswordRequestData(
+          attributes=ForgotPasswordRequestDataAttributes(
+              email="cms@webiz.cz",
+      ⋮ (36 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">login</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">login</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (28 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.login(
++ client.not_supported_yet.login(
+      email="jakub@dy.st",
+      password="hesloheslo",
+  )
+      ⋮ (40 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">generate_sanctum_token</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">generate_sanctum_token</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (28 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.generate_sanctum_token(
++ client.not_supported_yet.generate_sanctum_token(
+      email="jakub@dy.st",
+      password="hesloheslo",
+  )
+      ⋮ (40 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">logout</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">logout</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (28 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.logout(
++ client.not_supported_yet.logout(
+      email="cms@webiz.cz",
+      password="password",
+  )
+      ⋮ (40 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">new_password</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">new_password</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (22 unchanged line(s))
+  ```python
+  from fern import FernApi
+  from fern.environment import FernApiEnvironment
+- from fern.⚠️_not_supported_yet import NewPasswordRequestData, NewPasswordRequestDataAttributes
++ from fern.not_supported_yet import NewPasswordRequestData, NewPasswordRequestDataAttributes
+  
+  client = FernApi(
+      token="<token>",
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.new_password(
++ client.not_supported_yet.new_password(
+      data=NewPasswordRequestData(
+          attributes=NewPasswordRequestDataAttributes(
+              email="cms@webiz.cz",
+      ⋮ (39 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">register_without_password</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">register_without_password</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (22 unchanged line(s))
+  ```python
+  from fern import FernApi
+  from fern.environment import FernApiEnvironment
+- from fern.⚠️_not_supported_yet import RegisterWithoutPasswordRequestData, RegisterWithoutPasswordRequestDataAttributes
++ from fern.not_supported_yet import RegisterWithoutPasswordRequestData, RegisterWithoutPasswordRequestDataAttributes
+  
+  client = FernApi(
+      token="<token>",
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.register_without_password(
++ client.not_supported_yet.register_without_password(
+      data=RegisterWithoutPasswordRequestData(
+          attributes=RegisterWithoutPasswordRequestDataAttributes(
+              email="cms7@webiz.cz",
+      ⋮ (36 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">register</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">register</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (22 unchanged line(s))
+  ```python
+  from fern import FernApi
+  from fern.environment import FernApiEnvironment
+- from fern.⚠️_not_supported_yet import RegisterRequestData, RegisterRequestDataAttributes
++ from fern.not_supported_yet import RegisterRequestData, RegisterRequestDataAttributes
+  
+  client = FernApi(
+      token="<token>",
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.register(
++ client.not_supported_yet.register(
+      data=RegisterRequestData(
+          attributes=RegisterRequestDataAttributes(
+              email="cms6@webiz.cz",
+      ⋮ (38 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">add_composable_to_cart</a>(...)</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">add_composable_to_cart</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (22 unchanged line(s))
+  ```python
+  from fern import FernApi
+  from fern.environment import FernApiEnvironment
+- from fern.⚠️_not_supported_yet import AddComposableToCartRequestData, AddComposableToCartRequestDataAttributes, AddComposableToCartRequestDataAttributesComponentsItem, AddComposableToCartRequestDataAttributesComposable
++ from fern.not_supported_yet import AddComposableToCartRequestData, AddComposableToCartRequestDataAttributes, AddComposableToCartRequestDataAttributesComponentsItem, AddComposableToCartRequestDataAttributesComposable
+  
+  client = FernApi(
+      token="<token>",
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.add_composable_to_cart(
++ client.not_supported_yet.add_composable_to_cart(
+      data=AddComposableToCartRequestData(
+          attributes=AddComposableToCartRequestDataAttributes(
+              components=[
+      ⋮ (49 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.⚠️_not_supported_yet.<a href="src/fern/⚠️_not_supported_yet/client.py">csrf_token</a>()</code></summary>
++ <details><summary><code>client.not_supported_yet.<a href="src/fern/not_supported_yet/client.py">csrf_token</a>()</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (28 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.⚠️_not_supported_yet.csrf_token()
++ client.not_supported_yet.csrf_token()
+  
+  ```
+  </dd>
+      ⋮ (24 unchanged line(s))

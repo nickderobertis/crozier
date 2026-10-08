@@ -1,0 +1,1058 @@
+--- reference/README.md
++++ crozier/README.md
+      ⋮ (40 unchanged line(s))
+      token="<token>",
+  )
+  
+- client.numbers.buy_number()
++ client.numbers.update_number(
++     phone_number="phone_number",
++ )
+  ```
+  
+  ## Environments
+      ⋮ (5 unchanged line(s))
+  from fern.environment import FernApiEnvironment
+  
+  client = FernApi(
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  ```
+  
+      ⋮ (12 unchanged line(s))
+  
+  
+  async def main() -> None:
+-     await client.numbers.buy_number()
++     await client.numbers.update_number(
++         phone_number="phone_number",
++     )
+  
+  
+  asyncio.run(main())
+      ⋮ (8 unchanged line(s))
+  from fern.core.api_error import ApiError
+  
+  try:
+-     client.numbers.buy_number(...)
++     client.numbers.update_number(...)
+  except ApiError as e:
+      print(e.status_code)
+      print(e.body)
+      ⋮ (10 unchanged line(s))
+  from fern import FernApi
+  
+  client = FernApi(...)
+- response = client.numbers.with_raw_response.buy_number(...)
++ response = client.numbers.with_raw_response.update_number(...)
+  print(response.headers)  # access the response headers
+  print(response.status_code)  # access the response status code
+  print(response.data)  # access the underlying object
+      ⋮ (24 unchanged line(s))
+  Use the `max_retries` request option to configure this behavior.
+  
+  ```python
+- client.numbers.buy_number(..., request_options={
++ client.numbers.update_number(..., request_options={
+      "max_retries": 1
+  })
+  ```
+      ⋮ (8 unchanged line(s))
+  client = FernApi(..., timeout=20.0)
+  
+  # Override timeout for a specific method
+- client.numbers.buy_number(..., request_options={
++ client.numbers.update_number(..., request_options={
+      "timeout": 1
+  })
+  ```
+      ⋮ (28 unchanged line(s))
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (30 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.metrics_metrics_get()
+      ⋮ (43 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.numbers.list_numbers()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.numbers.get_number(
+      ⋮ (34 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.numbers.<a href="src/fern/numbers/client.py">buy_number</a>(...) -> PhoneNumber</code></summary>
+- <dl>
+- <dd>
+- 
+- #### 🔌 Usage
+- 
+- <dl>
+- <dd>
+- 
+- <dl>
+- <dd>
+- 
+- ```python
+- from fern import FernApi
+- from fern.environment import FernApiEnvironment
+- 
+- client = FernApi(
+-     token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
+- )
+- 
+- client.numbers.buy_number()
+- 
+- ```
+- </dd>
+- </dl>
+- </dd>
+- </dl>
+- 
+- #### ⚙️ Parameters
+- 
+- <dl>
+- <dd>
+- 
+- <dl>
+- <dd>
+- 
+- **area_code:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **telephony_provider:** `typing.Optional[BuyPhoneNumberRequestTelephonyProvider]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **telephony_account_connection:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **inbound_agent:** `typing.Optional[BuyPhoneNumberRequestInboundAgent]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+-     
+- </dd>
+- </dl>
+- </dd>
+- </dl>
+- 
+- 
+- </dd>
+- </dl>
+- </details>
+- 
+  <details><summary><code>client.numbers.<a href="src/fern/numbers/client.py">update_number</a>(...) -> PhoneNumber</code></summary>
+  <dl>
+  <dd>
+      ⋮ (12 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.numbers.update_number(
+      ⋮ (84 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.numbers.cancel_number(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.numbers.link_number(
+      ⋮ (78 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.calls.list_calls()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.calls.get_call(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.calls.end_call(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.calls.create_call(
+      ⋮ (110 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.calls.get_recording(
+      ⋮ (53 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.usage.get_usage()
+      ⋮ (43 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.actions.get_action(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.actions.list_actions()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.actions.create_action(
+      ⋮ (56 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.actions.update_action(
+      ⋮ (62 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.agents.get_agent(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.agents.list_agents()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.agents.create_agent(
+      ⋮ (53 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.agents.update_agent(
+      ⋮ (61 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.voices.get_voice(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.voices.list_voices()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.voices.create_voice(
+      ⋮ (54 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.voices.update_voice(
+      ⋮ (62 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.webhooks.get_webhook(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.webhooks.list_webhooks()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.webhooks.create_webhook(
+      ⋮ (55 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.webhooks.update_webhook(
+      ⋮ (61 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.prompts.get_prompt(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.prompts.list_prompts()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.prompts.create_prompt()
+      ⋮ (50 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.prompts.update_prompt(
+      ⋮ (61 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.vector_databases.get_vector_database(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.vector_databases.list_vector_databases()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.vector_databases.create_vector_database(
+      ⋮ (55 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.vector_databases.update_vector_database(
+      ⋮ (62 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.account_connections.get_account_connection(
+      ⋮ (52 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.account_connections.list_account_connections()
+      ⋮ (74 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.account_connections.create_account_connection(
+      ⋮ (56 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.account_connections.update_account_connection(
+      ⋮ (61 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.account_connections.add_to_steering_pool(
+      ⋮ (61 unchanged line(s))
+  
+  client = FernApi(
+      token="<token>",
+-     environment=FernApiEnvironment.PRODUCTION,
++     environment=FernApiEnvironment.DEFAULT,
+  )
+  
+  client.account_connections.remove_from_steering_pool(
+      ⋮ (46 unchanged line(s))
+
+--- reference/src/fern/__init__.py
++++ crozier/src/fern/__init__.py
+      ⋮ (147 unchanged line(s))
+          AzureVoiceUpdateParamsPitch,
+          AzureVoiceUpdateParamsRate,
+          AzureVoiceUpdateParamsVoiceName,
++         BuyPhoneNumberRequest,
++         BuyPhoneNumberRequestInboundAgent,
++         BuyPhoneNumberRequestInboundAgentTwo,
++         BuyPhoneNumberRequestTelephonyProvider,
+          Call,
+          CallHumanDetectionResult,
+          CallOnNoHumanAnswer,
+      ⋮ (246 unchanged line(s))
+          WebhookUpdateParamsUrl,
+      )
+      from .errors import UnprocessableEntityError
+-     from . import (
+-         account_connections,
+-         actions,
+-         agents,
+-         calls,
+-         numbers,
+-         prompts,
+-         usage,
+-         vector_databases,
+-         voices,
+-         webhooks,
+-     )
++     from . import account_connections, actions, agents, calls, prompts, usage, vector_databases, voices, webhooks
+      from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+-     from .calls import CreateCallRequestAgent, CreateCallRequestOnNoHumanAnswer
+      from .client import AsyncFernApi, FernApi
+      from .environment import FernApiEnvironment
++     from .calls import CreateCallRequestAgent, CreateCallRequestOnNoHumanAnswer
+      from .numbers import (
+-         BuyPhoneNumberRequestInboundAgent,
+-         BuyPhoneNumberRequestInboundAgentTwo,
+-         BuyPhoneNumberRequestTelephonyProvider,
+          LinkPhoneNumberRequestInboundAgent,
+          LinkPhoneNumberRequestInboundAgentTwo,
+          UpdateNumberRequestExampleContext,
+      ⋮ (149 unchanged line(s))
+      "AzureVoiceUpdateParamsPitch": ".types",
+      "AzureVoiceUpdateParamsRate": ".types",
+      "AzureVoiceUpdateParamsVoiceName": ".types",
+-     "BuyPhoneNumberRequestInboundAgent": ".numbers",
+-     "BuyPhoneNumberRequestInboundAgentTwo": ".numbers",
+-     "BuyPhoneNumberRequestTelephonyProvider": ".numbers",
++     "BuyPhoneNumberRequest": ".types",
++     "BuyPhoneNumberRequestInboundAgent": ".types",
++     "BuyPhoneNumberRequestInboundAgentTwo": ".types",
++     "BuyPhoneNumberRequestTelephonyProvider": ".types",
+      "Call": ".types",
+      "CallHumanDetectionResult": ".types",
+      "CallOnNoHumanAnswer": ".types",
+      ⋮ (262 unchanged line(s))
+      "actions": ".actions",
+      "agents": ".agents",
+      "calls": ".calls",
+-     "numbers": ".numbers",
+      "prompts": ".prompts",
+      "usage": ".usage",
+      "vector_databases": ".vector_databases",
+      ⋮ (170 unchanged line(s))
+      "AzureVoiceUpdateParamsPitch",
+      "AzureVoiceUpdateParamsRate",
+      "AzureVoiceUpdateParamsVoiceName",
++     "BuyPhoneNumberRequest",
+      "BuyPhoneNumberRequestInboundAgent",
+      "BuyPhoneNumberRequestInboundAgentTwo",
+      "BuyPhoneNumberRequestTelephonyProvider",
+      ⋮ (265 unchanged line(s))
+      "actions",
+      "agents",
+      "calls",
+-     "numbers",
+      "prompts",
+      "usage",
+      "vector_databases",
+      ⋮ (3 unchanged line(s))
+
+--- reference/src/fern/client.py
++++ crozier/src/fern/client.py
+      ⋮ (15 unchanged line(s))
+      from .actions.client import ActionsClient, AsyncActionsClient
+      from .agents.client import AgentsClient, AsyncAgentsClient
+      from .calls.client import AsyncCallsClient, CallsClient
+-     from .numbers.client import AsyncNumbersClient, NumbersClient
+      from .prompts.client import AsyncPromptsClient, PromptsClient
+      from .usage.client import AsyncUsageClient, UsageClient
+      from .vector_databases.client import AsyncVectorDatabasesClient, VectorDatabasesClient
+      ⋮ (15 unchanged line(s))
+  
+  
+  
+-         Defaults to FernApiEnvironment.PRODUCTION
++         Defaults to FernApiEnvironment.DEFAULT
+  
+  
+  
+      ⋮ (35 unchanged line(s))
+          self,
+          *,
+          base_url: typing.Optional[str] = None,
+-         environment: FernApiEnvironment = FernApiEnvironment.PRODUCTION,
++         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
+          token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
+          headers: typing.Optional[typing.Dict[str, str]] = None,
+          timeout: typing.Optional[float] = None,
+      ⋮ (22 unchanged line(s))
+              logging=logging,
+          )
+          self._raw_client = RawFernApi(client_wrapper=self._client_wrapper)
+-         self._numbers: typing.Optional[NumbersClient] = None
+          self._calls: typing.Optional[CallsClient] = None
+          self._usage: typing.Optional[UsageClient] = None
+          self._actions: typing.Optional[ActionsClient] = None
+      ⋮ (42 unchanged line(s))
+          return _response.data
+  
+      @property
+-     def numbers(self):
+-         if self._numbers is None:
+-             from .numbers.client import NumbersClient
+- 
+-             self._numbers = NumbersClient(client_wrapper=self._client_wrapper)
+-         return self._numbers
+- 
+-     @property
+      def calls(self):
+          if self._calls is None:
+              from .calls.client import CallsClient
+      ⋮ (98 unchanged line(s))
+  
+  
+  
+-         Defaults to FernApiEnvironment.PRODUCTION
++         Defaults to FernApiEnvironment.DEFAULT
+  
+  
+  
+      ⋮ (38 unchanged line(s))
+          self,
+          *,
+          base_url: typing.Optional[str] = None,
+-         environment: FernApiEnvironment = FernApiEnvironment.PRODUCTION,
++         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
+          token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
+          headers: typing.Optional[typing.Dict[str, str]] = None,
+          async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
+      ⋮ (22 unchanged line(s))
+              logging=logging,
+          )
+          self._raw_client = AsyncRawFernApi(client_wrapper=self._client_wrapper)
+-         self._numbers: typing.Optional[AsyncNumbersClient] = None
+          self._calls: typing.Optional[AsyncCallsClient] = None
+          self._usage: typing.Optional[AsyncUsageClient] = None
+          self._actions: typing.Optional[AsyncActionsClient] = None
+      ⋮ (48 unchanged line(s))
+          """
+          _response = await self._raw_client.metrics_metrics_get(request_options=request_options)
+          return _response.data
+- 
+-     @property
+-     def numbers(self):
+-         if self._numbers is None:
+-             from .numbers.client import AsyncNumbersClient
+- 
+-             self._numbers = AsyncNumbersClient(client_wrapper=self._client_wrapper)
+-         return self._numbers
+  
+      @property
+      def calls(self):
+      ⋮ (78 unchanged line(s))
+
+--- reference/src/fern/environment.py
++++ crozier/src/fern/environment.py
+      ⋮ (3 unchanged line(s))
+  
+  
+  class FernApiEnvironment(enum.Enum):
+-     PRODUCTION = "https://api.vocode.dev"
++     DEFAULT = "https://api.vocode.dev"
+
+--- reference/src/fern/numbers/__init__.py
++++ crozier/src/fern/numbers/__init__.py
+      ⋮ (2 unchanged line(s))
+  
+  if typing.TYPE_CHECKING:
+      from .types import (
+-         BuyPhoneNumberRequestInboundAgent,
+-         BuyPhoneNumberRequestInboundAgentTwo,
+-         BuyPhoneNumberRequestTelephonyProvider,
+          LinkPhoneNumberRequestInboundAgent,
+          LinkPhoneNumberRequestInboundAgentTwo,
+          UpdateNumberRequestExampleContext,
+      ⋮ (2 unchanged line(s))
+          UpdateNumberRequestOutboundOnly,
+      )
+  _dynamic_imports: typing.Dict[str, str] = {
+-     "BuyPhoneNumberRequestInboundAgent": ".types",
+-     "BuyPhoneNumberRequestInboundAgentTwo": ".types",
+-     "BuyPhoneNumberRequestTelephonyProvider": ".types",
+      "LinkPhoneNumberRequestInboundAgent": ".types",
+      "LinkPhoneNumberRequestInboundAgentTwo": ".types",
+      "UpdateNumberRequestExampleContext": ".types",
+      ⋮ (25 unchanged line(s))
+  
+  
+  __all__ = [
+-     "BuyPhoneNumberRequestInboundAgent",
+-     "BuyPhoneNumberRequestInboundAgentTwo",
+-     "BuyPhoneNumberRequestTelephonyProvider",
+      "LinkPhoneNumberRequestInboundAgent",
+      "LinkPhoneNumberRequestInboundAgentTwo",
+      "UpdateNumberRequestExampleContext",
+      ⋮ (4 unchanged line(s))
+
+Only in reference: src/fern/numbers/client.py
+
+Only in reference: src/fern/numbers/raw_client.py
+
+--- reference/src/fern/numbers/types/__init__.py
++++ crozier/src/fern/numbers/types/__init__.py
+      ⋮ (1 unchanged line(s))
+  from importlib import import_module
+  
+  if typing.TYPE_CHECKING:
+-     from .buy_phone_number_request_inbound_agent import BuyPhoneNumberRequestInboundAgent
+-     from .buy_phone_number_request_inbound_agent_two import BuyPhoneNumberRequestInboundAgentTwo
+-     from .buy_phone_number_request_telephony_provider import BuyPhoneNumberRequestTelephonyProvider
+      from .link_phone_number_request_inbound_agent import LinkPhoneNumberRequestInboundAgent
+      from .link_phone_number_request_inbound_agent_two import LinkPhoneNumberRequestInboundAgentTwo
+      from .update_number_request_example_context import UpdateNumberRequestExampleContext
+      ⋮ (1 unchanged line(s))
+      from .update_number_request_label import UpdateNumberRequestLabel
+      from .update_number_request_outbound_only import UpdateNumberRequestOutboundOnly
+  _dynamic_imports: typing.Dict[str, str] = {
+-     "BuyPhoneNumberRequestInboundAgent": ".buy_phone_number_request_inbound_agent",
+-     "BuyPhoneNumberRequestInboundAgentTwo": ".buy_phone_number_request_inbound_agent_two",
+-     "BuyPhoneNumberRequestTelephonyProvider": ".buy_phone_number_request_telephony_provider",
+      "LinkPhoneNumberRequestInboundAgent": ".link_phone_number_request_inbound_agent",
+      "LinkPhoneNumberRequestInboundAgentTwo": ".link_phone_number_request_inbound_agent_two",
+      "UpdateNumberRequestExampleContext": ".update_number_request_example_context",
+      ⋮ (25 unchanged line(s))
+  
+  
+  __all__ = [
+-     "BuyPhoneNumberRequestInboundAgent",
+-     "BuyPhoneNumberRequestInboundAgentTwo",
+-     "BuyPhoneNumberRequestTelephonyProvider",
+      "LinkPhoneNumberRequestInboundAgent",
+      "LinkPhoneNumberRequestInboundAgentTwo",
+      "UpdateNumberRequestExampleContext",
+      ⋮ (4 unchanged line(s))
+
+Only in reference: src/fern/numbers/types/buy_phone_number_request_inbound_agent.py
+
+Only in reference: src/fern/numbers/types/buy_phone_number_request_inbound_agent_two.py
+
+Only in reference: src/fern/numbers/types/buy_phone_number_request_telephony_provider.py
+
+--- reference/src/fern/types/__init__.py
++++ crozier/src/fern/types/__init__.py
+      ⋮ (180 unchanged line(s))
+      from .azure_voice_update_params_pitch import AzureVoiceUpdateParamsPitch
+      from .azure_voice_update_params_rate import AzureVoiceUpdateParamsRate
+      from .azure_voice_update_params_voice_name import AzureVoiceUpdateParamsVoiceName
++     from .buy_phone_number_request import BuyPhoneNumberRequest
++     from .buy_phone_number_request_inbound_agent import BuyPhoneNumberRequestInboundAgent
++     from .buy_phone_number_request_inbound_agent_two import BuyPhoneNumberRequestInboundAgentTwo
++     from .buy_phone_number_request_telephony_provider import BuyPhoneNumberRequestTelephonyProvider
+      from .call import Call
+      from .call_human_detection_result import CallHumanDetectionResult
+      from .call_on_no_human_answer import CallOnNoHumanAnswer
+      ⋮ (430 unchanged line(s))
+      "AzureVoiceUpdateParamsPitch": ".azure_voice_update_params_pitch",
+      "AzureVoiceUpdateParamsRate": ".azure_voice_update_params_rate",
+      "AzureVoiceUpdateParamsVoiceName": ".azure_voice_update_params_voice_name",
++     "BuyPhoneNumberRequest": ".buy_phone_number_request",
++     "BuyPhoneNumberRequestInboundAgent": ".buy_phone_number_request_inbound_agent",
++     "BuyPhoneNumberRequestInboundAgentTwo": ".buy_phone_number_request_inbound_agent_two",
++     "BuyPhoneNumberRequestTelephonyProvider": ".buy_phone_number_request_telephony_provider",
+      "Call": ".call",
+      "CallHumanDetectionResult": ".call_human_detection_result",
+      "CallOnNoHumanAnswer": ".call_on_no_human_answer",
+      ⋮ (414 unchanged line(s))
+      "AzureVoiceUpdateParamsPitch",
+      "AzureVoiceUpdateParamsRate",
+      "AzureVoiceUpdateParamsVoiceName",
++     "BuyPhoneNumberRequest",
++     "BuyPhoneNumberRequestInboundAgent",
++     "BuyPhoneNumberRequestInboundAgentTwo",
++     "BuyPhoneNumberRequestTelephonyProvider",
+      "Call",
+      "CallHumanDetectionResult",
+      "CallOnNoHumanAnswer",
+      ⋮ (248 unchanged line(s))
+
+--- reference/src/fern/types/action_page_items_item.py
++++ crozier/src/fern/types/action_page_items_item.py
+      ⋮ (8 unchanged line(s))
+  from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from .add_to_conference_action_action_trigger import AddToConferenceActionActionTrigger
+  from .add_to_conference_config import AddToConferenceConfig
++ from .dtmf_action_action_trigger import DtmfActionActionTrigger
+  from .empty_action_config import EmptyActionConfig
+  from .end_conversation_action_action_trigger import EndConversationActionActionTrigger
++ from .external_action_action_trigger import ExternalActionActionTrigger
+  from .external_action_config import ExternalActionConfig
+- from .function_call_action_trigger import FunctionCallActionTrigger
+  from .set_hold_action_action_trigger import SetHoldActionActionTrigger
+  from .transfer_call_action_action_trigger import TransferCallActionActionTrigger
+  from .transfer_call_config import TransferCallConfig
+      ⋮ (21 unchanged line(s))
+      id: str
+      user_id: str
+      config: typing.Optional[EmptyActionConfig] = None
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[DtmfActionActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (27 unchanged line(s))
+      id: str
+      user_id: str
+      config: ExternalActionConfig
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[ExternalActionActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (53 unchanged line(s))
+
+--- reference/src/fern/types/action_params_request.py
++++ crozier/src/fern/types/action_params_request.py
+      ⋮ (8 unchanged line(s))
+  from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from .add_to_conference_action_params_action_trigger import AddToConferenceActionParamsActionTrigger
+  from .add_to_conference_config import AddToConferenceConfig
++ from .dtmf_action_params_action_trigger import DtmfActionParamsActionTrigger
+  from .empty_action_config import EmptyActionConfig
+  from .end_conversation_action_params_action_trigger import EndConversationActionParamsActionTrigger
+  from .external_action_config import ExternalActionConfig
+- from .function_call_action_trigger import FunctionCallActionTrigger
++ from .external_action_params_action_trigger import ExternalActionParamsActionTrigger
+  from .set_hold_action_params_action_trigger import SetHoldActionParamsActionTrigger
+  from .transfer_call_action_params_action_trigger import TransferCallActionParamsActionTrigger
+  from .transfer_call_config import TransferCallConfig
+      ⋮ (17 unchanged line(s))
+  class ActionParamsRequest_ActionDtmf(UniversalBaseModel):
+      type: typing.Literal["action_dtmf"] = "action_dtmf"
+      config: typing.Optional[EmptyActionConfig] = None
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[DtmfActionParamsActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (23 unchanged line(s))
+  class ActionParamsRequest_ActionExternal(UniversalBaseModel):
+      type: typing.Literal["action_external"] = "action_external"
+      config: ExternalActionConfig
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[ExternalActionParamsActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (49 unchanged line(s))
+
+--- reference/src/fern/types/action_response_model.py
++++ crozier/src/fern/types/action_response_model.py
+      ⋮ (8 unchanged line(s))
+  from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from .add_to_conference_action_action_trigger import AddToConferenceActionActionTrigger
+  from .add_to_conference_config import AddToConferenceConfig
++ from .dtmf_action_action_trigger import DtmfActionActionTrigger
+  from .empty_action_config import EmptyActionConfig
+  from .end_conversation_action_action_trigger import EndConversationActionActionTrigger
++ from .external_action_action_trigger import ExternalActionActionTrigger
+  from .external_action_config import ExternalActionConfig
+- from .function_call_action_trigger import FunctionCallActionTrigger
+  from .set_hold_action_action_trigger import SetHoldActionActionTrigger
+  from .transfer_call_action_action_trigger import TransferCallActionActionTrigger
+  from .transfer_call_config import TransferCallConfig
+      ⋮ (21 unchanged line(s))
+      id: str
+      user_id: str
+      config: typing.Optional[EmptyActionConfig] = None
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[DtmfActionActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (27 unchanged line(s))
+      id: str
+      user_id: str
+      config: ExternalActionConfig
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[ExternalActionActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (53 unchanged line(s))
+
+--- reference/src/fern/types/agent_actions_item.py
++++ crozier/src/fern/types/agent_actions_item.py
+      ⋮ (8 unchanged line(s))
+  from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from .add_to_conference_action_action_trigger import AddToConferenceActionActionTrigger
+  from .add_to_conference_config import AddToConferenceConfig
++ from .dtmf_action_action_trigger import DtmfActionActionTrigger
+  from .empty_action_config import EmptyActionConfig
+  from .end_conversation_action_action_trigger import EndConversationActionActionTrigger
++ from .external_action_action_trigger import ExternalActionActionTrigger
+  from .external_action_config import ExternalActionConfig
+- from .function_call_action_trigger import FunctionCallActionTrigger
+  from .set_hold_action_action_trigger import SetHoldActionActionTrigger
+  from .transfer_call_action_action_trigger import TransferCallActionActionTrigger
+  from .transfer_call_config import TransferCallConfig
+      ⋮ (21 unchanged line(s))
+      id: str
+      user_id: str
+      config: typing.Optional[EmptyActionConfig] = None
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[DtmfActionActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (27 unchanged line(s))
+      id: str
+      user_id: str
+      config: ExternalActionConfig
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[ExternalActionActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (53 unchanged line(s))
+
+--- reference/src/fern/types/agent_params_actions_item_one.py
++++ crozier/src/fern/types/agent_params_actions_item_one.py
+      ⋮ (8 unchanged line(s))
+  from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from .add_to_conference_action_params_action_trigger import AddToConferenceActionParamsActionTrigger
+  from .add_to_conference_config import AddToConferenceConfig
++ from .dtmf_action_params_action_trigger import DtmfActionParamsActionTrigger
+  from .empty_action_config import EmptyActionConfig
+  from .end_conversation_action_params_action_trigger import EndConversationActionParamsActionTrigger
+  from .external_action_config import ExternalActionConfig
+- from .function_call_action_trigger import FunctionCallActionTrigger
++ from .external_action_params_action_trigger import ExternalActionParamsActionTrigger
+  from .set_hold_action_params_action_trigger import SetHoldActionParamsActionTrigger
+  from .transfer_call_action_params_action_trigger import TransferCallActionParamsActionTrigger
+  from .transfer_call_config import TransferCallConfig
+      ⋮ (17 unchanged line(s))
+  class AgentParamsActionsItemOne_ActionDtmf(UniversalBaseModel):
+      type: typing.Literal["action_dtmf"] = "action_dtmf"
+      config: typing.Optional[EmptyActionConfig] = None
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[DtmfActionParamsActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (23 unchanged line(s))
+  class AgentParamsActionsItemOne_ActionExternal(UniversalBaseModel):
+      type: typing.Literal["action_external"] = "action_external"
+      config: ExternalActionConfig
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[ExternalActionParamsActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (49 unchanged line(s))
+
+Only in crozier: src/fern/types/buy_phone_number_request.py
+
+Only in crozier: src/fern/types/buy_phone_number_request_inbound_agent.py
+
+Only in crozier: src/fern/types/buy_phone_number_request_inbound_agent_two.py
+
+Only in crozier: src/fern/types/buy_phone_number_request_telephony_provider.py
+
+--- reference/src/fern/types/create_call_agent_params_actions_item_one.py
++++ crozier/src/fern/types/create_call_agent_params_actions_item_one.py
+      ⋮ (8 unchanged line(s))
+  from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from .add_to_conference_action_params_action_trigger import AddToConferenceActionParamsActionTrigger
+  from .add_to_conference_config import AddToConferenceConfig
++ from .dtmf_action_params_action_trigger import DtmfActionParamsActionTrigger
+  from .empty_action_config import EmptyActionConfig
+  from .end_conversation_action_params_action_trigger import EndConversationActionParamsActionTrigger
+  from .external_action_config import ExternalActionConfig
+- from .function_call_action_trigger import FunctionCallActionTrigger
++ from .external_action_params_action_trigger import ExternalActionParamsActionTrigger
+  from .set_hold_action_params_action_trigger import SetHoldActionParamsActionTrigger
+  from .transfer_call_action_params_action_trigger import TransferCallActionParamsActionTrigger
+  from .transfer_call_config import TransferCallConfig
+      ⋮ (17 unchanged line(s))
+  class CreateCallAgentParamsActionsItemOne_ActionDtmf(UniversalBaseModel):
+      type: typing.Literal["action_dtmf"] = "action_dtmf"
+      config: typing.Optional[EmptyActionConfig] = None
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[DtmfActionParamsActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (23 unchanged line(s))
+  class CreateCallAgentParamsActionsItemOne_ActionExternal(UniversalBaseModel):
+      type: typing.Literal["action_external"] = "action_external"
+      config: ExternalActionConfig
+-     action_trigger: typing.Optional[FunctionCallActionTrigger] = None
++     action_trigger: typing.Optional[ExternalActionParamsActionTrigger] = None
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (49 unchanged line(s))

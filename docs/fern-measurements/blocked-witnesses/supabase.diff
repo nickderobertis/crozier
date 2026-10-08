@@ -1,0 +1,888 @@
+--- reference/README.md
++++ crozier/README.md
+      ⋮ (41 unchanged line(s))
+  )
+  
+  client.environments.v1push_a_branch(
+-     branch_id_or_ref="branch_id_or_ref",
++     branch_id_or_ref="abcdefghijklmnopqrst",
+      migration_version="20250312000000",
+  )
+  ```
+      ⋮ (27 unchanged line(s))
+  
+  async def main() -> None:
+      await client.environments.v1push_a_branch(
+-         branch_id_or_ref="branch_id_or_ref",
++         branch_id_or_ref="abcdefghijklmnopqrst",
+          migration_version="20250312000000",
+      )
+  
+      ⋮ (108 unchanged line(s))
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (35 unchanged line(s))
+  )
+  
+  client.environments.v1get_a_branch_config(
+-     branch_id_or_ref="branch_id_or_ref",
++     branch_id_or_ref="abcdefghijklmnopqrst",
+  )
+  
+  ```
+      ⋮ (66 unchanged line(s))
+  )
+  
+  client.environments.v1delete_a_branch(
+-     branch_id_or_ref="branch_id_or_ref",
++     branch_id_or_ref="abcdefghijklmnopqrst",
+  )
+  
+  ```
+      ⋮ (74 unchanged line(s))
+  )
+  
+  client.environments.v1update_a_branch_config(
+-     branch_id_or_ref="branch_id_or_ref",
++     branch_id_or_ref="abcdefghijklmnopqrst",
+      branch_name="preview-login-page",
+      git_branch="feature/login-page",
+      persistent=True,
+      ⋮ (127 unchanged line(s))
+  )
+  
+  client.environments.v1push_a_branch(
+-     branch_id_or_ref="branch_id_or_ref",
++     branch_id_or_ref="abcdefghijklmnopqrst",
+      migration_version="20250312000000",
+  )
+  
+      ⋮ (75 unchanged line(s))
+  )
+  
+  client.environments.v1merge_a_branch(
+-     branch_id_or_ref="branch_id_or_ref",
++     branch_id_or_ref="abcdefghijklmnopqrst",
+      migration_version="20250312000000",
+  )
+  
+      ⋮ (75 unchanged line(s))
+  )
+  
+  client.environments.v1reset_a_branch(
+-     branch_id_or_ref="branch_id_or_ref",
++     branch_id_or_ref="abcdefghijklmnopqrst",
+      migration_version="20250312000000",
+  )
+  
+      ⋮ (75 unchanged line(s))
+  )
+  
+  client.environments.v1restore_a_branch(
+-     branch_id_or_ref="branch_id_or_ref",
++     branch_id_or_ref="abcdefghijklmnopqrst",
+  )
+  
+  ```
+      ⋮ (67 unchanged line(s))
+  
+  client.environments.v1diff_a_branch(
+      branch_id_or_ref="branch_id_or_ref",
++     included_schemas="public,auth",
++     pgdelta="true",
+  )
+  
+  ```
+      ⋮ (2669 unchanged line(s))
+  client.projects.v1modify_database_disk(
+      ref="abcdefghijklmnopqrst",
+      attributes=DiskRequestBodyAttributes_Gp3(
+-         iops=3000,
+-         size_gb=100,
+-         throughput_mibps=125,
++         iops=1,
++         size_gb=1,
+      ),
+  )
+  
+      ⋮ (906 unchanged line(s))
+  <dd>
+  
+  ```python
+- from fern import FernApi, OAuthTokenBodyGrantType
++ from fern import FernApi
+  from fern.environment import FernApiEnvironment
+  
+  client = FernApi(
+      ⋮ (1 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.o_auth.v1exchange_oauth_token(
+-     grant_type=OAuthTokenBodyGrantType.AUTHORIZATION_CODE,
+-     client_id="66666666-6666-4666-8666-666666666666",
+-     client_secret="sb_secret_live_example_9f4d3a206b2e4a7e8c91",
+-     code="oauth_code_9f4d3a206b2e4a7e8c91",
+-     code_verifier="qW0Z6d9pQnW0mL1dK1q9wFq6Yz2nV5rA8jT3mP7sH4c",
+-     redirect_uri="https://app.acme.com/auth/callback",
+-     scope="projects:read projects:write",
+- )
++ client.o_auth.v1exchange_oauth_token()
+  
+  ```
+  </dd>
+      ⋮ (4803 unchanged line(s))
+      ref="abcdefghijklmnopqrst",
+      request=[
+          CreateSecretBodyItem(
+-             name="OPENAI_API_KEY",
+-             value="sk-example-secret",
+-         ),
+-         CreateSecretBodyItem(
+-             name="STRIPE_WEBHOOK_SECRET",
+-             value="whsec_example",
++             name="name",
++             value="value",
+          )
+      ],
+  )
+      ⋮ (78 unchanged line(s))
+  client.secrets.v1bulk_delete_secrets(
+      ref="abcdefghijklmnopqrst",
+      request=[
+-         "OPENAI_API_KEY"
++         "string"
+      ],
+  )
+  
+      ⋮ (5003 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **v1create_function_body_slug:** `str` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **v1create_function_body_name:** `str` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **body:** `str` 
++ **request:** `V1CreateFunctionBody` 
+      
+  </dd>
+  </dl>
+      ⋮ (57 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **v1create_function_body_verify_jwt:** `typing.Optional[bool]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+  **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+      
+  </dd>
+      ⋮ (45 unchanged line(s))
+      ref="abcdefghijklmnopqrst",
+      request=[
+          BulkUpdateFunctionBodyItem(
+-             id="3c078cce-ad70-4148-9f37-4da362789053",
+-             slug="hello-world",
+-             name="Hello World",
++             id="id",
++             slug="slug",
++             name="name",
+              status=BulkUpdateFunctionBodyItemStatus.ACTIVE,
+-             version=2,
+-             verify_jwt=True,
+-             entrypoint_path="index.ts",
++             version=1,
+          )
+      ],
+  )
+      ⋮ (393 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **slug:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **name:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **verify_jwt:** `typing.Optional[str]` 
++ **request:** `V1UpdateFunctionBody` 
+      
+  </dd>
+  </dl>
+      ⋮ (1 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **import_map:** `typing.Optional[str]` 
++ **slug:** `typing.Optional[str]` 
+      
+  </dd>
+  </dl>
+      ⋮ (1 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **entrypoint_path:** `typing.Optional[str]` 
++ **name:** `typing.Optional[str]` 
+      
+  </dd>
+  </dl>
+      ⋮ (1 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **import_map_path:** `typing.Optional[str]` 
++ **verify_jwt:** `typing.Optional[str]` 
+      
+  </dd>
+  </dl>
+      ⋮ (1 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **ezbr_sha256:** `typing.Optional[str]` 
++ **import_map:** `typing.Optional[str]` 
+      
+  </dd>
+  </dl>
+      ⋮ (1 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **v1update_function_body_name:** `typing.Optional[str]` 
++ **entrypoint_path:** `typing.Optional[str]` 
+      
+  </dd>
+  </dl>
+      ⋮ (1 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **body:** `typing.Optional[str]` 
++ **import_map_path:** `typing.Optional[str]` 
+      
+  </dd>
+  </dl>
+      ⋮ (1 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **v1update_function_body_verify_jwt:** `typing.Optional[bool]` 
++ **ezbr_sha256:** `typing.Optional[str]` 
+      
+  </dd>
+  </dl>
+      ⋮ (584 unchanged line(s))
+
+--- reference/src/fern/__init__.py
++++ crozier/src/fern/__init__.py
+      ⋮ (432 unchanged line(s))
+          storage,
+      )
+      from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
++     from .client import AsyncFernApi, FernApi
++     from .environment import FernApiEnvironment
+      from .advisors import V1GetSecurityAdvisorsRequestLintType
+      from .analytics import V1GetProjectFunctionCombinedStatsRequestInterval, V1GetProjectUsageApiCountRequestInterval
+      from .auth import (
+      ⋮ (53 unchanged line(s))
+          V1RemoveProjectAddonRequestAddonVariantTwo,
+          V1RemoveProjectAddonRequestAddonVariantZero,
+      )
+-     from .client import AsyncFernApi, FernApi
+      from .database import (
+          InviteExternalUserJitAccessBodyRolesItem,
+          InviteExternalUserJitAccessBodyRolesItemAllowedNetworks,
+      ⋮ (24 unchanged line(s))
+          V1UpdateJitAccessConfigResponseUnavailableReasonUnavailableReason,
+      )
+      from .edge_functions import V1DeployAFunctionRequestMetadata
+-     from .environment import FernApiEnvironment
+      from .environments import (
+          CreateBranchBodyDesiredInstanceSize,
+          CreateBranchBodyPostgresEngine,
+      ⋮ (10 unchanged line(s))
+      from .o_auth import (
+          V1AuthorizeUserRequestCodeChallengeMethod,
+          V1AuthorizeUserRequestResponseType,
++         V1ExchangeOauthTokenRequestGrantType,
+          V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
+          V1OauthAuthorizeProjectClaimRequestResponseType,
+      )
+      ⋮ (489 unchanged line(s))
+      "V1CreateProjectBodyRegionSelection_SmartGroup": ".projects",
+      "V1CreateProjectBodyRegionSelection_Specific": ".projects",
+      "V1DeployAFunctionRequestMetadata": ".edge_functions",
++     "V1ExchangeOauthTokenRequestGrantType": ".o_auth",
+      "V1GetAllProjectsForOrganizationRequestSort": ".projects",
+      "V1GetAvailableRegionsRequestContinent": ".projects",
+      "V1GetAvailableRegionsRequestDesiredInstanceSize": ".projects",
+      ⋮ (580 unchanged line(s))
+      "V1CreateProjectBodyRegionSelection_SmartGroup",
+      "V1CreateProjectBodyRegionSelection_Specific",
+      "V1DeployAFunctionRequestMetadata",
++     "V1ExchangeOauthTokenRequestGrantType",
+      "V1GetAllProjectsForOrganizationRequestSort",
+      "V1GetAvailableRegionsRequestContinent",
+      "V1GetAvailableRegionsRequestDesiredInstanceSize",
+      ⋮ (105 unchanged line(s))
+
+--- reference/src/fern/auth/client.py
++++ crozier/src/fern/auth/client.py
+      ⋮ (1560 unchanged line(s))
+                  keys={
+                      "email": CreateProviderBodyAttributeMappingKeysValue(
+                          name="email",
+-                     ),
++                     )
+                      "first_name": CreateProviderBodyAttributeMappingKeysValue(
+                          name="first_name",
+-                     ),
++                     )
+                      "last_name": CreateProviderBodyAttributeMappingKeysValue(
+                          name="last_name",
+-                     ),
++                     )
+                  },
+              ),
+          )
+      ⋮ (1790 unchanged line(s))
+                      keys={
+                          "email": CreateProviderBodyAttributeMappingKeysValue(
+                              name="email",
+-                         ),
++                         )
+                          "first_name": CreateProviderBodyAttributeMappingKeysValue(
+                              name="first_name",
+-                         ),
++                         )
+                          "last_name": CreateProviderBodyAttributeMappingKeysValue(
+                              name="last_name",
+-                         ),
++                         )
+                      },
+                  ),
+              )
+      ⋮ (171 unchanged line(s))
+
+--- reference/src/fern/edge_functions/client.py
++++ crozier/src/fern/edge_functions/client.py
+      ⋮ (193 unchanged line(s))
+              ref="abcdefghijklmnopqrst",
+              request=[
+                  BulkUpdateFunctionBodyItem(
+-                     id="3c078cce-ad70-4148-9f37-4da362789053",
+-                     slug="hello-world",
+-                     name="Hello World",
++                     id="id",
++                     slug="slug",
++                     name="name",
+                      status=BulkUpdateFunctionBodyItemStatus.ACTIVE,
+-                     version=2,
+-                     verify_jwt=True,
+-                     entrypoint_path="index.ts",
++                     version=1,
+                  )
+              ],
+          )
+      ⋮ (459 unchanged line(s))
+                  ref="abcdefghijklmnopqrst",
+                  request=[
+                      BulkUpdateFunctionBodyItem(
+-                         id="3c078cce-ad70-4148-9f37-4da362789053",
+-                         slug="hello-world",
+-                         name="Hello World",
++                         id="id",
++                         slug="slug",
++                         name="name",
+                          status=BulkUpdateFunctionBodyItemStatus.ACTIVE,
+-                         version=2,
+-                         verify_jwt=True,
+-                         entrypoint_path="index.ts",
++                         version=1,
+                      )
+                  ],
+              )
+      ⋮ (308 unchanged line(s))
+
+--- reference/src/fern/environments/client.py
++++ crozier/src/fern/environments/client.py
+      ⋮ (70 unchanged line(s))
+              token="YOUR_TOKEN",
+          )
+          client.environments.v1get_a_branch_config(
+-             branch_id_or_ref="branch_id_or_ref",
++             branch_id_or_ref="abcdefghijklmnopqrst",
+          )
+          """
+          _response = self._raw_client.v1get_a_branch_config(branch_id_or_ref, request_options=request_options)
+      ⋮ (33 unchanged line(s))
+              token="YOUR_TOKEN",
+          )
+          client.environments.v1delete_a_branch(
+-             branch_id_or_ref="branch_id_or_ref",
++             branch_id_or_ref="abcdefghijklmnopqrst",
+          )
+          """
+          _response = self._raw_client.v1delete_a_branch(branch_id_or_ref, force=force, request_options=request_options)
+      ⋮ (52 unchanged line(s))
+              token="YOUR_TOKEN",
+          )
+          client.environments.v1update_a_branch_config(
+-             branch_id_or_ref="branch_id_or_ref",
++             branch_id_or_ref="abcdefghijklmnopqrst",
+              branch_name="preview-login-page",
+              git_branch="feature/login-page",
+              persistent=True,
+      ⋮ (47 unchanged line(s))
+              token="YOUR_TOKEN",
+          )
+          client.environments.v1push_a_branch(
+-             branch_id_or_ref="branch_id_or_ref",
++             branch_id_or_ref="abcdefghijklmnopqrst",
+              migration_version="20250312000000",
+          )
+          """
+      ⋮ (35 unchanged line(s))
+              token="YOUR_TOKEN",
+          )
+          client.environments.v1merge_a_branch(
+-             branch_id_or_ref="branch_id_or_ref",
++             branch_id_or_ref="abcdefghijklmnopqrst",
+              migration_version="20250312000000",
+          )
+          """
+      ⋮ (35 unchanged line(s))
+              token="YOUR_TOKEN",
+          )
+          client.environments.v1reset_a_branch(
+-             branch_id_or_ref="branch_id_or_ref",
++             branch_id_or_ref="abcdefghijklmnopqrst",
+              migration_version="20250312000000",
+          )
+          """
+      ⋮ (29 unchanged line(s))
+              token="YOUR_TOKEN",
+          )
+          client.environments.v1restore_a_branch(
+-             branch_id_or_ref="branch_id_or_ref",
++             branch_id_or_ref="abcdefghijklmnopqrst",
+          )
+          """
+          _response = self._raw_client.v1restore_a_branch(branch_id_or_ref, request_options=request_options)
+      ⋮ (42 unchanged line(s))
+          )
+          client.environments.v1diff_a_branch(
+              branch_id_or_ref="branch_id_or_ref",
++             included_schemas="public,auth",
++             pgdelta="true",
+          )
+          """
+          _response = self._raw_client.v1diff_a_branch(
+      ⋮ (475 unchanged line(s))
+  
+          async def main() -> None:
+              await client.environments.v1get_a_branch_config(
+-                 branch_id_or_ref="branch_id_or_ref",
++                 branch_id_or_ref="abcdefghijklmnopqrst",
+              )
+  
+  
+      ⋮ (41 unchanged line(s))
+  
+          async def main() -> None:
+              await client.environments.v1delete_a_branch(
+-                 branch_id_or_ref="branch_id_or_ref",
++                 branch_id_or_ref="abcdefghijklmnopqrst",
+              )
+  
+  
+      ⋮ (62 unchanged line(s))
+  
+          async def main() -> None:
+              await client.environments.v1update_a_branch_config(
+-                 branch_id_or_ref="branch_id_or_ref",
++                 branch_id_or_ref="abcdefghijklmnopqrst",
+                  branch_name="preview-login-page",
+                  git_branch="feature/login-page",
+                  persistent=True,
+      ⋮ (55 unchanged line(s))
+  
+          async def main() -> None:
+              await client.environments.v1push_a_branch(
+-                 branch_id_or_ref="branch_id_or_ref",
++                 branch_id_or_ref="abcdefghijklmnopqrst",
+                  migration_version="20250312000000",
+              )
+  
+      ⋮ (43 unchanged line(s))
+  
+          async def main() -> None:
+              await client.environments.v1merge_a_branch(
+-                 branch_id_or_ref="branch_id_or_ref",
++                 branch_id_or_ref="abcdefghijklmnopqrst",
+                  migration_version="20250312000000",
+              )
+  
+      ⋮ (43 unchanged line(s))
+  
+          async def main() -> None:
+              await client.environments.v1reset_a_branch(
+-                 branch_id_or_ref="branch_id_or_ref",
++                 branch_id_or_ref="abcdefghijklmnopqrst",
+                  migration_version="20250312000000",
+              )
+  
+      ⋮ (37 unchanged line(s))
+  
+          async def main() -> None:
+              await client.environments.v1restore_a_branch(
+-                 branch_id_or_ref="branch_id_or_ref",
++                 branch_id_or_ref="abcdefghijklmnopqrst",
+              )
+  
+  
+      ⋮ (50 unchanged line(s))
+          async def main() -> None:
+              await client.environments.v1diff_a_branch(
+                  branch_id_or_ref="branch_id_or_ref",
++                 included_schemas="public,auth",
++                 pgdelta="true",
+              )
+  
+  
+      ⋮ (506 unchanged line(s))
+
+--- reference/src/fern/o_auth/__init__.py
++++ crozier/src/fern/o_auth/__init__.py
+      ⋮ (4 unchanged line(s))
+      from .types import (
+          V1AuthorizeUserRequestCodeChallengeMethod,
+          V1AuthorizeUserRequestResponseType,
++         V1ExchangeOauthTokenRequestGrantType,
+          V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
+          V1OauthAuthorizeProjectClaimRequestResponseType,
+      )
+  _dynamic_imports: typing.Dict[str, str] = {
+      "V1AuthorizeUserRequestCodeChallengeMethod": ".types",
+      "V1AuthorizeUserRequestResponseType": ".types",
++     "V1ExchangeOauthTokenRequestGrantType": ".types",
+      "V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod": ".types",
+      "V1OauthAuthorizeProjectClaimRequestResponseType": ".types",
+  }
+      ⋮ (23 unchanged line(s))
+  __all__ = [
+      "V1AuthorizeUserRequestCodeChallengeMethod",
+      "V1AuthorizeUserRequestResponseType",
++     "V1ExchangeOauthTokenRequestGrantType",
+      "V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod",
+      "V1OauthAuthorizeProjectClaimRequestResponseType",
+  ]
+
+--- reference/src/fern/o_auth/client.py
++++ crozier/src/fern/o_auth/client.py
+      ⋮ (3 unchanged line(s))
+  
+  from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+  from ..core.request_options import RequestOptions
+- from ..types.o_auth_token_body_grant_type import OAuthTokenBodyGrantType
+  from ..types.o_auth_token_response_output import OAuthTokenResponseOutput
+  from .raw_client import AsyncRawOAuthClient, RawOAuthClient
+  from .types.v1authorize_user_request_code_challenge_method import V1AuthorizeUserRequestCodeChallengeMethod
+  from .types.v1authorize_user_request_response_type import V1AuthorizeUserRequestResponseType
++ from .types.v1exchange_oauth_token_request_grant_type import V1ExchangeOauthTokenRequestGrantType
+  from .types.v1oauth_authorize_project_claim_request_code_challenge_method import (
+      V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
+  )
+      ⋮ (108 unchanged line(s))
+      def v1exchange_oauth_token(
+          self,
+          *,
+-         grant_type: typing.Optional[OAuthTokenBodyGrantType] = OMIT,
++         grant_type: typing.Optional[V1ExchangeOauthTokenRequestGrantType] = OMIT,
+          client_id: typing.Optional[str] = OMIT,
+          client_secret: typing.Optional[str] = OMIT,
+          code: typing.Optional[str] = OMIT,
+      ⋮ (10 unchanged line(s))
+  
+          Parameters
+          ----------
+-         grant_type : typing.Optional[OAuthTokenBodyGrantType]
++         grant_type : typing.Optional[V1ExchangeOauthTokenRequestGrantType]
+  
+          client_id : typing.Optional[str]
+  
+      ⋮ (25 unchanged line(s))
+  
+          Examples
+          --------
+-         from fern import FernApi, OAuthTokenBodyGrantType
++         from fern import FernApi
+  
+          client = FernApi(
+              token="YOUR_TOKEN",
+          )
+-         client.o_auth.v1exchange_oauth_token(
+-             grant_type=OAuthTokenBodyGrantType.AUTHORIZATION_CODE,
+-             client_id="66666666-6666-4666-8666-666666666666",
+-             client_secret="sb_secret_live_example_9f4d3a206b2e4a7e8c91",
+-             code="oauth_code_9f4d3a206b2e4a7e8c91",
+-             code_verifier="qW0Z6d9pQnW0mL1dK1q9wFq6Yz2nV5rA8jT3mP7sH4c",
+-             redirect_uri="https://app.acme.com/auth/callback",
+-             scope="projects:read projects:write",
+-         )
++         client.o_auth.v1exchange_oauth_token()
+          """
+          _response = self._raw_client.v1exchange_oauth_token(
+              grant_type=grant_type,
+      ⋮ (243 unchanged line(s))
+      async def v1exchange_oauth_token(
+          self,
+          *,
+-         grant_type: typing.Optional[OAuthTokenBodyGrantType] = OMIT,
++         grant_type: typing.Optional[V1ExchangeOauthTokenRequestGrantType] = OMIT,
+          client_id: typing.Optional[str] = OMIT,
+          client_secret: typing.Optional[str] = OMIT,
+          code: typing.Optional[str] = OMIT,
+      ⋮ (10 unchanged line(s))
+  
+          Parameters
+          ----------
+-         grant_type : typing.Optional[OAuthTokenBodyGrantType]
++         grant_type : typing.Optional[V1ExchangeOauthTokenRequestGrantType]
+  
+          client_id : typing.Optional[str]
+  
+      ⋮ (27 unchanged line(s))
+          --------
+          import asyncio
+  
+-         from fern import AsyncFernApi, OAuthTokenBodyGrantType
++         from fern import AsyncFernApi
+  
+          client = AsyncFernApi(
+              token="YOUR_TOKEN",
+      ⋮ (1 unchanged line(s))
+  
+  
+          async def main() -> None:
+-             await client.o_auth.v1exchange_oauth_token(
+-                 grant_type=OAuthTokenBodyGrantType.AUTHORIZATION_CODE,
+-                 client_id="66666666-6666-4666-8666-666666666666",
+-                 client_secret="sb_secret_live_example_9f4d3a206b2e4a7e8c91",
+-                 code="oauth_code_9f4d3a206b2e4a7e8c91",
+-                 code_verifier="qW0Z6d9pQnW0mL1dK1q9wFq6Yz2nV5rA8jT3mP7sH4c",
+-                 redirect_uri="https://app.acme.com/auth/callback",
+-                 scope="projects:read projects:write",
+-             )
++             await client.o_auth.v1exchange_oauth_token()
+  
+  
+          asyncio.run(main())
+      ⋮ (150 unchanged line(s))
+
+--- reference/src/fern/o_auth/raw_client.py
++++ crozier/src/fern/o_auth/raw_client.py
+      ⋮ (11 unchanged line(s))
+  from ..errors.forbidden_error import ForbiddenError
+  from ..errors.too_many_requests_error import TooManyRequestsError
+  from ..errors.unauthorized_error import UnauthorizedError
+- from ..types.o_auth_token_body_grant_type import OAuthTokenBodyGrantType
+  from ..types.o_auth_token_response_output import OAuthTokenResponseOutput
+  from .types.v1authorize_user_request_code_challenge_method import V1AuthorizeUserRequestCodeChallengeMethod
+  from .types.v1authorize_user_request_response_type import V1AuthorizeUserRequestResponseType
++ from .types.v1exchange_oauth_token_request_grant_type import V1ExchangeOauthTokenRequestGrantType
+  from .types.v1oauth_authorize_project_claim_request_code_challenge_method import (
+      V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
+  )
+      ⋮ (124 unchanged line(s))
+      def v1exchange_oauth_token(
+          self,
+          *,
+-         grant_type: typing.Optional[OAuthTokenBodyGrantType] = OMIT,
++         grant_type: typing.Optional[V1ExchangeOauthTokenRequestGrantType] = OMIT,
+          client_id: typing.Optional[str] = OMIT,
+          client_secret: typing.Optional[str] = OMIT,
+          code: typing.Optional[str] = OMIT,
+      ⋮ (10 unchanged line(s))
+  
+          Parameters
+          ----------
+-         grant_type : typing.Optional[OAuthTokenBodyGrantType]
++         grant_type : typing.Optional[V1ExchangeOauthTokenRequestGrantType]
+  
+          client_id : typing.Optional[str]
+  
+      ⋮ (402 unchanged line(s))
+      async def v1exchange_oauth_token(
+          self,
+          *,
+-         grant_type: typing.Optional[OAuthTokenBodyGrantType] = OMIT,
++         grant_type: typing.Optional[V1ExchangeOauthTokenRequestGrantType] = OMIT,
+          client_id: typing.Optional[str] = OMIT,
+          client_secret: typing.Optional[str] = OMIT,
+          code: typing.Optional[str] = OMIT,
+      ⋮ (10 unchanged line(s))
+  
+          Parameters
+          ----------
+-         grant_type : typing.Optional[OAuthTokenBodyGrantType]
++         grant_type : typing.Optional[V1ExchangeOauthTokenRequestGrantType]
+  
+          client_id : typing.Optional[str]
+  
+      ⋮ (283 unchanged line(s))
+
+--- reference/src/fern/o_auth/types/__init__.py
++++ crozier/src/fern/o_auth/types/__init__.py
+      ⋮ (3 unchanged line(s))
+  if typing.TYPE_CHECKING:
+      from .v1authorize_user_request_code_challenge_method import V1AuthorizeUserRequestCodeChallengeMethod
+      from .v1authorize_user_request_response_type import V1AuthorizeUserRequestResponseType
++     from .v1exchange_oauth_token_request_grant_type import V1ExchangeOauthTokenRequestGrantType
+      from .v1oauth_authorize_project_claim_request_code_challenge_method import (
+          V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
+      )
+      ⋮ (1 unchanged line(s))
+  _dynamic_imports: typing.Dict[str, str] = {
+      "V1AuthorizeUserRequestCodeChallengeMethod": ".v1authorize_user_request_code_challenge_method",
+      "V1AuthorizeUserRequestResponseType": ".v1authorize_user_request_response_type",
++     "V1ExchangeOauthTokenRequestGrantType": ".v1exchange_oauth_token_request_grant_type",
+      "V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod": ".v1oauth_authorize_project_claim_request_code_challenge_method",
+      "V1OauthAuthorizeProjectClaimRequestResponseType": ".v1oauth_authorize_project_claim_request_response_type",
+  }
+      ⋮ (23 unchanged line(s))
+  __all__ = [
+      "V1AuthorizeUserRequestCodeChallengeMethod",
+      "V1AuthorizeUserRequestResponseType",
++     "V1ExchangeOauthTokenRequestGrantType",
+      "V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod",
+      "V1OauthAuthorizeProjectClaimRequestResponseType",
+  ]
+
+Only in crozier: src/fern/o_auth/types/v1exchange_oauth_token_request_grant_type.py
+
+--- reference/src/fern/projects/client.py
++++ crozier/src/fern/projects/client.py
+      ⋮ (1034 unchanged line(s))
+          client.projects.v1modify_database_disk(
+              ref="abcdefghijklmnopqrst",
+              attributes=DiskRequestBodyAttributes_Gp3(
+-                 iops=3000,
+-                 size_gb=100,
+-                 throughput_mibps=125,
++                 iops=1,
++                 size_gb=1,
+              ),
+          )
+          """
+      ⋮ (1332 unchanged line(s))
+              await client.projects.v1modify_database_disk(
+                  ref="abcdefghijklmnopqrst",
+                  attributes=DiskRequestBodyAttributes_Gp3(
+-                     iops=3000,
+-                     size_gb=100,
+-                     throughput_mibps=125,
++                     iops=1,
++                     size_gb=1,
+                  ),
+              )
+  
+      ⋮ (165 unchanged line(s))
+
+--- reference/src/fern/secrets/client.py
++++ crozier/src/fern/secrets/client.py
+      ⋮ (505 unchanged line(s))
+              ref="abcdefghijklmnopqrst",
+              request=[
+                  CreateSecretBodyItem(
+-                     name="OPENAI_API_KEY",
+-                     value="sk-example-secret",
+-                 ),
+-                 CreateSecretBodyItem(
+-                     name="STRIPE_WEBHOOK_SECRET",
+-                     value="whsec_example",
+-                 ),
++                     name="name",
++                     value="value",
++                 )
+              ],
+          )
+          """
+      ⋮ (29 unchanged line(s))
+          )
+          client.secrets.v1bulk_delete_secrets(
+              ref="abcdefghijklmnopqrst",
+-             request=["OPENAI_API_KEY"],
++             request=["string"],
+          )
+          """
+          _response = self._raw_client.v1bulk_delete_secrets(ref, request=request, request_options=request_options)
+      ⋮ (578 unchanged line(s))
+                  ref="abcdefghijklmnopqrst",
+                  request=[
+                      CreateSecretBodyItem(
+-                         name="OPENAI_API_KEY",
+-                         value="sk-example-secret",
+-                     ),
+-                     CreateSecretBodyItem(
+-                         name="STRIPE_WEBHOOK_SECRET",
+-                         value="whsec_example",
+-                     ),
++                         name="name",
++                         value="value",
++                     )
+                  ],
+              )
+  
+      ⋮ (37 unchanged line(s))
+          async def main() -> None:
+              await client.secrets.v1bulk_delete_secrets(
+                  ref="abcdefghijklmnopqrst",
+-                 request=["OPENAI_API_KEY"],
++                 request=["string"],
+              )
+  
+  
+      ⋮ (4 unchanged line(s))
+
+--- reference/src/fern/types/json_value_output.py
++++ crozier/src/fern/types/json_value_output.py
+      ⋮ (5 unchanged line(s))
+  
+  from .json_value_output_zero import JsonValueOutputZero
+  
+- JsonValueOutput = typing.Union[
+-     typing.Optional[JsonValueOutputZero], typing.List["JsonValueOutput"], typing.Dict[str, "JsonValueOutput"]
+- ]
++ JsonValueOutput = typing.Union[JsonValueOutputZero, typing.List["JsonValueOutput"], typing.Dict[str, "JsonValueOutput"]]

@@ -1,0 +1,829 @@
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (34 unchanged line(s))
+  
+  client.query.get_thermo_metrics(
+      system_id="system_id",
++     channels=[
++         1.1
++     ],
+      time_start={"key": "value"},
+      time_end={"key": "value"},
+      interval=1.1,
+      ⋮ (100 unchanged line(s))
+  
+  client.query.get_heater_metrics(
+      system_id="system_id",
++     channels=[
++         1.1
++     ],
+      time_start={"key": "value"},
+      time_end={"key": "value"},
+      interval=1.1,
+      ⋮ (505 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **location:** `typing.Optional[str]` — Physical location
++ **location:** `typing.Optional[str]` 
+      
+  </dd>
+  </dl>
+      ⋮ (896 unchanged line(s))
+
+--- reference/src/fern/__init__.py
++++ crozier/src/fern/__init__.py
+      ⋮ (22 unchanged line(s))
+          GetActiveExperimentResponseExperimentStatusOne,
+          GetActiveExperimentResponseExperimentStatusTwo,
+          GetActiveExperimentResponseExperimentStatusZero,
+-         GetActiveExperimentResponseExperimentStopReason,
+-         GetActiveExperimentResponseExperimentStopReasonOne,
+-         GetActiveExperimentResponseExperimentStopReasonThree,
+-         GetActiveExperimentResponseExperimentStopReasonTwo,
+-         GetActiveExperimentResponseExperimentStopReasonZero,
+          GetExperimentResponse,
+          GetExperimentResponseStatus,
+-         GetExperimentResponseStopReason,
+-         GetExperimentResponseStopReasonOne,
+-         GetExperimentResponseStopReasonThree,
+-         GetExperimentResponseStopReasonTwo,
+-         GetExperimentResponseStopReasonZero,
+          ListExperimentsRequestStatus,
+          ListExperimentsResponse,
+          ListExperimentsResponseExperimentsItem,
+          ListExperimentsResponseExperimentsItemStatus,
+-         ListExperimentsResponseExperimentsItemStopReason,
+-         ListExperimentsResponseExperimentsItemStopReasonOne,
+-         ListExperimentsResponseExperimentsItemStopReasonThree,
+-         ListExperimentsResponseExperimentsItemStopReasonTwo,
+-         ListExperimentsResponseExperimentsItemStopReasonZero,
+          StartExperimentResponse,
+          StartExperimentResponseStatus,
+-         StartExperimentResponseStopReason,
+-         StartExperimentResponseStopReasonOne,
+-         StartExperimentResponseStopReasonThree,
+-         StartExperimentResponseStopReasonTwo,
+-         StartExperimentResponseStopReasonZero,
+          StopExperimentResponse,
+          StopExperimentResponseStatus,
+-         StopExperimentResponseStopReason,
+-         StopExperimentResponseStopReasonOne,
+-         StopExperimentResponseStopReasonThree,
+-         StopExperimentResponseStopReasonTwo,
+-         StopExperimentResponseStopReasonZero,
+          UpdateExperimentResponse,
+          UpdateExperimentResponseStatus,
+-         UpdateExperimentResponseStopReason,
+-         UpdateExperimentResponseStopReasonOne,
+-         UpdateExperimentResponseStopReasonThree,
+-         UpdateExperimentResponseStopReasonTwo,
+-         UpdateExperimentResponseStopReasonZero,
+      )
+      from .query import (
+          GetHeaterMetricsRequestTimeEnd,
+      ⋮ (67 unchanged line(s))
+      "GetActiveExperimentResponseExperimentStatusOne": ".experiments",
+      "GetActiveExperimentResponseExperimentStatusTwo": ".experiments",
+      "GetActiveExperimentResponseExperimentStatusZero": ".experiments",
+-     "GetActiveExperimentResponseExperimentStopReason": ".experiments",
+-     "GetActiveExperimentResponseExperimentStopReasonOne": ".experiments",
+-     "GetActiveExperimentResponseExperimentStopReasonThree": ".experiments",
+-     "GetActiveExperimentResponseExperimentStopReasonTwo": ".experiments",
+-     "GetActiveExperimentResponseExperimentStopReasonZero": ".experiments",
+      "GetAllScrapeMetricsResponseItem": ".scrape",
+      "GetAllScrapeMetricsResponseItemHeater": ".scrape",
+      "GetAllScrapeMetricsResponseItemHeaterErrorCountItem": ".scrape",
+      ⋮ (4 unchanged line(s))
+      "GetAllScrapeStatusResponseItemThermo": ".scrape",
+      "GetExperimentResponse": ".experiments",
+      "GetExperimentResponseStatus": ".experiments",
+-     "GetExperimentResponseStopReason": ".experiments",
+-     "GetExperimentResponseStopReasonOne": ".experiments",
+-     "GetExperimentResponseStopReasonThree": ".experiments",
+-     "GetExperimentResponseStopReasonTwo": ".experiments",
+-     "GetExperimentResponseStopReasonZero": ".experiments",
+      "GetHeaterMetricsRequestTimeEnd": ".query",
+      "GetHeaterMetricsRequestTimeStart": ".query",
+      "GetHeaterMetricsResponse": ".query",
+      ⋮ (23 unchanged line(s))
+      "ListExperimentsResponse": ".experiments",
+      "ListExperimentsResponseExperimentsItem": ".experiments",
+      "ListExperimentsResponseExperimentsItemStatus": ".experiments",
+-     "ListExperimentsResponseExperimentsItemStopReason": ".experiments",
+-     "ListExperimentsResponseExperimentsItemStopReasonOne": ".experiments",
+-     "ListExperimentsResponseExperimentsItemStopReasonThree": ".experiments",
+-     "ListExperimentsResponseExperimentsItemStopReasonTwo": ".experiments",
+-     "ListExperimentsResponseExperimentsItemStopReasonZero": ".experiments",
+      "ListSystemsResponseItem": ".systems",
+      "ListSystemsResponseItemHeatersItem": ".systems",
+      "ListSystemsResponseItemThermosItem": ".systems",
+      ⋮ (1 unchanged line(s))
+      "NotFoundErrorBody": ".types",
+      "StartExperimentResponse": ".experiments",
+      "StartExperimentResponseStatus": ".experiments",
+-     "StartExperimentResponseStopReason": ".experiments",
+-     "StartExperimentResponseStopReasonOne": ".experiments",
+-     "StartExperimentResponseStopReasonThree": ".experiments",
+-     "StartExperimentResponseStopReasonTwo": ".experiments",
+-     "StartExperimentResponseStopReasonZero": ".experiments",
+      "StopExperimentResponse": ".experiments",
+      "StopExperimentResponseStatus": ".experiments",
+-     "StopExperimentResponseStopReason": ".experiments",
+-     "StopExperimentResponseStopReasonOne": ".experiments",
+-     "StopExperimentResponseStopReasonThree": ".experiments",
+-     "StopExperimentResponseStopReasonTwo": ".experiments",
+-     "StopExperimentResponseStopReasonZero": ".experiments",
+      "UnprocessableEntityError": ".errors",
+      "UnprocessableEntityErrorBody": ".types",
+      "UpdateExperimentResponse": ".experiments",
+      "UpdateExperimentResponseStatus": ".experiments",
+-     "UpdateExperimentResponseStopReason": ".experiments",
+-     "UpdateExperimentResponseStopReasonOne": ".experiments",
+-     "UpdateExperimentResponseStopReasonThree": ".experiments",
+-     "UpdateExperimentResponseStopReasonTwo": ".experiments",
+-     "UpdateExperimentResponseStopReasonZero": ".experiments",
+      "UpdateSystemRequestHeatersItem": ".systems",
+      "UpdateSystemRequestThermosItem": ".systems",
+      "UpdateSystemResponse": ".systems",
+      ⋮ (50 unchanged line(s))
+      "GetActiveExperimentResponseExperimentStatusOne",
+      "GetActiveExperimentResponseExperimentStatusTwo",
+      "GetActiveExperimentResponseExperimentStatusZero",
+-     "GetActiveExperimentResponseExperimentStopReason",
+-     "GetActiveExperimentResponseExperimentStopReasonOne",
+-     "GetActiveExperimentResponseExperimentStopReasonThree",
+-     "GetActiveExperimentResponseExperimentStopReasonTwo",
+-     "GetActiveExperimentResponseExperimentStopReasonZero",
+      "GetAllScrapeMetricsResponseItem",
+      "GetAllScrapeMetricsResponseItemHeater",
+      "GetAllScrapeMetricsResponseItemHeaterErrorCountItem",
+      ⋮ (4 unchanged line(s))
+      "GetAllScrapeStatusResponseItemThermo",
+      "GetExperimentResponse",
+      "GetExperimentResponseStatus",
+-     "GetExperimentResponseStopReason",
+-     "GetExperimentResponseStopReasonOne",
+-     "GetExperimentResponseStopReasonThree",
+-     "GetExperimentResponseStopReasonTwo",
+-     "GetExperimentResponseStopReasonZero",
+      "GetHeaterMetricsRequestTimeEnd",
+      "GetHeaterMetricsRequestTimeStart",
+      "GetHeaterMetricsResponse",
+      ⋮ (23 unchanged line(s))
+      "ListExperimentsResponse",
+      "ListExperimentsResponseExperimentsItem",
+      "ListExperimentsResponseExperimentsItemStatus",
+-     "ListExperimentsResponseExperimentsItemStopReason",
+-     "ListExperimentsResponseExperimentsItemStopReasonOne",
+-     "ListExperimentsResponseExperimentsItemStopReasonThree",
+-     "ListExperimentsResponseExperimentsItemStopReasonTwo",
+-     "ListExperimentsResponseExperimentsItemStopReasonZero",
+      "ListSystemsResponseItem",
+      "ListSystemsResponseItemHeatersItem",
+      "ListSystemsResponseItemThermosItem",
+      ⋮ (1 unchanged line(s))
+      "NotFoundErrorBody",
+      "StartExperimentResponse",
+      "StartExperimentResponseStatus",
+-     "StartExperimentResponseStopReason",
+-     "StartExperimentResponseStopReasonOne",
+-     "StartExperimentResponseStopReasonThree",
+-     "StartExperimentResponseStopReasonTwo",
+-     "StartExperimentResponseStopReasonZero",
+      "StopExperimentResponse",
+      "StopExperimentResponseStatus",
+-     "StopExperimentResponseStopReason",
+-     "StopExperimentResponseStopReasonOne",
+-     "StopExperimentResponseStopReasonThree",
+-     "StopExperimentResponseStopReasonTwo",
+-     "StopExperimentResponseStopReasonZero",
+      "UnprocessableEntityError",
+      "UnprocessableEntityErrorBody",
+      "UpdateExperimentResponse",
+      "UpdateExperimentResponseStatus",
+-     "UpdateExperimentResponseStopReason",
+-     "UpdateExperimentResponseStopReasonOne",
+-     "UpdateExperimentResponseStopReasonThree",
+-     "UpdateExperimentResponseStopReasonTwo",
+-     "UpdateExperimentResponseStopReasonZero",
+      "UpdateSystemRequestHeatersItem",
+      "UpdateSystemRequestThermosItem",
+      "UpdateSystemResponse",
+      ⋮ (8 unchanged line(s))
+
+--- reference/src/fern/experiments/__init__.py
++++ crozier/src/fern/experiments/__init__.py
+      ⋮ (9 unchanged line(s))
+          GetActiveExperimentResponseExperimentStatusOne,
+          GetActiveExperimentResponseExperimentStatusTwo,
+          GetActiveExperimentResponseExperimentStatusZero,
+-         GetActiveExperimentResponseExperimentStopReason,
+-         GetActiveExperimentResponseExperimentStopReasonOne,
+-         GetActiveExperimentResponseExperimentStopReasonThree,
+-         GetActiveExperimentResponseExperimentStopReasonTwo,
+-         GetActiveExperimentResponseExperimentStopReasonZero,
+          GetExperimentResponse,
+          GetExperimentResponseStatus,
+-         GetExperimentResponseStopReason,
+-         GetExperimentResponseStopReasonOne,
+-         GetExperimentResponseStopReasonThree,
+-         GetExperimentResponseStopReasonTwo,
+-         GetExperimentResponseStopReasonZero,
+          ListExperimentsRequestStatus,
+          ListExperimentsResponse,
+          ListExperimentsResponseExperimentsItem,
+          ListExperimentsResponseExperimentsItemStatus,
+-         ListExperimentsResponseExperimentsItemStopReason,
+-         ListExperimentsResponseExperimentsItemStopReasonOne,
+-         ListExperimentsResponseExperimentsItemStopReasonThree,
+-         ListExperimentsResponseExperimentsItemStopReasonTwo,
+-         ListExperimentsResponseExperimentsItemStopReasonZero,
+          StartExperimentResponse,
+          StartExperimentResponseStatus,
+-         StartExperimentResponseStopReason,
+-         StartExperimentResponseStopReasonOne,
+-         StartExperimentResponseStopReasonThree,
+-         StartExperimentResponseStopReasonTwo,
+-         StartExperimentResponseStopReasonZero,
+          StopExperimentResponse,
+          StopExperimentResponseStatus,
+-         StopExperimentResponseStopReason,
+-         StopExperimentResponseStopReasonOne,
+-         StopExperimentResponseStopReasonThree,
+-         StopExperimentResponseStopReasonTwo,
+-         StopExperimentResponseStopReasonZero,
+          UpdateExperimentResponse,
+          UpdateExperimentResponseStatus,
+-         UpdateExperimentResponseStopReason,
+-         UpdateExperimentResponseStopReasonOne,
+-         UpdateExperimentResponseStopReasonThree,
+-         UpdateExperimentResponseStopReasonTwo,
+-         UpdateExperimentResponseStopReasonZero,
+      )
+  _dynamic_imports: typing.Dict[str, str] = {
+      "DeleteExperimentResponse": ".types",
+      ⋮ (3 unchanged line(s))
+      "GetActiveExperimentResponseExperimentStatusOne": ".types",
+      "GetActiveExperimentResponseExperimentStatusTwo": ".types",
+      "GetActiveExperimentResponseExperimentStatusZero": ".types",
+-     "GetActiveExperimentResponseExperimentStopReason": ".types",
+-     "GetActiveExperimentResponseExperimentStopReasonOne": ".types",
+-     "GetActiveExperimentResponseExperimentStopReasonThree": ".types",
+-     "GetActiveExperimentResponseExperimentStopReasonTwo": ".types",
+-     "GetActiveExperimentResponseExperimentStopReasonZero": ".types",
+      "GetExperimentResponse": ".types",
+      "GetExperimentResponseStatus": ".types",
+-     "GetExperimentResponseStopReason": ".types",
+-     "GetExperimentResponseStopReasonOne": ".types",
+-     "GetExperimentResponseStopReasonThree": ".types",
+-     "GetExperimentResponseStopReasonTwo": ".types",
+-     "GetExperimentResponseStopReasonZero": ".types",
+      "ListExperimentsRequestStatus": ".types",
+      "ListExperimentsResponse": ".types",
+      "ListExperimentsResponseExperimentsItem": ".types",
+      "ListExperimentsResponseExperimentsItemStatus": ".types",
+-     "ListExperimentsResponseExperimentsItemStopReason": ".types",
+-     "ListExperimentsResponseExperimentsItemStopReasonOne": ".types",
+-     "ListExperimentsResponseExperimentsItemStopReasonThree": ".types",
+-     "ListExperimentsResponseExperimentsItemStopReasonTwo": ".types",
+-     "ListExperimentsResponseExperimentsItemStopReasonZero": ".types",
+      "StartExperimentResponse": ".types",
+      "StartExperimentResponseStatus": ".types",
+-     "StartExperimentResponseStopReason": ".types",
+-     "StartExperimentResponseStopReasonOne": ".types",
+-     "StartExperimentResponseStopReasonThree": ".types",
+-     "StartExperimentResponseStopReasonTwo": ".types",
+-     "StartExperimentResponseStopReasonZero": ".types",
+      "StopExperimentResponse": ".types",
+      "StopExperimentResponseStatus": ".types",
+-     "StopExperimentResponseStopReason": ".types",
+-     "StopExperimentResponseStopReasonOne": ".types",
+-     "StopExperimentResponseStopReasonThree": ".types",
+-     "StopExperimentResponseStopReasonTwo": ".types",
+-     "StopExperimentResponseStopReasonZero": ".types",
+      "UpdateExperimentResponse": ".types",
+      "UpdateExperimentResponseStatus": ".types",
+-     "UpdateExperimentResponseStopReason": ".types",
+-     "UpdateExperimentResponseStopReasonOne": ".types",
+-     "UpdateExperimentResponseStopReasonThree": ".types",
+-     "UpdateExperimentResponseStopReasonTwo": ".types",
+-     "UpdateExperimentResponseStopReasonZero": ".types",
+  }
+  
+  
+      ⋮ (26 unchanged line(s))
+      "GetActiveExperimentResponseExperimentStatusOne",
+      "GetActiveExperimentResponseExperimentStatusTwo",
+      "GetActiveExperimentResponseExperimentStatusZero",
+-     "GetActiveExperimentResponseExperimentStopReason",
+-     "GetActiveExperimentResponseExperimentStopReasonOne",
+-     "GetActiveExperimentResponseExperimentStopReasonThree",
+-     "GetActiveExperimentResponseExperimentStopReasonTwo",
+-     "GetActiveExperimentResponseExperimentStopReasonZero",
+      "GetExperimentResponse",
+      "GetExperimentResponseStatus",
+-     "GetExperimentResponseStopReason",
+-     "GetExperimentResponseStopReasonOne",
+-     "GetExperimentResponseStopReasonThree",
+-     "GetExperimentResponseStopReasonTwo",
+-     "GetExperimentResponseStopReasonZero",
+      "ListExperimentsRequestStatus",
+      "ListExperimentsResponse",
+      "ListExperimentsResponseExperimentsItem",
+      "ListExperimentsResponseExperimentsItemStatus",
+-     "ListExperimentsResponseExperimentsItemStopReason",
+-     "ListExperimentsResponseExperimentsItemStopReasonOne",
+-     "ListExperimentsResponseExperimentsItemStopReasonThree",
+-     "ListExperimentsResponseExperimentsItemStopReasonTwo",
+-     "ListExperimentsResponseExperimentsItemStopReasonZero",
+      "StartExperimentResponse",
+      "StartExperimentResponseStatus",
+-     "StartExperimentResponseStopReason",
+-     "StartExperimentResponseStopReasonOne",
+-     "StartExperimentResponseStopReasonThree",
+-     "StartExperimentResponseStopReasonTwo",
+-     "StartExperimentResponseStopReasonZero",
+      "StopExperimentResponse",
+      "StopExperimentResponseStatus",
+-     "StopExperimentResponseStopReason",
+-     "StopExperimentResponseStopReasonOne",
+-     "StopExperimentResponseStopReasonThree",
+-     "StopExperimentResponseStopReasonTwo",
+-     "StopExperimentResponseStopReasonZero",
+      "UpdateExperimentResponse",
+      "UpdateExperimentResponseStatus",
+-     "UpdateExperimentResponseStopReason",
+-     "UpdateExperimentResponseStopReasonOne",
+-     "UpdateExperimentResponseStopReasonThree",
+-     "UpdateExperimentResponseStopReasonTwo",
+-     "UpdateExperimentResponseStopReasonZero",
+  ]
+
+--- reference/src/fern/experiments/types/__init__.py
++++ crozier/src/fern/experiments/types/__init__.py
+      ⋮ (8 unchanged line(s))
+      from .get_active_experiment_response_experiment_status_one import GetActiveExperimentResponseExperimentStatusOne
+      from .get_active_experiment_response_experiment_status_two import GetActiveExperimentResponseExperimentStatusTwo
+      from .get_active_experiment_response_experiment_status_zero import GetActiveExperimentResponseExperimentStatusZero
+-     from .get_active_experiment_response_experiment_stop_reason import GetActiveExperimentResponseExperimentStopReason
+-     from .get_active_experiment_response_experiment_stop_reason_one import (
+-         GetActiveExperimentResponseExperimentStopReasonOne,
+-     )
+-     from .get_active_experiment_response_experiment_stop_reason_three import (
+-         GetActiveExperimentResponseExperimentStopReasonThree,
+-     )
+-     from .get_active_experiment_response_experiment_stop_reason_two import (
+-         GetActiveExperimentResponseExperimentStopReasonTwo,
+-     )
+-     from .get_active_experiment_response_experiment_stop_reason_zero import (
+-         GetActiveExperimentResponseExperimentStopReasonZero,
+-     )
+      from .get_experiment_response import GetExperimentResponse
+      from .get_experiment_response_status import GetExperimentResponseStatus
+-     from .get_experiment_response_stop_reason import GetExperimentResponseStopReason
+-     from .get_experiment_response_stop_reason_one import GetExperimentResponseStopReasonOne
+-     from .get_experiment_response_stop_reason_three import GetExperimentResponseStopReasonThree
+-     from .get_experiment_response_stop_reason_two import GetExperimentResponseStopReasonTwo
+-     from .get_experiment_response_stop_reason_zero import GetExperimentResponseStopReasonZero
+      from .list_experiments_request_status import ListExperimentsRequestStatus
+      from .list_experiments_response import ListExperimentsResponse
+      from .list_experiments_response_experiments_item import ListExperimentsResponseExperimentsItem
+      from .list_experiments_response_experiments_item_status import ListExperimentsResponseExperimentsItemStatus
+-     from .list_experiments_response_experiments_item_stop_reason import ListExperimentsResponseExperimentsItemStopReason
+-     from .list_experiments_response_experiments_item_stop_reason_one import (
+-         ListExperimentsResponseExperimentsItemStopReasonOne,
+-     )
+-     from .list_experiments_response_experiments_item_stop_reason_three import (
+-         ListExperimentsResponseExperimentsItemStopReasonThree,
+-     )
+-     from .list_experiments_response_experiments_item_stop_reason_two import (
+-         ListExperimentsResponseExperimentsItemStopReasonTwo,
+-     )
+-     from .list_experiments_response_experiments_item_stop_reason_zero import (
+-         ListExperimentsResponseExperimentsItemStopReasonZero,
+-     )
+      from .start_experiment_response import StartExperimentResponse
+      from .start_experiment_response_status import StartExperimentResponseStatus
+-     from .start_experiment_response_stop_reason import StartExperimentResponseStopReason
+-     from .start_experiment_response_stop_reason_one import StartExperimentResponseStopReasonOne
+-     from .start_experiment_response_stop_reason_three import StartExperimentResponseStopReasonThree
+-     from .start_experiment_response_stop_reason_two import StartExperimentResponseStopReasonTwo
+-     from .start_experiment_response_stop_reason_zero import StartExperimentResponseStopReasonZero
+      from .stop_experiment_response import StopExperimentResponse
+      from .stop_experiment_response_status import StopExperimentResponseStatus
+-     from .stop_experiment_response_stop_reason import StopExperimentResponseStopReason
+-     from .stop_experiment_response_stop_reason_one import StopExperimentResponseStopReasonOne
+-     from .stop_experiment_response_stop_reason_three import StopExperimentResponseStopReasonThree
+-     from .stop_experiment_response_stop_reason_two import StopExperimentResponseStopReasonTwo
+-     from .stop_experiment_response_stop_reason_zero import StopExperimentResponseStopReasonZero
+      from .update_experiment_response import UpdateExperimentResponse
+      from .update_experiment_response_status import UpdateExperimentResponseStatus
+-     from .update_experiment_response_stop_reason import UpdateExperimentResponseStopReason
+-     from .update_experiment_response_stop_reason_one import UpdateExperimentResponseStopReasonOne
+-     from .update_experiment_response_stop_reason_three import UpdateExperimentResponseStopReasonThree
+-     from .update_experiment_response_stop_reason_two import UpdateExperimentResponseStopReasonTwo
+-     from .update_experiment_response_stop_reason_zero import UpdateExperimentResponseStopReasonZero
+  _dynamic_imports: typing.Dict[str, str] = {
+      "DeleteExperimentResponse": ".delete_experiment_response",
+      "GetActiveExperimentResponse": ".get_active_experiment_response",
+      ⋮ (2 unchanged line(s))
+      "GetActiveExperimentResponseExperimentStatusOne": ".get_active_experiment_response_experiment_status_one",
+      "GetActiveExperimentResponseExperimentStatusTwo": ".get_active_experiment_response_experiment_status_two",
+      "GetActiveExperimentResponseExperimentStatusZero": ".get_active_experiment_response_experiment_status_zero",
+-     "GetActiveExperimentResponseExperimentStopReason": ".get_active_experiment_response_experiment_stop_reason",
+-     "GetActiveExperimentResponseExperimentStopReasonOne": ".get_active_experiment_response_experiment_stop_reason_one",
+-     "GetActiveExperimentResponseExperimentStopReasonThree": ".get_active_experiment_response_experiment_stop_reason_three",
+-     "GetActiveExperimentResponseExperimentStopReasonTwo": ".get_active_experiment_response_experiment_stop_reason_two",
+-     "GetActiveExperimentResponseExperimentStopReasonZero": ".get_active_experiment_response_experiment_stop_reason_zero",
+      "GetExperimentResponse": ".get_experiment_response",
+      "GetExperimentResponseStatus": ".get_experiment_response_status",
+-     "GetExperimentResponseStopReason": ".get_experiment_response_stop_reason",
+-     "GetExperimentResponseStopReasonOne": ".get_experiment_response_stop_reason_one",
+-     "GetExperimentResponseStopReasonThree": ".get_experiment_response_stop_reason_three",
+-     "GetExperimentResponseStopReasonTwo": ".get_experiment_response_stop_reason_two",
+-     "GetExperimentResponseStopReasonZero": ".get_experiment_response_stop_reason_zero",
+      "ListExperimentsRequestStatus": ".list_experiments_request_status",
+      "ListExperimentsResponse": ".list_experiments_response",
+      "ListExperimentsResponseExperimentsItem": ".list_experiments_response_experiments_item",
+      "ListExperimentsResponseExperimentsItemStatus": ".list_experiments_response_experiments_item_status",
+-     "ListExperimentsResponseExperimentsItemStopReason": ".list_experiments_response_experiments_item_stop_reason",
+-     "ListExperimentsResponseExperimentsItemStopReasonOne": ".list_experiments_response_experiments_item_stop_reason_one",
+-     "ListExperimentsResponseExperimentsItemStopReasonThree": ".list_experiments_response_experiments_item_stop_reason_three",
+-     "ListExperimentsResponseExperimentsItemStopReasonTwo": ".list_experiments_response_experiments_item_stop_reason_two",
+-     "ListExperimentsResponseExperimentsItemStopReasonZero": ".list_experiments_response_experiments_item_stop_reason_zero",
+      "StartExperimentResponse": ".start_experiment_response",
+      "StartExperimentResponseStatus": ".start_experiment_response_status",
+-     "StartExperimentResponseStopReason": ".start_experiment_response_stop_reason",
+-     "StartExperimentResponseStopReasonOne": ".start_experiment_response_stop_reason_one",
+-     "StartExperimentResponseStopReasonThree": ".start_experiment_response_stop_reason_three",
+-     "StartExperimentResponseStopReasonTwo": ".start_experiment_response_stop_reason_two",
+-     "StartExperimentResponseStopReasonZero": ".start_experiment_response_stop_reason_zero",
+      "StopExperimentResponse": ".stop_experiment_response",
+      "StopExperimentResponseStatus": ".stop_experiment_response_status",
+-     "StopExperimentResponseStopReason": ".stop_experiment_response_stop_reason",
+-     "StopExperimentResponseStopReasonOne": ".stop_experiment_response_stop_reason_one",
+-     "StopExperimentResponseStopReasonThree": ".stop_experiment_response_stop_reason_three",
+-     "StopExperimentResponseStopReasonTwo": ".stop_experiment_response_stop_reason_two",
+-     "StopExperimentResponseStopReasonZero": ".stop_experiment_response_stop_reason_zero",
+      "UpdateExperimentResponse": ".update_experiment_response",
+      "UpdateExperimentResponseStatus": ".update_experiment_response_status",
+-     "UpdateExperimentResponseStopReason": ".update_experiment_response_stop_reason",
+-     "UpdateExperimentResponseStopReasonOne": ".update_experiment_response_stop_reason_one",
+-     "UpdateExperimentResponseStopReasonThree": ".update_experiment_response_stop_reason_three",
+-     "UpdateExperimentResponseStopReasonTwo": ".update_experiment_response_stop_reason_two",
+-     "UpdateExperimentResponseStopReasonZero": ".update_experiment_response_stop_reason_zero",
+  }
+  
+  
+      ⋮ (26 unchanged line(s))
+      "GetActiveExperimentResponseExperimentStatusOne",
+      "GetActiveExperimentResponseExperimentStatusTwo",
+      "GetActiveExperimentResponseExperimentStatusZero",
+-     "GetActiveExperimentResponseExperimentStopReason",
+-     "GetActiveExperimentResponseExperimentStopReasonOne",
+-     "GetActiveExperimentResponseExperimentStopReasonThree",
+-     "GetActiveExperimentResponseExperimentStopReasonTwo",
+-     "GetActiveExperimentResponseExperimentStopReasonZero",
+      "GetExperimentResponse",
+      "GetExperimentResponseStatus",
+-     "GetExperimentResponseStopReason",
+-     "GetExperimentResponseStopReasonOne",
+-     "GetExperimentResponseStopReasonThree",
+-     "GetExperimentResponseStopReasonTwo",
+-     "GetExperimentResponseStopReasonZero",
+      "ListExperimentsRequestStatus",
+      "ListExperimentsResponse",
+      "ListExperimentsResponseExperimentsItem",
+      "ListExperimentsResponseExperimentsItemStatus",
+-     "ListExperimentsResponseExperimentsItemStopReason",
+-     "ListExperimentsResponseExperimentsItemStopReasonOne",
+-     "ListExperimentsResponseExperimentsItemStopReasonThree",
+-     "ListExperimentsResponseExperimentsItemStopReasonTwo",
+-     "ListExperimentsResponseExperimentsItemStopReasonZero",
+      "StartExperimentResponse",
+      "StartExperimentResponseStatus",
+-     "StartExperimentResponseStopReason",
+-     "StartExperimentResponseStopReasonOne",
+-     "StartExperimentResponseStopReasonThree",
+-     "StartExperimentResponseStopReasonTwo",
+-     "StartExperimentResponseStopReasonZero",
+      "StopExperimentResponse",
+      "StopExperimentResponseStatus",
+-     "StopExperimentResponseStopReason",
+-     "StopExperimentResponseStopReasonOne",
+-     "StopExperimentResponseStopReasonThree",
+-     "StopExperimentResponseStopReasonTwo",
+-     "StopExperimentResponseStopReasonZero",
+      "UpdateExperimentResponse",
+      "UpdateExperimentResponseStatus",
+-     "UpdateExperimentResponseStopReason",
+-     "UpdateExperimentResponseStopReasonOne",
+-     "UpdateExperimentResponseStopReasonThree",
+-     "UpdateExperimentResponseStopReasonTwo",
+-     "UpdateExperimentResponseStopReasonZero",
+  ]
+
+--- reference/src/fern/experiments/types/get_active_experiment_response_experiment.py
++++ crozier/src/fern/experiments/types/get_active_experiment_response_experiment.py
+      ⋮ (7 unchanged line(s))
+  from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from ...core.serialization import FieldMetadata
+  from .get_active_experiment_response_experiment_status import GetActiveExperimentResponseExperimentStatus
+- from .get_active_experiment_response_experiment_stop_reason import GetActiveExperimentResponseExperimentStopReason
+  
+  
+  class GetActiveExperimentResponseExperiment(UniversalBaseModel):
+      ⋮ (75 unchanged line(s))
+      """
+  
+      stop_reason: typing_extensions.Annotated[
+-         typing.Optional[GetActiveExperimentResponseExperimentStopReason],
++         typing.Optional[
++             typing.Union[
++                 typing.Union[typing.Literal["manual"], typing.Any],
++                 typing.Union[typing.Literal["overheat"], typing.Any],
++                 typing.Union[typing.Literal["sensor_timeout"], typing.Any],
++                 typing.Union[typing.Literal["external_stop"], typing.Any],
++             ]
++         ],
+          FieldMetadata(alias="stopReason"),
+          pydantic.Field(alias="stopReason"),
+      ] = None
+      ⋮ (19 unchanged line(s))
+
+Only in reference: src/fern/experiments/types/get_active_experiment_response_experiment_stop_reason.py
+
+Only in reference: src/fern/experiments/types/get_active_experiment_response_experiment_stop_reason_one.py
+
+Only in reference: src/fern/experiments/types/get_active_experiment_response_experiment_stop_reason_three.py
+
+Only in reference: src/fern/experiments/types/get_active_experiment_response_experiment_stop_reason_two.py
+
+Only in reference: src/fern/experiments/types/get_active_experiment_response_experiment_stop_reason_zero.py
+
+--- reference/src/fern/experiments/types/get_experiment_response.py
++++ crozier/src/fern/experiments/types/get_experiment_response.py
+      ⋮ (7 unchanged line(s))
+  from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from ...core.serialization import FieldMetadata
+  from .get_experiment_response_status import GetExperimentResponseStatus
+- from .get_experiment_response_stop_reason import GetExperimentResponseStopReason
+  
+  
+  class GetExperimentResponse(UniversalBaseModel):
+      ⋮ (75 unchanged line(s))
+      """
+  
+      stop_reason: typing_extensions.Annotated[
+-         typing.Optional[GetExperimentResponseStopReason],
++         typing.Optional[
++             typing.Union[
++                 typing.Union[typing.Literal["manual"], typing.Any],
++                 typing.Union[typing.Literal["overheat"], typing.Any],
++                 typing.Union[typing.Literal["sensor_timeout"], typing.Any],
++                 typing.Union[typing.Literal["external_stop"], typing.Any],
++             ]
++         ],
+          FieldMetadata(alias="stopReason"),
+          pydantic.Field(alias="stopReason"),
+      ] = None
+      ⋮ (19 unchanged line(s))
+
+Only in reference: src/fern/experiments/types/get_experiment_response_stop_reason.py
+
+Only in reference: src/fern/experiments/types/get_experiment_response_stop_reason_one.py
+
+Only in reference: src/fern/experiments/types/get_experiment_response_stop_reason_three.py
+
+Only in reference: src/fern/experiments/types/get_experiment_response_stop_reason_two.py
+
+Only in reference: src/fern/experiments/types/get_experiment_response_stop_reason_zero.py
+
+--- reference/src/fern/experiments/types/list_experiments_response_experiments_item.py
++++ crozier/src/fern/experiments/types/list_experiments_response_experiments_item.py
+      ⋮ (7 unchanged line(s))
+  from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from ...core.serialization import FieldMetadata
+  from .list_experiments_response_experiments_item_status import ListExperimentsResponseExperimentsItemStatus
+- from .list_experiments_response_experiments_item_stop_reason import ListExperimentsResponseExperimentsItemStopReason
+  
+  
+  class ListExperimentsResponseExperimentsItem(UniversalBaseModel):
+      ⋮ (75 unchanged line(s))
+      """
+  
+      stop_reason: typing_extensions.Annotated[
+-         typing.Optional[ListExperimentsResponseExperimentsItemStopReason],
++         typing.Optional[
++             typing.Union[
++                 typing.Union[typing.Literal["manual"], typing.Any],
++                 typing.Union[typing.Literal["overheat"], typing.Any],
++                 typing.Union[typing.Literal["sensor_timeout"], typing.Any],
++                 typing.Union[typing.Literal["external_stop"], typing.Any],
++             ]
++         ],
+          FieldMetadata(alias="stopReason"),
+          pydantic.Field(alias="stopReason"),
+      ] = None
+      ⋮ (19 unchanged line(s))
+
+Only in reference: src/fern/experiments/types/list_experiments_response_experiments_item_stop_reason.py
+
+Only in reference: src/fern/experiments/types/list_experiments_response_experiments_item_stop_reason_one.py
+
+Only in reference: src/fern/experiments/types/list_experiments_response_experiments_item_stop_reason_three.py
+
+Only in reference: src/fern/experiments/types/list_experiments_response_experiments_item_stop_reason_two.py
+
+Only in reference: src/fern/experiments/types/list_experiments_response_experiments_item_stop_reason_zero.py
+
+--- reference/src/fern/experiments/types/start_experiment_response.py
++++ crozier/src/fern/experiments/types/start_experiment_response.py
+      ⋮ (7 unchanged line(s))
+  from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from ...core.serialization import FieldMetadata
+  from .start_experiment_response_status import StartExperimentResponseStatus
+- from .start_experiment_response_stop_reason import StartExperimentResponseStopReason
+  
+  
+  class StartExperimentResponse(UniversalBaseModel):
+      ⋮ (75 unchanged line(s))
+      """
+  
+      stop_reason: typing_extensions.Annotated[
+-         typing.Optional[StartExperimentResponseStopReason],
++         typing.Optional[
++             typing.Union[
++                 typing.Union[typing.Literal["manual"], typing.Any],
++                 typing.Union[typing.Literal["overheat"], typing.Any],
++                 typing.Union[typing.Literal["sensor_timeout"], typing.Any],
++                 typing.Union[typing.Literal["external_stop"], typing.Any],
++             ]
++         ],
+          FieldMetadata(alias="stopReason"),
+          pydantic.Field(alias="stopReason"),
+      ] = None
+      ⋮ (19 unchanged line(s))
+
+Only in reference: src/fern/experiments/types/start_experiment_response_stop_reason.py
+
+Only in reference: src/fern/experiments/types/start_experiment_response_stop_reason_one.py
+
+Only in reference: src/fern/experiments/types/start_experiment_response_stop_reason_three.py
+
+Only in reference: src/fern/experiments/types/start_experiment_response_stop_reason_two.py
+
+Only in reference: src/fern/experiments/types/start_experiment_response_stop_reason_zero.py
+
+--- reference/src/fern/experiments/types/stop_experiment_response.py
++++ crozier/src/fern/experiments/types/stop_experiment_response.py
+      ⋮ (7 unchanged line(s))
+  from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from ...core.serialization import FieldMetadata
+  from .stop_experiment_response_status import StopExperimentResponseStatus
+- from .stop_experiment_response_stop_reason import StopExperimentResponseStopReason
+  
+  
+  class StopExperimentResponse(UniversalBaseModel):
+      ⋮ (75 unchanged line(s))
+      """
+  
+      stop_reason: typing_extensions.Annotated[
+-         typing.Optional[StopExperimentResponseStopReason],
++         typing.Optional[
++             typing.Union[
++                 typing.Union[typing.Literal["manual"], typing.Any],
++                 typing.Union[typing.Literal["overheat"], typing.Any],
++                 typing.Union[typing.Literal["sensor_timeout"], typing.Any],
++                 typing.Union[typing.Literal["external_stop"], typing.Any],
++             ]
++         ],
+          FieldMetadata(alias="stopReason"),
+          pydantic.Field(alias="stopReason"),
+      ] = None
+      ⋮ (19 unchanged line(s))
+
+Only in reference: src/fern/experiments/types/stop_experiment_response_stop_reason.py
+
+Only in reference: src/fern/experiments/types/stop_experiment_response_stop_reason_one.py
+
+Only in reference: src/fern/experiments/types/stop_experiment_response_stop_reason_three.py
+
+Only in reference: src/fern/experiments/types/stop_experiment_response_stop_reason_two.py
+
+Only in reference: src/fern/experiments/types/stop_experiment_response_stop_reason_zero.py
+
+--- reference/src/fern/experiments/types/update_experiment_response.py
++++ crozier/src/fern/experiments/types/update_experiment_response.py
+      ⋮ (7 unchanged line(s))
+  from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+  from ...core.serialization import FieldMetadata
+  from .update_experiment_response_status import UpdateExperimentResponseStatus
+- from .update_experiment_response_stop_reason import UpdateExperimentResponseStopReason
+  
+  
+  class UpdateExperimentResponse(UniversalBaseModel):
+      ⋮ (75 unchanged line(s))
+      """
+  
+      stop_reason: typing_extensions.Annotated[
+-         typing.Optional[UpdateExperimentResponseStopReason],
++         typing.Optional[
++             typing.Union[
++                 typing.Union[typing.Literal["manual"], typing.Any],
++                 typing.Union[typing.Literal["overheat"], typing.Any],
++                 typing.Union[typing.Literal["sensor_timeout"], typing.Any],
++                 typing.Union[typing.Literal["external_stop"], typing.Any],
++             ]
++         ],
+          FieldMetadata(alias="stopReason"),
+          pydantic.Field(alias="stopReason"),
+      ] = None
+      ⋮ (19 unchanged line(s))
+
+Only in reference: src/fern/experiments/types/update_experiment_response_stop_reason.py
+
+Only in reference: src/fern/experiments/types/update_experiment_response_stop_reason_one.py
+
+Only in reference: src/fern/experiments/types/update_experiment_response_stop_reason_three.py
+
+Only in reference: src/fern/experiments/types/update_experiment_response_stop_reason_two.py
+
+Only in reference: src/fern/experiments/types/update_experiment_response_stop_reason_zero.py
+
+--- reference/src/fern/query/client.py
++++ crozier/src/fern/query/client.py
+      ⋮ (69 unchanged line(s))
+          )
+          client.query.get_thermo_metrics(
+              system_id="system_id",
++             channels=[1.1],
+              time_start={"key": "value"},
+              time_end={"key": "value"},
+              interval=1.1,
+      ⋮ (51 unchanged line(s))
+          )
+          client.query.get_heater_metrics(
+              system_id="system_id",
++             channels=[1.1],
+              time_start={"key": "value"},
+              time_end={"key": "value"},
+              interval=1.1,
+      ⋮ (72 unchanged line(s))
+          async def main() -> None:
+              await client.query.get_thermo_metrics(
+                  system_id="system_id",
++                 channels=[1.1],
+                  time_start={"key": "value"},
+                  time_end={"key": "value"},
+                  interval=1.1,
+      ⋮ (59 unchanged line(s))
+          async def main() -> None:
+              await client.query.get_heater_metrics(
+                  system_id="system_id",
++                 channels=[1.1],
+                  time_start={"key": "value"},
+                  time_end={"key": "value"},
+                  interval=1.1,
+      ⋮ (14 unchanged line(s))
+
+--- reference/src/fern/systems/client.py
++++ crozier/src/fern/systems/client.py
+      ⋮ (96 unchanged line(s))
+          heaters : typing.Sequence[CreateSystemRequestHeatersItem]
+  
+          location : typing.Optional[str]
+-             Physical location
+  
+          enabled : typing.Optional[bool]
+  
+      ⋮ (262 unchanged line(s))
+          heaters : typing.Sequence[CreateSystemRequestHeatersItem]
+  
+          location : typing.Optional[str]
+-             Physical location
+  
+          enabled : typing.Optional[bool]
+  
+      ⋮ (211 unchanged line(s))
+
+--- reference/src/fern/systems/raw_client.py
++++ crozier/src/fern/systems/raw_client.py
+      ⋮ (108 unchanged line(s))
+          heaters : typing.Sequence[CreateSystemRequestHeatersItem]
+  
+          location : typing.Optional[str]
+-             Physical location
+  
+          enabled : typing.Optional[bool]
+  
+      ⋮ (371 unchanged line(s))
+          heaters : typing.Sequence[CreateSystemRequestHeatersItem]
+  
+          location : typing.Optional[str]
+-             Physical location
+  
+          enabled : typing.Optional[bool]
+  
+      ⋮ (293 unchanged line(s))

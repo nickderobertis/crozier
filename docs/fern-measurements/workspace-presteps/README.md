@@ -44,8 +44,7 @@ groups:
 The relative path assumes the workspace is `<measurement>/case/fern/` and
 these documents are in `<measurement>/`. Copy the documents to a fresh
 directory before running. Each generation exited zero. The cases below state
-the changes to this configuration and the output observed. The corrected
-recipes are in [the migration guide](../../migrating-from-fern.md).
+the changes to this configuration and the output observed.
 
 ## Swagger
 

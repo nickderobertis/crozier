@@ -1,0 +1,62 @@
+--- reference/README.md
++++ crozier/README.md
+      ⋮ (40 unchanged line(s))
+  
+  client.statuses.post_statuses_update(
+      status="走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ\nｗｗｗｗｗ\nｗｗｗｗｗｗｗｗｗｗｗｗｗｗ",
+-     media_ids=[
+-         "710511363345354753"
+-     ],
++     media_ids=[],
+  )
+  ```
+  
+      ⋮ (25 unchanged line(s))
+  async def main() -> None:
+      await client.statuses.post_statuses_update(
+          status="走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ\nｗｗｗｗｗ\nｗｗｗｗｗｗｗｗｗｗｗｗｗｗ",
+-         media_ids=[
+-             "710511363345354753"
+-         ],
++         media_ids=[],
+      )
+  
+  
+      ⋮ (107 unchanged line(s))
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (221 unchanged line(s))
+  
+  client.statuses.post_statuses_update(
+      status="走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ\nｗｗｗｗｗ\nｗｗｗｗｗｗｗｗｗｗｗｗｗｗ",
+-     media_ids=[
+-         "710511363345354753"
+-     ],
++     media_ids=[],
+  )
+  
+  ```
+      ⋮ (202 unchanged line(s))
+
+--- reference/src/fern/statuses/client.py
++++ crozier/src/fern/statuses/client.py
+      ⋮ (150 unchanged line(s))
+          )
+          client.statuses.post_statuses_update(
+              status="走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ\nｗｗｗｗｗ\nｗｗｗｗｗｗｗｗｗｗｗｗｗｗ",
+-             media_ids=["710511363345354753"],
++             media_ids=[],
+          )
+          """
+          _response = self._raw_client.post_statuses_update(
+      ⋮ (208 unchanged line(s))
+          async def main() -> None:
+              await client.statuses.post_statuses_update(
+                  status="走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ\nｗｗｗｗｗ\nｗｗｗｗｗｗｗｗｗｗｗｗｗｗ",
+-                 media_ids=["710511363345354753"],
++                 media_ids=[],
+              )
+  
+  
+      ⋮ (51 unchanged line(s))

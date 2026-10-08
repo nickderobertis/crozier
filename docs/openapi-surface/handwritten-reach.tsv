@@ -1,4 +1,5 @@
 fixture	key	site	regions_executed	regions
+base-path-client-argument	parameter-in-path	src/ir.rs::base_path_client_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	4	4
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	9	9
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
@@ -13,6 +14,7 @@ format-scalar-bodies	format-time	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Pri
 format-scalar-bodies	format-uri	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
 format-scalar-bodies	format-uri-reference	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
 format-scalar-bodies	format-uri-template	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+header-subset-string-default	parameter-in-header	src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]	1	1
 http-dpop-unrequired	http-dpop	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
 http-mutual-unrequired	http-mutual	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
 http-negotiate-unrequired	http-negotiate	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
@@ -41,7 +43,11 @@ nested-array-discriminated-unions	inheritance-discriminated-union	src/ir.rs::Bui
 nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
 nested-array-elements	items-oneof-element	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]	21	21
+nullable-query-union-items	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]	2	2
 ore-bin-screen	parameter-style-form-query-object	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30
+query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]	2	2
+query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]	17	19
+query-union-array-enum-member	parameter-schema	src/ir.rs::InlineHoister::hoist_param_composition[if let Some\(\(items, values\)\) = enum_item \{]	21	21
 ref-pointer-ignored-head	ref-pointer-undeclared-component-head	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	1	1
 ref-pointer-walk	array-item-pointer-walk-allof	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	7	11
 ref-pointer-walk	array-item-pointer-walk-anyof	src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	7	11
