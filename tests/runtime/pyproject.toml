@@ -1,0 +1,14 @@
+# The `runtime` Nx project's uv workspace member (the workspace is declared in
+# the root pyproject.toml). It publishes nothing: there is no [build-system],
+# and `package = false` keeps uv from trying to build or install it. A promoted
+# tier: its dependencies are here so ty resolves the harness's imports; the
+# tier's own runner still builds the environment its suite runs in.
+[project]
+name = "crozier-runtime"
+version = "0.0.0"
+description = "The runtime wire suite's recorder and tests."
+requires-python = ">=3.11"
+dependencies = ["httpx>=0.28", "pytest>=8.4"]
+
+[tool.uv]
+package = false

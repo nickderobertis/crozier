@@ -1,0 +1,12 @@
+# The `surface-census` Nx project's uv workspace member (the workspace is declared in
+# the root pyproject.toml). It publishes nothing: there is no [build-system],
+# and `package = false` keeps uv from trying to build or install it.
+[project]
+name = "crozier-surface-census"
+version = "0.0.0"
+description = "The OpenAPI surface census, golden reach and fixture-coverage tooling."
+requires-python = ">=3.11"
+dependencies = ["PyYAML>=6"]
+
+[tool.uv]
+package = false

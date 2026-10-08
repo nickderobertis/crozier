@@ -39,3 +39,102 @@ Changelog = "https://github.com/nickderobertis/crozier/blob/main/CHANGELOG.md"
 
 [tool.maturin]
 bindings = "bin"
+
+# ---------------------------------------------------------------------------
+# The repository's Python tooling, as one uv workspace (one `uv.lock`). Nothing
+# below this line is read by maturin or reaches the published distribution's
+# metadata: these tables configure uv, ruff, ty, pytest and coverage for the
+# workspace members, each of which is also an Nx project (its project.json sits
+# beside its pyproject.toml). See AGENTS.md "Python tooling".
+# ---------------------------------------------------------------------------
+
+[tool.uv]
+# The root project is the maturin-built `crozier` binary wheel. `uv sync` and
+# `uv run` here exist for the tooling workspace, so uv must neither build that
+# wheel (it would compile the Rust crate) nor install it into the tooling
+# venv; `maturin build`, `maturin sdist` and `pip install crozier` ignore this.
+package = false
+
+[tool.uv.workspace]
+members = [
+    # Tooling projects: format, lint, typecheck, and a `test` whose coverage the
+    # `python-coverage` aggregate combines and holds to the floor.
+    "screenshots",
+    "tools/corpus",
+    "tools/corpus-fetch",
+    "tools/corpus-licensing",
+    "tools/fern-goldens",
+    "tools/fern-goldens-git",
+    "tools/fern-refusals",
+    "tools/fern-refusals-strict",
+    "tools/llmlint",
+    "tools/llmlint-resolution",
+    "tools/surface-census",
+    "tools/surface-reach",
+    "tools/witness-search",
+    "tools/witness-search-git",
+    # Promoted tiers holding Python harnesses: format, lint and typecheck only;
+    # their suites keep their own runners (see each one's AGENTS.md).
+    "tests/census_fallback",
+    "tests/corpus_match",
+    "tests/live_e2e",
+    "tests/runtime",
+]
+
+# The tooling's quality toolchain, resolved once in uv.lock. This ruff is the
+# tooling's linter and formatter; the generation-time ruff that decides byte
+# parity with Fern is pinned by `.ruff-version` and installed by
+# scripts/install-ruff.sh, and the two are deliberately independent.
+[dependency-groups]
+dev = [
+    "coverage>=7.16",
+    "pytest>=9.1",
+    "pytest-cov>=7",
+    "ruff>=0.16",
+    "ty>=0.0.85",
+]
+
+# Paths no formatter, linter or type checker here may read or rewrite: Fern's
+# vendored output and probe expectations, the templates crozier copies verbatim
+# into generated SDKs, and departure evidence. No tooling project contains them;
+# the exclusion holds for a run over the whole tree too.
+[tool.ruff]
+line-length = 120
+# The scripts are also run by the host's bare `python3` (recipes, promoted
+# tiers, PEP 723 `uv run --script`), so the source stays valid on 3.11.
+target-version = "py311"
+force-exclude = true
+extend-exclude = [
+    "tests/fixtures",
+    "docs",
+    "assets/core",
+    "assets/scaffolding",
+    "templates",
+]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "B", "UP", "SIM", "C4", "PIE", "RUF",
+    # Injection and unsafe deserialization (references/languages/python.md):
+    # exec/eval, pickle, yaml.load without SafeLoader, shell=True, SQL strings.
+    "S102", "S301", "S307", "S506", "S602", "S604", "S605", "S608",
+    "T10",
+]
+# Line length is the formatter's: what it cannot wrap (a long string or URL) stays.
+ignore = ["E501"]
+
+[tool.ty.environment]
+# The same 3.11 floor the source keeps for the host's bare `python3`.
+python-version = "3.11"
+
+[tool.ty.src]
+exclude = [
+    "tests/fixtures",
+    "docs",
+    "assets/core",
+    "assets/scaffolding",
+    "templates",
+]
+
+[tool.ty.terminal]
+error-on-warning = true

@@ -1,0 +1,12 @@
+# The `llmlint-tooling` Nx project's uv workspace member (the workspace is declared in
+# the root pyproject.toml). It publishes nothing: there is no [build-system],
+# and `package = false` keeps uv from trying to build or install it.
+[project]
+name = "crozier-llmlint-tooling"
+version = "0.0.0"
+description = "llmlint plugin vendoring and diff-scoping scripts."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false
