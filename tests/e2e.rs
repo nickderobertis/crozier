@@ -803,6 +803,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
+        (CLIENTS_EXTENSIONS_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -1918,6 +1919,19 @@ const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 /// compares, one directory per case.
 const PARAMETER_LOWERING_DIR: &str = "docs/fern-measurements/parameter-lowering";
 
+/// The client-construction trees `clients_extensions_measurements_match_fern`
+/// compares, one directory per case, each Fern's output under a setting other
+/// than its document's own gate uses.
+const CLIENTS_EXTENSIONS_DIR: &str = "docs/fern-measurements/clients-extensions";
+
+/// Each `CLIENTS_EXTENSIONS_DIR` case: its directory, the document crozier
+/// generates it from, and the setting Fern's tree was measured under.
+const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[(
+    "impedance-complex-reading-literals",
+    "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
+    &["--enum-type", "literals"],
+)];
+
 /// The naming tickets' (#350, #354, #357) authored probes are the case
 /// directories `376-<ticket>-<shape>`; `authored_probe_measurements_match_fern`
 /// byte-compares each against Fern's tree by default. A document Fern refused
@@ -2621,6 +2635,64 @@ fn handwritten_documents(
         })
         .unwrap_or_default();
     (evidence, failures)
+}
+
+/// The client-construction cases under `docs/fern-measurements/clients-extensions/`:
+/// crozier generates each case's document under the case's setting, and the whole
+/// tree is held to Fern's `fern-expected/` under the hand-written gate's
+/// normalization. The case table and the directory agree both ways, so a tree no
+/// case compares, or a case with no tree, fails.
+#[test]
+fn clients_extensions_measurements_match_fern() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut directories: Vec<String> = std::fs::read_dir(root.join(CLIENTS_EXTENSIONS_DIR))
+        .expect("the measurement directory exists")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_dir())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .collect();
+    directories.sort();
+    let mut cases: Vec<String> = CLIENTS_EXTENSIONS_CASES
+        .iter()
+        .map(|(case, _, _)| (*case).to_string())
+        .collect();
+    cases.sort();
+    assert_eq!(
+        directories, cases,
+        "{CLIENTS_EXTENSIONS_DIR}: every case directory needs a CLIENTS_EXTENSIONS_CASES row"
+    );
+    let mut failures = Vec::new();
+    for (case, spec, setting) in CLIENTS_EXTENSIONS_CASES {
+        let expected = root
+            .join(CLIENTS_EXTENSIONS_DIR)
+            .join(case)
+            .join("fern-expected");
+        let out = tempfile::tempdir().expect("case output tempdir");
+        let result = probe_command(&root.join(spec), out.path())
+            .args(*setting)
+            .output()
+            .expect("run crozier");
+        if !result.status.success() {
+            failures.push(format!(
+                "{case}: crozier failed over {spec}: {}",
+                String::from_utf8_lossy(&result.stderr)
+            ));
+            continue;
+        }
+        match departure_ledger().golden(&golden_path(&expected), &[]) {
+            Ok(ledger) => {
+                failures.extend(golden_tree_failures(
+                    case,
+                    spec,
+                    &ledger,
+                    &expected,
+                    out.path(),
+                ));
+            }
+            Err(found) => failures.extend(found),
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
 /// The measured parameter-lowering cases under

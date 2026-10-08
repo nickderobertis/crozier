@@ -2613,18 +2613,14 @@ class GrammarContractTests(unittest.TestCase):
         paragraph drifted once already, when a node-local predicate was added and
         the word before "of the 26" stayed put.
         """
-        words = {
-            "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
-            "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
-            "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
-            "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69, "Seventy": 70,
-            "Seventy-one": 71,
-            "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
-            "seventeen": 17, "eighteen": 18, "twenty": 20, "twenty-one": 21,
-            "twenty-three": 23, "twenty-four": 24,
-            "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
-            "thirty-five": 35, "thirty-six": 36, "thirty-seven": 37,
+        units = "zero one two three four five six seven eight nine ten eleven twelve " \
+            "thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split()
+        tens = "_ _ twenty thirty forty fifty sixty seventy eighty ninety".split()
+        words = {word: n for n, word in enumerate(units)}
+        words |= {
+            tens[n // 10] + (f"-{units[n % 10]}" if n % 10 else ""): n for n in range(20, 100)
         }
+        words |= {word.capitalize(): n for word, n in words.items()}
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
             r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text
@@ -4623,6 +4619,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - {name for name in census.PREDICATES
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
         - {"components.schemas:nonidentifier-name", "components.schemas:same-primitive-union",
+           "components.schemas:complex-module-name",
            "components.schemas:fields-reach-cycles-unsorted",
            "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
            "schema.type:misspelled-scalar",
@@ -13059,6 +13056,23 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_complex_module_name_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:complex-module-name"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, name in (
+                ("positive", "Complex"), ("lower", "complex"),
+                ("longer", "ComplexNumber"), ("builtin", "Range"),
+            ):
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {}, "components": {"schemas": {name: {"type": "object"}}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1, (selector, "lower"): 1}, rows(completed))
 
     def census_one(self, selector: str, documents: dict[str, dict]) -> dict:
         """Census each `(fixture, document)` pair for one selector, offline."""

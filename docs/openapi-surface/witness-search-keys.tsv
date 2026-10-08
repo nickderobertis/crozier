@@ -31,5 +31,6 @@ schema-example-on-ref-to-object	schema.example:on-ref-to-object	schemas.md	suppo
 schema-example-on-ref-to-union	schema.example:on-ref-to-union	schemas.md	supported
 schema-example-temporal-duplicate-element	schema.example:temporal-duplicate-element	schemas.md	supported
 schema-example-union-ref-sentinel	schema.example:union-ref-sentinel	schemas.md	supported
+schema-name-builtin-complex	components.schemas:complex-module-name	schemas.md	supported
 type-misspelled-scalar	schema.type:misspelled-scalar	schemas.md	supported
 unread-date-time-example	schema.example:unread-date-time	schemas.md	supported

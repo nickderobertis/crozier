@@ -1082,6 +1082,10 @@ PREDICATES = {
         "examples leave out unless it is required"
     ),
     "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
+    "components.schemas:complex-module-name": (
+        "one per component schema name whose class's module stem is `complex`, the "
+        "builtin Fern reserves, so its type module is `complex_.py`"
+    ),
     "operation.requestBody:body-prefixed-single-use": (
         "one per Operation Object other than a GET or HEAD whose request body's "
         "`application/json` schema is a `$ref` to a `components.schemas` entry named "
@@ -2245,7 +2249,7 @@ _PYTHON_KEYWORDS = frozenset({
 })
 # Builtins Fern munges in field contexts; `naming::is_reserved` is the two sets.
 _RESERVED_BUILTINS = frozenset(
-    {"all", "bool", "float", "int", "list", "long", "map", "set", "uuid"}
+    {"all", "bool", "complex", "float", "int", "list", "long", "map", "set", "uuid"}
 )
 # A path template expression: `{userId}` in `/users/{userId}/roles`.
 _TEMPLATE_EXPRESSION = re.compile(r"\{([^{}]*)\}")
@@ -2779,7 +2783,7 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     else:
         method = snake[len(tag_snake) + 1:] if snake.startswith(f"{tag_snake}_") else snake
     ident, prefixed = _sanitized(method)
-    reserved = is_reserved(ident) if tag is None else (ident in _PYTHON_KEYWORDS or ident == "all")
+    reserved = is_reserved(ident) if tag is None else (ident in _PYTHON_KEYWORDS or ident in {"all", "complex"})
     return (f"{ident}_" if reserved else ident), prefixed
 
 
@@ -4734,6 +4738,7 @@ class Census:
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))
+            found += self.complex_module_names(node.get("schemas"))
             found += self.same_primitive_unions(node.get("schemas"))
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
@@ -5215,6 +5220,18 @@ class Census:
             for key in node
             if isinstance(key, str) and not key.startswith("x-")
             and needs_sanitizing(key)
+        ]
+
+    @staticmethod
+    def complex_module_names(node: Any) -> list[str]:
+        """One per component name `module_name` stems to `complex` (`naming::is_reserved`)."""
+        if not isinstance(node, dict):
+            return []
+        return [
+            "components.schemas:complex-module-name"
+            for key in node
+            if isinstance(key, str) and not key.startswith("x-")
+            and to_snake_case(to_pascal_case(key)) == "complex"
         ]
 
     @staticmethod

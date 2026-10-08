@@ -1,6 +1,7 @@
 {
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
+    "docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},
@@ -64,6 +65,7 @@
     "docs/openapi-surface/handwritten/http-dpop-unrequired/fern-expected": {},
     "docs/openapi-surface/handwritten/http-mutual-unrequired/fern-expected": {},
     "docs/openapi-surface/handwritten/http-negotiate-unrequired/fern-expected": {},
+    "docs/openapi-surface/handwritten/impedance-complex-reading/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-anyof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-property-unions/fern-expected": {},

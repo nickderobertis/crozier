@@ -3380,7 +3380,18 @@ fn build_endpoint(
         for field in fields {
             if parameter_names.contains(field.py_name.as_str()) {
                 if let Some(prefix) = &field.collision_prefix {
-                    field.py_name = format!("{prefix}_{}", field.py_name);
+                    // Fern prefixes a reserved builtin unsuffixed (a `complex`
+                    // body property beside a `complex` query is
+                    // `…_request_complex`) but keeps a keyword's `_`
+                    // (waylay's `query_input_from_`).
+                    let base = field
+                        .py_name
+                        .strip_suffix('_')
+                        .filter(|base| {
+                            naming::is_reserved(base) && !naming::is_python_keyword(base)
+                        })
+                        .unwrap_or(&field.py_name);
+                    field.py_name = format!("{prefix}_{base}");
                     if doc.openapi.starts_with("3.1") {
                         field.collision_prefix = None;
                     }
@@ -8111,8 +8122,8 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     // This name is *derived* (a tag prefix stripped off a camelCase id), so — unlike
     // the verbatim `method_from_grouped_id` — reserved words are safe-named the way
     // Fern does it: a "list all" endpoint under tag `Activities` becomes `all_`, not
-    // the builtin-shadowing `all`. Uses the method-specific reserved set (keywords +
-    // `all`), so appwrite's derived `list` stays `list`, matching Fern.
+    // the builtin-shadowing `all`. Uses the method-specific reserved set (keywords,
+    // `all` and `complex`), so appwrite's derived `list` stays `list`, matching Fern.
     let ident = naming::sanitize_identifier(&method);
     let reserved = tag.map_or_else(
         || naming::is_reserved(&ident),
