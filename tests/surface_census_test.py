@@ -737,6 +737,21 @@ def load_script(name: str):
     return module
 
 
+_RUST_SPAN_REPORT = load_script("fixtures-coverage-report.py")
+
+
+def rust_function_body(lines: list[str], name: str) -> list[str]:
+    """Bound one Rust function with the coverage scanner's literal-aware lexer."""
+    start = next((index for index, line in enumerate(lines)
+                  if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None)
+    if start is None:
+        raise AssertionError(f"source declares no fn {name}")
+    end = _RUST_SPAN_REPORT._item_end_line(lines, start - 1)
+    if end is None:
+        raise AssertionError(f"cannot bound fn {name}; check its Rust syntax")
+    return lines[start:end]
+
+
 def handwritten_covers(base: Path = HANDWRITTEN) -> list[tuple[str, str, str | None]]:
     """`(fixture, key, arm or None)` for every cover a hand-written fixture declares.
 
@@ -2622,19 +2637,7 @@ class GrammarContractTests(unittest.TestCase):
         body" the honesty check below has.
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for index, line in enumerate(lines):
-            if not re.search(rf"\bfn {re.escape(name)}\s*[(<]", line):
-                continue
-            depth, started = 0, False
-            for cursor in range(index, len(lines)):
-                for char in lines[cursor]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                        if started and depth == 0:
-                            return lines[index : cursor + 1]
-        raise AssertionError(f"src/ir.rs declares no fn {name}")
+        return rust_function_body(lines, name)
 
     @classmethod
     def function_digest(cls, name: str) -> str:
@@ -2645,6 +2648,27 @@ class GrammarContractTests(unittest.TestCase):
             if line.strip() and not line.strip().startswith("//")
         ]
         return hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
+
+    def test_function_body_ignores_literal_and_comment_braces(self) -> None:
+        source = '''fn held<'a>(value: &'a str) {
+    let text = "{";
+    let raw = r##"}"##;
+    let character = '{';
+    // { is not an opening brace.
+    /* { /* } */ { */
+}
+fn following() { let other = 42; }
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "src/ir.rs").write_text(source, encoding="utf-8")
+            original = globals()["REPO"]
+            try:
+                globals()["REPO"] = root
+                self.assertEqual(source.splitlines()[:-1], self.function_body("held"))
+            finally:
+                globals()["REPO"] = original
 
     def test_the_case_table_and_the_case_analysis_carry_the_same_cases(self) -> None:
         """The two statements of one derivation, reconciled in both directions.
@@ -12267,22 +12291,8 @@ class NamingMirrorTests(unittest.TestCase):
                 }
                 self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
             else:
-                start = next(
-                    (index for index, line in enumerate(lines)
-                     if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-                )
-                self.assertIsNotNone(start, f"src/naming.rs declares no fn {name}")
-                depth, started = 0, False
-                for end in range(start, len(lines)):
-                    for char in lines[end]:
-                        if char == "{":
-                            depth, started = depth + 1, True
-                        elif char == "}":
-                            depth -= 1
-                    if started and depth == 0:
-                        break
                 kept = [
-                    " ".join(line.split()) for line in lines[start:end + 1]
+                    " ".join(line.split()) for line in rust_function_body(lines, name)
                     if line.strip() and not line.strip().startswith("//")
                 ]
                 actual = hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
@@ -12323,22 +12333,8 @@ class NamingMirrorTests(unittest.TestCase):
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.METHOD_NAME_PORT_DIGESTS.items():
-            start = next(
-                (index for index, line in enumerate(lines)
-                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
-                " ".join(line.split()) for line in lines[start:end + 1]
+                " ".join(line.split()) for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -12356,22 +12352,8 @@ class NamingMirrorTests(unittest.TestCase):
         """
         for (path, name), pinned in census.EXAMPLE_PORT_DIGESTS.items():
             lines = (REPO / path).read_text(encoding="utf-8").splitlines()
-            start = next(
-                (index for index, line in enumerate(lines)
-                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"{path} declares no fn {name}")
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
-                " ".join(line.split()) for line in lines[start:end + 1]
+                " ".join(line.split()) for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -12389,22 +12371,8 @@ class NamingMirrorTests(unittest.TestCase):
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.UNION_PORT_DIGESTS.items():
-            start = next(
-                (index for index, line in enumerate(lines)
-                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
-                " ".join(line.split()) for line in lines[start:end + 1]
+                " ".join(line.split()) for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -12422,22 +12390,8 @@ class NamingMirrorTests(unittest.TestCase):
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.SCHEMA_RESPONSE_PORT_DIGESTS.items():
-            start = next(
-                (index for index, line in enumerate(lines)
-                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
-                " ".join(line.split()) for line in lines[start:end + 1]
+                " ".join(line.split()) for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -12455,22 +12409,8 @@ class NamingMirrorTests(unittest.TestCase):
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.PARAMETER_PORT_DIGESTS.items():
-            start = next(
-                (index for index, line in enumerate(lines)
-                 if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
-                " ".join(line.split()) for line in lines[start:end + 1]
+                " ".join(line.split()) for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -13021,6 +12961,12 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                 "Code": strings,
                 "Port": {"oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1},
                                    {"type": "integer", "maximum": 9}]},
+                "Weight": {"oneOf": [{"type": "number", "format": "uint64"},
+                                      {"type": "integer"}]},
+                "Settings": {"oneOf": [{"type": "string", "format": "json-string"},
+                                        {"type": "string", "format": "json-string"}]},
+                "Calibrated": {"oneOf": [{"type": "boolean", "x-fern-type": "literal<true>"},
+                                          {"type": "boolean", "x-crozier-type": "literal<true>"}]},
             },
             "decoys": {
                 "Nullable": {"anyOf": [{"type": "string"}, {"type": "string"}, {"type": "null"}]},
@@ -13029,6 +12975,14 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                 "Lone": {"anyOf": [{"type": "string"}]},
                 "Typed": {"type": "string", **strings},
                 "Holder": {"type": "object", "properties": {"code": strings}},
+                "JsonText": {"oneOf": [{"type": "string", "format": "json-string"},
+                                       {"type": "string"}]},
+                "LiteralBool": {"oneOf": [{"type": "boolean", "x-fern-type": "literal<true>"},
+                                           {"type": "boolean"}]},
+                "CanonicalLiteral": {"oneOf": [
+                    {"type": "boolean", "x-crozier-type": "literal<false>",
+                     "x-fern-type": "literal<true>"},
+                    {"type": "boolean", "x-fern-type": "literal<true>"}]},
             },
         }
         with tempfile.TemporaryDirectory() as directory:
@@ -13041,7 +12995,7 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root),
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual({(selector, "positive"): 2}, rows(completed))
+        self.assertEqual({(selector, "positive"): 5}, rows(completed))
 
     def test_query_items_union_counts_an_inline_items_union_and_not_its_near_misses(self) -> None:
         """An array query parameter whose inline `items` composes two members.

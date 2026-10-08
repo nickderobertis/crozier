@@ -1735,6 +1735,7 @@ CASES: dict[str, tuple[Case, ...]] = {
         )),
     ),
     "prop_type_ref": (
+        Case("17", hole="H-ordered-members"),
         Case("1", block="prop_type_ref", selector="schema.properties>schema.allOf:annotated-ref", opens="prop_type_ref/resolution", falls_through=True),
         Case("2a", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued"),
         Case("2b", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued"),
@@ -1824,7 +1825,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "d18b44f1eb2c3221",
-    "prop_type_ref": "e2046726db880b3c",
+    "prop_type_ref": "101abbd090c21834",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -2608,7 +2609,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "92a25efcc00ca5a9",
+    "endpoint_method_name": "91b67ba509ea8c15",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3159,7 +3160,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 UNION_PORT_DIGESTS = {
     "inferred_discriminant_property_with": "e89b0d632c061c3f",
     "same_primitive_union_last": "46bacd9b81edeea4",
-    "base_type_ref": "aed18925c5369dea",
+    "base_type_ref": "8c1ce5136f0b7968",
 }
 
 
@@ -5128,14 +5129,19 @@ class Census:
             if kind == "float":
                 return "float"
             if kind == "string":
-                return {"date-time": "datetime", "date": "date"}.get(form, "str")
+                return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
             if kind == "integer":
                 return "long" if form == "int64" else "int"
             if kind == "number":
-                if form in ("int32", "int64"):
+                if form in ("int32", "int64", "uint64"):
                     return "long" if form == "int64" else "int"
                 return "float"
-            return "bool" if kind == "boolean" else None
+            if kind == "boolean":
+                override = member.get("x-crozier-type", member.get("x-fern-type"))
+                if override in ("literal<true>", "literal<false>"):
+                    return override
+                return "bool"
+            return None
 
         def same_primitive(schema: Any) -> bool:
             if not isinstance(schema, dict) or any(

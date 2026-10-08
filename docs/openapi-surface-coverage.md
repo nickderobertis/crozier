@@ -1149,8 +1149,8 @@ can express. Three conventions that derivation applies, stated once:
   `examples`, or an object whose values are themselves schema declarations, and
   `hoist_union_variant` sent all three to `base_type_ref` while it still hoisted
   a bare object with a concrete example. One-hundred-and-six of the
-  one-hundred-and-six cases below survive this test; the other zero name the
-  extension that would close them.
+  one-hundred-and-seven cases below survive this test; the other one names the
+  extension that would close it.
 
   What the test does **not** rule out is a node whose own declaration contradicts
   itself. A schema writing `$ref` beside a sibling keyword is one — 3.0 says the
@@ -3574,11 +3574,15 @@ selector the census declares — a conjunction, or, where the arm reads one Path
 Object key or one `$ref` value and opens no schema, a predicate — and only where
 that selector is
 *exact*, counting the nodes the branch is selected by and no others. Otherwise it
-would be recorded as an enumeration hole of zero remaining kinds, naming the property no
+is recorded as an enumeration hole of one remaining kind, naming the property no
 selector kind can express and what closing it would take — the way
 `normalization-collision` was recorded before
 `components.schemas:normalized-collision` existed. No case is in neither, and none
 is in both.
+
+| hole | property the current grammar cannot express | extension that would close it |
+|---|---|---|
+| **H-ordered-members** | Exactly two ordered `allOf` members: first a reference resolving to a string enum, then a string scalar carrying a pattern and no enum, reference, properties or nested composition | Ordered member selection with target resolution and sibling conjunctions |
 
 **This table is machine-readable, and this is the restatement of it.** The
 derivation is declared once, as `CASES` in `scripts/openapi-surface-census.py` —
@@ -4092,6 +4096,11 @@ helper read again, inside the one-member arity its own arm tests. Cases 11a and
 hoists as case 15's does (corpus row 218's `directoryScopeOptions`) — are not
 split into rows.
 
+Case 17 precedes the annotated-reference gate. It hoists a string enum reference
+narrowed by the second `allOf` member's pattern. Cases 11a and 11b retain the
+nullable member's description for an enum, and use the enclosing description
+before the member's description for an inline object; their selectors do not change.
+
 **Cases 8d, 12c and 12d require a written `properties` field.** A closed
 object without it takes the free-form path, returning `Dict[str, Any]` before
 these hoisting cases. Their conjunctions now retain that distinction, including
@@ -4114,6 +4123,7 @@ both count it and the earlier arm runs — the chain overlap
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
+| 17 | `scalar_narrowed_enum_type` succeeds on exactly two ordered members: a reference resolving to a string enum and a string scalar declaring a pattern; returns the hoisted enum identity | **H-ordered-members** |
 | 1 | the outer `if let (Some(schemas), Some((reference, description))) = (self.schemas, described_all_of_ref(prop_schema))` gate, which the arm-observation surface records on entry — before the resolution below. **The code tests one thing more than the four cases inside this gate state:** it also requires `resolve_ref_from_schemas(schemas, reference)` to return `Some`, and a property whose gate holds over a reference naming no component of this document takes none of cases 2 to 5 at all — it falls through to case 6 and beyond. The surface reports exactly that, case 1 without any of 2 to 5, which is how the disagreement was found, and it is why this row's selector carries no resolution while every row below it does. `self.schemas` is `Some` at every call site that reaches a property | `schema.properties>schema.allOf:annotated-ref` |
 | 2a | inside it, `if let Some(values) = string_enum_values(&target)` → a hoisted enum, over a target writing an `enum`, which the helper refuses unless the values are strings | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued` |
 | 2b | the same over a target writing a `const`, the spelling the helper falls back to when no `enum` is written. A target writing both is read by its `enum` alone, exactly as case 7b's selector already reads one, so a target whose `enum` is not string-valued beside a string `const` is counted here and falls to cases 3 to 5 — every one of them a case of this table | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued` |
