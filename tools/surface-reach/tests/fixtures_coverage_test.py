@@ -478,20 +478,38 @@ class RecipeEndToEndTests(unittest.TestCase):
                       completed.stderr)
 
     def test_a_missing_committed_corpus_is_a_hard_failure(self) -> None:
-        """The committed-source preflight refuses missing inputs before measurement."""
-        committed = REPO / "tests/fixtures/corpus-sources/frankfurter"
-        if not committed.is_dir():
-            self.fail("committed frankfurter source is missing")
-        hidden = committed.with_name("frankfurter.hidden-by-fixtures-coverage-test")
-        self.assertFalse(hidden.exists(), f"stale {hidden} from an interrupted run")
-        committed.rename(hidden)
-        self.addCleanup(hidden.rename, committed)
+        """The committed-source preflight refuses missing inputs before measurement.
 
-        completed, _ = self.run_recipe(
-            f"test(=frankfurter_matches_fern_output) or test(={JOURNEY}) or test(={UNIT})"
+        The source goes missing from a scratch copy of the script, the checker and
+        the committed corpus, never from the checkout: Nx runs the byte-match and
+        census suites that read it beside this one.
+        """
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        fixtures = REPO / "tests" / "fixtures"
+        for relative in ("tools/surface-census/fixtures-coverage.sh", "tools/corpus/corpus_sources.py",
+                         "tools/corpus/corpus_remote_ref_pins.py"):
+            (root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO / relative, root / relative)
+        for entry in fixtures.iterdir():
+            if entry.is_file():
+                (root / "tests" / "fixtures").mkdir(parents=True, exist_ok=True)
+                shutil.copy2(entry, root / "tests" / "fixtures" / entry.name)
+        shutil.copytree(fixtures / "corpus-sources", root / "tests" / "fixtures" / "corpus-sources")
+        checked = subprocess.run([sys.executable, str(root / "tools/corpus/corpus_sources.py"), "check"],
+                                 capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(0, checked.returncode, f"the copied corpus does not pass as the checkout's does:\n{checked.stderr}")
+        shutil.rmtree(root / "tests" / "fixtures" / "corpus-sources" / "frankfurter")
+
+        out = Path(self.enterContext(tempfile.TemporaryDirectory())) / "out"
+        completed = subprocess.run(
+            [str(root / "tools/surface-census/fixtures-coverage.sh"), "--no-fetch", "--out", str(out),
+             f"test(=frankfurter_matches_fern_output) or test(={JOURNEY}) or test(={UNIT})"],
+            cwd=root, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
         self.assertIn("recorded but missing", completed.stderr)
+        self.assertIn("frankfurter", completed.stderr)
+        self.assertFalse(out.exists() and any(out.glob("*.json")), "a tier was measured past the refusal")
 
 
 class CfgTestSpanTests(unittest.TestCase):

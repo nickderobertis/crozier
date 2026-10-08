@@ -135,12 +135,13 @@ count_tests() { # count_tests LABEL EXPRESSION
   printf '%s' "$count"
 }
 
+# The committed corpus is the golden tier's input: refuse a missing or changed
+# source before anything is built or listed.
+python3 "$repo_root/tools/corpus/corpus_sources.py" check
 golden_tests="$(count_tests golden-only "$golden_expr")"
 journey_tests="$(count_tests all-e2e "$journey_expr")"
 unit_tests="$(count_tests non-e2e "$unit_expr")"
 e2e_tests=$((golden_tests + journey_tests))
-
-python3 "$repo_root/tools/corpus/corpus_sources.py" check
 
 cd "$repo_root" || {
   echo "fixtures-coverage: cannot enter the repository root $repo_root; run it from a readable checkout" >&2
