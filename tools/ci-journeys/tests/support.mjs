@@ -76,6 +76,10 @@ export function commitChange(root, path, text) {
 /** Run `just <args>` in `root` with `env` over this environment. */
 export function just(root, args, env = {}) {
   const merged = { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true", ...env };
+  // The scratch gate picks its own cache policy: the sweep that runs these
+  // journeys exports NX_SKIP_NX_CACHE, which would turn every replay a journey
+  // asserts into a rerun. A journey that wants it passes it in `env`.
+  if (!("NX_SKIP_NX_CACHE" in env)) delete merged.NX_SKIP_NX_CACHE;
   for (const [key, value] of Object.entries(env)) if (value === undefined) delete merged[key];
   const run = spawnSync("just", args, { cwd: root, env: merged, encoding: "utf8", shell: process.platform === "win32" });
   return { status: run.status, stdout: run.stdout ?? "", stderr: run.stderr ?? "", output: `${run.stdout}${run.stderr}` };
