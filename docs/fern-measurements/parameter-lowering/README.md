@@ -2,11 +2,11 @@
 
 Each directory here is a document written for the purpose and the tree Fern
 generated from it at Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in
-the workspace `scripts/generate-fern-fixture.sh` scaffolds (Route A of
+the workspace `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (Route A of
 [`../../fern-goldens.md`](../../fern-goldens.md)), comment-stripped by
 `crozier internal-strip`. The trees are Fern's output as measured; nothing in
 them was edited. `parameter_lowering_measurements_match_fern` in
-[`../../../tests/e2e.rs`](../../../tests/e2e.rs) generates each document with
+[`../../../crates/crozier-e2e/tests/e2e.rs`](../../../crates/crozier-e2e/tests/e2e.rs) generates each document with
 crozier and holds its whole tree to `fern-expected/` under the corpus gate's
 normalization.
 

@@ -15,7 +15,7 @@ version.
   be retained, and they cover this vendored runtime as redistributed product
   (not only the test fixtures).
 - **Source:** produced by `fernapi/fern-python-sdk:5.20.0` over the managed Corpus
-  fixtures via `scripts/generate-fern-fixture.sh`.
+  fixtures via `tools/fern-goldens/generate-fern-fixture.sh`.
 - **Change made (Apache-2.0 §4(c)):** Python comments are stripped with the same
   string-safe normalizer used for fixtures, except Fern's `# type: ignore`
   pragmas, which stay at the lines Fern's own output carries them so a generated

@@ -1,0 +1,114 @@
+{
+  "name": "surface-reach",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "measures:crozier-e2e",
+    "lang:python"
+  ],
+  "implicitDependencies": [
+    "crozier",
+    "crozier-e2e"
+  ],
+  "targets": {
+    "test-fixtures-coverage": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/surface-reach/tests/fixtures_coverage_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/*",
+        "crateTests",
+        "e2eSource",
+        "generator",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ],
+      "parallelism": false
+    },
+    "test-handwritten-reach": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/surface-reach/tests/handwritten_reach_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/*",
+        "crateTests",
+        "e2eSource",
+        "generator",
+        "{workspaceRoot}/docs/openapi-surface/*.md",
+        "{workspaceRoot}/docs/openapi-surface/*.tsv",
+        "{workspaceRoot}/docs/openapi-surface/handwritten/**/*",
+        "{workspaceRoot}/docs/openapi-surface/probe-expected/MANIFEST.tsv",
+        "{workspaceRoot}/docs/openapi-surface/**/*.md",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ],
+      "parallelism": false
+    },
+    "test-llvm": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/surface-reach/tests/golden_reach_llvm_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/golden-reach.py",
+        "{workspaceRoot}/rust-toolchain.toml"
+      ]
+    },
+    "test-residual-attribution": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/surface-reach/tests/residual_attribution_test.py"
+      },
+      "cache": true,
+      "dependsOn": [
+        "crozier:build"
+      ],
+      "inputs": [
+        "default",
+        "crateSource",
+        "generator",
+        "{workspaceRoot}/tools/surface-census/*",
+        "{workspaceRoot}/tools/surface-census/tests/surface_census_test.py",
+        "e2eSource",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-fixtures-coverage",
+        "test-handwritten-reach",
+        "test-llvm",
+        "test-residual-attribution"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs surface-reach"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

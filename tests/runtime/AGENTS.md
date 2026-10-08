@@ -3,11 +3,11 @@
 A **pytest** suite that verifies a **generated** SDK's runtime behavior — the
 compiled client's behavior, not its source text (that is the byte-diff e2e's
 job) — **differentially against Fern**. Driven by
-`tests/e2e.rs::sdk_env_crozier_matches_fern_runtime_behavior`, which generates the
+`crates/crozier-e2e/tests/e2e.rs::sdk_env_crozier_matches_fern_runtime_behavior`, which generates the
 `airbyte.local-config` SDK, prepares a cached venv (httpx + pydantic + pytest), and runs
 `pytest` here with `CROZIER_SDK_SRC` / `FERN_SDK_SRC` pointing at the two SDKs.
-Installing those from PyPI puts it in the SDK Python-environment tier: `just
-test-sdk-env` (CI's `sdk-env` job, required by `gate`), never the offline `check`.
+Installing those from PyPI puts it in the SDK Python-environment tier, promoted
+out of the affected tier.
 
 - **`_recorder.py`** (helper, not collected) drives one SDK through an injected
   `httpx.MockTransport` — the generated client accepts an `httpx_client` — and

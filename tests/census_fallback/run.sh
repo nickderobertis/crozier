@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# The arm search's YAML fallback against the census's stdlib loader, under the
+# pinned full YAML 1.2 parser (ruamel.yaml) each script declares in its own
+# inline metadata, installed through uv:
+#   samples  identical counts on every registered YAML source, and each refused
+#            form's committed sample (tools/surface-census/tests/data/
+#            census-fallback-sample/) read as what it declares;
+#   parsers  the arm search and the witness-search re-census CLI over temporary
+#            ledgers, a loopback GitHub and Sourcegraph, and the same parser.
+# Fetches no specification. The `census-fallback` project's targets run it; CI
+# runs both in its live-e2e leg, and corpus-match's offline proof runs the
+# samples with sockets denied.
+set -euo pipefail
+cd "$(dirname "$0")/../.." || {
+  echo "census-fallback: cannot enter the checkout above $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
+
+# The parser pin, read from a script's PEP 723 `dependencies` line: exactly one
+# `package==version`, or the run stops naming the script, since an empty or
+# floating `--with` would run the fallback against whatever parser uv holds.
+# `run.sh pin SCRIPT` prints it, for the other callers that install the same pin.
+pinned() {
+  local pin
+  # A command substitution does not inherit errexit, so a read that fails is caught here.
+  # Only the PEP 723 block (`# /// script` … `# ///`) declares it; a comment elsewhere is not a pin.
+  pin="$(awk '/^# \/\/\/ script$/ { inside = 1; next }
+              inside && /^# \/\/\/$/ { inside = 0; next }
+              inside && match($0, /^# dependencies = \[".*"\]$/) { print substr($0, 20, length($0) - 21) }' "$1")" || {
+    echo "census-fallback: cannot read $1 — restore it (git checkout -- $1) and make it readable, then re-run" >&2
+    return 1
+  }
+  if [ "$(printf '%s\n' "$pin" | wc -l)" -ne 1 ] || ! [[ "$pin" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*==[0-9][A-Za-z0-9.]*$ ]]; then
+    echo "census-fallback: $1 declares no single pinned dependency in its PEP 723 header —" \
+         "restore its one exact '# dependencies = [\"<package>==<version>\"]' line (git checkout -- $1), then re-run" >&2
+    return 1
+  fi
+  printf '%s\n' "$pin"
+}
+
+# One fallback suite under its pinned parser; uv's own error, or the suite's, is
+# printed above this line.
+suite() {
+  local pin="$1"
+  shift
+  uv run --no-project --with "$pin" "$@" || {
+    local status=$?
+    echo "census-fallback: $* exited $status under $pin — if uv could not install $pin, check" \
+         "that PyPI is reachable; otherwise fix the failing test above, then re-run" >&2
+    exit "$status"
+  }
+}
+
+case "${1:-}" in
+  samples|parsers)
+    [ "$#" -eq 1 ] || {
+      echo "census-fallback: $1 takes no arguments, got: ${*:2} — usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2
+      exit 2
+    }
+    ;;
+esac
+case "${1:-}" in
+  samples)
+    search_pin="$(pinned tools/surface-census/golden-reach-search.py)"
+    python3 tools/corpus/corpus_sources.py check
+    CROZIER_REQUIRE_CORPUS=1 suite "$search_pin" python3 tests/census_fallback/golden_reach_census_fallback_test.py
+    ;;
+  parsers)
+    search_pin="$(pinned tools/surface-census/golden-reach-search.py)"
+    recensus_pin="$(pinned tools/witness-search/witness-search-recensus.py)"
+    CROZIER_REQUIRE_CORPUS=1 suite "$search_pin" python3 tools/surface-census/tests/golden_reach_test.py
+    suite "$recensus_pin" python3 tools/witness-search/tests/witness_search_recensus_test.py
+    ;;
+  pin)
+    [ "$#" -eq 2 ] || {
+      echo "census-fallback: pin takes exactly one SCRIPT, got $(($# - 1)) — usage: tests/census_fallback/run.sh pin SCRIPT" >&2
+      exit 2
+    }
+    pinned "$2"
+    ;;
+  "")
+    echo "census-fallback: no subcommand given — usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2
+    exit 2
+    ;;
+  *)
+    echo "census-fallback: unknown subcommand '$1' — usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2
+    exit 2
+    ;;
+esac

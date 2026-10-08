@@ -13,10 +13,10 @@ below and this record's renewed search.
 ## The search
 
 One bounded GitHub code search, issued on 2026-10-05 through
-`scripts/rate_limit_guard.py`: eleven phrasings, two or three per shape, each
+`tools/witness-search/rate_limit_guard.py`: eleven phrasings, two or three per shape, each
 answered and recorded with its count in [`queries.tsv`](queries.tsv). The first
 page of each (up to 100 results) was fetched at its indexed commit, 941 distinct
-documents in all. Every one was read by `scripts/openapi-surface-census.py` for
+documents in all. Every one was read by `tools/surface-census/openapi-surface-census.py` for
 the four keys' selectors below, one document at a time; [`census.tsv`](census.tsv)
 records the count per document, or why it could not be read. Every declarer was
 screened on licence, immutable reference and pinned Fern (CLI 5.67.1,

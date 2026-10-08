@@ -15,7 +15,7 @@ id is named by that id; an additional combination is described directly.
 ## Reproduction
 
 Fetch each immutable publisher document below, then use the workspace scaffold
-of `scripts/generate-fern-fixture.sh` (Route A): organization `fern`, package
+of `tools/fern-goldens/generate-fern-fixture.sh` (Route A): organization `fern`, package
 `fern`, project `default_package_name`, generator setting
 `pydantic_config.enum_type: python_enums`. Run:
 

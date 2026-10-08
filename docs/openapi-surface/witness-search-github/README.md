@@ -10,7 +10,7 @@ acquisition failure; unfetched query results stay outstanding. The only result r
 path, and pinned revision. Each source's `records.tsv` retains the resulting
 candidate identity, digest when fetched, classification, screens, and disposition.
 `candidates.tsv` is their consolidated index; regenerate and check both with
-`python3 scripts/witness-search-github-index.py` and its `--check` option.
+`python3 tools/witness-search/witness-search-github-index.py` and its `--check` option.
 
 Excluded inputs use `screened-nonpublic-input:v2:I:N`, where `I` is a random 32-character lowercase
 hexadecimal invocation ID and `N` is a positive assigned integer. Neither is
@@ -67,7 +67,7 @@ registration rather than by the search:
 
 - `byte-identical to CORPUS row N, sha256 <hex>`: a copy whose bytes equal
   corpus row N's registered source. Registering it again would add no golden.
-  `tests/corpus_surface_census_test.py` re-measures each digest against row N's
+  `tests/corpus_match/corpus_surface_census_test.py` re-measures each digest against row N's
   fetched document.
 - `pending-registration`: a usable candidate the registration node neither
   registered nor disposed. The continuation node owns it.

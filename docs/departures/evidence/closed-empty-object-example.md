@@ -56,7 +56,7 @@ default_package_name` writes the same tree but for those lines, where it passes
 and `reference.md`'s three-line placeholders, and each docstring line, as this
 departure and matches; the
 `compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_difference`
-journey in `tests/e2e/compare.rs` drives exactly that, and the fixture's
+journey in `crates/crozier-e2e/tests/e2e/compare.rs` drives exactly that, and the fixture's
 `closed-empty-object-example` rows in `tests/fixtures/departures-ledger.tsv` are
 those lines.
 

@@ -1,0 +1,115 @@
+{
+  "name": "corpus",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "lint-sources": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/corpus/corpus_sources.py check"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/corpus_sources.py",
+        "{projectRoot}/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tests/fixtures/**/*"
+      ]
+    },
+    "lint-remote-ref-pins": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/corpus/corpus_remote_ref_pins.py check"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tests/fixtures/**/*"
+      ]
+    },
+    "lint-licence-rescreening": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/corpus/licence-rescreening-check.py"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/licence-rescreening-check.py",
+        "{workspaceRoot}/docs/licence-rescreening.md",
+        "{workspaceRoot}/docs/openapi-surface/*.md"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs corpus"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-sources",
+        "lint-remote-ref-pins",
+        "lint-licence-rescreening",
+        "lint-boundaries"
+      ]
+    },
+    "test-sources": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/corpus/tests/corpus_sources_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/tests/fixtures/**/*"
+      ]
+    },
+    "test-remote-ref-pins": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/corpus/tests/corpus_remote_ref_pins_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/docs/openapi-surface/witness-search-github-publisher-trees/pinned-members.tsv"
+      ]
+    },
+    "test-licence-rescreening": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/corpus/tests/licence_rescreening_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/**/*.md",
+        "{workspaceRoot}/docs/openapi-surface/*.md"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-sources",
+        "test-remote-ref-pins",
+        "test-licence-rescreening"
+      ]
+    }
+  }
+}

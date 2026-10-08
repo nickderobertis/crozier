@@ -1,0 +1,127 @@
+{
+  "name": "witness-search",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test-redo": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only just (the gate's own runner, a host tool), python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 3 s (measured with `just nx run witness-search:test-redo --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh scripts/census-python.sh tools/witness-search/tests/witness_search_redo_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/surface-census/*.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test-acquisition": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh scripts/census-python.sh tools/witness-search/tests/witness_search_acquisition_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/surface-census/*.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test-github": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh scripts/census-python.sh tools/witness-search/tests/witness_search_github_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/surface-census/*.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test-screen": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh scripts/census-python.sh tools/witness-search/tests/witness_screen_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/surface-census/*.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test-rate-limit-guard": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sh scripts/census-python.sh tools/witness-search/tests/rate_limit_guard_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/rate_limit_guard.py",
+        "{projectRoot}/tests/rate_limit_guard_test.py",
+        "{workspaceRoot}/scripts/census-python.sh"
+      ],
+      "parallelism": false
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-redo",
+        "test-acquisition",
+        "test-github",
+        "test-screen",
+        "test-rate-limit-guard"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs witness-search"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

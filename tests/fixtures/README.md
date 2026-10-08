@@ -6,7 +6,7 @@ specifications; their provenance lives in [`CORPUS.md`](CORPUS.md) and the
 per-golden metadata.
 
 - **Generation:** Each local fixture's `expected/` tree is generated from its
-  own `openapi.yml` by `scripts/generate-fern-fixture.sh`. Numbered publisher
+  own `openapi.yml` by `tools/fern-goldens/generate-fern-fixture.sh`. Numbered publisher
   sources and immutable references live in [`CORPUS.md`](CORPUS.md). The
   **Fern goldens** workflow checks the latest stable generator from `main`
   weekly; each managed golden records its exact version in provenance.
@@ -34,7 +34,7 @@ Each `<api>/` directory holds:
   declares, Fern's **flat** output for the same spec and settings: what
   `fern generate --local` writes to a `local-file-system` output path, which
   crozier reproduces with `--layout flat`. Produced by
-  `scripts/generate-fern-fixture.sh --layout flat <fixture>` (or, for a
+  `tools/fern-goldens/generate-fern-fixture.sh --layout flat <fixture>` (or, for a
   `CORPUS.md` row, by the Fern goldens workflow beside its packaged golden). It
   follows the same comment-stripping and provenance rules as `expected/`, and its
   `.crozier-fern-golden.json` adds `"layout": "flat"`. A flat golden may sit in a
@@ -58,14 +58,14 @@ known failures, provenance, and the final green/no-change rerun.
 - **Feature-coverage targets** — hand-authored specs pinning one shape each,
   all matched in full (the shape-by-shape rationale is in
   [`../../docs/matching.md`](../../docs/matching.md)). `FEATURE_TARGETS` in
-  `tests/e2e.rs` is the list; those entries also provide compile/smoke coverage
+  `crates/crozier-e2e/tests/e2e.rs` is the list; those entries also provide compile/smoke coverage
   independently of the byte comparison.
 
-Declared fixtures also carry a flat golden (`FLAT_GOLDENS` in `tests/e2e.rs`, one
+Declared fixtures also carry a flat golden (`FLAT_GOLDENS` in `crates/crozier-e2e/tests/e2e.rs`, one
 `*_flat_matches_fern` test each), chosen so that between them they exercise every
 setting that changes the flat tree.
 
-Every `Corpus` in `tests/e2e.rs` carries an empty `unmatched` residual list: the
+Every `Corpus` in `crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` residual list: the
 whole corpus reproduces its Fern goldens byte-for-byte, apart from the one
 accepted upstream exception (`calorieninjas.com`, which has no golden because
 Fern cannot produce one). Every file in every golden tree is gated in both

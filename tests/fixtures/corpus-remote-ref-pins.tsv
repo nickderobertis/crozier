@@ -14,7 +14,7 @@
 #                member of one tree uses its CORPUS.md row's commit SHA
 #
 # `#` comments and blank lines are ignored; each record kind sorts by
-# (corpus_name, mutable_url/path). `scripts/corpus_remote_ref_pins.py` is the
+# (corpus_name, mutable_url/path). `tools/corpus/corpus_remote_ref_pins.py` is the
 # validator and fetcher.
 #
 # `80d0a6ee6c129a29c507c35b0245a16c5a81b9d3` is the `ethereum/execution-apis`

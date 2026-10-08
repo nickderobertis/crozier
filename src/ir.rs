@@ -4607,7 +4607,7 @@ pub(crate) fn response_key_status(key: &str) -> Option<u16> {
 /// `ApiError`, exactly as Fern does — it never suppresses the whole method.
 ///
 /// The table was read off Fern's own generator output (running it across the full
-/// status range under Docker, `scripts/generate-fern-fixture.sh`). Its drift gates:
+/// status range under Docker, `tools/fern-goldens/generate-fern-fixture.sh`). Its drift gates:
 /// the `error-responses` corpus pins the shape byte-for-byte for the common statuses
 /// (400/404/422/500/503), and the exhaustive
 /// `every_error_status_fern_names_maps_to_its_exception` test
@@ -5584,7 +5584,7 @@ fn resolve_request_body(
         // inline `{type: string, description: …}` body sends it and a titled
         // `{type: integer}` or `{type: string}` one does not. The hand-written
         // fixture `described-scalar-bodies` holds both sides, byte-compared by
-        // `handwritten_fixtures_match_fern_goldens` in `tests/e2e.rs`.
+        // `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`.
         let described = schema.reference.is_none() && schema.description.is_some();
         let mut body = single_with_override(
             type_ref,
@@ -7708,7 +7708,7 @@ fn has_bodyless_success(op: &Operation) -> bool {
     // body the primary response declares. A contentless `200` beside a typed
     // `201` stays non-optional too (the hand-written fixture
     // `contentless-created-success`, byte-compared by
-    // `handwritten_fixtures_match_fern_goldens` in `tests/e2e.rs`). EN 18222's `updateDPPById` returns
+    // `handwritten_fixtures_match_fern_goldens` in `crates/crozier-e2e/tests/e2e.rs`). EN 18222's `updateDPPById` returns
     // `HttpResponse[DigitalProductPassport]` with a bodyless `202` in the document.
     !(codes.is_empty()
         || success_response_schema(op).is_some()
@@ -18535,7 +18535,7 @@ mod tests {
     }
 
     // The shapes `NodeLocalSelectorDiscriminationTests` of
-    // `tests/surface_census_test.py` drives the census over, written once here so
+    // `tools/surface-census/tests/surface_census_test.py` drives the census over, written once here so
     // that what the census counts and what the generator does are asserted over the
     // same nodes. Each pair is a node that selects one arm and the near miss that
     // satisfies every part of the selector's condition but one.
@@ -20112,7 +20112,7 @@ mod tests {
     // ---------------------------------------------------------------------
     //
     // `tests/resolving-arm-inputs.json` is the one place these documents are
-    // written. `tests/surface_census_test.py` drives the real census over the
+    // written. `tools/surface-census/tests/surface_census_test.py` drives the real census over the
     // same documents and asserts what each selector counts; this drives the real
     // generator over them and asserts which arm ran. The two compose onto the
     // same inputs rather than onto two hand-copied sets, which is the whole

@@ -47,7 +47,7 @@ error, its version and the document's digest in the source's
 search on its own.
 
 13 candidate(s) reaching the arm carry only a historical screen: one filed
-before the measured screening stage (`scripts/witness_screen.py`), with no exit
+before the measured screening stage (`tools/witness-search/witness_screen.py`), with no exit
 status, pins or redacted log behind its outcomes. A historical screen is kept as
 it was filed and settles nothing, so each such candidate is outstanding — counted
 in `outstanding` below and listed in `outstanding.tsv` — until it is re-screened.
