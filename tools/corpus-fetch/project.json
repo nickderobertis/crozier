@@ -22,7 +22,10 @@
         "{workspaceRoot}/tools/corpus/tests/corpus_sources_test.py",
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
-        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv"
+        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv",
+        "{workspaceRoot}/tests/fixtures/CORPUS.md",
+        "{workspaceRoot}/tests/fixtures/corpus-sources.tsv",
+        "{workspaceRoot}/tests/fixtures/corpus-remote-ref-pins.tsv"
       ]
     },
     "test-remote-ref-pins": {
@@ -40,7 +43,10 @@
         "{workspaceRoot}/tools/corpus/tests/corpus_sources_test.py",
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
-        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv"
+        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv",
+        "{workspaceRoot}/tests/fixtures/CORPUS.md",
+        "{workspaceRoot}/tests/fixtures/corpus-sources.tsv",
+        "{workspaceRoot}/tests/fixtures/corpus-remote-ref-pins.tsv"
       ]
     },
     "test": {
