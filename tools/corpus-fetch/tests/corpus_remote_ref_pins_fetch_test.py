@@ -597,6 +597,23 @@ class PinMechanismTests(unittest.TestCase):
             "git checkout -- tests/fixtures/corpus-aliases.tsv",
         )
 
+    def test_an_alias_file_that_maps_ambiguously_names_the_line_and_how_to_repair_it(self) -> None:
+        for label, body, reason in (
+            ("self-alias", "plain-row\tplain-row\n", "line 2: alias source and fixture directory must differ"),
+            ("duplicate source", "plain-row\tfirst\nplain-row\tsecond\n", "line 3: duplicate alias source plain-row"),
+            ("duplicate fixture", "first\tshared\nsecond\tshared\n", "line 3: duplicate fixture directory shared"),
+        ):
+            with self.subTest(label):
+                (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").write_text(
+                    "# aliases\n" + body, encoding="utf-8"
+                )
+                self.assert_refused_without_a_path(
+                    self.fetch("plain-row"),
+                    reason,
+                    "fix that line",
+                    "git checkout -- tests/fixtures/corpus-aliases.tsv",
+                )
+
     def test_an_empty_alias_file_names_how_to_restore_it(self) -> None:
         (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").write_text(
             "# no aliases left\n", encoding="utf-8"
