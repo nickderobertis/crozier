@@ -2671,11 +2671,11 @@ fn handwritten_documents(
 
 /// An SDK method name written as a sequence generates under either spelling, the
 /// members joined as Fern joins them; beside a conflicting `x-fern-sdk-method-name`
-/// the `x-crozier-sdk-method-name` sequence wins. The nearby malformed form, a
-/// mapping, is still refused at the boundary with an actionable parse error and
-/// nothing written.
+/// the `x-crozier-sdk-method-name` sequence wins. The nearby malformed forms, a
+/// mapping and an empty sequence (on which Fern fails too), are still refused at
+/// the boundary with an actionable parse error and nothing written.
 #[test]
-fn sdk_method_name_sequence_reads_either_spelling_and_a_mapping_is_refused() {
+fn sdk_method_name_sequence_reads_either_spelling_and_malformed_forms_are_refused() {
     let dir = tempfile::tempdir().expect("tempdir");
     let generate = |name: &str, extensions: &str| {
         let spec = dir.path().join(format!("{name}.yml"));
@@ -2716,6 +2716,16 @@ fn sdk_method_name_sequence_reads_either_spelling_and_a_mapping_is_refused() {
         .failure()
         .code(1)
         .stderr(predicates::str::contains("x-fern-sdk-method-name"));
+    assert!(
+        !out.join("src").exists(),
+        "a refused document writes nothing"
+    );
+    let (assert, out) = generate("empty", "      x-crozier-sdk-method-name: []\n");
+    assert
+        .failure()
+        .code(1)
+        .stderr(predicates::str::contains("x-crozier-sdk-method-name"))
+        .stderr(predicates::str::contains("invalid length 0"));
     assert!(
         !out.join("src").exists(),
         "a refused document writes nothing"

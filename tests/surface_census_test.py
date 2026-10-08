@@ -13150,6 +13150,7 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                                         "x-fern-sdk-method-name": ["fetch"]},
                 "string": {"x-fern-sdk-method-name": "fetch"},
                 "mapping": {"x-fern-sdk-method-name": {"name": "fetch"}},
+                "empty": {"x-fern-sdk-method-name": []},
             }.items():
                 write_fixture(root, fixture, json.dumps({
                     "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},

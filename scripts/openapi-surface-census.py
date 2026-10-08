@@ -2838,7 +2838,7 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
 EXTENSION_ACCESSOR_PORT_DIGESTS = {
     ("src/openapi.rs", "sdk_group_name"): "4c285625fb40715e",
     ("src/openapi.rs", "sdk_method_name"): "05643ea13596fa87",
-    ("src/openapi.rs", "de_sdk_method_name"): "8d01a33989dc1ac6",
+    ("src/openapi.rs", "de_sdk_method_name"): "3cee342419e818ec",
 }
 
 
@@ -2860,7 +2860,7 @@ def sdk_method_named(operation: dict[Any, Any]) -> bool:
     for extension in ("x-crozier-sdk-method-name", "x-fern-sdk-method-name"):
         if extension in operation:
             named = operation[extension]
-            if isinstance(named, list) and all(isinstance(item, str) for item in named):
+            if isinstance(named, list) and named and all(isinstance(item, str) for item in named):
                 named = ",".join(named)
             return isinstance(named, str) and bool(named.strip())
     return False
@@ -2871,7 +2871,7 @@ def sdk_method_name_sequence(operation: dict[Any, Any]) -> bool:
     for extension in ("x-crozier-sdk-method-name", "x-fern-sdk-method-name"):
         if extension in operation:
             named = operation[extension]
-            return isinstance(named, list) and all(isinstance(item, str) for item in named)
+            return isinstance(named, list) and bool(named) and all(isinstance(item, str) for item in named)
     return False
 
 

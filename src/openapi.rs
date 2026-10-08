@@ -1406,8 +1406,8 @@ where
 /// Deserialize an SDK method-name override. Fern also accepts it written as a
 /// sequence of strings and reads the sequence the way JavaScript stringifies an
 /// array, its members joined by `,`: `[fetch]` names the method `fetch` and
-/// `[fetch, grab]` names it `fetch_grab`. An empty sequence is a blank name,
-/// which names nothing.
+/// `[fetch, grab]` names it `fetch_grab`. An empty sequence, which Fern fails
+/// on, is refused.
 fn de_sdk_method_name<'de, D>(deserializer: D) -> std::result::Result<Option<String>, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -1440,6 +1440,11 @@ where
             let mut names = Vec::new();
             while let Some(name) = sequence.next_element::<String>()? {
                 names.push(name);
+            }
+            if names.is_empty() {
+                // Fern fails on an empty sequence too, so it names no method
+                // crozier could match.
+                return Err(serde::de::Error::invalid_length(0, &self));
             }
             Ok(Some(names.join(",")))
         }
@@ -3430,8 +3435,13 @@ mod tests {
             name(serde_json::json!(["claim", "now"])).as_deref(),
             Some("claim,now")
         );
-        assert_eq!(name(serde_json::json!([])), None);
         assert_eq!(name(serde_json::Value::Null), None);
+        let empty: std::result::Result<Operation, _> =
+            serde_json::from_value(serde_json::json!({"x-fern-sdk-method-name": []}));
+        assert!(empty
+            .expect_err("an empty sequence names no method")
+            .to_string()
+            .contains("invalid length 0"));
         let mapping: std::result::Result<Operation, _> =
             serde_json::from_value(serde_json::json!({
                 "x-crozier-sdk-method-name": {"name": "vacancies"},
