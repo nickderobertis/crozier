@@ -3269,7 +3269,7 @@ print('ok')
 /// Required headers on a publisher document's sole operation are constructor
 /// arguments; sending the public method writes them to the HTTP request.
 #[test]
-#[ignore = "SDK Python-environment tier; run via `just test-sdk-env`"]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_single_operation_headers_reach_the_wire() {
     let sdk = generate_corpus(&AWS_MOBILEANALYTICS);
     let py = sdk_python_env(&sdk.path().join("pyproject.toml")).unwrap();
@@ -21200,7 +21200,7 @@ fn sdk_env_body_query_collision_keeps_both_callers_values() {
 mod parameter_controls;
 
 #[test]
-#[ignore = "SDK Python-environment tier; run via just test-sdk-env"]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_parameter_lifting_controls_reach_the_wire() {
     for case in parameter_controls::CASES {
         let dir = tempfile::tempdir().unwrap();
