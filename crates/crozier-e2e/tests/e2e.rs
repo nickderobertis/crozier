@@ -16137,14 +16137,23 @@ fn sdk_python_env(pyproject: &Path) -> Result<PathBuf, String> {
     sdk_python_env_in(&python_env_root(), pyproject, uv_available())
 }
 
+/// The one requirement the SDK environment adds to what the SDK declares: a test
+/// environment constraint, never part of the emitted `pyproject.toml`. pydantic
+/// 2.14.0 (published 2026-10-08) makes the SDK's pinned mypy 1.13 report
+/// `var-annotated` at Fern's vendored `core/pydantic_utilities.py:39-40`, which
+/// crozier emits byte for byte. Remove it once Fern's core file changes, or once
+/// the checked mypy and pydantic pairing stops reporting it.
+const SDK_ENV_PYDANTIC_CEILING: &str = "pydantic<2.14";
+
 /// [`sdk_python_env`] under `root`, building with `uv` or with `venv` + `pip`.
 fn sdk_python_env_in(root: &Path, pyproject: &Path, use_uv: bool) -> Result<PathBuf, String> {
     let text = std::fs::read_to_string(pyproject)
         .map_err(|error| format!("cannot read {}: {error}", pyproject.display()))?;
-    let requirements = pyproject_requirements(&text);
+    let mut requirements = pyproject_requirements(&text);
     if !requirements.iter().any(|r| r.starts_with("mypy==")) {
         return Err(format!("{} declares no pinned mypy", pyproject.display()));
     }
+    requirements.push(SDK_ENV_PYDANTIC_CEILING.to_string());
     cached_python_env(root, "crozier-sdk-env", &requirements, use_uv)
 }
 
