@@ -138,10 +138,53 @@ fn every_gate_leg_routes_its_tier_through_ci_check() {
     assert_eq!(
         scopes,
         [
-            "--exclude=tag:tier:promoted",
+            // The combined Python coverage floor holds on the Linux and macOS
+            // legs only: the suites skip their POSIX-only cases on Windows.
+            "--exclude=tag:tier:promoted${{ runner.os == 'Windows' && ',python-workspace' || '' }}",
             "--projects=sdk-env,runtime",
-            "--projects=live-e2e,corpus-match,census-fallback,screenshots"
+            "--projects=live-e2e,corpus-match,census-fallback"
         ]
+    );
+}
+
+/// `just bootstrap` syncs the Python tooling's uv workspace (`just sync-python`)
+/// and every Python target runs under `uv run`, but GitHub runners carry no uv:
+/// every job that bootstraps, in either workflow, installs uv before it does.
+#[test]
+fn every_job_that_bootstraps_installs_uv_first() {
+    let mut bootstrapping = Vec::new();
+    for (file, source) in [("ci.yml", CI_WORKFLOW), ("release.yml", RELEASE_WORKFLOW)] {
+        let workflow: Value =
+            serde_yaml_ng::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+        let jobs = workflow
+            .get("jobs")
+            .and_then(Value::as_mapping)
+            .unwrap_or_else(|| panic!("{file} has jobs"));
+        for (name, job) in jobs {
+            let name = name.as_str().expect("job ids are strings");
+            let Some(steps) = job.get("steps").and_then(Value::as_sequence) else {
+                continue;
+            };
+            let Some(bootstrap) = steps
+                .iter()
+                .position(|step| text(step, "run") == Some("just bootstrap"))
+            else {
+                continue;
+            };
+            let uv = steps.iter().position(|step| {
+                text(step, "uses").is_some_and(|uses| uses.starts_with("astral-sh/setup-uv@"))
+            });
+            assert!(
+                uv.is_some_and(|uv| uv < bootstrap),
+                "{file}: job `{name}` runs `just bootstrap` without installing uv first"
+            );
+            bootstrapping.push(format!("{file}:{name}"));
+        }
+    }
+    assert_eq!(
+        bootstrapping,
+        ["ci.yml:check", "ci.yml:sdk-env", "release.yml:test"],
+        "the jobs that bootstrap"
     );
 }
 

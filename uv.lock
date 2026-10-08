@@ -17,6 +17,7 @@ members = [
     "crozier-live-e2e",
     "crozier-llmlint-resolution",
     "crozier-llmlint-tooling",
+    "crozier-python-workspace",
     "crozier-runtime",
     "crozier-screenshots",
     "crozier-surface-census",
@@ -281,6 +282,17 @@ source = { virtual = "tools/llmlint-resolution" }
 name = "crozier-llmlint-tooling"
 version = "0.0.0"
 source = { virtual = "tools/llmlint" }
+
+[[package]]
+name = "crozier-python-workspace"
+version = "0.0.0"
+source = { virtual = "tools/python-workspace" }
+dependencies = [
+    { name = "coverage" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "coverage", specifier = ">=7.16" }]
 
 [[package]]
 name = "crozier-runtime"

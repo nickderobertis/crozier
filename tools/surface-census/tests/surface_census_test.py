@@ -2198,11 +2198,10 @@ class RecipeWiringTests(unittest.TestCase):
         project = census_project()
         self.assertNotIn("tier:promoted", project["tags"])
         self.assertEqual(
-            [
-                f"sh scripts/census-python.sh {Path(__file__).resolve().relative_to(REPO).as_posix()}",
-                "sh scripts/census-python.sh tools/surface-census/tests/apis_guru_gap_screen_test.py",
-            ],
-            project["targets"]["test-census"]["options"]["commands"],
+            "uv run --locked --all-packages pytest --cov --cov-report= "
+            f"{Path(__file__).resolve().relative_to(REPO).as_posix()} "
+            "tools/surface-census/tests/apis_guru_gap_screen_test.py",
+            project["targets"]["test-census"]["options"]["command"],
         )
         self.assertIn("test-census", project["targets"]["test"]["dependsOn"])
         self.assertEqual(["@just nx run surface-census:test-census"], recipe_body("test-surface-census"))
@@ -7670,15 +7669,16 @@ class PortableCensusInterpreterTests(CensusInterpreterCase):
 class CensusInterpreterTests(CensusInterpreterCase):
     """Pin POSIX interpreter provenance and virtualenv selection."""
 
-    def test_both_census_recipes_resolve_the_interpreter_through_the_resolver(self) -> None:
-        # The measurement recipe, and the gate target the test recipe runs.
-        for name, body in (
-            ("surface-census", " ".join(recipe_body("surface-census"))),
-            ("test-census", " ".join(census_project()["targets"]["test-census"]["options"]["commands"])),
-        ):
-            with self.subTest(recipe=name):
-                self.assertIn("scripts/census-python.sh", body)
-                self.assertNotRegex(body, r"(?<!census-)\bpython3 ")
+    def test_both_census_recipes_run_under_this_repositorys_interpreter(self) -> None:
+        # The measurement recipe resolves it through the resolver; the gate target
+        # the test recipe runs uses the workspace's own locked environment. Neither
+        # borrows whatever `python3` PATH offers.
+        measurement = " ".join(recipe_body("surface-census"))
+        self.assertIn("scripts/census-python.sh", measurement)
+        self.assertNotRegex(measurement, r"(?<!census-)\bpython3 ")
+        gate = census_project()["targets"]["test-census"]["options"]["command"]
+        self.assertTrue(gate.startswith("uv run --locked "), gate)
+        self.assertNotRegex(gate, r"\bpython3 ")
 
     def test_the_resolver_names_a_real_interpreter_that_is_not_a_virtualenv(self) -> None:
         completed = self.resolve()

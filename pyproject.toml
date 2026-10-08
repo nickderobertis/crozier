@@ -57,8 +57,8 @@ package = false
 
 [tool.uv.workspace]
 members = [
-    # Tooling projects: format, lint, typecheck, and a `test` whose coverage the
-    # `python-coverage` aggregate combines and holds to the floor.
+    # Tooling projects: format, lint, typecheck, and a `test` whose coverage
+    # `python-workspace:coverage` combines and holds to the floor.
     "screenshots",
     "tools/corpus",
     "tools/corpus-fetch",
@@ -69,6 +69,7 @@ members = [
     "tools/fern-refusals-strict",
     "tools/llmlint",
     "tools/llmlint-resolution",
+    "tools/python-workspace",
     "tools/surface-census",
     "tools/surface-reach",
     "tools/witness-search",
@@ -86,7 +87,7 @@ members = [
 # with Fern: `uv run` puts this venv's bin first on PATH, and crozier shells out
 # to the first `ruff` there, so any other version would silently change what a
 # tooling suite's `crozier generate` emits. `.ruff-version` leads; this pin
-# follows it (`python-workspace:lint` fails when they differ).
+# follows it (`python-workspace:test` fails when they differ).
 [dependency-groups]
 dev = [
     "coverage>=7.16",
@@ -169,3 +170,42 @@ exclude = [
 
 [tool.ty.terminal]
 error-on-warning = true
+
+[tool.pytest.ini_options]
+addopts = ["-p", "no:cacheprovider"]
+
+# Line coverage over the tooling projects (the first block of workspace members),
+# measured per `test` target and combined by `python-workspace:coverage`, which
+# holds the union to the floor AGENTS.md records. The promoted tiers' harnesses
+# are not here: their suites run where those tiers' toolchains are.
+[tool.coverage.run]
+parallel = true
+relative_files = true
+# Scripts the suites drive as subprocesses (most of them) are measured too.
+patch = ["subprocess"]
+# Patterns, not `source` directories: many suites run a COPY of a script from a
+# scratch root laid out like this repository, which `source` would not measure.
+# `[tool.coverage.paths]` folds those copies back onto the real files.
+include = ["*/screenshots/*", "*/tools/*"]
+# The test files themselves (and the helpers beside them under tests/) are what
+# measures, not what is measured.
+omit = ["*/tests/*", "*/.venv/*", "*/site-packages/*"]
+
+# One entry per tooling project: its directory first (the denominator
+# `coverage_gate.py` counts), then the spelling of a copy under any scratch root.
+[tool.coverage.paths]
+"screenshots" = ["screenshots/", "*/screenshots/"]
+"corpus" = ["tools/corpus/", "*/tools/corpus/"]
+"corpus-fetch" = ["tools/corpus-fetch/", "*/tools/corpus-fetch/"]
+"corpus-licensing" = ["tools/corpus-licensing/", "*/tools/corpus-licensing/"]
+"fern-goldens" = ["tools/fern-goldens/", "*/tools/fern-goldens/"]
+"fern-goldens-git" = ["tools/fern-goldens-git/", "*/tools/fern-goldens-git/"]
+"fern-refusals" = ["tools/fern-refusals/", "*/tools/fern-refusals/"]
+"fern-refusals-strict" = ["tools/fern-refusals-strict/", "*/tools/fern-refusals-strict/"]
+"llmlint" = ["tools/llmlint/", "*/tools/llmlint/"]
+"llmlint-resolution" = ["tools/llmlint-resolution/", "*/tools/llmlint-resolution/"]
+"python-workspace" = ["tools/python-workspace/", "*/tools/python-workspace/"]
+"surface-census" = ["tools/surface-census/", "*/tools/surface-census/"]
+"surface-reach" = ["tools/surface-reach/", "*/tools/surface-reach/"]
+"witness-search" = ["tools/witness-search/", "*/tools/witness-search/"]
+"witness-search-git" = ["tools/witness-search-git/", "*/tools/witness-search-git/"]

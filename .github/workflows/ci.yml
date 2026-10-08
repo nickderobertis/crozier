@@ -62,17 +62,27 @@ jobs:
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
 
+      # uv provisions the Python tooling workspace (the root pyproject.toml's
+      # members, locked in uv.lock, Pillow and the ruff/ty/pytest/coverage
+      # toolchain included) that bootstrap syncs and every Python target runs
+      # under; uv is not preinstalled on GitHub runners.
+      - uses: astral-sh/setup-uv@v8.3.2
+
       # Bootstrap installs the pinned `ruff` too (a generation-time dependency —
       # crozier defers Python wrapping to `ruff format`); see
       # scripts/install-ruff.sh and the `.ruff-version` source of truth.
       - name: Bootstrap
         run: just bootstrap
 
-      # Every project but the promoted tiers, which run in the jobs below.
+      # Every project but the promoted tiers, which run in the jobs below. On
+      # Windows also without `python-workspace`, the combined Python coverage
+      # floor: the suites skip their POSIX-only cases there, so the floor
+      # (AGENTS.md) holds on the Linux and macOS legs, and every tooling
+      # project's own tests still run here.
       - name: Check
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --exclude=tag:tier:promoted
+        run: just ci-check --exclude=tag:tier:promoted${{ runner.os == 'Windows' && ',python-workspace' || '' }}
 
   # The SDK Python-environment tier, SEPARATE from the offline `just check`: the
   # e2e journeys that build a generated SDK's virtualenv from PyPI and run mypy or
@@ -175,15 +185,14 @@ jobs:
       # `live-e2e` project builds the release binary its suite drives; `corpus-match`
       # byte-compares against Fern from committed sources (and proves it with sockets
       # denied and no cache); `census-fallback` holds the parser fallback to the
-      # pinned ruamel.yaml; `screenshots` tests the demo renderer with Pillow from
-      # PyPI. Each runs when the change reaches it, and on the release pull request
-      # always.
+      # pinned ruamel.yaml. Each runs when the change reaches it, and on the release
+      # pull request always.
       # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
       # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] The census-fallback tier needs uv to install the pinned ruamel.yaml, so it runs in this separate leg rather than the check matrix; it reads only committed specifications and loopback servers.
-      - name: Live e2e, corpus byte-match, census fallback and screenshot renderer
+      - name: Live e2e, corpus byte-match and census fallback
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --projects=live-e2e,corpus-match,census-fallback,screenshots
+        run: just ci-check --projects=live-e2e,corpus-match,census-fallback
       # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate

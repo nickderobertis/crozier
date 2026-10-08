@@ -52,45 +52,53 @@
         "boundaries"
       ]
     },
-    "lint": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "lint-sources",
-        "lint-remote-ref-pins",
-        "lint-licence-rescreening",
-        "lint-boundaries"
-      ]
-    },
     "test-sources": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/corpus/tests/corpus_sources_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/corpus/tests/corpus_sources_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/corpus/test-sources/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
         "default",
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
-        "{workspaceRoot}/tests/fixtures/**/*"
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/corpus/test-sources"
       ]
     },
     "test-remote-ref-pins": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/corpus/tests/corpus_remote_ref_pins_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/corpus/tests/corpus_remote_ref_pins_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/corpus/test-remote-ref-pins/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
         "default",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
         "{workspaceRoot}/tests/fixtures/**/*",
-        "{workspaceRoot}/docs/openapi-surface/witness-search-github-publisher-trees/pinned-members.tsv"
+        "{workspaceRoot}/docs/openapi-surface/witness-search-github-publisher-trees/pinned-members.tsv",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/corpus/test-remote-ref-pins"
       ]
     },
     "test-licence-rescreening": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/corpus/tests/licence_rescreening_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/corpus/tests/licence_rescreening_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/corpus/test-licence-rescreening/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -100,7 +108,11 @@
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/**/*.md",
-        "{workspaceRoot}/docs/openapi-surface/*.md"
+        "{workspaceRoot}/docs/openapi-surface/*.md",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/corpus/test-licence-rescreening"
       ]
     },
     "test": {
@@ -109,6 +121,54 @@
         "test-sources",
         "test-remote-ref-pins",
         "test-licence-rescreening"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/corpus"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/corpus"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/corpus"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-sources",
+        "lint-remote-ref-pins",
+        "lint-licence-rescreening",
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/corpus"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
       ]
     }
   }

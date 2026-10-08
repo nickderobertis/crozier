@@ -471,7 +471,8 @@ class TheGateAndItsTestsAreBothInTheDeterministicTier(unittest.TestCase):
         )
         self.assertEqual(
             targets["test-licence-rescreening"]["options"]["command"],
-            f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
+            "uv run --locked --all-packages pytest --cov --cov-report= "
+            f"{Path(__file__).resolve().relative_to(REPO).as_posix()}",
         )
 
 

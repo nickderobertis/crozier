@@ -79,7 +79,8 @@ class TheGateAndTheRequiredCheckRunThisSuite(unittest.TestCase):
         project = json.loads((REPO / "tools" / "llmlint-resolution" / "project.json").read_text(encoding="utf-8"))
         self.assertNotIn("tier:promoted", project["tags"])
         self.assertEqual(
-            f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
+            "uv run --locked --all-packages pytest --cov --cov-report= "
+            f"{Path(__file__).resolve().relative_to(REPO).as_posix()}",
             project["targets"]["test"]["options"]["command"],
         )
         self.assertIn({"env": "CROZIER_REQUIRE_LLMLINT"}, project["targets"]["test"]["inputs"])
