@@ -60,6 +60,21 @@ for (const [form, a] of [
   });
 }
 
+test("an invocation it does not take exits 2, apart from a violation's 1", (t) => {
+  const root = graph(t, {});
+  for (const [args, message] of [
+    [[], /usage: node scripts\/check-project-boundaries\.mjs PROJECT/],
+    [["a", "b"], /usage: node scripts\/check-project-boundaries\.mjs PROJECT/],
+    [["nope"], /no project named nope in the Nx graph \(projects: a, b\)/],
+  ]) {
+    const run = spawnSync(process.execPath, [join(root, "scripts/check-project-boundaries.mjs"), ...args], {
+      cwd: root, encoding: "utf8", env: { ...process.env, NX_DAEMON: "false" },
+    });
+    assert.equal(run.status, 2, `${JSON.stringify(args)}: ${run.stderr}`);
+    assert.match(run.stderr, message);
+  }
+});
+
 test("Markdown is prose: reading every AGENTS.md draws no edge", (t) => {
   const root = graph(t, { targets: { test: { command: "true", inputs: ["{workspaceRoot}/**/*.md"] } } });
   assert.equal(check(root, "a").status, 0);

@@ -29,7 +29,9 @@
 //   * the `implicitDependencies` graph is acyclic.
 //
 // Quiet on success (one line); on failure, one line per violation naming the
-// rule and the edge, then the fix.
+// rule and the edge, then the fix. Exits 0 when every edge holds, 1 on a
+// violation or a graph it cannot read, and 2 on an invocation it does not take
+// (no PROJECT, more than one, or one the graph lacks).
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -41,9 +43,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(join(root, "package.json"));
 const NAME = "check-project-boundaries";
 
-function fail(lines) {
+function fail(lines, status = 1) {
   for (const line of lines) console.error(`${NAME}: ${line}`);
-  process.exit(1);
+  process.exit(status);
 }
 
 /** `what`'s failure, with its own output and the next step, as a failed run. */
@@ -252,7 +254,7 @@ if (!wellFormed) {
 
 const requested = process.argv.slice(2);
 if (requested.length !== 1) {
-  fail(["usage: node scripts/check-project-boundaries.mjs PROJECT", "ACTION: name the project whose edges to check"]);
+  fail(["usage: node scripts/check-project-boundaries.mjs PROJECT", "ACTION: name the project whose edges to check"], 2);
 }
 const [subject] = requested;
 
@@ -262,7 +264,7 @@ if (!Object.hasOwn(projects, subject)) {
   fail([
     `no project named ${subject} in the Nx graph (projects: ${Object.keys(projects).sort().join(", ")})`,
     "ACTION: pass a listed project, or add a project.json naming it",
-  ]);
+  ], 2);
 }
 
 const problems = [];
