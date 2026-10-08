@@ -5,3 +5,5 @@
 - The committed samples it reads belong to the census
   (`tools/surface-census/tests/data/`), so the expensive tier reads the census's
   data rather than the census reading the tier's.
+- `test-runner` drives `run.sh` with a stand-in uv and needs no host tool;
+  the one journey through the real uv is `test-install`'s.

@@ -70,12 +70,23 @@
         "default"
       ]
     },
+    "test-install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/census_fallback/run_install_test.py"
+      },
+      "cache": false,
+      "inputs": [
+        "default"
+      ]
+    },
     "test": {
       "executor": "nx:noop",
       "dependsOn": [
         "test-samples",
         "test-parsers",
-        "test-runner"
+        "test-runner",
+        "test-install"
       ]
     },
     "lint": {

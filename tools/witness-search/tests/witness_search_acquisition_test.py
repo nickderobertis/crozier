@@ -859,6 +859,14 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                  "has revision_screen 'failed: ', not pass, failed: <reason> or not-run: <reason>"),
                 ("unknown disposition", good.replace("witness-found", "approved"),
                  "has disposition 'approved', which the index grammar does not read"),
+                ("witness over a failed screen", good.replace("\tpass\tpass\tpass", "\tfailed: refused\tpass\tpass"),
+                 "settles the candidate as 'witness-found' but its licence_screen reads 'failed: refused'"),
+                ("corpus copy over an unrun screen", good.replace("\tpass\twitness-found", "\tnot-run: no fern\t"
+                                                                 "byte-identical to CORPUS row 1, sha256 " + "0" * 64),
+                 "but its fern_screen reads 'not-run: no fern'"),
+                ("pending registration over a failed screen",
+                 good.replace("\tpass\tpass\tpass\twitness-found", "\tpass\tfailed: moved\tpass\tpending-registration"),
+                 "settles the candidate as 'pending-registration' but its revision_screen reads 'failed: moved'"),
             ):
                 with self.subTest(label):
                     (root / "witness-search-jentic/records.tsv").write_text(header + row + "\n", encoding="utf-8")

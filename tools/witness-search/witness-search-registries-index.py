@@ -90,6 +90,14 @@ def screen_cell(value: str) -> bool:
                                   for prefix in ("failed: ", "not-run: "))
 
 
+def settled(disposition: str) -> bool:
+    """A disposition that settles the candidate as a witness or a corpus copy, which
+    only a candidate that passed every screen can carry."""
+    return (disposition == "witness-found"
+            or GITHUB_INDEX.PENDING_REGISTRATION.fullmatch(disposition) is not None
+            or GITHUB_INDEX.BYTE_IDENTICAL.fullmatch(disposition) is not None)
+
+
 def records(root: Path, source: str) -> list[tuple[int, dict[str, str]]]:
     """One registry's candidate records with their line numbers, each held to the shared grammar.
 
@@ -110,6 +118,12 @@ def records(root: Path, source: str) -> list[tuple[int, dict[str, str]]]:
             raise ValueError(f"{where} has {bad[0]} {row[bad[0]]!r}, not pass, failed: <reason> or not-run: <reason>")
         if not GITHUB_INDEX.known_disposition(row["disposition"]):
             raise ValueError(f"{where} has disposition {row['disposition']!r}, which the index grammar does not read")
+        unpassed = next((field for field in ("licence_screen", "revision_screen", "fern_screen")
+                         if row[field] != "pass"), None)
+        if settled(row["disposition"]) and unpassed:
+            raise ValueError(f"{where} settles the candidate as {row['disposition']!r} but its {unpassed} reads "
+                             f"{row[unpassed]!r}; a settled candidate passed every screen, so re-screen it "
+                             "or file it rejected or outstanding")
         out.append((number, row))
     return out
 
