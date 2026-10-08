@@ -31,12 +31,17 @@ export function project(name, extra = {}) {
 }
 
 /**
- * A committed scratch workspace with projects `a` and `b`, `origin/main` at
- * the first commit; returns its root, removed once the test `t` ends.
+ * A committed scratch workspace with projects `a` and `b`, and a real bare
+ * repository as its `origin` whose `main` is the first commit; returns the
+ * workspace root. Both are removed once the test `t` ends.
  */
 export function scratchWorkspace(t) {
   const root = mkdtempSync(join(tmpdir(), "crozier-gate-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const remote = mkdtempSync(join(tmpdir(), "crozier-gate-origin-"));
+  t.after(() => {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(remote, { recursive: true, force: true });
+  });
   for (const path of ["justfile", "tools/ci/gate.mjs", "tools/ci/ci-tier.mjs", "scripts/check-project-boundaries.mjs", "package.json"]) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     cpSync(join(REPO, path), join(root, path));
@@ -54,7 +59,9 @@ export function scratchWorkspace(t) {
   git(root, "init", "--quiet", "--initial-branch=main");
   git(root, "-c", "user.name=t", "-c", "user.email=t@example.com", "add", "-A");
   git(root, "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "--quiet", "-m", "base");
-  git(root, "update-ref", "refs/remotes/origin/main", "HEAD");
+  git(remote, "init", "--quiet", "--bare", "--initial-branch=main");
+  git(root, "remote", "add", "origin", remote);
+  git(root, "push", "--quiet", "origin", "main");
   return root;
 }
 

@@ -33,6 +33,27 @@ test("any other pull request runs the affected tier against the merge base with 
   assert.deepEqual(decision, { tier: "affected", base, reason: "pull request: merge base with origin/main" });
 });
 
+test("a pull request scopes against its base branch as origin holds it now, not a stale local copy", (t) => {
+  const root = scratchWorkspace(t);
+  const stale = git(root, "rev-parse", "HEAD");
+  const merged = commitChange(root, "b/src.txt", "merged upstream\n");
+  git(root, "push", "--quiet", "origin", "main");
+  git(root, "update-ref", "refs/remotes/origin/main", stale);
+  commitChange(root, "a/src.txt", "feature\n");
+  const decision = decide(root, { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
+  assert.deepEqual(decision, { tier: "affected", base: merged, reason: "pull request: merge base with origin/main" });
+  assert.equal(git(root, "rev-parse", "origin/main"), merged);
+});
+
+test("a pull request whose base branch cannot be refreshed runs the broader tier", (t) => {
+  const root = scratchWorkspace(t);
+  commitChange(root, "a/src.txt", "feature\n");
+  git(root, "remote", "set-url", "origin", join(root, "no-such-remote"));
+  const decision = decide(root, { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
+  assert.equal(decision.tier, "sweep");
+  assert.match(decision.reason, /could not refresh origin\/main from origin/);
+});
+
 test("a push to main runs the affected tier against the commit the push replaced", (t) => {
   const root = scratchWorkspace(t);
   const before = git(root, "rev-parse", "HEAD");

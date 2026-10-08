@@ -20,10 +20,9 @@ import textwrap
 import unittest
 from pathlib import Path
 
-# This file is screenshots/tests/demo_gif_test.py: parents[0] is tests/, parents[1]
-# is screenshots/, parents[2] the repository root.
-REPO = Path(__file__).resolve().parents[2]
-SCRIPT = REPO / "screenshots" / "demo-gif.py"
+SCREENSHOTS = Path(__file__).resolve().parent.parent
+REPO = SCREENSHOTS.parent
+SCRIPT = SCREENSHOTS / "demo-gif.py"
 
 
 @unittest.skipIf(os.name == "nt", "the stub binary is a POSIX shell script")

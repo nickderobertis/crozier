@@ -12,8 +12,9 @@
 //     of its head with its base branch;
 //   * a push to main runs the affected tier against the commit the push
 //     replaced (`github.event.before`, passed as CROZIER_PUSH_BEFORE);
-//   * anything else, or a base this checkout cannot resolve, runs the broader
-//     tier and says why — a scoped run must never pass as a full one.
+//   * anything else, a base branch it cannot refresh from origin, or a base this
+//     checkout cannot resolve, runs the broader tier and says why — a scoped run
+//     must never pass as a full one.
 //
 // `--print` prints the decision as JSON and runs nothing (the workflow-contract
 // test drives it that way); otherwise it runs `just check` with the decision.
@@ -45,7 +46,10 @@ export function decide(env = process.env) {
     if (!BRANCH.test(baseRef) || baseRef.includes("..")) {
       return sweep(`pull request with no usable base branch ('${baseRef}')`);
     }
-    git(["fetch", "--no-tags", "--quiet", "origin", `+refs/heads/${baseRef}:refs/remotes/origin/${baseRef}`]);
+    const refreshed = git(["fetch", "--no-tags", "--quiet", "origin", `+refs/heads/${baseRef}:refs/remotes/origin/${baseRef}`]);
+    if (!refreshed.ok) {
+      return sweep(`could not refresh origin/${baseRef} from origin, so its merge base could be stale`);
+    }
     const base = git(["merge-base", `origin/${baseRef}`, "HEAD"]);
     if (!base.ok || !SHA40.test(base.out)) {
       return sweep(`no merge base between HEAD and origin/${baseRef} in this checkout`);

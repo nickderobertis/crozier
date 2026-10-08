@@ -1,6 +1,7 @@
 """witness-search's cases that drive the real `git`: a publisher tree indexed
-from a real repository's commits, and the default cache kept out of git by the
-repository's own ignore rules.
+from a real repository's commits, the default cache kept out of git by the
+repository's own ignore rules, and the locator audit over a repository's
+tracked evidence.
 
 They need the git host tool, so they are a project of their own; the offline
 suites, and the fixtures these share, are `tools/witness-search/tests/`'s.
@@ -9,10 +10,12 @@ Run: `just nx run witness-search-git:test`.
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -127,6 +130,134 @@ class TheDefaultCacheStaysIgnored(github.WitnessSearchGithubFixture, unittest.Te
         ignored = subprocess.run(["git", "check-ignore", "--quiet", str(cached)], cwd=REPO)
         self.assertEqual(0, ignored.returncode, f"{cached} is not gitignored")
         self.assertEqual(cached.parent.parent, SEARCH.DEFAULT_CACHE)
+
+
+class LocatorAuditTests(unittest.TestCase):
+    def run_audit(self, root):
+        return subprocess.run(
+            [sys.executable, str(REPO / "tools/witness-search/witness-locator-audit.py"), "--root", str(root)],
+            capture_output=True, text=True, check=False, encoding="utf-8",
+        )
+
+    def test_public_locator_failure_and_anonymous_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            record = root / "docs/openapi-surface/search/records.jsonl"
+            record.parent.mkdir(parents=True)
+            token = "screened-nonpublic-input:v2:" + "a" * 32 + ":1"
+            for repository in SEARCH.INDEX.EXCLUDED_REPOSITORIES:
+                for locator in (
+                    repository + ":description.json@" + "0" * 40,
+                    repository + "@" + "0" * 40,
+                    repository + "/description.json@" + "0" * 40,
+                    "https://github.com/" + repository + "/blob/" + "0" * 40 + "/description.json",
+                ):
+                    with self.subTest(repository=repository, locator=locator):
+                        record.write_text(json.dumps({"subject": locator}) + "\n", encoding="utf-8", newline="\n")
+                        subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                        refused = self.run_audit(root)
+                        self.assertNotEqual(0, refused.returncode)
+                        self.assertIn("public locator", refused.stderr)
+                        record.write_text(json.dumps({"subject": repository + ":" + token + "@" + token}) + "\n", encoding="utf-8", newline="\n")
+                        recovered = self.run_audit(root)
+                        self.assertEqual(0, recovered.returncode, recovered.stderr)
+                record.write_text(json.dumps({"repository": repository, "path": "description.json"}) + "\n", encoding="utf-8", newline="\n")
+                refused = self.run_audit(root)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn("public path", refused.stderr)
+                record.write_text(json.dumps({"repository": repository, "path": token}) + "\n", encoding="utf-8", newline="\n")
+                self.assertEqual(0, self.run_audit(root).returncode)
+
+    def test_quoted_input_notes_reject_then_recover(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            note = root / "docs/openapi-surface/note.md"
+            note.parent.mkdir(parents=True)
+            for repository in SEARCH.INDEX.EXCLUDED_REPOSITORIES:
+                with self.subTest(repository=repository):
+                    note.write_text(f"`{repository}`'s own `description.json`", encoding="utf-8", newline="\n")
+                    subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                    refused = self.run_audit(root)
+                    self.assertNotEqual(0, refused.returncode)
+                    self.assertIn("public locator", refused.stderr)
+                    note.write_text("one anonymous synthetic input", encoding="utf-8", newline="\n")
+                    recovered = self.run_audit(root)
+                    self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_generic_repository_links_are_exact_exceptions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            note = root / "docs/openapi-surface/note.md"
+            note.parent.mkdir(parents=True)
+            urls = (
+                "https://github.com/fern-api/fern/blob/main/CONTRIBUTING.md",
+                "https://github.com/fern-api/fern/issues",
+            )
+            note.write_text("\n".join("[Repository link](" + url + ")" for url in urls), encoding="utf-8", newline="\n")
+            subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+            accepted = self.run_audit(root)
+            self.assertEqual(0, accepted.returncode, accepted.stderr)
+            for url in urls:
+                note.write_text("[Public locator](" + url + "/description.json)", encoding="utf-8", newline="\n")
+                refused = self.run_audit(root)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn("public locator", refused.stderr)
+
+    def test_revision_notes_and_structured_formats_reject_then_recover(self):
+        token = "screened-nonpublic-input:v2:" + "a" * 32 + ":1"
+        repository = sorted(SEARCH.INDEX.EXCLUDED_REPOSITORIES)[0]
+        raw = json.dumps({"records": [{"repository": repository, "path": "description.json"}]})
+        anonymous = json.dumps({"records": [{"repository": repository, "path": token}]})
+        cases = (
+            (".md", repository + " at `" + "0" * 40 + "`", repository + " at `" + token + "`", "public revision"),
+            (".json", raw, anonymous, "public path"),
+            (".jsonl.gz", raw + "\n", anonymous + "\n", "public path"),
+        )
+        for extension, original, replacement, diagnostic in cases:
+            with self.subTest(extension=extension), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                subprocess.run(["git", "init", "-q", str(root)], check=True)
+                record = root / ("docs/openapi-surface/records" + extension)
+                record.parent.mkdir(parents=True)
+                def write(text):
+                    data = text.encode("utf-8")
+                    record.write_bytes(gzip.compress(data) if extension.endswith(".gz") else data)
+                write(original)
+                subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                refused = self.run_audit(root)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(diagnostic, refused.stderr)
+                write(replacement)
+                recovered = self.run_audit(root)
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_malformed_and_missing_evidence_fail_with_recovery(self):
+        for suffix, invalid in ((".json", b"{"), (".jsonl", b"{\n"), (".jsonl.gz", b"not gzip"), (".md", b"\xff")):
+            with self.subTest(suffix=suffix), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                subprocess.run(["git", "init", "-q", str(root)], check=True)
+                record = root / ("docs/openapi-surface/records" + suffix)
+                record.parent.mkdir(parents=True)
+                record.write_bytes(invalid)
+                subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
+                refused = self.run_audit(root)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn("restore valid evidence and retry", refused.stderr)
+                record.unlink()
+                missing = self.run_audit(root)
+                self.assertNotEqual(0, missing.returncode)
+                self.assertIn("restore valid evidence and retry", missing.stderr)
+                valid = b"{}\n" if suffix != ".md" else b"Anonymous evidence\n"
+                record.write_bytes(gzip.compress(valid) if suffix.endswith(".gz") else valid)
+                recovered = self.run_audit(root)
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_committed_evidence_has_only_anonymous_excluded_locators(self):
+        result = self.run_audit(REPO)
+        self.assertEqual(0, result.returncode, result.stderr)
 
 
 if __name__ == "__main__":
