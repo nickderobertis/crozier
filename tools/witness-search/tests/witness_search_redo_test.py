@@ -791,6 +791,25 @@ class WitnessSearchRedoTests(unittest.TestCase):
         recovered = self.reconcile_documents(shards, schemas)
         self.assertEqual(0, recovered.returncode, recovered.stderr)
 
+    def test_a_candidate_row_of_another_width_is_refused_not_read_as_no_witness(self) -> None:
+        shards, schemas = self.completed_documents()
+        key = self.contract_keys()[0][0]
+        candidates = schemas.parent / "candidates.md"
+        # The evidence cell is missing, so the row is seven cells wide.
+        candidates.write_text(
+            f"| `publisher/spec@pin/openapi.json` | `{key}` | passed: grant | "
+            "passed: publisher pin | passed: non-empty generation | "
+            "passed: generated model | `witness-found` |\n",
+            encoding="utf-8",
+        )
+        refused = self.reconcile_documents(shards, schemas)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn(f"{candidates}:1: a candidate row has 7 cells, not the 8", refused.stderr)
+        self.assertNotIn("Traceback", refused.stderr)
+        candidates.write_text("# Candidate screens\n", encoding="utf-8")
+        recovered = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_seven_zero_answers_allow_absence_but_one_unanswered_forbids_it(self) -> None:
         shards, schemas = self.completed_documents()
         for path in shards:
