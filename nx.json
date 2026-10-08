@@ -66,7 +66,6 @@
       "{workspaceRoot}/scripts/install.sh",
       "{workspaceRoot}/scripts/install-ruff.sh",
       "{workspaceRoot}/scripts/update-major-tag.sh",
-      "{workspaceRoot}/scripts/lib.sh",
       "{workspaceRoot}/tests/corpus_match/match.sh",
       "{workspaceRoot}/tools/corpus/corpus_sources.py",
       "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
@@ -77,9 +76,6 @@
       "{workspaceRoot}/tools/surface-census/handwritten-fixtures.py",
       "{workspaceRoot}/tools/surface-census/probe-differential-isolation.py",
       "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
-      "{workspaceRoot}/tools/fern-goldens/fern-overlay-goldens.sh",
-      "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
-      "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
       "{workspaceRoot}/tools/github-action/*.sh"
     ],
     "goldenReads": [
