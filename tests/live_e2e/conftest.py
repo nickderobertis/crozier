@@ -200,9 +200,7 @@ def _wait_until_listening(port: int, proc: subprocess.Popen, timeout: float = 60
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if proc.poll() is not None:
-            raise RuntimeError(
-                f"prism exited early ({proc.returncode}):\n{proc.communicate()[1]}"
-            )
+            raise RuntimeError(f"prism exited early ({proc.returncode}):\n{proc.communicate()[1]}")
         with contextlib.closing(socket.socket()) as sock:
             sock.settimeout(1.0)
             if sock.connect_ex(("127.0.0.1", port)) == 0:
@@ -216,9 +214,19 @@ def _spec_path(fixture: Fixture, work: Path) -> Path:
     if not fixture.registered_source:
         return _FIXTURES / fixture.name / "openapi.yml"
     result = subprocess.run(
-        [sys.executable, str(_FIXTURES.parent.parent / "tools/corpus/corpus_sources.py"),
-         "prepare", "--fixture", fixture.name, "--output", str(work / "source")],
-        check=True, capture_output=True, text=True, encoding="utf-8",
+        [
+            sys.executable,
+            str(_FIXTURES.parent.parent / "tools/corpus/corpus_sources.py"),
+            "prepare",
+            "--fixture",
+            fixture.name,
+            "--output",
+            str(work / "source"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
     )
     return Path(result.stdout.strip())
 
@@ -227,12 +235,11 @@ def _generate_sdk(crozier: str, fixture: Fixture, spec: Path, out: Path):
     result = subprocess.run(
         [crozier, *fixture.generate_args(spec, out)],
         capture_output=True,
-        text=True, encoding="utf-8",
+        text=True,
+        encoding="utf-8",
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            f"crozier generate failed for {fixture.name}:\n{result.stdout}{result.stderr}"
-        )
+        raise RuntimeError(f"crozier generate failed for {fixture.name}:\n{result.stdout}{result.stderr}")
 
 
 def _relax_spec(python: str, fixture: Fixture, spec: Path, dest: Path):
@@ -240,9 +247,7 @@ def _relax_spec(python: str, fixture: Fixture, spec: Path, dest: Path):
         [python, str(_RELAX), str(spec), str(dest)], capture_output=True, text=True, encoding="utf-8"
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            f"relaxing {fixture.name} spec failed:\n{result.stdout}{result.stderr}"
-        )
+        raise RuntimeError(f"relaxing {fixture.name} spec failed:\n{result.stdout}{result.stderr}")
 
 
 def _drive(python: str, sdk_src: Path, reference: Path, base_url: str) -> dict:
@@ -257,12 +262,11 @@ def _drive(python: str, sdk_src: Path, reference: Path, base_url: str) -> dict:
             "LIVE_BASE_URL": base_url,
         },
         capture_output=True,
-        text=True, encoding="utf-8",
+        text=True,
+        encoding="utf-8",
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            f"live driver failed for {reference}:\n{result.stdout}{result.stderr}"
-        )
+        raise RuntimeError(f"live driver failed for {reference}:\n{result.stdout}{result.stderr}")
     return json.loads(result.stdout)
 
 
@@ -270,9 +274,7 @@ def _drive(python: str, sdk_src: Path, reference: Path, base_url: str) -> dict:
 def recordings(tmp_path_factory) -> dict[str, dict]:
     """Build every fixture's live recording once: generate the SDK, relax the spec,
     boot Prism, and drive all endpoints. Returns `{fixture_name: {method: obs}}`."""
-    crozier = _require(
-        "the crozier binary (set CROZIER_BIN or build it)", _crozier_bin()
-    )
+    crozier = _require("the crozier binary (set CROZIER_BIN or build it)", _crozier_bin())
     prism_cmd = _require("Node/Prism", _prism_command())
     python = sys.executable
 
@@ -309,7 +311,8 @@ def recordings(tmp_path_factory) -> dict[str, dict]:
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True, encoding="utf-8",
+                text=True,
+                encoding="utf-8",
             )
             servers.append(proc)
             _wait_until_listening(port, proc)
@@ -317,9 +320,7 @@ def recordings(tmp_path_factory) -> dict[str, dict]:
             # Drive crozier's own generated reference.md (its documented endpoints);
             # the committed expected/reference.md drives collection, and the coverage
             # test cross-checks the two so any drift is caught.
-            out[fixture.name] = _drive(
-                python, sdk / "src", sdk / "reference.md", f"http://127.0.0.1:{port}"
-            )
+            out[fixture.name] = _drive(python, sdk / "src", sdk / "reference.md", f"http://127.0.0.1:{port}")
         yield out
     finally:
         for proc in servers:

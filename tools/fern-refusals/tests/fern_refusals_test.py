@@ -42,8 +42,9 @@ CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmat
 TABLES = ("classes.tsv", "documents.tsv", "generated.tsv", "unretrievable.tsv")
 
 
-def run(*args: str, registry: Path | None = None,
-        confirmations: Path | None = None) -> subprocess.CompletedProcess[str]:
+def run(
+    *args: str, registry: Path | None = None, confirmations: Path | None = None
+) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ)
     env.pop("CROZIER_FERN_REFUSALS_REGISTRY", None)
     env.pop("CROZIER_FERN_REFUSALS_CONFIRMATIONS", None)
@@ -51,8 +52,7 @@ def run(*args: str, registry: Path | None = None,
         env["CROZIER_FERN_REFUSALS_REGISTRY"] = str(registry)
     if confirmations is not None:
         env["CROZIER_FERN_REFUSALS_CONFIRMATIONS"] = str(confirmations)
-    return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True, env=env,
-                          cwd=REPO)
+    return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True, env=env, cwd=REPO)
 
 
 # A stand-in for the Fern CLI, which these suites never run: it answers
@@ -88,8 +88,10 @@ def stub_fern(directory: Path) -> Path:
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "fern-stub.py").write_text(FERN_STUB, encoding="utf-8")
     fern = directory / "fern"
-    fern.write_text(f"#!/bin/sh\nexec {shlex.quote(sys.executable)} {shlex.quote(str(directory / 'fern-stub.py'))} \"$@\"\n",
-                    encoding="utf-8")
+    fern.write_text(
+        f'#!/bin/sh\nexec {shlex.quote(sys.executable)} {shlex.quote(str(directory / "fern-stub.py"))} "$@"\n',
+        encoding="utf-8",
+    )
     fern.chmod(0o755)
     return directory
 
@@ -129,8 +131,9 @@ class CommittedTables(unittest.TestCase):
             result = run("build", registry=registry)
             self.assertEqual(result.returncode, 0, result.stderr)
             for name in TABLES:
-                self.assertEqual((registry / name).read_text(encoding="utf-8"),
-                                 (REGISTRY / name).read_text(encoding="utf-8"), name)
+                self.assertEqual(
+                    (registry / name).read_text(encoding="utf-8"), (REGISTRY / name).read_text(encoding="utf-8"), name
+                )
 
     def test_rebuild_preserves_strict_measurements_by_digest(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
@@ -157,25 +160,38 @@ class CommittedTables(unittest.TestCase):
         self.assertEqual(len(keys), len(set(keys)))
         refused = rows(REGISTRY / "documents.tsv")[1:]
         documents = {row[0] for row in refused} | {row[2] for row in refused}
-        generated = {row[4] for row in rows(REGISTRY / "generated.tsv")[1:]} | \
-            {row[1] for row in rows(REGISTRY / "generated.tsv")[1:]}
+        generated = {row[4] for row in rows(REGISTRY / "generated.tsv")[1:]} | {
+            row[1] for row in rows(REGISTRY / "generated.tsv")[1:]
+        }
         unretrievable = rows(REGISTRY / "unretrievable.tsv")[1:]
         listed = {row[1] for row in unretrievable}
         self.assertFalse({row[0] for row in refused} & generated, "a document is both refused and generated")
-        for name, table in (("documents.tsv", [row[0] for row in refused]),
-                            ("generated.tsv", [row[4] for row in rows(REGISTRY / "generated.tsv")[1:]]),
-                            ("unretrievable.tsv", [row[1] for row in unretrievable])):
+        for name, table in (
+            ("documents.tsv", [row[0] for row in refused]),
+            ("generated.tsv", [row[4] for row in rows(REGISTRY / "generated.tsv")[1:]]),
+            ("unretrievable.tsv", [row[1] for row in unretrievable]),
+        ):
             with self.subTest(table=name):
                 self.assertEqual(len(table), len(set(table)), f"{name} lists a document twice")
         for key, _source, locator, *_ in selected:
             with self.subTest(key=key):
                 # A document is named by its digest, or by its locator where no
                 # record gave a digest; one no record located is named by its key.
-                homes = [name for name, names in (("documents.tsv", documents), ("generated.tsv", generated),
-                                                  ("unretrievable.tsv", listed))
-                         if key in names or locator in names]
-                self.assertEqual(1, len(homes), f"{key} is accounted for in {homes or 'none'} of documents.tsv, "
-                                                "generated.tsv and unretrievable.tsv, not exactly one")
+                homes = [
+                    name
+                    for name, names in (
+                        ("documents.tsv", documents),
+                        ("generated.tsv", generated),
+                        ("unretrievable.tsv", listed),
+                    )
+                    if key in names or locator in names
+                ]
+                self.assertEqual(
+                    1,
+                    len(homes),
+                    f"{key} is accounted for in {homes or 'none'} of documents.tsv, "
+                    "generated.tsv and unretrievable.tsv, not exactly one",
+                )
 
 
 class Drift(unittest.TestCase):
@@ -198,11 +214,13 @@ class Drift(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_a_renamed_header_column_fails(self) -> None:
-        for name, column, renamed in (("classes.tsv", "population_strict", "strict_population"),
-                                      ("documents.tsv", "crozier_strict_exit", "crozier_strict"),
-                                      ("generated.tsv", "findings", "phrases"),
-                                      ("unretrievable.tsv", "reason", "why"),
-                                      ("findings.tsv", "probe", "document")):
+        for name, column, renamed in (
+            ("classes.tsv", "population_strict", "strict_population"),
+            ("documents.tsv", "crozier_strict_exit", "crozier_strict"),
+            ("generated.tsv", "findings", "phrases"),
+            ("unretrievable.tsv", "reason", "why"),
+            ("findings.tsv", "probe", "document"),
+        ):
             with self.subTest(table=name):
                 original = (self.registry / name).read_text(encoding="utf-8")
                 (self.registry / name).write_text(original.replace(column, renamed, 1), encoding="utf-8")
@@ -249,8 +267,9 @@ class Drift(unittest.TestCase):
         evaluated = {row[0] for row in table[1:] if row[6] != "unevaluated"}
         committed = rows(REGISTRY / "documents.tsv")[1:]
         # The evaluated class whose withdrawal leaves the most documents with no evaluated class.
-        withdrawn = max(sorted(evaluated), key=lambda name: sum(
-            set(row[8].split(",")) & evaluated == {name} for row in committed))
+        withdrawn = max(
+            sorted(evaluated), key=lambda name: sum(set(row[8].split(",")) & evaluated == {name} for row in committed)
+        )
         row = next(row for row in table[1:] if row[0] == withdrawn)
         row[6:9] = ["unevaluated", "—", "—"]
         write_rows(self.registry / "classes.tsv", table)
@@ -275,8 +294,12 @@ class Drift(unittest.TestCase):
         # The one population document Fern generates from stands in for a
         # confirmation that its class's refusal does not reproduce.
         generated = rows(REGISTRY / "generated.tsv")[1]
-        log = next(path for path in (REPO / "docs" / "openapi-surface" / "fern-refusals" / "logs").glob(
-            f"{generated[4]}.generate.log"))
+        log = next(
+            path
+            for path in (REPO / "docs" / "openapi-surface" / "fern-refusals" / "logs").glob(
+                f"{generated[4]}.generate.log"
+            )
+        )
         table[1][3:6] = ["0", "40", log.relative_to(REPO).as_posix()]
         write_rows(confirmations, table)
         result = run("check", confirmations=confirmations)
@@ -291,11 +314,19 @@ class Drift(unittest.TestCase):
         generated = rows(REGISTRY / "generated.tsv")[1]
         silent = f"docs/openapi-surface/fern-refusals/logs/{generated[4]}.generate.log"
         # A refused row whose own log carries its class's phrase, made to exit 0 with a tree.
-        phrased = next(number for number, row in enumerate(table[1:], 1) if row[3] == "1" and any(
-            patterns.template_pattern(classes[row[0]]["diagnostic"]).match(message)
-            for message in patterns.diagnostics(patterns.read_log(row[5]))))
-        for name, number, outcome in (("exit 0, no files", 1, ["0", "0", silent]),
-                                      ("exit 0, a tree, the phrase", phrased, ["0", "40", table[phrased][5]])):
+        phrased = next(
+            number
+            for number, row in enumerate(table[1:], 1)
+            if row[3] == "1"
+            and any(
+                patterns.template_pattern(classes[row[0]]["diagnostic"]).match(message)
+                for message in patterns.diagnostics(patterns.read_log(row[5]))
+            )
+        )
+        for name, number, outcome in (
+            ("exit 0, no files", 1, ["0", "0", silent]),
+            ("exit 0, a tree, the phrase", phrased, ["0", "40", table[phrased][5]]),
+        ):
             with self.subTest(name):
                 edited = [list(row) for row in table]
                 edited[number][3:6] = outcome
@@ -310,12 +341,15 @@ class Drift(unittest.TestCase):
 
     def test_a_timed_out_or_malformed_confirmation_fails(self) -> None:
         confirmations = Path(self.scratch.name) / "confirmations.tsv"
-        for outcome, phrase_ in ((["timeout", "0"], "timed out, which confirms nothing; rerun `confirm` with a "
-                                                    "longer `--timeout`"),
-                                 (["1", "many"], "generate_exit '1' and generate_files 'many' must be an exit "
-                                                 "status or `timeout`, and a file count"),
-                                 (["00", "40"], "generate_exit '00' and generate_files '40' must be an exit"),
-                                 (["", "0"], "must be an exit status")):
+        for outcome, phrase_ in (
+            (["timeout", "0"], "timed out, which confirms nothing; rerun `confirm` with a longer `--timeout`"),
+            (
+                ["1", "many"],
+                "generate_exit '1' and generate_files 'many' must be an exit status or `timeout`, and a file count",
+            ),
+            (["00", "40"], "generate_exit '00' and generate_files '40' must be an exit"),
+            (["", "0"], "must be an exit status"),
+        ):
             with self.subTest(outcome=outcome):
                 table = rows(CONFIRMATIONS)
                 table[1][3:5] = outcome
@@ -334,7 +368,6 @@ class Drift(unittest.TestCase):
         self.assertIn(f"{dropped}: no real document's generation confirms it", result.stderr)
 
 
-
 class MissingInputs(unittest.TestCase):
     """A committed input the population is read from that has gone missing
     fails `select` naming the file and its fix, never with a traceback. The
@@ -344,8 +377,10 @@ class MissingInputs(unittest.TestCase):
     INPUTS = (
         "tests/fixtures/CORPUS.md",
         "docs/openapi-surface/fern-refusals/dropped-sources.tsv",
-        *(f"docs/openapi-surface/golden-reach-witnesses/{source}/enumeration.tsv.gz"
-          for source in ("jentic", "apis.guru", "vendor-portals", "github-publisher-trees")),
+        *(
+            f"docs/openapi-surface/golden-reach-witnesses/{source}/enumeration.tsv.gz"
+            for source in ("jentic", "apis.guru", "vendor-portals", "github-publisher-trees")
+        ),
     )
 
     def assert_select_names_missing(self, missing: str) -> None:
@@ -356,8 +391,13 @@ class MissingInputs(unittest.TestCase):
                 if relative != missing:
                     shutil.copy(REPO / relative, root / relative)
             env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
-            result = subprocess.run([sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
-                                    capture_output=True, text=True, env=env, cwd=root)
+            result = subprocess.run(
+                [sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
+                capture_output=True,
+                text=True,
+                env=env,
+                cwd=root,
+            )
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
         self.assertIn(f"{missing} is missing; restore it from git", result.stderr)
@@ -366,8 +406,7 @@ class MissingInputs(unittest.TestCase):
         self.assert_select_names_missing("tests/fixtures/CORPUS.md")
 
     def test_a_missing_enumeration_names_it(self) -> None:
-        self.assert_select_names_missing(
-            "docs/openapi-surface/golden-reach-witnesses/jentic/enumeration.tsv.gz")
+        self.assert_select_names_missing("docs/openapi-surface/golden-reach-witnesses/jentic/enumeration.tsv.gz")
 
     def select_over_enumeration(self, source: str, text: str) -> subprocess.CompletedProcess[str]:
         """`select` from a scratch checkout whose `source` enumeration is `text`."""
@@ -379,8 +418,13 @@ class MissingInputs(unittest.TestCase):
             with gzip.open(root / self.enumeration(source), "wt", encoding="utf-8") as handle:
                 handle.write(text)
             env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
-            result = subprocess.run([sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
-                                    capture_output=True, text=True, env=env, cwd=root)
+            result = subprocess.run(
+                [sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
+                capture_output=True,
+                text=True,
+                env=env,
+                cwd=root,
+            )
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
         return result
@@ -398,19 +442,25 @@ class MissingInputs(unittest.TestCase):
         for row in ("o/r\ta.yml\tc\n", "o/r\ta.yml\tc\td\tsurplus\n"):
             with self.subTest(row=row):
                 result = self.select_over_enumeration("jentic", header + "o/r\tb.yml\tc\td\n" + row)
-                self.assertIn(f"{self.enumeration('jentic')} line 3 is not one cell per column of its header",
-                              result.stderr)
+                self.assertIn(
+                    f"{self.enumeration('jentic')} line 3 is not one cell per column of its header", result.stderr
+                )
 
     def test_a_vendor_portal_document_outside_its_clone_names_the_line(self) -> None:
-        result = self.select_over_enumeration("vendor-portals", "walk\tdocument\trevision\tsha256\n"
-                                                                "o/r\topenapi.yml\tc\td\n")
-        self.assertIn(f"{self.enumeration('vendor-portals')} line 2: vendor-portals document 'openapi.yml' is not "
-                      "`<owner>--<repo>/<path>`", result.stderr)
+        result = self.select_over_enumeration(
+            "vendor-portals", "walk\tdocument\trevision\tsha256\no/r\topenapi.yml\tc\td\n"
+        )
+        self.assertIn(
+            f"{self.enumeration('vendor-portals')} line 2: vendor-portals document 'openapi.yml' is not "
+            "`<owner>--<repo>/<path>`",
+            result.stderr,
+        )
 
     def test_missing_search_candidates_name_them(self) -> None:
         # Every input before it is present, so `select` reaches the first search.
         self.assert_select_names_missing(
-            "docs/openapi-surface/golden-reach-witnesses/github-code-search/candidates.jsonl")
+            "docs/openapi-surface/golden-reach-witnesses/github-code-search/candidates.jsonl"
+        )
 
 
 class MalformedInputs(unittest.TestCase):
@@ -418,8 +468,10 @@ class MalformedInputs(unittest.TestCase):
     the file, the line and what it lacks, never with a traceback. Like
     `MissingInputs`, it runs from a scratch checkout of what `select` reads."""
 
-    CANDIDATES = tuple(f"docs/openapi-surface/golden-reach-witnesses/{source}/candidates.jsonl"
-                       for source in ("github-code-search", "sourcegraph"))
+    CANDIDATES = tuple(
+        f"docs/openapi-surface/golden-reach-witnesses/{source}/candidates.jsonl"
+        for source in ("github-code-search", "sourcegraph")
+    )
     SCREENS = "docs/openapi-surface/scratch-search/screens.jsonl"
 
     def select_over(self, edit: tuple[str, str]) -> subprocess.CompletedProcess[str]:
@@ -435,8 +487,13 @@ class MalformedInputs(unittest.TestCase):
             target.write_text(existing + line + "\n", encoding="utf-8")
             numbered = len((existing + line).splitlines())
             env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
-            result = subprocess.run([sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
-                                    capture_output=True, text=True, env=env, cwd=root)
+            result = subprocess.run(
+                [sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "select"],
+                capture_output=True,
+                text=True,
+                env=env,
+                cwd=root,
+            )
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
         self.assertIn(f"{relative} line {numbered} ", result.stderr)
@@ -457,27 +514,47 @@ class MalformedInputs(unittest.TestCase):
     def test_a_field_that_is_not_a_non_empty_string_names_the_line(self) -> None:
         for edit, field in (
             ((self.SCREENS, '{"fern": 7, "source": "scratch"}'), "fern 7"),
-            ((self.SCREENS, '{"fern": "failed: check", "source": "scratch", "repository": ["o/r"], '
-                            '"commit": "c", "path": "a.yml"}'), "repository ['o/r']"),
-            ((self.CANDIDATES[0], '{"repository": "o/r", "path": "a.yml", "commit": null, "sha256": "d"}'),
-             "commit None"),
-            ((self.CANDIDATES[0], '{"repository": "", "path": "a.yml", "commit": "c", "sha256": "d"}'),
-             "repository ''"),
+            (
+                (
+                    self.SCREENS,
+                    '{"fern": "failed: check", "source": "scratch", "repository": ["o/r"], '
+                    '"commit": "c", "path": "a.yml"}',
+                ),
+                "repository ['o/r']",
+            ),
+            (
+                (self.CANDIDATES[0], '{"repository": "o/r", "path": "a.yml", "commit": null, "sha256": "d"}'),
+                "commit None",
+            ),
+            (
+                (self.CANDIDATES[0], '{"repository": "", "path": "a.yml", "commit": "c", "sha256": "d"}'),
+                "repository ''",
+            ),
         ):
             with self.subTest(field=field):
                 result = self.select_over(edit)
                 self.assertIn(f"has {field}, not a non-empty string; restore it from git", result.stderr)
 
     def test_a_failed_screens_digest_must_be_text(self) -> None:
-        result = self.select_over((self.SCREENS, '{"fern": "failed: check", "source": "scratch", '
-                                                 '"repository": "o/r", "commit": "c", "path": "a.yml", '
-                                                 '"sha256": 7}'))
+        result = self.select_over(
+            (
+                self.SCREENS,
+                '{"fern": "failed: check", "source": "scratch", '
+                '"repository": "o/r", "commit": "c", "path": "a.yml", '
+                '"sha256": 7}',
+            )
+        )
         self.assertIn("has sha256 7, not a digest string; restore it from git", result.stderr)
 
     def test_a_failed_screens_logs_must_be_a_list_of_paths(self) -> None:
-        result = self.select_over((self.SCREENS, '{"fern": "failed: check", "source": "scratch", '
-                                                 '"repository": "o/r", "commit": "c", "path": "a.yml", '
-                                                 '"fern_logs": "check.log"}'))
+        result = self.select_over(
+            (
+                self.SCREENS,
+                '{"fern": "failed: check", "source": "scratch", '
+                '"repository": "o/r", "commit": "c", "path": "a.yml", '
+                '"fern_logs": "check.log"}',
+            )
+        )
         self.assertIn("has fern_logs 'check.log', not a list of log paths; restore it from git", result.stderr)
 
     def test_a_screen_candidate_that_is_no_name_or_under_no_source_is_refused(self) -> None:
@@ -515,18 +592,21 @@ class MeasurementsAndArguments(unittest.TestCase):
         with tempfile.TemporaryDirectory() as scratch:
             module.EVIDENCE = Path(scratch)
             path = Path(scratch) / "measurements.jsonl"
-            for row, message in (({"check_exit": "failed"}, "has check_exit 'failed', not an exit status or `timeout`"),
-                                 ({"generate_files": "-1"}, "has generate_files '-1', not a file count"),
-                                 # A spelling a comparison with "0" would misread: exit 00 is a success.
-                                 ({"generate_exit": "00"}, "has generate_exit '00', not an exit status"),
-                                 ({"generate_files": "00"}, "has generate_files '00', not a file count"),
-                                 ({"crozier_exit": "\u0661"}, "has crozier_exit '\u0661', not an exit status"),
-                                 ({"crozier_files": "3 files"}, "has crozier_files '3 files', not a file count"),
-                                 ({"digest": "abc"}, "has digest 'abc', not a SHA-256 digest"),
-                                 ({"fern_stage": "lint", "fern_exit": "1", "fern_log": ""},
-                                  "has fern_stage 'lint', not check or generate"),
-                                 ({"fern_stage": "check", "fern_exit": "x", "fern_log": ""},
-                                  "has fern_exit 'x', not an exit status")):
+            for row, message in (
+                ({"check_exit": "failed"}, "has check_exit 'failed', not an exit status or `timeout`"),
+                ({"generate_files": "-1"}, "has generate_files '-1', not a file count"),
+                # A spelling a comparison with "0" would misread: exit 00 is a success.
+                ({"generate_exit": "00"}, "has generate_exit '00', not an exit status"),
+                ({"generate_files": "00"}, "has generate_files '00', not a file count"),
+                ({"crozier_exit": "\u0661"}, "has crozier_exit '\u0661', not an exit status"),
+                ({"crozier_files": "3 files"}, "has crozier_files '3 files', not a file count"),
+                ({"digest": "abc"}, "has digest 'abc', not a SHA-256 digest"),
+                (
+                    {"fern_stage": "lint", "fern_exit": "1", "fern_log": ""},
+                    "has fern_stage 'lint', not check or generate",
+                ),
+                ({"fern_stage": "check", "fern_exit": "x", "fern_log": ""}, "has fern_exit 'x', not an exit status"),
+            ):
                 with self.subTest(row=row):
                     path.write_text(json.dumps({"key": "k", **row}) + "\n", encoding="utf-8")
                     stderr = io.StringIO()
@@ -535,10 +615,28 @@ class MeasurementsAndArguments(unittest.TestCase):
                     self.assertIn(f"measurements.jsonl line 1 {message}", stderr.getvalue())
             # What `measure` writes is read back: a signal's negative status, a
             # timeout, and a legacy single-stage record.
-            path.write_text("".join(json.dumps(row) + "\n" for row in (
-                {"key": "a", "digest": "0" * 64, "check_exit": "-9", "crozier_exit": "timeout", "crozier_files": "0"},
-                {"key": "b", "fern_stage": "generate", "fern_exit": "1", "fern_log": "", "generate_files": "12"})),
-                encoding="utf-8")
+            path.write_text(
+                "".join(
+                    json.dumps(row) + "\n"
+                    for row in (
+                        {
+                            "key": "a",
+                            "digest": "0" * 64,
+                            "check_exit": "-9",
+                            "crozier_exit": "timeout",
+                            "crozier_files": "0",
+                        },
+                        {
+                            "key": "b",
+                            "fern_stage": "generate",
+                            "fern_exit": "1",
+                            "fern_log": "",
+                            "generate_files": "12",
+                        },
+                    )
+                ),
+                encoding="utf-8",
+            )
             read = module.read_measurements()
             self.assertEqual((read["a"]["check_exit"], read["a"]["crozier_exit"]), ("-9", "timeout"))
             self.assertEqual((read["b"]["check_exit"], read["b"]["generate_exit"]), ("0", "1"))
@@ -548,16 +646,21 @@ class MeasurementsAndArguments(unittest.TestCase):
         stderr = io.StringIO()
         with self.assertRaises(SystemExit), contextlib.redirect_stderr(stderr):
             module.read_log("docs/openapi-surface/fern-refusals/logs/gone.check.log")
-        self.assertIn("docs/openapi-surface/fern-refusals/logs/gone.check.log is missing; restore it from git, "
-                      "or rerun `measure --again` to retake it", stderr.getvalue())
+        self.assertIn(
+            "docs/openapi-surface/fern-refusals/logs/gone.check.log is missing; restore it from git, "
+            "or rerun `measure --again` to retake it",
+            stderr.getvalue(),
+        )
         self.assertEqual("", module.read_log(""))
 
     def test_a_count_or_timeout_out_of_range_is_refused_before_anything_runs(self) -> None:
-        for args, message in ((("measure", "--jobs", "0"), "0 is not a positive integer"),
-                              (("measure", "--timeout", "-5"), "-5 is not a positive integer"),
-                              (("measure", "--limit", "-1"), "-1 is not a non-negative integer"),
-                              (("confirm", "--per-class", "-2"), "-2 is not a non-negative integer"),
-                              (("probe", "x", "--jobs", "many"), "invalid positive value: 'many'")):
+        for args, message in (
+            (("measure", "--jobs", "0"), "0 is not a positive integer"),
+            (("measure", "--timeout", "-5"), "-5 is not a positive integer"),
+            (("measure", "--limit", "-1"), "-1 is not a non-negative integer"),
+            (("confirm", "--per-class", "-2"), "-2 is not a non-negative integer"),
+            (("probe", "x", "--jobs", "many"), "invalid positive value: 'many'"),
+        ):
             with self.subTest(args=args):
                 refused = run(*args)
                 self.assertEqual(2, refused.returncode, refused.stderr)
@@ -594,18 +697,23 @@ class FernRuns(unittest.TestCase):
         probe.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(REPO / self.finding_row[5], probe)
         self.calls = root / "fern-calls.jsonl"
-        self.env = {key: value for key, value in os.environ.items()
-                    if not key.startswith(("CROZIER", "FERN_STUB"))}
-        self.env.update(PATH=f"{stub_fern(root / 'bin')}{os.pathsep}{self.env.get('PATH', '')}",
-                        FERN_STUB_CALLS=str(self.calls))
+        self.env = {key: value for key, value in os.environ.items() if not key.startswith(("CROZIER", "FERN_STUB"))}
+        self.env.update(
+            PATH=f"{stub_fern(root / 'bin')}{os.pathsep}{self.env.get('PATH', '')}", FERN_STUB_CALLS=str(self.calls)
+        )
 
     def tearDown(self) -> None:
         self.scratch.cleanup()
 
     def script(self, *args: str, **fern: str) -> subprocess.CompletedProcess[str]:
         env = dict(self.env, **{f"FERN_STUB_{key.upper()}": value for key, value in fern.items()})
-        return subprocess.run([sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"),
-                               *args], capture_output=True, text=True, env=env, cwd=self.root)
+        return subprocess.run(
+            [sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"), *args],
+            capture_output=True,
+            text=True,
+            env=env,
+            cwd=self.root,
+        )
 
     def calls_made(self) -> list[dict[str, str]]:
         if not self.calls.exists():
@@ -614,8 +722,14 @@ class FernRuns(unittest.TestCase):
 
     def test_probe_records_the_stage_whose_output_carries_the_phrase(self) -> None:
         said = phrase(self.class_row[4])
-        result = self.script("probe", self.CLASS, check_exit="1", check_output=f"issue: {said}",
-                             generate_exit="1", generate_output=f"[error] {said}")
+        result = self.script(
+            "probe",
+            self.CLASS,
+            check_exit="1",
+            check_output=f"issue: {said}",
+            generate_exit="1",
+            generate_output=f"[error] {said}",
+        )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual("fern-refusals: 1 probe(s) recorded\n", result.stdout)
         [row] = rows(self.registry / "classes.tsv")[1:]
@@ -628,29 +742,43 @@ class FernRuns(unittest.TestCase):
         # Both stages ran, in a workspace pinning the CLI and generator, over the probe.
         calls = self.calls_made()
         self.assertEqual([call["argv"][0] for call in calls], ["check", "generate"])
-        self.assertTrue(all(call["cli"] == "5.67.1" and "version: 5.20.0" in call["generators"]
-                            and call["node_options"] == "--max-old-space-size=16384" for call in calls))
+        self.assertTrue(
+            all(
+                call["cli"] == "5.67.1"
+                and "version: 5.20.0" in call["generators"]
+                and call["node_options"] == "--max-old-space-size=16384"
+                for call in calls
+            )
+        )
         self.assertEqual(calls[0]["spec"], (REGISTRY / self.CLASS / "probe.yml").read_text(encoding="utf-8"))
 
     def test_a_probe_fern_generates_past_is_refused_as_a_finding(self) -> None:
         said = phrase(self.class_row[4])
-        result = self.script("probe", self.CLASS, check_exit="1", check_output=f"issue: {said}",
-                             generate_exit="0", generate_files="3")
+        result = self.script(
+            "probe", self.CLASS, check_exit="1", check_output=f"issue: {said}", generate_exit="0", generate_files="3"
+        )
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
-        self.assertIn(f"{self.CLASS}: the check stage exits 1 but the generation 0, writing 3 files; a phrase "
-                      "Fern still generates past is a finding", result.stderr)
+        self.assertIn(
+            f"{self.CLASS}: the check stage exits 1 but the generation 0, writing 3 files; a phrase "
+            "Fern still generates past is a finding",
+            result.stderr,
+        )
         self.assertIn("1 probe(s) not recorded, each explained above", result.stderr)
         self.assertFalse((self.registry / self.CLASS / "fern-refusal.txt").exists())
         self.assertEqual(rows(self.registry / "classes.tsv")[1], self.class_row)
 
     def test_a_probe_without_the_class_phrase_names_its_logs(self) -> None:
-        result = self.script("probe", self.CLASS, check_exit="1", check_output="issue: something else",
-                             generate_exit="1")
+        result = self.script(
+            "probe", self.CLASS, check_exit="1", check_output="issue: something else", generate_exit="1"
+        )
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-        self.assertIn(f"{self.CLASS}: Fern printed no diagnostic matching its template over the probe "
-                      "(check exit 1, generate exit 1); see docs/openapi-surface/fern-refusals/probe-logs/"
-                      f"{self.CLASS}.*.log", result.stderr)
+        self.assertIn(
+            f"{self.CLASS}: Fern printed no diagnostic matching its template over the probe "
+            "(check exit 1, generate exit 1); see docs/openapi-surface/fern-refusals/probe-logs/"
+            f"{self.CLASS}.*.log",
+            result.stderr,
+        )
 
     def test_without_fern_on_path_the_setup_recipe_is_named(self) -> None:
         self.env["PATH"] = str(self.root / "no-fern")
@@ -661,8 +789,13 @@ class FernRuns(unittest.TestCase):
     def test_finding_records_the_exits_of_a_check_only_phrase(self) -> None:
         self.finding_row[2:4] = ["7", "7"]
         write_rows(self.registry / "findings.tsv", [rows(self.registry / "findings.tsv")[0], self.finding_row])
-        result = self.script("finding", self.FINDING, check_exit="1",
-                             check_output=f"issue: {phrase(self.finding_row[4])}", generate_files="4")
+        result = self.script(
+            "finding",
+            self.FINDING,
+            check_exit="1",
+            check_output=f"issue: {phrase(self.finding_row[4])}",
+            generate_files="4",
+        )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual("fern-refusals: 1 finding(s) recorded\n", result.stdout)
         [row] = rows(self.registry / "findings.tsv")[1:]
@@ -671,16 +804,22 @@ class FernRuns(unittest.TestCase):
     def test_a_finding_fern_refuses_is_refused_as_a_class(self) -> None:
         result = self.script("finding", self.FINDING, check_exit="1", generate_exit="1")
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-        self.assertIn(f"{self.FINDING}: the generation exits 1 with 0 files, so Fern refuses the probe; "
-                      "a refusal is a class, not a finding", result.stderr)
+        self.assertIn(
+            f"{self.FINDING}: the generation exits 1 with 0 files, so Fern refuses the probe; "
+            "a refusal is a class, not a finding",
+            result.stderr,
+        )
         self.assertEqual(rows(self.registry / "findings.tsv")[1], self.finding_row)
 
     def test_a_check_only_finding_whose_check_is_silent_names_its_log(self) -> None:
         result = self.script("finding", self.FINDING, check_exit="1", generate_files="2")
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-        self.assertIn(f"{self.FINDING}: `fern check` printed no diagnostic matching its template; correct the "
-                      f"template or the probe, reading docs/openapi-surface/fern-refusals/probe-logs/"
-                      f"{self.FINDING}.check.log", result.stderr)
+        self.assertIn(
+            f"{self.FINDING}: `fern check` printed no diagnostic matching its template; correct the "
+            f"template or the probe, reading docs/openapi-surface/fern-refusals/probe-logs/"
+            f"{self.FINDING}.check.log",
+            result.stderr,
+        )
 
     def carrying_document(self) -> str:
         """A documents.tsv row carrying the class, its bytes in the cache `confirm` samples from."""
@@ -691,21 +830,30 @@ class FernRuns(unittest.TestCase):
         (cache / f"{digest}.yml").write_bytes(document)
         header = rows(REGISTRY / "documents.tsv")[0]
         row = dict.fromkeys(header, "—")
-        row.update(digest=digest, source="scratch", classes=self.CLASS,
-                   locator="https://raw.githubusercontent.com/acme/api/0/openapi.yml")
+        row.update(
+            digest=digest,
+            source="scratch",
+            classes=self.CLASS,
+            locator="https://raw.githubusercontent.com/acme/api/0/openapi.yml",
+        )
         write_rows(self.registry / "documents.tsv", [header, [row[column] for column in header]])
         return digest
 
     def test_confirm_runs_a_carrying_documents_generation_and_records_it(self) -> None:
         digest = self.carrying_document()
-        result = self.script("confirm", check_output="unused", generate_exit="1",
-                             generate_output=f"[error] {phrase(self.class_row[4])}")
+        result = self.script(
+            "confirm", check_output="unused", generate_exit="1", generate_output=f"[error] {phrase(self.class_row[4])}"
+        )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual("fern-refusals: 1 confirmation(s) taken, 1 on record\n", result.stdout)
         log = f"docs/openapi-surface/fern-refusals/logs/{digest}.generate.log"
-        self.assertEqual(rows(self.evidence / "confirmations.tsv"),
-                         [["class", "digest", "publisher", "generate_exit", "generate_files", "generate_log"],
-                          [self.CLASS, digest, "acme", "1", "0", log]])
+        self.assertEqual(
+            rows(self.evidence / "confirmations.tsv"),
+            [
+                ["class", "digest", "publisher", "generate_exit", "generate_files", "generate_log"],
+                [self.CLASS, digest, "acme", "1", "0", log],
+            ],
+        )
         self.assertIn(phrase(self.class_row[4]), (self.root / log).read_text(encoding="utf-8"))
         self.assertEqual([call["argv"][0] for call in self.calls_made()], ["generate"])
         # A class already sampled `--per-class` times is not run again.
@@ -717,9 +865,20 @@ class FernRuns(unittest.TestCase):
     def test_confirm_reuses_a_generation_measure_took(self) -> None:
         digest = self.carrying_document()
         log = f"docs/openapi-surface/fern-refusals/logs/{digest}.generate.log"
-        (self.evidence / "measurements.jsonl").write_text(json.dumps(
-            {"key": digest, "digest": digest, "check_exit": "0", "generate_exit": "1", "generate_files": "0",
-             "generate_log": log}) + "\n", encoding="utf-8")
+        (self.evidence / "measurements.jsonl").write_text(
+            json.dumps(
+                {
+                    "key": digest,
+                    "digest": digest,
+                    "check_exit": "0",
+                    "generate_exit": "1",
+                    "generate_files": "0",
+                    "generate_log": log,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         result = self.script("confirm")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(self.calls_made(), [])

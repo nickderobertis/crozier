@@ -35,16 +35,12 @@ def mirror(root: Path, *paths: str) -> None:
     for path in paths:
         (root / path).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / path, root / path)
+
+
 STATE = ".crozier-fern-golden.json"
 ALIASES = REPO / "tests" / "fixtures" / "corpus-aliases.tsv"
 PIN_MANIFEST = REPO / "tests" / "fixtures" / "corpus-remote-ref-pins.tsv"
-KNOWN_FAILURE = (
-    REPO
-    / "tests"
-    / "fixtures"
-    / "calorieninjas.com"
-    / "known-fern-failure.json"
-)
+KNOWN_FAILURE = REPO / "tests" / "fixtures" / "calorieninjas.com" / "known-fern-failure.json"
 
 
 def load_goldens_tool():
@@ -115,9 +111,7 @@ class CommittedGoldenStateTests(unittest.TestCase):
                 self.assertNotIn("corpus_remote_ref_pins", payload)
                 self.assertEqual(
                     committed.read_bytes(),
-                    self.tool.expected_state(
-                        REPO, row, payload["fern_python_sdk_version"]
-                    ),
+                    self.tool.expected_state(REPO, row, payload["fern_python_sdk_version"]),
                 )
             checked += 1
         self.assertGreater(checked, 100, "the committed corpus should be most of the rows")
@@ -128,8 +122,12 @@ class SharedLibraryTests(unittest.TestCase):
     """Each script loads `scripts/lib.sh` before anything else; a checkout missing it
     stops the script naming the file and how to restore it, before it does any work."""
 
-    SCRIPTS = ("tools/fern-goldens/fixture-new.sh", "tools/fern-goldens/fern-overlay-goldens.sh",
-               "tools/fern-goldens/generate-fern-fixture.sh", "tools/corpus/fetch-corpus.sh")
+    SCRIPTS = (
+        "tools/fern-goldens/fixture-new.sh",
+        "tools/fern-goldens/fern-overlay-goldens.sh",
+        "tools/fern-goldens/generate-fern-fixture.sh",
+        "tools/corpus/fetch-corpus.sh",
+    )
 
     def test_a_missing_shared_library_names_how_to_restore_it(self) -> None:
         for script in self.SCRIPTS:
@@ -137,10 +135,13 @@ class SharedLibraryTests(unittest.TestCase):
                 root = Path(scratch)
                 mirror(root, script, "tools/corpus/corpus-lib.sh")
                 (root / "tests" / "fixtures").mkdir(parents=True)
-                result = subprocess.run([str(root / script), "shapes"], capture_output=True, text=True, encoding="utf-8", check=False)
+                result = subprocess.run(
+                    [str(root / script), "shapes"], capture_output=True, text=True, encoding="utf-8", check=False
+                )
                 self.assertEqual(1, result.returncode, result.stderr)
-                self.assertIn(f"cannot load {root}/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh",
-                              result.stderr)
+                self.assertIn(
+                    f"cannot load {root}/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh", result.stderr
+                )
                 self.assertFalse((root / "tests" / "fixtures" / "shapes").exists())
 
 
@@ -158,8 +159,13 @@ class FixtureNewTests(unittest.TestCase):
         self.fixtures.mkdir(parents=True)
 
     def scaffold(self, name: str) -> subprocess.CompletedProcess[str]:
-        return subprocess.run([str(self.root / "tools" / "fern-goldens" / "fixture-new.sh"), name],
-                              capture_output=True, text=True, encoding="utf-8", check=False)
+        return subprocess.run(
+            [str(self.root / "tools" / "fern-goldens" / "fixture-new.sh"), name],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
 
     def test_a_fixture_is_scaffolded_with_its_wiring_steps(self) -> None:
         done = self.scaffold("shapes")
@@ -170,9 +176,11 @@ class FixtureNewTests(unittest.TestCase):
 
     def test_a_name_it_cannot_take_exits_two_and_creates_nothing(self) -> None:
         script = str(self.root / "tools" / "fern-goldens" / "fixture-new.sh")
-        for args, message in (([], "usage: tools/fern-goldens/fixture-new.sh <name>"),
-                              (["a", "b"], "usage: tools/fern-goldens/fixture-new.sh <name>"),
-                              (["../escape"], "invalid name '../escape'")):
+        for args, message in (
+            ([], "usage: tools/fern-goldens/fixture-new.sh <name>"),
+            (["a", "b"], "usage: tools/fern-goldens/fixture-new.sh <name>"),
+            (["../escape"], "invalid name '../escape'"),
+        ):
             with self.subTest(args=args):
                 refused = subprocess.run([script, *args], capture_output=True, text=True, encoding="utf-8", check=False)
                 self.assertEqual(2, refused.returncode, refused.stderr)
@@ -207,9 +215,18 @@ class FixtureNewTests(unittest.TestCase):
             self.skipTest("root writes through a read-only directory")
         # Under this umask the new fixture directory is made unwritable, so
         # creating it succeeds and writing its openapi.yml fails.
-        refused = subprocess.run(["sh", "-c", 'umask 0277 && exec "$0" shapes',
-                                  str(self.root / "tools" / "fern-goldens" / "fixture-new.sh")],
-                                 capture_output=True, text=True, encoding="utf-8", check=False)
+        refused = subprocess.run(
+            [
+                "sh",
+                "-c",
+                'umask 0277 && exec "$0" shapes',
+                str(self.root / "tools" / "fern-goldens" / "fixture-new.sh"),
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
         self.assertEqual(1, refused.returncode, refused.stderr)
         self.assertIn("could not create", refused.stderr)
         self.assertNotIn("could not remove", refused.stderr)
@@ -234,8 +251,13 @@ class GoldenOverlayReductionTests(unittest.TestCase):
         (self.base / "src" / "types" / "gone.py").write_text("x = 1\n", encoding="utf-8")
 
     def reduce(self, tree: Path, provenance: str) -> subprocess.CompletedProcess[str]:
-        return subprocess.run([sys.executable, str(self.SCRIPT), "reduce", str(self.base), str(tree), provenance],
-                              capture_output=True, text=True, encoding="utf-8", check=False)
+        return subprocess.run(
+            [sys.executable, str(self.SCRIPT), "reduce", str(self.base), str(tree), provenance],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
 
     def test_the_overlay_keeps_only_what_differs_and_names_what_it_lacks(self) -> None:
         done = self.reduce(self.tree, '{"enum_type": "literals", "base": "expected"}')
@@ -295,7 +317,8 @@ class FernOverlayGoldensTests(unittest.TestCase):
                 [ "$fixture" != "${FAIL_INSTALL:-}" ] || chmod a-w "$(dirname "$destination")"
                 """
             ).lstrip(),
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
         generator.chmod(0o755)
 
@@ -313,7 +336,8 @@ class FernOverlayGoldensTests(unittest.TestCase):
             ],
             env={**os.environ, "FAIL_INSTALL": fail_install, "FAIL_GENERATE": fail_generate, **extra},
             capture_output=True,
-            text=True, encoding="utf-8",
+            text=True,
+            encoding="utf-8",
             check=False,
         )
         for stage in (self.root / "tests" / "fixtures").glob("*/.fern-overlay-stage.*"):
@@ -325,8 +349,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
             result.stdout,
-            "generated alpha/expected-literals, beta/expected-literals"
-            " at fernapi/fern-python-sdk:4.3.17\n",
+            "generated alpha/expected-literals, beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n",
         )
         for fixture in ("alpha", "beta"):
             golden = self.root / "tests" / "fixtures" / fixture / "expected-literals"
@@ -344,9 +367,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertIn(f"(mv {stage}/expected-literals ", result.stderr)
         self.assertIn(f"discard it (rm -rf {stage})", result.stderr)
         self.assertFalse((self.root / "tests" / "fixtures" / "alpha" / "expected-literals").exists())
-        self.assertEqual(
-            result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
-        )
+        self.assertEqual(result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
 
     def test_a_failed_generation_names_its_log_and_the_command_that_retries_it(self) -> None:
         result = self.run_overlay("alpha", "beta", fail_generate="alpha")
@@ -361,9 +382,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
             result.stderr,
         )
         self.assertFalse(list((self.root / "tests" / "fixtures" / "alpha").glob(".fern-overlay-stage.*")))
-        self.assertEqual(
-            result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
-        )
+        self.assertEqual(result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
 
     def test_a_stage_that_cannot_be_made_names_the_step_and_the_fix(self) -> None:
         """The failing `mktemp` runs in an `xargs` worker, a child shell: the report
@@ -380,9 +399,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertRegex(result.stderr, r"fern-overlay-goldens: line \d+: 'mktemp -d [^']*' failed \(exit 1\)")
         self.assertIn("then re-run this script for the fixtures that failed", result.stderr)
-        self.assertEqual(
-            result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
-        )
+        self.assertEqual(result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
 
     def test_a_pinned_rows_fetch_that_fails_reports_its_cause_and_the_retry(self) -> None:
         fixtures = self.root / "tests" / "fixtures"
@@ -392,18 +409,28 @@ class FernOverlayGoldensTests(unittest.TestCase):
         (fixtures / "corpus-remote-ref-pins.tsv").write_text("pinned\tpinned\n", encoding="utf-8")
         stubs = self.root / "stub-bin"
         stubs.mkdir()
-        (stubs / "just").write_text("#!/bin/sh\necho 'fetch-corpus: the pinned commit is gone' >&2\nexit 1\n",
-                                    encoding="utf-8")
+        (stubs / "just").write_text(
+            "#!/bin/sh\necho 'fetch-corpus: the pinned commit is gone' >&2\nexit 1\n", encoding="utf-8"
+        )
         (stubs / "just").chmod(0o755)
         result = subprocess.run(
-            [str(self.root / "tools" / "fern-goldens" / "fern-overlay-goldens.sh"), "--enum-type", "literals", "pinned"],
+            [
+                str(self.root / "tools" / "fern-goldens" / "fern-overlay-goldens.sh"),
+                "--enum-type",
+                "literals",
+                "pinned",
+            ],
             env={**os.environ, "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}"},
-            capture_output=True, text=True, encoding="utf-8", check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
         )
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertIn("pinned: just fetch-corpus failed: fetch-corpus: the pinned commit is gone", result.stderr)
-        self.assertIn("then re-run tools/fern-goldens/fern-overlay-goldens.sh --enum-type literals pinned",
-                      result.stderr)
+        self.assertIn(
+            "then re-run tools/fern-goldens/fern-overlay-goldens.sh --enum-type literals pinned", result.stderr
+        )
 
     def test_fixtures_at_different_fern_pins_name_each_pin_in_the_summary(self) -> None:
         (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).write_text(
@@ -442,12 +469,8 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertIn("bare: no expected/ golden to overlay — restore it", result.stderr)
         self.assertIn("tools/fern-goldens/generate-fern-fixture.sh bare", result.stderr)
         self.assertIn("beta: unreadable expected/.crozier-fern-golden.json — restore it", result.stderr)
-        self.assertIn(
-            "git checkout -- tests/fixtures/beta/expected/.crozier-fern-golden.json", result.stderr
-        )
-        self.assertEqual(
-            result.stdout, "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17\n"
-        )
+        self.assertIn("git checkout -- tests/fixtures/beta/expected/.crozier-fern-golden.json", result.stderr)
+        self.assertEqual(result.stdout, "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
 
 
 if __name__ == "__main__":

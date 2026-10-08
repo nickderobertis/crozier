@@ -42,9 +42,13 @@ DOWNLOAD_HOSTS = ("api.github.com", "codeload.github.com", "raw.githubuserconten
 def is_download_url(value: str) -> bool:
     """A GitHub download over HTTPS, or a loopback HTTP server (the offline tier)."""
     parsed = urllib.parse.urlsplit(value)
-    return GUARD.valid_port(parsed) and bool(parsed.hostname) and (
-        (parsed.scheme == "https" and parsed.hostname in DOWNLOAD_HOSTS)
-        or (parsed.scheme == "http" and parsed.hostname in GUARD.LOOPBACK_HOSTS)
+    return (
+        GUARD.valid_port(parsed)
+        and bool(parsed.hostname)
+        and (
+            (parsed.scheme == "https" and parsed.hostname in DOWNLOAD_HOSTS)
+            or (parsed.scheme == "http" and parsed.hostname in GUARD.LOOPBACK_HOSTS)
+        )
     )
 
 
@@ -128,8 +132,7 @@ def main() -> int:
                 acquired = True
         else:
             temporary.unlink(missing_ok=True)
-    except (GUARD.SecondaryLimit, GUARD.UnsupportedBucket, OSError, RuntimeError,
-            ValueError) as error:
+    except (GUARD.SecondaryLimit, GUARD.UnsupportedBucket, OSError, RuntimeError, ValueError) as error:
         record["error"] = f"rate-limit guard refused acquisition: {error}"
         temporary.unlink(missing_ok=True)
     finally:
@@ -137,9 +140,12 @@ def main() -> int:
         with (args.evidence_dir / "acquisitions.jsonl").open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
     if not acquired:
-        print(f"witness-acquire-github: {args.url}: {record.get('status', 'transport error')}: "
-              f"{record.get('error', 'request failed')}; inspect {args.evidence_dir / 'acquisitions.jsonl'} "
-              "and retry the recorded source when available", file=sys.stderr)
+        print(
+            f"witness-acquire-github: {args.url}: {record.get('status', 'transport error')}: "
+            f"{record.get('error', 'request failed')}; inspect {args.evidence_dir / 'acquisitions.jsonl'} "
+            "and retry the recorded source when available",
+            file=sys.stderr,
+        )
         return 1
     print(f"witness-acquire-github: saved {record['bytes']} bytes")
     return 0

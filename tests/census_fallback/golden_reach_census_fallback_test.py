@@ -121,8 +121,10 @@ class FallbackAgreementTests(unittest.TestCase):
                 # A selector may itself carry `=` (`schema.type:primary=array`): the
                 # count is what follows the last one.
                 declared = dict(pair.rsplit("=", 1) for pair in row["declares"].split(";"))
-                self.assertEqual({selector: int(n) for selector, n in declared.items()},
-                                 {selector: counts.get(selector, 0) for selector in declared})
+                self.assertEqual(
+                    {selector: int(n) for selector, n in declared.items()},
+                    {selector: counts.get(selector, 0) for selector in declared},
+                )
 
     def test_every_sample_is_committed_at_its_pinned_digest_with_its_licence(self) -> None:
         with SAMPLE.open(encoding="utf-8", newline="") as handle:
@@ -144,7 +146,9 @@ class FallbackAgreementTests(unittest.TestCase):
         attributed = [entry.split()[:3] for entry in block.split("  * ")[1:]]
         expected = []
         for row in rows:
-            owner, repository, commit, path = row["url"].removeprefix("https://raw.githubusercontent.com/").split("/", 3)
+            owner, repository, commit, path = (
+                row["url"].removeprefix("https://raw.githubusercontent.com/").split("/", 3)
+            )
             expected.append([f"{owner}/{repository}@{commit}", path, row["license"]])
         self.assertEqual(expected, [[repo, path, licence.strip("(),")] for repo, path, licence in attributed])
 
@@ -170,7 +174,11 @@ class FallbackAgreementTests(unittest.TestCase):
                 COMMITTED = original
 
     def test_the_pin_is_the_one_the_inline_metadata_installs(self) -> None:
-        header = (REPO / "tools" / "surface-census" / "golden-reach-search.py").read_text(encoding="utf-8").split('"""', 1)[0]
+        header = (
+            (REPO / "tools" / "surface-census" / "golden-reach-search.py")
+            .read_text(encoding="utf-8")
+            .split('"""', 1)[0]
+        )
         self.assertIn(f'# dependencies = ["ruamel.yaml=={search.RUAMEL_YAML_PIN}"]', header)
         import ruamel.yaml
 

@@ -52,13 +52,21 @@ class ScratchCheckout(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        built = subprocess.run(["cargo", "build", "--locked", "--quiet", "--bin", "crozier",
-                                "--message-format=json-render-diagnostics"],
-                               capture_output=True, text=True, cwd=REPO)
+        built = subprocess.run(
+            ["cargo", "build", "--locked", "--quiet", "--bin", "crozier", "--message-format=json-render-diagnostics"],
+            capture_output=True,
+            text=True,
+            cwd=REPO,
+        )
         if built.returncode != 0:
             raise AssertionError(f"cargo build --bin crozier failed:\n{built.stderr}")
-        cls.binary = Path(next(message["executable"] for message in map(json.loads, built.stdout.splitlines())
-                               if message.get("reason") == "compiler-artifact" and message.get("executable")))
+        cls.binary = Path(
+            next(
+                message["executable"]
+                for message in map(json.loads, built.stdout.splitlines())
+                if message.get("reason") == "compiler-artifact" and message.get("executable")
+            )
+        )
 
     def setUp(self) -> None:
         self.scratch = tempfile.TemporaryDirectory()
@@ -83,11 +91,13 @@ class ScratchCheckout(unittest.TestCase):
             shutil.copy(REPO / relative, root / relative)
         (surface / "fern-refusals").mkdir(parents=True)
         (surface / "fern-refusals" / "dropped-sources.tsv").write_text(
-            "name\tcorpus_line\tsource\tlocator\trevision\tsha256\tevidence\treason\n", encoding="utf-8")
+            "name\tcorpus_line\tsource\tlocator\trevision\tsha256\tevidence\treason\n", encoding="utf-8"
+        )
         for source in ("jentic", "apis.guru", "vendor-portals", "github-publisher-trees"):
             (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
-            with gzip.open(surface / "golden-reach-witnesses" / source / "enumeration.tsv.gz", "wt",
-                           encoding="utf-8") as handle:
+            with gzip.open(
+                surface / "golden-reach-witnesses" / source / "enumeration.tsv.gz", "wt", encoding="utf-8"
+            ) as handle:
                 handle.write("walk\tdocument\trevision\tsha256\n")
         for source in ("github-code-search", "sourcegraph"):
             (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
@@ -99,12 +109,25 @@ class ScratchCheckout(unittest.TestCase):
         self.digest = hashlib.sha256(probe).hexdigest()
         screens = surface / "scratch"
         screens.mkdir()
-        shutil.copy(REPO / "docs" / "openapi-surface" / "fern-refusals" / "probe-logs" / f"{self.CLASS}.check.log",
-                    screens / "probe-check.log")
-        (screens / "screens.jsonl").write_text(json.dumps({
-            "fern": "failed: check exit 1", "source": "scratch", "repository": "scratch/probes",
-            "commit": "0" * 40, "path": "probe.yml", "sha256": self.digest,
-            "fern_logs": ["probe-check.log"]}) + "\n", encoding="utf-8")
+        shutil.copy(
+            REPO / "docs" / "openapi-surface" / "fern-refusals" / "probe-logs" / f"{self.CLASS}.check.log",
+            screens / "probe-check.log",
+        )
+        (screens / "screens.jsonl").write_text(
+            json.dumps(
+                {
+                    "fern": "failed: check exit 1",
+                    "source": "scratch",
+                    "repository": "scratch/probes",
+                    "commit": "0" * 40,
+                    "path": "probe.yml",
+                    "sha256": self.digest,
+                    "fern_logs": ["probe-check.log"],
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         registry = root / "docs" / "fern-refusals"
         registry.mkdir()
         classes = rows(REGISTRY / "classes.tsv")
@@ -121,8 +144,13 @@ class ScratchCheckout(unittest.TestCase):
     def script(self, *args: str, **extra: str) -> subprocess.CompletedProcess[str]:
         env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER")}
         env.update(extra)
-        return subprocess.run([sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"), *args],
-                              capture_output=True, text=True, env=env, cwd=self.root)
+        return subprocess.run(
+            [sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"), *args],
+            capture_output=True,
+            text=True,
+            env=env,
+            cwd=self.root,
+        )
 
     def measure(self) -> dict[str, str]:
         result = self.script("measure", "--jobs", "1", "--root", str(self.root / "documents"))
@@ -138,7 +166,6 @@ class ScratchCheckout(unittest.TestCase):
         [row] = table[1:]
         self.assertEqual((row[0], row[8]), (self.digest, self.CLASS))
         return row
-
 
 
 class StrictMeasurement(ScratchCheckout):
@@ -180,8 +207,7 @@ class StrictMeasurement(ScratchCheckout):
         result = self.script("build")
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
-        self.assertIn(f"{self.digest}: not measured (crozier-strict); run `just fern-refusals-measure`",
-                      result.stderr)
+        self.assertIn(f"{self.digest}: not measured (crozier-strict); run `just fern-refusals-measure`", result.stderr)
         self.assertFalse(self.documents.exists(), "a failed build wrote documents.tsv")
         # The recovery the message names: `measure` takes only the missing run.
         remeasured = self.measure()
@@ -234,18 +260,27 @@ class FetchedAndMeasured(ScratchCheckout):
         self.locator = f"http://127.0.0.1:{self.server.server_address[1]}/{self.NAME}/openapi.yml"
         (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
             f"| `{self.NAME}` | a document Fern refused | **DROPPED** — Fern golden generation failed |\n",
-            encoding="utf-8")
+            encoding="utf-8",
+        )
         self.record(self.served_digest)
         self.calls = self.root / "fern-calls.jsonl"
-        self.fern = dict(PATH=f"{stub_fern(self.root / 'bin')}{os.pathsep}{os.environ.get('PATH', '')}",
-                         FERN_STUB_CALLS=str(self.calls), no_proxy="127.0.0.1", NO_PROXY="127.0.0.1",
-                         FERN_STUB_GENERATE_FILES="4")
+        self.fern = dict(
+            PATH=f"{stub_fern(self.root / 'bin')}{os.pathsep}{os.environ.get('PATH', '')}",
+            FERN_STUB_CALLS=str(self.calls),
+            no_proxy="127.0.0.1",
+            NO_PROXY="127.0.0.1",
+            FERN_STUB_GENERATE_FILES="4",
+        )
 
     def record(self, digest: str) -> None:
         """The CORPUS.md row's committed location: the loopback locator and `digest`."""
-        write_rows(self.root / "docs" / "openapi-surface" / "fern-refusals" / "dropped-sources.tsv", [
-            ["name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason"],
-            [self.NAME, "1", "scratch", self.locator, "0" * 40, digest, "CORPUS.md:1", "Fern failed"]])
+        write_rows(
+            self.root / "docs" / "openapi-surface" / "fern-refusals" / "dropped-sources.tsv",
+            [
+                ["name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason"],
+                [self.NAME, "1", "scratch", self.locator, "0" * 40, digest, "CORPUS.md:1", "Fern failed"],
+            ],
+        )
 
     def measured(self, *args: str) -> dict[str, str]:
         result = self.script("measure", "--jobs", "1", "--root", str(self.root / "documents"), *args, **self.fern)
@@ -279,8 +314,10 @@ class FetchedAndMeasured(ScratchCheckout):
         self.record(recorded)
         self.server.documents[f"/{self.NAME}/openapi.yml"] = self.served
         row = self.measured()[recorded]
-        self.assertEqual(row["unretrievable"], f"{self.locator} now serves bytes hashing to {self.served_digest}, "
-                                               f"not the recorded {recorded}")
+        self.assertEqual(
+            row["unretrievable"],
+            f"{self.locator} now serves bytes hashing to {self.served_digest}, not the recorded {recorded}",
+        )
         self.assertFalse(self.calls.exists(), "Fern ran over bytes other than the recorded document")
 
 

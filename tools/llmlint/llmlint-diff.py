@@ -47,8 +47,10 @@ def fail(message: str) -> None:
 def git(*args: str) -> str:
     run = subprocess.run(["git", *args], capture_output=True, text=True)
     if run.returncode != 0:
-        fail(f"`git {' '.join(args)}` exited {run.returncode}: {run.stderr.strip()} — "
-             "fetch the base (`git fetch origin main`) and run from inside the checkout")
+        fail(
+            f"`git {' '.join(args)}` exited {run.returncode}: {run.stderr.strip()} — "
+            "fetch the base (`git fetch origin main`) and run from inside the checkout"
+        )
     return run.stdout
 
 
@@ -73,13 +75,17 @@ def excludes(llmlint: str) -> list[re.Pattern[str]]:
     """llmlint's own effective `files.exclude`, read from `llmlint config`."""
     run = subprocess.run([llmlint, "config"], capture_output=True, text=True)
     if run.returncode != 0:
-        fail(f"`llmlint config` exited {run.returncode}: {run.stderr.strip()[-400:]} — "
-             "fix llmlint.yml (`just lint-llm-validate`) and retry")
+        fail(
+            f"`llmlint config` exited {run.returncode}: {run.stderr.strip()[-400:]} — "
+            "fix llmlint.yml (`just lint-llm-validate`) and retry"
+        )
     try:
         globs = json.loads(run.stdout)["config"]["files"]["exclude"]
     except (ValueError, KeyError, TypeError) as error:
-        fail(f"`llmlint config` printed no `config.files.exclude` list ({error!r}); "
-             "check the installed llmlint with `just setup-llmlint`")
+        fail(
+            f"`llmlint config` printed no `config.files.exclude` list ({error!r}); "
+            "check the installed llmlint with `just setup-llmlint`"
+        )
     if not isinstance(globs, list) or not all(isinstance(g, str) for g in globs):
         fail("`llmlint config`'s `config.files.exclude` is not a list of globs; check the installed llmlint")
     return [glob_regex(g) for g in globs]
@@ -97,8 +103,10 @@ def changed(base: str, llmlint: str) -> dict[str, int]:
             continue
         diff = subprocess.run(["git", "diff", merge_base, "--", path], capture_output=True)
         if diff.returncode != 0:
-            fail(f"`git diff {merge_base} -- {path}` exited {diff.returncode}: "
-                 f"{diff.stderr.decode(errors='replace').strip()} — run from inside the checkout, then retry")
+            fail(
+                f"`git diff {merge_base} -- {path}` exited {diff.returncode}: "
+                f"{diff.stderr.decode(errors='replace').strip()} — run from inside the checkout, then retry"
+            )
         sizes[path] = Path(path).stat().st_size + len(diff.stdout)
     return sizes
 
@@ -127,8 +135,9 @@ def severity(code: int) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("base", nargs="?", default="origin/main")
-    parser.add_argument("--budget", type=int, default=DEFAULT_BUDGET,
-                        help="bytes of file plus diff one judge batch may receive")
+    parser.add_argument(
+        "--budget", type=int, default=DEFAULT_BUDGET, help="bytes of file plus diff one judge batch may receive"
+    )
     args, extra = parser.parse_known_args(argv)
     if args.budget <= 0:
         fail(f"--budget must be a positive byte count, not {args.budget}")

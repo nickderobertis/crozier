@@ -57,17 +57,15 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
         declared: list[str] = []
         for offset in range(0, len(sources), 30):
             fixture_args = list(
-                itertools.chain.from_iterable(
-                    ("--fixture", source.fixture)
-                    for source in sources[offset : offset + 30]
-                )
+                itertools.chain.from_iterable(("--fixture", source.fixture) for source in sources[offset : offset + 30])
             )
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--selector", selector, *fixture_args],
                 cwd=REPO,
                 capture_output=True,
                 text=True,
-                timeout=CENSUS_TIMEOUT, encoding="utf-8",
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
             )
             self.assertEqual(0, completed.returncode, completed.stderr)
             for line in completed.stdout.splitlines():
@@ -113,9 +111,7 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
                         self.assertEqual(candidate["digest"], digest)
                         source = sources[name]
                         self.assertIsNotNone(source.path, f"{name} is unfetched; run tools/corpus/fetch-corpus.sh")
-                        self.assertEqual(
-                            digest, hashlib.sha256(source.path.read_bytes()).hexdigest()
-                        )
+                        self.assertEqual(digest, hashlib.sha256(source.path.read_bytes()).hexdigest())
         self.assertGreater(copies, 0)
 
 

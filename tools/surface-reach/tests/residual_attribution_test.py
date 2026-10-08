@@ -38,7 +38,12 @@ class ResidualAttributionTests(unittest.TestCase):
         self.assertTrue(BINARY.is_file(), f"no {BINARY.relative_to(REPO)}; run `just nx run crozier:build`")
         self.assertIsNotNone(shutil.which("ruff"), "no ruff on PATH; install it with `just bootstrap`")
         completed = subprocess.run(
-            [sys.executable, str(SCRIPT)], cwd=REPO, capture_output=True, text=True, timeout=1800, encoding="utf-8",
+            [sys.executable, str(SCRIPT)],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=1800,
+            encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         measured = {
@@ -52,8 +57,11 @@ class ResidualAttributionTests(unittest.TestCase):
                 fixture, matched, unmatched = measured[key]
                 self.assertEqual(witness, fixture)
                 self.assertEqual(sorted(files), sorted(matched))
-                self.assertEqual(sorted(gaps), sorted(unmatched),
-                                 f"{key}: every `unmatched` file it moves is an open gap the table names")
+                self.assertEqual(
+                    sorted(gaps),
+                    sorted(unmatched),
+                    f"{key}: every `unmatched` file it moves is an open gap the table names",
+                )
                 expected = "split" if matched and unmatched else "byte-matched" if matched else "open gap"
                 self.assertEqual(expected, verdict)
 

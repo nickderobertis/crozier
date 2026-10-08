@@ -214,25 +214,35 @@ def read_document(path: str, timeout: int, phase: Callable[[str], None] | None =
             except TimeoutError:
                 return {"verdict": "refused", "reason": f"{strict}; {loader}: parse exceeded {timeout} s"}
             except Exception as lenient:  # a syntax refusal: no reading relaxes it
-                return {"verdict": "refused",
-                        "reason": f"{strict}; {loader}: {one_line(f'{type(lenient).__name__}: {lenient}')}"}
+                return {
+                    "verdict": "refused",
+                    "reason": f"{strict}; {loader}: {one_line(f'{type(lenient).__name__}: {lenient}')}",
+                }
         described = [document for document in stream if REACH._names_a_version(document)]
         if len(described) != 1:
-            return {"verdict": "not-openapi-3", "loader": loader,
-                    "reason": f"a stream of {len(stream)} YAML document(s), {len(described)} naming an "
-                              "`openapi` or `swagger` version"}
+            return {
+                "verdict": "not-openapi-3",
+                "loader": loader,
+                "reason": f"a stream of {len(stream)} YAML document(s), {len(described)} naming an "
+                "`openapi` or `swagger` version",
+            }
         parsed = described[0]
         if not GITHUB.OPENAPI_VERSION.fullmatch(str(parsed.get("openapi", ""))):
-            return {"verdict": "not-openapi-3", "loader": loader,
-                    "reason": f"names `openapi` {parsed.get('openapi')!r} / `swagger` {parsed.get('swagger')!r}"}
+            return {
+                "verdict": "not-openapi-3",
+                "loader": loader,
+                "reason": f"names `openapi` {parsed.get('openapi')!r} / `swagger` {parsed.get('swagger')!r}",
+            }
         try:
             phase(f"census walk over the {loader} reading exceeded {timeout} s")
             counts = CENSUS.census_document(parsed, root_path=local)
         except TimeoutError:
             return {"verdict": "refused", "reason": f"census walk over the {loader} reading exceeded {timeout} s"}
         except Exception as error:  # the census's own refusal, whatever its type
-            return {"verdict": "refused", "reason": f"census walk over the {loader} reading: "
-                                                    f"{one_line(f'{type(error).__name__}: {error}')}"}
+            return {
+                "verdict": "refused",
+                "reason": f"census walk over the {loader} reading: {one_line(f'{type(error).__name__}: {error}')}",
+            }
         return {"verdict": "counts", "counts": counts, "loader": loader}
     finally:
         if hasattr(signal, "SIGALRM"):
@@ -261,8 +271,9 @@ def bounded_reads(paths: dict[str, str], timeout: int, jobs: int) -> dict[str, d
             return {futures[future]: future.result() for future in concurrent.futures.as_completed(futures)}
     context = multiprocessing.get_context("spawn")
     queued = sorted(paths.items())
-    running: dict[multiprocessing.connection.Connection,
-                  tuple[str, multiprocessing.process.BaseProcess, float | None, str]] = {}
+    running: dict[
+        multiprocessing.connection.Connection, tuple[str, multiprocessing.process.BaseProcess, float | None, str]
+    ] = {}
     verdicts: dict[str, dict[str, Any]] = {}
     while queued or running:
         while queued and len(running) < jobs:
@@ -306,15 +317,35 @@ def read_bounded(path: str, timeout: int) -> dict[str, Any]:
     return bounded_reads({"document": path}, timeout, 1)["document"]
 
 
-def verdict_record(source: str, row: dict[str, Any], verdict: dict[str, Any], digest: str,
-                   keys: dict[str, dict[str, str]]) -> dict[str, Any]:
-    kept = ("source", "key", "selector", "repository", "path", "commit", "blob", "url",
-            "acquisition_route", "raw_url", "document", "shared_with_key", "supersedes",
-            "reacquired_at_head", "github_refusal", "served_by", "namesakes_searched")
+def verdict_record(
+    source: str, row: dict[str, Any], verdict: dict[str, Any], digest: str, keys: dict[str, dict[str, str]]
+) -> dict[str, Any]:
+    kept = (
+        "source",
+        "key",
+        "selector",
+        "repository",
+        "path",
+        "commit",
+        "blob",
+        "url",
+        "acquisition_route",
+        "raw_url",
+        "document",
+        "shared_with_key",
+        "supersedes",
+        "reacquired_at_head",
+        "github_refusal",
+        "served_by",
+        "namesakes_searched",
+    )
     record: dict[str, Any] = {field: row[field] for field in kept if field in row}
     # A reading repeated for a key added since names the parse failure the first one decided.
-    record.update(sha256=digest, loader=verdict.get("loader", REACH.YAML_LOADER),
-                  recensus_of=row.get("recensus_of") or status_of(row))
+    record.update(
+        sha256=digest,
+        loader=verdict.get("loader", REACH.YAML_LOADER),
+        recensus_of=row.get("recensus_of") or status_of(row),
+    )
     field = "status" if source == "github-publisher-trees" else "disposition"
     if verdict["verdict"] == "refused":
         record[field] = REFUSED
@@ -326,8 +357,9 @@ def verdict_record(source: str, row: dict[str, Any], verdict: dict[str, Any], di
             record["selector_count"] = 0
     elif source == "github-publisher-trees":
         record[field] = "readable"
-        record["selector_counts"] = {key: verdict["counts"].get(value["selector"], 0)
-                                     for key, value in sorted(keys.items())}
+        record["selector_counts"] = {
+            key: verdict["counts"].get(value["selector"], 0) for key, value in sorted(keys.items())
+        }
     else:
         count = verdict["counts"].get(keys[row["key"]]["selector"], 0)
         record[field] = "declares" if count else "does-not-declare"
@@ -342,21 +374,30 @@ def uncounted(source: str, row: dict[str, Any], wanted: set[str]) -> bool:
     it, and the census's stdlib loader cannot supply one, so the full parser
     reads the same cached copy again for every key.
     """
-    return (source == "github-publisher-trees" and status_of(row) == "readable"
-            and row.get("recensus_of") == "parse-failure"
-            and bool(wanted - set(row.get("selector_counts") or {})))
+    return (
+        source == "github-publisher-trees"
+        and status_of(row) == "readable"
+        and row.get("recensus_of") == "parse-failure"
+        and bool(wanted - set(row.get("selector_counts") or {}))
+    )
 
 
 def service_acquirer(evidence: Path, cache: Path) -> Any:
     """An acquirer honouring the acquisition CLI's service overrides, so an offline test drives it locally."""
     return GITHUB.Acquirer(
-        evidence, cache=cache,
+        evidence,
+        cache=cache,
         sourcegraph_url=GITHUB.checked_service_url(
-            os.environ.get("CROZIER_SOURCEGRAPH_URL", GITHUB.SOURCEGRAPH_URL), "CROZIER_SOURCEGRAPH_URL",
-            "sourcegraph.com"),
+            os.environ.get("CROZIER_SOURCEGRAPH_URL", GITHUB.SOURCEGRAPH_URL),
+            "CROZIER_SOURCEGRAPH_URL",
+            "sourcegraph.com",
+        ),
         raw_github_url=GITHUB.checked_service_url(
-            os.environ.get("CROZIER_RAW_GITHUB_URL", GITHUB.RAW_GITHUB_URL), "CROZIER_RAW_GITHUB_URL",
-            "raw.githubusercontent.com"))
+            os.environ.get("CROZIER_RAW_GITHUB_URL", GITHUB.RAW_GITHUB_URL),
+            "CROZIER_RAW_GITHUB_URL",
+            "raw.githubusercontent.com",
+        ),
+    )
 
 
 def full_yaml(args: argparse.Namespace) -> int:
@@ -389,29 +430,34 @@ def full_yaml(args: argparse.Namespace) -> int:
             except GITHUB.DigestRefused as error:
                 fail(f"refused: {error}")
             except (GITHUB.EvidenceError, GITHUB.SearchStopped, GITHUB.SecondaryLimit, OSError) as error:
-                fail(f"no cached copy of sha256 {digest} under {[str(r) for r in roots]}, and it cannot be "
-                     f"reacquired: {error}; pass the cache it was acquired into with --cache")
+                fail(
+                    f"no cached copy of sha256 {digest} under {[str(r) for r in roots]}, and it cannot be "
+                    f"reacquired: {error}; pass the cache it was acquired into with --cache"
+                )
             local = find_copy(digest, roots)
             if local is None:
-                fail(f"no cached copy of sha256 {digest} under {[str(r) for r in roots]}, and its recorded "
-                     "source no longer serves it; pass the cache it was acquired into with --cache")
+                fail(
+                    f"no cached copy of sha256 {digest} under {[str(r) for r in roots]}, and its recorded "
+                    "source no longer serves it; pass the cache it was acquired into with --cache"
+                )
         if hashlib.sha256(local.read_bytes()).hexdigest() != digest:
             fail(f"{local} does not hash to the pinned sha256 {digest}; re-acquire it at its commit")
         copies[digest] = local
-    verdicts = bounded_reads({digest: str(path) for digest, path in sorted(copies.items())},
-                             args.timeout, args.jobs)
+    verdicts = bounded_reads({digest: str(path) for digest, path in sorted(copies.items())}, args.timeout, args.jobs)
     tally: dict[str, int] = {}
     for row, digest in pending:
         record = verdict_record(args.source, row, verdicts[digest], digest, keys)
-        stamped = {"at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds"),
-                   **record}
+        stamped = {"at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds"), **record}
         INDEX.append_ledger(evidence / ledger_name(args.source), json.dumps(stamped, sort_keys=True) + "\n")
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1
     counted_since = f" and {recounts} full-parser reading(s) missing a key's count" if recounts else ""
-    print(f"witness-search-recensus: {args.source}: {len(pending) - recounts} parse-failure row(s)"
-          f"{counted_since} over {len(copies)} document(s) read again: "
-          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())) + opaque_summary(opaque_count))
+    print(
+        f"witness-search-recensus: {args.source}: {len(pending) - recounts} parse-failure row(s)"
+        f"{counted_since} over {len(copies)} document(s) read again: "
+        + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items()))
+        + opaque_summary(opaque_count)
+    )
     return 0
 
 
@@ -419,8 +465,9 @@ def git_blob(data: bytes) -> str:
     return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
 
 
-def from_history(acquirer: Any, row: dict[str, Any], base: dict[str, Any], head: str,
-                 refusal: str) -> tuple[dict[str, Any] | None, str]:
+def from_history(
+    acquirer: Any, row: dict[str, Any], base: dict[str, Any], head: str, refusal: str
+) -> tuple[dict[str, Any] | None, str]:
     """The file at the commit that pins the candidate's own blob, found in the head's history of its path.
 
     Where the head no longer holds the file but the repository still does in its
@@ -429,7 +476,8 @@ def from_history(acquirer: Any, row: dict[str, Any], base: dict[str, Any], head:
     what the history showed, to be added to the refusal.
     """
     status, commits, _ = acquirer.github_json(
-        "core", f"/repos/{row['repository']}/commits?path={urllib.parse.quote(row['path'])}&sha={head}&per_page=100")
+        "core", f"/repos/{row['repository']}/commits?path={urllib.parse.quote(row['path'])}&sha={head}&per_page=100"
+    )
     at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
     if status != 200 or not isinstance(commits, list):
         return None, f"the path's history at {head} answered HTTP {status} at {at}"
@@ -439,16 +487,34 @@ def from_history(acquirer: Any, row: dict[str, Any], base: dict[str, Any], head:
         if not isinstance(sha, str) or not FULL_COMMIT.fullmatch(sha):
             unnamed += 1
             continue
-        raw_url = (acquirer.raw_github_url + "/" + urllib.parse.quote(row["repository"], safe="/") + "/" + sha
-                   + "/" + urllib.parse.quote(row["path"], safe="/"))
+        raw_url = (
+            acquirer.raw_github_url
+            + "/"
+            + urllib.parse.quote(row["repository"], safe="/")
+            + "/"
+            + sha
+            + "/"
+            + urllib.parse.quote(row["path"], safe="/")
+        )
         got, data = acquirer.raw_github_get(raw_url, row["key"], f"{row['repository']}/{row['path']}@{sha}")
         if got == 200 and git_blob(data) == row.get("blob"):
             return acquirer.classify_and_record(
-                {**base, "commit": sha, "blob": row["blob"], "raw_url": raw_url,
-                 "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB, "supersedes": row["commit"],
-                 "reacquired_at_head": True, "github_refusal": refusal}, data), ""
-    return None, (f"the path's history at {head} lists {len(commits)} commit(s), none serving blob "
-                  f"{row.get('blob')}{unnamed_note(unnamed)}, at {at}")
+                {
+                    **base,
+                    "commit": sha,
+                    "blob": row["blob"],
+                    "raw_url": raw_url,
+                    "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB,
+                    "supersedes": row["commit"],
+                    "reacquired_at_head": True,
+                    "github_refusal": refusal,
+                },
+                data,
+            ), ""
+    return None, (
+        f"the path's history at {head} lists {len(commits)} commit(s), none serving blob "
+        f"{row.get('blob')}{unnamed_note(unnamed)}, at {at}"
+    )
 
 
 def unnamed_note(unnamed: int) -> str:
@@ -456,8 +522,7 @@ def unnamed_note(unnamed: int) -> str:
     return f" ({unnamed} naming no full commit SHA, not read)" if unnamed else ""
 
 
-def mirrored(acquirer: Any, row: dict[str, Any], base: dict[str, Any], refusal: str,
-             status: int) -> dict[str, Any]:
+def mirrored(acquirer: Any, row: dict[str, Any], base: dict[str, Any], refusal: str, status: int) -> dict[str, Any]:
     """The pinned blob from Sourcegraph's mirror at the pinned commit, where GitHub no longer serves it.
 
     Read on the guarded Sourcegraph lane and kept only if its git blob hash is
@@ -467,17 +532,37 @@ def mirrored(acquirer: Any, row: dict[str, Any], base: dict[str, Any], refusal: 
     pinned at.
     """
     url = acquirer.sourcegraph_raw_url(f"github.com/{row['repository']}", row["path"], row["commit"])
-    served_status, data = acquirer.sourcegraph_get(url, row["key"], f"{row['repository']}/{row['path']}@{row['commit']}")
+    served_status, data = acquirer.sourcegraph_get(
+        url, row["key"], f"{row['repository']}/{row['path']}@{row['commit']}"
+    )
     at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
     if served_status == 200 and git_blob(data) == row.get("blob"):
         return acquirer.classify_and_record(
-            {**base, "commit": row["commit"], "blob": row["blob"], "url": url,
-             "acquisition_route": GITHUB.ROUTE_SOURCEGRAPH_MIRROR, "reacquired_at_head": True,
-             "github_refusal": refusal}, data)
-    served = f"HTTP {served_status}" if served_status != 200 else f"a blob hashing to {git_blob(data)}, not {row.get('blob')}"
-    return {**base, "commit": row["commit"], "blob": row.get("blob"), "disposition": "acquisition-failure",
-            "status": status, "reacquired_at_head": True,
-            "diagnostic": f"{refusal}; Sourcegraph's mirror at {row['commit']} served {served} at {at}"}
+            {
+                **base,
+                "commit": row["commit"],
+                "blob": row["blob"],
+                "url": url,
+                "acquisition_route": GITHUB.ROUTE_SOURCEGRAPH_MIRROR,
+                "reacquired_at_head": True,
+                "github_refusal": refusal,
+            },
+            data,
+        )
+    served = (
+        f"HTTP {served_status}"
+        if served_status != 200
+        else f"a blob hashing to {git_blob(data)}, not {row.get('blob')}"
+    )
+    return {
+        **base,
+        "commit": row["commit"],
+        "blob": row.get("blob"),
+        "disposition": "acquisition-failure",
+        "status": status,
+        "reacquired_at_head": True,
+        "diagnostic": f"{refusal}; Sourcegraph's mirror at {row['commit']} served {served} at {at}",
+    }
 
 
 def reacquire_head(args: argparse.Namespace) -> int:
@@ -486,10 +571,14 @@ def reacquire_head(args: argparse.Namespace) -> int:
     keys = INDEX.read_keys(evidence)
     wanted = set(args.key)
     rows, opaque_count = continuation_rows(evidence, source)
-    pending = [row for _, row in rows
-               if status_of(row) == "acquisition-failure" and row.get("status") == 404
-               and (args.again or not row.get("reacquired_at_head"))
-               and (not wanted or row["key"] in wanted)]
+    pending = [
+        row
+        for _, row in rows
+        if status_of(row) == "acquisition-failure"
+        and row.get("status") == 404
+        and (args.again or not row.get("reacquired_at_head"))
+        and (not wanted or row["key"] in wanted)
+    ]
     # A row an earlier head request superseded is re-requested at the commit it pinned.
     pending = [{**row, "commit": row.get("supersedes") or row["commit"]} for row in pending]
     acquirer = service_acquirer(evidence, args.cache_dir)
@@ -506,15 +595,20 @@ def reacquire_head(args: argparse.Namespace) -> int:
                 heads[repository] = (status, "", f"GET /repos/{repository} answered HTTP {status}{malformed} at {at}")
             else:
                 status, commit, _ = acquirer.github_json(
-                    "core", f"/repos/{repository}/commits/{urllib.parse.quote(branch, safe='')}")
+                    "core", f"/repos/{repository}/commits/{urllib.parse.quote(branch, safe='')}"
+                )
                 at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
                 sha = commit.get("sha") if isinstance(commit, dict) else None
                 malformed = " without a full commit SHA" if status == 200 else ""
                 heads[repository] = (
                     (status, sha, f"head of {branch}")
                     if status == 200 and isinstance(sha, str) and FULL_COMMIT.fullmatch(sha)
-                    else (status, "", f"GET /repos/{repository}/commits/{branch} answered HTTP {status}{malformed} "
-                                      f"at {at}"))
+                    else (
+                        status,
+                        "",
+                        f"GET /repos/{repository}/commits/{branch} answered HTTP {status}{malformed} at {at}",
+                    )
+                )
         status, head, note = heads[repository]
         base = {field: row[field] for field in ("source", "key", "selector", "repository", "path")}
         if not head:
@@ -522,12 +616,25 @@ def reacquire_head(args: argparse.Namespace) -> int:
             if record.get("disposition") == "acquisition-failure":
                 acquirer.write("candidates.jsonl", record)
         else:
-            raw_url = (acquirer.raw_github_url + "/" + urllib.parse.quote(repository, safe="/") + "/" + head
-                       + "/" + urllib.parse.quote(row["path"], safe="/"))
+            raw_url = (
+                acquirer.raw_github_url
+                + "/"
+                + urllib.parse.quote(repository, safe="/")
+                + "/"
+                + head
+                + "/"
+                + urllib.parse.quote(row["path"], safe="/")
+            )
             got, data = acquirer.raw_github_get(raw_url, row["key"], f"{repository}/{row['path']}@{head}")
             at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
-            ident = {**base, "commit": head, "raw_url": raw_url, "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB,
-                     "supersedes": row["commit"], "reacquired_at_head": True}
+            ident = {
+                **base,
+                "commit": head,
+                "raw_url": raw_url,
+                "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB,
+                "supersedes": row["commit"],
+                "reacquired_at_head": True,
+            }
             if got != 200:
                 refusal = f"{row['path']} at {head} ({note}) answered HTTP {got} at {at}"
                 record, history = from_history(acquirer, row, base, head, refusal)
@@ -547,8 +654,11 @@ def reacquire_head(args: argparse.Namespace) -> int:
             acquirer.write("candidates.jsonl", record)
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1
-    print(f"witness-search-recensus: {len(pending)} 404 candidate(s) requested at head: "
-          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())) + opaque_summary(opaque_count))
+    print(
+        f"witness-search-recensus: {len(pending)} 404 candidate(s) requested at head: "
+        + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items()))
+        + opaque_summary(opaque_count)
+    )
     return 0
 
 
@@ -562,16 +672,24 @@ def namesakes(acquirer: Any, repository: str) -> tuple[list[str], str]:
     """
     name = repository.split("/", 1)[1]
     status, payload, _ = acquirer.github_json(
-        "search", f"/search/repositories?q={urllib.parse.quote(f'{name} in:name')}&per_page=100")
+        "search", f"/search/repositories?q={urllib.parse.quote(f'{name} in:name')}&per_page=100"
+    )
     at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
     if status != 200 or not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
         return [], f"the repository search for `{name}` answered HTTP {status} at {at}"
-    found = [item["full_name"] for item in payload["items"]
-             if isinstance(item, dict) and isinstance(item.get("full_name"), str)
-             and REPOSITORY.fullmatch(item["full_name"])
-             and item["full_name"].split("/", 1)[1].lower() == name.lower()
-             and item["full_name"].lower() != repository.lower()]
-    return found, f"the repository search for `{name}` names {len(found)} namesake(s) ({', '.join(found) or 'none'}) at {at}"
+    found = [
+        item["full_name"]
+        for item in payload["items"]
+        if isinstance(item, dict)
+        and isinstance(item.get("full_name"), str)
+        and REPOSITORY.fullmatch(item["full_name"])
+        and item["full_name"].split("/", 1)[1].lower() == name.lower()
+        and item["full_name"].lower() != repository.lower()
+    ]
+    return (
+        found,
+        f"the repository search for `{name}` names {len(found)} namesake(s) ({', '.join(found) or 'none'}) at {at}",
+    )
 
 
 def reacquire_namesake(args: argparse.Namespace) -> int:
@@ -588,16 +706,24 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
     keys = INDEX.read_keys(evidence)
     wanted = set(args.key)
     rows, opaque_count = continuation_rows(evidence, source)
-    pending = [row for _, row in rows
-               if status_of(row) == "acquisition-failure" and row.get("status") == 404
-               and row.get("reacquired_at_head")
-               and (args.again or not row.get("namesakes_searched"))
-               and (not wanted or row["key"] in wanted)]
+    pending = [
+        row
+        for _, row in rows
+        if status_of(row) == "acquisition-failure"
+        and row.get("status") == 404
+        and row.get("reacquired_at_head")
+        and (args.again or not row.get("namesakes_searched"))
+        and (not wanted or row["key"] in wanted)
+    ]
     acquirer = GITHUB.Acquirer(
-        evidence, cache=args.cache_dir,
+        evidence,
+        cache=args.cache_dir,
         raw_github_url=GITHUB.checked_service_url(
-            os.environ.get("CROZIER_RAW_GITHUB_URL", GITHUB.RAW_GITHUB_URL), "CROZIER_RAW_GITHUB_URL",
-            "raw.githubusercontent.com"))
+            os.environ.get("CROZIER_RAW_GITHUB_URL", GITHUB.RAW_GITHUB_URL),
+            "CROZIER_RAW_GITHUB_URL",
+            "raw.githubusercontent.com",
+        ),
+    )
     searched: dict[str, tuple[list[str], str]] = {}
     tally: dict[str, int] = {}
     for row in pending:
@@ -609,7 +735,8 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
         histories = []
         for namesake in found:
             status, commits, _ = acquirer.github_json(
-                "core", f"/repos/{namesake}/commits?path={urllib.parse.quote(row['path'])}&per_page=100")
+                "core", f"/repos/{namesake}/commits?path={urllib.parse.quote(row['path'])}&per_page=100"
+            )
             at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
             if status != 200 or not isinstance(commits, list):
                 histories.append(f"{namesake}'s history of the path answered HTTP {status} at {at}")
@@ -620,23 +747,45 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
                 if not isinstance(sha, str) or not FULL_COMMIT.fullmatch(sha):
                     unnamed += 1
                     continue
-                raw_url = (acquirer.raw_github_url + "/" + urllib.parse.quote(namesake, safe="/") + "/" + sha
-                           + "/" + urllib.parse.quote(row["path"], safe="/"))
+                raw_url = (
+                    acquirer.raw_github_url
+                    + "/"
+                    + urllib.parse.quote(namesake, safe="/")
+                    + "/"
+                    + sha
+                    + "/"
+                    + urllib.parse.quote(row["path"], safe="/")
+                )
                 got, data = acquirer.raw_github_get(raw_url, row["key"], f"{namesake}/{row['path']}@{sha}")
                 if got == 200 and git_blob(data) == row.get("blob"):
                     record = acquirer.classify_and_record(
-                        {**base, "commit": sha, "blob": row["blob"], "raw_url": raw_url,
-                         "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB, "served_by": namesake,
-                         "supersedes": row["commit"], "reacquired_at_head": True, "namesakes_searched": True,
-                         "github_refusal": row.get("diagnostic")}, data)
+                        {
+                            **base,
+                            "commit": sha,
+                            "blob": row["blob"],
+                            "raw_url": raw_url,
+                            "acquisition_route": GITHUB.ROUTE_PINNED_RAW_GITHUB,
+                            "served_by": namesake,
+                            "supersedes": row["commit"],
+                            "reacquired_at_head": True,
+                            "namesakes_searched": True,
+                            "github_refusal": row.get("diagnostic"),
+                        },
+                        data,
+                    )
                     break
             if record is not None:
                 break
-            histories.append(f"{namesake}'s history of the path lists {len(commits)} commit(s), none serving "
-                             f"blob {row.get('blob')}{unnamed_note(unnamed)}, at {at}")
+            histories.append(
+                f"{namesake}'s history of the path lists {len(commits)} commit(s), none serving "
+                f"blob {row.get('blob')}{unnamed_note(unnamed)}, at {at}"
+            )
         if record is None:
-            record = {**{field: row[field] for field in row if field != "at"}, "namesakes_searched": True,
-                      "diagnostic": "; ".join([str(row.get("diagnostic")), note, *histories])}
+            record = {
+                **{field: row[field] for field in row if field != "at"},
+                "namesakes_searched": True,
+                "diagnostic": "; ".join([str(row.get("diagnostic")), note, *histories]),
+            }
             acquirer.write("candidates.jsonl", record)
         elif status_of(record) == "parse-failure":
             local = acquirer.cache / "documents" / record["document"]
@@ -645,8 +794,11 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
             acquirer.write("candidates.jsonl", record)
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1
-    print(f"witness-search-recensus: {len(pending)} refused candidate(s) sought in namesake repositories: "
-          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())) + opaque_summary(opaque_count))
+    print(
+        f"witness-search-recensus: {len(pending)} refused candidate(s) sought in namesake repositories: "
+        + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items()))
+        + opaque_summary(opaque_count)
+    )
     return 0
 
 
@@ -656,10 +808,14 @@ def main() -> int:
     stages = parser.add_subparsers(dest="stage", required=True)
     full = stages.add_parser("full-yaml", help="census each parse failure again through the full YAML parser")
     full.add_argument("--source", choices=INDEX.SOURCES, required=True)
-    full.add_argument("--cache", type=Path, action="append",
-                      help="an acquisition cache holding documents/<sha256>.<suffix>; repeatable; defaults to "
-                           f"the gitignored {GITHUB.DEFAULT_CACHE.relative_to(REPO)}, and a document no cache "
-                           "holds is reacquired into the first at its recorded commit")
+    full.add_argument(
+        "--cache",
+        type=Path,
+        action="append",
+        help="an acquisition cache holding documents/<sha256>.<suffix>; repeatable; defaults to "
+        f"the gitignored {GITHUB.DEFAULT_CACHE.relative_to(REPO)}, and a document no cache "
+        "holds is reacquired into the first at its recorded commit",
+    )
     full.add_argument("--key", action="append", default=[])
     full.add_argument("--jobs", type=int, default=4)
     full.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_S)
@@ -667,8 +823,9 @@ def main() -> int:
     head.add_argument("--cache-dir", type=Path, required=True)
     head.add_argument("--key", action="append", default=[])
     head.add_argument("--again", action="store_true", help="request candidates an earlier run requested too")
-    namesake = stages.add_parser("reacquire-namesake",
-                                 help="seek each candidate refused at head in the repositories named as its own is")
+    namesake = stages.add_parser(
+        "reacquire-namesake", help="seek each candidate refused at head in the repositories named as its own is"
+    )
     namesake.add_argument("--cache-dir", type=Path, required=True)
     namesake.add_argument("--key", action="append", default=[])
     namesake.add_argument("--again", action="store_true", help="seek candidates an earlier run sought too")
@@ -690,6 +847,5 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except (OSError, ValueError, KeyError) as error:
-        print(f"witness-search-recensus: {error}; inspect the ledger and cache named and rerun",
-              file=sys.stderr)
+        print(f"witness-search-recensus: {error}; inspect the ledger and cache named and rerun", file=sys.stderr)
         raise SystemExit(1) from error

@@ -43,16 +43,24 @@ DOTS = [(255, 95, 86), (255, 189, 46), (39, 201, 63)]  # traffic-light window do
 FONT_SIZE = 20
 PAD = 24
 BAR_H = 40
-TYPE_STEP = 3       # characters revealed per typing frame
-TYPE_MS = 45        # per typing frame
-LINE_MS = 70        # per revealed output line
-BEAT_MS = 500       # pause after a command's output
-HOLD_MS = 3200      # hold on the final frame
+TYPE_STEP = 3  # characters revealed per typing frame
+TYPE_MS = 45  # per typing frame
+LINE_MS = 70  # per revealed output line
+BEAT_MS = 500  # pause after a command's output
+HOLD_MS = 3200  # hold on the final frame
 
 # The words the model's listing colours as keywords: Python's own, and the
 # names (`self`, `enum`, `str`, `typing`, ...) a generated model leans on.
 HIGHLIGHTED_WORDS = {
-    "import", "from", "class", "def", "if", "return", "self", "enum", "str",
+    "import",
+    "from",
+    "class",
+    "def",
+    "if",
+    "return",
+    "self",
+    "enum",
+    "str",
     "typing",
 }
 
@@ -68,9 +76,24 @@ def generate_sdk_summary(binp: str, spec: str, work: str) -> str:
     env = dict(os.environ)
     try:
         proc = subprocess.run(
-            [binp, "generate", "python", "--no-config", "--spec", spec, "--output", "sdk",
-             "--package-name", "petstore", "--project-name", "petstore"],
-            cwd=work, env=env, capture_output=True, text=True,
+            [
+                binp,
+                "generate",
+                "python",
+                "--no-config",
+                "--spec",
+                spec,
+                "--output",
+                "sdk",
+                "--package-name",
+                "petstore",
+                "--project-name",
+                "petstore",
+            ],
+            cwd=work,
+            env=env,
+            capture_output=True,
+            text=True,
         )
     except OSError as error:
         raise GenerateFailed(
@@ -103,7 +126,7 @@ def colorize(text: str) -> list[tuple[str, tuple[int, int, int]]]:
         elif tok in HIGHLIGHTED_WORDS:
             color = PURPLE
         elif tok.isupper() and tok.isalpha():
-            color = CYAN            # enum members (AVAILABLE, PENDING, SOLD)
+            color = CYAN  # enum members (AVAILABLE, PENDING, SOLD)
         else:
             color = FG
         segs.append((tok, color))
@@ -181,8 +204,13 @@ def render_gif(frames: list, font_path: str, out: str) -> None:
     imgs = [draw_frame(lines) for lines, _ in frames]
     durations = [ms for _, ms in frames]
     imgs[0].save(
-        out, save_all=True, append_images=imgs[1:], duration=durations,
-        loop=0, optimize=True, disposal=2,
+        out,
+        save_all=True,
+        append_images=imgs[1:],
+        duration=durations,
+        loop=0,
+        optimize=True,
+        disposal=2,
     )
 
 

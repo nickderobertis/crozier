@@ -101,16 +101,25 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
         directory.mkdir(parents=True)
         declared = "              format: email\n" if email else ""
         (directory / "openapi.yml").write_text(DOCUMENT.format(format=declared), encoding="utf-8")
-        (directory / "evidence.toml").write_text(
-            EVIDENCE.format(zero="0" * 64, arm=arm), encoding="utf-8"
-        )
+        (directory / "evidence.toml").write_text(EVIDENCE.format(zero="0" * 64, arm=arm), encoding="utf-8")
 
     def run_recipe(self, base: Path, ledger: Path) -> subprocess.CompletedProcess[str]:
         gates = ledger.with_name("gates.tsv")
         return subprocess.run(
-            ["just", "handwritten-reach", "--handwritten-dir", str(base), "--ledger", str(ledger),
-             "--gates", str(gates)],
-            cwd=REPO, capture_output=True, text=True, timeout=3600,
+            [
+                "just",
+                "handwritten-reach",
+                "--handwritten-dir",
+                str(base),
+                "--ledger",
+                str(ledger),
+                "--gates",
+                str(gates),
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=3600,
         )
 
     def test_the_recipe_measures_each_fixture_alone(self) -> None:
@@ -131,7 +140,8 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertGreaterEqual(total, 1)
             self.assertEqual(total, executed, "the document declaring the format did not take the arm")
             self.assertEqual(
-                ["0", str(total)], measured["declares-no-format"][3:],
+                ["0", str(total)],
+                measured["declares-no-format"][3:],
                 "a document without the format still counted the arm as executed",
             )
 
@@ -154,7 +164,8 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertGreaterEqual(total, 1)
             self.assertEqual(total, executed, "the run for the declared audience did not take the arm")
             self.assertEqual(
-                ["0", str(total)], measured["unfiltered"][3:],
+                ["0", str(total)],
+                measured["unfiltered"][3:],
                 "a fixture declaring no audience was measured with a filter",
             )
             # The configuration gate: the fixture declaring the audience is
@@ -163,8 +174,10 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                 gates = list(csv.reader(handle, delimiter="\t"))
             self.assertEqual(["fixture", "key", "site", "setting", "regions_executed", "regions"], gates[0])
             self.assertEqual(
-                [["for-public", "discriminator-mapping", AUDIENCE_ARM, "-", "0", str(total)],
-                 ["for-public", "discriminator-mapping", AUDIENCE_ARM, "audiences=public", str(total), str(total)]],
+                [
+                    ["for-public", "discriminator-mapping", AUDIENCE_ARM, "-", "0", str(total)],
+                    ["for-public", "discriminator-mapping", AUDIENCE_ARM, "audiences=public", str(total), str(total)],
+                ],
                 gates[1:],
             )
 

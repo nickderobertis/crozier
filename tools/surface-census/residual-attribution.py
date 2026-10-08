@@ -39,7 +39,9 @@ CROZIER = REPO / "target" / "debug" / ("crozier.exe" if sys.platform == "win32" 
 
 
 def _census():
-    spec = importlib.util.spec_from_file_location("openapi_surface_census", REPO / "tools" / "surface-census" / "openapi-surface-census.py")
+    spec = importlib.util.spec_from_file_location(
+        "openapi_surface_census", REPO / "tools" / "surface-census" / "openapi-surface-census.py"
+    )
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     sys.modules.setdefault("openapi_surface_census", module)
@@ -53,6 +55,7 @@ DISTINCT = {"type": "string", "format": "date-time"}
 
 def _retype_format(old: str) -> Callable[[Any], int]:
     """Rewrite every `format: <old>` to `date-time`, which types the field differently."""
+
     def perturb(node: Any) -> int:
         count = 0
         if isinstance(node, dict):
@@ -65,6 +68,7 @@ def _retype_format(old: str) -> Callable[[Any], int]:
         elif isinstance(node, list):
             count += sum(perturb(value) for value in node)
         return count
+
     return perturb
 
 
@@ -91,7 +95,9 @@ def _stringify_null_examples(node: Any) -> int:
     """Give every Schema Object whose selected example is null a string one instead."""
     count = 0
     if isinstance(node, dict):
-        if ("type" in node or "properties" in node or "examples" in node) and CENSUS.selected_example_kind(node) == "null":
+        if ("type" in node or "properties" in node or "examples" in node) and CENSUS.selected_example_kind(
+            node
+        ) == "null":
             node.pop("example", None)
             node["examples"] = ["crozier-perturbed"]
             count += 1
@@ -125,9 +131,20 @@ def _generate(document: Any, out: Path) -> dict[str, bytes]:
     source = out.with_suffix(".json")
     source.write_text(json.dumps(document), encoding="utf-8")
     completed = subprocess.run(
-        [str(CROZIER), "generate", "--spec", str(source), "--output", str(out),
-         "--package-name", "fern", "--project-name", "default_package_name"],
-        capture_output=True, text=True,
+        [
+            str(CROZIER),
+            "generate",
+            "--spec",
+            str(source),
+            "--output",
+            str(out),
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ],
+        capture_output=True,
+        text=True,
     )
     if completed.returncode != 0:
         sys.exit(
@@ -140,16 +157,20 @@ def _generate(document: Any, out: Path) -> dict[str, bytes]:
 
 def main() -> int:
     if not CROZIER.is_file():
-        sys.exit(f"residual-attribution: no {CROZIER.relative_to(REPO)}; run `just residual-attribution`, which builds it")
+        sys.exit(
+            f"residual-attribution: no {CROZIER.relative_to(REPO)}; run `just residual-attribution`, which builds it"
+        )
     if shutil.which("ruff") is None:
         sys.exit("residual-attribution: `ruff` is not on PATH; install it with `just bootstrap`")
     registrations = CENSUS.golden_registrations(REPO / CENSUS.GOLDEN_REGISTRY)
     for key, (fixture, perturb) in CASES.items():
         path = CENSUS.spec_in(REPO / "tests" / "fixtures" / "corpus-sources" / fixture)
         if path is None:
-            sys.exit(f"residual-attribution: {key}'s witness {fixture} has no committed source under "
-                     "tests/fixtures/corpus-sources/; restore it from git (`just lint-corpus-sources` names "
-                     "what is missing), then re-run")
+            sys.exit(
+                f"residual-attribution: {key}'s witness {fixture} has no committed source under "
+                "tests/fixtures/corpus-sources/; restore it from git (`just lint-corpus-sources` names "
+                "what is missing), then re-run"
+            )
         perturbed = CENSUS.load_document(path)
         if not perturb(perturbed):
             sys.exit(
@@ -164,10 +185,17 @@ def main() -> int:
         moved = sorted(name for name in before.keys() | after.keys() if before.get(name) != after.get(name))
         unmatched = set(registrations[fixture].unmatched)
         matched = [name for name in moved if name not in unmatched]
-        print(json.dumps({
-            "key": key, "fixture": fixture,
-            "byte_matched": matched, "unmatched": [name for name in moved if name in unmatched],
-        }, sort_keys=True))
+        print(
+            json.dumps(
+                {
+                    "key": key,
+                    "fixture": fixture,
+                    "byte_matched": matched,
+                    "unmatched": [name for name in moved if name in unmatched],
+                },
+                sort_keys=True,
+            )
+        )
     return 0
 
 

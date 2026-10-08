@@ -53,9 +53,7 @@ def config_with_urls() -> str:
     for plugin in VENDORED:
         spelling = f'"./{plugin["file"]}"'
         if spelling not in text:
-            raise AssertionError(
-                f"llmlint.yml does not name {spelling}; the lock and the config have drifted"
-            )
+            raise AssertionError(f"llmlint.yml does not name {spelling}; the lock and the config have drifted")
         text = text.replace(spelling, f'"{plugin["url"]}@{plugin["pin"]}"')
     return text
 
@@ -75,12 +73,14 @@ class TheGateAndTheRequiredCheckRunThisSuite(unittest.TestCase):
         # calls runs that target.
         project = json.loads((REPO / "tools" / "llmlint-resolution" / "project.json").read_text(encoding="utf-8"))
         self.assertNotIn("tier:promoted", project["tags"])
-        self.assertEqual(f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
-                         project["targets"]["test"]["options"]["command"])
+        self.assertEqual(
+            f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
+            project["targets"]["test"]["options"]["command"],
+        )
         self.assertIn({"env": "CROZIER_REQUIRE_LLMLINT"}, project["targets"]["test"]["inputs"])
         justfile = (REPO / "justfile").read_text(encoding="utf-8").splitlines()
         start = justfile.index("test-llmlint-plugins:") + 1
-        recipe = [line.strip() for line in justfile[start:start + 2]]
+        recipe = [line.strip() for line in justfile[start : start + 2]]
         self.assertEqual(["@just nx run llmlint-tooling:test-plugins", "@just nx run llmlint-resolution:test"], recipe)
 
     def test_the_required_llmlint_check_runs_it_without_the_skip(self) -> None:
@@ -111,10 +111,7 @@ class ResolvesWithTheOriginUnreachable(unittest.TestCase):
     def setUp(self) -> None:
         self.llmlint = llmlint_binary()
         if self.llmlint is None:
-            self.fail(
-                "CROZIER_REQUIRE_LLMLINT=1 but llmlint is not installed —"
-                " run `just setup-llmlint`"
-            )
+            self.fail("CROZIER_REQUIRE_LLMLINT=1 but llmlint is not installed — run `just setup-llmlint`")
         self.temporary = tempfile.TemporaryDirectory()
         self.scratch = Path(self.temporary.name)
         self.addCleanup(self.temporary.cleanup)
@@ -180,11 +177,7 @@ class ResolvesWithTheOriginUnreachable(unittest.TestCase):
             by_source.setdefault(origin["source"], set()).add(rule)
         for plugin in PLUGINS:
             with self.subTest(plugin=plugin["name"]):
-                source = (
-                    f'{plugin["url"]}@{plugin["pin"]}'
-                    if plugin.get("bundled")
-                    else str(REPO / plugin["file"])
-                )
+                source = f"{plugin['url']}@{plugin['pin']}" if plugin.get("bundled") else str(REPO / plugin["file"])
                 self.assertEqual(
                     sorted(by_source.pop(source, set())),
                     plugin["rules"],

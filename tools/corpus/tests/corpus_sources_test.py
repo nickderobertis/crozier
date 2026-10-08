@@ -64,7 +64,12 @@ def run(root: Path, *args: str, **environment: str) -> subprocess.CompletedProce
     env.update(environment)
     return subprocess.run(
         [sys.executable, str(root / "tools" / "corpus" / "corpus_sources.py"), *args],
-        cwd=root, env=env, text=True, capture_output=True, check=False, encoding="utf-8",
+        cwd=root,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        encoding="utf-8",
     )
 
 
@@ -85,7 +90,8 @@ class TheCommittedTreeHolds(unittest.TestCase):
             if line.strip() and not line.startswith("#")
         )
         golden_rows = [
-            row.name for row in corpus_sources.corpus_rows(REPO)
+            row.name
+            for row in corpus_sources.corpus_rows(REPO)
             if (REPO / "tests/fixtures" / aliases.get(row.name, row.name) / "expected").is_dir()
             or (REPO / "tests/fixtures" / aliases.get(row.name, row.name) / "known-fern-failure.json").is_file()
         ]
@@ -97,15 +103,12 @@ class TheCommittedTreeHolds(unittest.TestCase):
                 self.assertEqual(record.sha256, measured)
 
     def test_no_registered_row_is_left_fetch_only(self) -> None:
-        self.assertEqual(
-            [], [row.name for row in corpus_sources.corpus_rows(REPO) if row.decision != "committed"]
-        )
+        self.assertEqual([], [row.name for row in corpus_sources.corpus_rows(REPO) if row.decision != "committed"])
 
     def test_prepared_remote_references_use_committed_files_without_changing_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             staged = Path(directory)
-            completed = run(REPO, "prepare", "--fixture", "helios-verifiable-api",
-                            "--output", str(staged))
+            completed = run(REPO, "prepare", "--fixture", "helios-verifiable-api", "--output", str(staged))
             self.assertEqual(0, completed.returncode, completed.stderr)
             source = Path(completed.stdout.strip())
             self.assertNotIn("https://raw.githubusercontent.com", source.read_text(encoding="utf-8"))
@@ -120,8 +123,7 @@ class TheCommittedTreeHolds(unittest.TestCase):
 
     def test_prepare_refuses_a_missing_source_with_recovery_guidance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            completed = run(REPO, "prepare", "--fixture", "no-such-corpus",
-                            "--output", directory)
+            completed = run(REPO, "prepare", "--fixture", "no-such-corpus", "--output", directory)
             self.assertEqual(1, completed.returncode)
             self.assertIn("just lint-corpus-sources", completed.stderr)
 
@@ -151,9 +153,9 @@ class SyntheticRoot(unittest.TestCase):
         self.origin = self.ORIGIN
         self.write_corpus("committed")
         (self.fixtures / "corpus-remote-ref-pins.tsv").write_text(
-            "# Synthetic pins.\n"
-            f"remote\t{MUTABLE_URL}\t{PINNED_URL}\t{hashlib.sha256(BLOCK).hexdigest()}\n",
-            encoding="utf-8", newline="\n",
+            f"# Synthetic pins.\nremote\t{MUTABLE_URL}\t{PINNED_URL}\t{hashlib.sha256(BLOCK).hexdigest()}\n",
+            encoding="utf-8",
+            newline="\n",
         )
 
     def write_corpus(self, decision: str, *, extra: str = "", remote: bool = True) -> None:
@@ -164,7 +166,8 @@ class SyntheticRoot(unittest.TestCase):
             "|---:|---|---|---|---|---|---|---|\n"
             f"| 1 | `plain` | test | {self.origin}/specs/plain.json | `HEAD` | MIT | {decision} | plain |\n"
             f"{remote_row if remote else ''}{extra}",
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
 
     def commit_plain_without_fetching(self) -> None:
@@ -197,8 +200,7 @@ class TheOfflineCommandsRunEverywhere(SyntheticRoot):
     def test_prepare_rejects_malformed_aliases(self) -> None:
         self.commit_plain_without_fetching()
         (self.fixtures / "corpus-aliases.tsv").write_text("broken-row\n", encoding="utf-8", newline="\n")
-        completed = run(self.root, "prepare", "--fixture", "plain",
-                        "--output", str(self.root / "staged"))
+        completed = run(self.root, "prepare", "--fixture", "plain", "--output", str(self.root / "staged"))
         self.assertEqual(1, completed.returncode)
         self.assertIn("invalid alias", completed.stderr)
         self.assertNotIn("Traceback", completed.stderr)
@@ -206,33 +208,39 @@ class TheOfflineCommandsRunEverywhere(SyntheticRoot):
     def test_prepare_reports_missing_bytes_without_a_traceback(self) -> None:
         self.commit_plain_without_fetching()
         self.committed("plain/openapi.json").unlink()
-        completed = run(self.root, "prepare", "--fixture", "plain",
-                        "--output", str(self.root / "staged"))
+        completed = run(self.root, "prepare", "--fixture", "plain", "--output", str(self.root / "staged"))
         self.assertEqual(1, completed.returncode)
         self.assertIn("just lint-corpus-sources", completed.stderr)
         self.assertNotIn("Traceback", completed.stderr)
 
     def test_a_remote_url_that_decodes_out_of_its_row_is_refused(self) -> None:
-        for url in (f"{RAW}/example/schemas/{PINNED_SHA}/%2e%2e/%2e%2e/escape.yaml",
-                    f"{RAW}/example/schemas/{PINNED_SHA}/a%5cb.yaml",
-                    f"{RAW}/example//schemas.yaml"):
+        for url in (
+            f"{RAW}/example/schemas/{PINNED_SHA}/%2e%2e/%2e%2e/escape.yaml",
+            f"{RAW}/example/schemas/{PINNED_SHA}/a%5cb.yaml",
+            f"{RAW}/example//schemas.yaml",
+        ):
             with self.subTest(url=url), self.assertRaises(corpus_sources.SourcesError) as refused:
                 corpus_sources.remote_path(url)
             self.assertIn("which is no path inside its row's directory", str(refused.exception))
-        self.assertEqual(f"remote/raw.githubusercontent.com/example/schemas/{PINNED_SHA}/block.yaml",
-                         corpus_sources.remote_path(PINNED_URL))
+        self.assertEqual(
+            f"remote/raw.githubusercontent.com/example/schemas/{PINNED_SHA}/block.yaml",
+            corpus_sources.remote_path(PINNED_URL),
+        )
 
     def test_check_refuses_a_pinned_url_that_decodes_out_of_its_row_and_changes_nothing(self) -> None:
         self.commit_plain_without_fetching()
         self.write_corpus("committed")
         escaping = f"{RAW}/example/schemas/{PINNED_SHA}/%2e%2e/%2e%2e/escape.yaml"
         pins = self.fixtures / "corpus-remote-ref-pins.tsv"
-        pins.write_text(pins.read_text(encoding="utf-8").replace(PINNED_URL, escaping),
-                        encoding="utf-8", newline="\n")
+        pins.write_text(pins.read_text(encoding="utf-8").replace(PINNED_URL, escaping), encoding="utf-8", newline="\n")
         before = {path: path.read_bytes() for path in self.fixtures.rglob("*") if path.is_file()}
         completed = run(self.root, "check")
-        self.assert_refused(completed, f"{escaping} decodes to", "which is no path inside its row's directory",
-                            "pin the reference to a plain file URL")
+        self.assert_refused(
+            completed,
+            f"{escaping} decodes to",
+            "which is no path inside its row's directory",
+            "pin the reference to a plain file URL",
+        )
         self.assertNotIn("Traceback", completed.stderr)
         self.assertEqual(before, {path: path.read_bytes() for path in self.fixtures.rglob("*") if path.is_file()})
         self.assertFalse((self.root / "escape.yaml").exists())

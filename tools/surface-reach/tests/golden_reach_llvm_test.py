@@ -32,9 +32,7 @@ class RealLlvmToolTests(unittest.TestCase):
             raw = Path(scratch) / "stale.profraw"
             raw.write_bytes(b"not a profile")
             with self.assertRaises(SystemExit) as refused:
-                golden_reach.run_llvm(
-                    [profdata, "merge", "-sparse", str(raw), "-o", str(Path(scratch) / "m.profdata")]
-                )
+                golden_reach.run_llvm([profdata, "merge", "-sparse", str(raw), "-o", str(Path(scratch) / "m.profdata")])
         message = str(refused.exception)
         # On Windows the real tool is `llvm-profdata.exe`, so this also proves
         # the message names it without the suffix.

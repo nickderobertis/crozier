@@ -127,7 +127,9 @@ def spec_filename(url: str) -> str:
     """`openapi.<suffix>`, the canonical name `tools/corpus/corpus-lib.sh` publishes."""
     suffix = PurePosixPath(urlsplit(url).path).suffix
     if suffix not in SPEC_SUFFIXES:
-        raise SourcesError(f"{url} has no supported OpenAPI suffix ({', '.join(SPEC_SUFFIXES)}); use a pinned JSON or YAML source URL")
+        raise SourcesError(
+            f"{url} has no supported OpenAPI suffix ({', '.join(SPEC_SUFFIXES)}); use a pinned JSON or YAML source URL"
+        )
     return f"openapi{suffix}"
 
 
@@ -137,8 +139,10 @@ def remote_path(url: str) -> str:
     parts = urlsplit(url)
     path = f"{REMOTE_DIR}/{parts.netloc}{unquote(parts.path)}"
     if "\\" in path or any(part in ("", ".", "..") for part in path.split("/")):
-        raise SourcesError(f"{url} decodes to {path!r}, which is no path inside its row's directory; "
-                           "pin the reference to a plain file URL")
+        raise SourcesError(
+            f"{url} decodes to {path!r}, which is no path inside its row's directory; "
+            "pin the reference to a plain file URL"
+        )
     return path
 
 
@@ -171,11 +175,15 @@ def load_manifest(root: Path) -> list[Record]:
         if not DIGEST_RE.fullmatch(record.sha256):
             raise SourcesError(f"{site}: sha256 {record.sha256!r} is not 64 lowercase hexadecimal characters")
         if not safe_name(record.corpus_name):
-            raise SourcesError(f"{site}: corpus name {record.corpus_name!r} is not one path segment; "
-                               "rewrite the manifest with `vendor`")
+            raise SourcesError(
+                f"{site}: corpus name {record.corpus_name!r} is not one path segment; "
+                "rewrite the manifest with `vendor`"
+            )
         if "\\" in record.path:
-            raise SourcesError(f"{site}: path {record.path!r} holds a backslash, which would read as a "
-                               "separator on Windows; rewrite the manifest with `vendor`")
+            raise SourcesError(
+                f"{site}: path {record.path!r} holds a backslash, which would read as a "
+                "separator on Windows; rewrite the manifest with `vendor`"
+            )
         relative = PurePosixPath(record.path)
         prefix = ROOT_RELATIVE / record.corpus_name
         if ".." in relative.parts or not relative.is_relative_to(prefix) or relative == prefix:
@@ -195,8 +203,7 @@ def load_manifest(root: Path) -> list[Record]:
 def write_manifest(root: Path, records: list[Record]) -> None:
     ordered = sorted(records, key=lambda record: (record.corpus_name, record.path))
     body = "".join(
-        "\t".join((record.corpus_name, record.path, record.source_url, record.sha256)) + "\n"
-        for record in ordered
+        "\t".join((record.corpus_name, record.path, record.source_url, record.sha256)) + "\n" for record in ordered
     )
     (root / MANIFEST_RELATIVE).write_text(HEADER + "\n" + body, encoding="utf-8", newline="\n")
 
@@ -216,7 +223,9 @@ def check(root: Path) -> int:
         by_row.setdefault(record.corpus_name, {})[relative.as_posix()] = record
     names = {row.name for row in rows}
     for name in sorted(set(by_row) - names):
-        problems.append(f"{name}: recorded in {MANIFEST_RELATIVE} but is no canonical CORPUS.md row; delete its records and {ROOT_RELATIVE / name}/")
+        problems.append(
+            f"{name}: recorded in {MANIFEST_RELATIVE} but is no canonical CORPUS.md row; delete its records and {ROOT_RELATIVE / name}/"
+        )
     for row in rows:
         if row.decision != "committed":
             problems.append(
@@ -226,15 +235,21 @@ def check(root: Path) -> int:
         recorded = by_row.get(row.name, {})
         expected = expected_files(root, row)
         for missing in sorted(set(expected) - set(recorded)):
-            problems.append(f"{row.name}: {missing} is not committed; run `just corpus-sources vendor --fixture {row.name}`")
+            problems.append(
+                f"{row.name}: {missing} is not committed; run `just corpus-sources vendor --fixture {row.name}`"
+            )
         for extra in sorted(set(recorded) - set(expected)):
-            problems.append(f"{row.name}: {extra} is recorded but the row does not resolve it; run `just corpus-sources vendor --fixture {row.name}`")
+            problems.append(
+                f"{row.name}: {extra} is recorded but the row does not resolve it; run `just corpus-sources vendor --fixture {row.name}`"
+            )
         for relative, record in sorted(recorded.items()):
             if relative not in expected:
                 continue
             url, pinned = expected[relative]
             if record.source_url != url:
-                problems.append(f"{row.name}: {relative} records source {record.source_url}, but the row resolves {url}; restore its provenance or re-vendor the row")
+                problems.append(
+                    f"{row.name}: {relative} records source {record.source_url}, but the row resolves {url}; restore its provenance or re-vendor the row"
+                )
             if pinned is not None and record.sha256 != pinned:
                 problems.append(
                     f"{row.name}: {relative} records sha256 {record.sha256}, but "
@@ -259,7 +274,9 @@ def check(root: Path) -> int:
     if base.is_dir():
         for path in sorted(base.rglob("*")):
             if path.is_symlink() or (path.is_file() and path.relative_to(root).as_posix() not in recorded_paths):
-                problems.append(f"{path.relative_to(root).as_posix()} is not recorded in {MANIFEST_RELATIVE}; delete it or vendor its row")
+                problems.append(
+                    f"{path.relative_to(root).as_posix()} is not recorded in {MANIFEST_RELATIVE}; delete it or vendor its row"
+                )
     if problems:
         raise SourcesError("\n".join(problems))
     return verified
@@ -274,7 +291,9 @@ def bash() -> str:
     """
     found = shutil.which("bash")
     if found is None:
-        raise SourcesError("no bash on PATH; install bash (Git Bash on Windows) and put it on PATH to run the rebuild fetch")
+        raise SourcesError(
+            "no bash on PATH; install bash (Git Bash on Windows) and put it on PATH to run the rebuild fetch"
+        )
     return found
 
 
@@ -285,10 +304,15 @@ def fetch(root: Path, names: list[str], destination: Path) -> None:
     for name in names:
         result = subprocess.run(
             [shell, str(script), "--fixture", name, str(destination)],
-            cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+            cwd=root,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
         )
         if result.returncode != 0:
-            raise SourcesError(f"{name}: tools/corpus/fetch-corpus.sh failed: {result.stderr.strip()}; restore access to the pinned URL and retry the rebuild")
+            raise SourcesError(
+                f"{name}: tools/corpus/fetch-corpus.sh failed: {result.stderr.strip()}; restore access to the pinned URL and retry the rebuild"
+            )
 
 
 def collect_sources_and_fetch_remote_documents(root: Path, row: Row, fetched: Path) -> dict[str, tuple[str, bytes]]:
@@ -304,10 +328,14 @@ def collect_sources_and_fetch_remote_documents(root: Path, row: Row, fetched: Pa
         else:
             path = fetched / row.name / relative
             if not path.is_file():
-                raise SourcesError(f"{row.name}: the fetch left no {relative} under {fetched / row.name}; retry vendor without --from to fetch the complete row")
+                raise SourcesError(
+                    f"{row.name}: the fetch left no {relative} under {fetched / row.name}; retry vendor without --from to fetch the complete row"
+                )
             body = path.read_bytes()
         if pinned is not None and hashlib.sha256(body).hexdigest() != pinned:
-            raise SourcesError(f"{row.name}: {url} no longer serves its pinned sha256 {pinned}; restore the pinned bytes or review and record a new immutable pin")
+            raise SourcesError(
+                f"{row.name}: {url} no longer serves its pinned sha256 {pinned}; restore the pinned bytes or review and record a new immutable pin"
+            )
         files[relative] = (url, body)
     return files
 
@@ -319,7 +347,9 @@ def selected_rows(root: Path, fixtures: list[str]) -> list[Row]:
     known = {row.name: row for row in rows}
     unknown = [name for name in fixtures if name not in known]
     if unknown:
-        raise SourcesError(f"{unknown[0]!r} is not a canonical CORPUS.md row; choose a registered name from that manifest")
+        raise SourcesError(
+            f"{unknown[0]!r} is not a canonical CORPUS.md row; choose a registered name from that manifest"
+        )
     return [known[name] for name in fixtures]
 
 
@@ -377,8 +407,9 @@ def prepare(root: Path, fixture: str, output: Path) -> Path:
             if not line.strip() or line.startswith("#"):
                 continue
             cells = line.split("\t")
-            if len(cells) != 2 or any(not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", cell)
-                                      or ".." in cell for cell in cells):
+            if len(cells) != 2 or any(
+                not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", cell) or ".." in cell for cell in cells
+            ):
                 raise SourcesError(f"{alias_file}:{number}: invalid alias; restore two safe tab-separated names")
             if cells[0] in aliases or cells[1] in aliases.values():
                 raise SourcesError(f"{alias_file}:{number}: duplicate alias; keep each name once")
@@ -407,8 +438,11 @@ def prepare(root: Path, fixture: str, output: Path) -> Path:
     if output.exists() and any(output.iterdir()):
         raise SourcesError(f"{output}: staging directory is not empty; use a fresh directory")
     output.mkdir(parents=True, exist_ok=True)
-    remote = {record.source_url: output / Path(record.path).relative_to(base.relative_to(root))
-              for record in records if "/remote/" in record.path}
+    remote = {
+        record.source_url: output / Path(record.path).relative_to(base.relative_to(root))
+        for record in records
+        if "/remote/" in record.path
+    }
     for record in records:
         source = root / record.path
         body = source.read_bytes()
@@ -447,8 +481,14 @@ def main(argv: list[str] | None = None) -> int:
     ):
         command = commands.add_parser(name, help=help_text)
         command.add_argument("--fixture", action="append", default=[], metavar="NAME")
-        command.add_argument("--from", dest="source", type=Path, default=None, metavar="DIR",
-                             help="reuse a completed tools/corpus/fetch-corpus.sh fetch in DIR")
+        command.add_argument(
+            "--from",
+            dest="source",
+            type=Path,
+            default=None,
+            metavar="DIR",
+            help="reuse a completed tools/corpus/fetch-corpus.sh fetch in DIR",
+        )
     command = commands.add_parser("prepare", help="stage committed sources for offline generation")
     command.add_argument("--fixture", required=True)
     command.add_argument("--output", required=True, type=Path)
@@ -465,7 +505,10 @@ def main(argv: list[str] | None = None) -> int:
         else:
             drifted = refetch(root, args.fixture, args.source, write=False)
             if drifted:
-                print("corpus-sources: upstream no longer serves the committed bytes; restore the pinned bytes or review a new immutable pin and re-vendor the affected rows:", file=sys.stderr)
+                print(
+                    "corpus-sources: upstream no longer serves the committed bytes; restore the pinned bytes or review a new immutable pin and re-vendor the affected rows:",
+                    file=sys.stderr,
+                )
                 print("\n".join(f"  {line}" for line in drifted), file=sys.stderr)
                 return 1
     except (OSError, UnicodeError) as error:

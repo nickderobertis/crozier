@@ -35,9 +35,7 @@ def test_endpoint_returns_typed_response(recordings, endpoint):
         # its own schema-required field) — the SDK is not under test here. See
         # `_driver._mock_side_reason`. Skipped, not passed, so the count stays honest.
         pytest.skip(f"{fixture_name}:{method} mock-side: {observation['reason']}")
-    assert observation["ok"], (
-        f"{fixture_name}:{method} did not round-trip: {observation.get('error')}"
-    )
+    assert observation["ok"], f"{fixture_name}:{method} did not round-trip: {observation.get('error')}"
 
 
 def test_covers_every_reference_endpoint(recordings):
@@ -92,8 +90,7 @@ def test_partial_corpus_exercises_the_fern_5_20_parsing_error_classifier(recordi
     reasons = [obs["reason"] for obs in recording.values() if obs.get("skipped")]
     assert reasons, "Bunq's seeded Prism responses should exercise the skip classifier"
     assert all(
-        reason.startswith("mock response omitted schema-required field(s):")
-        or reason.startswith("prism 5")
+        reason.startswith("mock response omitted schema-required field(s):") or reason.startswith("prism 5")
         for reason in reasons
     ), reasons
 
@@ -108,16 +105,11 @@ def test_placeholder_snippet_endpoint_is_driven_for_real(recordings):
     upload = "queues.send_message_binary"
     recording = recordings["apache.org-qakka"]
     assert upload in recording, (
-        f"{upload} was not driven — the placeholder snippet was dropped instead of "
-        f"being resolved into a real call"
+        f"{upload} was not driven — the placeholder snippet was dropped instead of being resolved into a real call"
     )
     observation = recording[upload]
-    assert observation.get("synthesized"), (
-        f"{upload} did not go through the synthesized-argument path: {observation}"
-    )
-    assert observation.get("ok"), (
-        f"{upload} did not round-trip: {observation.get('error')}"
-    )
+    assert observation.get("synthesized"), f"{upload} did not go through the synthesized-argument path: {observation}"
+    assert observation.get("ok"), f"{upload} did not round-trip: {observation.get('error')}"
     assert observation["model"] == "ApiResponse", (
         f"{upload} returned {observation['model']}, not the declared response model"
     )
@@ -143,9 +135,7 @@ def test_response_models_are_deserialized(recordings):
     """Guard against a trivially-passing sweep: a complicated corpus must return real
     pydantic response models, not merely primitives — proof deserialization ran."""
     for fixture in FIXTURES:
-        models = sorted(
-            m for m, obs in recordings[fixture.name].items() if obs.get("model")
-        )
+        models = sorted(m for m, obs in recordings[fixture.name].items() if obs.get("model"))
         assert models, (
             f"{fixture.name}: no endpoint returned a pydantic model; response "
             f"deserialization may have degraded to raw JSON"

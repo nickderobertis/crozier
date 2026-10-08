@@ -73,9 +73,7 @@ def schema_document(name: str) -> bytes:
 def root_document(title: str, *, refs: dict[str, str], link: str | None = None) -> bytes:
     """A small OpenAPI document whose component schemas carry `refs`."""
     description = f"    Home page: {link}\n" if link else "    Home page: none\n"
-    schemas = "".join(
-        f"    {name}:\n      $ref: {reference}\n" for name, reference in refs.items()
-    )
+    schemas = "".join(f"    {name}:\n      $ref: {reference}\n" for name, reference in refs.items())
     return (
         "openapi: 3.0.0\n"
         "info:\n"
@@ -181,15 +179,9 @@ class PinMechanismTests(unittest.TestCase):
             ),
             # An absolute URL in a `description` is not a `$ref`: a text scan
             # would score this row as carrying a mutable cross-document reference.
-            "plain-row": root_document(
-                "Plain Row", refs={}, link=f"{RAW}/example/plain/refs/heads/main/README.md"
-            ),
-            "mutable-row": root_document(
-                "Mutable Row", refs={"Block": f"{mutable_url('block')}#/block"}
-            ),
-            "digest-row": root_document(
-                "Digest Row", refs={"State": f"{mutable_url('state')}#/state"}
-            ),
+            "plain-row": root_document("Plain Row", refs={}, link=f"{RAW}/example/plain/refs/heads/main/README.md"),
+            "mutable-row": root_document("Mutable Row", refs={"Block": f"{mutable_url('block')}#/block"}),
+            "digest-row": root_document("Digest Row", refs={"State": f"{mutable_url('state')}#/state"}),
             # Already carries an obsolete immutable address for a mapped file
             # beside the mutable one. Substituting the mutable spelling leaves
             # every current pin present and no mutable URL behind, so only the
@@ -336,9 +328,7 @@ class PinMechanismTests(unittest.TestCase):
 
     def test_a_row_with_no_records_may_not_publish_a_mutable_absolute_ref(self) -> None:
         result = self.fetch("mutable-row")
-        self.assert_actionable(
-            result, mutable_url("block"), str(self.manifest), "add a record"
-        )
+        self.assert_actionable(result, mutable_url("block"), str(self.manifest), "add a record")
 
     def test_a_row_with_no_records_and_no_absolute_ref_publishes_the_served_bytes(
         self,
@@ -361,9 +351,7 @@ class PinMechanismTests(unittest.TestCase):
 
     def test_a_record_the_served_document_does_not_reference_fails(self) -> None:
         result = self.fetch("stale-row")
-        self.assert_actionable(
-            result, mutable_url("absent"), str(self.manifest), "delete it"
-        )
+        self.assert_actionable(result, mutable_url("absent"), str(self.manifest), "delete it")
 
     def test_an_obsolete_immutable_address_for_a_mapped_file_is_rejected(self) -> None:
         """The rule the mutable-URL and missing-pin rules cannot reach.
@@ -394,9 +382,7 @@ class PinMechanismTests(unittest.TestCase):
         self.assertIn("/specs/pinned-row.yaml", self.server.requests)
 
     def test_if_missing_refreshes_a_cache_pinned_to_a_superseded_commit(self) -> None:
-        superseded = self.expected_pinned_bytes().replace(
-            PINNED_SHA.encode(), SUPERSEDED_SHA.encode()
-        )
+        superseded = self.expected_pinned_bytes().replace(PINNED_SHA.encode(), SUPERSEDED_SHA.encode())
         self.assertNotIn(b"refs/heads/", superseded)  # immutably addressed, yet stale
         self.plant("pinned-row", superseded)
         result = self.fetch("pinned-row", "--if-missing")
@@ -427,16 +413,35 @@ class PinMechanismTests(unittest.TestCase):
         """Add an immutable, real two-file source to the boundary repository."""
         base = f"{RAW}/example/api/{PINNED_SHA}/spec"
         root = b"openapi: 3.0.3\ninfo: {title: Tree, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    Item:\n      $ref: './schemas/item.yaml#/components/schemas/Item'\n"
-        sibling = b"components:\n  schemas:\n    Item:\n      type: object\n      properties:\n        id: {type: string}\n"
+        sibling = (
+            b"components:\n  schemas:\n    Item:\n      type: object\n      properties:\n        id: {type: string}\n"
+        )
         self.server.documents[f"/example/api/{PINNED_SHA}/spec/openapi.yaml"] = root
         self.server.documents[f"/example/api/{PINNED_SHA}/spec/schemas/item.yaml"] = sibling
         corpus = self.root / "tests" / "fixtures" / "CORPUS.md"
-        corpus.write_text(corpus.read_text() + f"| 99 | `tree-row` | github-raw | {base}/openapi.yaml | `{PINNED_SHA}` | MIT | link-ok | relative ref |\n")
+        corpus.write_text(
+            corpus.read_text()
+            + f"| 99 | `tree-row` | github-raw | {base}/openapi.yaml | `{PINNED_SHA}` | MIT | link-ok | relative ref |\n"
+        )
         records = [
-            ("tree", "tree-row", "spec/openapi.yaml", f"{RAW}/example/api/{PINNED_SHA}/spec/openapi.yaml", hashlib.sha256(root).hexdigest()),
+            (
+                "tree",
+                "tree-row",
+                "spec/openapi.yaml",
+                f"{RAW}/example/api/{PINNED_SHA}/spec/openapi.yaml",
+                hashlib.sha256(root).hexdigest(),
+            ),
         ]
         if include_sibling:
-            records.append(("tree", "tree-row", "spec/schemas/item.yaml", f"{RAW}/example/api/{PINNED_SHA}/spec/schemas/item.yaml", sibling_digest or hashlib.sha256(sibling).hexdigest()))
+            records.append(
+                (
+                    "tree",
+                    "tree-row",
+                    "spec/schemas/item.yaml",
+                    f"{RAW}/example/api/{PINNED_SHA}/spec/schemas/item.yaml",
+                    sibling_digest or hashlib.sha256(sibling).hexdigest(),
+                )
+            )
         with self.manifest.open("a") as stream:
             for record in records:
                 stream.write("\t".join(record) + "\n")
@@ -472,25 +477,40 @@ class PinMechanismTests(unittest.TestCase):
         extra = tree / "extra.yaml"
         extra.write_text("type: string\n")
         result = subprocess.run(
-            [sys.executable, str(self.root / "tools/corpus/corpus_remote_ref_pins.py"),
-             "--root", str(self.root), "verify-tree", "tree-row", str(tree)],
-            text=True, capture_output=True, check=False,
+            [
+                sys.executable,
+                str(self.root / "tools/corpus/corpus_remote_ref_pins.py"),
+                "--root",
+                str(self.root),
+                "verify-tree",
+                "tree-row",
+                str(tree),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
         )
         self.assert_actionable(result, "tree file set drifted", "extra.yaml")
         extra.unlink()
         root = tree / "spec/openapi.yaml"
-        root.write_bytes(root.read_bytes().replace(
-            b"./schemas/item.yaml", mutable_url("block").encode()
-        ))
+        root.write_bytes(root.read_bytes().replace(b"./schemas/item.yaml", mutable_url("block").encode()))
         # Re-pin only this controlled boundary document to reach the reference guard.
         manifest = self.manifest.read_text()
-        old_digest = hashlib.sha256(self.server.documents[
-            f"/example/api/{PINNED_SHA}/spec/openapi.yaml"]).hexdigest()
+        old_digest = hashlib.sha256(self.server.documents[f"/example/api/{PINNED_SHA}/spec/openapi.yaml"]).hexdigest()
         self.manifest.write_text(manifest.replace(old_digest, hashlib.sha256(root.read_bytes()).hexdigest()))
         result = subprocess.run(
-            [sys.executable, str(self.root / "tools/corpus/corpus_remote_ref_pins.py"),
-             "--root", str(self.root), "verify-tree", "tree-row", str(tree)],
-            text=True, capture_output=True, check=False,
+            [
+                sys.executable,
+                str(self.root / "tools/corpus/corpus_remote_ref_pins.py"),
+                "--root",
+                str(self.root),
+                "verify-tree",
+                "tree-row",
+                str(tree),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
         )
         self.assert_actionable(result, "absolute `$ref`", "bytes it serves can change")
 
@@ -530,27 +550,49 @@ class PinMechanismTests(unittest.TestCase):
                 if corpus is not None:
                     (self.root / "tests/fixtures/CORPUS.md").write_text(corpus)
                 result = subprocess.run(
-                    [sys.executable, str(self.root / "tools/corpus/corpus_remote_ref_pins.py"),
-                     "--root", str(self.root), "check"],
-                    text=True, capture_output=True, check=False,
+                    [
+                        sys.executable,
+                        str(self.root / "tools/corpus/corpus_remote_ref_pins.py"),
+                        "--root",
+                        str(self.root),
+                        "check",
+                    ],
+                    text=True,
+                    capture_output=True,
+                    check=False,
                 )
                 self.assert_actionable(result, phrase)
                 self.manifest.write_text(original)
 
         check_with(original.replace(root_line, root_line.rsplit("\t", 1)[0]), "five tab-separated cells")
-        check_with(original.replace(root_line, root_line.replace("spec/openapi.yaml", "spec/../openapi.yaml")), "invalid tree name or relative document path")
+        check_with(
+            original.replace(root_line, root_line.replace("spec/openapi.yaml", "spec/../openapi.yaml")),
+            "invalid tree name or relative document path",
+        )
         check_with(original.replace(root_line, root_line.replace(PINNED_SHA, "refs/heads/main")), "40-character commit")
         check_with(original.replace(root_line, root_line.rsplit("\t", 1)[0] + "\tbad"), "invalid SHA-256")
         check_with(original + root_line + "\n", "duplicate tree member")
-        check_with(original.replace(root_line + "\n" + sibling_line, sibling_line + "\n" + root_line), "tree records must sort")
+        check_with(
+            original.replace(root_line + "\n" + sibling_line, sibling_line + "\n" + root_line), "tree records must sort"
+        )
         check_with(original.replace("tree\ttree-row\t", "tree\tunknown-row\t"), "unknown corpus")
-        check_with(original.replace(root_line, root_line.replace(PINNED_SHA, SUPERSEDED_SHA)), "must pin its CORPUS.md root URL exactly once")
-        check_with(original.replace(sibling_line, sibling_line.replace(PINNED_SHA, SUPERSEDED_SHA)), "does not share the root URL")
+        check_with(
+            original.replace(root_line, root_line.replace(PINNED_SHA, SUPERSEDED_SHA)),
+            "must pin its CORPUS.md root URL exactly once",
+        )
+        check_with(
+            original.replace(sibling_line, sibling_line.replace(PINNED_SHA, SUPERSEDED_SHA)),
+            "does not share the root URL",
+        )
         corpus_path = self.root / "tests/fixtures/CORPUS.md"
         corpus = corpus_path.read_text()
-        check_with(original, "must use CORPUS.md pinned ref", corpus.replace(
-            f"`{PINNED_SHA}` | MIT | link-ok | relative ref", f"`{SUPERSEDED_SHA}` | MIT | link-ok | relative ref"
-        ))
+        check_with(
+            original,
+            "must use CORPUS.md pinned ref",
+            corpus.replace(
+                f"`{PINNED_SHA}` | MIT | link-ok | relative ref", f"`{SUPERSEDED_SHA}` | MIT | link-ok | relative ref"
+            ),
+        )
 
     def test_the_fetch_origin_override_refuses_a_non_loopback_value(self) -> None:
         result = self.fetch("pinned-row", CROZIER_CORPUS_PIN_ORIGIN="https://example.test")
@@ -566,17 +608,13 @@ class PinMechanismTests(unittest.TestCase):
     # The fetchers run inside the caller's command substitution, where errexit
     # does not reach, so each step's failure must be returned explicitly.
 
-    def assert_refused_without_a_path(
-        self, result: subprocess.CompletedProcess[str], *names: str
-    ) -> None:
+    def assert_refused_without_a_path(self, result: subprocess.CompletedProcess[str], *names: str) -> None:
         self.assert_actionable(result, *names, "then re-run")
         self.assertEqual(result.stdout, "", "a failed fetch must not print a source path")
 
     def test_a_missing_manifest_names_how_to_restore_it(self) -> None:
         (self.root / "tests" / "fixtures" / "CORPUS.md").unlink()
-        self.assert_actionable(
-            self.fetch("plain-row"), "git checkout -- tests/fixtures/CORPUS.md", "then re-run"
-        )
+        self.assert_actionable(self.fetch("plain-row"), "git checkout -- tests/fixtures/CORPUS.md", "then re-run")
 
     def test_a_missing_alias_file_names_how_to_restore_it(self) -> None:
         (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").unlink()
@@ -615,9 +653,7 @@ class PinMechanismTests(unittest.TestCase):
                 )
 
     def test_an_alias_file_with_no_aliases_resolves_each_row_to_its_own_directory(self) -> None:
-        (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").write_text(
-            "# no aliases left\n", encoding="utf-8"
-        )
+        (self.root / "tests" / "fixtures" / "corpus-aliases.tsv").write_text("# no aliases left\n", encoding="utf-8")
         result = self.fetch("plain-row")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.published("plain-row").read_bytes(), self.roots["plain-row"])
@@ -671,22 +707,36 @@ class PinMechanismTests(unittest.TestCase):
                     (cache / "openapi.yaml").symlink_to(cache / "elsewhere")
                 result = self.fetch(name)
                 self.assert_refused_without_a_path(
-                    result, f"corpus: {cache / 'openapi.yaml'} is a directory or a link, not the cached spec for {name}",
-                    f"(rm -rf {cache / 'openapi.yaml'})")
+                    result,
+                    f"corpus: {cache / 'openapi.yaml'} is a directory or a link, not the cached spec for {name}",
+                    f"(rm -rf {cache / 'openapi.yaml'})",
+                )
                 held = cache / ("openapi.yaml" if label == "directory" else "elsewhere")
                 self.assertEqual([], list(held.iterdir()), "the document was moved inside it")
 
     @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "root enters a directory whatever its mode")
     def test_a_library_directory_it_cannot_enter_stops_the_pin_step_with_its_fix(self) -> None:
         library = self.root / "tools" / "corpus"
-        for step in ('corpus_pin_apply plain-row "$2" openapi.yaml', 'corpus_tree_root plain-row',
-                     'corpus_fetch_source "$2" plain-row https://example.test/openapi.yaml HEAD'):
+        for step in (
+            'corpus_pin_apply plain-row "$2" openapi.yaml',
+            "corpus_tree_root plain-row",
+            'corpus_fetch_source "$2" plain-row https://example.test/openapi.yaml HEAD',
+        ):
             with self.subTest(step=step):
                 result = subprocess.run(
-                    ["bash", "-c", f'. "$1/corpus-lib.sh" && chmod 0 "$1" && {{ {step}; status=$?; '
-                     'chmod 0755 "$1"; exit "$status"; }', "bash", str(library),
-                     str(self.root / "document.yaml")],
-                    text=True, capture_output=True, encoding="utf-8", check=False,
+                    [
+                        "bash",
+                        "-c",
+                        f'. "$1/corpus-lib.sh" && chmod 0 "$1" && {{ {step}; status=$?; '
+                        'chmod 0755 "$1"; exit "$status"; }',
+                        "bash",
+                        str(library),
+                        str(self.root / "document.yaml"),
+                    ],
+                    text=True,
+                    capture_output=True,
+                    encoding="utf-8",
+                    check=False,
                 )
                 library.chmod(0o755)
                 self.assertEqual(1, result.returncode, result.stderr)
@@ -714,9 +764,7 @@ class PinMechanismTests(unittest.TestCase):
 
     def test_a_second_destination_root_asks_for_exactly_one(self) -> None:
         result = self.fetch("plain-row", str(self.root / "one"), str(self.root / "two"))
-        self.assert_refused_without_a_path(
-            result, "more than one destination root", "supply exactly one DEST_ROOT"
-        )
+        self.assert_refused_without_a_path(result, "more than one destination root", "supply exactly one DEST_ROOT")
         self.assertEqual(result.returncode, 2, result.stderr)
         self.assertEqual(self.server.requests, [])
 
@@ -739,8 +787,12 @@ class PinMechanismTests(unittest.TestCase):
         ):
             with self.subTest(arguments=arguments):
                 result = subprocess.run(
-                    [script, *arguments], cwd=self.root, capture_output=True, text=True,
-                    encoding="utf-8", check=False,
+                    [script, *arguments],
+                    cwd=self.root,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    check=False,
                 )
                 self.assertEqual(result.returncode, 2, result.stderr)
                 self.assertIn(message, result.stderr)
@@ -760,9 +812,7 @@ class PinMechanismTests(unittest.TestCase):
     def test_an_uncreatable_cache_directory_fails_the_fetch(self) -> None:
         self.destination("plain-row").parent.mkdir(parents=True)
         self.destination("plain-row").write_text("in the way\n", encoding="utf-8")
-        self.assert_refused_without_a_path(
-            self.fetch("plain-row"), "cannot create the cache directory", "plain-row"
-        )
+        self.assert_refused_without_a_path(self.fetch("plain-row"), "cannot create the cache directory", "plain-row")
 
     def test_an_unwritable_cache_directory_fails_before_fetching(self) -> None:
         if os.geteuid() == 0:
@@ -771,9 +821,7 @@ class PinMechanismTests(unittest.TestCase):
         directory.mkdir(parents=True)
         directory.chmod(0o555)
         self.addCleanup(directory.chmod, 0o755)
-        self.assert_refused_without_a_path(
-            self.fetch("plain-row"), "cannot create a temporary file in", "writable"
-        )
+        self.assert_refused_without_a_path(self.fetch("plain-row"), "cannot create a temporary file in", "writable")
         self.assertEqual(self.server.requests, [])
 
     def test_a_failed_publication_keeps_the_prior_cache_and_prints_no_path(self) -> None:
@@ -815,8 +863,9 @@ class PinMechanismTests(unittest.TestCase):
         blocking.chmod(0o555)
         self.addCleanup(blocking.chmod, 0o755)
         self.assert_refused_without_a_path(
-            self.fetch("plain-row"), "could not remove the stale cached spec",
-            f"(chmod -R u+w {blocking} && rm -rf {blocking})"
+            self.fetch("plain-row"),
+            "could not remove the stale cached spec",
+            f"(chmod -R u+w {blocking} && rm -rf {blocking})",
         )
         self.assertTrue((blocking / "keep").exists())
 

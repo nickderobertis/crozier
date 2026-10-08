@@ -26,31 +26,56 @@ REPO = Path(__file__).resolve().parents[2]
 DEFAULT_INDEX = "https://api.apis.guru/v2/list.json"
 DEFAULT_PROVENANCE = REPO / "docs/openapi-surface/apis-guru-publisher-provenance.tsv"
 HEADER = (
-    "snapshot_utc", "catalogue_digest", "gap_key", "selector", "outcome",
-    "api_id", "version", "spec_url", "source_url", "immutable_ref", "license",
-    "license_screen", "declaration_count", "notes",
+    "snapshot_utc",
+    "catalogue_digest",
+    "gap_key",
+    "selector",
+    "outcome",
+    "api_id",
+    "version",
+    "spec_url",
+    "source_url",
+    "immutable_ref",
+    "license",
+    "license_screen",
+    "declaration_count",
+    "notes",
 )
 OWNED_KEYS = (
-    "annotated-ref-target-composed", "annotated-ref-target-closed-object",
-    "annotated-ref-target-oneof", "annotated-ref-target-string-const",
+    "annotated-ref-target-composed",
+    "annotated-ref-target-closed-object",
+    "annotated-ref-target-oneof",
+    "annotated-ref-target-string-const",
     "anyof-array-variant-anyof-nullable-item",
-    "anyof-array-variant-closed-object-item", "anyof-array-variant-empty-object-item",
-    "anyof-array-variant-oneof-nullable-item", "anyof-array-variant-struct-item",
-    "anyof-sole-member", "array-item-inheritance-union",
-    "array-item-pointer-walk-anyof", "array-item-pointer-walk-oneof",
+    "anyof-array-variant-closed-object-item",
+    "anyof-array-variant-empty-object-item",
+    "anyof-array-variant-oneof-nullable-item",
+    "anyof-array-variant-struct-item",
+    "anyof-sole-member",
+    "array-item-inheritance-union",
+    "array-item-pointer-walk-anyof",
+    "array-item-pointer-walk-oneof",
     "oneof-array-variant-annotated-ref-item",
     "oneof-array-variant-anyof-discriminated-union-item",
-    "oneof-array-variant-anyof-item", "oneof-array-variant-anyof-nullable-item",
-    "oneof-array-variant-closed-object-item", "oneof-array-variant-composed-item",
+    "oneof-array-variant-anyof-item",
+    "oneof-array-variant-anyof-nullable-item",
+    "oneof-array-variant-closed-object-item",
+    "oneof-array-variant-composed-item",
     "oneof-array-variant-empty-object-item",
     "property-sole-anyof-closed-object-member",
-    "property-sole-anyof-composed-member", "property-sole-anyof-empty-object-member",
-    "property-sole-anyof-struct-member", "property-sole-oneof-closed-object-member",
-    "property-sole-oneof-composed-member", "property-sole-oneof-empty-object-member",
-    "ref-pointer-undeclared-component-head", "ref-pointer-unnamed-segment",
+    "property-sole-anyof-composed-member",
+    "property-sole-anyof-empty-object-member",
+    "property-sole-anyof-struct-member",
+    "property-sole-oneof-closed-object-member",
+    "property-sole-oneof-composed-member",
+    "property-sole-oneof-empty-object-member",
+    "ref-pointer-undeclared-component-head",
+    "ref-pointer-unnamed-segment",
 )
 CASE_11_KEY = "oneof-bare-object-example-variant"
-SHA_REF = re.compile(r"(?:github\.com/[^/]+/[^/]+/(?:blob|raw)/|raw\.githubusercontent\.com/[^/]+/[^/]+/)([0-9a-f]{40})(?:/|$)", re.I)
+SHA_REF = re.compile(
+    r"(?:github\.com/[^/]+/[^/]+/(?:blob|raw)/|raw\.githubusercontent\.com/[^/]+/[^/]+/)([0-9a-f]{40})(?:/|$)", re.I
+)
 
 
 def load_census():
@@ -176,7 +201,13 @@ def usable_url(url: str) -> str:
     """Percent-encode catalogue paths which APIs.guru sometimes leaves raw."""
     parsed = urllib.parse.urlsplit(url)
     return urllib.parse.urlunsplit(
-        (parsed.scheme, parsed.netloc, urllib.parse.quote(urllib.parse.unquote(parsed.path), safe="/%:@"), parsed.query, parsed.fragment)
+        (
+            parsed.scheme,
+            parsed.netloc,
+            urllib.parse.quote(urllib.parse.unquote(parsed.path), safe="/%:@"),
+            parsed.query,
+            parsed.fragment,
+        )
     )
 
 
@@ -309,10 +340,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--attempts", type=int, default=3)
     parser.add_argument("--timeout", type=float, default=30)
     parser.add_argument("--workers", type=int, default=12)
-    parser.add_argument("--redo-unread", type=Path,
-                        help="historical catalogue-entries.tsv.gz; re-ask its unread versions")
-    parser.add_argument("--evidence-dir", type=Path,
-                        help="write per-version responses and complete selector output")
+    parser.add_argument(
+        "--redo-unread", type=Path, help="historical catalogue-entries.tsv.gz; re-ask its unread versions"
+    )
+    parser.add_argument("--evidence-dir", type=Path, help="write per-version responses and complete selector output")
     return parser.parse_args(argv)
 
 
@@ -334,9 +365,10 @@ def redo_unread(args: argparse.Namespace) -> int:
         if None in row or None in row.values():
             raise ValueError(f"{args.redo_unread}:{line}: a catalogue entry row of another width than its header")
         if not all(row[column] for column in ("api_id", "version", "indexed_json_url")):
-            raise ValueError(f"{args.redo_unread}:{line}: a catalogue entry row with no api_id, version or "
-                             "indexed_json_url")
-    if len(rows) != len(index) or {(r['api_id'], r['version']) for r in rows} != set(index):
+            raise ValueError(
+                f"{args.redo_unread}:{line}: a catalogue entry row with no api_id, version or indexed_json_url"
+            )
+    if len(rows) != len(index) or {(r["api_id"], r["version"]) for r in rows} != set(index):
         raise ValueError("historical entries differ from served index; do not reuse their census")
     for row in rows:
         key = (row["api_id"], row["version"])
@@ -352,14 +384,22 @@ def redo_unread(args: argparse.Namespace) -> int:
             url = usable_url(row["indexed_json_url"])
             try:
                 status, body, taken = fetch_status(url, args.timeout)
-                record: dict[str, Any] = {"api_id": key[0], "version": key[1],
-                    "url": url, "taken_utc": taken, "status": status,
-                    "sha256": hashlib.sha256(body).hexdigest()}
+                record: dict[str, Any] = {
+                    "api_id": key[0],
+                    "version": key[1],
+                    "url": url,
+                    "taken_utc": taken,
+                    "status": status,
+                    "sha256": hashlib.sha256(body).hexdigest(),
+                }
                 if status == 200:
                     document = parse_bytes(body, url)
                     if isinstance(document, dict) and str(document.get("openapi", "")).startswith("3."):
-                        conjunctions = {s: CENSUS.compile_conjunction(s) for s in selectors.values()
-                                        if CENSUS.selector_error(s) is None and CENSUS.is_conjunction(s)}
+                        conjunctions = {
+                            s: CENSUS.compile_conjunction(s)
+                            for s in selectors.values()
+                            if CENSUS.selector_error(s) is None and CENSUS.is_conjunction(s)
+                        }
                         counts = CENSUS.census_document(document, conjunctions=conjunctions)
                         record["selectors"] = {k: counts.get(s, 0) for k, s in selectors.items()}
                         record["classification"] = "openapi-3"
@@ -369,15 +409,30 @@ def redo_unread(args: argparse.Namespace) -> int:
                     record["classification"] = "source-refused"
                     record["response"] = body.decode("utf-8", errors="replace")[:500]
             except (OSError, ValueError, CENSUS.DocumentError) as error:
-                record = {"api_id": key[0], "version": key[1], "url": url,
+                record = {
+                    "api_id": key[0],
+                    "version": key[1],
+                    "url": url,
                     "taken_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                    "classification": "source-error", "error": str(error)}
+                    "classification": "source-error",
+                    "error": str(error),
+                }
             handle.write(json.dumps(record, sort_keys=True) + "\n")
-    (args.evidence_dir / "index.json").write_text(json.dumps({
-        "url": args.index_url, "sha256": hashlib.sha256(index_bytes).hexdigest(),
-        "versions": len(index), "historical_manifest": str(args.redo_unread),
-        "unread": sum(not row["tree_path"] for row in rows),
-    }, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    (args.evidence_dir / "index.json").write_text(
+        json.dumps(
+            {
+                "url": args.index_url,
+                "sha256": hashlib.sha256(index_bytes).hexdigest(),
+                "versions": len(index),
+                "historical_manifest": str(args.redo_unread),
+                "unread": sum(not row["tree_path"] for row in rows),
+            },
+            sort_keys=True,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"apis-guru-gap-screen: recorded {sum(not row['tree_path'] for row in rows)} unread versions")
     return 0
 
@@ -385,16 +440,24 @@ def redo_unread(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.attempts < 1 or args.workers < 1 or not (math.isfinite(args.timeout) and args.timeout > 0):
-        print("apis-guru-gap-screen: attempts, workers, and timeout must be positive (and the timeout finite)",
-              file=sys.stderr)
+        print(
+            "apis-guru-gap-screen: attempts, workers, and timeout must be positive (and the timeout finite)",
+            file=sys.stderr,
+        )
         return 2
     if args.snapshot_utc is not None and not utc_instant(args.snapshot_utc):
-        print(f"apis-guru-gap-screen: --snapshot-utc {args.snapshot_utc!r} is not a UTC instant such as "
-              "2026-10-07T12:00:00Z; pass one, or omit it to stamp now", file=sys.stderr)
+        print(
+            f"apis-guru-gap-screen: --snapshot-utc {args.snapshot_utc!r} is not a UTC instant such as "
+            "2026-10-07T12:00:00Z; pass one, or omit it to stamp now",
+            file=sys.stderr,
+        )
         return 2
     if args.redo_unread and args.evidence_dir is None:
-        print("apis-guru-gap-screen: --redo-unread requires --evidence-dir; pass --evidence-dir "
-              "to retain the measured responses", file=sys.stderr)
+        print(
+            "apis-guru-gap-screen: --redo-unread requires --evidence-dir; pass --evidence-dir "
+            "to retain the measured responses",
+            file=sys.stderr,
+        )
         return 2
     if args.redo_unread:
         try:
@@ -412,7 +475,9 @@ def main(argv: list[str] | None = None) -> int:
         results = []
         failures = []
         with ThreadPoolExecutor(max_workers=args.workers) as executor:
-            futures = {executor.submit(screen_one, entry, selectors, args.attempts, args.timeout): entry for entry in entries}
+            futures = {
+                executor.submit(screen_one, entry, selectors, args.attempts, args.timeout): entry for entry in entries
+            }
             for future in as_completed(futures):
                 try:
                     results.append(future.result())
@@ -420,7 +485,9 @@ def main(argv: list[str] | None = None) -> int:
                     failures.append(f"{futures[future][0]}/{futures[future][1]}: {error}")
         if failures:
             raise RuntimeError(f"{len(failures)} catalogue document(s) unanswered; first: {sorted(failures)[0]}")
-        snapshot = args.snapshot_utc or datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        snapshot = args.snapshot_utc or datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
+            "+00:00", "Z"
+        )
         digest = hashlib.sha256(index_bytes).hexdigest()
         rejected = rejected_api_guru_versions(REPO / "tests/fixtures/AGENTS.md")
         rows = []
@@ -438,9 +505,53 @@ def main(argv: list[str] | None = None) -> int:
                         )
                     if (api_id, version) in rejected:
                         notes += "; repeats the rejected-spec table in tests/fixtures/AGENTS.md"
-                    rows.append(dict(zip(HEADER, (snapshot, digest, key, selectors[key], "candidate", api_id, version, spec_url, source_url, immutable_ref, license_text, license_screen, str(count), notes))))
+                    rows.append(
+                        dict(
+                            zip(
+                                HEADER,
+                                (
+                                    snapshot,
+                                    digest,
+                                    key,
+                                    selectors[key],
+                                    "candidate",
+                                    api_id,
+                                    version,
+                                    spec_url,
+                                    source_url,
+                                    immutable_ref,
+                                    license_text,
+                                    license_screen,
+                                    str(count),
+                                    notes,
+                                ),
+                            )
+                        )
+                    )
             if not any(row["gap_key"] == key for row in rows):
-                rows.append(dict(zip(HEADER, (snapshot, digest, key, selectors[key], "none-found", "", "", "", "", "", "", "", "", "no catalogue version declared this selector"))))
+                rows.append(
+                    dict(
+                        zip(
+                            HEADER,
+                            (
+                                snapshot,
+                                digest,
+                                key,
+                                selectors[key],
+                                "none-found",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "no catalogue version declared this selector",
+                            ),
+                        )
+                    )
+                )
         rows.sort(key=lambda row: (row["gap_key"], row["api_id"], row["version"], row["spec_url"]))
         write_report(args.output, rows)
     except (OSError, ValueError, RuntimeError, CENSUS.DocumentError) as error:

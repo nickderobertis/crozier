@@ -73,12 +73,12 @@ def shard_outcomes(contract: Path) -> dict[str, str]:
     read, so its key keeps the baseline membership the shards themselves decide.
     """
     keys = REDO.contract_keys(contract)
-    records = REDO.shard_records(
-        [contract.with_name("catalogue-portals.md"), contract.with_name("code-platforms.md")]
-    )
+    records = REDO.shard_records([contract.with_name("catalogue-portals.md"), contract.with_name("code-platforms.md")])
     supplement = REPO / "docs/openapi-surface/witness-scrape-wide/candidates.md"
     return REDO.frozen_outcomes(
-        keys, records, contract.with_name("candidates.md"),
+        keys,
+        records,
+        contract.with_name("candidates.md"),
         (supplement,) if supplement.is_file() else (),
     )
 
@@ -104,10 +104,7 @@ def baseline(regions: Path, contract: Path) -> dict[str, dict]:
                         f"{name}/{key}: handwritten, and no selector in witness-search-keys.tsv; "
                         "restore that file from git, where the key's search recorded it"
                     )
-            elif (
-                REDO.value(row[3]) != "gap"
-                or REDO.authoritative_details(row)[0] != "search-incomplete"
-            ):
+            elif REDO.value(row[3]) != "gap" or REDO.authoritative_details(row)[0] != "search-incomplete":
                 continue
             else:
                 match = re.search(r"census `([^`]+)`", " ".join(row))
@@ -117,9 +114,7 @@ def baseline(regions: Path, contract: Path) -> dict[str, dict]:
                 # its search, under docs/openapi-surface-coverage.md's search rules.
                 continue
             if selector is None or frozen[key] != selector:
-                raise ValueError(
-                    f"{name}/{key}: selector disagrees with frozen authority"
-                )
+                raise ValueError(f"{name}/{key}: selector disagrees with frozen authority")
             error = LOCAL.CENSUS.selector_error(selector)
             if error:
                 raise ValueError(error)
@@ -149,8 +144,7 @@ def derive(args) -> None:
                 "artifact": REDO.value(row[0]),
                 "screens": row[2:6],
                 "disposition": REDO.value(row[6]),
-                "discarded": key
-                in re.findall(r"`([^`]+)`", row[5].split("discarded keys:", 1)[1])
+                "discarded": key in re.findall(r"`([^`]+)`", row[5].split("discarded keys:", 1)[1])
                 if "discarded keys:" in row[5]
                 else False,
             }
@@ -162,25 +156,19 @@ def derive(args) -> None:
         args.report / "baseline.json",
         {
             "schema_version": 1,
-            "source_commit": subprocess.check_output(
-                ["git", "rev-parse", "HEAD"], cwd=REPO, encoding="utf-8"
-            ).strip(),
+            "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, encoding="utf-8").strip(),
             "keys": items,
         },
     )
     (args.report / "keys.md").write_text(
         "# Frozen derived baseline\n\n| key | selector |\n|---|---|\n"
-        + "".join(
-            f"| `{key}` | `{item['selector']}` |\n" for key, item in items.items()
-        ),
+        + "".join(f"| `{key}` | `{item['selector']}` |\n" for key, item in items.items()),
         encoding="utf-8",
     )
 
 
 def write_json(path: Path, value) -> None:
-    path.write_text(
-        json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def digest(data: bytes) -> str:
@@ -189,35 +177,20 @@ def digest(data: bytes) -> str:
 
 def read_inventory(path: Path) -> dict:
     text = (
-        gzip.decompress(path.read_bytes()).decode("utf-8")
-        if path.suffix == ".gz"
-        else path.read_text(encoding="utf-8")
+        gzip.decompress(path.read_bytes()).decode("utf-8") if path.suffix == ".gz" else path.read_text(encoding="utf-8")
     )
     value = json.loads(text)
-    if (
-        not isinstance(value, dict)
-        or value.get("schema_version") != 1
-        or not isinstance(value.get("sources"), list)
-    ):
-        raise ValueError(
-            f"{path}: expected inventory schema_version 1 and sources array"
-        )
+    if not isinstance(value, dict) or value.get("schema_version") != 1 or not isinstance(value.get("sources"), list):
+        raise ValueError(f"{path}: expected inventory schema_version 1 and sources array")
     seen = set()
     for row in value["sources"]:
-        if (
-            not isinstance(row, dict)
-            or not isinstance(row.get("artifact"), str)
-            or not row["artifact"]
-        ):
+        if not isinstance(row, dict) or not isinstance(row.get("artifact"), str) or not row["artifact"]:
             raise ValueError(f"{path}: missing artifact identity")
         if row["artifact"] in seen:
             raise ValueError(f"{path}: duplicate artifact {row['artifact']}")
         seen.add(row["artifact"])
         for field in ("sha256", "prior_sha256"):
-            if field in row and (
-                not isinstance(row[field], str)
-                or not re.fullmatch("[0-9a-f]{64}", row[field])
-            ):
+            if field in row and (not isinstance(row[field], str) or not re.fullmatch("[0-9a-f]{64}", row[field])):
                 raise ValueError(f"{path}: malformed {field}")
         # `index-tree --local-paths` writes the pinned tree's file for a row it
         # also gives a tree `path` and a digest: a local read is that file,
@@ -232,7 +205,7 @@ def read_inventory(path: Path) -> dict:
                 or ".." in Path(tree_path).parts
                 or not Path(local).is_absolute()
                 or ".." in Path(local).parts
-                or Path(local).parts[-len(Path(tree_path).parts):] != Path(tree_path).parts
+                or Path(local).parts[-len(Path(tree_path).parts) :] != Path(tree_path).parts
                 or "sha256" not in row
             ):
                 raise ValueError(
@@ -296,9 +269,7 @@ def acquire_one(job) -> dict:
         atomic_bytes(path, data)
         try:
             doc = LOCAL.CENSUS.load_document(path)
-            if not isinstance(doc, dict) or not OPENAPI_VERSION.fullmatch(
-                str(doc.get("openapi", ""))
-            ):
+            if not isinstance(doc, dict) or not OPENAPI_VERSION.fullmatch(str(doc.get("openapi", ""))):
                 row.update(
                     status="excluded",
                     diagnostic="not an OpenAPI 3 document; no conversion performed",
@@ -334,9 +305,7 @@ def acquire(args) -> None:
     documents = args.cache / "documents"
     documents.mkdir(exist_ok=True)
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as pool:
-        outcomes = list(
-            pool.map(acquire_one, ((row, args.cache) for row in inventory["sources"]))
-        )
+        outcomes = list(pool.map(acquire_one, ((row, args.cache) for row in inventory["sources"])))
     # Census only this invocation's readable bytes, never stale cache documents.
     selected = {row["document"] for row in outcomes if row["status"] == "readable"}
     for path in documents.iterdir():
@@ -394,10 +363,7 @@ def validate(args) -> None:
         with fingerprints.open(encoding="utf-8", newline="") as stream:
             for row in csv.DictReader(stream, dialect="excel-tab"):
                 path = (REPO / row["path"]).resolve()
-                if (
-                    not path.is_relative_to(REPO)
-                    or digest(path.read_bytes()) != row["sha256"]
-                ):
+                if not path.is_relative_to(REPO) or digest(path.read_bytes()) != row["sha256"]:
                     raise ValueError(f"historical report bytes changed: {row['path']}")
     stored = json.loads((root / "baseline.json").read_text(encoding="utf-8"))
     if stored.get("schema_version") != 1:
@@ -415,22 +381,12 @@ def validate(args) -> None:
                 all_selectors[REDO.value(row[0])] = match[1]
     keys = dict(LOCAL.contract_keys(root / "keys.md"))
     expected = {k: v["selector"] for k, v in stored["keys"].items()}
-    if (
-        keys != expected
-        or any(all_selectors.get(k) != v for k, v in keys.items())
-        or set(authority) - keys.keys()
-    ):
-        raise ValueError(
-            "derived selectors/keys disagree with authority or frozen baseline"
-        )
+    if keys != expected or any(all_selectors.get(k) != v for k, v in keys.items()) or set(authority) - keys.keys():
+        raise ValueError("derived selectors/keys disagree with authority or frozen baseline")
     known = set(keys)
     candidates = root / "candidates.md"
     header = next(
-        (
-            line
-            for line in candidates.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| artifact")
-        ),
+        (line for line in candidates.read_text(encoding="utf-8").splitlines() if line.startswith("| artifact")),
         "",
     )
     if tuple(cell.strip() for cell in header.strip("|").split("|")) != CANDIDATE_FIELDS:
@@ -458,9 +414,7 @@ def validate(args) -> None:
             raise ValueError(f"candidate has unknown keys: {owned - known}")
         # Use the canonical screening function per artifact, without duplicating precedence.
         if REDO.value(row[6]) == "witness-found":
-            passing[REDO.value(row[0])] = REDO.screened_keys(
-                candidates, artifact=REDO.value(row[0])
-            )
+            passing[REDO.value(row[0])] = REDO.screened_keys(candidates, artifact=REDO.value(row[0]))
     screened = REDO.screened_keys(candidates)
     ranks = {}
     identities = set()
@@ -477,11 +431,7 @@ def validate(args) -> None:
             if not re.fullmatch("[0-9a-f]{64}", sha) or sha in identities:
                 raise ValueError(f"malformed or duplicate ranked digest: {sha}")
             owned = json_keys(row["keys"], known)
-            if (
-                not owned
-                or not set(owned) <= screened
-                or not set(owned) <= passing.get(row["artifact"], set())
-            ):
+            if not owned or not set(owned) <= screened or not set(owned) <= passing.get(row["artifact"], set()):
                 raise ValueError("ranked artifact lacks retained candidate screens")
             for field in ("fern_evidence", "comparison_evidence"):
                 evidence(root, row[field])
@@ -491,22 +441,14 @@ def validate(args) -> None:
     ranked_artifacts = {row["artifact"] for row in ranks.values()}
     aliases = {}
     firmness = {}
-    acquisition = root / (
-        "acquisition.json.gz"
-        if (root / "acquisition.json.gz").exists()
-        else "acquisition.json"
-    )
+    acquisition = root / ("acquisition.json.gz" if (root / "acquisition.json.gz").exists() else "acquisition.json")
     if acquisition.is_file():
         for row in read_inventory(acquisition)["sources"]:
             sha = row.get("sha256")
             aliases[row["artifact"]] = sha
             grade = (
-                (
-                    int(bool(row.get("repository_licences")))
-                    + int(bool(row.get("document_license")))
-                )
-                if row.get("ref")
-                and row.get("repository") != "APIs-guru/openapi-directory"
+                (int(bool(row.get("repository_licences"))) + int(bool(row.get("document_license"))))
+                if row.get("ref") and row.get("repository") != "APIs-guru/openapi-directory"
                 else 0
             )
             firmness[sha] = max(firmness.get(sha, 0), grade)
@@ -517,11 +459,7 @@ def validate(args) -> None:
         if aliases[artifact] != row["artifact_sha256"]:
             raise ValueError(f"ranked digest differs from acquisition: {artifact}")
     for artifact, retained in passing.items():
-        if (
-            retained
-            and artifact not in ranked_artifacts
-            and aliases.get(artifact) not in identities
-        ):
+        if retained and artifact not in ranked_artifacts and aliases.get(artifact) not in identities:
             raise ValueError(f"retained candidate missing rank: {artifact}")
     if sorted(ranks) != list(range(1, len(ranks) + 1)):
         raise ValueError("ranks must be contiguous from 1")
@@ -534,9 +472,7 @@ def validate(args) -> None:
         ),
     )
     if [ranks[k] for k in sorted(ranks)] != expected_order:
-        raise ValueError(
-            "ranking violates retained-key coverage, publisher/licence firmness or SHA order"
-        )
+        raise ValueError("ranking violates retained-key coverage, publisher/licence firmness or SHA order")
     slots = set()
     claimed = set()
     registered_keys = set()
@@ -562,12 +498,7 @@ def validate(args) -> None:
             if sha != "—" or owned:
                 raise ValueError("exhausted slot must have absent artifact and keys")
         else:
-            if (
-                sha in claimed
-                or sha not in ranked_keys
-                or not owned
-                or not owned <= ranked_keys[sha]
-            ):
+            if sha in claimed or sha not in ranked_keys or not owned or not owned <= ranked_keys[sha]:
                 raise ValueError("conflicting slot claim or unranked artifact/keys")
             claimed.add(sha)
             if disposition == "registered":
@@ -580,9 +511,7 @@ def validate(args) -> None:
         if outcomes.get("inventory_sha256") != digest(args.inventory.read_bytes()) or {
             r["artifact"] for r in inventory["sources"]
         } != {r["artifact"] for r in outcomes["sources"]}:
-            raise ValueError(
-                "partial inventory accounting or inventory digest mismatch"
-            )
+            raise ValueError("partial inventory accounting or inventory digest mismatch")
         for row in outcomes["sources"]:
             if row.get("status") not in {
                 "readable",
@@ -596,11 +525,7 @@ def validate(args) -> None:
                 raise ValueError("failed acquisition missing diagnostic")
         if "census_runs" in outcomes:
             declarations: dict[str, set[str]] = {}
-            documents = {
-                row.get("document")
-                for row in outcomes["sources"]
-                if row["status"] == "readable"
-            }
+            documents = {row.get("document") for row in outcomes["sources"] if row["status"] == "readable"}
             if not outcomes["census_runs"]:
                 raise ValueError("missing census runs")
             for run in outcomes["census_runs"]:
@@ -608,14 +533,9 @@ def validate(args) -> None:
                     raise ValueError("unfinished or failed census")
                 for stream in ("stdout", "stderr"):
                     evidence(root, run[stream])
-                    if (
-                        digest((root / run[stream]).read_bytes())
-                        != run[stream + "_sha256"]
-                    ):
+                    if digest((root / run[stream]).read_bytes()) != run[stream + "_sha256"]:
                         raise ValueError("census evidence digest changed")
-                with (root / run["stdout"]).open(
-                    encoding="utf-8", newline=""
-                ) as stream:
+                with (root / run["stdout"]).open(encoding="utf-8", newline="") as stream:
                     reader = csv.DictReader(stream, dialect="excel-tab")
                     if tuple(reader.fieldnames or ()) != (
                         "source",
@@ -626,46 +546,31 @@ def validate(args) -> None:
                     ):
                         raise ValueError("census evidence header changed")
                     for row in reader:
-                        if (
-                            row["document"] not in documents
-                            or keys.get(row["key"]) != row["selector"]
-                        ):
-                            raise ValueError(
-                                "census has unknown document, selector or key"
-                            )
+                        if row["document"] not in documents or keys.get(row["key"]) != row["selector"]:
+                            raise ValueError("census has unknown document, selector or key")
                         if not re.fullmatch("[1-9][0-9]*", row["count"]):
                             raise ValueError("invalid declaration count")
-                        declarations.setdefault(Path(row["document"]).stem, set()).add(
-                            row["key"]
-                        )
+                        declarations.setdefault(Path(row["document"]).stem, set()).add(row["key"])
             accounted = set()
             for row in candidate_rows(candidates):
                 artifact = REDO.value(row[0])
                 sha = aliases.get(artifact)
                 if declarations.get(sha) != set(re.findall(r"`([^`]+)`", row[1])):
-                    raise ValueError(
-                        "candidate keys disagree with measured declarations"
-                    )
+                    raise ValueError("candidate keys disagree with measured declarations")
                 evidence(root, REDO.value(row[7]))
                 accounted.add(sha)
             if accounted != set(declarations):
-                raise ValueError(
-                    "declaring artifacts missing completed or blocked screens"
-                )
+                raise ValueError("declaring artifacts missing completed or blocked screens")
 
 
 def index_tree(args) -> None:
     """Associate every version with its exact indexed YAML alternative, if tracked."""
     if digest(args.index.read_bytes()) != args.index_sha256:
         raise ValueError("complete catalogue digest changed")
-    pin = subprocess.check_output(
-        ["git", "-C", str(args.tree), "rev-parse", "HEAD"], encoding="utf-8"
-    ).strip()
+    pin = subprocess.check_output(["git", "-C", str(args.tree), "rev-parse", "HEAD"], encoding="utf-8").strip()
     if pin != args.ref:
         raise ValueError("tree commit differs from the requested pin")
-    dirty = subprocess.run(
-        ["git", "-C", str(args.tree), "diff", "--quiet", "HEAD", "--", "APIs"]
-    )
+    dirty = subprocess.run(["git", "-C", str(args.tree), "diff", "--quiet", "HEAD", "--", "APIs"])
     if dirty.returncode:
         raise ValueError("pinned tree has changed bytes")
     tracked = {}
@@ -685,9 +590,7 @@ def index_tree(args) -> None:
     for api, version, primary in guru.versions(index):
         metadata = index[api]["versions"][version]
         alternate = metadata.get("swaggerYamlUrl", "")
-        path = "APIs/" + urllib.parse.unquote(
-            urllib.parse.urlsplit(alternate).path.partition("/specs/")[2]
-        )
+        path = "APIs/" + urllib.parse.unquote(urllib.parse.urlsplit(alternate).path.partition("/specs/")[2])
         row = {
             "artifact": primary,
             "api_id": api,
@@ -716,9 +619,7 @@ def index_tree(args) -> None:
             if args.local_paths:
                 row["local_path"] = str((args.tree / path).resolve())
         else:
-            row["tree_diagnostic"] = (
-                "indexed alternative absent from pinned repository tree"
-            )
+            row["tree_diagnostic"] = "indexed alternative absent from pinned repository tree"
         sources.append(row)
     write_json(
         args.output,

@@ -67,26 +67,64 @@ SURFACE = REPO / "docs" / "openapi-surface"
 CORPUS = REPO / "tests" / "fixtures" / "CORPUS.md"
 CACHE = REPO / ".local" / "fern-refusals"
 
-CLASSES_HEADER = ("class", "family", "fern_stage", "fern_exit", "diagnostic", "documents",
-                  "status", "crozier_diagnostic", "population_strict")
-DOCUMENTS_HEADER = ("digest", "source", "locator", "revision", "recorded_by", "fern_stage", "fern_exit",
-                    "fern_log", "classes", "crozier_exit", "crozier_files", "crozier_strict_exit")
+CLASSES_HEADER = (
+    "class",
+    "family",
+    "fern_stage",
+    "fern_exit",
+    "diagnostic",
+    "documents",
+    "status",
+    "crozier_diagnostic",
+    "population_strict",
+)
+DOCUMENTS_HEADER = (
+    "digest",
+    "source",
+    "locator",
+    "revision",
+    "recorded_by",
+    "fern_stage",
+    "fern_exit",
+    "fern_log",
+    "classes",
+    "crozier_exit",
+    "crozier_files",
+    "crozier_strict_exit",
+)
 UNRETRIEVABLE_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "reason")
 GENERATED_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "fern_log", "findings")
 CONFIRMATIONS_HEADER = ("class", "digest", "publisher", "generate_exit", "generate_files", "generate_log")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
-MEASUREMENT_FIELDS = ("key", "digest", "unretrievable", "check_exit", "check_log", "generate_exit",
-                      "generate_files", "generate_log", "crozier_exit", "crozier_files", "crozier_strict_exit")
+MEASUREMENT_FIELDS = (
+    "key",
+    "digest",
+    "unretrievable",
+    "check_exit",
+    "check_log",
+    "generate_exit",
+    "generate_files",
+    "generate_log",
+    "crozier_exit",
+    "crozier_files",
+    "crozier_strict_exit",
+)
 # What a measured value may be, when it is not empty (not yet taken): an exit
 # is the run's status (negative when a signal ended it) or `timeout`.
 # Spelled canonically, in ASCII digits, so comparing one with "0" reads it right.
 _EXIT = (re.compile(r"0|-?[1-9][0-9]*|timeout"), "an exit status or `timeout`")
 _COUNT = (re.compile(r"0|[1-9][0-9]*"), "a file count")
-MEASUREMENT_GRAMMAR = {"digest": (re.compile(r"[0-9a-f]{64}"), "a SHA-256 digest"),
-                       "check_exit": _EXIT, "generate_exit": _EXIT, "crozier_exit": _EXIT,
-                       "crozier_strict_exit": _EXIT, "fern_exit": _EXIT,
-                       "generate_files": _COUNT, "crozier_files": _COUNT}
+MEASUREMENT_GRAMMAR = {
+    "digest": (re.compile(r"[0-9a-f]{64}"), "a SHA-256 digest"),
+    "check_exit": _EXIT,
+    "generate_exit": _EXIT,
+    "crozier_exit": _EXIT,
+    "crozier_strict_exit": _EXIT,
+    "fern_exit": _EXIT,
+    "generate_files": _COUNT,
+    "crozier_files": _COUNT,
+}
 FERN_CLI = "5.67.1"
 FERN_PYTHON_SDK = "5.20.0"
 EMPTY = "—"
@@ -115,19 +153,20 @@ def require(path: Path) -> Path:
     return path
 
 
-def require_fields(path: Path, number: int, row: dict[str, Any], fields: tuple[str, ...],
-                   may_be_empty: tuple[str, ...] = ()) -> None:
+def require_fields(
+    path: Path, number: int, row: dict[str, Any], fields: tuple[str, ...], may_be_empty: tuple[str, ...] = ()
+) -> None:
     """Exit naming line `number` of `path` when its record does not carry every one of
     `fields` as a string — a non-empty one unless the field is in `may_be_empty` — since
     each is read as text, joined into keys and compared."""
     missing = [field for field in fields if field not in row]
     if missing:
         fail(f"{rel(path)} line {number} lacks {', '.join(missing)}; restore it from git")
-    wrong = [field for field in fields
-             if not isinstance(row[field], str) or (not row[field] and field not in may_be_empty)]
+    wrong = [
+        field for field in fields if not isinstance(row[field], str) or (not row[field] and field not in may_be_empty)
+    ]
     if wrong:
-        fail(f"{rel(path)} line {number} has {wrong[0]} {row[wrong[0]]!r}, not a non-empty string; "
-             "restore it from git")
+        fail(f"{rel(path)} line {number} has {wrong[0]} {row[wrong[0]]!r}, not a non-empty string; restore it from git")
 
 
 def read_jsonl(path: Path, fields: tuple[str, ...]) -> list[tuple[int, dict[str, Any]]]:
@@ -155,8 +194,10 @@ def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
         fail(f"{rel(path)}: the header must be exactly {chr(9).join(header)!r}; restore it from git")
     for number, row in enumerate(rows[1:], 2):
         if len(row) != len(header):
-            fail(f"{rel(path)} line {number}: {len(row)} column(s) where the header has {len(header)}; "
-                 "restore it from git")
+            fail(
+                f"{rel(path)} line {number}: {len(row)} column(s) where the header has {len(header)}; "
+                "restore it from git"
+            )
     return [dict(zip(header, row)) for row in rows[1:]]
 
 
@@ -166,8 +207,10 @@ def tsv_text(header: tuple[str, ...], rows: Iterable[dict[str, str]]) -> str:
         cells = [str(row[column]) for column in header]
         for cell in cells:
             if "\t" in cell or "\n" in cell:
-                fail(f"a cell holds a tab or newline: {cell!r}; remove it from the record or class row "
-                     "it came from, then rerun `build`")
+                fail(
+                    f"a cell holds a tab or newline: {cell!r}; remove it from the record or class row "
+                    "it came from, then rerun `build`"
+                )
         lines.append("\t".join(cells))
     return "\n".join(lines) + "\n"
 
@@ -207,16 +250,19 @@ def enumeration(source: str) -> dict[str, dict[str, str]]:
         # A short row leaves trailing columns None and a long one files its
         # surplus under None; the columns read here must each be text.
         if None in row or any(not isinstance(row.get(column), str) for column in ENUMERATION_COLUMNS):
-            fail(f"{rel(path)} line {number} is not one cell per column of its header; restore it from git, "
-                 "or re-walk the source")
+            fail(
+                f"{rel(path)} line {number} is not one cell per column of its header; restore it from git, "
+                "or re-walk the source"
+            )
         if source == "vendor-portals" and "/" not in row["document"]:
-            fail(f"{rel(path)} line {number}: vendor-portals document {row['document']!r} is not "
-                 "`<owner>--<repo>/<path>`; restore it from git, or re-walk the source")
+            fail(
+                f"{rel(path)} line {number}: vendor-portals document {row['document']!r} is not "
+                "`<owner>--<repo>/<path>`; restore it from git, or re-walk the source"
+            )
     seen: dict[str, int] = {}
     for row in rows:
         seen[row["document"]] = seen.get(row["document"], 0) + 1
-    return {(f"{row['walk']}:{row['document']}" if seen[row["document"]] > 1 else row["document"]): row
-            for row in rows}
+    return {(f"{row['walk']}:{row['document']}" if seen[row["document"]] > 1 else row["document"]): row for row in rows}
 
 
 def enumerated_locator(source: str, row: dict[str, str]) -> str:
@@ -239,6 +285,7 @@ def searched_candidates(source: str) -> dict[str, dict[str, Any]]:
 
 class Entry(TypedDict, total=False):
     """One selected document: how the committed records locate it and name it."""
+
     key: str
     digest: str
     source: str
@@ -263,12 +310,22 @@ def population() -> list[Entry]:
     for line, name, _reason in dropped_rows():
         row = located.get(name)
         if row is None:
-            fail(f"CORPUS.md line {line} drops `{name}` for a Fern failure, but "
-                 f"{rel(EVIDENCE / 'dropped-sources.tsv')} does not locate it; add its row")
+            fail(
+                f"CORPUS.md line {line} drops `{name}` for a Fern failure, but "
+                f"{rel(EVIDENCE / 'dropped-sources.tsv')} does not locate it; add its row"
+            )
         known = {field: "" if row[field] == EMPTY else row[field] for field in ("sha256", "locator", "revision")}
-        entries.append({"digest": known["sha256"], "source": row["source"], "locator": known["locator"],
-                        "revision": known["revision"], "records": {corpus}, "name": name,
-                        "reason": "" if known["locator"] else row["evidence"]})
+        entries.append(
+            {
+                "digest": known["sha256"],
+                "source": row["source"],
+                "locator": known["locator"],
+                "revision": known["revision"],
+                "records": {corpus},
+                "name": name,
+                "reason": "" if known["locator"] else row["evidence"],
+            }
+        )
     enumerations = {source: enumeration(source) for source in ENUMERATED}
     candidates = {source: searched_candidates(source) for source in SEARCHED}
     for screens in sorted(SURFACE.glob("**/screens.jsonl")):
@@ -281,38 +338,69 @@ def population() -> list[Entry]:
                 require_fields(screens, number, row, ("source", "repository", "commit", "path"))
                 fern_logs = row.get("fern_logs", [])
                 if not isinstance(fern_logs, list) or not all(isinstance(log, str) and log for log in fern_logs):
-                    fail(f"{record} line {number} has fern_logs {fern_logs!r}, not a list of log paths; "
-                         "restore it from git")
+                    fail(
+                        f"{record} line {number} has fern_logs {fern_logs!r}, not a list of log paths; "
+                        "restore it from git"
+                    )
                 if not isinstance(row.get("sha256", ""), str):
-                    fail(f"{record} line {number} has sha256 {row['sha256']!r}, not a digest string; restore it from git")
+                    fail(
+                        f"{record} line {number} has sha256 {row['sha256']!r}, not a digest string; restore it from git"
+                    )
                 logs = [rel(screens.parent / log) for log in fern_logs]
-                entries.append({"digest": row.get("sha256", ""), "source": row["source"],
-                                "locator": raw_url(row["repository"], row["commit"], row["path"]),
-                                "revision": row["commit"], "records": {record}, "verdict": row["fern"],
-                                "logs": logs})
+                entries.append(
+                    {
+                        "digest": row.get("sha256", ""),
+                        "source": row["source"],
+                        "locator": raw_url(row["repository"], row["commit"], row["path"]),
+                        "revision": row["commit"],
+                        "records": {record},
+                        "verdict": row["fern"],
+                        "logs": logs,
+                    }
+                )
             elif not isinstance(row["candidate"], str) or not row["candidate"]:
-                fail(f"{record} line {number} has candidate {row['candidate']!r}, not a candidate name; "
-                     "restore it from git")
+                fail(
+                    f"{record} line {number} has candidate {row['candidate']!r}, not a candidate name; "
+                    "restore it from git"
+                )
             elif source not in enumerations and source not in candidates:
-                fail(f"{record} line {number} is a screen filed under {source!r}, which is neither an enumerated source "
-                     f"({', '.join(ENUMERATED)}) nor a searched one ({', '.join(SEARCHED)}); move the ledger "
-                     "under its source's directory, or register the source")
+                fail(
+                    f"{record} line {number} is a screen filed under {source!r}, which is neither an enumerated source "
+                    f"({', '.join(ENUMERATED)}) nor a searched one ({', '.join(SEARCHED)}); move the ledger "
+                    "under its source's directory, or register the source"
+                )
             elif source in enumerations:
                 hit = enumerations[source].get(row["candidate"])
                 if hit is None:
-                    fail(f"{record}: {row['candidate']} is in no {source} enumeration row; restore "
-                         f"golden-reach-witnesses/{source}/enumeration.tsv.gz from git, or re-walk the source")
-                entries.append({"digest": hit["sha256"], "source": source,
-                                "locator": enumerated_locator(source, hit), "revision": hit["revision"],
-                                "records": {record}})
+                    fail(
+                        f"{record}: {row['candidate']} is in no {source} enumeration row; restore "
+                        f"golden-reach-witnesses/{source}/enumeration.tsv.gz from git, or re-walk the source"
+                    )
+                entries.append(
+                    {
+                        "digest": hit["sha256"],
+                        "source": source,
+                        "locator": enumerated_locator(source, hit),
+                        "revision": hit["revision"],
+                        "records": {record},
+                    }
+                )
             else:
                 hit = candidates[source].get(row["candidate"])
                 if hit is None:
-                    fail(f"{record}: {row['candidate']} is in no {source} candidates.jsonl row; restore "
-                         f"golden-reach-witnesses/{source}/candidates.jsonl from git")
-                entries.append({"digest": hit["sha256"], "source": source,
-                                "locator": raw_url(hit["repository"], hit["commit"], hit["path"]),
-                                "revision": hit["commit"], "records": {record}})
+                    fail(
+                        f"{record}: {row['candidate']} is in no {source} candidates.jsonl row; restore "
+                        f"golden-reach-witnesses/{source}/candidates.jsonl from git"
+                    )
+                entries.append(
+                    {
+                        "digest": hit["sha256"],
+                        "source": source,
+                        "locator": raw_url(hit["repository"], hit["commit"], hit["path"]),
+                        "revision": hit["commit"],
+                        "records": {record},
+                    }
+                )
     merged: dict[str, Entry] = {}
     for entry in entries:
         key = entry["digest"] or entry["locator"] or f"{corpus}#{entry['name']}"
@@ -330,8 +418,17 @@ def population() -> list[Entry]:
 def select(_args: argparse.Namespace) -> int:
     print("key\tsource\tlocator\trevision\trecorded_by")
     for entry in population():
-        print("\t".join([entry["key"], entry["source"], entry["locator"] or EMPTY, entry["revision"] or EMPTY,
-                         ";".join(sorted(entry["records"]))]))
+        print(
+            "\t".join(
+                [
+                    entry["key"],
+                    entry["source"],
+                    entry["locator"] or EMPTY,
+                    entry["revision"] or EMPTY,
+                    ";".join(sorted(entry["records"])),
+                ]
+            )
+        )
     return 0
 
 
@@ -378,8 +475,9 @@ class Fetcher:
             if urllib.parse.urlparse(locator).hostname == "raw.githubusercontent.com":
                 status, data = self.acquirer.raw_github_get(locator, "fern-refusals", locator)
             else:
-                with urllib.request.urlopen(urllib.request.Request(
-                        locator, headers={"User-Agent": "crozier-fern-refusals"}), timeout=90) as response:
+                with urllib.request.urlopen(
+                    urllib.request.Request(locator, headers={"User-Agent": "crozier-fern-refusals"}), timeout=90
+                ) as response:
                     status, data = response.status, response.read()
         except OSError as error:
             return None, f"fetch failed: {error}"
@@ -395,13 +493,15 @@ def fern_workspace(document: Path, workspace: Path) -> None:
     (workspace / "openapi").mkdir(parents=True)
     shutil.copyfile(document, workspace / "openapi" / "openapi.yml")
     (workspace / "fern.config.json").write_text(
-        json.dumps({"organization": "fern", "version": FERN_CLI}) + "\n", encoding="utf-8")
+        json.dumps({"organization": "fern", "version": FERN_CLI}) + "\n", encoding="utf-8"
+    )
     (workspace / "generators.yml").write_text(
         "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n    generators:\n"
         f"      - name: fernapi/fern-python-sdk\n        version: {FERN_PYTHON_SDK}\n"
         "        config:\n          pydantic_config:\n            enum_type: python_enums\n"
         "        output:\n          location: local-file-system\n          path: ../generated/python\n",
-        encoding="utf-8")
+        encoding="utf-8",
+    )
 
 
 # Node's default heap cannot hold Fern's model of the largest documents (the
@@ -412,13 +512,17 @@ NODE_HEAP = "--max-old-space-size=16384"
 
 def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, str]:
     if shutil.which(command[0]) is None:
-        fail(f"`{command[0]}` is not on PATH; run `just setup-fern` (it installs the Fern CLI and needs Docker "
-             "for `fern generate`)")
-    env = dict(os.environ, FERN_TOKEN="preview-only-no-publish", CI="true", GITHUB_ACTIONS="true",
-               NODE_OPTIONS=NODE_HEAP)
+        fail(
+            f"`{command[0]}` is not on PATH; run `just setup-fern` (it installs the Fern CLI and needs Docker "
+            "for `fern generate`)"
+        )
+    env = dict(
+        os.environ, FERN_TOKEN="preview-only-no-publish", CI="true", GITHUB_ACTIONS="true", NODE_OPTIONS=NODE_HEAP
+    )
     try:
-        run = subprocess.run(command, cwd=workspace, env=env, capture_output=True, text=True,
-                             errors="replace", timeout=timeout)
+        run = subprocess.run(
+            command, cwd=workspace, env=env, capture_output=True, text=True, errors="replace", timeout=timeout
+        )
     except subprocess.TimeoutExpired:
         return "timeout", ""
     return str(run.returncode), run.stdout + run.stderr
@@ -443,8 +547,11 @@ def fern_generate(document: Path, digest: str, timeout: int) -> dict[str, str]:
         workspace = Path(scratch) / "fern"
         fern_workspace(document, workspace)
         preview = Path(scratch) / "preview"
-        status, output = fern_run(["fern", "generate", "--group", "python-sdk", "--local", "--preview",
-                                   "--output", str(preview), "--force"], workspace, timeout)
+        status, output = fern_run(
+            ["fern", "generate", "--group", "python-sdk", "--local", "--preview", "--output", str(preview), "--force"],
+            workspace,
+            timeout,
+        )
         files = sum(1 for path in preview.rglob("*") if path.is_file()) if preview.is_dir() else 0
     path = EVIDENCE / "logs" / f"{digest}.generate.log"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -456,8 +563,9 @@ def scrub(log: str) -> str:
     """Fern's output with this host's paths and scratch names made generic, less
     the lines that only repeat it: the `::error`/`::warning` annotations a CI run
     adds, and each stack frame under an error it already printed."""
-    log = "".join(line for line in log.splitlines(keepends=True)
-                  if not line.startswith("::") and not re.match(r"\s+at ", line))
+    log = "".join(
+        line for line in log.splitlines(keepends=True) if not line.startswith("::") and not re.match(r"\s+at ", line)
+    )
     log = re.sub(r"/home/[^/\s]+/\.npm/_npx/[0-9a-f]+/", "<npx>/", log)
     log = re.sub(r"/tmp/[\w.-]+", "<tmp>", log)
     log = re.sub(r"\b\d+(\.\d+)? seconds\b", "<n> seconds", log)
@@ -497,10 +605,26 @@ def crozier_run(binary: Path, document: Path, timeout: int, log: Path, *flags: s
     with tempfile.TemporaryDirectory(prefix="fern-refusals-crozier-") as scratch:
         output = Path(scratch) / "sdk"
         try:
-            run = subprocess.run([str(binary), "--no-config", "generate", "python", *flags, "--spec",
-                                  str(document), "--output", str(output), "--package-name", "fern",
-                                  "--project-name", "default_package_name"],
-                                 capture_output=True, text=True, timeout=timeout)
+            run = subprocess.run(
+                [
+                    str(binary),
+                    "--no-config",
+                    "generate",
+                    "python",
+                    *flags,
+                    "--spec",
+                    str(document),
+                    "--output",
+                    str(output),
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
         except subprocess.TimeoutExpired:
             log.write_text(f"timed out after {timeout} seconds\n", encoding="utf-8")
             return "timeout", "0"
@@ -528,16 +652,20 @@ def read_measurements() -> dict[str, dict[str, str]]:
         if "fern_stage" in row:
             require_fields(path, number, row, ("fern_stage", "fern_exit", "fern_log"), may_be_empty=("fern_log",))
             if row["fern_stage"] not in ("check", "generate"):
-                fail(f"{rel(path)} line {number} has fern_stage {row['fern_stage']!r}, not check or generate; "
-                     "restore it from git")
+                fail(
+                    f"{rel(path)} line {number} has fern_stage {row['fern_stage']!r}, not check or generate; "
+                    "restore it from git"
+                )
         # Every other field `measure` writes is text; `upgraded` fills a missing one.
         present = tuple(field for field in MEASUREMENT_FIELDS if field in row)
         require_fields(path, number, row, present, may_be_empty=present)
         for field in (*present, *(("fern_exit",) if "fern_stage" in row else ())):
             grammar = MEASUREMENT_GRAMMAR.get(field)
             if grammar and row[field] and not grammar[0].fullmatch(row[field]):
-                fail(f"{rel(path)} line {number} has {field} {row[field]!r}, not {grammar[1]}; "
-                     "restore it from git, or rerun `measure --again` to retake it")
+                fail(
+                    f"{rel(path)} line {number} has {field} {row[field]!r}, not {grammar[1]}; "
+                    "restore it from git, or rerun `measure --again` to retake it"
+                )
     return {row["key"]: upgraded(row) for _number, row in rows}
 
 
@@ -556,8 +684,9 @@ def check_blocks(row: dict[str, str]) -> bool:
     generation need not be run to know Fern refuses it."""
     classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
     findings = read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER)
-    carried, _found, _unmatched = classify(diagnostics(read_log(row.get("check_log", ""))),
-                                           class_patterns(classes), finding_patterns(findings))
+    carried, _found, _unmatched = classify(
+        diagnostics(read_log(row.get("check_log", ""))), class_patterns(classes), finding_patterns(findings)
+    )
     return row.get("check_exit") not in ("", "0") and bool(carried)
 
 
@@ -587,8 +716,11 @@ def measure(args: argparse.Namespace) -> int:
     if not binary.is_file():
         fail("build crozier's release binary first: run `just fern-refusals-measure`, which builds it and measures")
     done = read_measurements()
-    todo = [entry for entry in population()
-            if entry["key"] not in done or missing_measurements(done[entry["key"]]) or args.again]
+    todo = [
+        entry
+        for entry in population()
+        if entry["key"] not in done or missing_measurements(done[entry["key"]]) or args.again
+    ]
     if args.limit:
         todo = todo[: args.limit]
     fetcher = Fetcher([REPO / ".local", *args.root])
@@ -601,11 +733,17 @@ def measure(args: argparse.Namespace) -> int:
         path.write_bytes(data)
         row = {} if args.again else dict(done.get(entry["key"], {}))
         row.update(key=entry["key"], digest=digest, unretrievable="")
-        needed = missing_measurements(row) if row.get("check_exit") or row.get("crozier_exit") else \
-            {"check", "crozier", "crozier-strict"}
+        needed = (
+            missing_measurements(row)
+            if row.get("check_exit") or row.get("crozier_exit")
+            else {"check", "crozier", "crozier-strict"}
+        )
         if "check" in needed:
-            row.update(committed_check(entry) if not row.get("check_exit") and committed_check(entry)
-                       else fern_check(path, digest, args.timeout))
+            row.update(
+                committed_check(entry)
+                if not row.get("check_exit") and committed_check(entry)
+                else fern_check(path, digest, args.timeout)
+            )
             if not row.get("generate_files") and not check_blocks(row):
                 needed.add("generate")
         if "generate" in needed:
@@ -643,8 +781,7 @@ def measure(args: argparse.Namespace) -> int:
 def write_measurements(done: dict[str, dict[str, str]]) -> None:
     path = EVIDENCE / "measurements.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(json.dumps(done[key], sort_keys=True) + "\n" for key in sorted(done)),
-                    encoding="utf-8")
+    path.write_text("".join(json.dumps(done[key], sort_keys=True) + "\n" for key in sorted(done)), encoding="utf-8")
 
 
 API_LINE = re.compile(r"\[api\]: (?:python-sdk )?(?:fernapi/fern-python-sdk )?(.*)")
@@ -680,13 +817,15 @@ def diagnostics(log: str) -> list[str]:
         elif in_container and re.match(r"(\w+(Error|Exception): |Failed to run command: )", text):
             message = text
         if text.startswith("issue: "):
-            message = text[len("issue: "):]
+            message = text[len("issue: ") :]
         elif "JavaScript heap out of memory" in text:
             message = text
         elif "[error] " in text:
             message = text.split("[error] ", 1)[1]
         elif (api := API_LINE.match(text)) and re.match(
-                r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |Maximum call stack|.* is undefined$|\w*(Error|Exception)\b.*:", api.group(1)):
+            r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |Maximum call stack|.* is undefined$|\w*(Error|Exception)\b.*:",
+            api.group(1),
+        ):
             message = api.group(1)
         # A name Fern could not form leaves the phrase leading with a space.
         message = message.rstrip()
@@ -699,6 +838,7 @@ def diagnostics(log: str) -> list[str]:
 class Template(NamedTuple):
     """A class's or finding's `diagnostic` as a matcher, with how much literal
     text it pins down."""
+
     name: str
     pattern: re.Pattern[str]
     literal: int
@@ -729,16 +869,16 @@ def finding_patterns(findings: list[dict[str, str]]) -> list[Template]:
     return [template(row["finding"], row["diagnostic"]) for row in findings if row["kind"] == "check-only"]
 
 
-def classify(messages: list[str], patterns: list[Template],
-             findings: list[Template]) -> tuple[list[str], list[str], list[str]]:
+def classify(
+    messages: list[str], patterns: list[Template], findings: list[Template]
+) -> tuple[list[str], list[str], list[str]]:
     """The classes and check-only findings `messages` carry, and the messages
     that match no single class or finding."""
     carried: list[str] = []
     found: list[str] = []
     unmatched: list[str] = []
     for message in messages:
-        matched = most_specific([candidate for candidate in [*patterns, *findings]
-                                 if candidate.pattern.match(message)])
+        matched = most_specific([candidate for candidate in [*patterns, *findings] if candidate.pattern.match(message)])
         hits = [candidate.name for candidate in patterns if candidate.name in matched]
         near = [candidate.name for candidate in findings if candidate.name in matched]
         if len(hits) + len(near) != 1:
@@ -760,8 +900,9 @@ def read_log(path: str) -> str:
     return (REPO / path).read_text(encoding="utf-8", errors="replace")
 
 
-def verdict(result: dict[str, str], patterns: list[Template],
-            findings: list[Template]) -> tuple[dict[str, str] | None, list[str], list[str]]:
+def verdict(
+    result: dict[str, str], patterns: list[Template], findings: list[Template]
+) -> tuple[dict[str, str] | None, list[str], list[str]]:
     """Whether Fern refuses the measured document, and why.
 
     Fern refuses when its generation exits non-zero, writes nothing, or reports
@@ -771,22 +912,48 @@ def verdict(result: dict[str, str], patterns: list[Template],
     phrases it printed. The third value lists every message no class or finding
     matches.
     """
-    check_classes, check_found, check_unmatched = classify(diagnostics(read_log(result["check_log"])),
-                                                           patterns, findings)
+    check_classes, check_found, check_unmatched = classify(
+        diagnostics(read_log(result["check_log"])), patterns, findings
+    )
     if check_classes and result["check_exit"] != "0" and not result.get("generate_exit"):
         # The check named a class, which stops the generation too; it was not run.
-        return ({"fern_stage": "check", "fern_exit": result["check_exit"], "fern_log": result["check_log"],
-                 "classes": ",".join(check_classes)}, check_found, check_unmatched)
-    gen_classes, _gen_found, gen_unmatched = classify(diagnostics(read_log(result.get("generate_log", ""))),
-                                                      patterns, findings)
+        return (
+            {
+                "fern_stage": "check",
+                "fern_exit": result["check_exit"],
+                "fern_log": result["check_log"],
+                "classes": ",".join(check_classes),
+            },
+            check_found,
+            check_unmatched,
+        )
+    gen_classes, _gen_found, gen_unmatched = classify(
+        diagnostics(read_log(result.get("generate_log", ""))), patterns, findings
+    )
     refused = result["generate_exit"] != "0" or result["generate_files"] == "0" or gen_classes
     if not refused:
         return None, check_found, check_unmatched + gen_unmatched
     if check_classes:
-        return ({"fern_stage": "check", "fern_exit": result["check_exit"], "fern_log": result["check_log"],
-                 "classes": ",".join(check_classes)}, check_found, check_unmatched)
-    return ({"fern_stage": "generate", "fern_exit": result["generate_exit"], "fern_log": result["generate_log"],
-             "classes": ",".join(gen_classes)}, check_found, gen_unmatched)
+        return (
+            {
+                "fern_stage": "check",
+                "fern_exit": result["check_exit"],
+                "fern_log": result["check_log"],
+                "classes": ",".join(check_classes),
+            },
+            check_found,
+            check_unmatched,
+        )
+    return (
+        {
+            "fern_stage": "generate",
+            "fern_exit": result["generate_exit"],
+            "fern_log": result["generate_log"],
+            "classes": ",".join(gen_classes),
+        },
+        check_found,
+        gen_unmatched,
+    )
 
 
 def tables() -> tuple[dict[str, str], list[str]]:
@@ -807,37 +974,58 @@ def tables() -> tuple[dict[str, str], list[str]]:
         result = measured.get(entry["key"])
         missing = missing_measurements(result) - {"crozier-strict"} if result is not None else {"any"}
         if missing:
-            problems.append(f"{entry['key']}: not measured ({', '.join(sorted(missing))}); "
-                            "run `just fern-refusals-measure`")
+            problems.append(
+                f"{entry['key']}: not measured ({', '.join(sorted(missing))}); run `just fern-refusals-measure`"
+            )
             continue
-        identity = {"source": entry["source"], "locator": entry["locator"] or EMPTY,
-                    "revision": entry["revision"] or EMPTY, "recorded_by": records}
+        identity = {
+            "source": entry["source"],
+            "locator": entry["locator"] or EMPTY,
+            "revision": entry["revision"] or EMPTY,
+            "recorded_by": records,
+        }
         if result["unretrievable"]:
             # A record that never located its document is named by the record itself.
-            unretrievable.append(dict(identity, locator=entry["locator"] or entry["key"],
-                                      digest=entry["digest"] or EMPTY, reason=result["unretrievable"]))
+            unretrievable.append(
+                dict(
+                    identity,
+                    locator=entry["locator"] or entry["key"],
+                    digest=entry["digest"] or EMPTY,
+                    reason=result["unretrievable"],
+                )
+            )
             continue
         for log in (result["check_log"], result["generate_log"]):
             if log and not (REPO / log).is_file():
-                problems.append(f"{entry['key']}: its Fern log {log} is missing; restore it from git, or "
-                                "take the document again with `measure --again`")
+                problems.append(
+                    f"{entry['key']}: its Fern log {log} is missing; restore it from git, or "
+                    "take the document again with `measure --again`"
+                )
         refusal, found, unmatched = verdict(result, patterns, near)
         digest = result["digest"]
-        problems += [f"{digest}: no single class or finding matches {message}; add a classes.tsv or "
-                     "findings.tsv row for the phrase, or narrow the template that overlaps it"
-                     for message in unmatched]
+        problems += [
+            f"{digest}: no single class or finding matches {message}; add a classes.tsv or "
+            "findings.tsv row for the phrase, or narrow the template that overlaps it"
+            for message in unmatched
+        ]
         table = documents if refusal else generated
         if digest in table:
             kept = table[digest]
             kept["recorded_by"] = ";".join(sorted(set(kept["recorded_by"].split(";")) | set(entry["records"])))
             continue
         if refusal is None:
-            generated[digest] = dict(identity, digest=digest, fern_log=result["check_log"] or result["generate_log"],
-                                     findings=",".join(found) or EMPTY)
+            generated[digest] = dict(
+                identity,
+                digest=digest,
+                fern_log=result["check_log"] or result["generate_log"],
+                findings=",".join(found) or EMPTY,
+            )
             continue
         if not refusal["classes"]:
-            problems.append(f"{digest}: Fern refuses it, but {refusal['fern_log']} carries no refusal class; "
-                            "add a class for the phrase that stopped it")
+            problems.append(
+                f"{digest}: Fern refuses it, but {refusal['fern_log']} carries no refusal class; "
+                "add a class for the phrase that stopped it"
+            )
         names = list(filter(None, refusal["classes"].split(",")))
         for name in names:
             counts[name] += 1
@@ -845,18 +1033,30 @@ def tables() -> tuple[dict[str, str], list[str]]:
         if evaluated.intersection(names):
             strict = result["crozier_strict_exit"]
             if not strict:
-                problems.append(f"{entry['key']}: not measured (crozier-strict); "
-                                "run `just fern-refusals-measure`")
+                problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
                 continue
-        documents[digest] = dict(identity, digest=digest, **refusal, crozier_exit=result["crozier_exit"],
-                                 crozier_files=result["crozier_files"], crozier_strict_exit=strict)
+        documents[digest] = dict(
+            identity,
+            digest=digest,
+            **refusal,
+            crozier_exit=result["crozier_exit"],
+            crozier_files=result["crozier_files"],
+            crozier_strict_exit=strict,
+        )
     for row in classes:
         row["documents"] = str(counts[row["class"]])
-    return ({"documents.tsv": tsv_text(DOCUMENTS_HEADER, (documents[key] for key in sorted(documents))),
-             "generated.tsv": tsv_text(GENERATED_HEADER, (generated[key] for key in sorted(generated))),
-             "unretrievable.tsv": tsv_text(UNRETRIEVABLE_HEADER, sorted(unretrievable, key=lambda row: (
-                 row["source"], row["locator"], row["recorded_by"]))),
-             "classes.tsv": tsv_text(CLASSES_HEADER, classes)}, problems)
+    return (
+        {
+            "documents.tsv": tsv_text(DOCUMENTS_HEADER, (documents[key] for key in sorted(documents))),
+            "generated.tsv": tsv_text(GENERATED_HEADER, (generated[key] for key in sorted(generated))),
+            "unretrievable.tsv": tsv_text(
+                UNRETRIEVABLE_HEADER,
+                sorted(unretrievable, key=lambda row: (row["source"], row["locator"], row["recorded_by"])),
+            ),
+            "classes.tsv": tsv_text(CLASSES_HEADER, classes),
+        },
+        problems,
+    )
 
 
 def build(_args: argparse.Namespace) -> int:
@@ -866,8 +1066,10 @@ def build(_args: argparse.Namespace) -> int:
     for name, text in written.items():
         (REGISTRY / name).write_text(text, encoding="utf-8")
     counts = {name: text.count("\n") - 1 for name, text in written.items()}
-    print(f"fern-refusals: {counts['documents.tsv']} refused, {counts['generated.tsv']} generated, "
-          f"{counts['unretrievable.tsv']} unretrievable")
+    print(
+        f"fern-refusals: {counts['documents.tsv']} refused, {counts['generated.tsv']} generated, "
+        f"{counts['unretrievable.tsv']} unretrievable"
+    )
     return 0
 
 
@@ -896,8 +1098,10 @@ def cross_reference_problems() -> list[str]:
             problems.append(f"documents.tsv {row['digest']}: its fern_log {row['fern_log']} is not committed")
     for row in classes:
         if row["documents"] != str(carried.get(row["class"], 0)):
-            problems.append(f"classes.tsv {row['class']}: documents is {row['documents']}, but "
-                            f"{carried.get(row['class'], 0)} documents.tsv row(s) carry it")
+            problems.append(
+                f"classes.tsv {row['class']}: documents is {row['documents']}, but "
+                f"{carried.get(row['class'], 0)} documents.tsv row(s) carry it"
+            )
     return problems
 
 
@@ -914,8 +1118,7 @@ def _publisher(locator: str) -> str:
         tree = parts[3:]
         tree = tree[2:] if tree[:2] == ["apis", "openapi"] else tree[1:]
         return tree[0] if tree else parts[0]
-    return parts[1] if urllib.parse.urlparse(locator).hostname == "api.apis.guru" and len(parts) > 3 \
-        else parts[0]
+    return parts[1] if urllib.parse.urlparse(locator).hostname == "api.apis.guru" and len(parts) > 3 else parts[0]
 
 
 def generation_refused(row: dict[str, str], pattern: re.Pattern[str]) -> bool:
@@ -924,8 +1127,11 @@ def generation_refused(row: dict[str, str], pattern: re.Pattern[str]) -> bool:
     a document carrying the class, so it is what a confirmation shows; a refusal
     the document's other classes caused counts too. Its caller has refused a
     timeout, which is no verdict."""
-    return row["generate_exit"] != "0" or row["generate_files"] == "0" or any(
-        pattern.match(message) for message in diagnostics(read_log(row["generate_log"])))
+    return (
+        row["generate_exit"] != "0"
+        or row["generate_files"] == "0"
+        or any(pattern.match(message) for message in diagnostics(read_log(row["generate_log"])))
+    )
 
 
 def confirm(args: argparse.Namespace) -> int:
@@ -948,9 +1154,13 @@ def confirm(args: argparse.Namespace) -> int:
         name = row["class"]
         done = [confirmed for confirmed in kept if confirmed["class"] == name]
         carrying = [doc for doc in documents if name in doc["classes"].split(",") and doc["digest"] in cached]
-        carrying.sort(key=lambda doc: (doc["classes"] != name, doc["digest"] not in measured
-                                       or not measured[doc["digest"]]["generate_exit"],
-                                       cached[doc["digest"]].stat().st_size))
+        carrying.sort(
+            key=lambda doc: (
+                doc["classes"] != name,
+                doc["digest"] not in measured or not measured[doc["digest"]]["generate_exit"],
+                cached[doc["digest"]].stat().st_size,
+            )
+        )
         publishers = {confirmed["publisher"] for confirmed in done}
         chosen = {confirmed["digest"] for confirmed in done}
         for doc in carrying:
@@ -967,8 +1177,11 @@ def confirm(args: argparse.Namespace) -> int:
         name, doc = item
         digest = doc["digest"]
         previous = measured.get(digest, {})
-        result = {key: previous[key] for key in ("generate_exit", "generate_files", "generate_log")} \
-            if previous.get("generate_exit") else fern_generate(cached[digest], digest, args.timeout)
+        result = (
+            {key: previous[key] for key in ("generate_exit", "generate_files", "generate_log")}
+            if previous.get("generate_exit")
+            else fern_generate(cached[digest], digest, args.timeout)
+        )
         return {"class": name, "digest": digest, "publisher": doc["publisher"], **result}
 
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
@@ -997,33 +1210,47 @@ def confirmation_problems() -> list[str]:
     for row in confirmations:
         doc = documents.get(row["digest"])
         if row["class"] not in patterns or doc is None or row["class"] not in doc["classes"].split(","):
-            problems.append(f"confirmations.tsv {row['class']} {row['digest']}: names no documents.tsv row "
-                            "carrying that class; rerun `confirm` after `build`")
+            problems.append(
+                f"confirmations.tsv {row['class']} {row['digest']}: names no documents.tsv row "
+                "carrying that class; rerun `confirm` after `build`"
+            )
         elif not _EXIT[0].fullmatch(row["generate_exit"]) or not _COUNT[0].fullmatch(row["generate_files"]):
-            problems.append(f"confirmations.tsv {row['digest']}: generate_exit {row['generate_exit']!r} and "
-                            f"generate_files {row['generate_files']!r} must be an exit status or `timeout`, and "
-                            "a file count; restore it from git, or rerun `confirm`")
+            problems.append(
+                f"confirmations.tsv {row['digest']}: generate_exit {row['generate_exit']!r} and "
+                f"generate_files {row['generate_files']!r} must be an exit status or `timeout`, and "
+                "a file count; restore it from git, or rerun `confirm`"
+            )
         elif not (REPO / row["generate_log"]).is_file():
             problems.append(f"confirmations.tsv {row['digest']}: its log {row['generate_log']} is not committed")
         elif row["generate_exit"] == "timeout":
-            problems.append(f"{row['class']}: the generation of {row['digest']} timed out, which confirms "
-                            "nothing; rerun `confirm` with a longer `--timeout`")
+            problems.append(
+                f"{row['class']}: the generation of {row['digest']} timed out, which confirms "
+                "nothing; rerun `confirm` with a longer `--timeout`"
+            )
         elif not generation_refused(row, patterns[row["class"]]):
-            problems.append(f"{row['class']}: Fern generates from {row['digest']} (exit 0, "
-                            f"{row['generate_files']} files), contradicting the class's probe; measure the "
-                            "class again, or make the phrase a finding")
+            problems.append(
+                f"{row['class']}: Fern generates from {row['digest']} (exit 0, "
+                f"{row['generate_files']} files), contradicting the class's probe; measure the "
+                "class again, or make the phrase a finding"
+            )
     for row in classes:
         if row["documents"] != "0" and not any(confirmed["class"] == row["class"] for confirmed in confirmations):
-            problems.append(f"{row['class']}: no real document's generation confirms it; run "
-                            "`tools/fern-refusals/fern-refusals.py confirm`")
+            problems.append(
+                f"{row['class']}: no real document's generation confirms it; run "
+                "`tools/fern-refusals/fern-refusals.py confirm`"
+            )
     return problems
 
 
 def check(_args: argparse.Namespace) -> int:
     problems = []
-    for name, header in (("classes.tsv", CLASSES_HEADER), ("documents.tsv", DOCUMENTS_HEADER),
-                         ("generated.tsv", GENERATED_HEADER), ("unretrievable.tsv", UNRETRIEVABLE_HEADER),
-                         ("findings.tsv", FINDINGS_HEADER)):
+    for name, header in (
+        ("classes.tsv", CLASSES_HEADER),
+        ("documents.tsv", DOCUMENTS_HEADER),
+        ("generated.tsv", GENERATED_HEADER),
+        ("unretrievable.tsv", UNRETRIEVABLE_HEADER),
+        ("findings.tsv", FINDINGS_HEADER),
+    ):
         path = REGISTRY / name
         first = path.read_text(encoding="utf-8").split("\n", 1)[0] if path.is_file() else ""
         if first != "\t".join(header):
@@ -1032,14 +1259,22 @@ def check(_args: argparse.Namespace) -> int:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
     problems = cross_reference_problems() + confirmation_problems()
     if problems:
-        fail("\n  ".join(["the registry's tables disagree with each other "
-                          "(run `tools/fern-refusals/fern-refusals.py build`, or restore the hand-edited one from git):",
-                          *problems]))
+        fail(
+            "\n  ".join(
+                [
+                    "the registry's tables disagree with each other "
+                    "(run `tools/fern-refusals/fern-refusals.py build`, or restore the hand-edited one from git):",
+                    *problems,
+                ]
+            )
+        )
     written, problems = tables()
     for name, text in written.items():
         if (REGISTRY / name).read_text(encoding="utf-8") != text:
-            problems.append(f"docs/fern-refusals/{name} differs from what `build` writes; "
-                            "run `tools/fern-refusals/fern-refusals.py build` and commit the result")
+            problems.append(
+                f"docs/fern-refusals/{name} differs from what `build` writes; "
+                "run `tools/fern-refusals/fern-refusals.py build` and commit the result"
+            )
     if problems:
         fail("\n  ".join(["the registry drifted from its inputs:", *problems]))
     return 0
@@ -1063,29 +1298,53 @@ def probe(args: argparse.Namespace) -> int:
 
     def one(name: str) -> tuple[str, dict[str, str]]:
         check_exit, check_log, generate_exit, generate_log, tree = fern_probe(
-            REGISTRY / name / "probe.yml", name, args.timeout)
+            REGISTRY / name / "probe.yml", name, args.timeout
+        )
         logs = EVIDENCE / "probe-logs"
         pattern = patterns[name]
-        stage = next((stage for stage, log in (("check", check_log), ("generate", generate_log))
-                      if any(pattern.match(message) for message in diagnostics(log))), "")
+        stage = next(
+            (
+                stage
+                for stage, log in (("check", check_log), ("generate", generate_log))
+                if any(pattern.match(message) for message in diagnostics(log))
+            ),
+            "",
+        )
         if not stage:
-            fail(f"{name}: Fern printed no diagnostic matching its template over the probe "
-                 f"(check exit {check_exit}, generate exit {generate_exit}); see {rel(logs)}/{name}.*.log")
-        phrase = next(message for message in diagnostics(check_log if stage == "check" else generate_log)
-                      if pattern.match(message))
+            fail(
+                f"{name}: Fern printed no diagnostic matching its template over the probe "
+                f"(check exit {check_exit}, generate exit {generate_exit}); see {rel(logs)}/{name}.*.log"
+            )
+        phrase = next(
+            message
+            for message in diagnostics(check_log if stage == "check" else generate_log)
+            if pattern.match(message)
+        )
         exit_of_stage = check_exit if stage == "check" else generate_exit
         if exit_of_stage != generate_exit:
-            fail(f"{name}: the {stage} stage exits {exit_of_stage} but the generation {generate_exit}, "
-                 f"writing {len(tree)} files; a phrase Fern still generates past is a finding "
-                 "(findings.tsv), not a class")
+            fail(
+                f"{name}: the {stage} stage exits {exit_of_stage} but the generation {generate_exit}, "
+                f"writing {len(tree)} files; a phrase Fern still generates past is a finding "
+                "(findings.tsv), not a class"
+            )
         python = [path for path in tree if path.suffix == ".py"]
         # A false success writes a tree from a document Fern never parsed.
-        output_tree = f"{len(tree)} files, {len(python)} Python" + (
-            ", from a document Fern did not parse" if generate_exit == "0" else "") if tree else "none"
-        record = {"fern_cli_version": FERN_CLI, "fern_python_sdk_version": FERN_PYTHON_SDK,
-                  "generate_exit": generate_exit, "diagnostic": phrase, "output_tree": output_tree}
+        output_tree = (
+            f"{len(tree)} files, {len(python)} Python"
+            + (", from a document Fern did not parse" if generate_exit == "0" else "")
+            if tree
+            else "none"
+        )
+        record = {
+            "fern_cli_version": FERN_CLI,
+            "fern_python_sdk_version": FERN_PYTHON_SDK,
+            "generate_exit": generate_exit,
+            "diagnostic": phrase,
+            "output_tree": output_tree,
+        }
         (REGISTRY / name / "fern-refusal.txt").write_text(
-            "".join(f"{field}: {value}\n" for field, value in record.items()), encoding="utf-8")
+            "".join(f"{field}: {value}\n" for field, value in record.items()), encoding="utf-8"
+        )
         return name, {"fern_stage": stage, "fern_exit": exit_of_stage}
 
     results: dict[str, dict[str, str]] = {}
@@ -1113,10 +1372,15 @@ def fern_probe(document: Path, name: str, timeout: int) -> tuple[str, str, str, 
         check_exit, check_log = fern_run(["fern", "check"], workspace, timeout)
         preview = Path(scratch) / "preview"
         generate_exit, generate_log = fern_run(
-            ["fern", "generate", "--group", "python-sdk", "--local", "--preview", "--output", str(preview),
-             "--force"], workspace, timeout)
-        tree = sorted(path.relative_to(preview) for path in preview.rglob("*") if path.is_file()) \
-            if preview.is_dir() else []
+            ["fern", "generate", "--group", "python-sdk", "--local", "--preview", "--output", str(preview), "--force"],
+            workspace,
+            timeout,
+        )
+        tree = (
+            sorted(path.relative_to(preview) for path in preview.rglob("*") if path.is_file())
+            if preview.is_dir()
+            else []
+        )
     logs = EVIDENCE / "probe-logs"
     logs.mkdir(parents=True, exist_ok=True)
     (logs / f"{name}.check.log").write_text(scrub(check_log), encoding="utf-8")
@@ -1142,12 +1406,17 @@ def finding(args: argparse.Namespace) -> int:
         row = by_name[name]
         check_exit, check_log, generate_exit, _log, tree = fern_probe(REPO / row["probe"], name, args.timeout)
         if generate_exit != "0" or not tree:
-            fail(f"{name}: the generation exits {generate_exit} with {len(tree)} files, so Fern refuses the "
-                 "probe; a refusal is a class, not a finding")
+            fail(
+                f"{name}: the generation exits {generate_exit} with {len(tree)} files, so Fern refuses the "
+                "probe; a refusal is a class, not a finding"
+            )
         if row["kind"] == "check-only" and not any(
-                template_pattern(row["diagnostic"]).match(message) for message in diagnostics(check_log)):
-            fail(f"{name}: `fern check` printed no diagnostic matching its template; correct the template "
-                 f"or the probe, reading {rel(EVIDENCE / 'probe-logs')}/{name}.check.log")
+            template_pattern(row["diagnostic"]).match(message) for message in diagnostics(check_log)
+        ):
+            fail(
+                f"{name}: `fern check` printed no diagnostic matching its template; correct the template "
+                f"or the probe, reading {rel(EVIDENCE / 'probe-logs')}/{name}.check.log"
+            )
         row.update(check_exit=check_exit, generate_exit=generate_exit)
 
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
@@ -1183,8 +1452,13 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--timeout", type=positive, default=3600)
     m.add_argument("--limit", type=nonnegative, default=0)
     m.add_argument("--again", action="store_true", help="re-measure documents already on record")
-    m.add_argument("--root", type=Path, action="append", default=[],
-                   help="another directory whose files may supply a document by digest")
+    m.add_argument(
+        "--root",
+        type=Path,
+        action="append",
+        default=[],
+        help="another directory whose files may supply a document by digest",
+    )
     m.set_defaults(run=measure)
     p = sub.add_parser("probe", help="measure Fern on classes' probes and write their fern-refusal.txt")
     p.add_argument("cls", nargs="+", metavar="CLASS")

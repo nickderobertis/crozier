@@ -2,6 +2,7 @@
 ruff and uv, failing genuinely — a build into a target directory that is a
 regular file, a venv path under one, and an install with no network and no
 cache."""
+
 import os
 import subprocess
 from pathlib import Path
@@ -15,7 +16,9 @@ pytestmark = pytest.mark.skipif(os.name == "nt", reason="run.sh is the Linux/mac
 def _run(venv: Path, **env: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["bash", str(RUNNER)],
-        capture_output=True, text=True, timeout=1800,
+        capture_output=True,
+        text=True,
+        timeout=1800,
         env={**os.environ, "CROZIER_LIVE_E2E_VENV": str(venv), **env},
     )
 

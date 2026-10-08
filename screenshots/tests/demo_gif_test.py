@@ -10,6 +10,7 @@ freshly built crozier (`crozier:build` runs first). Needs Pillow (the script's
 renderer): run it as the `screenshots` project's `test` target, which installs
 it with uv.
 """
+
 from __future__ import annotations
 
 import os
@@ -38,7 +39,9 @@ class AFailedGenerateStopsTheRender(unittest.TestCase):
         run = subprocess.run(
             [sys.executable, str(SCRIPT)],
             env={**os.environ, "CROZIER_BIN": str(stub), "DEMO_GIF_OUT": str(out)},
-            capture_output=True, text=True, timeout=120,
+            capture_output=True,
+            text=True,
+            timeout=120,
         )
         return run, out
 
@@ -57,7 +60,9 @@ class AFailedGenerateStopsTheRender(unittest.TestCase):
         run = subprocess.run(
             [sys.executable, str(SCRIPT)],
             env={**os.environ, "CROZIER_BIN": scratch.name, "DEMO_GIF_OUT": str(out)},
-            capture_output=True, text=True, timeout=120,
+            capture_output=True,
+            text=True,
+            timeout=120,
         )
         self.assertEqual(1, run.returncode, run.stdout + run.stderr)
         self.assertIn(f"demo-gif: cannot run {scratch.name}", run.stderr)
@@ -83,7 +88,9 @@ class TheRealBinaryRendersTheSession(unittest.TestCase):
             run = subprocess.run(
                 [sys.executable, str(SCRIPT)],
                 env={**os.environ, "CROZIER_BIN": str(binary), "DEMO_GIF_OUT": str(out)},
-                capture_output=True, text=True, timeout=300,
+                capture_output=True,
+                text=True,
+                timeout=300,
             )
             self.assertEqual(0, run.returncode, run.stderr)
             frames = int(run.stderr.rsplit("(", 1)[1].split(" frames)")[0])

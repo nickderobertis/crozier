@@ -84,8 +84,7 @@ class TheGateHoldsTheFinishedTree(unittest.TestCase):
         self.assertEqual(
             result.returncode,
             0,
-            f"the tree enumerates the admissible licences outside {RULE}:\n"
-            f"{result.stderr}",
+            f"the tree enumerates the admissible licences outside {RULE}:\n{result.stderr}",
         )
 
     def test_it_is_quiet_on_success(self) -> None:
@@ -119,8 +118,7 @@ class TheGateStillDiscriminates(ScratchTree):
 
     def test_a_planted_second_enumeration_fails_naming_the_file(self) -> None:
         planted = self.plant(
-            "# probe\n\nThis document restates the rule: the corpus admits"
-            " Apache-2.0/MIT/BSD/CC0 and nothing else.\n"
+            "# probe\n\nThis document restates the rule: the corpus admits Apache-2.0/MIT/BSD/CC0 and nothing else.\n"
         )
         result = run_gate(self.root)
         self.assertEqual(
@@ -134,10 +132,7 @@ class TheGateStillDiscriminates(ScratchTree):
 
     def test_it_reads_a_comma_and_conjunction_list_too(self) -> None:
         """Drift will not necessarily arrive in the spelling it left in."""
-        planted = self.plant(
-            "# probe\n\nRegistrable sources are MIT, Apache-2.0, BSD-3-Clause"
-            " and CC0-1.0.\n"
-        )
+        planted = self.plant("# probe\n\nRegistrable sources are MIT, Apache-2.0, BSD-3-Clause and CC0-1.0.\n")
         result = run_gate(self.root)
         self.assertEqual(result.returncode, 1)
         self.assertIn(planted, result.stderr)
@@ -154,8 +149,7 @@ class TheGateStillDiscriminates(ScratchTree):
         self.assertEqual(
             result.returncode,
             0,
-            f"per-document licence provenance was read as a second copy of the"
-            f" rule:\n{result.stderr}",
+            f"per-document licence provenance was read as a second copy of the rule:\n{result.stderr}",
         )
 
     def test_prose_referring_to_the_rule_is_not_drift(self) -> None:
@@ -215,14 +209,8 @@ class TheGateSpellsPathsTheWayGitDoes(unittest.TestCase):
     def test_the_paths_it_matches_the_listing_against_are_posix_strings(self) -> None:
         gate = load_gate()
         compared = {"RULE": gate.RULE}
-        compared.update(
-            (f"SKIP_PREFIXES[{index}]", value)
-            for index, value in enumerate(gate.SKIP_PREFIXES)
-        )
-        compared.update(
-            (f"SKIP_FILES[{index}]", value)
-            for index, value in enumerate(gate.SKIP_FILES)
-        )
+        compared.update((f"SKIP_PREFIXES[{index}]", value) for index, value in enumerate(gate.SKIP_PREFIXES))
+        compared.update((f"SKIP_FILES[{index}]", value) for index, value in enumerate(gate.SKIP_FILES))
         compared["SKIP_FIXTURE_OUTPUT"] = gate.SKIP_FIXTURE_OUTPUT.pattern
         for name, value in compared.items():
             self.assertIsInstance(
@@ -262,8 +250,7 @@ class TheGateSpellsPathsTheWayGitDoes(unittest.TestCase):
         for path in read:
             self.assertTrue(
                 gate.is_read(path),
-                f"the walk skips {path}, which is exactly where the rule used"
-                " to be restated",
+                f"the walk skips {path}, which is exactly where the rule used to be restated",
             )
 
     def test_the_walk_still_excludes_the_rule_file(self) -> None:
@@ -293,6 +280,7 @@ class TheGateAndItsTestsAreBothInTheDeterministicTier(unittest.TestCase):
             targets["test"]["options"]["command"],
             f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
         )
+
 
 if __name__ == "__main__":
     unittest.main()

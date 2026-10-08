@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Drive real corpus recipes without sockets or an ignored corpus cache (Linux)."""
+
 from __future__ import annotations
 
 import ctypes
@@ -21,8 +22,7 @@ def deny_network() -> None:
     socket_syscall = {"x86_64": 41, "aarch64": 198}[platform.machine()]
 
     class Filter(ctypes.Structure):
-        _fields_ = [("code", ctypes.c_ushort), ("jt", ctypes.c_ubyte),
-                    ("jf", ctypes.c_ubyte), ("k", ctypes.c_uint)]
+        _fields_ = [("code", ctypes.c_ushort), ("jt", ctypes.c_ubyte), ("jf", ctypes.c_ubyte), ("k", ctypes.c_uint)]
 
     class Program(ctypes.Structure):
         _fields_ = [("len", ctypes.c_ushort), ("filter", ctypes.POINTER(Filter))]
@@ -42,8 +42,7 @@ def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
     """Fetch every build dependency (never a specification) while the network is up."""
     # The recipes compile crozier's tests, so a cold registry (a fresh CI
     # runner's) needs every locked crate downloaded before sockets go away.
-    fetch = subprocess.run(["cargo", "fetch", "--locked"], cwd=REPO, env=env,
-                           capture_output=True, text=True)
+    fetch = subprocess.run(["cargo", "fetch", "--locked"], cwd=REPO, env=env, capture_output=True, text=True)
     case.assertEqual(0, fetch.returncode, fetch.stderr)
     # The fallback samples need the pinned parser: install that package so
     # the denied run resolves it from uv's cache alone.
@@ -51,18 +50,27 @@ def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
     # fallback's own runner, the one place that parses it. A checkout without
     # the fallback (the recovery suite's synthetic root) has no parser to warm.
     if (REPO / "tools/surface-census/golden-reach-search.py").is_file():
-        pin = subprocess.run(["bash", "tests/census_fallback/run.sh", "pin", "tools/surface-census/golden-reach-search.py"],
-                             cwd=REPO, env=env, capture_output=True, text=True)
+        pin = subprocess.run(
+            ["bash", "tests/census_fallback/run.sh", "pin", "tools/surface-census/golden-reach-search.py"],
+            cwd=REPO,
+            env=env,
+            capture_output=True,
+            text=True,
+        )
         case.assertEqual(0, pin.returncode, pin.stderr)
         warm = subprocess.run(
             ["uv", "run", "--no-project", "--with", pin.stdout.strip(), "python3", "-c", ""],
-            cwd=REPO, env=env, capture_output=True, text=True,
+            cwd=REPO,
+            env=env,
+            capture_output=True,
+            text=True,
         )
         case.assertEqual(0, warm.returncode, warm.stderr)
 
 
-@unittest.skipUnless(sys.platform == "linux" and platform.machine() in {"x86_64", "aarch64"},
-                     "network-denial proof uses Linux seccomp")
+@unittest.skipUnless(
+    sys.platform == "linux" and platform.machine() in {"x86_64", "aarch64"}, "network-denial proof uses Linux seccomp"
+)
 class OfflineCorpusRecipes(unittest.TestCase):
     def test_warmed_build_needs_no_network_from_a_cold_registry(self) -> None:
         # CI's runner starts with no crates cached; a denied recipe then failed
@@ -71,9 +79,23 @@ class OfflineCorpusRecipes(unittest.TestCase):
             env = {**os.environ, "CARGO_HOME": cold, "RUSTC_WRAPPER": ""}
             warm_dependencies(self, env)
             build = subprocess.run(
-                [sys.executable, str(Path(__file__).resolve()), "--deny-network",
-                 "cargo", "test", "--locked", "--no-run", "-p", "crozier-e2e", "--test", "e2e"],
-                cwd=REPO, env=env, capture_output=True, text=True,
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "--deny-network",
+                    "cargo",
+                    "test",
+                    "--locked",
+                    "--no-run",
+                    "-p",
+                    "crozier-e2e",
+                    "--test",
+                    "e2e",
+                ],
+                cwd=REPO,
+                env=env,
+                capture_output=True,
+                text=True,
             )
             self.assertEqual(0, build.returncode, build.stderr)
 
@@ -90,9 +112,17 @@ class OfflineCorpusRecipes(unittest.TestCase):
             try:
                 self.assertFalse(any(cache.exists() for cache in caches))
                 probe = subprocess.run(
-                    [sys.executable, str(Path(__file__).resolve()), "--deny-network",
-                     sys.executable, "-c", "import socket; socket.socket()"],
-                    cwd=REPO, capture_output=True, text=True,
+                    [
+                        sys.executable,
+                        str(Path(__file__).resolve()),
+                        "--deny-network",
+                        sys.executable,
+                        "-c",
+                        "import socket; socket.socket()",
+                    ],
+                    cwd=REPO,
+                    capture_output=True,
+                    text=True,
                 )
                 self.assertNotEqual(0, probe.returncode)
                 self.assertIn("Operation not permitted", probe.stderr)
@@ -101,20 +131,32 @@ class OfflineCorpusRecipes(unittest.TestCase):
                 # target, not the `test-fern-refusals` alias: that alias also runs
                 # fern-refusals-strict, whose `measure` journeys fetch from a
                 # loopback server, and a denied socket() denies loopback too.
-                for recipe in (("test-corpus-match",), ("test-corpus-match-strict",), ("surface-census",),
-                               ("nx", "run", "fern-refusals:test"), ("test-census-fallback-samples",)):
+                for recipe in (
+                    ("test-corpus-match",),
+                    ("test-corpus-match-strict",),
+                    ("surface-census",),
+                    ("nx", "run", "fern-refusals:test"),
+                    ("test-census-fallback-samples",),
+                ):
                     with self.subTest(recipe=" ".join(recipe)):
                         result = subprocess.run(
-                            [sys.executable, str(Path(__file__).resolve()), "--deny-network",
-                             "just", *recipe], cwd=REPO, capture_output=True, text=True,
+                            [sys.executable, str(Path(__file__).resolve()), "--deny-network", "just", *recipe],
+                            cwd=REPO,
+                            capture_output=True,
+                            text=True,
                             # A user-level sccache daemon needs a socket; the repo
                             # build contract has no wrapper and works offline.
                             # A replayed cache entry would prove nothing about the
                             # network, so each recipe's target really runs; and Nx
                             # loads its plugins in-process, since an isolated plugin
                             # worker reaches Nx over a socket the filter denies.
-                            env={**os.environ, "RUSTC_WRAPPER": "", "UV_OFFLINE": "1", "NX_SKIP_NX_CACHE": "true",
-                                 "NX_ISOLATE_PLUGINS": "false"},
+                            env={
+                                **os.environ,
+                                "RUSTC_WRAPPER": "",
+                                "UV_OFFLINE": "1",
+                                "NX_SKIP_NX_CACHE": "true",
+                                "NX_ISOLATE_PLUGINS": "false",
+                            },
                         )
                         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
                         for cache in caches:
