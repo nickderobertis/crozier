@@ -39,6 +39,8 @@ Handling sites:
 - `src/ir.rs::hoist_form_object[=\(multipart && is_file\)]`
 - `src/emit.rs::build_example_inner[=&& matches!\(f\.type_ref, TypeRef::Optional\(_\)\)]`
 
+- `src/ir.rs::hoist_form_object[if nullable_binary]`
+
 ## Renewed search
 
 | key | result | scope |

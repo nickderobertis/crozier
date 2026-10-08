@@ -7197,10 +7197,13 @@ fn hoist_form_object(
             let nullable_binary = multipart
                 && prop_schema.any_of.is_some()
                 && simple_nullable_member(prop_schema).is_some_and(binary_scalar);
-            let is_file = binary_scalar(prop_schema)
-                || nullable_binary
-                || prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array")
-                    && prop_schema.items.as_deref().is_some_and(binary_scalar);
+            let is_file = if nullable_binary {
+                true
+            } else {
+                binary_scalar(prop_schema)
+                    || prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array")
+                        && prop_schema.items.as_deref().is_some_and(binary_scalar)
+            };
             let resolved = prop_schema
                 .reference
                 .as_deref()

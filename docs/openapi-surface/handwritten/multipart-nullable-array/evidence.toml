@@ -4,21 +4,7 @@ digest = "082b2c78826f6addbab452df4c5a8a56c286029e10229c59bf3f12397819e395"
 
 [[covers]]
 key = "format-binary"
-arm = 'src/ir.rs::hoist_form_object[=&& simple_nullable_member\(prop_schema\)\.is_some_and\(binary_scalar\)]'
-search = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md"
-
-[[covers]]
-key = "description"
-arm = 'src/ir.rs::hoist_form_object[=\(multipart && is_file\)]'
-search = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md"
-
-[[covers]]
-key = "format-binary"
-arm = 'src/emit.rs::build_example_inner[=&& matches!\(f\.type_ref, TypeRef::Optional\(_\)\)]'
+arm = 'src/ir.rs::hoist_form_object[if nullable_binary]'
 search = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-multipart-nullable-array/README.md"

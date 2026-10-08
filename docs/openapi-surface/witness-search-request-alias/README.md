@@ -27,6 +27,8 @@ Handling sites:
 - `src/ir.rs::build_endpoint[=let aliased_inline_request =]`
 
 
+- `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]`
+
 ## Renewed search
 
 | key | result | scope |

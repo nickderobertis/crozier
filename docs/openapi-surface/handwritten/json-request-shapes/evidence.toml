@@ -4,20 +4,6 @@ digest = "f49e42fc62d042570ed6be8d1767c583a9ccf33761a59da373841d824a322496"
 
 [[covers]]
 key = "request-body-content"
-arm = 'src/ir.rs::resolve_request_body[let Some\(schema\) = media\.schema\.as_ref\(\) else]'
-search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
-
-[[covers]]
-key = "request-body-required"
-arm = 'src/ir.rs::resolve_request_body[\x7c\x7c is_map\(schema\)]'
-search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
-
-[[covers]]
-key = "request-body-content"
 arm = 'src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]'
 search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
 verdict = "search-incomplete"
@@ -26,13 +12,6 @@ renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
 [[covers]]
 key = "request-body-content"
 arm = 'src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]'
-search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
-
-[[covers]]
-key = "request-body-content"
-arm = 'src/ir.rs::inline_body_source_names[\&\& !is_optional\(target\)]'
 search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
@@ -47,13 +26,6 @@ renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
 [[covers]]
 key = "format-binary"
 arm = 'src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]'
-search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
-
-[[covers]]
-key = "request-body-content"
-arm = 'src/ir.rs::request_body_has_all_of[!schema\.properties\.is_empty\(\)]'
 search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
