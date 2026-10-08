@@ -7531,6 +7531,19 @@ class CensusInterpreterTests(unittest.TestCase):
                 self.assertEqual(expected, completed.returncode, completed.stderr)
                 self.assertEqual("['first arg', '--flag']", completed.stdout.strip())
 
+    def test_started_as_sh_without_bash_on_path_it_names_bash_and_the_fix(self) -> None:
+        """The selection needs bash proper; a PATH without one stops it with 127, before any interpreter is asked."""
+        sh = shutil.which("sh")
+        if sh is None:
+            self.skipTest("no sh on PATH")
+        with tempfile.TemporaryDirectory() as empty:
+            completed = subprocess.run([sh, str(self.RESOLVER), "-c", "print('ran')"], cwd=REPO,
+                                       capture_output=True, text=True, timeout=CENSUS_TIMEOUT, env={"PATH": empty})
+        self.assertEqual(127, completed.returncode, completed.stderr)
+        self.assertEqual("", completed.stdout)
+        self.assertIn("census-python: bash is not on PATH — it selects the interpreter; install bash "
+                      "(Git Bash on Windows), then re-run", completed.stderr)
+
     @unittest.skipIf(os.name == "nt", "a shebang names the interpreter that cannot start only on POSIX")
     def test_an_interpreter_that_cannot_start_names_itself_and_the_fix(self) -> None:
         """A repo-local interpreter the kernel cannot execute is reported, not left to the shell."""

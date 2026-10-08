@@ -641,6 +641,26 @@ class PinMechanismTests(unittest.TestCase):
         self.assertIn(f"could not remove the partial download {temporary} for stuck-row", result.stderr)
         self.assertIn(f"delete it (rm -f {temporary}) before re-running", result.stderr)
 
+    def test_a_directory_or_link_where_the_spec_is_published_is_refused(self) -> None:
+        for label in ("directory", "link to a directory"):
+            with self.subTest(label):
+                name = "blocked-row" if label == "directory" else "linked-row"
+                self.server.documents[f"/specs/{name}.yaml"] = b"openapi: 3.0.3\n"
+                self.add_repository_row(name, self.spec_url(name), "HEAD")
+                cache = self.destination(name)
+                cache.mkdir(parents=True)
+                if label == "directory":
+                    (cache / "openapi.yaml").mkdir()
+                else:
+                    (cache / "elsewhere").mkdir()
+                    (cache / "openapi.yaml").symlink_to(cache / "elsewhere")
+                result = self.fetch(name)
+                self.assert_refused_without_a_path(
+                    result, f"corpus: {cache / 'openapi.yaml'} is a directory or a link, not the cached spec for {name}",
+                    f"(rm -rf {cache / 'openapi.yaml'})")
+                held = cache / ("openapi.yaml" if label == "directory" else "elsewhere")
+                self.assertEqual([], list(held.iterdir()), "the document was moved inside it")
+
     def test_an_unsupported_spec_suffix_names_the_supported_ones(self) -> None:
         result = subprocess.run(
             [

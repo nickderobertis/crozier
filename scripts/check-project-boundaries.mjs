@@ -344,7 +344,7 @@ for (const [name, node] of Object.entries(projects)) {
     }
     const inputs = target.inputs ?? nxJson.targetDefaults?.[targetName]?.inputs ?? ["default"];
     for (const { path, descends } of workspacePaths(name, inputs)) {
-      // A glob that descends from a directory holding project roots reads them.
+      // A glob reads every project rooted under where it descends from, not only the one owning its path.
       const owners = new Set([ownerOf(path)]);
       for (const [other, projectRoot] of roots) {
         if (descends && (path === "" || projectRoot.startsWith(`${path}/`))) owners.add(other);

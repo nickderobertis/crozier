@@ -261,6 +261,13 @@ corpus_fetch_source() {
       _corpus_discard_temporary
       return 1
     fi
+    # `mv` onto a directory (or a link to one) would move the document inside it.
+    if [ -d "$target" ] || [ -L "$target" ]; then
+      _corpus_discard_temporary
+      echo "corpus: $target is a directory or a link, not the cached spec for $name — remove it" \
+           "(rm -rf $target), then re-run" >&2
+      return 1
+    fi
     # Stale siblings are removed only once the new document is published.
     if ! mv "$temporary" "$target"; then
       _corpus_discard_temporary
