@@ -1983,6 +1983,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "tide-gauge-sessions-literals",
+        "docs/openapi-surface/handwritten/tide-gauge-sessions/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "twin-key-relay-literals",
         "docs/openapi-surface/handwritten/twin-key-relay/openapi.yml",
         &["--enum-type", "literals"],
@@ -2692,6 +2697,47 @@ fn handwritten_documents(
         })
         .unwrap_or_default();
     (evidence, failures)
+}
+
+/// An `http` scheme's name is case-insensitive, as Fern reads it: an operation
+/// requiring `scheme: Bearer` or `scheme: BASIC` generates the lowercase scheme's
+/// client. The nearby refusal stands: a scheme Fern does not import (`Digest`),
+/// in any case, is still refused as the operation's undefined auth, exit 1 and
+/// nothing written.
+#[test]
+fn http_scheme_names_read_case_insensitively_and_unimported_schemes_still_refuse() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |scheme: &str| {
+        let spec = dir.path().join(format!("{scheme}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Tides, version: '1'}}\npaths:\n  /tides:\n    get:\n      operationId: listTides\n      security: [{{Session: []}}]\n      responses: {{'204': {{description: ok}}}}\ncomponents:\n  securitySchemes:\n    Session: {{type: http, scheme: {scheme}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(scheme);
+        (probe_command(&spec, &out).assert(), out)
+    };
+    let wrapper = |out: &Path| {
+        std::fs::read_to_string(out.join("src/fern/core/client_wrapper.py")).expect("wrapper")
+    };
+    let (assert, out) = generate("Bearer");
+    assert.success();
+    assert!(wrapper(&out).contains("headers[\"Authorization\"] = f\"Bearer {self._get_token()}\""));
+    let (assert, out) = generate("BASIC");
+    assert.success();
+    assert!(wrapper(&out).contains("httpx.BasicAuth("));
+    for unimported in ["Digest", "digest"] {
+        let (assert, out) = generate(unimported);
+        assert.failure().code(1).stderr(predicates::str::contains(
+            "endpoint-auth-undefined: GET /tides security/Session",
+        ));
+        assert!(
+            !out.join("src").exists(),
+            "a refused document writes nothing"
+        );
+    }
 }
 
 /// The security-scheme naming extensions read crozier's spelling on its own and

@@ -457,16 +457,29 @@ pub enum SecuritySchemeType {
 
 /// The `scheme` of an `http` security scheme. Only `bearer` (which crozier
 /// reproduces) and `basic` are named; anything else is [`HttpAuthScheme::Other`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "lowercase")]
+/// HTTP authentication scheme names are case-insensitive, and Fern reads them
+/// so: `scheme: Bearer` generates exactly what `bearer` does.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HttpAuthScheme {
     /// `bearer`.
     Bearer,
     /// `basic`.
     Basic,
     /// Any other HTTP auth scheme.
-    #[serde(other)]
     Other,
+}
+
+impl<'de> Deserialize<'de> for HttpAuthScheme {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
+        let name = String::deserialize(deserializer)?;
+        Ok(match name.to_ascii_lowercase().as_str() {
+            "bearer" => HttpAuthScheme::Bearer,
+            "basic" => HttpAuthScheme::Basic,
+            _ => HttpAuthScheme::Other,
+        })
+    }
 }
 
 /// One path's operations, keyed by HTTP method. Only the methods crozier
@@ -3512,6 +3525,17 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn an_http_scheme_name_reads_case_insensitively() {
+        let scheme = |name: &str| -> HttpAuthScheme {
+            serde_json::from_value(serde_json::json!(name)).expect("a scheme name")
+        };
+        assert_eq!(scheme("Bearer"), HttpAuthScheme::Bearer);
+        assert_eq!(scheme("BASIC"), HttpAuthScheme::Basic);
+        assert_eq!(scheme("bearer"), HttpAuthScheme::Bearer);
+        assert_eq!(scheme("Digest"), HttpAuthScheme::Other);
+    }
 
     #[test]
     fn a_method_name_sequence_reads_joined_as_fern_reads_it() {

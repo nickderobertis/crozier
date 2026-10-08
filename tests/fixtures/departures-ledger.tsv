@@ -85,6 +85,12 @@ docs/fern-measurements/clients-extensions/ski-lift-gates-literals/fern-expected	
 docs/fern-measurements/clients-extensions/ski-lift-gates-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/ski-lift-gates-literals/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/ski-lift-gates-literals/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected	README.md	42	repeated-credential-example-keyword
 docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected	reference.md	20	repeated-credential-example-keyword
@@ -620,6 +626,11 @@ docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected	src/fern/cor
 docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/tide-gauge-sessions/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

@@ -111,6 +111,7 @@ Security Scheme, OAuth Flows, OAuth Flow and Security Requirement objects, and
 | `security-scheme-basic-extension-named` | both | Security Scheme Object.x-fern-basic (on an http `basic` scheme) | handwritten | handwritten: lock-keeper-vault; search: search-incomplete ([record](witness-search-clients-extensions/README.md#basic-credential-extension)) |  |  |  |
 | `security-scheme-token-variable-name` | both | Security Scheme Object.x-fern-token-variable-name (on the bearer scheme Fern names) | handwritten | handwritten: grid-valve-console; search: search-incomplete ([record](witness-search-clients-extensions/README.md#token-variable-name-extension)) |  |  |  |
 | `security-schemes-duplicate-api-key-header` | both | Components Object.securitySchemes (two header `apiKey` schemes naming one `X-Api-Key` header, both offered) | handwritten | handwritten: twin-key-relay; search: search-incomplete ([record](witness-search-clients-extensions/README.md#duplicate-api-key-header-schemes)) |  |  |  |
+| `security-scheme-capitalised-http` | both | Security Scheme Object.scheme (`bearer` or `basic` spelled with a capital) | handwritten | handwritten: tide-gauge-sessions; search: search-incomplete ([record](witness-search-clients-extensions/README.md#capitalised-http-scheme)) |  |  |  |
 
 ## Method notes
 

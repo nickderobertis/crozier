@@ -40,6 +40,7 @@ schema-example-union-ref-sentinel	schema.example:union-ref-sentinel	schemas.md	s
 schema-name-builtin-complex	components.schemas:complex-module-name	schemas.md	supported
 security-scheme-basic-extension-named	securityScheme.x-fern-basic:named-or-env	security.md	supported
 security-scheme-bearer-extension-named	securityScheme.x-fern-bearer:named	security.md	supported
+security-scheme-capitalised-http	securityScheme.scheme:capitalised-http	security.md	supported
 security-scheme-header-extension-named	securityScheme.x-fern-header:named	security.md	supported
 security-scheme-token-variable-name	securityScheme.x-fern-token-variable-name:bearer	security.md	supported
 security-schemes-duplicate-api-key-header	components.securitySchemes:duplicate-api-key-header	security.md	supported

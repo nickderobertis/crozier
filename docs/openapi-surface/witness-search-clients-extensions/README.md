@@ -152,6 +152,14 @@ trigger. The registered `openepcis-dpp-ready` reaches the shared-parameter
 emission from another direction, two headers (`X-API-KEY`, `API-KEY`) that stem
 to one name; it is no declarer of this key.
 
+## Capitalised http scheme
+
+The shape: an http security scheme whose `scheme` is `bearer` or `basic` spelled with a capital (`securityScheme.scheme:capitalised-http`). HTTP scheme names are case-insensitive, and Fern generates it as the lowercase scheme.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `security-scheme-capitalised-http` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -168,3 +176,4 @@ to one name; it is no declarer of this key.
 | `security-scheme-basic-extension-named` | `none-registrable` | `lock-keeper-vault` |
 | `security-scheme-token-variable-name` | `none-registrable` | `grid-valve-console` |
 | `security-schemes-duplicate-api-key-header` | `none-registrable` | `twin-key-relay` |
+| `security-scheme-capitalised-http` | `none-registrable` | `tide-gauge-sessions` |
