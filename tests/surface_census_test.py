@@ -2275,6 +2275,183 @@ class GrammarContractTests(unittest.TestCase):
 
     DOC = REPO / "docs" / "openapi-surface-coverage.md"
 
+    def test_predicate_grammar_regenerator_finds_committed_document_current(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(REPO / "scripts/update-predicate-grammar.py"), "--check"],
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_predicate_grammar_regenerator_repairs_only_grammar_and_is_idempotent(self) -> None:
+        script = REPO / "scripts/update-predicate-grammar.py"
+        original = self.DOC.read_text(encoding="utf-8")
+        stale = original.replace("`info.title:non-ascii`", "`info.title:removed-predicate`", 1)
+        self.assertNotEqual(original, stale)
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "coverage.md"
+            document.write_text(stale, encoding="utf-8")
+            command = [sys.executable, str(script), "--document", str(document)]
+            check = subprocess.run(command + ["--check"], capture_output=True, text=True, check=False)
+            self.assertEqual(1, check.returncode, check.stderr)
+            self.assertEqual("", check.stdout)
+            self.assertIn("regenerate", check.stderr)
+            self.assertEqual(stale, document.read_text(encoding="utf-8"))
+            for _ in range(2):
+                update = subprocess.run(command, capture_output=True, text=True, check=False)
+                self.assertEqual(0, update.returncode, update.stderr)
+                self.assertEqual("", update.stdout)
+                self.assertEqual("", update.stderr)
+                self.assertEqual(original, document.read_text(encoding="utf-8"))
+
+    def test_predicate_grammar_regenerator_repairs_counts_and_context_list(self) -> None:
+        original = self.DOC.read_text(encoding="utf-8")
+        stale = re.sub(r"closed list of\s+\d+", "closed list of\n999", original, count=1)
+        stale = re.sub(r"\*\*[A-Z][a-z-]+ of the \d+", "**One of the 999", stale, count=1)
+        stale = re.sub(r"The other\s+[a-z-]+ —", "The other\none —", stale, count=1)
+        before, after = stale.split("The other\none", 1)
+        stale = before + "The other\none" + after.replace(
+            "`components.schemas:cycle-into-cycle`", "`components.schemas:absent-cycle`", 1
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "coverage.md"
+            document.write_text(stale, encoding="utf-8")
+            command = [sys.executable, str(REPO / "scripts/update-predicate-grammar.py"), "--document", str(document)]
+            check = subprocess.run(command + ["--check"], capture_output=True, text=True, check=False)
+            self.assertEqual(1, check.returncode, check.stderr)
+            self.assertEqual(stale, document.read_text(encoding="utf-8"))
+            update = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual((0, "", ""), (update.returncode, update.stdout, update.stderr))
+            self.assertEqual(original, document.read_text(encoding="utf-8"))
+
+    def test_predicate_grammar_regenerator_rejects_malformed_documents_without_writing(self) -> None:
+        original = self.DOC.read_text(encoding="utf-8")
+        for before, after in [
+            ("A shape the two kinds above", "Missing start"),
+            ("A predicate selector is a selector like any other everywhere else:", "Missing end"),
+            ("\n- ", "\n* "),
+            (re.search(r"\n\*\*[A-Z][a-z-]+ of", original).group(), "\nmissing partition of"),
+            (re.search(r"closed list of\s+\d+", original).group(), "missing total"),
+            (re.search(r"[A-Z][a-z-]+ of the \d+ are node-local\*\*", original).group(), "missing local count**"),
+            (re.search(r"The other\s+[a-z-]+ —", original).group(), "missing context count —"),
+        ]:
+            with self.subTest(before=before), tempfile.TemporaryDirectory() as directory:
+                document = Path(directory) / "coverage.md"
+                malformed = original.replace(before, after)
+                self.assertNotEqual(original, malformed)
+                document.write_text(malformed, encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(REPO / "scripts/update-predicate-grammar.py"), "--document", str(document)],
+                    capture_output=True, text=True, check=False,
+                )
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertIn("restore", result.stderr)
+                self.assertEqual(malformed, document.read_text(encoding="utf-8"))
+
+    def test_predicate_grammar_regenerator_reports_missing_and_non_utf8_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "coverage.md"
+            command = [sys.executable, str(REPO / "scripts/update-predicate-grammar.py"), "--document", str(document)]
+            for content in [None, b"\xff"]:
+                if content is not None:
+                    document.write_bytes(content)
+                result = subprocess.run(command, capture_output=True, text=True, check=False)
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertIn("restore the input file", result.stderr)
+                if content is not None:
+                    self.assertEqual(content, document.read_bytes())
+                else:
+                    self.assertFalse(document.exists())
+
+    def test_predicate_grammar_regenerator_reports_write_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "coverage.md"
+            stale = self.DOC.read_text(encoding="utf-8").replace("`info.title:non-ascii`", "`info.title:absent`", 1)
+            document.write_text(stale, encoding="utf-8")
+            document.chmod(0o444)
+            try:
+                try:
+                    with document.open("a", encoding="utf-8"):
+                        pass
+                except PermissionError:
+                    pass
+                else:
+                    self.skipTest("filesystem does not enforce read-only mode for this user")
+                result = subprocess.run(
+                    [sys.executable, str(REPO / "scripts/update-predicate-grammar.py"), "--document", str(document)],
+                    capture_output=True, text=True, check=False,
+                )
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertIn("ensure it is writable", result.stderr)
+                self.assertEqual(stale, document.read_text(encoding="utf-8"))
+            finally:
+                document.chmod(0o644)
+
+    def test_predicate_grammar_regenerator_reports_invalid_census_configuration(self) -> None:
+        script = REPO / "scripts/update-predicate-grammar.py"
+        source = REPO / "scripts/openapi-surface-census.py"
+        original = self.DOC.read_text(encoding="utf-8")
+        for addition, diagnostic in [
+            (None, "restore the input file"),
+            ('\nDOCUMENT_COMPARING_PREDICATES = frozenset({"absent"})\n', "reconcile DOCUMENT_COMPARING_PREDICATES"),
+            ('\nPREDICATES.update({f"schema.synthetic:case-{i}": "authored boundary" for i in range(100)})\n', "extend number_words"),
+        ]:
+            with self.subTest(diagnostic=diagnostic), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                scripts = root / "scripts"
+                scripts.mkdir()
+                shutil.copyfile(script, scripts / script.name)
+                shutil.copyfile(REPO / "scripts/corpus_remote_ref_pins.py", scripts / "corpus_remote_ref_pins.py")
+                if addition is not None:
+                    (scripts / source.name).write_text(source.read_text(encoding="utf-8") + addition, encoding="utf-8")
+                document = root / "coverage.md"
+                document.write_text(original, encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(scripts / script.name), "--document", str(document)],
+                    capture_output=True, text=True, check=False,
+                )
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertEqual(original, document.read_text(encoding="utf-8"))
+
+    def test_predicate_grammar_regenerator_renders_small_teen_and_exact_ten_counts(self) -> None:
+        source = REPO / "scripts/openapi-surface-census.py"
+        script = REPO / "scripts/update-predicate-grammar.py"
+        original = self.DOC.read_text(encoding="utf-8")
+        for total, contextual, local_word, contextual_word in [
+            (6, 2, "Four", "two"),
+            (25, 12, "Thirteen", "twelve"),
+            (30, 10, "Twenty", "ten"),
+        ]:
+            with self.subTest(total=total), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                scripts = root / "scripts"
+                scripts.mkdir()
+                shutil.copyfile(script, scripts / script.name)
+                shutil.copyfile(REPO / "scripts/corpus_remote_ref_pins.py", scripts / "corpus_remote_ref_pins.py")
+                (scripts / source.name).write_text(
+                    source.read_text(encoding="utf-8")
+                    + f"\nPREDICATES = dict(list(PREDICATES.items())[:{total}])\n"
+                    + f"DOCUMENT_COMPARING_PREDICATES = tuple(list(PREDICATES)[:{contextual}])\n",
+                    encoding="utf-8",
+                )
+                document = root / "coverage.md"
+                document.write_text(original, encoding="utf-8")
+                command = [sys.executable, str(scripts / script.name), "--document", str(document)]
+                update = subprocess.run(command, capture_output=True, text=True, check=False)
+                self.assertEqual((0, "", ""), (update.returncode, update.stdout, update.stderr))
+                generated = document.read_text(encoding="utf-8")
+                self.assertIn(f"**{local_word} of the {total} are node-local**", generated)
+                self.assertIn(f"The other\n{contextual_word} —", generated)
+                self.assertEqual(original.split("A shape the two kinds above", 1)[0], generated.split("A shape the two kinds above", 1)[0])
+                end = "A predicate selector is a selector like any other everywhere else:"
+                self.assertEqual(original.split(end, 1)[1], generated.split(end, 1)[1])
+                check = subprocess.run(command + ["--check"], capture_output=True, text=True, check=False)
+                self.assertEqual((0, "", ""), (check.returncode, check.stdout, check.stderr))
+
     def backticked(self, start: str, end: str) -> set[str]:
         text = self.DOC.read_text(encoding="utf-8")
         self.assertIn(start, text, f"the grammar section no longer says {start!r}")
@@ -2465,6 +2642,7 @@ class GrammarContractTests(unittest.TestCase):
             "the two stated families do not partition the closed list",
         )
         self.assertEqual(len(self.DOCUMENT_COMPARING_PREDICATES), comparing)
+        self.assertEqual(self.DOCUMENT_COMPARING_PREDICATES, frozenset(census.DOCUMENT_COMPARING_PREDICATES))
         for selector in sorted(self.DOCUMENT_COMPARING_PREDICATES):
             with self.subTest(selector=selector):
                 self.assertIn(selector, census.PREDICATES)

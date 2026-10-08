@@ -1425,6 +1425,48 @@ PREDICATES = {
     ),
 }
 
+# Predicates that read document context rather than one object-model node.
+# GrammarContractTests independently reconciles this partition and its prose.
+DOCUMENT_COMPARING_PREDICATES = (
+    "operation.operationId:duplicate",
+    "openapi.paths:normalized-collision",
+    "components.schemas:normalized-collision",
+    "schema.$ref:undeclared-component-head",
+    "schema.$ref:resolves-to-component",
+    "schema.oneOf:discriminated-union",
+    "schema.anyOf:discriminated-union",
+    "schema.discriminator:inheritance-union",
+    "parameter.schema:subset-header-string-default",
+    "operation.operationId:digit-leading-method",
+    "operation.responses:wildcard-binary",
+    "parameter.example:non-scalar-query",
+    "mediaType.examples:named-beside-example",
+    "mediaType.examples:named-only",
+    "schema.example:on-ref-to-object",
+    "schema.example:on-ref-to-enum",
+    "schema.example:on-ref-to-union",
+    "schema.example:on-ref-to-alias",
+    "operation.requestBody:body-prefixed-single-use",
+    "operation.requestBody:titled-inline-container-oas-three-zero",
+    "operation.responses:empty-schema-success-oas-three-zero",
+    "operation.responses:schemaless-text-success",
+    "operation.responses:schemaless-download-success",
+    "operation.responses:suffixed-status-key",
+    "operation.requestBody:schemaless-json",
+    "operation.responses:schemaless-wav-success",
+    "operation.responses:space-suffixed-status-key",
+    "operation.requestBody:blank-description-optional-object",
+    "operation.requestBody:described-inline-scalar",
+    "operation.requestBody:plain-string-map",
+    "operation.responses:contentless-two-hundred-with-created",
+    "mediaType.schema:allof-parent-body",
+    "mediaType.example:nested-null-member",
+    "mediaType.example:deprecated-property",
+    "components.schemas:fields-reach-cycles-unsorted",
+    "components.schemas:cycle-into-cycle",
+    "mediaType.schema:closed-empty-object-property",
+)
+
 # The closed list of *conjunction* selectors, the fourth kind — a shape that is a
 # combination of fields rather than one field, written with the composition
 # operators over the selectors above: `&` joins members declared at one
