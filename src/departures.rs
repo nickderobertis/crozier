@@ -1052,11 +1052,6 @@ fn pattern_narrowed_enum_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> 
     if pair.rel != "README.md" && pair.rel != "reference.md" && !pair.rel.ends_with("client.py") {
         return false;
     }
-    if !documented_example_line(pair.rel, pair.fern, fern)
-        || !documented_example_line(pair.rel, pair.crozier, crozier)
-    {
-        return false;
-    }
     let examples = pair
         .context
         .source_enum_examples
@@ -1088,7 +1083,10 @@ fn pattern_narrowed_enum_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> 
         ] {
             let indent = fern.len() - fern.trim_start().len();
             if fern[indent..] == old && crozier == format!("{}{new}", &fern[..indent]) {
-                return true;
+                // Scan complete example regions only for a matching correction,
+                // not for every unrelated line in a large client module.
+                return documented_example_line(pair.rel, pair.fern, fern)
+                    && documented_example_line(pair.rel, pair.crozier, crozier);
             }
         }
     }
