@@ -2690,6 +2690,128 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
     }
 }
 
+/// Named request representations match their complete certified tree.
+#[test]
+fn named_request_media_match_certified_output_and_canonical_extensions() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    for shape in ["request-media-methods"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            for spelling in ["fern", "crozier", "conflicting"] {
+                let source = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
+                let source = match spelling {
+                    "crozier" => source.replace("x-fern-sdk-method-name", "x-crozier-sdk-method-name"),
+                    "conflicting" => source
+                        .replace("x-fern-sdk-method-name: append_card_note", "x-fern-sdk-method-name: ignored_json\n            x-crozier-sdk-method-name: append_card_note")
+                        .replace("x-fern-sdk-method-name: append_card_scan", "x-fern-sdk-method-name: ignored_scan\n            x-crozier-sdk-method-name: append_card_scan"),
+                    _ => source,
+                };
+                let input = tempfile::tempdir().unwrap();
+                let spec_path = input.path().join("openapi.yml");
+                std::fs::write(&spec_path, &source).unwrap();
+                let out = tempfile::tempdir().unwrap();
+                crozier_clean_env()
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec_path)
+                    .arg("--output")
+                    .arg(out.path())
+                    .args([
+                        "--package-name",
+                        "fern",
+                        "--project-name",
+                        "default_package_name",
+                        "--enum-type",
+                        mode,
+                    ])
+                    .assert()
+                    .success();
+                let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+                assert!(failures.is_empty(), "{}", failures.join("\n"));
+                let client = out.path().join("src/fern/raw_client.py");
+                let text = std::fs::read_to_string(&client).unwrap();
+                assert!(text.contains("def append_card_note("));
+                assert!(text.contains("def append_card_scan("));
+                std::fs::write(client, text.replace("note: str", "note: int")).unwrap();
+                let failures = golden_tree_failures(
+                    mode,
+                    "unexplained named media annotation",
+                    &ledger,
+                    &expected,
+                    out.path(),
+                );
+                assert!(
+                    failures
+                        .iter()
+                        .any(|failure| failure.contains("raw_client.py differs")),
+                    "{failures:?}"
+                );
+                let invalid = source
+                    .replace(
+                        "x-crozier-sdk-method-name: append_card_note",
+                        "x-crozier-sdk-method-name: [invalid]",
+                    )
+                    .replace(
+                        "x-fern-sdk-method-name: append_card_note",
+                        "x-fern-sdk-method-name: [invalid]",
+                    );
+                std::fs::write(&spec_path, invalid).unwrap();
+                crozier_clean_env()
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec_path)
+                    .arg("--output")
+                    .arg(out.path())
+                    .assert()
+                    .failure()
+                    .stderr(predicate::str::contains("expected a string"));
+                std::fs::write(&spec_path, source).unwrap();
+                crozier_clean_env()
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec_path)
+                    .arg("--output")
+                    .arg(out.path())
+                    .args([
+                        "--package-name",
+                        "fern",
+                        "--project-name",
+                        "default_package_name",
+                        "--enum-type",
+                        mode,
+                    ])
+                    .assert()
+                    .success();
+                let failures = golden_tree_failures(
+                    mode,
+                    "recovered named media",
+                    &ledger,
+                    &expected,
+                    out.path(),
+                );
+                assert!(failures.is_empty(), "{}", failures.join("\n"));
+            }
+        }
+    }
+}
+
 /// Nullable file dispatch, inherited description and 3.1 array headers match together.
 #[test]
 fn multipart_nullable_and_array_body_shapes_match_certified_output_in_both_enum_modes() {

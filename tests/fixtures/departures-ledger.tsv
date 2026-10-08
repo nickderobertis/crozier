@@ -65,6 +65,12 @@ docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-e
 docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -566,6 +572,11 @@ docs/openapi-surface/handwritten/request-example-nulls/fern-expected	src/fern/co
 docs/openapi-surface/handwritten/request-example-nulls/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/request-example-nulls/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/request-example-nulls/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-media-methods/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-media-methods/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-media-methods/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-media-methods/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/request-media-methods/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/same-primitive-union-components/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

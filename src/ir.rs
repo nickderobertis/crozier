@@ -2558,48 +2558,51 @@ fn endpoints(
     let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
-            // A `stream-condition` makes one operation two methods: `<name>_stream`
-            // with the condition set, and `<name>` with it cleared. Each is built
-            // from its own view of the operation, so the response type, the chunk
-            // type and the fixed body field all follow from the document rather
-            // than from a special case downstream.
-            let variants = stream_condition_variants(op);
-            for variant in &variants {
-                let view = variant.as_ref().map_or(op, |split| &split.operation);
-                let endpoint = build_endpoint(
-                    doc,
-                    types,
-                    path,
-                    http_method,
-                    view,
-                    &mut tag_types,
-                    &global_names,
-                );
-                let endpoint = match variant {
-                    Some(split) => Endpoint {
-                        method_name: split.method_name.clone(),
-                        stream_condition: Some((split.condition.clone(), split.streaming)),
-                        response_doc: None,
-                        // Fern's reference writer documents both halves as the
-                        // flattened body they send, and shows the streaming half's
-                        // worked call under each of them.
-                        reference_body_type: None,
-                        reference_method_name: Some(split.stream_method_name.clone()),
-                        ..endpoint
-                    },
-                    None => endpoint,
-                };
-                // Fern exposes one method for duplicate synthesized/declared names in
-                // the same client, with the later operation replacing the earlier one's
-                // contents while retaining its first-seen position. Keep all
-                // already-hoisted response types, but only the winning endpoint.
-                if let Some(index) = out.iter().position(|existing: &Endpoint| {
-                    existing.module == endpoint.module
-                        && existing.method_name == endpoint.method_name
-                }) {
-                    out[index] = endpoint;
-                } else {
-                    out.push(endpoint);
+            for media_view in request_media_variants(op) {
+                let op = media_view.as_ref().unwrap_or(op);
+                // A `stream-condition` makes one operation two methods: `<name>_stream`
+                // with the condition set, and `<name>` with it cleared. Each is built
+                // from its own view of the operation, so the response type, the chunk
+                // type and the fixed body field all follow from the document rather
+                // than from a special case downstream.
+                let variants = stream_condition_variants(op);
+                for variant in &variants {
+                    let view = variant.as_ref().map_or(op, |split| &split.operation);
+                    let endpoint = build_endpoint(
+                        doc,
+                        types,
+                        path,
+                        http_method,
+                        view,
+                        &mut tag_types,
+                        &global_names,
+                    );
+                    let endpoint = match variant {
+                        Some(split) => Endpoint {
+                            method_name: split.method_name.clone(),
+                            stream_condition: Some((split.condition.clone(), split.streaming)),
+                            response_doc: None,
+                            // Fern's reference writer documents both halves as the
+                            // flattened body they send, and shows the streaming half's
+                            // worked call under each of them.
+                            reference_body_type: None,
+                            reference_method_name: Some(split.stream_method_name.clone()),
+                            ..endpoint
+                        },
+                        None => endpoint,
+                    };
+                    // Fern exposes one method for duplicate synthesized/declared names in
+                    // the same client, with the later operation replacing the earlier one's
+                    // contents while retaining its first-seen position. Keep all
+                    // already-hoisted response types, but only the winning endpoint.
+                    if let Some(index) = out.iter().position(|existing: &Endpoint| {
+                        existing.module == endpoint.module
+                            && existing.method_name == endpoint.method_name
+                    }) {
+                        out[index] = endpoint;
+                    } else {
+                        out.push(endpoint);
+                    }
                 }
             }
         }
@@ -2618,6 +2621,32 @@ fn endpoints(
         declared.insert((tag_type.module.clone(), tag_type.decl.name().to_string()))
     });
     (out, tag_types)
+}
+
+/// Give each explicitly named request representation its own existing endpoint.
+/// Unnamed alternatives retain the operation's established media selection.
+fn request_media_variants(op: &Operation) -> Vec<Option<Operation>> {
+    let Some(body) = op.request_body.as_ref() else {
+        return vec![None];
+    };
+    if body.content.is_empty()
+        || body
+            .content
+            .values()
+            .any(|media| media.sdk_method_name().is_none())
+    {
+        return vec![None];
+    }
+    body.content
+        .iter()
+        .map(|(media_type, media)| {
+            let mut view = op.with_sdk_method_name(media.sdk_method_name().unwrap());
+            if let Some(body) = view.request_body.as_mut() {
+                body.content.retain(|name, _| name == media_type);
+            }
+            Some(view)
+        })
+        .collect()
 }
 
 /// The base method name a `stream-condition` operation splits from — *not* the
@@ -17373,6 +17402,64 @@ mod tests {
             .endpoints
             .iter()
             .any(|endpoint| endpoint.module == "vault" && endpoint.method_name == "list_bundles"));
+    }
+
+    #[test]
+    fn named_request_media_have_separate_views_without_mutating_the_operation() {
+        let operation: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+            "operationId": "appendCard", "requestBody": { "content": {
+                "application/json": { "x-fern-sdk-method-name": "card_note",
+                    "schema": { "type": "object" } },
+                "image/png": { "x-fern-sdk-method-name": "wrong",
+                    "x-crozier-sdk-method-name": "card_scan",
+                    "schema": { "type": "string", "format": "binary" } }
+            } }, "responses": {}
+        }))
+        .unwrap();
+        let views = super::request_media_variants(&operation);
+        assert_eq!(views.len(), 2);
+        assert_eq!(
+            views[0].as_ref().unwrap().sdk_method_name(),
+            Some("card_note")
+        );
+        assert_eq!(
+            views[1].as_ref().unwrap().sdk_method_name(),
+            Some("card_scan")
+        );
+        assert!(views.iter().all(|view| view
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap()
+            .content
+            .len()
+            == 1));
+        assert!(operation.sdk_method_name().is_none());
+        assert_eq!(operation.request_body.as_ref().unwrap().content.len(), 2);
+        let mut unnamed = operation.clone();
+        unnamed
+            .request_body
+            .as_mut()
+            .unwrap()
+            .content
+            .insert("text/plain".into(), Default::default());
+        assert_eq!(super::request_media_variants(&unnamed).len(), 1);
+        assert!(super::request_media_variants(&unnamed)[0].is_none());
+        let blank: crate::openapi::MediaType = serde_json::from_value(serde_json::json!({
+            "x-crozier-sdk-method-name": " ", "x-fern-sdk-method-name": "fallback"
+        }))
+        .unwrap();
+        assert!(blank.sdk_method_name().is_none());
+        assert!(
+            serde_json::from_value::<crate::openapi::MediaType>(serde_json::json!({
+                "x-crozier-sdk-method-name": 12
+            }))
+            .is_err()
+        );
+        let no_body: crate::openapi::Operation =
+            serde_json::from_value(serde_json::json!({ "responses": {} })).unwrap();
+        assert_eq!(super::request_media_variants(&no_body).len(), 1);
     }
 
     #[test]
