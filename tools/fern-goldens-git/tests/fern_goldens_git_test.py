@@ -2277,6 +2277,13 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         self.assertFalse(calls.exists(), "a dry run ran the generator")
         self.assertFalse((self.root / "tests" / "fixtures" / "delta").exists())
 
+    def test_a_source_path_holding_any_character_reaches_the_plan_whole(self) -> None:
+        self.upstream_row("delta", {"spec/openapi.yaml": "openapi: 3.0.3\ninfo: {title: d, version: '1'}\n"})
+        cache = self.base / "cache|with a bar"
+        result = self.run_script("--only", "delta", "--dry-run", "--fetch-root", str(cache))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"delta\t{cache / 'delta' / 'spec' / 'openapi.yaml'}\n")
+
     @unittest.skipIf(os.geteuid() == 0, "root reads a file whatever its mode")
     def test_an_unreadable_alias_file_names_itself_and_how_to_restore_it(self) -> None:
         aliases = self.root / "tests" / "fixtures" / ALIASES.name

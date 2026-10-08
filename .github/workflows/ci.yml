@@ -79,7 +79,7 @@ jobs:
   # pytest in it (the runtime wire suite, the own-pin type-check, the shared env's
   # concurrent build, and the fern-refusals gate's `wire_test.py` condition). Same
   # OS matrix as `check`, since the env and mypy-cache locking are per-platform.
-  # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
+  # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
   sdk-env:
     name: sdk-env (${{ matrix.os }})
     needs: check
@@ -118,6 +118,7 @@ jobs:
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
         run: just ci-check --projects=sdk-env,runtime
+  # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
   # Single stable required-status context aggregating the matrix, so branch
   # protection lists one `gate` name instead of every per-OS leg. Fails unless
@@ -178,11 +179,12 @@ jobs:
       # PyPI. Each runs when the change reaches it, and on the release pull request
       # always.
       # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
-      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] The census-fallback tier needs uv to install the pinned ruamel.yaml, so it runs in this separate leg rather than the check matrix; it reads only committed specifications and loopback servers.
+      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] The census-fallback tier needs uv to install the pinned ruamel.yaml, so it runs in this separate leg rather than the check matrix; it reads only committed specifications and loopback servers.
       - name: Live e2e, corpus byte-match, census fallback and screenshot renderer
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
         run: just ci-check --projects=live-e2e,corpus-match,census-fallback,screenshots
+      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate
   # (honoring Cargo.toml's `include`) and compiles from that tarball. This is the

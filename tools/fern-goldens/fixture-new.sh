@@ -7,7 +7,7 @@
 # After this: replace openapi.yml with the spec you want to match, generate Fern's
 # golden output with tools/fern-goldens/generate-fern-fixture.sh <name> (Docker + fern CLI),
 # copy an existing FEATURE_TARGETS entry for it as the printed steps say, then
-# grow `matched` with `just fixtures-candidates`. See tests/fixtures/AGENTS.md.
+# shrink its `unmatched` list with `just fixtures-gaps`. See tests/fixtures/AGENTS.md.
 #
 # Usage:  tools/fern-goldens/fixture-new.sh <name>
 # Exit status: 0 once the placeholder is written; 2 for a missing or invalid
@@ -72,7 +72,8 @@ fixture-new: next steps —
   1. Replace tests/fixtures/$name/openapi.yml with the real spec.
   2. Generate Fern's golden tree:  tools/fern-goldens/generate-fern-fixture.sh $name
   3. Wire it into crates/crozier-e2e/tests/e2e.rs: copy an existing FEATURE_TARGETS entry, set
-     api: "$name" and matched: &[] (empty to start). Copying a real entry keeps
+     api: "$name" and unmatched: &[] (empty is the target). Copying a real entry keeps
      the Corpus shape single-sourced — no hand-mirrored struct to drift.
-  4. Grow \`matched\` as generation lands:  just fixtures-candidates
+  4. Add its #[test] and its tests/corpus_match/match.sh line; the gate fails without both.
+  5. While crozier still diverges, list the files that differ:  just fixtures-gaps
 EOF

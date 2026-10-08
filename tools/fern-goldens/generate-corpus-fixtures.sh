@@ -110,7 +110,10 @@ rows="$(corpus_rows "$manifest")" || {
        "above, then re-run" >&2
   exit 1
 }
+# Two parallel lists, not one delimited string: a source path may hold any
+# character, so none is free to split it on.
 plan=()
+plan_sources=()
 while IFS=$'\t' read -r name url ref decision; do
   [ -n "$name" ] || continue
   fixture="$(corpus_fixture_for "$name")"
@@ -148,7 +151,8 @@ while IFS=$'\t' read -r name url ref decision; do
     source_desc="$discovered"
   fi
 
-  plan+=("$fixture|$source_desc")
+  plan+=("$fixture")
+  plan_sources+=("$source_desc")
 done <<<"$rows"
 
 if [ "${#plan[@]}" -eq 0 ]; then
@@ -178,9 +182,9 @@ if [ "$dry_run" -eq 0 ]; then
   }
   trap 'rm -f "$log" || echo "generate-corpus-fixtures: could not remove $log; delete it by hand" >&2' EXIT
 fi
-for item in "${plan[@]}"; do
-  fixture="${item%%|*}"
-  source_desc="${item#*|}"
+for index in "${!plan[@]}"; do
+  fixture="${plan[$index]}"
+  source_desc="${plan_sources[$index]}"
   if [ "$dry_run" -eq 1 ]; then
     # The plan is what --dry-run was asked for: one `fixture<TAB>source` row per
     # selected fixture on stdout, the data its caller reads, not progress chatter.

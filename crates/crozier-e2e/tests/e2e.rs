@@ -9821,6 +9821,42 @@ fn a_known_fern_failure_registration_cannot_excuse_anything_else() {
 /// unnoticed exactly where the corpus is supposed to catch it. Both wirings are
 /// derived from the sources themselves, so adding a corpus without them fails
 /// here rather than years later.
+/// `tools/fern-goldens/fixture-new.sh` prints the steps that wire a new fixture
+/// in here. This holds them to the table, the `Corpus` field and the recipes
+/// they name, so the scaffolder cannot drift from the registration it describes.
+#[test]
+fn fixture_new_names_the_registration_this_suite_reads() {
+    let script = std::fs::read_to_string(repo_root().join("tools/fern-goldens/fixture-new.sh"))
+        .expect("read tools/fern-goldens/fixture-new.sh");
+    // A renamed field fails to compile here before the printed step goes stale.
+    let Corpus { unmatched: _, .. } = FEATURE_TARGETS[0];
+    for named in [
+        "FEATURE_TARGETS",
+        "unmatched: &[]",
+        "tests/corpus_match/match.sh",
+        "just fixtures-gaps",
+    ] {
+        assert!(
+            script.contains(named),
+            "fixture-new.sh no longer names {named}"
+        );
+    }
+    assert!(
+        script
+            .match_indices("matched")
+            .all(|(at, _)| script[..at].ends_with("un")),
+        "fixture-new.sh names a `matched` field Corpus does not have"
+    );
+    assert!(repo_root().join("tests/corpus_match/match.sh").is_file());
+    let justfile = std::fs::read_to_string(repo_root().join("justfile")).expect("read justfile");
+    assert!(
+        justfile
+            .lines()
+            .any(|line| line.starts_with("fixtures-gaps ") || line.starts_with("fixtures-gaps:")),
+        "the justfile has no fixtures-gaps recipe for fixture-new.sh to name"
+    );
+}
+
 #[test]
 fn every_registered_corpus_is_wired_into_the_gate() {
     let source = include_str!("e2e.rs");

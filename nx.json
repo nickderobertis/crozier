@@ -72,6 +72,7 @@
       "{workspaceRoot}/tools/corpus/corpus-lib.sh",
       "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
       "{workspaceRoot}/tools/fern-goldens/fern-goldens",
+      "{workspaceRoot}/tools/fern-goldens/fixture-new.sh",
       "{workspaceRoot}/tools/fern-goldens/tests/fern_goldens_test.py",
       "{workspaceRoot}/tools/fern-goldens-git/tests/fern_goldens_git_test.py",
       "{workspaceRoot}/scripts/lib.sh",
