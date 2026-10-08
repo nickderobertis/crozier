@@ -69,6 +69,8 @@ RULE_MARKER = "corpus-licence-set:"
 # run from when those screens were measured. It names the stage; the file now
 # lives in tools/witness-search/.
 STAGE = "scripts/witness_screen.py"
+# Where the stage runs from today, for the instruction a refused row is given.
+SCRIPT_PATH = "tools/witness-search/witness_screen.py"
 SCREENS = ("licence", "ref", "fern")
 # A screen row dated at or after this instant was filed after the measured stage
 # landed, so it owes the measured record; one before it is historical.
@@ -808,10 +810,10 @@ def unmeasured_date_failure(row: dict[str, Any]) -> str | None:
     if stamp is None:
         return (f"its `{field}` {row[field]!r} is no ISO 8601 instant with its offset, so nothing shows it "
                 f"predates the measured stage ({MEASURED_SINCE}) — restore the row from git, or file it "
-                f"through `{STAGE}`")
+                f"through `{SCRIPT_PATH}`")
     if stamp >= datetime.datetime.fromisoformat(MEASURED_SINCE):
         return (f"it is dated {row[field]}, after the measured stage landed ({MEASURED_SINCE}), and carries "
-                f"no measured record — file it through `{STAGE}`")
+                f"no measured record — file it through `{SCRIPT_PATH}`")
     return None
 
 

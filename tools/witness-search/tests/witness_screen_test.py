@@ -674,6 +674,19 @@ class HistoricalRowTests(unittest.TestCase):
         self.assertIn("a screen is filed only with its measured record", str(refused.exception))
         self.assertIn("after the measured stage landed", str(refused.exception))
 
+    def test_the_index_cli_names_where_a_late_row_is_filed_today(self) -> None:
+        root = Path(self.write({**self.ROW, "screened_at": "2026-10-03T09:00:00+00:00"}).parent)
+        source = root / "witness-search-github-code-search"
+        source.mkdir()
+        (root / "screens.jsonl").rename(source / "screens.jsonl")
+        refused = subprocess.run(
+            [sys.executable, str(REPO / "tools" / "witness-search" / "witness-search-github-index.py"),
+             "--check", "--evidence-root", str(root)],
+            capture_output=True, text=True, cwd=REPO, timeout=60)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("file it through `tools/witness-search/witness_screen.py`", refused.stderr)
+        self.assertTrue((REPO / "tools" / "witness-search" / "witness_screen.py").is_file())
+
 
 class CommittedScreenTests(unittest.TestCase):
     """Every screen row the tree commits, read the way the two families read it."""
