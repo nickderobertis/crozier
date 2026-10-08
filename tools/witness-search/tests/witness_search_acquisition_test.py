@@ -1334,7 +1334,8 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             return [json.loads(line) for line in (root / "evidence" / name).read_text().splitlines()]
 
         cases = [("interrupted transfer", "/truncated.tar.gz", "IncompleteRead"),
-                 ("bucket refused after the body", "/other-bucket.tar.gz", "spent in 'search'")]
+                 ("bucket refused after the body", "/other-bucket.tar.gz", "spent in 'search'"),
+                 ("publication fails", "/tree.tar.gz", "could not publish")]
         if Path("/dev/full").exists():
             cases.append(("destination write fails", "/tree.tar.gz", "No space left on device"))
         for name, path, error in cases:
@@ -1345,13 +1346,18 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 if name == "destination write fails":
                     # Every write to the staging file fails as a full disk does.
                     partial.symlink_to("/dev/full")
+                if name == "publication fails":
+                    # A directory where the file is published: every byte arrives, the rename cannot land.
+                    output.mkdir()
+                    (output / "occupied").write_text("", encoding="utf-8")
                 completed = acquire(root, path, output)
                 self.assertEqual(completed.returncode, 1, completed.stdout + completed.stderr)
                 self.assertNotIn("Traceback", completed.stderr)
                 self.assertNotIn("saved", completed.stdout)
                 self.assertIn(error, completed.stderr)
                 self.assertIn("retry the recorded source when available", completed.stderr)
-                self.assertFalse(os.path.lexists(output))
+                # Nothing is published: the destination is as it was before the run.
+                self.assertTrue(output.is_dir() if name == "publication fails" else not os.path.lexists(output))
                 self.assertFalse(os.path.lexists(partial))
                 [record] = records(root, "acquisitions.jsonl")
                 self.assertEqual(record["status"], 200)

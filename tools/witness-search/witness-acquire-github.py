@@ -116,10 +116,16 @@ def main() -> int:
             guard.record(TransportFailure())
             record["error"] = str(error) or type(error).__name__
         if transferred and record.get("status") == 200:
-            temporary.replace(args.output)
-            record["sha256"] = digest.hexdigest()
-            record["bytes"] = args.output.stat().st_size
-            acquired = True
+            try:
+                temporary.replace(args.output)
+            except OSError as error:
+                # Every byte arrived, but the file is not where the caller reads it.
+                record["error"] = f"could not publish {args.output}: {error.strerror or error}"
+                temporary.unlink(missing_ok=True)
+            else:
+                record["sha256"] = digest.hexdigest()
+                record["bytes"] = args.output.stat().st_size
+                acquired = True
         else:
             temporary.unlink(missing_ok=True)
     except (GUARD.SecondaryLimit, GUARD.UnsupportedBucket, OSError, RuntimeError,
