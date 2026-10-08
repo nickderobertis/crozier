@@ -1,7 +1,9 @@
 {
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
+    "docs/fern-measurements/models-refs-literals/library-records/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/material-register/fern-expected": {},
+    "docs/fern-measurements/models-refs-remote/library-records/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},

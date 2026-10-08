@@ -457,6 +457,23 @@ impl Resolver<'_> {
     /// Resolve `schema` in place, then every schema nested inside it.
     fn resolve_schema(&mut self, schema: &mut Schema, source: &DocumentLocation) -> Result<()> {
         if let Some(reference) = schema.reference.clone() {
+            // A component pointer in a fetched document names that document's
+            // component. Only a pointer the defining document actually carries
+            // is promoted; legacy fragments absent there keep the root fallback.
+            if matches!(source, DocumentLocation::Remote(_)) {
+                if let Some(fragment) = reference.strip_prefix('#') {
+                    if let Some(name) = fragment
+                        .strip_prefix("/components/schemas/")
+                        .filter(|name| !name.is_empty() && !name.contains('/'))
+                    {
+                        if pointer(self.document(source, &reference)?, fragment).is_some() {
+                            self.import_pointer_at_path(source, name, fragment, None, &reference)?;
+                            schema.reference = Some(format!("#/components/schemas/{name}"));
+                            return Ok(());
+                        }
+                    }
+                }
+            }
             if let Some((_, fragment)) = split_external(&reference) {
                 // NDW's registered single-file golden has a sibling schema
                 // pointer whose file is absent. Fern types that nested field
@@ -471,7 +488,7 @@ impl Resolver<'_> {
                         }
                     }
                 }
-                if let Some(name) = self.import_sibling_component(&reference, source)? {
+                if let Some(name) = self.import_external_component(&reference, source)? {
                     schema.reference = Some(format!("#/components/schemas/{name}"));
                     return Ok(());
                 }
@@ -504,13 +521,13 @@ impl Resolver<'_> {
         Ok(())
     }
 
-    /// A relative file's component schema (`../components.yaml#/components/schemas/ErrorResponse`)
+    /// An external document's component schema (`../components.yaml#/components/schemas/ErrorResponse`)
     /// is imported as the component it names, as Fern imports it, with each
     /// component of that file it points at imported beside it: HuaTuo's node and
     /// server descriptions share `ErrorResponse`, `Error`, `ErrorCode` and
     /// `ObservationScope` this way. A name the root document already declares is
     /// not displaced, and such a reference is inlined as before.
-    fn import_sibling_component(
+    fn import_external_component(
         &mut self,
         reference: &str,
         source: &DocumentLocation,
@@ -518,9 +535,7 @@ impl Resolver<'_> {
         let Some((_, fragment)) = split_external(reference) else {
             return Ok(None);
         };
-        // A document reached by URL keeps Helios's root-document pointer
-        // semantics, so only a file beside the root is imported this way.
-        if split_remote(reference).is_some() || matches!(source, DocumentLocation::Remote(_)) {
+        if matches!(source, DocumentLocation::Remote(_)) {
             return Ok(None);
         }
         let Some(name) = fragment.strip_prefix("/components/schemas/") else {
@@ -945,6 +960,33 @@ components:
             Some("integer")
         );
         assert_eq!(fetched, vec![root_url.to_string(), leaf_url.to_string()]);
+    }
+
+    #[test]
+    fn an_external_component_inside_a_remote_document_keeps_its_inline_identity() {
+        let leaf_url = "https://example.test/leaf.yml";
+        let (doc, fetched) = resolved(
+            &format!(
+                "openapi: 3.0.3\ncomponents:\n  schemas:\n    Wrapper:\n      $ref: {REMOTE}#/Wrapper\n"
+            ),
+            &[
+                (
+                    REMOTE,
+                    &format!(
+                        "Wrapper:\n  properties:\n    leaf:\n      $ref: {leaf_url}#/components/schemas/Leaf\n"
+                    ),
+                ),
+                (leaf_url, "components:\n  schemas:\n    Leaf:\n      type: integer\n"),
+            ],
+        );
+        let leaf = &doc.components.schemas["Wrapper"].properties["leaf"];
+        assert!(leaf.reference.is_none());
+        assert_eq!(
+            leaf.ty.as_ref().and_then(|ty| ty.primary()),
+            Some("integer")
+        );
+        assert!(!doc.components.schemas.contains_key("Leaf"));
+        assert_eq!(fetched, vec![REMOTE.to_string(), leaf_url.to_string()]);
     }
 
     #[test]

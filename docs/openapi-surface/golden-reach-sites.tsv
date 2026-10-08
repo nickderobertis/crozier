@@ -224,7 +224,7 @@ example	schema.example	src/ir.rs::schema_example,src/ir.rs::schema_example_liter
 deprecated	schema.deprecated	none	
 dollar-schema	schema.$schema	none	
 dollar-id	schema.$id	none	
-dollar-ref	schema.$ref	src/ir.rs::base_type_ref[if let Some\(reference\) = &schema\.reference \{],src/ir.rs::ref_to_class,src/ir.rs::resolve_ref,src/ir.rs::resolve_ref_from_schemas,src/ir.rs::resolve_schema_pointer,src/refs.rs::Resolver::resolve_schema	
+dollar-ref	schema.$ref	src/ir.rs::base_type_ref[if let Some\(reference\) = &schema\.reference \{],src/ir.rs::ref_to_class,src/ir.rs::resolve_ref,src/ir.rs::resolve_ref_from_schemas,src/ir.rs::resolve_schema_pointer,src/refs.rs::Resolver::resolve_schema,src/refs.rs::Resolver::resolve_schema[if matches!.*DocumentLocation::Remote],src/refs.rs::Resolver::resolve_schema[if let Some\(name\) = self.import_external_component],src/refs.rs::Resolver::resolve_reference	Defining-document local pointers, external component identities and failed-fetch recovery have scoped loopback proof: tests/e2e.rs::remote_model_components_match_the_certified_fern_tree; evidence docs/fern-measurements/models-refs-remote/library-records/evidence.md. This is handwritten proof, never a real witness.
 dollar-defs	schema.$defs	none	
 dollar-comment	schema.$comment	none	
 prefix-items	schema.prefixItems	none	
@@ -252,8 +252,8 @@ format-uri-reference	schema.format=uri-reference	src/ir.rs::base_type_ref[=^ {12
 format-uri-template	schema.format=uri-template	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 format-json-pointer	schema.format=json-pointer	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 format-regex	schema.format=regex	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
-format-int32	schema.format=int32	src/ir.rs::number_prim[=Some\("int32" \x7c "int64"\)],src/ir.rs::int_prim	
-format-int64	schema.format=int64	src/ir.rs::int_prim,src/ir.rs::number_prim[=Some\("int32" \x7c "int64"\)],src/emit.rs::ExampleCtx::value[=TypeRef::Primitive\(Prim::Long\) =>]	
+format-int32	schema.format=int32	src/ir.rs::number_prim[=Some\("int32" \x7c "int64" \x7c "uint64"\)],src/ir.rs::int_prim	The integer-number arm also accepts uint64.
+format-int64	schema.format=int64	src/ir.rs::int_prim,src/ir.rs::number_prim[=Some\("int32" \x7c "int64" \x7c "uint64"\)],src/emit.rs::ExampleCtx::value[=TypeRef::Primitive\(Prim::Long\) =>]	The integer-number arm also accepts uint64.
 format-float	schema.format=float	src/ir.rs::number_prim[=_ => Prim::Float]	
 format-double	schema.format=double	src/ir.rs::number_prim[=_ => Prim::Float]	
 format-password	schema.format=password	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	

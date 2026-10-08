@@ -19,6 +19,8 @@ property-sole-anyof-empty-object-member	schema.properties>schema.anyOf:sole-memb
 property-sole-oneof-composed-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported
 property-sole-oneof-empty-object-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
 query-array-items-union	parameter.schema:query-items-union	parameters.md	supported
+remote-document-local-pointer-resolved-against-root	schema.$ref:cross-document	schemas.md	supported
+remote-ref-at-use-site-inlined	schema.$ref:cross-document	schemas.md	supported
 request-body-described-inline-scalar	operation.requestBody:described-inline-scalar	bodies-media.md	supported
 request-body-property-closed-empty-object	mediaType.schema:closed-empty-object-property	schemas.md	supported
 request-example-deprecated-property	mediaType.example:deprecated-property	bodies-media.md	supported

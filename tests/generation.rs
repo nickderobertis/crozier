@@ -72,6 +72,51 @@ fn material_register_formats_keep_their_certified_scalar_types() {
     );
 }
 
+#[test]
+fn remote_model_types_resolve_through_a_real_http_document() {
+    use std::io::{BufRead, BufReader, Write};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("loopback listener");
+    let address = listener.local_addr().unwrap();
+    let server = std::thread::spawn(move || {
+        let (mut stream, _) = listener.accept().expect("schema request");
+        let mut reader = BufReader::new(stream.try_clone().unwrap());
+        let mut line = String::new();
+        reader.read_line(&mut line).unwrap();
+        assert!(line.starts_with("GET /models.yml "), "{line}");
+        loop {
+            line.clear();
+            if reader.read_line(&mut line).unwrap() == 0 || line.trim().is_empty() {
+                break;
+            }
+        }
+        let body = include_str!("e2e/fixtures/models-refs-remote/library-records/models.yml");
+        write!(
+            stream,
+            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+            body.len()
+        )
+        .unwrap();
+    });
+    let spec = include_str!("e2e/fixtures/models-refs-remote/library-records/openapi.yml")
+        .replace("@REMOTE_URL@", &format!("http://{address}"));
+    let files = render(&spec);
+    server.join().expect("the document was fetched once");
+    let catalogue = &files["src/acme/types/catalogue.py"];
+    assert!(
+        catalogue.contains("curator: typing.Optional[Curator] = None"),
+        "{catalogue}"
+    );
+    assert!(files.contains_key("src/acme/types/curator.py"));
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("from .types.curator import Curator"),
+        "{client}"
+    );
+    assert!(!files
+        .keys()
+        .any(|path| path.contains("read_curator_response")));
+}
+
 /// [`render`] without the Fern refusal checks: the IR and emitter alone, for
 /// a guard that only a document crozier refuses reaches.
 fn render_ir(spec: &str) -> HashMap<String, String> {

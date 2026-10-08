@@ -1,0 +1,23 @@
+version = 1
+
+[[covers]]
+kind = "handwritten-e2e"
+key = "remote-document-local-pointer-resolved-against-root"
+fixture = "tests/e2e/fixtures/models-refs-remote/library-records"
+test = "remote_model_components_match_the_certified_fern_tree"
+evidence = "docs/fern-measurements/models-refs-remote/library-records/evidence.md"
+golden = "docs/fern-measurements/models-refs-remote/library-records/fern-expected"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#remote-component-identities"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+kind = "handwritten-e2e"
+key = "remote-ref-at-use-site-inlined"
+fixture = "tests/e2e/fixtures/models-refs-remote/library-records"
+test = "remote_model_components_match_the_certified_fern_tree"
+evidence = "docs/fern-measurements/models-refs-remote/library-records/evidence.md"
+golden = "docs/fern-measurements/models-refs-remote/library-records/fern-expected"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#remote-component-identities"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

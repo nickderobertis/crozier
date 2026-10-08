@@ -13593,5 +13593,94 @@ class ParityProofIndexTests(unittest.TestCase):
                     name = test.strip().rsplit("::", 1)[-1]
                     self.assertRegex(test_sources, rf"fn {re.escape(name)}\(", f"missing comparison test {test}")
 
+class HandwrittenE2eCoversTests(unittest.TestCase):
+    """The additive multi-file cover uses real committed inputs and gate API."""
+
+    def check(self, missing: str | None = None) -> list[str]:
+        gate = load_script("handwritten-fixtures.py")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            paths = [
+                "docs/openapi-surface/handwritten-e2e.toml",
+                "docs/openapi-surface/schemas.md",
+                "docs/openapi-surface/witness-search-models-refs/README.md",
+                "docs/fern-measurements/models-refs-remote/library-records/evidence.md",
+                "docs/fern-measurements/models-refs-remote/library-records/fern-expected/.fern/metadata.json",
+                "tests/e2e/fixtures/models-refs-remote/library-records/openapi.yml",
+                "tests/e2e/fixtures/models-refs-remote/library-records/models.yml",
+                "tests/e2e.rs",
+            ]
+            for relative in paths:
+                source = REPO / relative
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(source.read_bytes())
+            if missing == "fixture":
+                (root / paths[5]).unlink()
+                (root / paths[6]).unlink()
+            elif missing == "test":
+                (root / "tests/e2e.rs").write_text("", encoding="utf-8")
+            elif missing == "loopback":
+                target = root / "tests/e2e.rs"
+                target.write_text(target.read_text().replace("LocalDocumentServer::start", "unrelated_server"), encoding="utf-8")
+            elif missing == "comparison":
+                target = root / "tests/e2e.rs"
+                target.write_text(target.read_text().replace("golden_tree_failures", "unrelated_comparison"), encoding="utf-8")
+            elif missing == "evidence":
+                (root / paths[3]).unlink()
+            elif missing == "search":
+                (root / paths[2]).unlink()
+            elif missing == "golden":
+                (root / paths[4]).unlink()
+            elif missing == "version":
+                target = root / paths[0]
+                target.write_text(target.read_text().replace("version = 1", "version = 2"), encoding="utf-8")
+            elif missing == "row":
+                target = root / paths[1]
+                target.write_text(target.read_text().replace("handwritten-e2e:", "unexplained:"), encoding="utf-8")
+            elif missing == "golden-binding":
+                target = root / "tests/e2e.rs"
+                target.write_text(target.read_text().replace('format!("{MODELS_REFS_REMOTE_DIR}', 'format!("{UNRELATED_CERTIFIED_DIR}'), encoding="utf-8")
+            elif missing in ("registry-syntax", "kind", "duplicate", "verdict"):
+                target = root / paths[0]
+                text = target.read_text()
+                if missing == "registry-syntax":
+                    text = "[["
+                elif missing == "kind":
+                    text = text.replace('kind = "handwritten-e2e"', 'kind = "unknown"')
+                elif missing == "duplicate":
+                    text = text.replace('key = "remote-ref-at-use-site-inlined"', 'key = "remote-document-local-pointer-resolved-against-root"')
+                else:
+                    text = text.replace('verdict = "search-incomplete"', 'verdict = "unknown"')
+                target.write_text(text, encoding="utf-8")
+            _keys, failures = gate.e2e_cover_failures(root, gate.region_rows(root))
+            return failures
+
+    def test_committed_multi_file_covers_are_accepted(self) -> None:
+        self.assertEqual(self.check(), [])
+
+    def test_every_missing_piece_is_refused(self) -> None:
+        expected = {
+            "fixture": "multi-file fixture directory",
+            "test": "gated real-binary test",
+            "loopback": "gated real-binary test",
+            "comparison": "gated real-binary test",
+            "evidence": "evidence note",
+            "search": "search anchor does not resolve",
+            "golden": "complete certified golden",
+            "version": "expected version = 1",
+            "row": "must name exactly",
+            "golden-binding": "must name this certified golden",
+            "registry-syntax": "restore the registry or repair its TOML syntax",
+            "kind": "set kind to handwritten-e2e",
+            "duplicate": "keep exactly one registry cover",
+            "verdict": "cite one of exhausted, search-incomplete, config-gated",
+        }
+        for missing, message in expected.items():
+            with self.subTest(missing=missing):
+                failures = self.check(missing)
+                self.assertTrue(any(message in failure for failure in failures), failures)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])

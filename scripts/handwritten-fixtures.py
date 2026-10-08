@@ -70,6 +70,13 @@ EVIDENCE_CELL = re.compile(
     r"^handwritten: (?P<fixtures>[a-z0-9-]+(?:, [a-z0-9-]+)*); "
     r"search: (?P<verdict>[a-z-]+) \(\[record\]\((?P<link>[^)\s]+)\)\)$"
 )
+E2E_COVERS = REGIONS / "handwritten-e2e.toml"
+E2E_FIELDS = {"kind", "key", "fixture", "test", "evidence", "golden", "search", "verdict", "renewed"}
+E2E_EVIDENCE_CELL = re.compile(
+    r"^handwritten-e2e: (?P<fixture>tests/e2e/fixtures/[a-z0-9/-]+); "
+    r"test: (?P<test>[a-z0-9_]+); evidence: \[note\]\((?P<evidence>[^)\s]+)\); "
+    r"search: (?P<verdict>[a-z-]+) \(\[record\]\((?P<link>[^)\s]+)\)\)$"
+)
 _CORPUS_ROW = re.compile(r"^\s*\|\s*\d+\s*\|")
 
 
@@ -285,7 +292,7 @@ def verdict_failures(base: Path, reference: str, key: str, verdict: str) -> list
 def evidence_cell_failures(region: Path, key: str, cell: str) -> list[str]:
     """A `handwritten` row's evidence cell: its form, and the record its link names
     stating the verdict it states. The link is relative to the region file."""
-    parsed = EVIDENCE_CELL.match(cell)
+    parsed = EVIDENCE_CELL.match(cell) or E2E_EVIDENCE_CELL.match(cell)
     if parsed is None:
         return [
             f"{key}: its evidence cell must read `handwritten: <fixture>[, <fixture>…]; search: "
@@ -419,6 +426,87 @@ def corpus_rows(root: Path) -> set[str]:
     return names
 
 
+def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tuple[set[str], list[str]]:
+    """Strict additive covers for committed multi-document loopback journeys.
+
+    Ordinary three-entry fixtures and their cover rules are unchanged. This
+    separate versioned record never supplies an ordinary fixture's cover.
+    """
+    path = root / E2E_COVERS
+    if not path.exists():
+        return set(), []
+    failures: list[str] = []
+    keys: set[str] = set()
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+        return keys, [f"{E2E_COVERS}: cannot read cover records: {error} — restore the registry or repair its TOML syntax"]
+    if set(data) != {"version", "covers"} or type(data.get("version")) is not int or data.get("version") != 1 or not isinstance(data.get("covers"), list):
+        return keys, [f"{E2E_COVERS}: expected version = 1 and covers tables"]
+
+    def committed_path(value: str) -> Path | None:
+        candidate = root / value
+        relative = Path(value)
+        return candidate if not relative.is_absolute() and ".." not in relative.parts else None
+
+    test_path = root / "tests" / "e2e.rs"
+    test_source = test_path.read_text(encoding="utf-8") if test_path.is_file() else ""
+    for cover in data["covers"]:
+        if not isinstance(cover, dict) or set(cover) != E2E_FIELDS or not all(isinstance(v, str) and v for v in cover.values()):
+            failures.append(f"{E2E_COVERS}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings")
+            continue
+        key = cover["key"]
+        where = f"handwritten-e2e `{key}`"
+        if cover["kind"] != "handwritten-e2e":
+            failures.append(f"{where}: invalid kind `{cover['kind']}` — set kind to handwritten-e2e")
+            continue
+        if key in keys:
+            failures.append(f"{where}: duplicate key — keep exactly one registry cover for this shape")
+            continue
+        keys.add(key)
+        fixture = committed_path(cover["fixture"])
+        if fixture is None or not fixture.is_dir() or len(list(fixture.glob("*.yml"))) < 2:
+            failures.append(f"{where}: commit the named multi-file fixture directory")
+        evidence = committed_path(cover["evidence"])
+        if evidence is None or not evidence.is_file():
+            failures.append(f"{where}: commit the named evidence note")
+        golden = committed_path(cover["golden"])
+        if golden is None or not golden.is_dir() or not (golden / ".fern" / "metadata.json").is_file():
+            failures.append(f"{where}: commit the complete certified golden")
+        test = re.search(r"#\[test\]\s*fn " + re.escape(cover["test"]) + r"\(\)\s*\{([\s\S]*?)(?=\n#\[test\]|\Z)", test_source)
+        body = test.group(1) if test else ""
+        required = ("LocalDocumentServer::start", "probe_command", "golden_tree_failures", "assert!(failures.is_empty()")
+        fixture_include = cover["fixture"].removeprefix("tests/") + "/"
+        if not body or any(token not in body for token in required) or fixture_include not in body:
+            failures.append(f"{where}: name a gated real-binary test serving this fixture over loopback and comparing its complete tree")
+        golden_prefix, _, golden_suffix = cover["golden"].rpartition("/")
+        golden_prefix, _, fixture_name = golden_prefix.rpartition("/")
+        constants = re.findall(r'const ([A-Z_]+): &str = "([^"]+)";', test_source)
+        names_prefix = any(name in body and value == golden_prefix for name, value in constants)
+        if cover["golden"] not in body and not (names_prefix and f"{fixture_name}/{golden_suffix}" in body):
+            failures.append(f"{where}: the gated test must name this certified golden")
+        if cover["verdict"] not in VERDICTS:
+            failures.append(f"{where}: invalid real-specification search verdict — cite one of {', '.join(VERDICTS)}")
+        elif committed_path(cover["search"].partition("#")[0]) is None or committed_path(cover["renewed"]) is None:
+            failures.append(f"{where}: search paths must stay inside the repository")
+        else:
+            failures += search_failures(root, where, Cover(key, None, cover["search"], cover["verdict"], cover["renewed"]))
+        row = rows.get(key)
+        evidence_link = os.path.relpath(root / cover["evidence"], root / REGIONS).replace(os.sep, "/")
+        search_path, _, anchor = cover["search"].partition("#")
+        search_link = os.path.relpath(root / search_path, root / REGIONS).replace(os.sep, "/") + "#" + anchor
+        expected = (
+            f"handwritten-e2e: {cover['fixture']}; test: {cover['test']}; "
+            f"evidence: [note]({evidence_link}); search: {cover['verdict']} ([record]({search_link}))"
+        )
+        if row is None or row[1][3] != "handwritten" or row[1][4] != expected or any(row[1][5:8]):
+            failures.append(f"{where}: its handwritten row must name exactly this fixture, test, evidence and search, with empty remaining cells")
+    for key, (_region, cells) in rows.items():
+        if cells[4].startswith("handwritten-e2e:") and key not in keys:
+            failures.append(f"{key}: handwritten-e2e row has no cover record — add its registry cover or remove the unsupported row")
+    return keys, failures
+
+
 def gate(root: Path) -> dict[str, Any]:
     """Every contract failure the committed documents show, and each fixture's pins and digest."""
     failures: list[str] = []
@@ -455,6 +543,8 @@ def gate(root: Path) -> dict[str, Any]:
             fixtures[name] = fixture
 
     rows = region_rows(root)
+    e2e_keys, found = e2e_cover_failures(root, rows)
+    failures += found
     reach = golden_reach()
     try:
         sites = reach.read_sites_table(root / REGIONS / "golden-reach-sites.tsv")
@@ -565,6 +655,8 @@ def gate(root: Path) -> dict[str, Any]:
                 proofs[fields[0]] = fields[2]
     for key, (_region, cells) in sorted(rows.items()):
         if cells[3].strip("`") != "handwritten":
+            continue
+        if key in e2e_keys and cells[4].startswith("handwritten-e2e:"):
             continue
         failures += handwritten_row_failures(key, cells, feature_covers.get(key, []))
         if proofs.get(key) in NON_GENERATION:

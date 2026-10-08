@@ -803,6 +803,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
         (MODELS_REFS_LITERALS_DIR, "fern-expected"),
+        (MODELS_REFS_REMOTE_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
@@ -2383,6 +2384,7 @@ fn unwritten_module_imports_names_a_missing_module() {
 
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
 const MODELS_REFS_LITERALS_DIR: &str = "docs/fern-measurements/models-refs-literals";
+const MODELS_REFS_REMOTE_DIR: &str = "docs/fern-measurements/models-refs-remote";
 
 /// Every hand-written generation fixture, found by listing
 /// `docs/openapi-surface/handwritten/` and nothing else, held to the contract
@@ -14494,6 +14496,96 @@ fn a_remote_url_ref_is_fetched_and_generates_against_the_referenced_document() {
         widget.contains("owner: typing.Optional[Address] = None")
             && widget.contains("tags: typing.Optional[Tags] = None"),
         "the model should be typed against the fetched schemas:\n{widget}"
+    );
+}
+
+/// The same complete certified package proves both defining-document pointers
+/// and named external components at operation response use sites.
+#[test]
+fn remote_model_components_match_the_certified_fern_tree() {
+    let server = LocalDocumentServer::start(&[(
+        "/models.yml",
+        include_str!("e2e/fixtures/models-refs-remote/library-records/models.yml"),
+    )]);
+    let source = tempfile::tempdir().expect("remote source");
+    let spec = source.path().join("openapi.yml");
+    let text = include_str!("e2e/fixtures/models-refs-remote/library-records/openapi.yml");
+    let failed_output = source.path().join("failed-sdk");
+    std::fs::write(
+        &spec,
+        text.replace("@REMOTE_URL@", &format!("{}/missing", server.base_url)),
+    )
+    .unwrap();
+    probe_command(&spec, &failed_output)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("could not resolve remote $ref"));
+    assert!(!failed_output.exists(), "a failed fetch must write no SDK");
+    std::fs::write(&spec, text.replace("@REMOTE_URL@", &server.base_url)).unwrap();
+    let out = tempfile::tempdir().expect("remote SDK");
+    probe_command(&spec, out.path()).assert().success();
+    let catalogue = std::fs::read_to_string(out.path().join("src/fern/types/catalogue.py"))
+        .expect("the local component retains its identity");
+    assert!(
+        catalogue.contains("curator: typing.Optional[Curator] = None"),
+        "a local pointer inside an external document names that document's component:\n{catalogue}"
+    );
+    let client = std::fs::read_to_string(out.path().join("src/fern/client.py")).unwrap();
+    assert!(
+        client.contains("from .types.curator import Curator"),
+        "the external response keeps its component identity:\n{client}"
+    );
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let golden = format!("{MODELS_REFS_REMOTE_DIR}/library-records/fern-expected");
+    let ledger = departure_ledger()
+        .golden(&golden, &[])
+        .expect("remote golden");
+    let failures = golden_tree_failures(
+        "remote model components",
+        "library-records/openapi.yml + models.yml over loopback HTTP",
+        &ledger,
+        &root.join(&golden),
+        out.path(),
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let literal_out = tempfile::tempdir().expect("remote literals SDK");
+    probe_command(&spec, literal_out.path())
+        .args(["--enum-type", "literals"])
+        .assert()
+        .success();
+    let literal_golden = format!("{MODELS_REFS_LITERALS_DIR}/library-records/fern-expected");
+    let literal_ledger = departure_ledger()
+        .golden(&literal_golden, &[])
+        .expect("remote literals golden");
+    let failures = golden_tree_failures(
+        "remote model components literals",
+        "library-records/openapi.yml + models.yml over loopback HTTP",
+        &literal_ledger,
+        &root.join(&literal_golden),
+        literal_out.path(),
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[test]
+fn remote_model_controls_reject_an_unexplained_dependency_mismatch() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(MODELS_REFS_REMOTE_DIR)
+        .join("library-records/fern-expected");
+    let rel = "src/fern/types/catalogue.py";
+    let expected = std::fs::read_to_string(fixture.join(rel)).expect("certified catalogue");
+    let changed = expected.replace("typing.Optional[Curator]", "typing.Optional[typing.Any]");
+    assert_ne!(
+        expected, changed,
+        "the dependency control must change a type"
+    );
+    let context = Context::from_trees(&fixture, &fixture);
+    assert!(
+        parity::compare_file(&context, rel, &changed, &expected)
+            .expect("compare a dependency mismatch")
+            .diff()
+            .is_some(),
+        "an unexplained dependency mismatch must fail parity"
     );
 }
 
