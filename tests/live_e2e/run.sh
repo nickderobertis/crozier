@@ -47,5 +47,6 @@ if [ ! -x "$py" ] || ! "$py" -c "import httpx, pydantic, pytest, yaml" 2>/dev/nu
   }
 fi
 
-# CROZIER_BIN is the compiled binary the suite generates each SDK with.
+# Pin the suite to the release binary just built, over any CROZIER_BIN the
+# caller's environment carries.
 CROZIER_BIN="$root/target/release/crozier" "$py" -m pytest tests/live_e2e -q -p no:cacheprovider "$@"

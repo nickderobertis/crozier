@@ -172,6 +172,24 @@ fn an_unknown_report_is_refused_with_the_usage() {
     );
 }
 
+#[test]
+fn a_report_given_extra_arguments_is_refused_with_the_usage() {
+    for args in [&[][..], &["gaps", "unexpected"][..]] {
+        let run = run_script("fixtures-report.sh", args, "", |_| {});
+        assert_eq!(run.status, 1, "{args:?}: {}", run.stderr);
+        assert_eq!(run.calls, "", "{args:?} ran cargo");
+        assert!(
+            run.stderr
+                .contains(&format!("takes exactly one report, got {}", args.len()))
+                && run
+                    .stderr
+                    .contains("usage: crates/crozier-e2e/fixtures-report.sh gaps|diff"),
+            "{args:?}: {}",
+            run.stderr
+        );
+    }
+}
+
 /// The stand-in for `cargo nextest`: the recording run leaves one record per
 /// golden under `$CROZIER_RECORD_DEPARTURES`; the merge (`write_departures_ledger`)
 /// writes the ledger from them, failing as `$MERGE_FAILS` says.

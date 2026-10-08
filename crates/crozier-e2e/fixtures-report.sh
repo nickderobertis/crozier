@@ -17,6 +17,8 @@ fail() { echo "fixtures-report: $1" >&2; echo "fixtures-report: $2" >&2; exit 1;
 
 cd "$(dirname "$0")/../.." || fail "cannot enter the repository root above $0" "run it from a readable checkout"
 
+[ "$#" -eq 1 ] || fail "takes exactly one report, got $#" "usage: crates/crozier-e2e/fixtures-report.sh gaps|diff"
+
 case "${1:-}" in
   gaps) reporter=report_fixture_gaps summary='file(s) still unmatched across all corpora'
         restore="restore report_fixture_gaps in crates/crozier-e2e/tests/e2e.rs, or fix the self-check failure above" ;;
