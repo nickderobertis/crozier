@@ -13635,6 +13635,9 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
             elif missing == "version":
                 target = root / paths[0]
                 target.write_text(target.read_text().replace("version = 1", "version = 2"), encoding="utf-8")
+            elif missing == "fields":
+                target = root / paths[0]
+                target.write_text(target.read_text().replace('fixture = "tests/e2e/fixtures/models-refs-remote/library-records"', 'fixture = ""'), encoding="utf-8")
             elif missing == "row":
                 target = root / paths[1]
                 target.write_text(target.read_text().replace("handwritten-e2e:", "unexplained:"), encoding="utf-8")
@@ -13669,6 +13672,7 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
             "search": "search anchor does not resolve",
             "golden": "complete certified golden",
             "version": "expected version = 1",
+            "fields": "repair this cover table",
             "row": "must name exactly",
             "golden-binding": "must name this certified golden",
             "registry-syntax": "restore the registry or repair its TOML syntax",

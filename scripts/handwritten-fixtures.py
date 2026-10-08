@@ -453,7 +453,7 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
     test_source = test_path.read_text(encoding="utf-8") if test_path.is_file() else ""
     for cover in data["covers"]:
         if not isinstance(cover, dict) or set(cover) != E2E_FIELDS or not all(isinstance(v, str) and v for v in cover.values()):
-            failures.append(f"{E2E_COVERS}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings")
+            failures.append(f"{E2E_COVERS}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings — repair this cover table to contain those fields and supply a nonempty string for each")
             continue
         key = cover["key"]
         where = f"handwritten-e2e `{key}`"

@@ -397,6 +397,9 @@ impl Checker<'_> {
             &format!("{label}: crozier generation finished in {crozier_seconds:.2}s"),
         );
 
+        // Example departures need the schema's constraints: an SDK annotation
+        // alone cannot prove an example invalid. The source-aware CLI boundary
+        // is covered by tests/e2e/compare.rs::compare_validates_pattern_narrowed_examples_and_rejects_adjacent_changes.
         let compared = match parity::compare_trees_with_document(
             &reference_root,
             &crozier_root,
