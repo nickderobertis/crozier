@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "f3436bae481fdf5be9a622dee08eddc7d617f27e30c58ce18e5d71b23a155637"
+
+[[covers]]
+key = "parameter-schema"
+arm = 'src/ir.rs::InlineHoister::hoist_param_composition[if let Some\(\(items, values\)\) = enum_item \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/parameter-schema.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/golden-reach-witnesses/searches/parameter-schema.md"

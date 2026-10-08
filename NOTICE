@@ -515,3 +515,11 @@ Additional string-map request specification:
     The repository's LICENSE at that revision grants Apache-2.0 redistribution;
     corpus row 331 records the immutable reference. The unmodified source and
     Fern-generated output are vendored, with Python comments stripped as above.
+
+Additional SMS request specification:
+
+  * NetGSM SMS API: the publisher's own description at
+    https://raw.githubusercontent.com/netgsm/netgsm-sms-js/33ca38622067e3730479aded9e56f6b1151bfeb5/openapi.json.
+    The repository's LICENSE at that revision permits redistribution under
+    MIT; corpus row 332 records the immutable reference. The unmodified source
+    and Fern-generated output are vendored, with Python comments stripped as above.
