@@ -431,8 +431,9 @@ def repository_path(path: str) -> bool:
 
 
 def passed(outcome: str) -> bool:
-    """Whether a screen outcome reads as a pass: exactly `passed`, or `passed: <reason>`."""
-    return outcome == "passed" or outcome.startswith("passed: ")
+    """Whether a screen outcome reads as a pass: exactly `passed`, or `passed: <reason>`
+    with a reason that says something."""
+    return outcome == "passed" or (outcome.startswith("passed: ") and bool(outcome[len("passed: "):].strip()))
 
 
 def timestamp(value: Any) -> datetime.datetime | None:

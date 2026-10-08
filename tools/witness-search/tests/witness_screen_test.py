@@ -82,7 +82,8 @@ class _Raw(BaseHTTPRequestHandler):
             f"/acme/shop/{COMMIT}/LICENSE": b"MIT License\n\nCopyright (c) acme\n",
             f"/acme/eula/{COMMIT}/openapi.yaml": PROPRIETARY,
             f"/acme/eula/{COMMIT}/LICENSE": b"MIT License\n",
-            # Declares an admissible grant itself; its repository's licence file is never read for it.
+            # Declares an admissible grant itself; its repository's licence file is fetched and
+            # recorded, but never decides it.
             f"/acme/declared/{COMMIT}/openapi.yaml": DECLARED,
             f"/acme/declared/{COMMIT}/LICENSE": b"All rights reserved.\n",
             f"/acme/garbled/{COMMIT}/openapi.yaml": b"openapi: [3.0.3\ninfo: {title\n",
@@ -502,6 +503,8 @@ class LegacyScreenCliTests(unittest.TestCase):
             (lambda r: r["document"].update(repository="../acme"),
              "the document it read (['repository'] of `document`)"),
             (lambda r: r["ref"].update(outcome="passed-invalid"), "a ref outcome reading `passed` or `failed: "),
+            (lambda r: r["ref"].update(outcome="passed: "), "a ref outcome reading `passed` or `failed: "),
+            (lambda r: r["ref"].update(outcome="passed:    "), "a ref outcome reading `passed` or `failed: "),
             (lambda r: r["fern"].update(outcome="failed: "), "the fern screen's reason: 'failed: ' says what happened"),
             (lambda r: r["ref"]["pins"].update(path="other.yaml"), "its repository, commit and path pins"),
             (lambda r: r["ref"]["pins"].update(expected_sha256="0" * 64), "the bytes its pin names"),
