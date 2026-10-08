@@ -23,8 +23,15 @@
 # One summary line on success; logs under .local/fern-overlay/<fixture>.log.
 set -euo pipefail
 
-. "$(cd "$(dirname "$0")/../../scripts" && pwd)/lib.sh"
-repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
+repo_root="$(cd "$(dirname "$0")/../.." && pwd)" || {
+  echo "fern-overlay-goldens: cannot resolve the checkout from $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
+# shellcheck source=../../scripts/lib.sh
+. "$repo_root/scripts/lib.sh" || {
+  echo "fern-overlay-goldens: cannot load $repo_root/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh, then re-run" >&2
+  exit 1
+}
 
 usage="usage: tools/fern-goldens/fern-overlay-goldens.sh [--jobs N] (--enum-type literals | --default-max-retries N) FIXTURE..."
 jobs=1

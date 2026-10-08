@@ -50,9 +50,15 @@
 #                       tests/fixtures/<fixture>/expected[-flat].
 set -euo pipefail
 
-. "$(cd "$(dirname "$0")/../../scripts" && pwd)/lib.sh"
-
-repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
+repo_root="$(cd "$(dirname "$0")/../.." && pwd)" || {
+  echo "generate-fern-fixture: cannot resolve the checkout from $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
+# shellcheck source=../../scripts/lib.sh
+. "$repo_root/scripts/lib.sh" || {
+  echo "generate-fern-fixture: cannot load $repo_root/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh, then re-run" >&2
+  exit 1
+}
 
 LAYOUT=packaged
 ENUM_TYPE=python-enums

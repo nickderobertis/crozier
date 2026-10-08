@@ -4,10 +4,24 @@
 # copies under tests/fixtures/corpus-sources/ (tools/corpus/corpus_sources.py).
 set -euo pipefail
 
-script_dir="$(cd "$(dirname "$0")" && pwd)"
-. "$script_dir/corpus-lib.sh"
-. "$script_dir/../../scripts/lib.sh"
-repo_root="$(cd "$script_dir/../.." && pwd)"
+script_dir="$(cd "$(dirname "$0")" && pwd)" || {
+  echo "fetch-corpus: cannot resolve the checkout from $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
+repo_root="$(cd "$(dirname "$0")/../.." && pwd)" || {
+  echo "fetch-corpus: cannot resolve the checkout from $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
+# shellcheck source=../../scripts/lib.sh
+. "$repo_root/scripts/lib.sh" || {
+  echo "fetch-corpus: cannot load $repo_root/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh, then re-run" >&2
+  exit 1
+}
+# shellcheck source=corpus-lib.sh
+. "$script_dir/corpus-lib.sh" || {
+  echo "fetch-corpus: cannot load $script_dir/corpus-lib.sh — restore it with git checkout -- tools/corpus/corpus-lib.sh, then re-run" >&2
+  exit 1
+}
 manifest="$repo_root/tests/fixtures/CORPUS.md"
 dry_run=0
 selector=""

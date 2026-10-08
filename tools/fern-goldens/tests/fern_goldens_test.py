@@ -120,6 +120,27 @@ class CommittedGoldenStateTests(unittest.TestCase):
 
 
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
+class SharedLibraryTests(unittest.TestCase):
+    """Each script loads `scripts/lib.sh` before anything else; a checkout missing it
+    stops the script naming the file and how to restore it, before it does any work."""
+
+    SCRIPTS = ("tools/fern-goldens/fixture-new.sh", "tools/fern-goldens/fern-overlay-goldens.sh",
+               "tools/fern-goldens/generate-fern-fixture.sh", "tools/corpus/fetch-corpus.sh")
+
+    def test_a_missing_shared_library_names_how_to_restore_it(self) -> None:
+        for script in self.SCRIPTS:
+            with self.subTest(script=script), tempfile.TemporaryDirectory() as scratch:
+                root = Path(scratch)
+                mirror(root, script, "tools/corpus/corpus-lib.sh")
+                (root / "tests" / "fixtures").mkdir(parents=True)
+                result = subprocess.run([str(root / script), "shapes"], capture_output=True, text=True, check=False)
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn(f"cannot load {root}/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh",
+                              result.stderr)
+                self.assertFalse((root / "tests" / "fixtures" / "shapes").exists())
+
+
+@unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
 class FixtureNewTests(unittest.TestCase):
     """`fixture-new.sh` over a synthetic root: the placeholder and the wiring steps it
     prints, and a fixture directory it cannot complete left absent, not half-made."""

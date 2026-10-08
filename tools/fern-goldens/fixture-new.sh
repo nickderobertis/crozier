@@ -17,7 +17,15 @@
 # mirror tests/fixtures/AGENTS.md.
 set -euo pipefail
 
-. "$(cd "$(dirname "$0")/../../scripts" && pwd)/lib.sh"
+repo_root="$(cd "$(dirname "$0")/../.." && pwd)" || {
+  echo "fixture-new: cannot resolve the checkout from $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
+# shellcheck source=../../scripts/lib.sh
+. "$repo_root/scripts/lib.sh" || {
+  echo "fixture-new: cannot load $repo_root/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh, then re-run" >&2
+  exit 1
+}
 
 name="${1:-}"
 [ -n "$name" ] || { echo "fixture-new: usage: tools/fern-goldens/fixture-new.sh <name>" >&2; exit 1; }
@@ -29,7 +37,6 @@ valid_fixture_name "$name" || {
   exit 1
 }
 
-repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
 dir="$repo_root/tests/fixtures/$name"
 [ -e "$dir" ] && { echo "fixture-new: $dir already exists — refusing to overwrite" >&2; exit 1; }
 
