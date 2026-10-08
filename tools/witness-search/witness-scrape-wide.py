@@ -9,10 +9,9 @@ the reason on stderr; 2 on a usage error.
 from __future__ import annotations
 
 import argparse
-import csv
 import concurrent.futures
+import csv
 import gzip
-import tempfile
 import hashlib
 import http.client
 import importlib.util
@@ -20,8 +19,9 @@ import json
 import re
 import subprocess
 import sys
-import urllib.request
+import tempfile
 import urllib.parse
+import urllib.request
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]

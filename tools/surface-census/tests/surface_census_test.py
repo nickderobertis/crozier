@@ -34,15 +34,16 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 import textwrap
+import time
 import tomllib
-import unittest
 import unicodedata
+import unittest
 from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
+from typing import ClassVar
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -1057,7 +1058,7 @@ def compact_ledger(path: Path) -> tuple[tuple[str, ...], dict[str, list[tuple[in
     return _compact_ledger(path, state)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _compact_ledger(
     path: Path, _state: tuple[tuple[str, int, int, int], ...]
 ) -> tuple[tuple[str, ...], dict[str, list[tuple[int, dict[str, str]]]]]:
@@ -1162,18 +1163,17 @@ def compact_record_failures(
                 or (indexed and indexed.get("record") != f"witness-search-{source}/records.tsv:{number}")
             ):
                 failures.append(f"{key}: `{source}` candidate `{candidate}` differs from candidates.tsv")
-        if expected["witness-found"]:
-            if (
-                not segment["witness"]
-                or not segment["revision"]
-                or not any(
-                    row["candidate"] == segment["witness"]
-                    and row["revision"] == segment["revision"]
-                    and row["disposition"] == "witness-found"
-                    for _, row in rows
-                )
-            ):
-                failures.append(f"{key}: `{source}` omits its witness candidate and revision")
+        if expected["witness-found"] and (
+            not segment["witness"]
+            or not segment["revision"]
+            or not any(
+                row["candidate"] == segment["witness"]
+                and row["revision"] == segment["revision"]
+                and row["disposition"] == "witness-found"
+                for _, row in rows
+            )
+        ):
+            failures.append(f"{key}: `{source}` omits its witness candidate and revision")
     if set(central_by_identity) != {identity for identity in encountered if identity[0] in indexed_sources}:
         failures.append(f"{key}: candidates.tsv and per-source records.tsv disagree on candidates")
     return failures
@@ -1466,7 +1466,7 @@ def evidence_records(directory: Path) -> list[dict[str, str]]:
         return []
     lines = _index_module.read_ledger(index).splitlines()
     header = lines[0].split("\t") if lines else []
-    return [dict(zip(header, line.split("\t"))) for line in lines[1:] if line]
+    return [dict(zip(header, line.split("\t"), strict=False)) for line in lines[1:] if line]
 
 
 class EvidenceDirectory:
@@ -1587,7 +1587,7 @@ def exhaustive_search_failures(
     exhausted = outcomes == {EXHAUSTED}
     sources = [line[1].strip("`* ") for line in lines]
 
-    for source, line in zip(sources, lines):
+    for source, line in zip(sources, lines, strict=False):
         for cell in (line[3], line[4]):
             for reason in re.findall(r"unanswered\b([^;|]*)", cell):
                 if RATE_LIMIT_REASON.search(reason):
@@ -1608,7 +1608,7 @@ def exhaustive_search_failures(
         if dropped:
             failures.append(f"{key}: an `exhausted` search drops declared source(s) {dropped}")
 
-    for source, line in zip(sources, lines):
+    for source, line in zip(sources, lines, strict=False):
         if source not in DECLARED_SOURCES:
             # An undeclared source answers for nothing and owes nothing.
             continue
@@ -1660,7 +1660,7 @@ def fixture_declined(key: str, evidence: EvidenceDirectory) -> set[str]:
     return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(marker)}
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def reaching_probes(directory: Path) -> frozenset[tuple[str, str, str]]:
     """`(key, candidate, build)` of every probe in `directory/probe.jsonl` that reaches an unreached site."""
     probes = directory / "probe.jsonl"
@@ -1673,7 +1673,7 @@ def reaches_on(directory: Path, key: str, candidate: str, build: str) -> bool:
     return (key, candidate, build) in reaching_probes(directory)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def screen_states(directory: Path, key: str) -> dict[str, str]:
     """The arm search's own reading of each candidate's latest screen in `directory` (measured or historical)."""
     return golden_reach_search().screen_states_in(directory, key)
@@ -1830,8 +1830,9 @@ def exhaustive_line_failures(
     if not exhausted:
         return failures
     if capability is None:
-        return failures + [
-            f"{key}: `{source}` has no row in the source-capability table, so what it owes cannot be read"
+        return [
+            *failures,
+            f"{key}: `{source}` has no row in the source-capability table, so what it owes cannot be read",
         ]
     text_query, enumerable, _cited = capability
     if "unanswered" in line[3] or "unanswered" in line[4]:
@@ -1882,7 +1883,7 @@ def config_gated_verdict(text: str, key: str) -> str | None:
     body = text.split(CONFIG_GATE_HEADING, 1)[1].split("\n### ", 1)[0].split("\n#### ", 1)[0]
     stated = {
         cells[3].strip("`")
-        for cells in map(lambda line: table_cells(line, 4), body.splitlines())
+        for cells in (table_cells(line, 4) for line in body.splitlines())
         if cells and cells[0].strip("`") == key
     }
     return stated.pop() if len(stated) == 1 else None
@@ -1977,7 +1978,7 @@ def config_gated_record_failures(
     # (3) Each declared source: its probe sets nothing, and its evidence shows no search.
     sources = sub.get("Each declared source")
     if sources is None:
-        return failures + [f"{key}: has no `#### Each declared source` table"]
+        return [*failures, f"{key}: has no `#### Each declared source` table"]
     lines = [
         cells for cells in (table_cells(line, 3) for line in sources.splitlines()) if cells and cells[0].startswith("`")
     ]
@@ -3067,7 +3068,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.oneOf",
     )
 
-    DECLARED = {
+    DECLARED: ClassVar = {
         "schema.anyOf>schema.$ref": {},
         "schema.anyOf>schema.allOf": {},
         "schema.items>schema.$ref": {
@@ -6416,7 +6417,7 @@ class NestedCompositionSelectorDiscriminationTests(unittest.TestCase):
     the composition, are asserted over documents of their own.
     """
 
-    PAIR = [{"type": "string"}, {"type": "integer"}]
+    PAIR: ClassVar = [{"type": "string"}, {"type": "integer"}]
     CASES: tuple[dict, ...] = (
         {"selector": "schema.oneOf>schema.oneOf", "head": "oneOf", "member": "oneOf", "other": "anyOf"},
         {"selector": "schema.oneOf>schema.anyOf", "head": "oneOf", "member": "anyOf", "other": "oneOf"},
@@ -7855,7 +7856,8 @@ class PyYamlOracleTests(unittest.TestCase):
             / "tools/surface-census/tests/data/census-fallback-sample/4b23d81eeb8a0d4d789baa362841c0c14f181b579ff3458c3ab002eb6aa1b553.yaml"
         )
         loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
-        theirs = yaml.load(path.read_text(encoding="utf-8"), Loader=loader)
+        # `loader` is CSafeLoader or SafeLoader, both safe; ruff cannot see through getattr.
+        theirs = yaml.load(path.read_text(encoding="utf-8"), Loader=loader)  # noqa: S506
         self.assertEqual(
             census.census_document(theirs, root_path=path),
             census.census_document(census.load_document(path), root_path=path),
@@ -7875,9 +7877,26 @@ class EscalationRestatementTests(unittest.TestCase):
     REGIONS = REPO / "docs" / "openapi-surface"
     DOC = REPO / "docs" / "openapi-surface-coverage.md"
     SCHEMAS = REGIONS / "schemas.md"
-    WORDS = {
+    WORDS: ClassVar = {
         word: n
-        for n, word in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen".split())
+        for n, word in enumerate(
+            [
+                "zero",
+                "one",
+                "two",
+                "three",
+                "four",
+                "five",
+                "six",
+                "seven",
+                "eight",
+                "nine",
+                "ten",
+                "eleven",
+                "twelve",
+                "thirteen",
+            ]
+        )
     }
     STAYS_OPEN = re.compile(r"what stays open is (\d+) candidate\(s\)")
 
@@ -8114,7 +8133,7 @@ class RankedBacklogTests(unittest.TestCase):
         )
         self.assertIsNotNone(totals, "the summary table no longer carries a total row")
         self.assertEqual(
-            [sum(column) for column in zip(*stated.values())],
+            [sum(column) for column in zip(*stated.values(), strict=False)],
             [int(totals.group(n)) for n in range(1, 9)],
             "the total row is not the six region rows' own column sums",
         )
@@ -8275,7 +8294,7 @@ class RankedBacklogTests(unittest.TestCase):
         arms = [(reach.key, spec) for _rank, reach in ledger_rows for spec, _hit, _total in reach.sites]
         refused = set(refused_arm_records(REPO)) & unreached
         self.assertEqual(set(), covered & refused, "an arm is both hand-written and Fern-refused")
-        searches = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
+        REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
         cover_verdicts: dict[tuple[str, str], set[str]] = {}
         gate = load_script("tools/surface-census/handwritten-fixtures.py")
         for directory in sorted(HANDWRITTEN.iterdir()):
@@ -8581,7 +8600,7 @@ class RankedBacklogTests(unittest.TestCase):
         exports = REPO / out_dir.group(1)
         names = re.findall(r'--output-path "\$out_dir/([a-z0-9-]+)\.json"', recipe)
         self.assertIn(golden.group(1), names, "the golden tier has no export in the recipe")
-        order = [golden.group(1)] + sorted(name for name in names if name != golden.group(1))
+        order = [golden.group(1), *sorted(name for name in names if name != golden.group(1))]
         missing = sorted(name for name in order if not (exports / f"{name}.json").is_file())
         if missing:
             self.skipTest(f"no {', '.join(missing)} export in {exports}; run `just fixtures-coverage`")
@@ -8674,7 +8693,8 @@ class RankedBacklogTests(unittest.TestCase):
             citing = [
                 (region, cells)
                 for key, (region, cells) in self.entries.items()
-                if f"`{selector}`" in cells[4] or cells[3].strip("`") == "handwritten" and tracked.get(key) == selector
+                if f"`{selector}`" in cells[4]
+                or (cells[3].strip("`") == "handwritten" and tracked.get(key) == selector)
             ]
             self.assertEqual(
                 1,
@@ -8700,7 +8720,7 @@ class RankedBacklogTests(unittest.TestCase):
     # The reading of each arm on its own is a `census.MEMBER_ONLY_PREDICATES`
     # member rather than a selector, so it carries no row and this rule does not
     # reach it — see the note where the five names would otherwise sit, below.
-    BRANCH_PREDICATES = {
+    BRANCH_PREDICATES: ClassVar = {
         "schema.type:primary=array": "schemas",
         "schema.properties:non-empty": "schemas",
         "schema.oneOf:sole-member": "schemas",
@@ -9265,7 +9285,7 @@ class RankedBacklogTests(unittest.TestCase):
     # still counted in the population that read `limitations` before the
     # amendment, under the verdict that demoted it.
     SETTLED_AFTER_DEMOTION = re.compile(r"\*\*settled after demotion:\*\* `([a-z]+)`")
-    PROOF_FORMS = {
+    PROOF_FORMS: ClassVar = {
         "absent-tree": ("discards",),
         "refusal": ("refuses", "crashes"),
         "differential": ("ignores", "coincidence"),
@@ -9599,7 +9619,7 @@ class RankedBacklogTests(unittest.TestCase):
             assert [(p["repository"], p["path"], p["commit"], p["blob"]) for p in pins] == [
                 (r["walk"], r["document"], r["revision"], r["blob"]) for r in rows
             ], "pins.tsv is not the shared publisher-tree pin"
-            for pin, row in zip(pins, rows):
+            for pin, row in zip(pins, rows, strict=False):
                 assert not pin.get("sha256") or pin["sha256"] == row["sha256"], row["document"]
         else:
             with (shared / "acquisition-manifest.tsv").open(encoding="utf-8", newline="") as handle:
@@ -11157,7 +11177,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
         source = "sourcegraph"
         path = self.root / f"witness-search-{source}/records.tsv"
         with path.open(encoding="utf-8", newline="") as stream:
-            row = list(csv.DictReader(stream, delimiter="\t"))[0]
+            row = next(iter(csv.DictReader(stream, delimiter="\t")))
         row["disposition"] = "witness-found"
         for field in ("licence_screen", "revision_screen", "fern_screen"):
             row[field] = "pass"
@@ -11209,7 +11229,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
         source = "sourcegraph"
         path = self.root / f"witness-search-{source}/records.tsv"
         with path.open(encoding="utf-8", newline="") as stream:
-            row = list(csv.DictReader(stream, delimiter="\t"))[0]
+            row = next(iter(csv.DictReader(stream, delimiter="\t")))
         row["revision"] = "c" * 40
         row["digest"] = "d" * 64
         with path.open("a", encoding="utf-8", newline="") as stream:
@@ -11252,7 +11272,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     KEY = "sample-shape"
     COMMIT = "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c"
     # source -> (queries, walk, candidates, screens, evidence rows beyond the table's)
-    LINES = {
+    LINES: ClassVar = {
         "apis.guru": (
             "—",
             f"`APIs-guru/openapi-directory` at `{COMMIT}` → 2 documents",
@@ -11299,7 +11319,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             [("document", "f.example/openapi.yaml", "census 0", "census.tsv")],
         ),
     }
-    CANDIDATE_CENSUS = {
+    CANDIDATE_CENSUS: ClassVar = {
         "apis/openapi/c.example/openapi.json": "census 3",
         "d-org/d-repo/openapi.yaml": "census 0",
     }
@@ -12123,9 +12143,9 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
     """
 
     REGIONS = REPO / "docs" / "openapi-surface"
-    CATEGORIES = {"golden", "limitations", "handwritten", "gap"}
+    CATEGORIES: ClassVar = {"golden", "limitations", "handwritten", "gap"}
     PAIR = re.compile(r"`([^`]+)` \((\d+)\)")
-    PREFIXES = {
+    PREFIXES: ClassVar = {
         "OpenAPI Object": "openapi",
         "Info Object": "info",
         "Contact Object": "info.contact",
@@ -12141,7 +12161,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
     }
     # Rows whose cells are not one field selector's per-source list; each is
     # reconciled by its own case below.
-    SPECIAL = {
+    SPECIAL: ClassVar = {
         "missing-operation-id",
         "non-identifier-operation-id",
         "untagged-operation",
@@ -12378,8 +12398,8 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             "info-summary": self.measured["info.summary"],
             "license-identifier": self.measured["info.license.identifier"],
             "reference-description": self.measured["reference.description"],
-            "paths-absent": {name: 1 for name in sources - paths},
-            "webhooks-without-paths": {name: 1 for name in webhooks - paths},
+            "paths-absent": dict.fromkeys(sources - paths, 1),
+            "webhooks-without-paths": dict.fromkeys(webhooks - paths, 1),
             "x-fern-or-crozier-ignore": dict(ignored),
         }
         for key, witnesses in expected.items():
@@ -12779,7 +12799,7 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
     so a predicate that read the wrong property passes neither half.
     """
 
-    CASES: dict[str, tuple[dict, dict]] = {
+    CASES: ClassVar[dict[str, tuple[dict, dict]]] = {
         "schema.enum:deburred-member": (_enum("SUBSTÂNCIA"), _enum("SUBSTANCIA")),
         "schema.enum:letter-run-member": (_enum("u.s. virgin islands"), _enum("us virgin islands")),
         "schema.enum:alphanumeric-join-member": (_enum("a b12"), _enum("ab b12")),
@@ -13083,7 +13103,7 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
     """The real CLI must distinguish each example, enum-member and schema-name
     spelling from a nearby decoy."""
 
-    ENUM_CASES = {
+    ENUM_CASES: ClassVar = {
         "empty-member": ([""], ["a"]),
         "empty-identifier-member": (["!"], ["a"]),
         "wildcard-member": (["*"], ["a"]),
@@ -13097,7 +13117,7 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
         "normalized-collision": (["foo-bar", "foo_bar"], ["foo", "bar"]),
         "numeric-member": ([7], ["7"]),
     }
-    EXAMPLE_VALUES = {
+    EXAMPLE_VALUES: ClassVar = {
         "object": {},
         "array": [],
         "string": "value",
@@ -13726,7 +13746,10 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
 
     def test_a_body_prefixed_body_counts_only_posted_once(self) -> None:
         selector = "operation.requestBody:body-prefixed-single-use"
-        ref = lambda name: {"$ref": f"#/components/schemas/{name}"}
+
+        def ref(name):
+            return {"$ref": f"#/components/schemas/{name}"}
+
         model = {"type": "object", "properties": {"seed": {"type": "string"}}}
         documents = {
             "positive": {
@@ -14098,7 +14121,10 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         selector = "operation.requestBody:blank-description-optional-object"
         optional = {"type": "object", "properties": {"q": {"type": "string"}}}
         required = {"type": "object", "required": ["q"], "properties": {"q": {"type": "string"}}}
-        blank = lambda schema: {"description": "", "content": {"application/json": {"schema": schema}}}
+
+        def blank(schema):
+            return {"description": "", "content": {"application/json": {"schema": schema}}}
+
         query = [{"name": "dry", "in": "query", "schema": {"type": "boolean"}}]
         documents = {
             "positive": {

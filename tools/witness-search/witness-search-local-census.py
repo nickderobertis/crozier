@@ -8,8 +8,8 @@ unreadable, each named on stderr; 2 on a usage error.
 from __future__ import annotations
 
 import argparse
-import csv
 import concurrent.futures
+import csv
 import datetime
 import hashlib
 import importlib.util
@@ -74,7 +74,7 @@ def census_one(
                         "event": "start",
                         "document": str(path),
                         "pid": os.getpid(),
-                        "taken_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                        "taken_utc": datetime.datetime.now(datetime.UTC).isoformat(),
                     }
                 )
                 + "\n"
@@ -103,13 +103,14 @@ def census_one(
                     # outside the built-in census reader's supported subset.
                     import yaml
                 except ImportError:
-                    raise original
+                    raise original from None
                 # CSafeLoader needs libyaml; a pure-Python PyYAML has only
                 # SafeLoader, which reads the same documents more slowly.
                 yaml_loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
                 loader = f"PyYAML {yaml.__version__} {yaml_loader.__name__}"
                 try:
-                    document = yaml.load(raw, Loader=yaml_loader)
+                    # `yaml_loader` is CSafeLoader or SafeLoader, both safe; ruff cannot see through getattr.
+                    document = yaml.load(raw, Loader=yaml_loader)  # noqa: S506
                 except yaml.YAMLError as error:
                     raise ValueError(f"PyYAML parse failure: {error}") from error
         version = str(document.get("openapi") or document.get("swagger") or "") if isinstance(document, dict) else ""
@@ -140,7 +141,7 @@ def census_one(
                             "event": "end",
                             "document": str(path),
                             "pid": os.getpid(),
-                            "taken_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                            "taken_utc": datetime.datetime.now(datetime.UTC).isoformat(),
                         }
                     )
                     + "\n"
@@ -239,7 +240,7 @@ def main() -> int:
                             {
                                 **identity,
                                 "classification": "openapi-3" if version.startswith("3.") else "other-version",
-                                "selectors": {key: count for key, count in selector_counts},
+                                "selectors": dict(selector_counts),
                             },
                             sort_keys=True,
                         )

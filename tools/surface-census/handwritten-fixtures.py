@@ -618,9 +618,10 @@ def handwritten_row_failures(key: str, cells: list[str], covers: list[tuple[str,
         )
     parsed = EVIDENCE_CELL.match(cells[4])
     if parsed is None:
-        return failures + [
+        return [
+            *failures,
             f"{key}: its evidence cell must read `handwritten: <fixture>[, <fixture>…]; search: "
-            "<verdict> ([record](<link>))`"
+            "<verdict> ([record](<link>))`",
         ]
     named = parsed.group("fixtures").split(", ")
     if named != sorted({name for name, _cover in covers}):

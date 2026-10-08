@@ -119,7 +119,7 @@ def profile(
             candidates.append((location, (directory, key, name, value.get("sha256", ""))))
     edges = sorted((location, screens[key]) for location, key in candidates if key in screens)
     superseded = []
-    for location, value, context, name, revision in nodes:
+    for location, value, context, name, _revision in nodes:
         if value.get("supersedes"):
             group = (
                 str(Path(location[0]).parent),

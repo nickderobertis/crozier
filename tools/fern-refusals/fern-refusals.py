@@ -54,10 +54,11 @@ import tempfile
 import threading
 import urllib.parse
 import urllib.request
+from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Iterable, NamedTuple, TypedDict
+from typing import Any, NamedTuple, TypedDict
 
 REPO = Path(__file__).resolve().parents[2]
 # The tests point this at a scratch copy to show `check` failing on drift.
@@ -198,7 +199,7 @@ def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
                 f"{rel(path)} line {number}: {len(row)} column(s) where the header has {len(header)}; "
                 "restore it from git"
             )
-    return [dict(zip(header, row)) for row in rows[1:]]
+    return [dict(zip(header, row, strict=False)) for row in rows[1:]]
 
 
 def tsv_text(header: tuple[str, ...], rows: Iterable[dict[str, str]]) -> str:
@@ -588,7 +589,7 @@ def upgraded(row: dict[str, str]) -> dict[str, str]:
     """A measurement in today's fields, each one present. One taken before
     generations were measured carries a single log, the check's or the
     generation's."""
-    row = dict({field: "" for field in MEASUREMENT_FIELDS}, **row)
+    row = dict(dict.fromkeys(MEASUREMENT_FIELDS, ""), **row)
     if "fern_stage" in row:
         stage, status, log = row.pop("fern_stage"), row.pop("fern_exit"), row.pop("fern_log")
         if stage == "check":

@@ -122,8 +122,17 @@ select = [
     "S102", "S301", "S307", "S506", "S602", "S604", "S605", "S608",
     "T10",
 ]
-# Line length is the formatter's: what it cannot wrap (a long string or URL) stays.
-ignore = ["E501"]
+ignore = [
+    # Line length is the formatter's: what it cannot wrap (a long string or URL) stays.
+    "E501",
+    # `isinstance(x, (A, B))` over `A | B`: ruff itself deprecated this rule, the
+    # union form being slower at runtime and no clearer.
+    "UP038",
+]
+# The en dash (page ranges) and multiplication sign (fixture × endpoint) are the
+# repository's prose typography, matched against its Markdown; neither is a
+# look-alike typed by mistake.
+allowed-confusables = ["–", "×"]
 
 [tool.ty.environment]
 # The same 3.11 floor the source keeps for the host's bare `python3`.

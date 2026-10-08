@@ -18,7 +18,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -189,7 +189,7 @@ def fetch(url: str, attempts: int, timeout: float) -> bytes:
 def fetch_status(url: str, timeout: float) -> tuple[int, bytes, str]:
     """Preserve a source refusal as a measured response, never as a zero."""
     request = urllib.request.Request(url, headers={"User-Agent": "crozier-gap-screen/1"})
-    taken = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    taken = datetime.now(UTC).isoformat(timespec="seconds")
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             return response.status, response.read(), taken
@@ -413,7 +413,7 @@ def redo_unread(args: argparse.Namespace) -> int:
                     "api_id": key[0],
                     "version": key[1],
                     "url": url,
-                    "taken_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "taken_utc": datetime.now(UTC).isoformat(timespec="seconds"),
                     "classification": "source-error",
                     "error": str(error),
                 }
@@ -485,9 +485,7 @@ def main(argv: list[str] | None = None) -> int:
                     failures.append(f"{futures[future][0]}/{futures[future][1]}: {error}")
         if failures:
             raise RuntimeError(f"{len(failures)} catalogue document(s) unanswered; first: {sorted(failures)[0]}")
-        snapshot = args.snapshot_utc or datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
-            "+00:00", "Z"
-        )
+        snapshot = args.snapshot_utc or datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
         digest = hashlib.sha256(index_bytes).hexdigest()
         rejected = rejected_api_guru_versions(REPO / "tests/fixtures/AGENTS.md")
         rows = []
@@ -525,6 +523,7 @@ def main(argv: list[str] | None = None) -> int:
                                     str(count),
                                     notes,
                                 ),
+                                strict=False,
                             )
                         )
                     )
@@ -549,6 +548,7 @@ def main(argv: list[str] | None = None) -> int:
                                 "",
                                 "no catalogue version declared this selector",
                             ),
+                            strict=False,
                         )
                     )
                 )

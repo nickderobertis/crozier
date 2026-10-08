@@ -16,7 +16,6 @@ its recording, one reported case per endpoint.
 """
 
 import pytest
-
 from conftest import FIXTURES, reference_methods
 
 
@@ -90,8 +89,7 @@ def test_partial_corpus_exercises_the_fern_5_20_parsing_error_classifier(recordi
     reasons = [obs["reason"] for obs in recording.values() if obs.get("skipped")]
     assert reasons, "Bunq's seeded Prism responses should exercise the skip classifier"
     assert all(
-        reason.startswith("mock response omitted schema-required field(s):") or reason.startswith("prism 5")
-        for reason in reasons
+        reason.startswith(("mock response omitted schema-required field(s):", "prism 5")) for reason in reasons
     ), reasons
 
 

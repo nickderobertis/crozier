@@ -27,7 +27,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
 
-from surface_census_test import residual_attributions  # noqa: E402 - the census tests' directory must be on sys.path first
+from surface_census_test import residual_attributions  # noqa: E402 - sys.path must name its directory first
 
 SCRIPT = REPO / "tools" / "surface-census" / "residual-attribution.py"
 BINARY = REPO / "target" / "debug" / ("crozier.exe" if os.name == "nt" else "crozier")

@@ -26,8 +26,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "fern-refusals" / "tests"))
 
-from fern_refusals_test import REGISTRY, REPO, rows, stub_fern, write_rows  # noqa: E402 - the shared helpers' directory must be on sys.path first
-
+from fern_refusals_test import (
+    REGISTRY,
+    REPO,
+    rows,
+    stub_fern,
+    write_rows,
+)
 
 MEASURE_LOADS = (
     "tools/fern-refusals/fern-refusals.py",
@@ -228,7 +233,7 @@ class _Served(BaseHTTPRequestHandler):
 
     server: _Host
 
-    def do_GET(self) -> None:  # noqa: N802 - the name http.server dispatches to
+    def do_GET(self) -> None:
         body = self.server.documents.get(self.path)
         self.send_response(200 if body is not None else 404)
         self.end_headers()
@@ -264,13 +269,13 @@ class FetchedAndMeasured(ScratchCheckout):
         )
         self.record(self.served_digest)
         self.calls = self.root / "fern-calls.jsonl"
-        self.fern = dict(
-            PATH=f"{stub_fern(self.root / 'bin')}{os.pathsep}{os.environ.get('PATH', '')}",
-            FERN_STUB_CALLS=str(self.calls),
-            no_proxy="127.0.0.1",
-            NO_PROXY="127.0.0.1",
-            FERN_STUB_GENERATE_FILES="4",
-        )
+        self.fern = {
+            "PATH": f"{stub_fern(self.root / 'bin')}{os.pathsep}{os.environ.get('PATH', '')}",
+            "FERN_STUB_CALLS": str(self.calls),
+            "no_proxy": "127.0.0.1",
+            "NO_PROXY": "127.0.0.1",
+            "FERN_STUB_GENERATE_FILES": "4",
+        }
 
     def record(self, digest: str) -> None:
         """The CORPUS.md row's committed location: the loopback locator and `digest`."""

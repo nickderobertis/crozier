@@ -21,10 +21,10 @@ Run: `just test-corpus-remote-ref-pins` (part of `just check`).
 
 from __future__ import annotations
 
+import datetime
+import email.utils
 import hashlib
 import http.server
-import email.utils
-import datetime
 import os
 import shutil
 import subprocess
@@ -97,7 +97,7 @@ class RecordingHandler(http.server.BaseHTTPRequestHandler):
 
     protocol_version = "HTTP/1.1"
 
-    def do_GET(self) -> None:  # noqa: N802 - http.server's spelling
+    def do_GET(self) -> None:
         self.server.requests.append(self.path)
         if self.server.throttles.get(self.path, 0):
             self.server.throttles[self.path] -= 1
@@ -519,7 +519,7 @@ class PinMechanismTests(unittest.TestCase):
         path = f"/example/api/{PINNED_SHA}/spec/openapi.yaml"
         self.server.throttles[path] = 1
         self.server.throttle_retry_after[path] = email.utils.format_datetime(
-            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=1),
+            datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=1),
             usegmt=True,
         )
         self.server.success_retry_after[path] = "1"

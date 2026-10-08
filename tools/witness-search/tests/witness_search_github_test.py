@@ -93,7 +93,7 @@ class StringMapSearchRecordTests(unittest.TestCase):
         self.assertEqual(2, len(queries))
         self.assertEqual(len(queries), len(summary))
         record = (root / "README.md").read_text(encoding="utf-8")
-        for measured, stated in zip(queries, summary):
+        for measured, stated in zip(queries, summary, strict=False):
             self.assertEqual(measured["key"], stated["key"])
             self.assertEqual(measured["query"], stated["query"])
             self.assertEqual(measured["outcome"], stated["outcome"])
@@ -147,7 +147,7 @@ class ReplacementArmSearchRecordTests(unittest.TestCase):
                     summary = list(csv.DictReader(handle, delimiter="\t"))
                 self.assertEqual(query_budget, len(queries))
                 self.assertEqual(len(queries), len(summary))
-                for measured, stated in zip(queries, summary):
+                for measured, stated in zip(queries, summary, strict=False):
                     self.assertEqual(measured["key"], stated["key"])
                     self.assertEqual(measured["query"], stated["query"])
                     self.assertIn("count:100", measured["query"])
@@ -166,7 +166,10 @@ class ReplacementArmSearchRecordTests(unittest.TestCase):
                 ]
                 with (root / "shape-screen.tsv").open(newline="", encoding="utf-8") as handle:
                     screens = list(csv.DictReader(handle, delimiter="\t"))
-                identity = lambda row: (row["key"], row["repository"], row["path"], row["commit"])
+
+                def identity(row):
+                    return (row["key"], row["repository"], row["path"], row["commit"])
+
                 acquired = {identity(row): row for row in acquisitions}
                 self.assertEqual(document_budget, len(acquired))
                 self.assertEqual(set(acquired), {identity(row) for row in screens})
@@ -195,7 +198,7 @@ class IntegerFormatSearchRecordTests(unittest.TestCase):
         self.assertEqual(2, len(queries))
         self.assertEqual(len(queries), len(summary))
         record = (root / "README.md").read_text(encoding="utf-8")
-        for measured, stated in zip(queries, summary):
+        for measured, stated in zip(queries, summary, strict=False):
             self.assertEqual(measured["key"], stated["key"])
             self.assertEqual(measured["query"], stated["query"])
             self.assertEqual(measured["outcome"], stated["outcome"])
@@ -1516,11 +1519,14 @@ class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
 
     def test_raw_refusals_observe_retry_budget_with_invalid_retry_after(self) -> None:
         self.server.state["raw_status"] = 429
-        with patch.object(SEARCH, "RAW_BACKOFF_BASE_S", 0.001), patch.object(SEARCH, "RAW_SPACING_S", 0):
-            with self.assertRaisesRegex(SEARCH.SearchStopped, "five times"):
-                self.search.raw_github_get(
-                    f"{self.url}/example/api/{'c' * 40}/openapi.yaml", "closed-object", "example/api/openapi.yaml"
-                )
+        with (
+            patch.object(SEARCH, "RAW_BACKOFF_BASE_S", 0.001),
+            patch.object(SEARCH, "RAW_SPACING_S", 0),
+            self.assertRaisesRegex(SEARCH.SearchStopped, "five times"),
+        ):
+            self.search.raw_github_get(
+                f"{self.url}/example/api/{'c' * 40}/openapi.yaml", "closed-object", "example/api/openapi.yaml"
+            )
         self.assertEqual(5, self.server.state["raw_hits"])
         waits = [
             json.loads(line) for line in (self.root / "raw-github-waits.jsonl").read_text(encoding="utf-8").splitlines()
@@ -2497,26 +2503,29 @@ class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
             "GITHUB_TOKEN": "offline-test-token",
             "CROZIER_TEST_CODE_SEARCH_SPACING_S": "0.01",
         }
-        run = lambda *extra: subprocess.run(
-            [
-                sys.executable,
-                str(script),
-                *SOURCE_COMMIT,
-                "--evidence",
-                str(evidence),
-                "--source",
-                "github-code-search",
-                "--stage",
-                "search",
-                "--key",
-                key,
-                *extra,
-            ],
-            env=env,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-        )
+
+        def run(*extra):
+            return subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    *SOURCE_COMMIT,
+                    "--evidence",
+                    str(evidence),
+                    "--source",
+                    "github-code-search",
+                    "--stage",
+                    "search",
+                    "--key",
+                    key,
+                    *extra,
+                ],
+                env=env,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+
         for flags, message in (
             (("--split-truncated-floor", "0"), "--split-truncated-floor must be a positive"),
             (("--split-budget", "-1"), "--split-budget must not be negative"),
@@ -2576,13 +2585,16 @@ class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
         (evidence / "keys.json").write_text(json.dumps(recorded), encoding="utf-8", newline="\n")
         (evidence / "queries.jsonl").write_text("", encoding="utf-8", newline="\n")
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}
-        run = lambda *extra: subprocess.run(
-            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence), *extra],
-            env=env,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-        )
+
+        def run(*extra):
+            return subprocess.run(
+                [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence), *extra],
+                env=env,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+
         kept = run("--source", "github-code-search", "--stage", "evaluate", "--key", "registered-since")
         self.assertEqual(0, kept.returncode, kept.stderr)
         self.assertEqual(recorded, json.loads((evidence / "keys.json").read_text(encoding="utf-8")))
@@ -3152,27 +3164,29 @@ components:
             "GITHUB_TOKEN": "offline-test-token",
             "CROZIER_TEST_CODE_SEARCH_SPACING_S": "0.01",
         }
-        run = lambda stage: subprocess.run(
-            [
-                sys.executable,
-                str(script),
-                *SOURCE_COMMIT,
-                "--evidence",
-                str(evidence),
-                "--cache",
-                str(self.root / "cli-string-map-cache"),
-                "--source",
-                "github-code-search",
-                "--stage",
-                stage,
-                "--key",
-                key,
-            ],
-            env=env,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-        )
+
+        def run(stage):
+            return subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    *SOURCE_COMMIT,
+                    "--evidence",
+                    str(evidence),
+                    "--cache",
+                    str(self.root / "cli-string-map-cache"),
+                    "--source",
+                    "github-code-search",
+                    "--stage",
+                    stage,
+                    "--key",
+                    key,
+                ],
+                env=env,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
 
         searched = run("search")
         self.assertEqual(0, searched.returncode, searched.stderr)
@@ -3728,16 +3742,19 @@ components:
             "reported": 1500,
             "windows": [{"query": low, "lower": 0, "upper": 99}, {"query": high, "lower": 100, "upper": None}],
         }
-        answered = lambda q: {
-            "source": "github-code-search",
-            "key": "shape",
-            "query": q,
-            "outcome": "answered",
-            "page": 1,
-            "result_count": 1,
-            "retrieved_total": 1,
-            "results": [],
-        }
+
+        def answered(q):
+            return {
+                "source": "github-code-search",
+                "key": "shape",
+                "query": q,
+                "outcome": "answered",
+                "page": 1,
+                "result_count": 1,
+                "retrieved_total": 1,
+                "results": [],
+            }
+
         refused = {
             "source": "github-code-search",
             "key": "shape",
@@ -3801,15 +3818,18 @@ components:
         )
         plan = SEARCH.query_plan(selector)["github-code-search"]
         base = {"source": "github-code-search", "key": "shape"}
-        answered = lambda q, n: {
-            **base,
-            "query": q,
-            "outcome": "answered",
-            "page": 1,
-            "result_count": n,
-            "retrieved_total": n - 1,
-            "results": [],
-        }
+
+        def answered(q, n):
+            return {
+                **base,
+                "query": q,
+                "outcome": "answered",
+                "page": 1,
+                "result_count": n,
+                "retrieved_total": n - 1,
+                "results": [],
+            }
+
         rows = [
             answered(plan[0], 10),
             {
@@ -3972,9 +3992,10 @@ components:
             json.dumps({"publishers": []}), encoding="utf-8", newline="\n"
         )
         code = root / "witness-search-github-code-search"
-        write = lambda name, rows: (code / name).write_text(
-            "".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n"
-        )
+
+        def write(name, rows):
+            return (code / name).write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+
         write(
             "rate-limit-calls.jsonl",
             [{"at": "2026-09-25T00:00:00+00:00", "bucket": "code_search", "status": 200}] * 2

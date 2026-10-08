@@ -20,8 +20,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "witness-search" / "tests"))
 
-import witness_search_redo_test as redo  # noqa: E402 - the shared fixtures' directory must be on sys.path first
-from witness_search_redo_test import (  # noqa: E402 - the shared fixtures' directory must be on sys.path first
+import witness_search_redo_test as redo
+from witness_search_redo_test import (
     CONTRACT,
     REPO,
     ROOT,
@@ -355,7 +355,7 @@ class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
         numbers = ranks if ranks is not None else list(range(1, len(candidates) + 1))
         rows = [
             f"{rank}\t{sha}\t{artifact}\t{json.dumps(keys)}\tfern.txt\tcomparison.txt\n"
-            for rank, (sha, artifact, keys) in zip(numbers, candidates)
+            for rank, (sha, artifact, keys) in zip(numbers, candidates, strict=False)
         ]
         (self.report / "ranking.tsv").write_text(self.rank_header + "".join(rows), encoding="utf-8")
 
@@ -459,7 +459,7 @@ class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
         self.assertNotEqual(0, refused.returncode)
         self.assertIn("retained candidate missing rank", refused.stderr)
         alias = "https://publisher.example/" + "1" * 40 + "/mirror-b/openapi.json"
-        self.write_ranks(candidates + [(candidates[1][0], alias, candidates[1][2])])
+        self.write_ranks([*candidates, (candidates[1][0], alias, candidates[1][2])])
         refused = self.validate()
         self.assertNotEqual(0, refused.returncode)
         self.assertIn("duplicate ranked digest", refused.stderr)
@@ -501,9 +501,12 @@ class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
             "--candidates",
             str(schemas.parent / "candidates.md"),
         ]
-        run = lambda extra: subprocess.run(
-            command + extra, cwd=REPO, capture_output=True, errors="backslashreplace", encoding="utf-8"
-        )
+
+        def run(extra):
+            return subprocess.run(
+                command + extra, cwd=REPO, capture_output=True, errors="backslashreplace", encoding="utf-8"
+            )
+
         self.assertEqual(0, run([]).returncode)
         supplement = ["--supplement-candidates", str(supplemental)]
         self.assertIn("expected 'witness-found'", run(supplement).stderr)
@@ -900,7 +903,10 @@ class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
 
         root = self.work / "consolidated"
         shutil.copytree(REPO / "docs/openapi-surface/witness-scrape-wide", root)
-        run = lambda: self.cli("validate", "--report", root, "--inventory", root / "inventory.json.gz")
+
+        def run():
+            return self.cli("validate", "--report", root, "--inventory", root / "inventory.json.gz")
+
         good = run()
         self.assertEqual(0, good.returncode, good.stderr)
         candidates = root / "candidates.md"
@@ -951,7 +957,10 @@ class WideWitnessTests(WideWitnessFixture, unittest.TestCase):
 
         root = self.work / "consolidated"
         shutil.copytree(REPO / "docs/openapi-surface/witness-scrape-wide", root)
-        run = lambda: self.cli("validate", "--report", root, "--inventory", root / "inventory.json.gz")
+
+        def run():
+            return self.cli("validate", "--report", root, "--inventory", root / "inventory.json.gz")
+
         fingerprints = root / "historical-sha256.tsv"
         original_fingerprints = fingerprints.read_text(encoding="utf-8")
         lines = original_fingerprints.splitlines()

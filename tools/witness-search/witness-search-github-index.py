@@ -120,7 +120,7 @@ def append_ledger(path: Path, line: str, limit: int | None = None) -> None:
     parts = ledger_parts(path)
     target = parts[-1]
     encoded = len(line.encode("utf-8"))
-    if target.is_file() and 0 < target.stat().st_size and target.stat().st_size + encoded > limit:
+    if target.is_file() and target.stat().st_size > 0 and target.stat().st_size + encoded > limit:
         target = path.with_name(f"{path.stem}.{len(parts):03d}{path.suffix}")
     with target.open("a", encoding="utf-8", newline="\n") as output:
         output.write(line)
@@ -258,11 +258,11 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
             failure = identity_failure(row)
             if failure:
                 raise ValueError(f"{path}:{number}: {failure}")
-        if path.name == "candidates.jsonl":
-            if not isinstance(row.get("disposition"), str) or (
-                "selector_count" in row and not isinstance(row["selector_count"], int)
-            ):
-                raise ValueError(f"{path}:{number}: invalid candidate disposition or selector_count")
+        if path.name == "candidates.jsonl" and (
+            not isinstance(row.get("disposition"), str)
+            or ("selector_count" in row and not isinstance(row["selector_count"], int))
+        ):
+            raise ValueError(f"{path}:{number}: invalid candidate disposition or selector_count")
         if (
             path.name.endswith("waits.jsonl")
             and "duration_s" in row
@@ -952,7 +952,7 @@ def search_index_failures(directory: Path) -> list[str]:
             return []
         lines = path.read_text(encoding="utf-8").splitlines()
         header = lines[0].split("\t") if lines else []
-        return [dict(zip(header, line.split("\t"))) for line in lines[1:]]
+        return [dict(zip(header, line.split("\t"), strict=False)) for line in lines[1:]]
 
     failures = []
     csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
@@ -1120,7 +1120,7 @@ def main() -> int:
         index_text = "".join(
             "\t".join(row[field] for field in SEARCH_INDEX_FIELDS) + "\n"
             for row in [
-                dict(zip(SEARCH_INDEX_FIELDS, SEARCH_INDEX_FIELDS)),
+                dict(zip(SEARCH_INDEX_FIELDS, SEARCH_INDEX_FIELDS, strict=False)),
                 *search_index_rows(args.evidence_root, source, rows),
             ]
         )

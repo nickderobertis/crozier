@@ -39,7 +39,7 @@ from typing import Any
 # The guard sits beside this module; callers in other projects load this file by
 # path, so its directory is not otherwise on sys.path.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from rate_limit_guard import (  # noqa: E402 - importable only once this directory is on sys.path
+from rate_limit_guard import (
     CALLS_FILE,
     REFUSAL_STATUSES,
     WAITS_FILE,
@@ -294,7 +294,8 @@ def query_plan(selector: str) -> dict[str, list[str]]:
 def publisher_set(root: Path = REPO) -> list[dict[str, Any]]:
     """Prior trees, registered publishers, and publisher-owned declarer repositories."""
     wide = root / "docs/openapi-surface/witness-scrape-wide/trees.json.gz"
-    trees = json.load(gzip.open(wide, "rt", encoding="utf-8"))["trees"]
+    with gzip.open(wide, "rt", encoding="utf-8") as stream:
+        trees = json.load(stream)["trees"]
     if not isinstance(trees, list):
         raise ValueError(f"{wide}: trees must be a list")
     selected = []
@@ -514,7 +515,7 @@ class Acquirer:
             if status not in INDEX.RAW_STATUSES:
                 raise ValueError(f"unknown acquisition status: {status}")
         record = {
-            "at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds"),
+            "at": datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds"),
             **record,
         }
         INDEX.append_ledger(self.evidence / filename, json.dumps(record, sort_keys=True) + "\n")
@@ -575,7 +576,7 @@ class Acquirer:
         duration = max(0.0, deadline - time.time())
         if duration:
             cause = "refusal-cooldown" if refusal_until >= spacing_until else "spacing"
-            started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            started = datetime.datetime.now(datetime.UTC).isoformat()
             time.sleep(duration)
             self.write(
                 INDEX_PACING_WAITS,
@@ -1400,7 +1401,7 @@ class Acquirer:
                 try:
                     stamp = email.utils.parsedate_to_datetime(retry)
                     retry_seconds = max(
-                        (stamp - datetime.datetime.now(datetime.timezone.utc)).total_seconds(),
+                        (stamp - datetime.datetime.now(datetime.UTC)).total_seconds(),
                         0,
                     )
                 except (TypeError, ValueError, OverflowError):
@@ -2114,9 +2115,10 @@ def jsonl(path: Path) -> list[dict[str, Any]]:
                 for item in paths
             ):
                 raise EvidenceError(f"{path}:{number}: invalid tree paths")
-        if path.name == "documents.jsonl":
-            if any(not isinstance(row.get(field), str) or not row[field] for field in ("repository", "path", "commit")):
-                raise EvidenceError(f"{path}:{number}: invalid document identity")
+        if path.name == "documents.jsonl" and any(
+            not isinstance(row.get(field), str) or not row[field] for field in ("repository", "path", "commit")
+        ):
+            raise EvidenceError(f"{path}:{number}: invalid document identity")
         if path.name == CALLS_FILE:
             stamp = row.get("at")
             if not isinstance(stamp, str):

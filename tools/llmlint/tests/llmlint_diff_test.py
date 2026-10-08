@@ -130,7 +130,7 @@ class LlmlintDiffTests(unittest.TestCase):
         # argument through intact (CI saw "caf\ufffd.md"), so the accented name
         # is asserted where the stub is the executable itself.
         names = ["a b.md"] if os.name == "nt" else ["a b.md", "café.md"]
-        self.commit({name: "a" * 400 for name in names})
+        self.commit(dict.fromkeys(names, "a" * 400))
         run = self.run_script("--budget", "500")
         self.assertEqual(0, run.returncode, run.stderr)
         base = ["--diff", "git", "--diff-base", "base"]

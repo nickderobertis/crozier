@@ -40,7 +40,7 @@ from corpus_sources_test import (  # noqa: E402 - the offline suite's directory 
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
-    def do_GET(self) -> None:  # noqa: N802 - http.server's spelling
+    def do_GET(self) -> None:
         self.server.requests.append(self.path)
         body = self.server.documents.get(self.path)
         if body is None:
@@ -342,7 +342,7 @@ class TheCheckStillDiscriminates(LoopbackRoot):
         cases = (
             (rows[0] + "\textra\n", "expected 4 tab-separated cells"),
             ("\n".join(reversed(rows)) + "\n", "records must sort"),
-            ("\n".join(sorted(rows + [rows[0]])) + "\n", "recorded twice"),
+            ("\n".join(sorted([*rows, rows[0]])) + "\n", "recorded twice"),
             (original.replace(self.origin + "/specs/plain.json", self.origin + "/other.json"), "records source"),
             (
                 "\t".join(["/abs", "/abs/openapi.json", *rows[0].split("\t")[2:]]) + "\n",

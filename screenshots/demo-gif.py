@@ -146,8 +146,8 @@ def prompt_line(shown: str, done: bool) -> list:
 def type_frames(frames: list, base: list, command: str) -> None:
     """Append frames that type `command` after the prompt, char-stepped."""
     for i in range(0, len(command) + 1, TYPE_STEP):
-        frames.append((base + [prompt_line(command[:i], False)], TYPE_MS))
-    frames.append((base + [prompt_line(command, True)], TYPE_MS))
+        frames.append(([*base, prompt_line(command[:i], False)], TYPE_MS))
+    frames.append(([*base, prompt_line(command, True)], TYPE_MS))
 
 
 def build_frames(binp: str, spec: str, work: str, model: list[str]) -> list:
@@ -159,15 +159,15 @@ def build_frames(binp: str, spec: str, work: str, model: list[str]) -> list:
     base: list = []
 
     type_frames(frames, base, gen_cmd)
-    base = base + [prompt_line(gen_cmd, True)]
-    base = base + [[(summary, FG)]]
+    base = [*base, prompt_line(gen_cmd, True)]
+    base = [*base, [(summary, FG)]]
     frames.append((base, BEAT_MS))
-    base = base + [[("", FG)]]
+    base = [*base, [("", FG)]]
 
     type_frames(frames, base, cat_cmd)
-    base = base + [prompt_line(cat_cmd, True)]
+    base = [*base, prompt_line(cat_cmd, True)]
     for line in model:
-        base = base + [colorize(line)]
+        base = [*base, colorize(line)]
         frames.append((base, LINE_MS))
 
     frames.append((base, HOLD_MS))

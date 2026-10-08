@@ -20,7 +20,6 @@ import unittest
 import unittest.mock
 from pathlib import Path
 
-
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
 os.environ["PYTHONUTF8"] = "1"

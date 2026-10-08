@@ -52,18 +52,21 @@ import argparse
 import difflib
 import json
 import re
-import unicodedata
 import sys
+import unicodedata
 from collections import Counter, defaultdict
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Iterable, Iterator
+from typing import Any
 from urllib.parse import unquote
 
 # The corpus project owns the remote-ref pins; its directory is not on sys.path
 # for a script run from here, nor for the tests that load this one by path.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "corpus"))
-import corpus_remote_ref_pins as corpus_pins  # noqa: E402 - importable only once tools/corpus is on sys.path
+import itertools
+
+import corpus_remote_ref_pins as corpus_pins
 
 # The corpus is half JSON and half YAML, and this script has to run inside
 # `just check` on the Linux/macOS/Windows matrix with nothing but the standard
@@ -2878,6 +2881,7 @@ _ENUM_DEBURR_EXCEPTIONS = dict(
             "T",
             "t",
         ),
+        strict=False,
     )
 )
 
@@ -2953,7 +2957,7 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
     uuid_parts = folded.split("-")
     if len(uuid_parts) == 5 and all(
         len(part) == size and all(char in "0123456789abcdefABCDEF" for char in part)
-        for part, size in zip(uuid_parts, (8, 4, 4, 4, 12))
+        for part, size in zip(uuid_parts, (8, 4, 4, 4, 12), strict=False)
     ):
         words = split_words(folded)
         if words:
@@ -3043,7 +3047,7 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
         )
         single_letter = len(previous) == 1 and previous.isascii() and previous.isalpha()
         letter_digits = len(current) > 1 and current[0].isalpha() and current[1:].isascii() and current[1:].isdigit()
-        if short_letters and numeric_letter or single_letter and letter_digits:
+        if (short_letters and numeric_letter) or (single_letter and letter_digits):
             merged[index - 1] += merged.pop(index)
             trace.add("alphanumeric-join")
         else:
@@ -3063,7 +3067,7 @@ def _collapse_enum_digit_boundaries(name: str) -> str:
         char
         for index, char in enumerate(chars)
         if char != "_"
-        or not (index > 0 and _is_digit(chars[index - 1]) or index + 1 < len(chars) and _is_digit(chars[index + 1]))
+        or not ((index > 0 and _is_digit(chars[index - 1])) or (index + 1 < len(chars) and _is_digit(chars[index + 1])))
     )
 
 
@@ -3192,7 +3196,7 @@ def _fern_camel(name: str) -> bool:
 def _fern_location_tokens(name: str) -> list[str]:
     if _fern_camel(name):
         starts = [0, *(index for index, char in enumerate(name) if char in _ASCII_UPPER), len(name)]
-        words = [name[a:b] for a, b in zip(starts, starts[1:])]
+        words = [name[a:b] for a, b in itertools.pairwise(starts)]
     else:
         words = re.split(r"[^A-Za-z0-9]", name)
     return [_ascii_lower(word) for word in words if word]
@@ -3237,7 +3241,7 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
             len(data) > head
             and split is not None
             and _ascii_lower(split[0]) == _ascii_lower(tag)
-            and any(65 <= a <= 90 and 65 <= b <= 90 for a, b in zip(data[head:], data[head + 1 :]))
+            and any(65 <= a <= 90 and 65 <= b <= 90 for a, b in zip(data[head:], data[head + 1 :], strict=False))
         )
     if not tag_snake or acronym or (suffix is not None and _ascii_lower(suffix) == "info"):
         method = snake
@@ -3795,7 +3799,7 @@ def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
         parts = value.split("-")
         if len(parts) == 5 and all(
             len(part) == size and all(char in "0123456789abcdefABCDEF" for char in part)
-            for part, size in zip(parts, (8, 4, 4, 4, 12))
+            for part, size in zip(parts, (8, 4, 4, 4, 12), strict=False)
         ):
             found.add("schema.enum:uuid-member")
             first = split_words(value)[0]
@@ -4084,11 +4088,8 @@ def _candidate_tag_values(
             if only_references and singleton_enum and candidate not in required_names(variant):
                 supported = True
             elif candidate == "type":
-                supported = (
-                    candidate in required_names(variant)
-                    and isinstance(schema_example(field), str)
-                    or written(field, "const")
-                    and isinstance(field["const"], str)
+                supported = (candidate in required_names(variant) and isinstance(schema_example(field), str)) or (
+                    written(field, "const") and isinstance(field["const"], str)
                 )
             elif candidate in ("role", "status"):
                 supported = candidate in required_names(variant)
@@ -4467,8 +4468,7 @@ def is_json_like_media_type(media_type: str) -> bool:
     base = media_type.split(";", 1)[0].strip()
     return (
         base == "application/json"
-        or base.endswith("+json")
-        or base.endswith("/ndjson")
+        or base.endswith(("+json", "/ndjson"))
         or (base.startswith("application/") and "json" in base[len("application/") :])
     )
 
@@ -4711,7 +4711,7 @@ def parameter_schema_is_scalar(schema: Any) -> bool:
         }
 
     return isinstance(schema, dict) and (
-        scalar(schema) or primary_type(schema.get("type")) == "array" and scalar(schema.get("items"))
+        scalar(schema) or (primary_type(schema.get("type")) == "array" and scalar(schema.get("items")))
     )
 
 
@@ -4911,7 +4911,7 @@ class Census:
             and name not in self.api_key_headers
         ):
             carried = self.header_operations.get(name, 0)
-            if 0 < self.operation_total and carried * 4 >= self.operation_total * 3 and carried < self.operation_total:
+            if self.operation_total > 0 and carried * 4 >= self.operation_total * 3 and carried < self.operation_total:
                 found.append("parameter.schema:subset-header-string-default")
         return found
 
@@ -4977,7 +4977,7 @@ class Census:
         _, base_required = self.object_members(bases[0])
         return parent and bool(own_required & set(example)) and bool(base_required & set(example))
 
-    def example_holds(self, schema: Any, example: Any, test: "MemberTest", depth: int) -> bool:
+    def example_holds(self, schema: Any, example: Any, test: MemberTest, depth: int) -> bool:
         """Whether `test` holds of some member of an example object, read against its schema."""
         if not isinstance(example, dict) or depth > 8:
             return False
@@ -5030,7 +5030,9 @@ class Census:
                 or any(isinstance(media, str) and "/" in media and all(media.split("/", 1)) for media in content)
             )
 
-        content = lambda value: isinstance(value, dict) and bool(value.get("content"))
+        def content(value):
+            return isinstance(value, dict) and bool(value.get("content"))
+
         key = (
             "200"
             if "200" in resolved and content(resolved["200"]) and dispatchable(resolved["200"])
@@ -5253,9 +5255,12 @@ class Census:
         if kind_name == "paths":
             found += self.normalized_collisions(node)
             found += self.path_key_templates(node)
-        if kind_name == "info" and isinstance(node.get("title"), str):
-            if any(ord(char) > 127 for char in node["title"]):
-                found.append("info.title:non-ascii")
+        if (
+            kind_name == "info"
+            and isinstance(node.get("title"), str)
+            and any(ord(char) > 127 for char in node["title"])
+        ):
+            found.append("info.title:non-ascii")
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))
@@ -5268,9 +5273,12 @@ class Census:
             example_kind = selected_example_kind(node)
             if example_kind is not None:
                 found.append(f"schema.example={example_kind}")
-            if example_kind == "string" and node.get("format") == "date-time":
-                if not fern_reads_date_time(schema_example(node)):
-                    found.append("schema.example:unread-date-time")
+            if (
+                example_kind == "string"
+                and node.get("format") == "date-time"
+                and not fern_reads_date_time(schema_example(node))
+            ):
+                found.append("schema.example:unread-date-time")
         if is_reference_node(node, kind_name):
             reference = OBJECTS["reference"]
             found += [f"reference.{name}" for name in node if isinstance(name, str) and name in reference.fields]
@@ -5293,9 +5301,8 @@ class Census:
                 # must not count here.
                 if address and not address.startswith(("/", "http://", "https://")) and ":" not in address:
                     found.append("pathItem.$ref:relative-file")
-            if kind_name == "operation" and name == "tags":
-                if isinstance(value, list) and len(value) > 1:
-                    found.append("operation.tags:multiple")
+            if kind_name == "operation" and name == "tags" and isinstance(value, list) and len(value) > 1:
+                found.append("operation.tags:multiple")
             if selector in VALUED:
                 if selector == "schema.example":
                     continue

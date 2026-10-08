@@ -97,15 +97,14 @@ class TheGateStillDiscriminates(ScratchTree):
     """Plant a second enumeration in the tree; require a named failure."""
 
     def plant(self, body: str) -> str:
-        handle = tempfile.NamedTemporaryFile(
+        with tempfile.NamedTemporaryFile(
             dir=self.root / "docs",
             prefix="corpus-licensing-drift-probe-",
             suffix=".md",
             mode="w",
             encoding="utf-8",
             delete=False,
-        )
-        with handle:
+        ) as handle:
             handle.write(body)
         planted = Path(handle.name)
         # `git ls-files` only reports tracked paths, so the probe has to be

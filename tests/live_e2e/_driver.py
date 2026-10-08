@@ -226,7 +226,9 @@ def _validate(client, sub_client, method, result):
 
 def _observe(sub_client, method, source, base_url):
     namespace = {}
-    exec(compile(_repoint(source, base_url), f"<snippet {method}>", "exec"), namespace)
+    # Running the SDK's own documented snippet (from the reference.md crozier
+    # generated, repointed at the local Prism mock) IS what this suite proves.
+    exec(compile(_repoint(source, base_url), f"<snippet {method}>", "exec"), namespace)  # noqa: S102
     return _validate(namespace["client"], sub_client, method, namespace.get("__result__"))
 
 
@@ -241,7 +243,8 @@ def _observe_placeholder(sub_client, method, preamble, base_url):
             f"the reference has no worked example to take a client from"
         )
     namespace = {}
-    exec(compile(_repoint(preamble, base_url), f"<preamble {method}>", "exec"), namespace)
+    # The documented preamble, run for the same reason as `_observe`'s snippet.
+    exec(compile(_repoint(preamble, base_url), f"<preamble {method}>", "exec"), namespace)  # noqa: S102
     client = namespace["client"]
     args, kwargs = _synthesized_arguments(client, sub_client, method)
     result = getattr(getattr(client, sub_client), method)(*args, **kwargs)
@@ -269,7 +272,7 @@ def record(sdk_src, reference_path, base_url):
                 else _observe_placeholder(sub_client, method, preamble, base_url)
             )
             recording[endpoint] = {"ok": True, **observation}
-        except Exception as error:  # noqa: BLE001 — recorded, then asserted on by the suite
+        except Exception as error:
             reason = _mock_side_reason(error)
             if reason is not None:
                 # The endpoint WAS exercised (so coverage still counts it), but the

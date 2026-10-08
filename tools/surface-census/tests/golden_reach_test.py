@@ -37,20 +37,21 @@ import gzip
 import hashlib
 import importlib.util
 import io
-import os
-import threading
-import time
-import urllib.parse
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from unittest import mock
 import json
+import os
 import re
 import subprocess
 import sys
 import tempfile
 import textwrap
+import threading
+import time
 import unittest
+import urllib.parse
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import ClassVar
+from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -987,7 +988,7 @@ class FernRescreenVerdictTests(unittest.TestCase):
 class ArmSearchOutcomeTests(unittest.TestCase):
     """A search reads `exhausted` only when nothing is outstanding on a build `src/` still matches."""
 
-    SETTLED = {
+    SETTLED: ClassVar = {
         "declarers": 3,
         "unreadable": 0,
         "probed": 3,
@@ -1263,7 +1264,7 @@ class ArmSearchStageTests(_StageScratch):
         for stage in ("single", "many"):
             with self.subTest(stage=stage):
 
-                def publish(rows: list[dict[str, object]]) -> None:
+                def publish(rows: list[dict[str, object]], stage: str = stage) -> None:
                     if stage == "single":
                         golden_reach_search.file_probes("github-code-search", self.KEY, rows)
                     else:
@@ -1987,7 +1988,7 @@ class ArmSearchStageTests(_StageScratch):
             self.measured(),
         ]
         with self.assertRaises(SystemExit) as refused:
-            golden_reach_search.main(screen + ["--declined", golden_reach_search.FIXTURE_DECLINE])
+            golden_reach_search.main([*screen, "--declined", golden_reach_search.FIXTURE_DECLINE])
         self.assertIn("name the repository, the path at its pinned commit", str(refused.exception))
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(0, golden_reach_search.main(screen))
@@ -1996,7 +1997,7 @@ class ArmSearchStageTests(_StageScratch):
         self.assertIn("| `jentic` | `search-incomplete` |", record, "a reaching candidate passing every screen")
         declined = f"{golden_reach_search.FIXTURE_DECLINE} — `acme/tool` at `{'e' * 40}`, `test/a.yaml`"
         with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(0, golden_reach_search.main(screen + ["--declined", declined]))
+            self.assertEqual(0, golden_reach_search.main([*screen, "--declined", declined]))
         self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
         record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
         self.assertIn("| `jentic` | `exhausted` |", record)
@@ -2265,20 +2266,20 @@ class ArmSearchStageTests(_StageScratch):
         screen = ["screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml"]
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.main(
-                screen + ["--measured", self.measured(), "--registered", "corpus row 1", "--declined", "a duplicate"]
+                [*screen, "--measured", self.measured(), "--registered", "corpus row 1", "--declined", "a duplicate"]
             )
         self.assertIn("registered or declined, not both", str(refused.exception))
         # A registration claims every screen passed, so a measured refusal cannot carry one.
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.main(
-                screen + ["--measured", self.measured(licence=None), "--registered", "corpus row 1 (`a`)"]
+                [*screen, "--measured", self.measured(licence=None), "--registered", "corpus row 1 (`a`)"]
             )
         self.assertIn("--registered claims a.yaml passed every screen", str(refused.exception))
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(
                 0,
                 golden_reach_search.main(
-                    screen + ["--measured", self.measured(), "--registered", "corpus row 1 (`a`)"]
+                    [*screen, "--measured", self.measured(), "--registered", "corpus row 1 (`a`)"]
                 ),
             )
         self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
@@ -2711,7 +2712,7 @@ class _Loopback(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self) -> None:
-        self.server.requests = getattr(self.server, "requests", []) + [self.path]
+        self.server.requests = [*getattr(self.server, "requests", []), self.path]
         base = f"http://127.0.0.1:{self.server.server_port}"
         declaring = textwrap.dedent(_StageScratch.DECLARING).encode("utf-8")
         if self.path == "/rate_limit":
@@ -2725,14 +2726,14 @@ class _Loopback(BaseHTTPRequestHandler):
                     200,
                     {
                         "total_count": 2,
-                        "items": getattr(self.server, "extra_items", [])
-                        + [
+                        "items": [
+                            *getattr(self.server, "extra_items", []),
                             {
                                 "repository": {"full_name": "example/api"},
                                 "path": "openapi.yaml",
                                 "sha": golden_reach_search.git_blob(declaring),
                                 "url": f"{base}/repos/example/api/contents/openapi.yaml?ref={self.COMMIT}",
-                            }
+                            },
                         ],
                     },
                 )
@@ -2852,7 +2853,7 @@ class ArmSearchNetworkStageTests(_StageScratch):
             "result": "unreadable: parser refused the document",
             "file": "candidates.jsonl",
         }
-        golden_reach_search.replace_records("github-code-search", rows + [unreadable])
+        golden_reach_search.replace_records("github-code-search", [*rows, unreadable])
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
             self.assertEqual(0, golden_reach_search.main(["outstanding"]))

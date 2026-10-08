@@ -4,8 +4,7 @@ import json
 import subprocess
 
 import pytest
-
-from conftest import FIXTURES, Fixture, _FIXTURES, _spec_path
+from conftest import _FIXTURES, FIXTURES, Fixture, _spec_path
 
 
 @pytest.mark.parametrize("fixture", FIXTURES, ids=lambda fixture: fixture.name)

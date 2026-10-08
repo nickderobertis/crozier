@@ -8,16 +8,16 @@ import gzip
 import importlib.util
 import json
 import re
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import subprocess
 import sys
 import tempfile
 import threading
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from region_flip import flipped_regions  # noqa: E402 - the tests directory must enter sys.path first
+from region_flip import flipped_regions
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools/surface-census/apis-guru-gap-screen.py"

@@ -23,6 +23,7 @@ import unittest
 import unittest.mock
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import ClassVar
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -336,7 +337,7 @@ class LegacyScreenCliTests(unittest.TestCase):
                     "--evidence-root",
                     str(self.root),
                 ]
-                for flag, value in zip(args[::2], args[1::2]):
+                for flag, value in zip(args[::2], args[1::2], strict=False):
                     if flag in command:
                         command[command.index(flag) + 1] = value
                     else:
@@ -937,7 +938,7 @@ class WindowsNewlineTests(unittest.TestCase):
 class HistoricalRowTests(unittest.TestCase):
     """What the legacy index reads a screen row filed before the stage as."""
 
-    ROW = {
+    ROW: ClassVar = {
         "source": "sourcegraph",
         "repository": "acme/shop",
         "path": "openapi.yaml",

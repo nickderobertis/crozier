@@ -15,6 +15,7 @@ from __future__ import annotations
 import dataclasses
 import email.utils
 import http.server
+import itertools
 import json
 import os
 import shutil
@@ -300,7 +301,7 @@ class GitHubCapTests(GuardTestCase):
         self.assertFalse(refusing["admitted"])
         self.assertEqual(refusing["reading"]["used"], 70)
         reads = self.fixture.requests("/rate_limit")
-        second_read = [r for r in reads if r.reading and r.reading["code_search"]["used"] == 70][0]
+        second_read = next(r for r in reads if r.reading and r.reading["code_search"]["used"] == 70)
         self.assertGreater(second_read.at, calls[0].at)
 
     def test_first_reading_of_an_over_cap_bucket_is_free_and_repeated_until_reset(self) -> None:
@@ -358,20 +359,21 @@ class GitHubCapTests(GuardTestCase):
         # The guard is not wedged: a covered bucket still admits.
         self.call(guard, "core", "/repos/o/r/contents")
 
-        with urllib.request.urlopen(
-            urllib.request.Request(f"{self.url}/graphql", data=b"", method="POST"), timeout=10
-        ) as response:
-            with self.assertRaises(UnsupportedBucket):
-                guard.record(response)
+        with (
+            urllib.request.urlopen(
+                urllib.request.Request(f"{self.url}/graphql", data=b"", method="POST"), timeout=10
+            ) as response,
+            self.assertRaises(UnsupportedBucket),
+        ):
+            guard.record(response)
         self.assertEqual(guard.waits(), [])
 
     def test_rejecting_a_graphql_response_releases_the_acquired_bucket(self) -> None:
         guard = self.guard()
         guard.acquire("core")
         request = urllib.request.Request(f"{self.url}/graphql", data=b"", method="POST")
-        with urllib.request.urlopen(request, timeout=10) as response:
-            with self.assertRaises(UnsupportedBucket):
-                guard.record(response)
+        with urllib.request.urlopen(request, timeout=10) as response, self.assertRaises(UnsupportedBucket):
+            guard.record(response)
         # The reservation closed with the refusal: this thread acquires again,
         # and another thread is not left blocked on the bucket's lock.
         self.assertEqual(self.call(guard, "core", "/repos/o/r/contents")[1], 200)
@@ -427,9 +429,11 @@ class GitHubCapTests(GuardTestCase):
 
     def test_record_without_acquire_and_double_acquire_are_loud(self) -> None:
         guard = self.guard()
-        with urllib.request.urlopen(f"{self.url}/repos/o/r/contents", timeout=10) as response:
-            with self.assertRaises(RuntimeError):
-                guard.record(response)
+        with (
+            urllib.request.urlopen(f"{self.url}/repos/o/r/contents", timeout=10) as response,
+            self.assertRaises(RuntimeError),
+        ):
+            guard.record(response)
         guard.acquire("core")
         with self.assertRaises(RuntimeError):
             guard.acquire("search")
@@ -565,7 +569,7 @@ class PacedLaneTests(GuardTestCase):
                 self.assertEqual(len(self.fixture.requests(path)), served)
 
                 at = self.admissions[:9]
-                gaps = [later - earlier for earlier, later in zip(at, at[1:])]
+                gaps = [later - earlier for earlier, later in itertools.pairwise(at)]
                 self.assertTrue(all(gap >= 0.4 for gap in gaps), gaps)  # declared spacing
                 self.assertGreaterEqual(gaps[2], 1.0)  # Retry-After waited out, not retried into
                 self.assertGreaterEqual(gaps[3], 0.6)  # second refusal: base doubled
@@ -621,7 +625,7 @@ class PacedLaneTests(GuardTestCase):
         self.assertEqual(len(self.fixture.requests("/postman/_api/ws/proxy")), 3)
         at = sorted(self.admissions)
         self.assertEqual(len(at), 3)
-        self.assertTrue(all(b - a >= 0.4 for a, b in zip(at, at[1:])), at)
+        self.assertTrue(all(b - a >= 0.4 for a, b in itertools.pairwise(at)), at)
 
 
 class EvidenceTests(GuardTestCase):

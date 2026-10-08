@@ -31,8 +31,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[2]
 CROZIER = REPO / "target" / "debug" / ("crozier.exe" if sys.platform == "win32" else "crozier")

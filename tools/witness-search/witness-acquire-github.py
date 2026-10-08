@@ -19,8 +19,9 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import ClassVar
 
 
 def load_guard():
@@ -80,7 +81,7 @@ def main() -> int:
         if token:
             headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(args.url, headers=headers)
-    record = {"url": args.url, "taken_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    record = {"url": args.url, "taken_utc": datetime.now(UTC).isoformat(timespec="seconds")}
     temporary = args.output.with_suffix(args.output.suffix + ".part")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()
@@ -114,7 +115,7 @@ def main() -> int:
             # source as empty or its partial bytes as acquired.
             class TransportFailure:
                 status = 503
-                headers: dict[str, str] = {}
+                headers: ClassVar[dict[str, str]] = {}
                 url = args.url
 
             guard.record(TransportFailure())

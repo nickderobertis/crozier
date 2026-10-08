@@ -50,7 +50,7 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import corpus_remote_ref_pins as pins  # noqa: E402 - the sibling scripts directory must be on sys.path first
+import corpus_remote_ref_pins as pins
 
 ROOT_RELATIVE = PurePosixPath("tests/fixtures/corpus-sources")
 MANIFEST_RELATIVE = PurePosixPath("tests/fixtures/corpus-sources.tsv")

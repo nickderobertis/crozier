@@ -124,8 +124,9 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 CAP = 0.70
 """The share of any GitHub REST bucket this repository's calls may reach."""
@@ -185,7 +186,7 @@ class SecondaryLimit(RuntimeError):
 
 
 def _now_iso() -> str:
-    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds")
+    return datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds")
 
 
 def _token() -> str | None:
@@ -635,7 +636,7 @@ def status() -> int:
             print("quota-status: check CROZIER_GITHUB_API_URL points at the GitHub REST API", file=sys.stderr)
             return 1
         share = used / limit if limit else 0.0
-        when = datetime.datetime.fromtimestamp(reset, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        when = datetime.datetime.fromtimestamp(reset, datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         guarded = "guarded" if bucket in GITHUB_BUCKETS else "not called here"
         over = "  OVER CAP" if share > CAP else ""
         lines.append(f"  {bucket:<28} limit {limit:>6}  used {used:>6}  {share:>6.1%}  reset {when}  {guarded}{over}")

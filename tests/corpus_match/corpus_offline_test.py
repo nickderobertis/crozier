@@ -7,12 +7,13 @@ import ctypes
 import errno
 import os
 import platform
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
 from collections.abc import Mapping
+from pathlib import Path
+from typing import ClassVar
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -22,10 +23,15 @@ def deny_network() -> None:
     socket_syscall = {"x86_64": 41, "aarch64": 198}[platform.machine()]
 
     class Filter(ctypes.Structure):
-        _fields_ = [("code", ctypes.c_ushort), ("jt", ctypes.c_ubyte), ("jf", ctypes.c_ubyte), ("k", ctypes.c_uint)]
+        _fields_: ClassVar = [
+            ("code", ctypes.c_ushort),
+            ("jt", ctypes.c_ubyte),
+            ("jf", ctypes.c_ubyte),
+            ("k", ctypes.c_uint),
+        ]
 
     class Program(ctypes.Structure):
-        _fields_ = [("len", ctypes.c_ushort), ("filter", ctypes.POINTER(Filter))]
+        _fields_: ClassVar = [("len", ctypes.c_ushort), ("filter", ctypes.POINTER(Filter))]
 
     instructions = (Filter * 4)(
         Filter(0x20, 0, 0, 0),  # load syscall number
@@ -106,7 +112,7 @@ class OfflineCorpusRecipes(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=REPO / ".local") as directory:
             hidden = [Path(directory) / f"cache-{index}" for index in range(len(caches))]
             held = [cache.exists() for cache in caches]
-            for cache, aside, present in zip(caches, hidden, held):
+            for cache, aside, present in zip(caches, hidden, held, strict=False):
                 if present:
                     cache.rename(aside)
             try:
@@ -164,7 +170,7 @@ class OfflineCorpusRecipes(unittest.TestCase):
             finally:
                 # A failing recipe can create a new cache. Move that test output
                 # aside before restoring the caller's original directories.
-                for index, (cache, aside, present) in enumerate(zip(caches, hidden, held)):
+                for index, (cache, aside, present) in enumerate(zip(caches, hidden, held, strict=False)):
                     if cache.exists():
                         cache.rename(Path(directory) / f"unexpected-cache-{index}")
                     if present:

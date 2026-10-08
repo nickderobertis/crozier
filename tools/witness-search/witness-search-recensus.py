@@ -56,8 +56,8 @@ import signal
 import sys
 import time
 import urllib.parse
-from pathlib import Path
 from collections.abc import Callable
+from pathlib import Path
 from types import ModuleType
 from typing import Any
 
@@ -294,8 +294,10 @@ def bounded_reads(paths: dict[str, str], timeout: int, jobs: int) -> dict[str, d
                         verdicts[digest] = value
                         break
                     started, reason = started or now, value
-            except EOFError:
-                raise ChildProcessError(f"the reader of sha256 {digest} exited {child.exitcode} without a verdict")
+            except EOFError as error:
+                raise ChildProcessError(
+                    f"the reader of sha256 {digest} exited {child.exitcode} without a verdict"
+                ) from error
             if digest in verdicts:
                 child.join()
             elif started is not None and now - started >= timeout:
@@ -447,7 +449,7 @@ def full_yaml(args: argparse.Namespace) -> int:
     tally: dict[str, int] = {}
     for row, digest in pending:
         record = verdict_record(args.source, row, verdicts[digest], digest, keys)
-        stamped = {"at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds"), **record}
+        stamped = {"at": datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds"), **record}
         INDEX.append_ledger(evidence / ledger_name(args.source), json.dumps(stamped, sort_keys=True) + "\n")
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1
@@ -478,7 +480,7 @@ def from_history(
     status, commits, _ = acquirer.github_json(
         "core", f"/repos/{row['repository']}/commits?path={urllib.parse.quote(row['path'])}&sha={head}&per_page=100"
     )
-    at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    at = datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds")
     if status != 200 or not isinstance(commits, list):
         return None, f"the path's history at {head} answered HTTP {status} at {at}"
     unnamed = 0
@@ -535,7 +537,7 @@ def mirrored(acquirer: Any, row: dict[str, Any], base: dict[str, Any], refusal: 
     served_status, data = acquirer.sourcegraph_get(
         url, row["key"], f"{row['repository']}/{row['path']}@{row['commit']}"
     )
-    at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    at = datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds")
     if served_status == 200 and git_blob(data) == row.get("blob"):
         return acquirer.classify_and_record(
             {
@@ -588,7 +590,7 @@ def reacquire_head(args: argparse.Namespace) -> int:
         repository = row["repository"]
         if repository not in heads:
             status, payload, _ = acquirer.github_json("core", f"/repos/{repository}")
-            at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+            at = datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds")
             branch = payload.get("default_branch") if isinstance(payload, dict) else None
             if status != 200 or not isinstance(branch, str) or not branch:
                 malformed = " without a default branch name" if status == 200 else ""
@@ -597,7 +599,7 @@ def reacquire_head(args: argparse.Namespace) -> int:
                 status, commit, _ = acquirer.github_json(
                     "core", f"/repos/{repository}/commits/{urllib.parse.quote(branch, safe='')}"
                 )
-                at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+                at = datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds")
                 sha = commit.get("sha") if isinstance(commit, dict) else None
                 malformed = " without a full commit SHA" if status == 200 else ""
                 heads[repository] = (
@@ -626,7 +628,7 @@ def reacquire_head(args: argparse.Namespace) -> int:
                 + urllib.parse.quote(row["path"], safe="/")
             )
             got, data = acquirer.raw_github_get(raw_url, row["key"], f"{repository}/{row['path']}@{head}")
-            at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+            at = datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds")
             ident = {
                 **base,
                 "commit": head,
@@ -674,7 +676,7 @@ def namesakes(acquirer: Any, repository: str) -> tuple[list[str], str]:
     status, payload, _ = acquirer.github_json(
         "search", f"/search/repositories?q={urllib.parse.quote(f'{name} in:name')}&per_page=100"
     )
-    at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    at = datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds")
     if status != 200 or not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
         return [], f"the repository search for `{name}` answered HTTP {status} at {at}"
     found = [
@@ -737,7 +739,7 @@ def reacquire_namesake(args: argparse.Namespace) -> int:
             status, commits, _ = acquirer.github_json(
                 "core", f"/repos/{namesake}/commits?path={urllib.parse.quote(row['path'])}&per_page=100"
             )
-            at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+            at = datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds")
             if status != 200 or not isinstance(commits, list):
                 histories.append(f"{namesake}'s history of the path answered HTTP {status} at {at}")
                 continue

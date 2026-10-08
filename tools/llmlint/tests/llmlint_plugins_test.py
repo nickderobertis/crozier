@@ -18,10 +18,10 @@ import fnmatch
 import hashlib
 import http.server
 import json
-import sys
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import unittest
@@ -275,7 +275,7 @@ class AMalformedLlmlintAnswerIsRefused(unittest.TestCase):
 
 
 class _Plugins(http.server.BaseHTTPRequestHandler):
-    def do_GET(self) -> None:  # noqa: N802 - the stdlib's handler name
+    def do_GET(self) -> None:
         body = self.server.documents.get(self.path)
         self.server.requests.append(self.path)
         self.send_response(200 if body is not None else 404)
@@ -334,7 +334,7 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
         self.addCleanup(thread.join)
         self.addCleanup(self.server.server_close)
         self.addCleanup(self.server.shutdown)
-        self.origin = "http://127.0.0.1:{}".format(self.server.server_address[1])
+        self.origin = f"http://127.0.0.1:{self.server.server_address[1]}"
         stubs = self.root / "bin"
         stubs.mkdir()
         (stubs / "llmlint").write_text(

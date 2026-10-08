@@ -152,7 +152,7 @@ def validate_shard(path: Path, contract: Path) -> list[str]:
                 "licence screen",
                 "Fern screen",
             )
-            missing = [label for label, cell in zip(labels, supporting) if cell in EMPTY]
+            missing = [label for label, cell in zip(labels, supporting, strict=False) if cell in EMPTY]
             if missing:
                 failures.append(f"{path}: {source}/{key} positive result is missing {missing}")
     return failures

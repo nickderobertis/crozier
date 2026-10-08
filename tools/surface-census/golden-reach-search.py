@@ -73,11 +73,11 @@ import json
 import os
 import re
 import signal
-import types
 import subprocess
 import sys
 import tempfile
 import time
+import types
 import urllib.parse
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Iterator
@@ -730,7 +730,7 @@ def walk(args: argparse.Namespace) -> int:
         # it could not read is read again here for the whole reason.
         again = [index for index, result in enumerate(results) if result.get("census_error")]
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-            for index, result in zip(again, pool.map(_census_one, [jobs[i] for i in again])):
+            for index, result in zip(again, pool.map(_census_one, [jobs[i] for i in again]), strict=False):
                 results[index] = result
     else:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
@@ -740,7 +740,7 @@ def walk(args: argparse.Namespace) -> int:
         jobs = [(str(locate(source, args.root, row, by_digest)), row["sha256"], predicate_keys) for row in listing]
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
             extra = list(pool.map(_predicate_one, jobs, chunksize=64))
-        for result, found in zip(results, extra):
+        for result, found in zip(results, extra, strict=False):
             if not found or result["status"] != "readable":
                 continue
             counts = {**json.loads(result.get("counts") or "{}"), **found}
@@ -754,7 +754,7 @@ def walk(args: argparse.Namespace) -> int:
     with gzip.open(out, "wt", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, WALK_FIELDS, delimiter="\t", lineterminator="\n")
         writer.writeheader()
-        for row, result in zip(listing, results):
+        for row, result in zip(listing, results, strict=False):
             walks[(row["walk"], row["revision"])] += 1
             # A row another search matched keeps that match: this walk answers for
             # the keys it was given, and the other keys' document records rest on it.
@@ -1404,9 +1404,8 @@ def load_probe_cache(build: str) -> dict[str, dict[str, Any]]:
 def append_probe_cache(build: str, digest: str, result: dict[str, Any]) -> None:
     path = probe_cache_path(build)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with exclusive_lock(CACHE / "probe-cache.lock"):
-        with path.open("a", encoding="utf-8", newline="\n") as handle:
-            handle.write(json.dumps({"digest": digest, **result}, sort_keys=True) + "\n")
+    with exclusive_lock(CACHE / "probe-cache.lock"), path.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps({"digest": digest, **result}, sort_keys=True) + "\n")
 
 
 def read_probes(source: str) -> list[dict[str, Any]]:
@@ -1733,7 +1732,7 @@ def _dispositions(key: str, build: str) -> list[str]:
                 )
             elif row.get("declined"):
                 out.append(f"- **Declined** (`{source}`): `{candidate}` — {row['declined']}")
-    return ["", "#### Candidates passing every screen", ""] + out if out else []
+    return ["", "#### Candidates passing every screen", "", *out] if out else []
 
 
 def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
@@ -2199,7 +2198,7 @@ def _historical_note(tallies: dict[str, dict[str, int]]) -> list[str]:
 def _exhausted_verdict(key: str, build: str) -> str:
     fixtures = sum(len(fixture_declined(key, source) & _reaching(key, source, build)) for source in DECLARED_SOURCES)
     return (
-        f"**Verdict: `exhausted`.** No real-world document in the six declared sources "
+        "**Verdict: `exhausted`.** No real-world document in the six declared sources "
         "both declares this row and reaches the arm while passing every screen, so the "
         "arm has no real witness and stays open."
         + (
@@ -2297,7 +2296,7 @@ def restate(args: argparse.Namespace) -> int:
             elif line.startswith("| source | declarers |"):
                 while out and out[-1] == "":
                     out.pop()
-                out += _historical_note(tallies) + [""]
+                out += [*_historical_note(tallies), ""]
             elif HISTORICAL_NOTE in line:
                 in_note = True
                 if out and out[-1] == "":
@@ -2306,7 +2305,7 @@ def restate(args: argparse.Namespace) -> int:
             elif line.startswith("**Verdict: `exhausted`.**"):
                 if out and out[-1] == "":
                     out.pop()
-                out += [""] + verdict if verdict else []
+                out += ["", *verdict] if verdict else []
                 continue
             elif line == "#### Candidates passing every screen":
                 section = [line]
@@ -2320,7 +2319,7 @@ def restate(args: argparse.Namespace) -> int:
         if dispositions and not disposed:
             while out and out[-1] == "":
                 out.pop()
-            out += dispositions + [""]
+            out += [*dispositions, ""]
         while len(out) > 1 and out[-1] == "" and out[-2] == "":
             out.pop()
         if out[-1] != "":

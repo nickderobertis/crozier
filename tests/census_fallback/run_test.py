@@ -6,9 +6,9 @@ scripts carry no pin (or two), so nothing is installed and no suite runs."""
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
-import os
 import tempfile
 import unittest
 from pathlib import Path

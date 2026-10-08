@@ -21,8 +21,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "witness-search" / "tests"))
 
-import witness_search_github_test as github  # noqa: E402 - the shared fixtures' directory must be on sys.path first
-import witness_search_redo_test as redo  # noqa: E402 - the shared fixtures' directory must be on sys.path first
+import witness_search_github_test as github
+import witness_search_redo_test as redo
 
 REPO = github.REPO
 SEARCH = github.SEARCH
@@ -55,7 +55,7 @@ class ATreeIndexedFromARealRepository(redo.WideWitnessFixture, unittest.TestCase
         git("config", "user.email", "witness@example.invalid")
         path = tree / "APIs/publisher/1/openapi.yaml"
         path.parent.mkdir(parents=True)
-        path.write_bytes("openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n".encode("utf-8"))
+        path.write_bytes("openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n".encode())
         git("add", "APIs")
         git("commit", "-qm", "test: record publisher tree")
         pin = git("rev-parse", "HEAD").stdout.strip()
@@ -164,7 +164,7 @@ class TheDefaultCacheStaysIgnored(github.WitnessSearchGithubFixture, unittest.Te
         The document carries this test's temporary directory name, so its digest
         names a cache file no other run writes, and that one file is removed after.
         """
-        document = DOCUMENT + f"# {self.root.name}\n".encode("utf-8")
+        document = DOCUMENT + f"# {self.root.name}\n".encode()
         self.server.state["raw_document"] = document
         digest = hashlib.sha256(document).hexdigest()
         cached = REPO / ".local" / "witness-search-cache" / "documents" / f"{digest}.yaml"
@@ -286,7 +286,7 @@ class LocatorAuditTests(unittest.TestCase):
                 record = root / ("docs/openapi-surface/records" + extension)
                 record.parent.mkdir(parents=True)
 
-                def write(text):
+                def write(text, record=record, extension=extension):
                     data = text.encode("utf-8")
                     record.write_bytes(gzip.compress(data) if extension.endswith(".gz") else data)
 

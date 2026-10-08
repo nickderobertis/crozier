@@ -18,7 +18,7 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -243,7 +243,9 @@ def acquire_hits(args: argparse.Namespace, keys: list[dict]) -> int:
     try:
         hits = metadata_hits(queries)
     except (OSError, ValueError) as error:
-        raise SystemExit(f"witness-search-postman: cannot read {queries}: {error}; run the search stage first")
+        raise SystemExit(
+            f"witness-search-postman: cannot read {queries}: {error}; run the search stage first"
+        ) from error
     census = load_census()
     guard = GUARD.RateLimitGuard("postman", evidence_dir=args.evidence_dir)
     output = args.evidence_dir / "hit-access.jsonl"
@@ -260,7 +262,7 @@ def acquire_hits(args: argparse.Namespace, keys: list[dict]) -> int:
                 url, headers={"User-Agent": "crozier-witness-search/1", "Accept": "application/json"}
             )
             while True:
-                taken = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                taken = datetime.now(UTC).isoformat(timespec="seconds")
                 content_type = ""
                 try:
                     guard.acquire("postman", cost=1)
@@ -331,7 +333,7 @@ def main() -> int:
             for index in INDICES:
                 offset = 0
                 while True:
-                    taken = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                    taken = datetime.now(UTC).isoformat(timespec="seconds")
                     try:
                         status, body = search_once(args.url, guard, query, offset, index)
                     except GUARD.SecondaryLimit as error:

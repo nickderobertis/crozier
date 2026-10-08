@@ -35,8 +35,9 @@ import re
 import sys
 import textwrap
 from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, NamedTuple
+from typing import NamedTuple
 
 # LLVM's coverage export encodes a region as
 # [line_start, col_start, line_end, col_end, count, file_id, expanded_file_id, kind]

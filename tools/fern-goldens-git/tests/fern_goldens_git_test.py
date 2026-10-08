@@ -26,7 +26,7 @@ os.environ["PYTHONUTF8"] = "1"
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "fern-goldens" / "tests"))
 
-from fern_goldens_test import (  # noqa: E402 - the shared helpers' directory must be on sys.path first
+from fern_goldens_test import (
     ALIASES,
     KNOWN_FAILURE,
     PIN_MANIFEST,

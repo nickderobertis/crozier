@@ -22,8 +22,8 @@ from __future__ import annotations
 import contextlib
 import gzip
 import hashlib
-import io
 import importlib.util
+import io
 import json
 import os
 import shlex

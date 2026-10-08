@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import contextlib
 import gzip
 import importlib.util
 import io
@@ -19,7 +20,6 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
-
 
 GENERATOR = "fernapi/fern-python-sdk"
 TAGS_URL = "https://hub.docker.com/v2/repositories/fernapi/fern-python-sdk/tags?page_size=100&ordering=name"
@@ -608,28 +608,30 @@ def write_deterministic_archive(root: Path, fixtures: list[str], output: Path) -
     if not fixtures:
         output.unlink(missing_ok=True)
         return
-    with output.open("wb") as raw:
-        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
-            with tarfile.open(fileobj=compressed, mode="w") as archive:
-                bases = [
-                    root / "tests" / "fixtures" / fixture / directory
-                    for fixture in sorted(fixtures)
-                    for directory in GOLDEN_DIRS.values()
-                ]
-                for base in (base for base in bases if base.is_dir()):
-                    for path in [base, *sorted(base.rglob("*"))]:
-                        relative = path.relative_to(root)
-                        info = archive.gettarinfo(str(path), arcname=relative.as_posix())
-                        info.uid = 0
-                        info.gid = 0
-                        info.uname = ""
-                        info.gname = ""
-                        info.mtime = 0
-                        if info.isfile():
-                            with path.open("rb") as source:
-                                archive.addfile(info, source)
-                        else:
-                            archive.addfile(info)
+    with (
+        output.open("wb") as raw,
+        gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed,
+        tarfile.open(fileobj=compressed, mode="w") as archive,
+    ):
+        bases = [
+            root / "tests" / "fixtures" / fixture / directory
+            for fixture in sorted(fixtures)
+            for directory in GOLDEN_DIRS.values()
+        ]
+        for base in (base for base in bases if base.is_dir()):
+            for path in [base, *sorted(base.rglob("*"))]:
+                relative = path.relative_to(root)
+                info = archive.gettarinfo(str(path), arcname=relative.as_posix())
+                info.uid = 0
+                info.gid = 0
+                info.uname = ""
+                info.gname = ""
+                info.mtime = 0
+                if info.isfile():
+                    with path.open("rb") as source:
+                        archive.addfile(info, source)
+                else:
+                    archive.addfile(info)
 
 
 def write_patch(root: Path, report: Path) -> None:
@@ -782,10 +784,8 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
         except (GoldensError, OSError) as error:
             failures.append(f"{row.fixture}: {error}")
             if not fixture_existed:
-                try:
+                with contextlib.suppress(OSError):
                     fixture_dir.rmdir()
-                except OSError:
-                    pass
 
     (report / "generated.txt").write_text(
         "".join(f"{fixture}\n" for fixture in generated), encoding="utf-8", newline="\n"
@@ -976,7 +976,7 @@ def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def publish(root: Path, branch: str) -> int:
-    if not branch or branch.startswith("-") or branch.startswith("refs/") or any(ord(char) < 33 for char in branch):
+    if not branch or branch.startswith(("-", "refs/")) or any(ord(char) < 33 for char in branch):
         raise GoldensError(f"invalid branch name {branch!r}")
     check = git(root, "check-ref-format", "--branch", branch)
     if check.returncode != 0:

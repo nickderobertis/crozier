@@ -56,7 +56,7 @@ REMOTE_ROOT = (
     "paths: {}\n"
     "components:\n  schemas:\n    Block:\n"
     f"      $ref: '{MUTABLE_URL}#/block'\n"
-).encode("utf-8")
+).encode()
 
 
 def run(root: Path, *args: str, **environment: str) -> subprocess.CompletedProcess[str]:

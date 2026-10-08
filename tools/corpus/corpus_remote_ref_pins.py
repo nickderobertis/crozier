@@ -71,10 +71,10 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Iterator, Mapping
 from urllib.parse import urlsplit
 
 MANIFEST_RELATIVE = ("tests", "fixtures", "corpus-remote-ref-pins.tsv")
@@ -239,7 +239,7 @@ def load_records(root: Path | None = None) -> list[PinRecord]:
                 "tab between each column"
             )
         record = PinRecord(*cells)
-        for column, value in zip(COLUMNS, cells):
+        for column, value in zip(COLUMNS, cells, strict=False):
             if not value.strip() or value != value.strip():
                 raise PinError(
                     f"{site}: {column} is {value!r}; every column must carry a "
@@ -357,7 +357,7 @@ def _reject_prefixes(path: Path, records: list[PinRecord]) -> None:
 def _reject_disorder(path: Path, records: list[PinRecord]) -> None:
     ordered = sorted(records, key=_sort_key)
     if records != ordered:
-        first = next(record for record, want in zip(records, ordered) if record != want)
+        first = next(record for record, want in zip(records, ordered, strict=False) if record != want)
         raise PinError(
             f"{path}: records are not sorted; {first.corpus_name} "
             f"{first.mutable_url} is out of order — sort the records by corpus name "
@@ -547,7 +547,7 @@ def fetch_bytes(url: str, override: str | None) -> bytes:
             return min(float(value), 60)
         try:
             reset = email.utils.parsedate_to_datetime(value)
-            return min(60, max(0, (reset - datetime.datetime.now(datetime.timezone.utc)).total_seconds()))
+            return min(60, max(0, (reset - datetime.datetime.now(datetime.UTC)).total_seconds()))
         except (TypeError, ValueError, OverflowError):
             return fallback
 

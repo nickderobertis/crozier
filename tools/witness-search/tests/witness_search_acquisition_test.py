@@ -7,7 +7,6 @@ import csv
 import gzip
 import hashlib
 import importlib.util
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import io
 import json
 import os
@@ -19,6 +18,7 @@ import tempfile
 import threading
 import time
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 # Every child these tests start has its output decoded as UTF-8, so a Python

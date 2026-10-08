@@ -29,7 +29,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "llmlint" / "tests"))
 
-from llmlint_plugins_test import CONFIG, PLUGINS, REPO, VENDORED  # noqa: E402 - the shared lock reader's directory must be on sys.path first
+from llmlint_plugins_test import (
+    CONFIG,
+    PLUGINS,
+    REPO,
+    VENDORED,
+)
 
 
 def llmlint_binary() -> str | None:

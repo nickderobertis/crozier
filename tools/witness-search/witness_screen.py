@@ -149,7 +149,7 @@ def _yaml_block(value: Any, indent: int) -> list[str]:
     lines = []
     for key, item in value.items():
         if isinstance(item, dict):
-            lines += [" " * indent + f"{key}:"] + _yaml_block(item, indent + 2)
+            lines += [" " * indent + f"{key}:", *_yaml_block(item, indent + 2)]
         else:
             lines.append(" " * indent + f"{key}: {item}")
     return lines
@@ -249,7 +249,7 @@ def fern_diagnostic(output: str) -> str:
             (
                 line
                 for line in lines
-                if UNPARSED.search(line) or re.search(r"\berror\b", line, re.I) and "deprecated" not in line
+                if UNPARSED.search(line) or (re.search(r"\berror\b", line, re.I) and "deprecated" not in line)
             ),
             lines[-1] if lines else "no output",
         )
@@ -326,7 +326,7 @@ def fern_verdict(row: dict[str, Any]) -> str | None:
     return "passed"
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def admissible_families(rule: Path = RULE) -> tuple[str, ...]:
     """The licence names the rule's canonical enumeration admits, in its own order.
 
@@ -597,7 +597,7 @@ def measure(
     sha256 = hashlib.sha256(data).hexdigest() if status == 200 else ""
     record: dict[str, Any] = {
         "stage": STAGE,
-        "screened_at": now or datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),
+        "screened_at": now or datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat(),
         "document": {
             "repository": repository,
             "commit": commit,
