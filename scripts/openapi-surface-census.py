@@ -1216,6 +1216,11 @@ PREDICATES = {
         "one per Operation Object `operation.operationId:tag-spelled-split-prefix` "
         "counts whose first tag is all capitals, several of them (`QX`)"
     ),
+    "operation.x-fern-sdk-method-name:sequence": (
+        "one per Operation Object under the Paths Object whose SDK method name "
+        "(`x-crozier-sdk-method-name` over `x-fern-sdk-method-name`) is written as a "
+        "sequence of strings rather than a string"
+    ),
     "operation.x-fern-sdk-group-name:leading-underscore": (
         "one per Operation Object under the Paths Object declaring an SDK method name "
         "whose SDK group name (`x-crozier-sdk-group-name` over `x-fern-sdk-group-name`) "
@@ -2826,12 +2831,14 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     return (f"{ident}_" if reserved else ident), prefixed
 
 
-# `sdk_group_segments` and `sdk_method_named` port two `Operation` accessors of
-# `src/openapi.rs`; NamingMirrorTests recomputes each one's normalized-body digest,
-# so an accessor edited there fails until its port is read again here.
+# `sdk_group_segments` and `sdk_method_named` port `Operation` accessors, and the
+# method-name deserializer, of `src/openapi.rs`; NamingMirrorTests recomputes each
+# one's normalized-body digest, so an accessor edited there fails until its port is
+# read again here.
 EXTENSION_ACCESSOR_PORT_DIGESTS = {
     ("src/openapi.rs", "sdk_group_name"): "4c285625fb40715e",
     ("src/openapi.rs", "sdk_method_name"): "05643ea13596fa87",
+    ("src/openapi.rs", "de_sdk_method_name"): "8d01a33989dc1ac6",
 }
 
 
@@ -2846,11 +2853,25 @@ def sdk_group_segments(operation: dict[Any, Any]) -> list[str]:
 
 
 def sdk_method_named(operation: dict[Any, Any]) -> bool:
-    """`Operation::sdk_method_name`: either spelling, a blank value naming nothing."""
+    """`Operation::sdk_method_name`: either spelling, a blank value naming nothing.
+
+    A sequence of strings is read joined by `,`, as `de_sdk_method_name` reads it.
+    """
     for extension in ("x-crozier-sdk-method-name", "x-fern-sdk-method-name"):
         if extension in operation:
             named = operation[extension]
+            if isinstance(named, list) and all(isinstance(item, str) for item in named):
+                named = ",".join(named)
             return isinstance(named, str) and bool(named.strip())
+    return False
+
+
+def sdk_method_name_sequence(operation: dict[Any, Any]) -> bool:
+    """`operation.x-fern-sdk-method-name:sequence`: the winning spelling is a list."""
+    for extension in ("x-crozier-sdk-method-name", "x-fern-sdk-method-name"):
+        if extension in operation:
+            named = operation[extension]
+            return isinstance(named, list) and all(isinstance(item, str) for item in named)
     return False
 
 
@@ -4509,6 +4530,8 @@ class Census:
                 )
             ):
                 found.append("operation.operationId:untagged-list-or-set")
+            if sdk_method_name_sequence(node):
+                found.append("operation.x-fern-sdk-method-name:sequence")
             segments = sdk_group_segments(node)
             if segments and not sdk_method_named(node):
                 found.append("operation.x-fern-sdk-group-name:without-method-name")

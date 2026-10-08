@@ -4627,6 +4627,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
            "operation.operationId:all-caps-tag-split-prefix",
            "operation.x-fern-sdk-group-name:leading-underscore",
            "operation.x-fern-sdk-group-name:without-method-name",
+           "operation.x-fern-sdk-method-name:sequence",
            "components.schemas:fields-reach-cycles-unsorted",
            "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
            "schema.type:misspelled-scalar",
@@ -13137,6 +13138,27 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "lower-tag"): 1,
                           (selector, "split-tag"): 1}, rows(completed))
+
+    def test_sdk_method_name_sequence_reads_the_winning_spelling(self) -> None:
+        selector = "operation.x-fern-sdk-method-name:sequence"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, extensions in {
+                "fern": {"x-fern-sdk-method-name": ["fetch"]},
+                "crozier": {"x-crozier-sdk-method-name": ["claim", "now"]},
+                "crozier-string-wins": {"x-crozier-sdk-method-name": "claim",
+                                        "x-fern-sdk-method-name": ["fetch"]},
+                "string": {"x-fern-sdk-method-name": "fetch"},
+                "mapping": {"x-fern-sdk-method-name": {"name": "fetch"}},
+            }.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {"/q": {"get": {"operationId": "op", **extensions,
+                                             "responses": {"204": {"description": "ok"}}}}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "fern"): 1, (selector, "crozier"): 1}, rows(completed))
 
     def test_sdk_group_name_predicates_read_both_spellings(self) -> None:
         under = "operation.x-fern-sdk-group-name:leading-underscore"

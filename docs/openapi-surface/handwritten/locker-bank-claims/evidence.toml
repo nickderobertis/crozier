@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "b10f74aa5f9b9ffa7f0fa7a43ac0aef43a7e45b71b0e1ed089395f71b4094d86"
+
+[[covers]]
+key = "operation-sdk-method-name-sequence"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#method-name-written-as-a-sequence"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

@@ -484,12 +484,20 @@ pub struct Operation {
     /// [`Operation::sdk_method_name`], which also honours the
     /// `x-fern-sdk-method-name` variant per the
     /// [dual-header policy](self#fern-compatible-extensions).
-    #[serde(rename = "x-crozier-sdk-method-name", default)]
+    #[serde(
+        rename = "x-crozier-sdk-method-name",
+        default,
+        deserialize_with = "de_sdk_method_name"
+    )]
     sdk_method_name_crozier: Option<String>,
     /// `x-fern-sdk-method-name`: the Fern spelling of the method-name override.
     /// Superseded by `x-crozier-sdk-method-name` when both appear (see
     /// [`Operation::sdk_method_name`]).
-    #[serde(rename = "x-fern-sdk-method-name", default)]
+    #[serde(
+        rename = "x-fern-sdk-method-name",
+        default,
+        deserialize_with = "de_sdk_method_name"
+    )]
     sdk_method_name_fern: Option<String>,
     /// `x-crozier-streaming`: how this operation streams, and (when it declares a
     /// `stream-condition`) the request property that selects between the streaming
@@ -1393,6 +1401,50 @@ where
     D: serde::Deserializer<'de>,
 {
     Ok(Option::<IndexMap<String, String>>::deserialize(deserializer)?.unwrap_or_default())
+}
+
+/// Deserialize an SDK method-name override. Fern also accepts it written as a
+/// sequence of strings and reads the sequence the way JavaScript stringifies an
+/// array, its members joined by `,`: `[fetch]` names the method `fetch` and
+/// `[fetch, grab]` names it `fetch_grab`. An empty sequence is a blank name,
+/// which names nothing.
+fn de_sdk_method_name<'de, D>(deserializer: D) -> std::result::Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct MethodName;
+    impl<'de> serde::de::Visitor<'de> for MethodName {
+        type Value = Option<String>;
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("a method name: a string, or a sequence of strings")
+        }
+        fn visit_str<E: serde::de::Error>(self, name: &str) -> std::result::Result<Self::Value, E> {
+            Ok(Some(name.to_string()))
+        }
+        fn visit_unit<E: serde::de::Error>(self) -> std::result::Result<Self::Value, E> {
+            Ok(None)
+        }
+        fn visit_none<E: serde::de::Error>(self) -> std::result::Result<Self::Value, E> {
+            Ok(None)
+        }
+        fn visit_some<S: serde::Deserializer<'de>>(
+            self,
+            deserializer: S,
+        ) -> std::result::Result<Self::Value, S::Error> {
+            deserializer.deserialize_any(self)
+        }
+        fn visit_seq<A: serde::de::SeqAccess<'de>>(
+            self,
+            mut sequence: A,
+        ) -> std::result::Result<Self::Value, A::Error> {
+            let mut names = Vec::new();
+            while let Some(name) = sequence.next_element::<String>()? {
+                names.push(name);
+            }
+            Ok(Some(names.join(",")))
+        }
+    }
+    deserializer.deserialize_any(MethodName)
 }
 
 /// Deserialize a schema's `deprecated` mark: `true` only for the boolean `true`.
@@ -3355,6 +3407,40 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_method_name_sequence_reads_joined_as_fern_reads_it() {
+        let name = |extension: serde_json::Value| {
+            let op: Operation = serde_json::from_value(serde_json::json!({
+                "operationId": "getLockers",
+                "x-fern-sdk-method-name": extension,
+            }))
+            .expect("operation deserializes");
+            op.sdk_method_name().map(str::to_string)
+        };
+        assert_eq!(
+            name(serde_json::json!("vacancies")).as_deref(),
+            Some("vacancies")
+        );
+        assert_eq!(
+            name(serde_json::json!(["vacancies"])).as_deref(),
+            Some("vacancies")
+        );
+        assert_eq!(
+            name(serde_json::json!(["claim", "now"])).as_deref(),
+            Some("claim,now")
+        );
+        assert_eq!(name(serde_json::json!([])), None);
+        assert_eq!(name(serde_json::Value::Null), None);
+        let mapping: std::result::Result<Operation, _> =
+            serde_json::from_value(serde_json::json!({
+                "x-crozier-sdk-method-name": {"name": "vacancies"},
+            }));
+        assert!(mapping
+            .expect_err("a mapping is no method name")
+            .to_string()
+            .contains("a string, or a sequence of strings"));
+    }
 
     #[test]
     fn a_base_path_reads_its_placeholders_and_their_map_form_defaults() {

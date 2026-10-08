@@ -1948,6 +1948,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "locker-bank-claims-literals",
+        "docs/openapi-surface/handwritten/locker-bank-claims/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "rfid-door-panel-literals",
         "docs/openapi-surface/handwritten/rfid-door-panel/openapi.yml",
         &["--enum-type", "literals"],
@@ -2662,6 +2667,59 @@ fn handwritten_documents(
         })
         .unwrap_or_default();
     (evidence, failures)
+}
+
+/// An SDK method name written as a sequence generates under either spelling, the
+/// members joined as Fern joins them; beside a conflicting `x-fern-sdk-method-name`
+/// the `x-crozier-sdk-method-name` sequence wins. The nearby malformed form, a
+/// mapping, is still refused at the boundary with an actionable parse error and
+/// nothing written.
+#[test]
+fn sdk_method_name_sequence_reads_either_spelling_and_a_mapping_is_refused() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, extensions: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Lockers, version: '1'}}\npaths:\n  /lockers:\n    get:\n      operationId: getLockers\n{extensions}      responses: {{'204': {{description: ok}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        let assert = probe_command(&spec, &out).assert();
+        (assert, out)
+    };
+    let client =
+        |out: &Path| std::fs::read_to_string(out.join("src/fern/client.py")).expect("client.py");
+    let (assert, out) = generate("fern", "      x-fern-sdk-method-name: [vacancies]\n");
+    assert.success();
+    assert!(client(&out).contains("def vacancies("));
+    let (assert, out) = generate("crozier", "      x-crozier-sdk-method-name: [claim, now]\n");
+    assert.success();
+    assert!(client(&out).contains("def claim_now("));
+    let (assert, out) = generate(
+        "both",
+        "      x-fern-sdk-method-name: [vacancies]\n      x-crozier-sdk-method-name: [free]\n",
+    );
+    assert.success();
+    let both = client(&out);
+    assert!(
+        both.contains("def free(") && !both.contains("def vacancies("),
+        "{both}"
+    );
+    let (assert, out) = generate(
+        "mapping",
+        "      x-fern-sdk-method-name: {name: vacancies}\n",
+    );
+    assert
+        .failure()
+        .code(1)
+        .stderr(predicates::str::contains("x-fern-sdk-method-name"));
+    assert!(
+        !out.join("src").exists(),
+        "a refused document writes nothing"
+    );
 }
 
 /// The client-construction cases under `docs/fern-measurements/clients-extensions/`:

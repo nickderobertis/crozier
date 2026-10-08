@@ -6,3 +6,4 @@ operation-id-all-caps-tag-split-prefix	operation.operationId:all-caps-tag-split-
 operation-id-tag-spelled-split-prefix	operation.operationId:tag-spelled-split-prefix	supported
 operation-sdk-group-name-leading-underscore	operation.x-fern-sdk-group-name:leading-underscore	supported
 operation-sdk-group-name-without-method-name	operation.x-fern-sdk-group-name:without-method-name	supported
+operation-sdk-method-name-sequence	operation.x-fern-sdk-method-name:sequence	supported

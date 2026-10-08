@@ -93,6 +93,14 @@ The shape: an operation declaring a non-blank SDK group name and no SDK method n
 |---|---|---|
 | `operation-sdk-group-name-without-method-name` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Method name written as a sequence
+
+The shape: an operation whose SDK method name is written as a sequence of strings (`operation.x-fern-sdk-method-name:sequence`, either spelling). Fern generates from it, joining the members with `,` (`[vacancies]` is `vacancies`, `[claim, now]` is `claim_now`).
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-sdk-method-name-sequence` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -103,3 +111,4 @@ The shape: an operation declaring a non-blank SDK group name and no SDK method n
 | `operation-id-all-caps-tag-split-prefix` | `none-registrable` | `rfid-door-panel` |
 | `operation-sdk-group-name-leading-underscore` | `none-registrable` | `signal-box-relays` |
 | `operation-sdk-group-name-without-method-name` | `none-registrable` | `cargo-hold-pallets` |
+| `operation-sdk-method-name-sequence` | `none-registrable` | `locker-bank-claims` |

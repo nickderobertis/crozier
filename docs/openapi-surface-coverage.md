@@ -23,10 +23,10 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 599 features. By category, 493 are `golden`, 52
-`limitations`, 32 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 600 features. By category, 493 are `golden`, 52
+`limitations`, 33 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 599
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 600
 split four ways:
 
 - **491 carry byte-match evidence against a registered real-world
@@ -38,12 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
-- **32 rest on a hand-written fixture, a weaker proof than a real
+- **33 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. Twenty-seven read `search-incomplete`. Of those,
+  decided and none is registrable. Twenty-eight read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -99,7 +99,7 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-491 + 66 + 32 + 10 = 599.
+491 + 66 + 33 + 10 = 600.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 493 `golden` rows declare 915 handling sites in
@@ -212,7 +212,7 @@ class is yet one where crozier generates and Fern does not. A `generate`
 decision, which would write an SDK by default and refuse only under
 `fern-strict`, is the registry's to make, with a wire test proving the SDK.
 
-**What the census still cannot enumerate.** The 599 are what a selector over a
+**What the census still cannot enumerate.** The 600 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
 the census cannot measure the population beyond its own reach.
 
@@ -444,7 +444,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-115, declared in `scripts/openapi-surface-census.py` and restated here, with a
+116, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` has a non-empty
@@ -710,6 +710,9 @@ drift gate over the pair:
 - `operation.operationId:all-caps-tag-split-prefix` — one per Operation Object
   `operation.operationId:tag-spelled-split-prefix` counts whose first tag is all
   capitals, several of them (`QX`)
+- `operation.x-fern-sdk-method-name:sequence` — one per Operation Object under the Paths
+  Object whose SDK method name (`x-crozier-sdk-method-name` over `x-fern-sdk-method-
+  name`) is written as a sequence of strings rather than a string
 - `operation.x-fern-sdk-group-name:leading-underscore` — one per Operation Object under
   the Paths Object declaring an SDK method name whose SDK group name (`x-crozier-sdk-
   group-name` over `x-fern-sdk-group-name`) has a segment starting with `_`, which Fern
@@ -863,7 +866,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Seventy-eight of the 115 are node-local**, which is what makes them one family:
+**Seventy-nine of the 116 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -1721,11 +1724,11 @@ for either; each bullet below says where its number comes from.
 | [`bodies-media`](openapi-surface/bodies-media.md) | 57 | 46 | 5 | 6 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 75 | 68 | 3 | 3 | 1 | 1 | 0 | 0 |
-| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 55 | 38 | 2 | 3 | 12 | 0 | 0 | 12 |
-| **total** | **599** | **493** | **52** | **32** | **22** | **8** | **0** | **14** |
+| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 56 | 38 | 2 | 4 | 12 | 0 | 0 | 12 |
+| **total** | **600** | **493** | **52** | **33** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **599** features and landed each in exactly one category:
-**493** `golden`, **52** `limitations`, **32** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **600** features and landed each in exactly one category:
+**493** `golden`, **52** `limitations`, **33** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -1876,7 +1879,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 599 rows carry 599 distinct
+**Each feature is classified exactly once.** The 600 rows carry 600 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Fifteen spec
@@ -2048,7 +2051,7 @@ is what makes the gap a *supply* problem rather than a closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 599](#what-the-walk-enumerated) is a
+[the walk's 600](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
 [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107
