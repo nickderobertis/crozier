@@ -80,8 +80,9 @@ MEASUREMENT_FIELDS = ("key", "digest", "unretrievable", "check_exit", "check_log
                       "generate_files", "generate_log", "crozier_exit", "crozier_files", "crozier_strict_exit")
 # What a measured value may be, when it is not empty (not yet taken): an exit
 # is the run's status (negative when a signal ended it) or `timeout`.
-_EXIT = (re.compile(r"-?\d+|timeout"), "an exit status or `timeout`")
-_COUNT = (re.compile(r"\d+"), "a file count")
+# Spelled canonically, in ASCII digits, so comparing one with "0" reads it right.
+_EXIT = (re.compile(r"0|-?[1-9][0-9]*|timeout"), "an exit status or `timeout`")
+_COUNT = (re.compile(r"0|[1-9][0-9]*"), "a file count")
 MEASUREMENT_GRAMMAR = {"digest": (re.compile(r"[0-9a-f]{64}"), "a SHA-256 digest"),
                        "check_exit": _EXIT, "generate_exit": _EXIT, "crozier_exit": _EXIT,
                        "crozier_strict_exit": _EXIT, "fern_exit": _EXIT,
@@ -1165,7 +1166,8 @@ def positive(text: str) -> int:
 
 
 def nonnegative(text: str) -> int:
-    """A limit or a per-class count: an integer of at least zero (0 is no limit)."""
+    """An integer of at least zero: `--limit`'s, where 0 means no limit, or
+    `--per-class`'s, where 0 samples nothing."""
     value = int(text)
     if value < 0:
         raise argparse.ArgumentTypeError(f"{text} is not a non-negative integer")

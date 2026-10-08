@@ -314,6 +314,7 @@ class Drift(unittest.TestCase):
                                                     "longer `--timeout`"),
                                  (["1", "many"], "generate_exit '1' and generate_files 'many' must be an exit "
                                                  "status or `timeout`, and a file count"),
+                                 (["00", "40"], "generate_exit '00' and generate_files '40' must be an exit"),
                                  (["", "0"], "must be an exit status")):
             with self.subTest(outcome=outcome):
                 table = rows(CONFIRMATIONS)
@@ -516,6 +517,10 @@ class MeasurementsAndArguments(unittest.TestCase):
             path = Path(scratch) / "measurements.jsonl"
             for row, message in (({"check_exit": "failed"}, "has check_exit 'failed', not an exit status or `timeout`"),
                                  ({"generate_files": "-1"}, "has generate_files '-1', not a file count"),
+                                 # A spelling a comparison with "0" would misread: exit 00 is a success.
+                                 ({"generate_exit": "00"}, "has generate_exit '00', not an exit status"),
+                                 ({"generate_files": "00"}, "has generate_files '00', not a file count"),
+                                 ({"crozier_exit": "\u0661"}, "has crozier_exit '\u0661', not an exit status"),
                                  ({"crozier_files": "3 files"}, "has crozier_files '3 files', not a file count"),
                                  ({"digest": "abc"}, "has digest 'abc', not a SHA-256 digest"),
                                  ({"fern_stage": "lint", "fern_exit": "1", "fern_log": ""},
