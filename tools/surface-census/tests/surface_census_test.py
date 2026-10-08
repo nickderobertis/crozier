@@ -7574,15 +7574,24 @@ class CensusInterpreterCase(unittest.TestCase):
         environment = dict(os.environ)
         if path is not None:
             environment["PATH"] = path
-        return subprocess.run(
-            [shell, str(self.RESOLVER)],
-            cwd=REPO,
-            capture_output=True,
-            text=True,
-            env=environment,
-            timeout=CENSUS_TIMEOUT,
-            encoding="utf-8",
-        )
+        # The real resolver, copied into a root with no `.venv`: these cases drive
+        # the PATH selection, which the checkout's own workspace venv (`uv sync`
+        # makes one) would otherwise win before PATH is read. The `.venv` branch
+        # is `test_a_repo_local_venv_is_preferred_over_anything_on_path`'s.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "scripts").mkdir()
+            copied = root / "scripts" / self.RESOLVER.name
+            shutil.copy2(self.RESOLVER, copied)
+            return subprocess.run(
+                [shell, str(copied)],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                env=environment,
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
+            )
 
 
 class PortableCensusInterpreterTests(CensusInterpreterCase):
@@ -7593,8 +7602,13 @@ class PortableCensusInterpreterTests(CensusInterpreterCase):
         """Windows Python installations need not install a python3 executable."""
         with tempfile.TemporaryDirectory() as directory:
             interpreter = Path(directory) / ("python.exe" if os.name == "nt" else "python")
-            shutil.copy2(Path(sys.executable).resolve(), interpreter)
-            if os.name == "nt":
+            if os.name != "nt":
+                # A link, not a copy: a relocatable CPython (uv's, which the
+                # workspace venv runs on) finds its standard library relative to
+                # the real executable, which a copy elsewhere would lose.
+                interpreter.symlink_to(Path(sys.executable).resolve())
+            else:
+                shutil.copy2(Path(sys.executable).resolve(), interpreter)
                 # PATH is deliberately restricted, so retain the real runtime's
                 # adjacent DLLs as well as its executable.
                 runtime = Path(sys.executable).resolve().parent
@@ -7668,10 +7682,10 @@ class CensusInterpreterTests(CensusInterpreterCase):
             encoding="utf-8",
         )
         self.assertEqual(0, prefixes.returncode, prefixes.stderr)
-        # This repository commits no virtualenv, so PATH's system Python is the
-        # answer here. A deliberate local `.venv` would win instead, which is the
-        # preference the next case drives.
-        self.assertFalse((REPO / ".venv").exists(), "this case assumes no local .venv")
+        # With no `.venv` beside the resolver, PATH's first non-virtualenv Python
+        # is the answer: a virtualenv ahead of it on PATH (the workspace venv a
+        # `uv run` puts first) is passed over. A local `.venv` would win instead,
+        # which is the preference the next case drives.
         first, second = prefixes.stdout.split()
         self.assertEqual(first, second, "the resolver chose a virtualenv")
 
