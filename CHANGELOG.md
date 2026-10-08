@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.108](https://github.com/nickderobertis/crozier/compare/v0.0.107...v0.0.108) - 2026-10-08
+
+### Other
+
+- *(graph)* run crozier's gate through an Nx project graph ([#468](https://github.com/nickderobertis/crozier/pull/468))
+
 ## [0.0.107](https://github.com/nickderobertis/crozier/compare/v0.0.106...v0.0.107) - 2026-10-08
 
 ### Fixed
