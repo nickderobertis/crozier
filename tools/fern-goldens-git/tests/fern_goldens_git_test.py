@@ -2131,6 +2131,8 @@ class FixturesRefreshTests(unittest.TestCase):
         target.mkdir(parents=True)
         (target / "crozier").write_text(
             "#!/usr/bin/env bash\n"
+            # A scratch directory the refresh cannot remove afterwards.
+            '[ -z "${LOCK_SCRATCH:-}" ] || chmod a-w "$(dirname "$2")"\n'
             '[ -z "${FAIL_STRIP:-}" ] || { echo "crozier: simulated strip failure" >&2; exit 3; }\n'
             'cat "$2"\n',
             encoding="utf-8",
@@ -2248,6 +2250,24 @@ class FixturesRefreshTests(unittest.TestCase):
         self.assertIn("fixtures-refresh: stopped while regenerating tests/fixtures/exhaustive with Fern's "
                       "container generator (exit 4)", result.stderr)
 
+    @unittest.skipIf(os.geteuid() == 0, "root removes a read-only directory's entries")
+    def test_a_scratch_directory_it_cannot_remove_is_named_without_hiding_the_result(self) -> None:
+        scratch = self.root.parent / "tmp"
+        scratch.mkdir()
+        self.addCleanup(lambda: [path.chmod(0o755) for path in scratch.rglob("*") if path.is_dir()])
+        result = self.refresh(LOCK_SCRATCH="1", TMPDIR=str(scratch))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        [workdir] = list(scratch.iterdir())
+        self.assertIn(f"fixtures-refresh: could not remove the scratch directory {workdir} — delete it "
+                      f"(rm -rf {workdir})", result.stderr)
+        self.assertIn("fixtures-refresh: refreshed 1 fixture(s)", result.stderr)
+        # A failed run keeps its own status and step behind the same note.
+        failed = self.refresh(LOCK_SCRATCH="1", FAIL_STRIP="1", TMPDIR=str(scratch))
+        self.assertEqual(failed.returncode, 3, failed.stderr)
+        self.assertIn("could not remove the scratch directory", failed.stderr)
+        self.assertIn("fixtures-refresh: stopped while refreshing tests/fixtures/query-parameters-openapi (exit 3)",
+                      failed.stderr)
+
     def test_a_failed_step_is_named_on_exit(self) -> None:
         result = self.refresh(FAIL_STRIP="1")
         self.assertEqual(result.returncode, 3, result.stderr)
@@ -2287,7 +2307,9 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             "#!/usr/bin/env bash\n"
             '[ -z "${GENERATOR_CALLS:-}" ] || printf \'%s\\n\' "$*" >> "$GENERATOR_CALLS"\n'
             '[ -z "${FAIL_GENERATE:-}" ] || { echo "generate-fern-fixture: simulated failure" >&2; exit 9; }\n'
-            'echo "generate-fern-fixture: wrote 1 files to tests/fixtures/$1/expected" >&2\n',
+            'echo "generate-fern-fixture: wrote 1 files to tests/fixtures/$1/expected" >&2\n'
+            # A log of its output the caller can no longer read.
+            '[ -z "${HIDE_LOG:-}" ] || chmod 0 "$(readlink /proc/$$/fd/2)"\n',
             encoding="utf-8",
         )
         generator.chmod(0o755)
@@ -2380,6 +2402,15 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         self.assertIn("then re-run with --only alpha", failed.stderr)
         # The failing generator's own output is shown before the fix.
         self.assertIn("generate-fern-fixture: simulated failure\n", failed.stderr)
+
+    @unittest.skipIf(not Path("/proc/self/fd").is_dir() or os.geteuid() == 0,
+                     "the stand-in hides its log through /proc, from a reader file modes deny")
+    def test_a_summary_it_cannot_read_names_the_log_and_what_to_review(self) -> None:
+        result = self.run_script("--only", "alpha", HIDE_LOG="1")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("generate-corpus-fixtures: generated alpha, but could not read the generator's summary "
+                      "from ", result.stderr)
+        self.assertIn("review tests/fixtures/alpha/expected, then wire it into the e2e manifest", result.stderr)
 
     def test_a_batch_reports_one_line_for_every_fixture_it_generated(self) -> None:
         beta = self.root / "tests" / "fixtures" / "beta"

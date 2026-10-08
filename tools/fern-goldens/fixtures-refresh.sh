@@ -43,7 +43,9 @@ workdir="$(mktemp -d)" || {
 step=""
 on_exit() {
   local status=$?
-  rm -rf "$workdir"
+  # A cleanup that fails names what is left; it never replaces the run's own status.
+  rm -rf "$workdir" 2>/dev/null ||
+    echo "fixtures-refresh: could not remove the scratch directory $workdir — delete it (rm -rf $workdir)" >&2
   [ "$status" -eq 0 ] || [ -z "$step" ] ||
     echo "fixtures-refresh: stopped while $step (exit $status) — fix the error above, then" \
          "re-run; restore any partly refreshed fixture with git checkout -- tests/fixtures/" >&2

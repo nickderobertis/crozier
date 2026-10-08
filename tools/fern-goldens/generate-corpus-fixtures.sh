@@ -183,7 +183,11 @@ for item in "${plan[@]}"; do
   fi
 done
 if [ "${#generated[@]}" -eq 1 ]; then
-  tail -n 1 "$log" >&2
+  tail -n 1 "$log" >&2 || {
+    echo "generate-corpus-fixtures: generated ${generated[0]}, but could not read the generator's summary" \
+         "from $log — review tests/fixtures/${generated[0]}/expected, then wire it into the e2e manifest" >&2
+    exit 1
+  }
 elif [ "${#generated[@]}" -gt 1 ]; then
   echo "generate-corpus-fixtures: generated ${#generated[@]} fixtures (${generated[*]}) — review," \
        "then wire them into the e2e manifest (see docs/matching.md)" >&2
