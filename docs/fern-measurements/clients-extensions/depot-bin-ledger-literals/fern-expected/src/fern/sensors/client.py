@@ -70,6 +70,110 @@ class SensorsClient:
         _response = self._raw_client.float_(sensor_id, request_options=request_options)
         return _response.data
 
+    def bool_(self, sensor_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> bool:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        bool
+            True when closed.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.sensors.bool_(
+            sensor_id="sensorId",
+        )
+        """
+        _response = self._raw_client.bool_(sensor_id, request_options=request_options)
+        return _response.data
+
+    def int_(self, sensor_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> int:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        int
+            Lifts since the last service.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.sensors.int_(
+            sensor_id="sensorId",
+        )
+        """
+        _response = self._raw_client.int_(sensor_id, request_options=request_options)
+        return _response.data
+
+    def long_(self, sensor_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> int:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        int
+            Lifetime lifts.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.sensors.long_(
+            sensor_id="sensorId",
+        )
+        """
+        _response = self._raw_client.long_(sensor_id, request_options=request_options)
+        return _response.data
+
+    def uuid_(self, sensor_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> str:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        str
+            The sensor's hardware id.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.sensors.uuid_(
+            sensor_id="sensorId",
+        )
+        """
+        _response = self._raw_client.uuid_(sensor_id, request_options=request_options)
+        return _response.data
+
 
 class AsyncSensorsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -148,4 +252,140 @@ class AsyncSensorsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.float_(sensor_id, request_options=request_options)
+        return _response.data
+
+    async def bool_(self, sensor_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> bool:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        bool
+            True when closed.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.sensors.bool_(
+                sensor_id="sensorId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.bool_(sensor_id, request_options=request_options)
+        return _response.data
+
+    async def int_(self, sensor_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> int:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        int
+            Lifts since the last service.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.sensors.int_(
+                sensor_id="sensorId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.int_(sensor_id, request_options=request_options)
+        return _response.data
+
+    async def long_(self, sensor_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> int:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        int
+            Lifetime lifts.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.sensors.long_(
+                sensor_id="sensorId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.long_(sensor_id, request_options=request_options)
+        return _response.data
+
+    async def uuid_(self, sensor_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> str:
+        """
+        Parameters
+        ----------
+        sensor_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        str
+            The sensor's hardware id.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.sensors.uuid_(
+                sensor_id="sensorId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.uuid_(sensor_id, request_options=request_options)
         return _response.data

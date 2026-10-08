@@ -86,6 +86,78 @@ paths:
             application/json:
               schema:
                 type: number
+  /sensors/{sensorId}/lid:
+    get:
+      tags: [Sensors]
+      operationId: bool
+      summary: Whether a lid sensor reads closed.
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: True when closed.
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /sensors/{sensorId}/lifts:
+    get:
+      tags: [Sensors]
+      operationId: int
+      summary: A lift counter's count.
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lifts since the last service.
+          content:
+            application/json:
+              schema:
+                type: integer
+  /sensors/{sensorId}/odometer:
+    get:
+      tags: [Sensors]
+      operationId: long
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lifetime lifts.
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+  /sensors/{sensorId}/serial:
+    get:
+      tags: [Sensors]
+      operationId: uuid
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The sensor's hardware id.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
 components:
   schemas:
     Bin:

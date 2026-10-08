@@ -8491,9 +8491,6 @@ fn declared_group(op: &Operation) -> Option<Vec<&str>> {
 /// `_dispatch/_private`, `client._dispatch._private`).
 fn group_segment_module(segment: &str) -> String {
     let name = segment.trim_start_matches('_');
-    if name.is_empty() {
-        return snake_module(segment);
-    }
     format!(
         "{}{}",
         &segment[..segment.len() - name.len()],

@@ -2685,7 +2685,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "0a66a1200ca30b17",
+    "endpoint_method_name": "c3aef4805c767974",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -2824,6 +2824,15 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     ident, prefixed = _sanitized(method)
     reserved = is_reserved(ident) and ident not in {"list", "set"}
     return (f"{ident}_" if reserved else ident), prefixed
+
+
+# `sdk_group_segments` and `sdk_method_named` port two `Operation` accessors of
+# `src/openapi.rs`; NamingMirrorTests recomputes each one's normalized-body digest,
+# so an accessor edited there fails until its port is read again here.
+EXTENSION_ACCESSOR_PORT_DIGESTS = {
+    ("src/openapi.rs", "sdk_group_name"): "4c285625fb40715e",
+    ("src/openapi.rs", "sdk_method_name"): "05643ea13596fa87",
+}
 
 
 def sdk_group_segments(operation: dict[Any, Any]) -> list[str]:
