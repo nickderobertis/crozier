@@ -182,6 +182,15 @@ class FixtureNewTests(unittest.TestCase):
         (self.fixtures / "shapes").mkdir()
         self.assertEqual(1, self.scaffold("shapes").returncode)
 
+    def test_a_dangling_symlink_in_its_place_is_refused_and_left_alone(self) -> None:
+        link = self.fixtures / "shapes"
+        link.symlink_to(self.root / "nowhere")
+        refused = self.scaffold("shapes")
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("already exists — refusing to overwrite", refused.stderr)
+        self.assertTrue(link.is_symlink())
+        self.assertFalse((self.root / "nowhere").exists())
+
     def test_a_fixture_it_cannot_write_is_left_absent_with_the_fix(self) -> None:
         if os.geteuid() == 0:
             self.skipTest("root writes through a read-only directory")

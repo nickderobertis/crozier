@@ -40,19 +40,26 @@ valid_fixture_name "$name" || {
 }
 
 dir="$repo_root/tests/fixtures/$name"
-[ -e "$dir" ] && { echo "fixture-new: $dir already exists — refusing to overwrite" >&2; exit 1; }
+# A symlink counts as existing even when it dangles, which `-e` alone misses.
+if [ -e "$dir" ] || [ -L "$dir" ]; then
+  echo "fixture-new: $dir already exists — refusing to overwrite" >&2
+  exit 1
+fi
 
-# A fixture directory is created whole or not at all.
+# A fixture directory is created whole or not at all, and the cleanup removes
+# only a directory this run made.
+made=""
 undo_partial_fixture() {
   echo "fixture-new: could not create $dir/openapi.yml — check that tests/fixtures/ is writable and" \
        "the disk has free space, then re-run" >&2
-  if ! rm -rf "$dir"; then
+  if [ -n "$made" ] && ! rm -rf "$dir"; then
     echo "fixture-new: could not remove the partial $dir either — delete it by hand (rm -rf $dir)" \
          "before re-running" >&2
   fi
   exit 1
 }
 mkdir -p "$dir" || undo_partial_fixture
+made=1
 cat > "$dir/openapi.yml" <<'YAML' || undo_partial_fixture
 # PLACEHOLDER — replace with the OpenAPI document this fixture should match.
 # crozier consumes only this file; author the shapes you want to exercise, then
