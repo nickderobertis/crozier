@@ -1,0 +1,165 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:17
+                                              client = FernApi(="YOUR_", )
+                                                              ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:22
+                                              client = AsyncFernApi(="YOUR_", )
+                                                                   ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:17
+                                              client = FernApi(="YOUR_", )
+                                                              ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 5:22
+                                              client = AsyncFernApi(="YOUR_", )
+                                                                   ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:17
+                                              client = FernApi(="YOUR_", )
+                                                              ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 5:22
+                                              client = AsyncFernApi(="YOUR_", )
+                                                                   ^
+                                          ParseError: bad input
+                                          Output mode: downloadFiles
+                                          Failed to format Cannot parse: 3:17
+                                              client = FernApi(="YOUR_", )
+                                                              ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 5:22
+                                              client = AsyncFernApi(="YOUR_", )
+                                                                   ^
+                                          ParseError: bad input
+                                          Failed to run command: ruff check --fix --no-cache --ignore E741 /fern/output
+                                          b'fern/output/src/fern/client.py:63:7: SyntaxError: Expected \',\', found \':\'\n   |\n61 |     """\n62 |     def __init__(self, *, base_url: typing.Optional[str] = None, environment: FernApiEnvironment = FernApiEnvironment.DEFAULT\n63 |     , : str, headers: typing.Optional[typing.Dict[str, str]] = None, timeout: typing.Optional[float] = None, max_retries: typing.Optio\xe2\x80\xa6\n   |       ^\n64 |         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None\n65 |         _defaulted_max_retries = max_retries if max_retries is not None else 2\n   |\n\nfern/output/src/fern/client.py:66:118: SyntaxError: Expected \',\', found \'=\'\n   |\n64 | \xe2\x80\xa6     _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None\n65 | \xe2\x80\xa6     _defaulted_max_retries = max_retries if max_retries is not None else 2\n66 | \xe2\x80\xa6     self._client_wrapper = SyncClientWrapper(base_url=_get_base_url(base_url=base_url, environment=environment), =, headers=headers,\xe2\x80\xa6\n   |                                                                                                                    ^\n67 | \xe2\x80\xa6     , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max_s\xe2\x80\xa6\n68 | \xe2\x80\xa6     self._raw_client = RawFernApi(client_wrapper=self._client_wrapper)\n   |\n\nfern/output/src/fern/client.py:66:119: SyntaxError: Expected an expression or a \')\'\n   |\n64 | \xe2\x80\xa6     _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None\n65 | \xe2\x80\xa6     _defaulted_max_retries = max_retries if max_retries is not None else 2\n66 | \xe2\x80\xa6     self._client_wrapper = SyncClientWrapper(base_url=_get_base_url(base_url=base_url, environment=environment), =, headers=headers,\xe2\x80\xa6\n   |                                                                                                                     ^\n67 | \xe2\x80\xa6     , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max_s\xe2\x80\xa6\n68 | \xe2\x80\xa6     self._raw_client = RawFernApi(client_wrapper=self._client_wrapper)\n   |\n\nfern/output/src/fern/client.py:168:7: SyntaxError: Expected \',\', found \':\'\n    |\n166 |     """\n167 |     def __init__(self, *, base_url: typing.Optional[str] = None, environment: FernApiEnvironment = FernApiEnvironment.DEFAULT\n168 |     , : str, headers: typing.Optional[typing.Dict[str, str]] = None, timeout: typing.Optional[float] = None, max_retries: typing.Opti\xe2\x80\xa6\n    |       ^\n169 |         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None\n170 |         _defaulted_max_retries = max_retries if max_retries is not None else 2\n    |\n\nfern/output/src/fern/client.py:171:119: SyntaxError: Expected \',\', found \'=\'\n    |\n169 | \xe2\x80\xa6     _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None\n170 | \xe2\x80\xa6     _defaulted_max_retries = max_retries if max_retries is not None else 2\n171 | \xe2\x80\xa6     self._client_wrapper = AsyncClientWrapper(base_url=_get_base_url(base_url=base_url, environment=environment), =, headers=header\xe2\x80\xa6\n    |                                                                                                                     ^\n172 | \xe2\x80\xa6     , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max_\xe2\x80\xa6\n173 | \xe2\x80\xa6     self._raw_client = AsyncRawFernApi(client_wrapper=self._client_wrapper)\n    |\n\nfern/output/src/fern/client.py:171:120: SyntaxError: Expected an expression or a \')\'\n    |\n169 | \xe2\x80\xa6     _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None\n170 | \xe2\x80\xa6     _defaulted_max_retries = max_retries if max_retries is not None else 2\n171 | \xe2\x80\xa6     self._client_wrapper = AsyncClientWrapper(base_url=_get_base_url(base_url=base_url, environment=environment), =, headers=header\xe2\x80\xa6\n    |                                                                                                                      ^\n172 | \xe2\x80\xa6     , timeout=_defaulted_timeout, max_retries=_defaulted_max_retries, stream_reconnection_enabled=stream_reconnection_enabled, max_\xe2\x80\xa6\n173 | \xe2\x80\xa6     self._raw_client = AsyncRawFernApi(client_wrapper=self._client_wrapper)\n    |\n\nfern/output/src/fern/core/client_wrapper.py:10:27: SyntaxError: Expected \',\', found \':\'\n   |\n 8 | from .http_client import AsyncHttpClient\n 9 | class BaseClientWrapper:\n10 |     def __init__(self, *, : str, headers: typing.Optional[typing.Dict[str, str]] = None, base_url: str, timeout: typing.Optional[float\xe2\x80\xa6\n   |                           ^\n11 |         self._ = \n12 |         self._headers = headers\n   |\n\nfern/output/src/fern/core/client_wrapper.py:11:18: SyntaxError: Expected an expression\n   |\n 9 | class BaseClientWrapper:\n10 |     def __init__(self, *, : str, headers: typing.Optional[typing.Dict[str, str]] = None, base_url: str, timeout: typing.Optional[float\xe2\x80\xa6\n11 |         self._ = \n   |                  ^\n12 |         self._headers = headers\n13 |         self._base_url = base_url\n14 |         self._timeout = timeout\n   |\n\nfern/output/src/fern/core/client_wrapper.py:52:27: SyntaxError: Expected \',\', found \':\'\n   |\n50 |         return self._max_stream_reconnection_attempts\n51 | class SyncClientWrapper(BaseClientWrapper):\n52 |     def __init__(self, *, : str, headers: typing.Optional[typing.Dict[str, str]] = None, base_url: str, timeout: typing.Optional[float\xe2\x80\xa6\n   |                           ^\n53 |         super().__init__(=, headers=headers, base_url=base_url, timeout=timeout, max_retries=max_retries, stream_reconnection_enabled=\xe2\x80\xa6\n54 |         self.httpx_client = HttpClient(httpx_client=httpx_client, base_headers=self.get_headers, base_timeout=self.get_timeout, base_u\xe2\x80\xa6\n   |\n\nfern/output/src/fern/core/client_wrapper.py:53:26: SyntaxError: Expected an expression or a \')\'\n   |\n51 | class SyncClientWrapper(BaseClientWrapper):\n52 |     def __init__(self, *, : str, headers: typing.Optional[typing.Dict[str, str]] = None, base_url: str, timeout: typing.Optional[float\xe2\x80\xa6\n53 |         super().__init__(=, headers=headers, base_url=base_url, timeout=timeout, max_retries=max_retries, stream_reconnection_enabled=\xe2\x80\xa6\n   |                          ^\n54 |         self.httpx_client = HttpClient(httpx_client=httpx_client, base_headers=self.get_headers, base_timeout=self.get_timeout, base_u\xe2\x80\xa6\n55 | class AsyncClientWrapper(BaseClientWrapper):\n   |\n\nfern/output/src/fern/core/client_wrapper.py:53:27: SyntaxError: Expected an expression or a \')\'\n   |\n51 | class SyncClientWrapper(BaseClientWrapper):\n52 |     def __init__(self, *, : str, headers: typing.Optional[typing.Dict[str, str]] = None, base_url: str, timeout: typing.Optional[float\xe2\x80\xa6\n53 |         super().__init__(=, headers=headers, base_url=base_url, timeout=timeout, max_retries=max_retries, stream_reconnection_enabled=\xe2\x80\xa6\n   |                           ^\n54 |         self.httpx_client = HttpClient(httpx_client=httpx_client, base_headers=self.get_headers, base_timeout=self.get_timeout, base_u\xe2\x80\xa6\n55 | class AsyncClientWrapper(BaseClientWrapper):\n   |\n\nfern/output/src/fern/core/client_wrapper.py:56:27: SyntaxError: Expected \',\', found \':\'\n   |\n54 |         self.httpx_client = HttpClient(httpx_client=httpx_client, base_headers=self.get_headers, base_timeout=self.get_timeout, base_u\xe2\x80\xa6\n55 | class AsyncClientWrapper(BaseClientWrapper):\n56 |     def __init__(self, *, : str, headers: typing.Optional[typing.Dict[str, str]] = None, base_url: str, timeout: typing.Optional[float\xe2\x80\xa6\n   |                           ^\n57 |         super().__init__(=, headers=headers, base_url=base_url, timeout=timeout, max_retries=max_retries, stream_reconnection_enabled=\xe2\x80\xa6\n58 |         self._async_token = async_token\n   |\n\nfern/output/src/fern/core/client_wrapper.py:57:26: SyntaxError: Expected an expression or a \')\'\n   |\n55 | class AsyncClientWrapper(BaseClientWrapper):\n56 |     def __init__(self, *, : str, headers: typing.Optional[typing.Dict[str, str]] = None, base_url: str, timeout: typing.Optional[float\xe2\x80\xa6\n57 |         super().__init__(=, headers=headers, base_url=base_url, timeout=timeout, max_retries=max_retries, stream_reconnection_enabled=\xe2\x80\xa6\n   |                          ^\n58 |         self._async_token = async_token\n59 |         self.httpx_client = AsyncHttpClient(httpx_client=httpx_client, base_headers=self.get_headers, base_timeout=self.get_timeout, b\xe2\x80\xa6\n   |\n\nfern/output/src/fern/core/client_wrapper.py:57:27: SyntaxError: Expected an expression or a \')\'\n   |\n55 | class AsyncClientWrapper(BaseClientWrapper):\n56 |     def __init__(self, *, : str, headers: typing.Optional[typing.Dict[str, str]] = None, base_url: str, timeout: typing.Optional[float\xe2\x80\xa6\n57 |         super().__init__(=, headers=headers, base_url=base_url, timeout=timeout, max_retries=max_retries, stream_reconnection_enabled=\xe2\x80\xa6\n   |                           ^\n58 |         self._async_token = async_token\n59 |         self.httpx_client = AsyncHttpClient(httpx_client=httpx_client, base_headers=self.get_headers, base_timeout=self.get_timeout, b\xe2\x80\xa6\n   |\n\nFound 17 errors (3 fixed, 14 remaining).\n'
+                                          b''
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                          * 'smart_union' has been removed
+                                            warnings.warn(message, UserWarning)
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                            warnings.warn(message, UserWarning)
+                                          Traceback (most recent call last):
+                                            File "/src/fern_python/cli/publisher.py", line 108, in _run_command
+                                              completed_command = subprocess.run(
+                                                  command,
+                                              ...<4 lines>...
+                                                  env=env,
+                                              )
+                                            File "/usr/local/lib/python3.13/subprocess.py", line 577, in run
+                                              raise CalledProcessError(retcode, process.args,
+                                                                       output=stdout, stderr=stderr)
+                                          subprocess.CalledProcessError: Command '['ruff', 'check', '--fix', '--no-cache', '--ignore', 'E741', '/fern/output']' returned non-zero exit status 1.
+                                          
+                                          During handling of the above exception, another exception occurred:
+                                          
+                                          Traceback (most recent call last):
+                                            File "<frozen runpy>", line 203, in _run_module_as_main
+                                            File "<frozen runpy>", line 88, in _run_code
+                                            File "/src/fern_python/generators/sdk/cli.py", line 13, in <module>
+                                              typer.run(main)
+                                              ~~~~~~~~~^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 1050, in run
+                                              app()
+                                              ~~~^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 328, in __call__
+                                              raise e
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 311, in __call__
+                                              return get_command(self)(*args, **kwargs)
+                                                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1524, in __call__
+                                              return self.main(*args, **kwargs)
+                                                     ~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 716, in main
+                                              return _main(
+                                                  self,
+                                              ...<5 lines>...
+                                                  **extra,
+                                              )
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 216, in _main
+                                              rv = self.invoke(ctx)
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1308, in invoke
+                                              return ctx.invoke(self.callback, **ctx.params)
+                                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 877, in invoke
+                                              return callback(*args, **kwargs)
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 683, in wrapper
+                                              return callback(**use_params)  # type: ignore
+                                            File "/src/fern_python/generators/sdk/cli.py", line 9, in main
+                                              cli.run()
+                                              ~~~~~~~^^
+                                            File "/src/fern_python/cli/generator_cli.py", line 60, in run
+                                              raise e
+                                            File "/src/fern_python/cli/generator_cli.py", line 44, in run
+                                              self.abstract_generator.generate_project(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  ir=ir,
+                                                  ^^^^^^
+                                                  generator_config=config,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/abstract_generator.py", line 225, in generate_project
+                                              publisher.run_ruff_check_fix("/fern/output", cwd="/")
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix
+                                              self._run_command(
+                                              ~~~~~~~~~~~~~~~~~^
+                                                  command=command,
+                                                  ^^^^^^^^^^^^^^^^
+                                                  safe_command=" ".join(command),
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  cwd=cwd,
+                                                  ^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/publisher.py", line 131, in _run_command
+                                              raise Exception("Failed to run command", safe_command)
+                                          Exception: ('Failed to run command', 'ruff check --fix --no-cache --ignore E741 /fern/output')
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.

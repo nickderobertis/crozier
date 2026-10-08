@@ -103,3 +103,12 @@ certified tree digest and pin in `evidence.toml`. Their Python-enum output and
 complete tree comparisons. Alias journeys use both spellings and conflicting
 values. The separate wire journey verifies values, signatures, defaults and
 positional ordering, including failure and recovery cases.
+
+The independently authored `warehouse-header-token` additionally proves that
+a structured global-header declaration passes its wire name through unchanged.
+It uses the same `global-headers-extension` search above: no selected publisher
+description declares that extension, so the invalid-token variation also has
+no complete real witness. This is **search-incomplete**, not a claim that no
+public description could contain it. The certified accepted outputs and the
+direct unknown-alias observation are recorded in
+[`header-token-alias`](../fern-measurements/header-token-alias/README.md).

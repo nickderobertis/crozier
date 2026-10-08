@@ -2681,6 +2681,7 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
         "observatory-route-order",
         "observatory-unlocated-parameter",
         "observatory-base-path",
+        "warehouse-header-token",
     ] {
         for mode in ["literals", "python-enums"] {
             let expected = root.join(case).join("fern-expected");
@@ -2697,7 +2698,11 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
                 let overlay = Path::new(env!("CARGO_MANIFEST_DIR"))
                     .join("docs/fern-measurements/parameter-literals");
                 std::fs::copy(
-                    overlay.join("metadata.json"),
+                    overlay.join(if case == "warehouse-header-token" {
+                        "warehouse-header-token.metadata.json"
+                    } else {
+                        "metadata.json"
+                    }),
                     literal_tree.path().join(".fern/metadata.json"),
                 )
                 .unwrap();
@@ -2812,6 +2817,7 @@ fn parameter_extension_aliases_match_and_win() {
         "observatory-query-extensions",
         "observatory-client-headers",
         "observatory-client-variable",
+        "warehouse-header-token",
     ] {
         let case = root.join(name);
         let original: serde_json::Value =
@@ -2832,6 +2838,35 @@ fn parameter_extension_aliases_match_and_win() {
                 failures.join("\n\n")
             );
         }
+    }
+}
+
+#[test]
+fn global_header_wire_names_match_certified_pass_through_for_both_aliases() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/warehouse-header-token");
+    let original: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(root.join("openapi.yml")).unwrap()).unwrap();
+    for mode in ["fern", "crozier", "canonical-wins"] {
+        let mut document = original.clone();
+        if mode != "fern" {
+            let header = document
+                .as_object_mut()
+                .unwrap()
+                .remove("x-fern-global-headers")
+                .unwrap();
+            document["x-crozier-global-headers"] = header;
+            if mode == "canonical-wins" {
+                document["x-fern-global-headers"] =
+                    serde_json::json!([{"header": "X-Other", "name": "other"}]);
+            }
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("header-wire-name.json");
+        std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+        let expected = root.join("fern-expected");
+        let failures = filtered_tree_failures(mode, &golden_path(&expected), &spec, &expected, &[]);
+        assert!(failures.is_empty(), "{mode}: {}", failures.join("\n\n"));
     }
 }
 
@@ -19066,6 +19101,47 @@ fn enum_default_refusal_recovers_with_a_retained_default() {
     }
 }
 
+#[test]
+fn global_header_constructor_name_refusals_accept_both_aliases_and_canonical_precedence() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-lint-failure");
+    for probe in [
+        "global-header-empty-name-probe.yml",
+        "global-header-punctuation-name-probe.yml",
+    ] {
+        let original: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(root.join(probe)).unwrap()).unwrap();
+        for conflict in [false, true] {
+            let mut document = original.clone();
+            let headers = document
+                .as_object_mut()
+                .unwrap()
+                .remove("x-fern-global-headers")
+                .unwrap();
+            let name = headers[0]["name"].as_str().unwrap().to_owned();
+            document["x-crozier-global-headers"] = headers;
+            if conflict {
+                document["x-fern-global-headers"] =
+                    serde_json::json!([{"header": "X-Other", "name": "other"}]);
+            }
+            let scratch = tempfile::tempdir().unwrap();
+            let spec = scratch.path().join("openapi.json");
+            std::fs::write(&spec, serde_json::to_vec(&document).unwrap()).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier, &spec, strict).unwrap();
+                let failures = refused_failures(
+                    "generator-lint-failure",
+                    &run,
+                    &format!("constructor name {name:?}"),
+                    strict,
+                );
+                assert!(failures.is_empty(), "{probe}: {}", failures.join("\n"));
+            }
+        }
+    }
+}
+
 /// `generator-lint-failure`: each shape whose generated Python pinned Fern's own
 /// `ruff check` rejects is refused in both modes, naming the element, while
 /// every measured near-miss Fern generates from writes the same SDK in both.
@@ -19079,6 +19155,8 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
             "probe.yml",
             "type Event variants \"user:account_deleted\" and \"user_account:deleted\" are both Event_UserAccountDeleted",
         ),
+        ("global-header-punctuation-name-probe.yml", "global header \"X-Ledger\" constructor name \"/\""),
+        ("global-header-empty-name-probe.yml", "global header \"X-Ledger\" constructor name \"\""),
         ("root-collision-probe.yml", "GET /search root method and sub-client search"),
         (
             "tag-suffix-collision-probe.yml",

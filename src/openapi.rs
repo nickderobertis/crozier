@@ -97,9 +97,9 @@ pub struct OpenApi {
 #[derive(Debug, Clone, Deserialize)]
 pub struct GlobalHeaderExtension {
     /// The header name sent on the wire.
-    pub header: String,
+    pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.67.1/SDK 5.20.0): docs/fern-measurements/header-token-alias/README.md.
     /// The client constructor argument name.
-    pub name: String,
+    pub name: String, // llmlint: ignore[invalid_states_unrepresentable] The shared deserialized contract remains String; document_refusals::check_sdk rejects an empty normalized constructor name before emission.
 }
 
 /// A document-level base path (`x-crozier-base-path` / `x-fern-base-path`): a
@@ -883,10 +883,10 @@ pub struct Parameter {
     pub ignore_fern: Option<bool>,
     /// The SDK argument name; the wire name remains unchanged. (crozier spelling).
     #[serde(rename = "x-crozier-parameter-name", default)]
-    pub parameter_name_crozier: Option<String>,
+    pub parameter_name_crozier: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
     /// The SDK argument name; the wire name remains unchanged. (fern spelling).
     #[serde(rename = "x-fern-parameter-name", default)]
-    pub parameter_name_fern: Option<String>,
+    pub parameter_name_fern: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
     /// The generated argument default. (crozier spelling).
     #[serde(rename = "x-crozier-default", default)]
     pub default_crozier: Option<serde_json::Value>,
@@ -895,10 +895,10 @@ pub struct Parameter {
     pub default_fern: Option<serde_json::Value>,
     /// The document SDK variable supplying this path parameter. (crozier spelling).
     #[serde(rename = "x-crozier-sdk-variable", default)]
-    pub sdk_variable_crozier: Option<String>,
+    pub sdk_variable_crozier: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
     /// The document SDK variable supplying this path parameter. (fern spelling).
     #[serde(rename = "x-fern-sdk-variable", default)]
-    pub sdk_variable_fern: Option<String>,
+    pub sdk_variable_fern: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
 }
 
 impl Parameter {

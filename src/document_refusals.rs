@@ -1990,6 +1990,21 @@ pub fn check_sdk(
         return refusal(path, strict, Class::ExampleTypeMismatch, &element);
     }
     let class = Class::GeneratorLintFailure;
+    if let Some(header) = doc
+        .global_header_extensions()
+        .iter()
+        .find(|header| crate::naming::field_name(&header.name).is_empty())
+    {
+        return refusal(
+            path,
+            strict,
+            class,
+            &format!(
+                "global header {:?} constructor name {:?}",
+                header.header, header.name
+            ),
+        );
+    }
     for decl in ir
         .types
         .iter()

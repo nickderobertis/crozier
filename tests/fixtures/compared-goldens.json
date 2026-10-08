@@ -97,6 +97,7 @@
     "docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected": {},
     "docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected": {},
     "docs/openapi-surface/handwritten/unread-date-time-examples/fern-expected": {},
+    "docs/openapi-surface/handwritten/warehouse-header-token/fern-expected": {},
     "docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-closed-object": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-composed": {},

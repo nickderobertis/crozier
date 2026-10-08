@@ -1,6 +1,6 @@
 # Certified literals setting for parameter proofs
 
-These nine inputs are the independently authored documents under
+These ten inputs are the independently authored documents under
 `docs/openapi-surface/handwritten/`. Their complete Python-enum trees and
 pins are recorded there. Each was also generated unedited by CLI 5.67.1 with
 `fernapi/fern-python-sdk` 5.20.0, `enum_type` unset (literals), package `fern`,
@@ -14,4 +14,8 @@ records each complete stripped tree's Contract A digest. The real-binary test
 reconstructs the tree, checks that digest, and compares every generated file
 bidirectionally through `src/parity.rs`. Neither the source nor generated tree
 was edited to fit crozier. The overlay is shared because its bytes are identical
-for all nine inputs; the exact per-input digest guards that claim.
+for the original nine inputs; the exact per-input digest guards that claim.
+
+Warehouse Ledger retains its complete certified metadata in
+`warehouse-header-token.metadata.json`.
+Its separate digest guards that exact literals tree.

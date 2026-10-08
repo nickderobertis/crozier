@@ -7,5 +7,6 @@
   "observatory-nullable-array": "44bb73bfce83d7fd9e41daa606b097124361750d4a8254998ff21b9efcf4d3cb",
   "observatory-query-extensions": "60ffb7165168fe5ec78228ae35e7a3c322054282c83fbac7dbae26f12c659253",
   "observatory-route-order": "a99467e0a69490f5d1d88aea8e14661aa1ac2e1398ceba2acf78386b758c1b99",
-  "observatory-unlocated-parameter": "3041b8632a201979d8c6bb0d3fde4faba5f181420d15c4aea15bee7e2e0747ea"
+  "observatory-unlocated-parameter": "3041b8632a201979d8c6bb0d3fde4faba5f181420d15c4aea15bee7e2e0747ea",
+  "warehouse-header-token": "b266a34dc47185e1dbddaf54a3b2f638fccb92d57fc56ff5a834aeacc213d6b6"
 }
