@@ -1090,10 +1090,18 @@ fn repo_root() -> &'static Path {
 /// -p crozier` leaves in this profile's target directory, beside the `deps/`
 /// holding this test executable. `crozier-e2e:test` depends on `crozier:build`,
 /// so through `just test-e2e` that is always a freshly built artifact. A
-/// `CARGO_BIN_EXE_crozier` set in the environment overrides the lookup.
+/// `CARGO_BIN_EXE_crozier` set in the environment overrides the lookup, and is
+/// held to the same check: it must name a file.
 fn crozier_bin() -> PathBuf {
     if let Some(explicit) = std::env::var_os("CARGO_BIN_EXE_crozier") {
-        return PathBuf::from(explicit);
+        let binary = PathBuf::from(explicit);
+        assert!(
+            binary.is_file(),
+            "CARGO_BIN_EXE_crozier names no file ({}): unset it to drive the binary \
+             `crozier:build` leaves beside this suite, or point it at a built crozier",
+            binary.display()
+        );
+        return binary;
     }
     let exe = std::env::current_exe().expect("the test executable has a path");
     let mut profile = exe
@@ -10285,6 +10293,38 @@ fn help_lists_generate() {
         .assert()
         .success()
         .stdout(predicate::str::contains("generate"));
+}
+
+/// The `CARGO_BIN_EXE_crozier` override, driven through this suite's own
+/// binary: one naming no file fails the journey before anything runs, naming
+/// the variable; one naming the built binary drives it.
+#[test]
+fn a_binary_override_must_name_a_file() {
+    let suite = std::env::current_exe().expect("the e2e test binary");
+    let journey = |binary: &std::ffi::OsStr| {
+        std::process::Command::new(&suite)
+            .args(["help_lists_generate", "--exact", "--test-threads", "1"])
+            .env("CARGO_BIN_EXE_crozier", binary)
+            .output()
+            .expect("run the suite's own binary")
+    };
+    let scratch = tempfile::tempdir().expect("scratch dir");
+    let missing = journey(scratch.path().join("no-such-crozier").as_os_str());
+    let stdout = String::from_utf8_lossy(&missing.stdout);
+    assert!(
+        !missing.status.success(),
+        "a missing override passed:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("CARGO_BIN_EXE_crozier names no file"),
+        "the failure does not name the variable:\n{stdout}"
+    );
+    let built = journey(crozier_bin().as_os_str());
+    let stdout = String::from_utf8_lossy(&built.stdout);
+    assert!(
+        built.status.success() && stdout.contains("1 passed"),
+        "{stdout}"
+    );
 }
 
 #[test]
