@@ -222,6 +222,21 @@ class TheOfflineCommandsRunEverywhere(SyntheticRoot):
         self.assertEqual(f"remote/raw.githubusercontent.com/example/schemas/{PINNED_SHA}/block.yaml",
                          corpus_sources.remote_path(PINNED_URL))
 
+    def test_check_refuses_a_pinned_url_that_decodes_out_of_its_row_and_changes_nothing(self) -> None:
+        self.commit_plain_without_fetching()
+        self.write_corpus("committed")
+        escaping = f"{RAW}/example/schemas/{PINNED_SHA}/%2e%2e/%2e%2e/escape.yaml"
+        pins = self.fixtures / "corpus-remote-ref-pins.tsv"
+        pins.write_text(pins.read_text(encoding="utf-8").replace(PINNED_URL, escaping),
+                        encoding="utf-8", newline="\n")
+        before = {path: path.read_bytes() for path in self.fixtures.rglob("*") if path.is_file()}
+        completed = run(self.root, "check")
+        self.assert_refused(completed, f"{escaping} decodes to", "which is no path inside its row's directory",
+                            "pin the reference to a plain file URL")
+        self.assertNotIn("Traceback", completed.stderr)
+        self.assertEqual(before, {path: path.read_bytes() for path in self.fixtures.rglob("*") if path.is_file()})
+        self.assertFalse((self.root / "escape.yaml").exists())
+
     def test_vendor_without_bash_on_path_names_it(self) -> None:
         empty = self.root / "no-bash"
         empty.mkdir()
