@@ -5703,7 +5703,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     && ep.body_schema_dropped
                     && ep.body_schema_shape == BodySchemaShape::Ref
                     || ep.reference_body_example.is_some()
-                        && ep.body_schema_dropped
+                        // Inline named examples keep their header. A surviving
+                        // referenced schema still follows the schema drop below.
+                        && (ep.body_schema_shape != BodySchemaShape::Ref || ep.body_schema_dropped)
                         && !ep.body_schema_is_success_response
                         && matches!(body, RequestBody::Inline(_))
                     || !ep.header_params.is_empty()

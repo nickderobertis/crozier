@@ -14508,3 +14508,21 @@ components:
         "{reference}"
     );
 }
+
+#[test]
+fn inline_named_media_examples_keep_json_headers_beside_surviving_ref_control() {
+    let files = render_registered_request_source("portfoliooptimizer.io");
+    let raw = &files["src/acme/assets_analysis/raw_client.py"];
+    for method in ["absorption_ratio", "turbulence_index"] {
+        let body = generated_python_method(raw, method);
+        assert!(
+            body.contains("\"content-type\": \"application/json\""),
+            "{body}"
+        );
+    }
+    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/json-request-shapes/openapi.yml");
+    let files = render(&std::fs::read_to_string(source).unwrap());
+    let body = generated_python_method(&files["src/acme/raw_client.py"], "summarize_field");
+    assert!(!body.contains("\"content-type\""), "{body}");
+}
