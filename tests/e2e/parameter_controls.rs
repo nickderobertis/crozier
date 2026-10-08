@@ -1,3 +1,4 @@
+// llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo/just repository with no Nx. This helper is compiled through #[path] into the e2e and generation Cargo test binaries, exercised by sdk_env_parameter_lifting_controls_reach_the_wire and parameter_lifting_controls_render_through_the_public_boundary.
 //! Shared independently authored controls for the real CLI and library boundary.
 
 pub const CASES: &[&str] = &[
