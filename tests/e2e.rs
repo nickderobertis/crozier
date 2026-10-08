@@ -2836,6 +2836,47 @@ fn parameter_extension_aliases_match_and_win() {
 }
 
 #[test]
+fn inherited_parameter_ignore_and_operation_overrides_match_complete_golden() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/observatory-query-extensions");
+    let original: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(root.join("openapi.yml")).unwrap()).unwrap();
+    for mode in ["inherited-ignore", "operation-ignore", "operation-unignore"] {
+        let mut document = original.clone();
+        let parameters = document["paths"]["/signals"]["get"]["parameters"]
+            .as_array_mut()
+            .unwrap();
+        let inherited = if mode == "operation-unignore" {
+            parameters[0]["x-crozier-ignore"] = serde_json::json!(false);
+            let mut parameter = parameters[0].clone();
+            parameter["x-crozier-ignore"] = serde_json::json!(true);
+            parameter
+        } else {
+            let parameter = parameters
+                .iter()
+                .find(|parameter| parameter["name"] == "obsolete")
+                .unwrap()
+                .clone();
+            if mode == "inherited-ignore" {
+                parameters.retain(|parameter| parameter["name"] != "obsolete");
+                parameter
+            } else {
+                let mut parameter = parameter;
+                parameter["x-fern-ignore"] = serde_json::json!(false);
+                parameter
+            }
+        };
+        document["paths"]["/signals"]["parameters"] = serde_json::json!([inherited]);
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("inherited-ignore.json");
+        std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+        let expected = root.join("fern-expected");
+        let failures = filtered_tree_failures(mode, &golden_path(&expected), &spec, &expected, &[]);
+        assert!(failures.is_empty(), "{mode}: {}", failures.join("\n\n"));
+    }
+}
+
+#[test]
 fn parameter_header_refusals_keep_adjacent_controls_generating() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-refusals");
     let (fern_version, crozier_version) = documented_parameter_extension("version", "document");
@@ -2883,6 +2924,19 @@ fn parameter_header_refusals_keep_adjacent_controls_generating() {
                 assert!(!run.files.is_empty());
             }
         }
+        if name == "version-header-redeclared-as-parameter" {
+            let mut optional = document.clone();
+            optional["paths"]["/measurements"]["get"]["parameters"][0]["required"] =
+                serde_json::json!(false);
+            let dir = tempfile::tempdir().unwrap();
+            let spec = dir.path().join("optional-header-control.json");
+            std::fs::write(&spec, serde_json::to_vec_pretty(&optional).unwrap()).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier_clean_env, &spec, strict).unwrap();
+                assert_eq!(run.code, Some(0), "{}", run.stderr);
+                assert!(!run.files.is_empty());
+            }
+        }
         if name == "header-default-differs-across-operations" {
             document["paths"]["/measurements"]["put"]["parameters"][0]["schema"]["default"] =
                 serde_json::json!("radial");
@@ -2898,6 +2952,142 @@ fn parameter_header_refusals_keep_adjacent_controls_generating() {
             assert!(!run.files.is_empty());
         }
     }
+}
+
+#[test]
+fn parameter_departures_reject_unexplained_complete_tree_differences() {
+    fn copy_tree(source: &Path, target: &Path) {
+        for rel in walk_files(source) {
+            let dest = target.join(&rel);
+            std::fs::create_dir_all(dest.parent().unwrap()).unwrap();
+            std::fs::copy(source.join(rel), dest).unwrap();
+        }
+    }
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    let mut date_client = String::new();
+    for (case, id, file, from, to) in [
+        (
+            "observatory-client-date",
+            "date-header-constructor-example",
+            "src/fern/client.py",
+            "import typing",
+            "import typing\nUNEXPLAINED_VALUE = 17",
+        ),
+        (
+            "observatory-client-variable",
+            "sdk-variable-docs-examples",
+            "reference.md",
+            "client.list_signals()",
+            "client.list_unrelated(...)",
+        ),
+    ] {
+        let expected = root.join(case).join("fern-expected");
+        let actual = tempfile::tempdir().unwrap();
+        probe_command(&root.join(case).join("openapi.yml"), actual.path())
+            .assert()
+            .success();
+        let positive =
+            crozier::parity::compare_trees(&expected, actual.path(), None, true).unwrap();
+        assert!(
+            positive.differences.is_empty(),
+            "{case}: {:?}",
+            positive.differences
+        );
+        assert!(positive
+            .departures
+            .iter()
+            .any(|departure| departure.id == id));
+        if case == "observatory-client-date" {
+            date_client =
+                std::fs::read_to_string(actual.path().join("src/fern/client.py")).unwrap();
+        }
+        let edited = tempfile::tempdir().unwrap();
+        copy_tree(&expected, edited.path());
+        let text = std::fs::read_to_string(edited.path().join(file)).unwrap();
+        assert!(text.contains(from));
+        std::fs::write(edited.path().join(file), text.replacen(from, to, 1)).unwrap();
+        let negative =
+            crozier::parity::compare_trees(edited.path(), actual.path(), None, true).unwrap();
+        assert!(negative.differences.iter().any(|(path, _)| path == file));
+        assert!(!negative
+            .departures
+            .iter()
+            .any(|departure| departure.file == file && departure.id == id));
+    }
+
+    // A temporal-looking constructor example on a string header cannot use the
+    // date correction, even when the rest of the complete SDK is identical.
+    let mut document: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(root.join("observatory-client-date/openapi.yml")).unwrap(),
+    )
+    .unwrap();
+    document["paths"]["/signals"]["get"]["parameters"][0]["schema"]
+        .as_object_mut()
+        .unwrap()
+        .remove("format");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("string-header.json");
+    std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+    let actual = tempfile::tempdir().unwrap();
+    probe_command(&spec, actual.path()).assert().success();
+    let reference = tempfile::tempdir().unwrap();
+    copy_tree(actual.path(), reference.path());
+    assert!(
+        crozier::parity::compare_trees(reference.path(), actual.path(), None, true)
+            .unwrap()
+            .differences
+            .is_empty()
+    );
+    let file = "src/fern/client.py";
+    assert!(date_client.contains("import datetime as dt"));
+    let corrupt = date_client
+        .replace("import datetime as dt\n", "")
+        .replace("dt.date", "str");
+    // Reproduce an emitter regression: temporal constructor examples on an
+    // otherwise string-typed client must remain an unexplained difference.
+    std::fs::write(actual.path().join(file), corrupt).unwrap();
+    let negative =
+        crozier::parity::compare_trees(reference.path(), actual.path(), None, true).unwrap();
+    assert!(negative.differences.iter().any(|(path, _)| path == file));
+    assert!(!negative
+        .departures
+        .iter()
+        .any(|departure| departure.id == "date-header-constructor-example"));
+}
+
+fn parameter_wire_server_python() -> &'static str {
+    r#"
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import httpx
+
+def start_wire_server(answer):
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+        def respond(self):
+            content = self.rfile.read(int(self.headers.get('Content-Length', '0')))
+            request = httpx.Request(
+                self.command, f'http://127.0.0.1:{self.server.server_port}{self.path}',
+                headers=list(self.headers.items()), content=content,
+            )
+            response = answer(request)
+            self.send_response(response.status_code)
+            for key, value in response.headers.items():
+                if key.lower() != 'content-length':
+                    self.send_header(key, value)
+            self.send_header('Content-Length', str(len(response.content)))
+            self.send_header('Connection', 'close')
+            self.end_headers()
+            self.wfile.write(response.content)
+        do_GET = respond
+        do_POST = respond
+        do_PUT = respond
+    server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    worker = threading.Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    return server, worker, f'http://127.0.0.1:{server.server_port}'
+"#
 }
 
 /// The generated methods use their public signatures and the declared wire
@@ -2944,7 +3134,8 @@ sent = []
 def answer(request):
     sent.append(request)
     return httpx.Response(200, json=['signal'])
-ctor = dict(base_url='https://signals.test', httpx_client=httpx.Client(transport=httpx.MockTransport(answer)))
+server, worker, base_url = start_wire_server(answer)
+ctor = dict(base_url=base_url, httpx_client=httpx.Client(trust_env=False))
 if case.endswith('client-date'):
     ctor['sampling_day'] = datetime.date(2026, 4, 9)
 elif case.endswith('client-headers'):
@@ -3017,10 +3208,14 @@ elif case.endswith('route-order'):
 else:
     assert list(signature.parameters) == ['request_options'], signature
     assert not request.url.params
+server.shutdown()
+server.server_close()
+worker.join()
 print('ok')
 "#;
+        let script = format!("{}\n{script}", parameter_wire_server_python());
         let run = std::process::Command::new(&py)
-            .args(["-c", script])
+            .args(["-c", &script])
             .current_dir(sdk.join("src"))
             .env("PARAMETER_CASE", case)
             .env("PYTHONDONTWRITEBYTECODE", "1")
@@ -3051,7 +3246,8 @@ sent = []
 def answer(request):
     sent.append(request)
     return httpx.Response(202)
-ctor = dict(base_url='https://analytics.test', api_key='token', httpx_client=httpx.Client(transport=httpx.MockTransport(answer)))
+server, worker, base_url = start_wire_server(answer)
+ctor = dict(base_url=base_url, api_key='token', httpx_client=httpx.Client(trust_env=False))
 try:
     FernApi(**ctor)
 except TypeError as exc:
@@ -3069,10 +3265,14 @@ except TypeError:
     pass
 else:
     raise AssertionError('lifted header accepted by method')
+server.shutdown()
+server.server_close()
+worker.join()
 print('ok')
 "#;
+    let script = format!("{}\n{script}", parameter_wire_server_python());
     let run = std::process::Command::new(py)
-        .args(["-c", script])
+        .args(["-c", &script])
         .current_dir(sdk.path().join("src"))
         .env("PYTHONDONTWRITEBYTECODE", "1")
         .output()

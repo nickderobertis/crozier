@@ -13590,8 +13590,21 @@ class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
         operation = self.operation(parameters=parameters)
         documents = {"positive": {"openapi": "3.1.0", "paths": {"/stations/{station}/sensors/{sensor}": {"get": operation}}},
                      "near": {"openapi": "3.0.3", "paths": {"/stations/{station}/sensors/{sensor}": {"get": operation}}}}
+        documents["path-level"] = {"openapi": "3.1.0", "paths": {"/stations/{station}/sensors/{sensor}": {"parameters": [parameters[0]], "get": operation}}}
+        titled = [{**parameter, "schema": {**parameter["schema"], "title": "Route value"}} for parameter in parameters]
+        documents["titled"] = {"openapi": "3.1.0", "paths": {"/stations/{station}/sensors/{sensor}": {"get": self.operation(parameters=titled)}}}
         selector = "operation.parameters:path-order-31"
         self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+    def test_date_header_promotion_requires_frequency_and_unowned_header(self) -> None:
+        header = {"name": "X-Date", "in": "header", "schema": {"type": "string", "format": "date"}}
+        def document(carried: int, name: str = "X-Date") -> dict:
+            return {"openapi": "3.0.3", "paths": {f"/signals/{index}": {"get": self.operation(parameters=[{**header, "name": name}] if index < carried else [])} for index in range(4)}}
+        documents = {"threshold": document(3), "below": document(2), "excluded": document(4, "Content-Type"), "owned": document(4)}
+        documents["owned"]["components"] = {"securitySchemes": {"DateKey": {"type": "apiKey", "in": "header", "name": "X-Date"}}}
+        documents["owned"]["security"] = [{"DateKey": []}]
+        selector = "parameter.schema:promoted-date-header"
+        self.assertEqual({(selector, "threshold"): 3}, self.census(selector, documents))
 
 
 class ParityProofIndexTests(unittest.TestCase):

@@ -18,3 +18,12 @@ Canonical version spelling takes precedence on the document node.
 Settings: CLI 5.67.1, Python SDK 5.20.0, packaged layout, organization `fern`,
 client `FernApi`, `python_enums`, extra fields `allow`, default retries 2, no
 audience filter. There is no known real-document population for this class.
+
+The [optional-header control](evidence/optional-control.yml) changes only the
+parameter’s `required` flag to `false`. The same certified pair accepts it
+([generation log](evidence/optional-control-fern.log),
+[generator metadata](evidence/optional-control-metadata.json)); its source
+SHA-256 is `9edc12026e0458d89c70752f643ed4496e7c14202c228be79332ce7dffddad75`.
+The compiled-CLI recovery journey generates this adjacent control in both
+default and fern-strict modes. It does not alter the required-header conflict
+or this class’s `refuse` status.
