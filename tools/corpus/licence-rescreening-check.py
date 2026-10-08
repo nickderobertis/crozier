@@ -51,6 +51,7 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 REPO = Path(__file__).resolve().parents[2]
 RECORD = "docs/licence-rescreening.md"
@@ -379,9 +380,20 @@ def check(root: Path) -> list[str]:
                 continue
             # The cited row must name this document's repository: a region row
             # records its witnesses by repository, and a bare file name is one
-            # any other repository's document can share.
-            slug = document.split(":")[0]
-            if slug not in row:
+            # any other repository's document can share. The repository is
+            # matched as a whole code span of the row, or as whole path segments
+            # of a URL span (a SwaggerHub row names its document only in its
+            # address), never as a substring, so `example/one` is not named by
+            # `example/one-extra` or by prose.
+            slug = document if URL.match(document) else document.split(":")[0]
+            spans = [token.strip() for token in TICK.findall(row)]
+            named = set(spans) | {found.split(":")[0] for found in documents_in(row)}
+            in_url = any(
+                f"/{slug}/" in f"/{urlsplit(span).path.strip('/')}/"
+                for span in spans
+                if URL.match(span)
+            )
+            if slug not in named and not in_url:
                 problems.append(
                     f"{where} — {place} does not name {document}, so the"
                     " provenance citation does not hold"

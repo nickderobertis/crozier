@@ -308,6 +308,49 @@ class TheGateStillDiscriminates(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("does not name other/repo:openapi.yaml", result.stderr)
 
+    def test_a_longer_repository_name_does_not_name_the_document(self) -> None:
+        """`example/one` is a different repository from `example/one-extra`."""
+        ledger = [ledger_row("`example/one-extra` `openapi.yaml`")]
+        lines = [
+            record_line(candidate="`example/one-extra` `openapi.yaml`", source="`schemas.md:{row}`"),
+            record_line(source="`schemas.md:{row}`"),
+        ]
+        result = self.gate_over(ledger, lines)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("does not name example/one:openapi.yaml", result.stderr)
+        self.assertNotIn("does not name example/one-extra", result.stderr)
+
+    def test_a_repository_named_only_in_prose_does_not_name_the_document(self) -> None:
+        ledger = [
+            f"| `example/two` `api.json` | commit `{SHA}` | none declared | `format: ipv6`=1 |"
+            " not a witness — nothing grants redistribution, unlike example/one |"
+        ]
+        lines = [
+            record_line(candidate="`example/two` `api.json`", source="`schemas.md:{row}`"),
+            record_line(source="`schemas.md:{row}`"),
+        ]
+        result = self.gate_over(ledger, lines)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("does not name example/one:openapi.yaml", result.stderr)
+
+    def test_a_document_named_by_whole_segments_of_an_address_is_named(self) -> None:
+        """A SwaggerHub row names its document only in its address."""
+        address = "https://api.swaggerhub.com/apis/owner/query/1.0.0"
+        ledger = [
+            f"| `example/one` `openapi.yaml` | commit `{SHA}` | none declared | `format: ipv6`=1 |"
+            f" not a witness — nothing grants redistribution; mirrored at `{address}` |"
+        ]
+        lines = [
+            record_line(source="`schemas.md:{row}`"),
+            record_line(candidate="SwaggerHub `owner/query/1.0.0`", source="`schemas.md:{row}`"),
+        ]
+        passed = self.gate_over(ledger, lines)
+        self.assertEqual(0, passed.returncode, passed.stderr)
+        lines[1] = record_line(candidate="SwaggerHub `owner/query/1.0`", source="`schemas.md:{row}`")
+        result = self.gate_over(ledger, lines)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("does not name owner/query/1.0", result.stderr)
+
     def test_a_missing_source_citation_fails(self) -> None:
         result = self.gate_over(*self.one(source="the schemas ledger"))
         self.assertEqual(result.returncode, 1)
