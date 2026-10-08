@@ -11,7 +11,7 @@ script_dir="$(cd "$(dirname "$0")" && pwd)" && repo_root="$(cd "$script_dir/../.
   exit 1
 }
 # shellcheck source=../corpus/corpus-lib.sh
-. "$script_dir/../corpus/corpus-lib.sh" || {
+{ [ -r "$script_dir/../corpus/corpus-lib.sh" ] && . "$script_dir/../corpus/corpus-lib.sh"; } || {
   echo "generate-corpus-fixtures: cannot load $script_dir/../corpus/corpus-lib.sh — restore it with" \
        "git checkout -- tools/corpus/corpus-lib.sh, then re-run" >&2
   exit 1
@@ -64,28 +64,33 @@ done
 }
 
 
+# openapi_candidates ROOT — each file under ROOT that declares `openapi:`, one
+# per line; exit 3 once a file cannot be read. A function rather than an inline
+# command substitution: bash 3.2, macOS's, ends a `$(` at a case pattern's `)`.
+openapi_candidates() {
+  find "$1" \
+    \( -path '*/.git' -o -path '*/node_modules' -o -path '*/target' -o -path '*/dist' -o -path '*/build' -o -path '*/vendor' \) -prune \
+    -o -type f \( -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) -size -20M -print0 |
+  while IFS= read -r -d '' f; do
+    matched=0
+    LC_ALL=C grep -Eq "(^|[\"'[:space:]])openapi([\"'[:space:]]*:|:)" "$f" || matched=$?
+    case "$matched" in
+      0) printf '%s\n' "$f" ;;
+      1) ;;
+      *) echo "generate-corpus-fixtures: could not read $f while looking for the OpenAPI document" \
+              "(grep exit $matched)" >&2
+         exit 3 ;;
+    esac
+  done
+}
+
 # discover_openapi ROOT — the one OpenAPI document under ROOT: exit 1 when there
 # is none, 2 when there are several, 3 when the search itself failed. Callers
 # test it in an `||`, which turns off errexit inside, so each failure is
 # returned explicitly rather than left to `set -e`.
 discover_openapi() {
   local root="$1" candidates count
-  candidates="$({
-    find "$root" \
-      \( -path '*/.git' -o -path '*/node_modules' -o -path '*/target' -o -path '*/dist' -o -path '*/build' -o -path '*/vendor' \) -prune \
-      -o -type f \( -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) -size -20M -print0 |
-    while IFS= read -r -d '' f; do
-      matched=0
-      LC_ALL=C rg -q "(^|[\"'[:space:]])openapi([\"'[:space:]]*:|:)" "$f" || matched=$?
-      case "$matched" in
-        0) printf '%s\n' "$f" ;;
-        1) ;;
-        *) echo "generate-corpus-fixtures: could not read $f while looking for the OpenAPI document" \
-                "(rg exit $matched)" >&2
-           exit 3 ;;
-      esac
-    done
-  })" || {
+  candidates="$(openapi_candidates "$root")" || {
     echo "generate-corpus-fixtures: the search for the OpenAPI document under $root failed — make it" \
          "readable (or remove the unreadable file named above), then re-run" >&2
     return 3

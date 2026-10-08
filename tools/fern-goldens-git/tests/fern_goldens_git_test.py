@@ -1969,8 +1969,12 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             backups = list((fixtures / "beta").glob(".expected.backup.*"))
             self.assertEqual(len(backups), 1, stranded.stderr)
             self.assertFalse(expected.exists())
-            self.assertIn(f"nor restore the prior golden from {backups[0]}", stranded.stderr)
-            self.assertIn(f"(mv {backups[0]} {expected})", stranded.stderr)
+            # The script names the fixture directory as `pwd -P` resolves it, which
+            # differs from the scratch path where the temporary root is a link
+            # (macOS's /var).
+            backup, restored = backups[0].resolve(), expected.parent.resolve() / expected.name
+            self.assertIn(f"nor restore the prior golden from {backup}", stranded.stderr)
+            self.assertIn(f"(mv {backup} {restored})", stranded.stderr)
             backups[0].rename(expected)
             self.assertEqual(self.tree(expected), before)
 
@@ -2004,7 +2008,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             finally:
                 (fixtures / "beta").chmod(0o755)
             self.assertNotEqual(blocked.returncode, 0, blocked.stderr)
-            self.assertRegex(blocked.stderr, r"generate-fern-fixture: line \d+: 'mktemp -d [^']*' failed \(exit 1\)")
+            # bash 3.2 names the whole assignment holding the failed command.
+            self.assertRegex(blocked.stderr,
+                             r"generate-fern-fixture: line \d+: '[^']*mktemp -d [^']*' failed \(exit 1\)")
             self.assertIn("are writable on a disk with free space, then re-run", blocked.stderr)
             if before is not None:
                 self.assertEqual(before, self.tree(expected))
@@ -2392,15 +2398,19 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         self.assertIn("git checkout -- tests/fixtures/CORPUS.md", result.stderr)
         self.assertNotIn("generate-fern-fixture:", result.stderr)
 
+    @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "file modes do not deny this reader")
     def test_a_discovery_search_that_cannot_read_a_file_stops_naming_it(self) -> None:
-        stubs = self.base / "failing-rg"
-        stubs.mkdir()
-        (stubs / "rg").write_text("#!/bin/sh\necho 'rg: Permission denied' >&2\nexit 2\n", encoding="utf-8")
-        (stubs / "rg").chmod(0o755)
-        result = self.run_script("--only", "gamma", "--fetch-root", str(self.base / "cache"),
-                                 PATH=f"{stubs}{os.pathsep}{os.environ['PATH']}")
+        cache = self.base / "cache"
+        # The first run clones gamma, which holds no OpenAPI document; the second
+        # reuses that clone, whose one candidate file it then cannot read.
+        self.run_script("--only", "gamma", "--fetch-root", str(cache))
+        unreadable = cache / "gamma" / "settings.yml"
+        unreadable.chmod(0)
+        self.addCleanup(unreadable.chmod, 0o644)
+        result = self.run_script("--only", "gamma", "--fetch-root", str(cache))
         self.assertNotEqual(result.returncode, 0, result.stderr)
-        self.assertIn("settings.yml while looking for the OpenAPI document (rg exit 2)", result.stderr)
+        self.assertIn(f"could not read {unreadable} while looking for the OpenAPI document (grep exit 2)",
+                      result.stderr)
         self.assertIn("the search for the OpenAPI document under", result.stderr)
         self.assertNotIn("generate-fern-fixture:", result.stderr)
 

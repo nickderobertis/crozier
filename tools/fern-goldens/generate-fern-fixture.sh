@@ -55,7 +55,7 @@ repo_root="$(cd "$(dirname "$0")/../.." && pwd)" || {
   exit 1
 }
 # shellcheck source=../../scripts/lib.sh
-. "$repo_root/scripts/lib.sh" || {
+{ [ -r "$repo_root/scripts/lib.sh" ] && . "$repo_root/scripts/lib.sh"; } || {
   echo "generate-fern-fixture: cannot load $repo_root/scripts/lib.sh — restore it with git checkout -- scripts/lib.sh, then re-run" >&2
   exit 1
 }
