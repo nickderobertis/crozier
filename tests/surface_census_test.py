@@ -12967,6 +12967,9 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                                         {"type": "string", "format": "json-string"}]},
                 "Calibrated": {"oneOf": [{"type": "boolean", "x-fern-type": "literal<true>"},
                                           {"type": "boolean", "x-crozier-type": "literal<true>"}]},
+                "MissingOverride": {"oneOf": [
+                    {"type": "boolean", "x-crozier-type": None, "x-fern-type": "literal<true>"},
+                    {"type": "boolean", "x-crozier-type": "literal<true>"}]},
             },
             "decoys": {
                 "Nullable": {"anyOf": [{"type": "string"}, {"type": "string"}, {"type": "null"}]},
@@ -12995,7 +12998,7 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root),
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual({(selector, "positive"): 5}, rows(completed))
+        self.assertEqual({(selector, "positive"): 6}, rows(completed))
 
     def test_query_items_union_counts_an_inline_items_union_and_not_its_near_misses(self) -> None:
         """An array query parameter whose inline `items` composes two members.

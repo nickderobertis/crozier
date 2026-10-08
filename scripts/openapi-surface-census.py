@@ -5137,7 +5137,9 @@ class Census:
                     return "long" if form == "int64" else "int"
                 return "float"
             if kind == "boolean":
-                override = member.get("x-crozier-type", member.get("x-fern-type"))
+                override = member.get("x-crozier-type")
+                if override is None:
+                    override = member.get("x-fern-type")
                 if override in ("literal<true>", "literal<false>"):
                     return override
                 return "bool"
