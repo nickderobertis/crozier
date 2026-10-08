@@ -35,6 +35,9 @@ Usage: tools/corpus/fetch-corpus.sh [--dry-run] [--fixture NAME] [--if-missing] 
   --fixture NAME  Fetch one canonical CORPUS.md row and print its local path.
   --if-missing    With --fixture, reuse a nonempty canonical cached spec.
   --dry-run       Print the matching registered rows without fetching them.
+
+Exit status: 0 on success, 1 when a fetch or the filesystem fails, 2 for an
+invalid invocation.
 USAGE
 }
 
@@ -43,17 +46,17 @@ while [ "$#" -gt 0 ]; do
     --dry-run) dry_run=1 ;;
     --fixture)
       shift
-      [ "$#" -gt 0 ] || { echo "fetch-corpus: --fixture needs a name" >&2; exit 1; }
+      [ "$#" -gt 0 ] || { echo "fetch-corpus: --fixture needs a name" >&2; usage; exit 2; }
       selector="$1"
       ;;
     --if-missing) if_missing=1 ;;
     -h|--help) usage; exit 0 ;;
-    --*) echo "fetch-corpus: unknown argument '$1'" >&2; usage; exit 1 ;;
+    --*) echo "fetch-corpus: unknown argument '$1'" >&2; usage; exit 2 ;;
     *)
       [ "$dest_root" = "$repo_root/.local/corpus" ] || {
         echo "fetch-corpus: more than one destination root was provided — supply exactly one" \
              "DEST_ROOT (or none, for .local/corpus), then re-run" >&2
-        exit 1
+        exit 2
       }
       dest_root="$1"
       ;;
@@ -65,11 +68,12 @@ done
   echo "fetch-corpus: invalid fixture name '$selector' — pass one CORPUS.md row name or" \
        "fixture directory (letters, digits, '.', '_' and '-'; not starting with '.' or '-';" \
        "no '..'), then re-run" >&2
-  exit 1
+  exit 2
 }
 [ "$if_missing" -eq 0 ] || [ -n "$selector" ] || {
   echo "fetch-corpus: --if-missing requires --fixture" >&2
-  exit 1
+  usage
+  exit 2
 }
 
 [ -f "$manifest" ] || {

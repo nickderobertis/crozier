@@ -357,6 +357,9 @@ class FernOverlayGoldensTests(unittest.TestCase):
         )
 
     def test_a_stage_that_cannot_be_made_names_the_step_and_the_fix(self) -> None:
+        """The failing `mktemp` runs in an `xargs` worker, a child shell: the report
+        comes from the trap that worker re-arms with scripts/lib.sh's exported
+        `arm_failure_report`, `_failure_tool` and `_failure_action`."""
         if os.geteuid() == 0:
             self.skipTest("root writes through a read-only directory")
         alpha = self.root / "tests" / "fixtures" / "alpha"

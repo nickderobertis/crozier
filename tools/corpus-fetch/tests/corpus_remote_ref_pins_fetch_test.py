@@ -699,14 +699,35 @@ class PinMechanismTests(unittest.TestCase):
         self.assert_refused_without_a_path(
             result, "more than one destination root", "supply exactly one DEST_ROOT"
         )
+        self.assertEqual(result.returncode, 2, result.stderr)
         self.assertEqual(self.server.requests, [])
 
     def test_an_invalid_fixture_name_states_the_accepted_shape(self) -> None:
+        result = self.fetch("../plain-row")
         self.assert_refused_without_a_path(
-            self.fetch("../plain-row"),
+            result,
             "invalid fixture name '../plain-row'",
             "letters, digits, '.', '_' and '-'",
         )
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(self.server.requests, [])
+
+    def test_an_invalid_invocation_exits_two_with_the_usage_and_fetches_nothing(self) -> None:
+        script = str(self.root / "tools" / "corpus" / "fetch-corpus.sh")
+        for arguments, message in (
+            (["--fixture"], "--fixture needs a name"),
+            (["--sideways"], "unknown argument '--sideways'"),
+            (["--if-missing"], "--if-missing requires --fixture"),
+        ):
+            with self.subTest(arguments=arguments):
+                result = subprocess.run(
+                    [script, *arguments], cwd=self.root, capture_output=True, text=True,
+                    encoding="utf-8", check=False,
+                )
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn(message, result.stderr)
+                self.assertIn("Exit status: 0 on success, 1 when a fetch", result.stderr)
+                self.assertEqual(result.stdout, "")
         self.assertEqual(self.server.requests, [])
 
     def test_an_unknown_row_says_where_the_valid_rows_are_listed(self) -> None:
