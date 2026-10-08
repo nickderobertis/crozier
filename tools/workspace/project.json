@@ -73,7 +73,7 @@
       },
       "executor": "nx:run-commands",
       "options": {
-        "command": "node --test tools/workspace/tests/release-roster.test.mjs tools/workspace/tests/coverage-profiles.test.mjs"
+        "command": "node --test tools/workspace/tests/release-roster.test.mjs"
       },
       "cache": true,
       "inputs": [
@@ -81,18 +81,23 @@
         "cargo",
         "{workspaceRoot}/crates/*/Cargo.toml",
         "{workspaceRoot}/tools/*/Cargo.toml",
-        "{workspaceRoot}/release-plz.toml",
-        "{workspaceRoot}/src/project.json"
+        "{workspaceRoot}/release-plz.toml"
       ]
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node scripts/check-project-boundaries.mjs workspace"
+        "commands": [
+          "node scripts/check-project-boundaries.mjs workspace",
+          "node --test tools/workspace/tests/coverage-profiles.test.mjs"
+        ],
+        "parallel": false
       },
       "cache": true,
       "inputs": [
-        "boundaries"
+        "boundaries",
+        "{projectRoot}/tests/coverage-profiles.test.mjs",
+        "{workspaceRoot}/src/project.json"
       ]
     }
   }

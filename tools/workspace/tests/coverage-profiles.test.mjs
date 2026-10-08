@@ -1,7 +1,8 @@
 // `crozier:test` writes the coverage profiles and `workspace:coverage` reports on
 // them, each naming the profile directory in its own project.json. The two must
 // name the same directory, or the report reads a directory the suite never
-// wrote. This reconciles the two settings, so neither project can move it alone.
+// wrote. This reconciles the two settings, so neither project can move it alone;
+// `workspace:lint` runs it, beside the other checks over the project files.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
