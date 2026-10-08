@@ -1,6 +1,7 @@
 """The runner's own failure paths: the real run.sh, with the real cargo, node,
-ruff and uv, pointed at a scratch venv whose creation or install genuinely fails —
-a venv path under a regular file, and an install with no network and no cache."""
+ruff and uv, failing genuinely — a build into a target directory that is a
+regular file, a venv path under one, and an install with no network and no
+cache."""
 import os
 import subprocess
 from pathlib import Path
@@ -17,6 +18,16 @@ def _run(venv: Path, **env: str) -> subprocess.CompletedProcess:
         capture_output=True, text=True, timeout=1800,
         env={**os.environ, "CROZIER_LIVE_E2E_VENV": str(venv), **env},
     )
+
+
+def test_a_build_that_fails_keeps_cargos_error_and_names_the_repair(tmp_path):
+    blocker = tmp_path / "not-a-directory"
+    blocker.write_text("", encoding="utf-8")
+    done = _run(tmp_path / "venv", CARGO_TARGET_DIR=str(blocker))
+    assert done.returncode == 1, done.stderr
+    assert "failed to create directory" in done.stderr
+    assert "live-e2e: building the release crozier failed (cargo's error is above)" in done.stderr
+    assert not (tmp_path / "venv").exists(), "the runner went on past a failed build"
 
 
 def test_a_venv_that_cannot_be_created_names_the_directory_and_the_repair(tmp_path):

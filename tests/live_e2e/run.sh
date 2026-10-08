@@ -25,7 +25,11 @@ need node  "install Node 18+ via https://nodejs.org (Prism, the mock server, run
 need ruff  "run 'just bootstrap' (crozier shells out to 'ruff format' when generating)"
 
 # Build the binary the suite drives — release, the artifact users run.
-cargo build --release --locked --bin crozier >&2
+cargo build --release --locked --bin crozier >&2 || {
+  echo "live-e2e: building the release crozier failed (cargo's error is above) — fix it, or run" \
+       "'cargo fetch --locked' with network if a crate could not be fetched, then re-run" >&2
+  exit 1
+}
 
 # Cached venv with the generated SDK's runtime deps (httpx, pydantic), the test
 # runner (pytest), and a YAML parser for the request-relaxer (pyyaml). Rebuilt only
