@@ -16,6 +16,8 @@ operation-id-all-caps-tag-split-prefix	operation.operationId:all-caps-tag-split-
 operation-id-digit-leading-method	operation.operationId:digit-leading-method	document-paths.md	supported
 operation-id-hyphenated-tag-method	operation.operationId:hyphenated-tag-method	document-paths.md	supported
 operation-id-untagged-list-or-set	operation.operationId:untagged-list-or-set	document-paths.md	supported
+operation-sdk-group-name-leading-underscore	operation.x-fern-sdk-group-name:leading-underscore	oas31-extensions.md	supported
+operation-sdk-group-name-without-method-name	operation.x-fern-sdk-group-name:without-method-name	oas31-extensions.md	supported
 property-sole-anyof-composed-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported
 property-sole-anyof-empty-object-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
 property-sole-oneof-composed-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported

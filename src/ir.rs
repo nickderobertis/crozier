@@ -8343,7 +8343,7 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
     // and joined by a space: `sessions` under `Agent Sessions` is `Sessions`,
     // `server` under `Capabilities` is `Server`, and
     // `["catalogs", "mcpServers"]` is `Catalogs McpServers`.
-    if let Some(segments) = op.sdk_group_name() {
+    if let Some(segments) = declared_group(op) {
         let letters = |value: &str| {
             value
                 .chars()
@@ -8424,10 +8424,10 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
     // consulted. A list names a *nested* path, which becomes a `/`-joined module
     // (`["catalogs", "mcpServers"]` -> `catalogs/mcp_servers`) — the one place a
     // module holds more than one directory segment.
-    if let Some(segments) = op.sdk_group_name() {
+    if let Some(segments) = declared_group(op) {
         return segments
             .iter()
-            .map(|segment| snake_module(segment))
+            .map(|segment| group_segment_module(segment))
             .collect::<Vec<_>>()
             .join("/");
     }
@@ -8474,6 +8474,31 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
         return snake_module(tag);
     }
     naming::sanitize_identifier(&naming::to_snake_case(&path_group(url)))
+}
+
+/// The `x-crozier-sdk-group-name` / `x-fern-sdk-group-name` path an operation
+/// declares, honoured only beside a declared method name: Fern places an
+/// operation that names a group but no method by its tag and `operationId`, as
+/// if no group were declared (an untagged `listHoists` under `[harbor, hoists]` is
+/// the root client's `list_hoists`).
+fn declared_group(op: &Operation) -> Option<Vec<&str>> {
+    op.sdk_method_name()?;
+    op.sdk_group_name()
+}
+
+/// The module a declared group segment names: [`snake_module`], keeping the
+/// segment's leading underscores (`[_dispatch, _private]` is
+/// `_dispatch/_private`, `client._dispatch._private`).
+fn group_segment_module(segment: &str) -> String {
+    let name = segment.trim_start_matches('_');
+    if name.is_empty() {
+        return snake_module(segment);
+    }
+    format!(
+        "{}{}",
+        &segment[..segment.len() - name.len()],
+        snake_module(name)
+    )
 }
 
 /// The snake-cased, identifier-safe module name a tag maps to (`attachment-public`
@@ -15140,6 +15165,39 @@ mod tests {
             endpoint_method_name(&o, "GET", "/v2/catalog/info"),
             "catalog_info"
         );
+    }
+
+    #[test]
+    fn a_declared_group_needs_a_method_name_and_keeps_leading_underscores() {
+        use super::endpoint_module;
+        let operation = |value: serde_json::Value| -> crate::openapi::Operation {
+            serde_json::from_value(value).expect("operation deserializes")
+        };
+        let o = operation(serde_json::json!({
+            "operationId": "callCar",
+            "x-fern-sdk-group-name": ["_lift", "_staff"],
+            "x-fern-sdk-method-name": "summon",
+        }));
+        assert_eq!(endpoint_module(&o, "/x"), "_lift/_staff");
+        let o = operation(serde_json::json!({
+            "operationId": "ringBell",
+            "x-crozier-sdk-group-name": "__lobby",
+            "x-crozier-sdk-method-name": "ring",
+        }));
+        assert_eq!(endpoint_module(&o, "/x"), "__lobby");
+        // Without a method name the group is ignored: untagged is the root
+        // client, tagged is the tag's.
+        let o = operation(serde_json::json!({
+            "operationId": "listHoists",
+            "x-fern-sdk-group-name": ["harbor", "hoists"],
+        }));
+        assert_eq!(endpoint_module(&o, "/x"), "");
+        let o = operation(serde_json::json!({
+            "operationId": "listTugs",
+            "tags": ["Docks"],
+            "x-crozier-sdk-group-name": "marina",
+        }));
+        assert_eq!(endpoint_module(&o, "/x"), "docks");
     }
 
     #[test]

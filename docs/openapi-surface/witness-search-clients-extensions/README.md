@@ -77,6 +77,22 @@ of this trigger.
 | `APIs/docker.com/hub/beta/openapi.yaml` | 2 | `AuditLogs_GetAuditLogs` under `audit-logs` | an all-capitals tag |
 | `APIs/windows.net/graphrbac/1.6/openapi.yaml` | 2 | `DeletedApplications_List` under `deletedApplications` | an all-capitals tag |
 
+## Group name with a leading underscore
+
+The shape: an operation declaring an SDK method name whose SDK group name has a segment starting with `_` (`operation.x-fern-sdk-group-name:leading-underscore`, either spelling). Fern keeps the underscore in the module path and accessor (`_relays/`, `client._audit._trail`).
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-sdk-group-name-leading-underscore` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Group name without a method name
+
+The shape: an operation declaring a non-blank SDK group name and no SDK method name (`operation.x-fern-sdk-group-name:without-method-name`, either spelling). Fern ignores the group and places the operation by its tag and `operationId`.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-sdk-group-name-without-method-name` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -85,3 +101,5 @@ of this trigger.
 | `operation-id-untagged-list-or-set` | `none-registrable` | `depot-bin-ledger` |
 | `operation-id-hyphenated-tag-method` | `none-registrable` | `ferry-berth-desk` |
 | `operation-id-all-caps-tag-split-prefix` | `none-registrable` | `rfid-door-panel` |
+| `operation-sdk-group-name-leading-underscore` | `none-registrable` | `signal-box-relays` |
+| `operation-sdk-group-name-without-method-name` | `none-registrable` | `cargo-hold-pallets` |

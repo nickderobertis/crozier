@@ -1928,6 +1928,11 @@ const CLIENTS_EXTENSIONS_DIR: &str = "docs/fern-measurements/clients-extensions"
 /// generates it from, and the setting Fern's tree was measured under.
 const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     (
+        "cargo-hold-pallets-literals",
+        "docs/openapi-surface/handwritten/cargo-hold-pallets/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "depot-bin-ledger-literals",
         "docs/openapi-surface/handwritten/depot-bin-ledger/openapi.yml",
         &["--enum-type", "literals"],
@@ -1945,6 +1950,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     (
         "rfid-door-panel-literals",
         "docs/openapi-surface/handwritten/rfid-door-panel/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "signal-box-relays-literals",
+        "docs/openapi-surface/handwritten/signal-box-relays/openapi.yml",
         &["--enum-type", "literals"],
     ),
 ];

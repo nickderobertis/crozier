@@ -1216,6 +1216,15 @@ PREDICATES = {
         "one per Operation Object `operation.operationId:tag-spelled-split-prefix` "
         "counts whose first tag is all capitals, several of them (`QX`)"
     ),
+    "operation.x-fern-sdk-group-name:leading-underscore": (
+        "one per Operation Object under the Paths Object declaring an SDK method name "
+        "whose SDK group name (`x-crozier-sdk-group-name` over `x-fern-sdk-group-name`) "
+        "has a segment starting with `_`, which Fern keeps in the module path"
+    ),
+    "operation.x-fern-sdk-group-name:without-method-name": (
+        "one per Operation Object under the Paths Object declaring a non-blank SDK "
+        "group name (either spelling) and no SDK method name, which Fern then ignores"
+    ),
     "operation.operationId:untagged-list-or-set": (
         "one per Operation Object under the Paths Object with no tag and no SDK "
         "method-name extension whose operationId is exactly `list` or `set`, the "
@@ -2676,7 +2685,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "b82b29d5d9a26d4c",
+    "endpoint_method_name": "0a66a1200ca30b17",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -2815,6 +2824,25 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     ident, prefixed = _sanitized(method)
     reserved = is_reserved(ident) and ident not in {"list", "set"}
     return (f"{ident}_" if reserved else ident), prefixed
+
+
+def sdk_group_segments(operation: dict[Any, Any]) -> list[str]:
+    """`Operation::sdk_group_name`: the crozier spelling wins; blank segments drop."""
+    for extension in ("x-crozier-sdk-group-name", "x-fern-sdk-group-name"):
+        if extension in operation:
+            declared = operation[extension]
+            values = declared if isinstance(declared, list) else [declared]
+            return [value.strip() for value in values if isinstance(value, str) and value.strip()]
+    return []
+
+
+def sdk_method_named(operation: dict[Any, Any]) -> bool:
+    """`Operation::sdk_method_name`: either spelling, a blank value naming nothing."""
+    for extension in ("x-crozier-sdk-method-name", "x-fern-sdk-method-name"):
+        if extension in operation:
+            named = operation[extension]
+            return isinstance(named, str) and bool(named.strip())
+    return False
 
 
 def tag_spelled_split_prefix(operation: dict[Any, Any]) -> bool:
@@ -4472,6 +4500,13 @@ class Census:
                 )
             ):
                 found.append("operation.operationId:untagged-list-or-set")
+            segments = sdk_group_segments(node)
+            if segments and not sdk_method_named(node):
+                found.append("operation.x-fern-sdk-group-name:without-method-name")
+            if segments and sdk_method_named(node) and any(
+                segment.startswith("_") for segment in segments
+            ):
+                found.append("operation.x-fern-sdk-group-name:leading-underscore")
             if tag_spelled_split_prefix(node):
                 found.append("operation.operationId:tag-spelled-split-prefix")
                 if re.fullmatch(r"[A-Z][A-Z0-9]+", _first_tag(node) or ""):

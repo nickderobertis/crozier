@@ -2512,9 +2512,10 @@ class GrammarContractTests(unittest.TestCase):
         # make the spelling a valued selector over a field nothing declares. It
         # admits a `$` too, because the field a pointer-form predicate reads is
         # spelled `$ref`: the gate widens to the spelling rather than the spelling
-        # bending to the gate.
+        # bending to the gate. A `-` is admitted for the same reason: a vendor
+        # extension's field is spelled `x-fern-sdk-group-name`.
         documented = set(
-            re.findall(r"`([A-Za-z][A-Za-z.$]*:[a-z$-]+(?:=[A-Za-z0-9-]+)?)`", body)
+            re.findall(r"`([A-Za-z][A-Za-z.$-]*:[a-z$-]+(?:=[A-Za-z0-9-]+)?)`", body)
         )
         self.assertEqual(set(census.PREDICATES), documented)
         stated = re.search(
@@ -4624,6 +4625,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
            "operation.operationId:hyphenated-tag-method",
            "operation.operationId:tag-spelled-split-prefix",
            "operation.operationId:all-caps-tag-split-prefix",
+           "operation.x-fern-sdk-group-name:leading-underscore",
+           "operation.x-fern-sdk-group-name:without-method-name",
            "components.schemas:fields-reach-cycles-unsorted",
            "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
            "schema.type:misspelled-scalar",
@@ -13101,6 +13104,31 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "lower-tag"): 1,
                           (selector, "split-tag"): 1}, rows(completed))
+
+    def test_sdk_group_name_predicates_read_both_spellings(self) -> None:
+        under = "operation.x-fern-sdk-group-name:leading-underscore"
+        without = "operation.x-fern-sdk-group-name:without-method-name"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, extensions in {
+                "under": {"x-fern-sdk-group-name": ["lift", "_staff"], "x-fern-sdk-method-name": "go"},
+                "under-crozier": {"x-crozier-sdk-group-name": "_lobby", "x-fern-sdk-method-name": "go"},
+                "crozier-wins": {"x-crozier-sdk-group-name": "lobby", "x-fern-sdk-group-name": "_lobby",
+                                 "x-fern-sdk-method-name": "go"},
+                "without": {"x-fern-sdk-group-name": ["harbor", "hoists"]},
+                "blank-method": {"x-crozier-sdk-group-name": "quay", "x-crozier-sdk-method-name": " "},
+                "plain": {"x-fern-sdk-group-name": "quay", "x-crozier-sdk-method-name": "list"},
+            }.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {"/q": {"get": {"operationId": "op", **extensions,
+                                             "responses": {"204": {"description": "ok"}}}}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", under, "--selector", without)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(under, "under"): 1, (under, "under-crozier"): 1,
+                          (without, "without"): 1, (without, "blank-method"): 1}, rows(completed))
 
     def test_all_caps_tag_split_prefix_counts_only_an_all_caps_tag(self) -> None:
         selector = "operation.operationId:all-caps-tag-split-prefix"
