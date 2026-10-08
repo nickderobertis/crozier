@@ -71,6 +71,9 @@
       ]
     },
     "test-install": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] census-fallback is the promoted uv tier: its samples and parsers stages install their parser pin through uv, and this journey runs that same uv offline (UV_OFFLINE, no cache) to prove an install failure names the suite and the pin; only test-runner, with its stand-in uv, needs no host tool."
+      },
       "executor": "nx:run-commands",
       "options": {
         "command": "python3 tests/census_fallback/run_install_test.py"

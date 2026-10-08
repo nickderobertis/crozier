@@ -15,6 +15,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 function members() {
   const metadata = JSON.parse(
+    // llmlint: ignore[shell_test_tiers_stay_split] This suite drives only `cargo metadata --no-deps`, which every leg carries; it reads the local manifests, reaches no network, installs nothing, and ran in 1 s (measured with `just nx run workspace:test --skipNxCache`).
     execFileSync("cargo", ["metadata", "--format-version", "1", "--no-deps", "--locked"], {
       cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024,
     }),

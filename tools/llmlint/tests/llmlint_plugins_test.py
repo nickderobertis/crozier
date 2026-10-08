@@ -136,14 +136,18 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
     """`refresh` reads the lock's hand-edited fields first; a lock of the wrong
     shape fails there with the fix, before any network or llmlint call."""
 
-    def refresh_over(self, lock: object) -> subprocess.CompletedProcess[str]:
-        with tempfile.TemporaryDirectory() as directory:
+    def refresh_over(self, lock: object, link: tuple[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+        """`refresh` over a synthetic root holding `lock`; `link`, when given, is a
+        (path under the root, target outside it) symlink made first."""
+        with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as outside:
             root = Path(directory)
             script = root / "tools" / "llmlint" / "llmlint-plugins.py"
             script.parent.mkdir(parents=True)
             shutil.copy2(REPO / "tools" / "llmlint" / "llmlint-plugins.py", script)
             (root / "llmlint-plugins").mkdir()
             (root / "llmlint-plugins" / "lock.json").write_text(json.dumps(lock), encoding="utf-8")
+            if link is not None:
+                (root / link[0]).symlink_to(Path(outside) / link[1])
             return subprocess.run([sys.executable, str(script), "refresh"], capture_output=True, text=True,
                                   env={**os.environ, "PATH": ""}, timeout=60)
 
@@ -188,6 +192,17 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
                 self.assertIn(f"plugin #1 file {file!r} is not under llmlint-plugins/", run.stderr)
                 self.assertIn("record a relative path inside llmlint-plugins/ with no '..'", run.stderr)
                 self.assertNotIn("Traceback", run.stderr)
+
+    @unittest.skipIf(os.name == "nt", "creating a symlink needs a privilege on Windows")
+    def test_a_vendored_path_that_links_out_of_the_vendor_directory_is_refused(self) -> None:
+        # Spelled inside llmlint-plugins/, but a symlink there leads out of it.
+        file = "llmlint-plugins/base.llmlint.yml"
+        run = self.refresh_over({"schema": 1, "plugins": [
+            {"name": "base", "url": "http://127.0.0.1:9/base.yml", "pin": "1", "file": file}]},
+            link=(file, "base.llmlint.yml"))
+        self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+        self.assertIn(f"plugin #1 file {file!r} is not under llmlint-plugins/", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
 
 
 class AMalformedLlmlintAnswerIsRefused(unittest.TestCase):
@@ -288,7 +303,7 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
         stubs.mkdir()
         (stubs / "llmlint").write_text(
             '#!/bin/sh\n'
-            'if [ "$1" = --version ]; then printf "%s\\n" "$STUB_VERSION"; exit 0; fi\n'
+            'if [ "$1" = --version ]; then printf "%s\\n" "$STUB_VERSION"; exit "${STUB_VERSION_EXIT:-0}"; fi\n'
             'cat "$STUB_SOURCES"\n',
             encoding="utf-8",
         )
@@ -363,6 +378,9 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
              "unset CROZIER_LLMLINT_PLUGINS_ORIGIN"),
             ("an llmlint with no version", {"/rules/base.llmlint.yml": self.DOCUMENT}, {"STUB_VERSION": ""},
              "`llmlint --version` exited 0 and printed '', no version", "reinstall llmlint"),
+            ("an llmlint whose --version fails", {"/rules/base.llmlint.yml": self.DOCUMENT},
+             {"STUB_VERSION_EXIT": "3"},
+             "`llmlint --version` exited 3 and printed 'llmlint 0.9.1', no version", "reinstall llmlint"),
         ]
         for name, documents, env, message, remedy in cases:
             with self.subTest(name):
