@@ -2,8 +2,8 @@
 // events the workflows run on, over a scratch repository with an origin/main.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, rmSync } from "node:fs";
+import { basename, join } from "node:path";
 import { test } from "node:test";
 import { commitChange, git, ran, scratchWorkspace, write } from "./support.mjs";
 
@@ -60,6 +60,30 @@ test("a push to main runs the affected tier against the commit the push replaced
   commitChange(root, "a/src.txt", "merged\n");
   const decision = decide(root, { GITHUB_EVENT_NAME: "push", CROZIER_PUSH_BEFORE: before });
   assert.deepEqual(decision, { tier: "affected", base: before, reason: "push: the commit the push replaced" });
+});
+
+test("a pull request sharing no history with its base branch runs the broader tier", (t) => {
+  const root = scratchWorkspace(t);
+  git(root, "checkout", "--quiet", "--orphan", "unrelated");
+  commitChange(root, "a/src.txt", "a history of its own\n");
+  const decision = decide(root, { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "unrelated", GITHUB_BASE_REF: "main" });
+  assert.equal(decision.tier, "sweep");
+  assert.match(decision.reason, /no merge base between HEAD and origin\/main in this checkout/);
+});
+
+test("a push whose replaced commit this checkout lacks fetches it from origin and scopes against it", (t) => {
+  const root = scratchWorkspace(t);
+  // The replaced commit exists only on origin, as after a shallow checkout.
+  const elsewhere = join(root, "..", `${basename(root)}-elsewhere`);
+  t.after(() => rmSync(elsewhere, { recursive: true, force: true }));
+  git(root, "clone", "--quiet", git(root, "remote", "get-url", "origin"), elsewhere);
+  const before = commitChange(elsewhere, "b/src.txt", "only on origin\n");
+  git(elsewhere, "push", "--quiet", "origin", "HEAD:refs/heads/replaced");
+  assert.throws(() => git(root, "cat-file", "-e", `${before}^{commit}`));
+
+  const decision = decide(root, { GITHUB_EVENT_NAME: "push", CROZIER_PUSH_BEFORE: before });
+  assert.deepEqual(decision, { tier: "affected", base: before, reason: "push: the commit the push replaced" });
+  git(root, "cat-file", "-e", `${before}^{commit}`);
 });
 
 test("an event with no derivable base runs the broader tier rather than a scoped one", (t) => {
