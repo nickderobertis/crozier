@@ -296,9 +296,9 @@ holds the judgment about why.
 **The Python tooling's floor is 88%, lower than the crate's 95% — a floor to
 ratchet up, not a target** (`python-workspace:coverage`, combined over every
 tooling project's suite; test files are the only exclusion). It rests on the
-2026-10-08 measurement of 88.60% (12408/14004 lines, 34 files): screenshots
+2026-10-08 measurement of 88.62% (12411/14004 lines, 34 files): screenshots
 97.10, corpus 93.23, corpus-licensing 100, fern-goldens 83.86, fern-refusals
-95.40, llmlint-tooling 93.16, python-workspace 93.70, surface-census 88.79,
+95.40, llmlint-tooling 93.16, python-workspace 96.85, surface-census 88.79,
 witness-search 86.22. Two files are 0% here by structure, 526 lines between them:
 `witness-search-recensus.py`, whose suite needs the census-fallback tier's
 ruamel.yaml pin (kept out of the workspace venv because the golden-reach suites

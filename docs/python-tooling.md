@@ -97,7 +97,7 @@ suite. The floor and the measurement it rests on are recorded in [Floor](#floor)
 
 ## Floor
 
-**88%**, measured on 2026-10-08 (Linux): **88.60%**, 12408 of 14004 lines across
+**88%**, measured on 2026-10-08 (Linux): **88.62%**, 12411 of 14004 lines across
 34 files. It is a floor to ratchet up, not a target; never lower it without a new
 measurement recorded here and in `AGENTS.md`.
 
@@ -109,7 +109,7 @@ measurement recorded here and in `AGENTS.md`.
 | fern-goldens | 665 / 793 | 83.86 |
 | fern-refusals | 746 / 782 | 95.40 |
 | llmlint-tooling (`tools/llmlint`) | 245 / 263 | 93.16 |
-| python-workspace | 119 / 127 | 93.70 |
+| python-workspace | 123 / 127 | 96.85 |
 | surface-census | 5379 / 6058 | 88.79 |
 | witness-search | 4078 / 4730 | 86.22 |
 
@@ -123,7 +123,7 @@ at the census fallback's pin and runs in the promoted census-fallback tier (the
 pin stays out of the workspace venv because the golden-reach suites assert the
 refusal when it is absent); and `tools/surface-census/probe-differential-isolation.py`,
 which only the Rust e2e harness drives, under a bare `python3`. Without them the
-rest measures 92.06%. The largest other gaps: `golden-reach-search.py` (282 lines
+rest measures 92.08%. The largest other gaps: `golden-reach-search.py` (282 lines
 missed), `fern-goldens` (124, the Docker/Fern lifecycle), `golden-reach.py` (94),
 `handwritten-fixtures.py` (87).
 
