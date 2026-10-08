@@ -205,19 +205,16 @@ The immutable bounded APIs.guru screen and the 2026-10-08 renewal over the 282 c
 
 ## Model handling arms
 
-The bounded committed-source search above did not establish an accepted whole-document real witness for these specific handling arms. These fixture runs prove the stated arm, without counting as real witnesses.
+The bounded searches above assess complete scenario triggers. The regenerated golden-reach ledger supersedes the handwritten arm covers for JSON-string mapping, the inline scalar-narrowed enum hoist and cyclic-parent reach retention: registered real-source runs reach those sites. Their scenario fixtures remain complete-trigger proofs. The remaining arm covers below do not count as real witnesses.
 
 | key | verdict | handling arm and proof |
 |---|---|---|
-| `type-single` | `search-incomplete` | `src/ir.rs::base_type_ref[=Some\("json-string"\) => TypeRef::Primitive\(Prim::Any\)]`: `material-register`. |
 | `type-single` | `search-incomplete` | `src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]`: `verified-seal`. |
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]`: `nullable-store`. |
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]`: `union-sample`. |
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]`: `measurement-phase`. |
-| `allof` | `search-incomplete` | `src/ir.rs::InlineHoister::prop_type_ref[if let Some\(declaration\) = self\.schemas\.and_then\(]`: `measurement-phase`. |
 | `enum` | `search-incomplete` | `src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]`: `measurement-phase`. |
 | `description` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]`: `blank-reading-description`. |
-| `allof` | `search-incomplete` | `src/ir.rs::Builder::add_object[=\.map\(\x7c\(\(base_name\x2c _\)\x2c _\)\x7c base_name\.clone\(\)\)]`: `circuit-readings`. |
 
 ## Renewed handling-arm search
 

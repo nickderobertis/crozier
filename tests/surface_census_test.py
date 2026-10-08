@@ -1352,15 +1352,20 @@ def completeness_failures(
             continue
         elif record is None and category == "handwritten":
             gate = load_script("handwritten-fixtures.py")
-            validated = gate.gate(root)
-            covers = []
-            for name in validated["fixtures"]:
-                fixture, _found = gate.read_evidence(root / gate.HANDWRITTEN / name)
-                if fixture is not None:
-                    covers.extend(cover for cover in fixture.covers if cover.key == key and cover.arm is None)
-            if covers and not validated["failures"]:
+            if gate.E2E_EVIDENCE_CELL.match(cells[4]):
+                keys, cover_failures = gate.e2e_cover_failures(root, gate.region_rows(root))
+                covered = key in keys
+            else:
+                validated = gate.gate(root)
+                covered = False
+                for name in validated["fixtures"]:
+                    fixture, _found = gate.read_evidence(root / gate.HANDWRITTEN / name)
+                    if fixture is not None:
+                        covered |= any(cover.key == key and cover.arm is None for cover in fixture.covers)
+                cover_failures = validated["failures"]
+            if covered and not cover_failures:
                 continue
-            failures.extend(validated["failures"])
+            failures.extend(cover_failures)
             failures.append(
                 f"{key} ({region}.md, `{category}`): lacks both halves — no validated hand-written fixture "
                 "cover and its cited bounded search"
@@ -8292,7 +8297,7 @@ class RankedBacklogTests(unittest.TestCase):
         )
         stated = re.search(r"(\w+) spec locations carry more than one row", flat)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the shared locations")
-        self.assertEqual(len(shared), {"Fifteen": 15}.get(stated.group(1)))
+        self.assertEqual(len(shared), {"Fifteen": 15, "Eighteen": 18}.get(stated.group(1)))
         named = 0
         for location, count in sorted(shared.items()):
             if f"`{location}`" not in flat:
@@ -13573,7 +13578,7 @@ class ParityProofIndexTests(unittest.TestCase):
         section = index.split("## Parity repair proof index", 1)[1].split("### Handed-off real witnesses", 1)[0]
         rows = [cells for line in section.splitlines()
                 if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}]
-        self.assertEqual(33, len(rows))
+        self.assertEqual(34, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
@@ -13596,7 +13601,7 @@ class ParityProofIndexTests(unittest.TestCase):
 class HandwrittenE2eCoversTests(unittest.TestCase):
     """The additive multi-file cover uses real committed inputs and gate API."""
 
-    def check(self, missing: str | None = None) -> list[str]:
+    def check(self, missing: str | None = None, *, completeness: bool = False) -> list[str]:
         gate = load_script("handwritten-fixtures.py")
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -13656,8 +13661,19 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 else:
                     text = text.replace('verdict = "search-incomplete"', 'verdict = "unknown"')
                 target.write_text(text, encoding="utf-8")
-            _keys, failures = gate.e2e_cover_failures(root, gate.region_rows(root))
+            rows = gate.region_rows(root)
+            if completeness:
+                entries = {key: ("schemas", cells) for key, (_path, cells) in rows.items()
+                           if key in ("remote-document-local-pointer-resolved-against-root", "remote-ref-at-use-site-inlined")}
+                return completeness_failures(entries, {"schemas": (root / paths[1]).read_text(encoding="utf-8")}, {}, root=root)
+            _keys, failures = gate.e2e_cover_failures(root, rows)
             return failures
+
+    def test_completeness_reads_the_committed_multi_file_covers(self) -> None:
+        self.assertEqual(self.check(completeness=True), [])
+        for missing in ("fixture", "test", "loopback", "comparison", "evidence", "search", "golden", "version", "fields", "golden-binding", "registry-syntax", "kind", "duplicate", "verdict"):
+            with self.subTest(missing=missing):
+                self.assertTrue(self.check(missing, completeness=True))
 
     def test_committed_multi_file_covers_are_accepted(self) -> None:
         self.assertEqual(self.check(), [])

@@ -35,11 +35,9 @@ inline-oneof-variants	oneof-string-const-variant	src/ir.rs::InlineHoister::hoist
 inline-property-unions	annotated-ref-target-anyof	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	5	6
 inline-property-unions	property-sole-anyof-closed-object-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
 inline-property-unions	property-sole-anyof-struct-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
-material-register	type-single	src/ir.rs::base_type_ref[=Some\("json-string"\) => TypeRef::Primitive\(Prim::Any\)]	2	2
 meadow-tag-code	format-uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	2	3
 measurement-phase	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
-measurement-phase	allof	src/ir.rs::InlineHoister::prop_type_ref[if let Some\(declaration\) = self\.schemas\.and_then\(]	7	7
-measurement-phase	enum	src/ir.rs::EnumType::example_member[if let Some\(value\) = &self\.example_value \{]	6	7
+measurement-phase	enum	src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]	5	5
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]	9	9
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-discriminated-unions	array-item-anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5

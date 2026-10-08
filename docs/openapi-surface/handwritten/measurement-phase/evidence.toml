@@ -16,13 +16,6 @@ verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
 
 [[covers]]
-key = "allof"
-arm = 'src/ir.rs::InlineHoister::prop_type_ref[if let Some\(declaration\) = self\.schemas\.and_then\(]'
-search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
-
-[[covers]]
 key = "enum"
 arm = 'src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]'
 search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"

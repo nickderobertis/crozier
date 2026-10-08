@@ -7,10 +7,3 @@ key = "allof-base-in-cycle-imported-after-class"
 search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
-
-[[covers]]
-key = "allof"
-arm = 'src/ir.rs::Builder::add_object[=\.map\(\x7c\(\(base_name\x2c _\)\x2c _\)\x7c base_name\.clone\(\)\)]'
-search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
