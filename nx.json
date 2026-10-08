@@ -49,7 +49,13 @@
       "{workspaceRoot}/tests/support/**/*"
     ],
     "e2eReads": [
-      "{workspaceRoot}/docs/**/*",
+      "{workspaceRoot}/docs/departures/**/*",
+      "{workspaceRoot}/docs/fern-measurements/**/*",
+      "{workspaceRoot}/docs/fern-refusals/**/*",
+      "{workspaceRoot}/docs/openapi-surface/**/*",
+      "{workspaceRoot}/docs/openapi-surface-coverage.md",
+      "{workspaceRoot}/docs/migrating-from-fern.md",
+      "{workspaceRoot}/docs/github-action.md",
       "!{workspaceRoot}/docs/openapi-surface/witness-search-*/**/*",
       "!{workspaceRoot}/docs/openapi-surface/golden-reach-witnesses/**/*",
       "{workspaceRoot}/tests/fixtures/**/*",
