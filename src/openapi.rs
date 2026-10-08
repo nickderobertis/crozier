@@ -3406,6 +3406,9 @@ pub fn filter_ignored(doc: &mut OpenApi) {
                 .map(|(name, _)| name.clone())
                 .collect();
             node.properties.retain(|name, _| !ignored.contains(name));
+            // Keep requirements inherited through composition; remove only
+            // ignored declarations. The public pipeline control is
+            // tests/generation.rs::property_metadata_survives_the_public_generation_pipeline.
             if let RequiredNames::Listed(names) = &mut node.required {
                 names.retain(|name| !ignored.contains(name));
             }
