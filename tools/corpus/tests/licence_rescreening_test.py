@@ -351,6 +351,20 @@ class TheGateStillDiscriminates(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("does not name owner/query/1.0", result.stderr)
 
+    def test_a_malformed_address_in_the_cited_row_is_reported_not_raised(self) -> None:
+        ledger = [
+            f"| `example/one` `openapi.yaml` | commit `{SHA}` | none declared | `format: ipv6`=1 |"
+            " not a witness — nothing grants redistribution; mirrored at `http://[::1/owner/query/1.0.0` |"
+        ]
+        lines = [
+            record_line(source="`schemas.md:{row}`"),
+            record_line(candidate="SwaggerHub `owner/query/2.0.0`", source="`schemas.md:{row}`"),
+        ]
+        result = self.gate_over(ledger, lines)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("does not name owner/query/2.0.0", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
     def test_a_missing_source_citation_fails(self) -> None:
         result = self.gate_over(*self.one(source="the schemas ledger"))
         self.assertEqual(result.returncode, 1)

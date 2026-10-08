@@ -51,7 +51,6 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
-from urllib.parse import urlsplit
 
 REPO = Path(__file__).resolve().parents[2]
 RECORD = "docs/licence-rescreening.md"
@@ -389,7 +388,7 @@ def check(root: Path) -> list[str]:
             spans = [token.strip() for token in TICK.findall(row)]
             named = set(spans) | {found.split(":")[0] for found in documents_in(row)}
             in_url = any(
-                f"/{slug}/" in f"/{urlsplit(span).path.strip('/')}/"
+                f"/{slug}/" in f"{re.split(r'[?#]', span)[0].rstrip('/')}/"
                 for span in spans
                 if URL.match(span)
             )
