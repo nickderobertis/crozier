@@ -125,7 +125,7 @@ the run without. This pair is the measured gate a `config-gated` record cites.
 ## The gate
 
 `handwritten_fixtures_match_fern_goldens` in
-[`../../../tests/e2e.rs`](../../../tests/e2e.rs), in `just check`, finds its
+[`../../../crates/crozier-e2e/tests/e2e.rs`](../../../crates/crozier-e2e/tests/e2e.rs), in `just check`, finds its
 fixtures by listing this directory and nothing else, and holds each to every
 rule above, naming the fixture and the rule it breaks. It also holds the two
 directions: every `handwritten` row has a feature-level cover, every

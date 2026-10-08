@@ -46,7 +46,7 @@ without one, into
 
 #### Each declared source
 
-`scripts/golden-reach-search.py probe` runs every declarer through
+`tools/surface-census/golden-reach-search.py probe` runs every declarer through
 `crozier generate` with no `--audience`, as 217 of the 220 golden tests are
 run. So no document in any source can execute the arm under it, and each
 source's candidate set is empty by construction. The selector was never walked

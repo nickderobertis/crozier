@@ -13,7 +13,7 @@ test, and `just test-corpus-match` line are removed.
 ## The publisher-grant search
 
 Searched on 2026-10-02. GitHub was read only through
-`scripts/rate_limit_guard.py` (REST `core`, `search` and `code_search` buckets,
+`tools/witness-search/rate_limit_guard.py` (REST `core`, `search` and `code_search` buckets,
 never GraphQL). Postman and SwaggerHub were not consulted.
 
 | step | what was read | result |

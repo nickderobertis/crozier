@@ -18,7 +18,7 @@ in this node's sources declares that shape. The census gained the
 `securityscheme-ref-census.tsv.gz` has one row per `enumeration.tsv` row,
 matched by SHA-256, carrying the parsed classification and the selector count or
 the parser's reason. The output came from
-`scripts/witness-search-local-census.py --all-documents-jsonl` over the same
+`tools/witness-search/witness-search-local-census.py --all-documents-jsonl` over the same
 digest-verified archives and responses. The counts are 8,130 rows for
 APIs.guru, 74,240 for jentic and 13,907 for the vendor portals. Every document
 that parsed has a selector count of 0. That covers 3,797 OpenAPI 3 documents in
@@ -42,7 +42,7 @@ registration rather than by the search:
 
 - `byte-identical to CORPUS row N, sha256 <hex>`: a copy whose bytes equal
   corpus row N's registered source. Registering it again would add no golden.
-  `tests/corpus_surface_census_test.py` re-measures each digest against row N's
+  `tests/corpus_match/corpus_surface_census_test.py` re-measures each digest against row N's
   fetched document.
 - `pending-registration`: a usable candidate the registration node neither
   registered nor disposed. The continuation node owns it.

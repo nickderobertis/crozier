@@ -26,7 +26,7 @@ answered searches with declarations but no qualifying artifact are `witness-bloc
 Declaration counts alone never establish a screened witness.
 
 The reconciliation entry point is
-`scripts/witness-search-redo.py CONTRACT SHARD SHARD --reconcile --schemas docs/openapi-surface/schemas.md`.
+`tools/witness-search/witness-search-redo.py CONTRACT SHARD SHARD --reconcile --schemas docs/openapi-surface/schemas.md`.
 It reads the four-screen `candidates.md` beside CONTRACT (override with
 `--candidates PATH`). A `witness-found` artifact must have `passed:` in every
 screen cell. If an artifact retains some declared keys but discards others, its

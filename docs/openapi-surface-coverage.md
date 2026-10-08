@@ -5001,7 +5001,7 @@ Each form commits one kind of artifact:
    form for `ignores` and `coincidence`, and for the `x-` extension positions.
 
 **How the gate reads it.** `witness_supply_probes_match_fern_measurements` in
-[`../tests/e2e.rs`](../tests/e2e.rs) derives its keys from the manifest and from
+[`../crates/crozier-e2e/tests/e2e.rs`](../crates/crozier-e2e/tests/e2e.rs) derives its keys from the manifest and from
 nothing else. For every row it checks that the artifact's computed digest equals
 the declared one. For `absent-tree` and `differential` rows it generates the
 named probe with crozier and byte-compares the output against the committed tree,

@@ -18,7 +18,7 @@ with HTTP 400 (`From value: 225 must be non-negative integer and less than
 The proxy returns team, collection and API **metadata**, never an OpenAPI
 body. `api-access.jsonl` is a first keyless request to the Postman API for each
 of the 23 API hits, and every one returned HTTP 401.
-`scripts/witness-search-postman.py --acquire-hits` then began reading every
+`tools/witness-search/witness-search-postman.py --acquire-hits` then began reading every
 hit through its unauthenticated route, recorded in `hit-access.jsonl`:
 a collection's JSON link, a team's profile page, or the Postman API for an API.
 It was stopped after 562 requests when Postman left the plan. Of those, 185
