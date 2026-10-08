@@ -784,7 +784,7 @@ def fetch_pins(args: argparse.Namespace) -> int:
     pins = read_jsonl(shared, ("repository", "path", "commit", "blob"),
                       "restore it from git; it is the publisher trees' committed pin list")
     for pin in pins:
-        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_fetch_pins_skips_opaque_history_and_refuses_invalid_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_fetch_pins_skips_opaque_history_and_refuses_invalid_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
         if INDEX.opaque_identity(pin["path"]):
             screened += 1
             continue
@@ -923,7 +923,7 @@ def query(args: argparse.Namespace) -> int:
             new.append({"key": key, "kind": "query", "subject": phrasing, "result": str(total),
                         "file": "queries.jsonl"})
             for document in fetched:
-                # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_query_and_screen_skip_opaque_inputs_and_reject_unknown_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+                # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_query_and_screen_skip_opaque_inputs_and_reject_unknown_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
                 candidate = f"{INDEX.candidate_name(document)}@{INDEX.candidate_revision(document)}"
                 # llmlint: ignore-end[changed_behavior_has_e2e]
                 if document.get("document"):
@@ -1313,7 +1313,7 @@ def file_probes_many(source: str, probed: dict[str, list[dict[str, Any]]]) -> No
     path = source_dir(source) / "probe.jsonl"
     CACHE.mkdir(parents=True, exist_ok=True)
     with exclusive_lock(CACHE / f"{source}.probe.lock"):
-        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_probe_publication_preserves_opaque_history_while_replacing_current_rows`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_probe_publication_preserves_opaque_history_while_replacing_current_rows`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
         kept = [row for row in read_probes(source)
                 if row["key"] not in probed or opaque_candidate(row["candidate"])]
         rows = kept + [row for key in probed for row in probed[key]
@@ -1408,7 +1408,7 @@ def screen(args: argparse.Namespace) -> int:
     the caller: `--measured` files a record that stage measured earlier, and is
     refused unless it is whole.
     """
-    # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_query_and_screen_skip_opaque_inputs_and_reject_unknown_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+    # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_query_and_screen_skip_opaque_inputs_and_reject_unknown_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
     if opaque_candidate(args.candidate):
         print(f"golden-reach-search: {args.source}: {args.candidate} screened by repository rule")
         return 0
@@ -2230,7 +2230,7 @@ def local_copies(
     for record in records:
         if record["kind"] != "document":
             continue
-        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_continuations_preserve_opaque_history_without_fetching`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+        # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_continuations_preserve_opaque_history_without_fetching`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
         if opaque_candidate(record["subject"]):
             skipped.add(record["subject"])
             continue
@@ -2504,7 +2504,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
                     latest[row["candidate"]] = row
         located = dict(declarers(args.source, key, args.root)) if reaching else {}
         for candidate in sorted(reaching):
-            # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 scripts/golden-reach-search.py` runs, by tests/golden_reach_test.py's `test_continuations_preserve_opaque_history_without_fetching`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
+            # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_continuations_preserve_opaque_history_without_fetching`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
             if opaque_candidate(candidate):
                 skipped.add(candidate)
                 continue
