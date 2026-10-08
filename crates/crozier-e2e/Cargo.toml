@@ -13,7 +13,7 @@ publish = false
 [dev-dependencies]
 # The suite reads the crate's comparison engine (`crozier::parity`) and its
 # departure catalog (`crozier::departures`); the binary it drives comes from
-# `crozier:build` (see tests/e2e.rs `crozier()`).
+# `crozier:build` (see crates/crozier-e2e/tests/e2e.rs `crozier()`).
 crozier = { workspace = true }
 assert_cmd = { workspace = true }
 predicates = { workspace = true }

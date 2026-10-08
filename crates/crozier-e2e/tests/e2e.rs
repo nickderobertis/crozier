@@ -12,8 +12,8 @@ use crozier::departures::Context;
 use crozier::parity::{self, Difference};
 use predicates::prelude::*;
 
-/// `crozier compare` journeys (a file under `tests/e2e/`, so cargo does not
-/// build it as a test binary of its own).
+/// `crozier compare` journeys (a file under `crates/crozier-e2e/tests/e2e/`, so
+/// cargo does not build it as a test binary of its own).
 #[path = "e2e/compare.rs"]
 mod compare;
 
