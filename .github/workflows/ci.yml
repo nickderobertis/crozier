@@ -268,7 +268,8 @@ jobs:
         run: |
           ./scripts/setup-llmlint.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      # The suite below is an Nx target (llmlint-tooling:test-plugins).
+      # This job skips `just bootstrap`, so it installs Nx itself: without it
+      # `just test-llmlint-plugins` cannot start.
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
