@@ -278,7 +278,10 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
     def setUp(self) -> None:
         scratch = tempfile.TemporaryDirectory()
         self.addCleanup(scratch.cleanup)
-        self.root = Path(scratch.name)
+        # Resolved as the script resolves its own checkout, so the sources the
+        # stub reports match what it hands llmlint where the temporary root is a
+        # link (macOS's /var).
+        self.root = Path(scratch.name).resolve()
         self.script = self.root / "tools" / "llmlint" / "llmlint-plugins.py"
         self.script.parent.mkdir(parents=True)
         shutil.copy2(REPO / "tools" / "llmlint" / "llmlint-plugins.py", self.script)

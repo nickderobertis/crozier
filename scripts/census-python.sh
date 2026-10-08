@@ -28,18 +28,19 @@ needs_bash() {
 if [ -z "${BASH_VERSION:-}" ]; then needs_bash "$@"; fi
 case ":${SHELLOPTS:-}:" in *:posix:*) needs_bash "$@" ;; esac
 set -euo pipefail
-# A failed `exec` returns, so `found` can say why rather than leave the shell's words alone.
-shopt -s execfail
 
 found() { # found INTERPRETER [ARGS...]: print it, or run ARGS under it
   local interpreter="$1"
   shift
   if [ "$#" -gt 0 ]; then
-    exec "$interpreter" "$@" || {
+    # Asked before the `exec` rather than after it fails: bash 3.2, macOS's, ends
+    # a `set -e` shell at a failed `exec`, `shopt -s execfail` or not.
+    "$interpreter" -c '' >/dev/null 2>&1 || {
       echo "census-python: could not run $interpreter — repair or reinstall that Python (remove" \
            "$repo_root/.venv if it is that one, to fall back to the system python3), then re-run" >&2
       exit 126
     }
+    exec "$interpreter" "$@"
   fi
   printf '%s\n' "$interpreter"
   exit 0

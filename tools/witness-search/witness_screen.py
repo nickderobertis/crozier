@@ -187,7 +187,10 @@ def redact(text: str, *paths: Path) -> str:
         if SECRET_NAME.search(name) and len(value) >= 8:
             text = text.replace(value, f"[{name} redacted]")
     for path in paths:
-        text = text.replace(str(path), "<scratch>")
+        # A process run there names its real path (macOS's /private/var for
+        # /var), which holds the given one, so that is replaced first.
+        for form in dict.fromkeys((str(path.resolve()), str(path))):
+            text = text.replace(form, "<scratch>")
     home = os.path.expanduser("~")
     if len(home) > 1:
         text = text.replace(home, "~")
