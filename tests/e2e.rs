@@ -2733,6 +2733,30 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
+fn documented_parameter_extension(stem: &str, placement: &str) -> (String, String) {
+    let reference = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-reference.md"),
+    )
+    .unwrap();
+    let prefix = format!("| `x-fern-{stem}` |");
+    let row = reference
+        .lines()
+        .find(|row| row.starts_with(&prefix))
+        .unwrap();
+    let columns: Vec<_> = row.split('|').map(str::trim).collect();
+    assert!(
+        columns[3]
+            .split(',')
+            .map(str::trim)
+            .any(|node| node == placement),
+        "extension {stem} must document its exercised node {placement}: {row}"
+    );
+    (
+        columns[1].trim_matches('`').to_owned(),
+        columns[2].trim_matches('`').to_owned(),
+    )
+}
+
 /// Renaming an argument, ignoring a parameter, supplying a default, and lifting
 /// a client variable or header all accept the canonical spelling and prefer it
 /// when the same node carries conflicting Fern values.
@@ -2756,7 +2780,16 @@ fn parameter_extension_aliases_match_and_win() {
                             }
                             _ => panic!("unmeasured extension {key}"),
                         };
-                        object.insert(format!("x-crozier-{stem}"), original);
+                        let placement = match stem {
+                            "default" => "query parameter",
+                            "sdk-variable" => "path parameter",
+                            "sdk-variables" | "global-headers" => "document",
+                            _ => "parameter",
+                        };
+                        let (documented_fern, canonical) =
+                            documented_parameter_extension(stem, placement);
+                        assert_eq!(documented_fern, key);
+                        object.insert(canonical, original);
                         if conflict {
                             object.insert(key, replacement);
                         }
@@ -2805,6 +2838,7 @@ fn parameter_extension_aliases_match_and_win() {
 #[test]
 fn parameter_header_refusals_keep_adjacent_controls_generating() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-refusals");
+    let (fern_version, crozier_version) = documented_parameter_extension("version", "document");
     for name in [
         "header-default-differs-across-operations",
         "version-header-redeclared-as-parameter",
@@ -2818,9 +2852,9 @@ fn parameter_header_refusals_keep_adjacent_controls_generating() {
                 let value = document
                     .as_object_mut()
                     .unwrap()
-                    .remove("x-fern-version")
+                    .remove(&fern_version)
                     .unwrap();
-                document["x-crozier-version"] = value;
+                document[&crozier_version] = value;
             }
             let dir = tempfile::tempdir().unwrap();
             let spec = dir.path().join("probe.json");
@@ -2838,8 +2872,8 @@ fn parameter_header_refusals_keep_adjacent_controls_generating() {
         }
         if name == "version-header-redeclared-as-parameter" {
             let mut preferred = document.clone();
-            preferred["x-fern-version"] = preferred["x-crozier-version"].clone();
-            preferred["x-crozier-version"]["header"] = serde_json::json!("X-Independent-Revision");
+            preferred[&fern_version] = preferred[&crozier_version].clone();
+            preferred[&crozier_version]["header"] = serde_json::json!("X-Independent-Revision");
             let dir = tempfile::tempdir().unwrap();
             let spec = dir.path().join("canonical-wins.json");
             std::fs::write(&spec, serde_json::to_vec_pretty(&preferred).unwrap()).unwrap();
@@ -2853,10 +2887,7 @@ fn parameter_header_refusals_keep_adjacent_controls_generating() {
             document["paths"]["/measurements"]["put"]["parameters"][0]["schema"]["default"] =
                 serde_json::json!("radial");
         } else {
-            document
-                .as_object_mut()
-                .unwrap()
-                .remove("x-crozier-version");
+            document.as_object_mut().unwrap().remove(&crozier_version);
         }
         let dir = tempfile::tempdir().unwrap();
         let spec = dir.path().join("control.json");

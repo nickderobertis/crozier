@@ -1,3 +1,4 @@
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo CLI driven by just, with no Nx workspace; this documentary evidence script belongs to the linked departure or refusal evaluation and is run explicitly against the committed certified output or an identified generated SDK.
 """Validate the certified constructor placeholder against its date schema."""
 import datetime
 import pathlib

@@ -130,14 +130,16 @@ extension not listed here does not change crozier's output.
 | `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name for each value. |
 | `x-fern-property-name` | `x-crozier-property-name` | object property | The property's Python name, both the model field and the request keyword argument. Its JSON key on the wire stays the property's key. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
-
 | `x-fern-parameter-name` | `x-crozier-parameter-name` | parameter | Names the SDK argument while retaining the parameter wire name. |
 | `x-fern-default` | `x-crozier-default` | query parameter | Supplies the generated argument default. |
 | `x-fern-sdk-variables` | `x-crozier-sdk-variables` | document | Declares client constructor variables. |
 | `x-fern-sdk-variable` | `x-crozier-sdk-variable` | path parameter | Reads a declared client variable instead of taking a method argument. |
 | `x-fern-global-headers` | `x-crozier-global-headers` | document | Declares client constructor arguments sent as headers. |
-
 | `x-fern-version` | `x-crozier-version` | document | Refuses a version header also declared as a required operation parameter. |
+
+The parameter-extension alias gate reads these spellings and placements from
+this table, then checks their complete generated output. Its header refusal
+control does the same for the version extension.
 
 ## The script
 
