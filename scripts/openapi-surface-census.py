@@ -1199,6 +1199,11 @@ PREDICATES = {
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
     ),
+    "operation.operationId:untagged-list-or-set": (
+        "one per Operation Object under the Paths Object with no tag and no SDK "
+        "method-name extension whose operationId is exactly `list` or `set`, the "
+        "builtins Fern leaves unsuffixed as method names"
+    ),
     "operation.operationId:duplicate": (
         "one per Operation Object whose `operationId` value is declared by more than "
         "one Operation Object of the same document, so a value written twice counts two"
@@ -2654,12 +2659,12 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "92a25efcc00ca5a9",
+    "endpoint_method_name": "eaf2eefd5b69c03b",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
     "method_from_dotted_id": "9b5cc4e4625b43d2",
-    "method_from_groupless_id": "7b4f62c5899ec99b",
+    "method_from_groupless_id": "3ba287086971a152",
     "operation_id_tag_prefix": "6b9d3e0baac71cd4",
     "stripped_suffix_has_acronym": "2fc2a5586fdf1c7d",
     "fastapi_endpoint_name": "00ebd39bf3393e58",
@@ -2783,7 +2788,7 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     else:
         method = snake[len(tag_snake) + 1:] if snake.startswith(f"{tag_snake}_") else snake
     ident, prefixed = _sanitized(method)
-    reserved = is_reserved(ident) if tag is None else (ident in _PYTHON_KEYWORDS or ident in {"all", "complex"})
+    reserved = is_reserved(ident) and ident not in {"list", "set"}
     return (f"{ident}_" if reserved else ident), prefixed
 
 
@@ -4382,6 +4387,14 @@ class Census:
             method, url = self.operation_routes[id(node)]
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
+            if (
+                node.get("operationId") in ("list", "set")
+                and not node.get("tags")
+                and not any(
+                    key in node for key in ("x-fern-sdk-method-name", "x-crozier-sdk-method-name")
+                )
+            ):
+                found.append("operation.operationId:untagged-list-or-set")
             if self.wildcard_binary_response(node):
                 found.append("operation.responses:wildcard-binary")
             found += self.body_and_response_predicates(node, method, url)

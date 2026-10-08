@@ -19,3 +19,4 @@ and settles no coverage row.
 | case | document | setting | what it pins |
 |---|---|---|---|
 | `impedance-complex-reading-literals` | [`impedance-complex-reading`](../../openapi-surface/handwritten/impedance-complex-reading/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the reserved `complex` (`types/complex_.py`, `complex_` field, method and query argument) when the `Form` enum is an open `Literal` union with no `visit` method, beside the fixture's `python_enums` tree |
+| `depot-bin-ledger-literals` | [`depot-bin-ledger`](../../openapi-surface/handwritten/depot-bin-ledger/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | untagged `list`/`set` kept and `map` suffixed, tagged `float` suffixed and `list` kept, when the `Bin.material` enum is an open `Literal` union |

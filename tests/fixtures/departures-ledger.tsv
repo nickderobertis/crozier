@@ -16,6 +16,12 @@ docs/departures/evidence/readme-client-class-casing/fern-reference	core/client_w
 docs/departures/evidence/readme-client-class-casing/fern-reference	core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/departures/evidence/readme-client-class-casing/fern-reference	reference.md	16	readme-client-class-casing
 docs/departures/evidence/readme-client-class-casing/fern-reference	reference.md	19	readme-client-class-casing
+docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -338,6 +344,11 @@ docs/openapi-surface/handwritten/contentless-created-success/fern-expected	src/f
 docs/openapi-surface/handwritten/contentless-created-success/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/contentless-created-success/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/contentless-created-success/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/depot-bin-ledger/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

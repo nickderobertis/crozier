@@ -38,8 +38,20 @@ writes `types/complex_.py`.
 |---|---|---|
 | `schema-name-builtin-complex` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Untagged list or set operation
+
+The shape: an untagged operation whose `operationId` is exactly `list` or `set`
+and that names no method by extension
+(`operation.operationId:untagged-list-or-set`). Fern leaves both builtins
+unsuffixed as method names.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-id-untagged-list-or-set` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
 |---|---|---|
 | `schema-name-builtin-complex` | `none-registrable` | `impedance-complex-reading` |
+| `operation-id-untagged-list-or-set` | `none-registrable` | `depot-bin-ledger` |

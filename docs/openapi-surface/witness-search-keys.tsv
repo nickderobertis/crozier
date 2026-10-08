@@ -13,6 +13,7 @@ oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:prim
 oneof-array-variant-anyof-nullable-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	schemas.md	supported
 oneof-bare-object-example-variant	schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object	schemas.md	supported
 operation-id-digit-leading-method	operation.operationId:digit-leading-method	document-paths.md	supported
+operation-id-untagged-list-or-set	operation.operationId:untagged-list-or-set	document-paths.md	supported
 property-sole-anyof-composed-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported
 property-sole-anyof-empty-object-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
 property-sole-oneof-composed-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported

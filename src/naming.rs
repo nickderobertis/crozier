@@ -1001,16 +1001,16 @@ pub fn model_field_name(wire_name: &str) -> String {
     }
 }
 
-/// Reserved-word check for *derived method* names. Fern safe-names Python keywords
-/// and the builtins `all` (a REST "list all" method → `all_`) and `complex` (an
-/// operation `complex` → `complex_`), but — unlike field and type names — leaves
-/// other builtins alone: appwrite's derived `list` stays `list`, not `list_`, and
-/// `bool`/`set`/… likewise. Evidence-based against the golden corpus and measured
-/// generations; widen only when a measured generation shows Fern suffixing another
-/// method name.
+/// Reserved-word check for *derived method* names, tagged or not. Fern safe-names
+/// every name [`is_reserved`] holds except `list` and `set`: an operation `all`,
+/// `bool`, `complex`, `float`, `int`, `long`, `map` or `uuid` is that name with a
+/// trailing `_`, while appwrite's derived `list` stays `list` and an untagged
+/// operation `set` stays `set`. Evidence-based against the golden corpus and
+/// measured generations; widen only when a measured generation shows Fern
+/// suffixing another method name.
 #[must_use]
 pub fn is_reserved_method(name: &str) -> bool {
-    PYTHON_KEYWORDS.contains(&name) || matches!(name, "all" | "complex")
+    is_reserved(name) && !matches!(name, "list" | "set")
 }
 
 /// Apply Python's mandatory keyword escaping without treating ordinary builtins
@@ -1046,11 +1046,13 @@ mod tests {
     #[test]
     fn method_reserved_set_is_narrower_than_general() {
         // Fern safe-names `all` and keywords as method names (apideck's `all_`,
-        // `import_`) but leaves other builtins alone (appwrite's `list`, not `list_`).
+        // `import_`) but leaves `list` and `set` alone (appwrite's `list`).
         assert!(is_reserved_method("all"));
         assert!(is_reserved_method("import"));
+        assert!(is_reserved_method("bool"));
         assert!(!is_reserved_method("list"));
-        assert!(!is_reserved_method("bool"));
+        assert!(!is_reserved_method("set"));
+        assert!(!is_reserved_method("dict"));
         // The general set still guards field/type names, so `list`/`bool`
         // stay reserved there.
         assert!(is_reserved("list"));

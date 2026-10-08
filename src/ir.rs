@@ -8122,14 +8122,10 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     // This name is *derived* (a tag prefix stripped off a camelCase id), so — unlike
     // the verbatim `method_from_grouped_id` — reserved words are safe-named the way
     // Fern does it: a "list all" endpoint under tag `Activities` becomes `all_`, not
-    // the builtin-shadowing `all`. Uses the method-specific reserved set (keywords,
-    // `all` and `complex`), so appwrite's derived `list` stays `list`, matching Fern.
+    // the builtin-shadowing `all`. Uses the method-specific reserved set, tagged or
+    // not, so appwrite's derived `list` and an untagged `set` stay as they are.
     let ident = naming::sanitize_identifier(&method);
-    let reserved = tag.map_or_else(
-        || naming::is_reserved(&ident),
-        |_| naming::is_reserved_method(&ident),
-    );
-    if reserved {
+    if naming::is_reserved_method(&ident) {
         format!("{ident}_")
     } else {
         ident

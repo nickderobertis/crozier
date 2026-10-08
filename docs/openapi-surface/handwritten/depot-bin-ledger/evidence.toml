@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "6ebe04bee492eb6efd1cf47c5a021e01bceb6ebca07306be5a7af45a522c92bf"
+
+[[covers]]
+key = "operation-id-untagged-list-or-set"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#untagged-list-or-set-operation"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

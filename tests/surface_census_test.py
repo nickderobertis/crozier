@@ -4620,6 +4620,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
         - {"components.schemas:nonidentifier-name", "components.schemas:same-primitive-union",
            "components.schemas:complex-module-name",
+           "operation.operationId:untagged-list-or-set",
            "components.schemas:fields-reach-cycles-unsorted",
            "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
            "schema.type:misspelled-scalar",
@@ -13073,6 +13074,30 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1, (selector, "lower"): 1}, rows(completed))
+
+    def test_untagged_list_or_set_has_a_positive_and_decoys(self) -> None:
+        selector = "operation.operationId:untagged-list-or-set"
+
+        def operation(**fields: object) -> dict:
+            return {"responses": {"204": {"description": "ok"}}, **fields}
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, op in (
+                ("positive", operation(operationId="set")),
+                ("empty-tags", operation(operationId="list", tags=[])),
+                ("tagged", operation(operationId="list", tags=["Bins"])),
+                ("named", operation(operationId="set", **{"x-fern-sdk-method-name": "put"})),
+                ("other", operation(operationId="map")),
+            ):
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {"/bins": {"get": op}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1, (selector, "empty-tags"): 1}, rows(completed))
 
     def census_one(self, selector: str, documents: dict[str, dict]) -> dict:
         """Census each `(fixture, document)` pair for one selector, offline."""

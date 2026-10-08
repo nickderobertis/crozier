@@ -3244,6 +3244,12 @@ paths:
       responses:
         "204":
           description: ""
+  /routes:
+    get:
+      operationId: map
+      responses:
+        "204":
+          description: ""
 "##;
 
 #[test]
@@ -3253,8 +3259,10 @@ fn synthesized_names_cover_verb_resource_and_reserved_munge() {
     let client = &files["src/acme/client.py"];
     assert!(client.contains("def put_inventory("), "{client}");
     assert!(client.contains("def delete_id("), "{client}");
-    // A groupless `list` operationId collides with the builtin and becomes `list_`.
-    assert!(client.contains("def list_("), "{client}");
+    // A groupless `map` operationId collides with a builtin Fern reserves and
+    // becomes `map_`; `list` is one Fern leaves alone as a method name.
+    assert!(client.contains("def map_("), "{client}");
+    assert!(client.contains("def list("), "{client}");
 }
 
 /// Binary success responses use Fern's context-managed byte-stream API in both

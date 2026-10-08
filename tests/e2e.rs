@@ -1926,11 +1926,18 @@ const CLIENTS_EXTENSIONS_DIR: &str = "docs/fern-measurements/clients-extensions"
 
 /// Each `CLIENTS_EXTENSIONS_DIR` case: its directory, the document crozier
 /// generates it from, and the setting Fern's tree was measured under.
-const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[(
-    "impedance-complex-reading-literals",
-    "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
-    &["--enum-type", "literals"],
-)];
+const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
+    (
+        "depot-bin-ledger-literals",
+        "docs/openapi-surface/handwritten/depot-bin-ledger/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "impedance-complex-reading-literals",
+        "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+];
 
 /// The naming tickets' (#350, #354, #357) authored probes are the case
 /// directories `376-<ticket>-<shape>`; `authored_probe_measurements_match_fern`
