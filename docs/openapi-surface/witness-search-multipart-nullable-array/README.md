@@ -35,9 +35,9 @@ performed and no exhaustive public absence is claimed.
 
 Handling sites:
 
-- `src/ir.rs::hoist_form_object[let nullable_binary = multipart]`
-- `src/ir.rs::hoist_form_object[\(multipart && is_file\)]`
-- `src/emit.rs::build_example_inner[&& matches!\(f\.type_ref, TypeRef::Optional\(_\)\)]`
+- `src/ir.rs::hoist_form_object[=&& simple_nullable_member\(prop_schema\)\.is_some_and\(binary_scalar\)]`
+- `src/ir.rs::hoist_form_object[=\(multipart && is_file\)]`
+- `src/emit.rs::build_example_inner[=&& matches!\(f\.type_ref, TypeRef::Optional\(_\)\)]`
 
 ## Renewed search
 

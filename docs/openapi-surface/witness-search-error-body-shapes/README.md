@@ -29,8 +29,8 @@ claims no exhaustive public absence.
 
 Handling sites:
 
-- `src/ir.rs::error_body_type[\[only\] if only\.reference\.is_none]`
-- `src/ir.rs::hoist_error_body_types[if let \[only\] = members\.as_slice\(\)]`
+- `src/ir.rs::error_body_type[\x5bonly\x5d if only\.reference\.is_none]`
+- `src/ir.rs::hoist_error_body_types[if let \x5bonly\x5d = members\.as_slice\(\)]`
 - `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]`
 
 ## Renewed search

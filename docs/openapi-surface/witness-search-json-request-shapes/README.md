@@ -39,7 +39,7 @@ The handling sites are:
 - `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]`
 - `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]`
 - `src/ir.rs::inline_body_source_names[\&\& !is_optional\(target\)]`
-- `src/ir.rs::scalar_body[Some\("binary"\)]`
+- `src/ir.rs::scalar_body[=Some\("binary"\)]`
 - `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]`
 
 - `src/ir.rs::request_body_has_all_of[!schema\.properties\.is_empty\(\)]`

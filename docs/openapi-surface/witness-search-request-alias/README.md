@@ -24,7 +24,7 @@ was performed and no exhaustive public absence is claimed.
 Handling sites:
 
 - `src/ir.rs::resolve_request_body[resolve_form_object_alias\(target]`
-- `src/ir.rs::build_endpoint[let aliased_inline_request =]`
+- `src/ir.rs::build_endpoint[=let aliased_inline_request =]`
 
 
 ## Renewed search

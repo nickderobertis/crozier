@@ -39,7 +39,7 @@ renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
 
 [[covers]]
 key = "format-binary"
-arm = 'src/ir.rs::scalar_body[Some\("binary"\)]'
+arm = 'src/ir.rs::scalar_body[=Some\("binary"\)]'
 search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"

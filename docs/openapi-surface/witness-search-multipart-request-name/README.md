@@ -20,7 +20,7 @@ acquisition was performed and no exhaustive public absence is claimed.
 
 Handling site:
 
-- `src/name_refusals.rs::validate_ir[=body.content.len() == 1]`
+- `src/name_refusals.rs::validate_ir[=body\.content\.len\(\) == 1]`
 
 ## Renewed search
 

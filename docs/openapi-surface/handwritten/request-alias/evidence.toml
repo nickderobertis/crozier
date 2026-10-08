@@ -11,7 +11,7 @@ renewed = "docs/openapi-surface/witness-search-request-alias/README.md"
 
 [[covers]]
 key = "request-body-content"
-arm = 'src/ir.rs::build_endpoint[let aliased_inline_request =]'
+arm = 'src/ir.rs::build_endpoint[=let aliased_inline_request =]'
 search = "docs/openapi-surface/witness-search-request-alias/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-request-alias/README.md"

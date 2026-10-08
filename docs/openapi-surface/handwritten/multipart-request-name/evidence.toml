@@ -4,7 +4,7 @@ digest = "4cf78fb204674c6abe6042a5912b283328cb8f0c0a94550d57437ef399d08b0c"
 
 [[covers]]
 key = "request-body-content"
-arm = 'src/name_refusals.rs::validate_ir[=body.content.len() == 1]'
+arm = 'src/name_refusals.rs::validate_ir[=body\.content\.len\(\) == 1]'
 search = "docs/openapi-surface/witness-search-multipart-request-name/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-multipart-request-name/README.md"
