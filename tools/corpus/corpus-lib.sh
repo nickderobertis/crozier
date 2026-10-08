@@ -276,7 +276,8 @@ corpus_fetch_source() {
       return 1
     fi
     for stale in "$target_dir/openapi.json" "$target_dir/openapi.yaml" "$target_dir/openapi.yml"; do
-      [ "$stale" = "$target" ] || rm -f "$stale" || {
+      # A stale sibling may be a directory left by hand; the cache owns it either way.
+      [ "$stale" = "$target" ] || rm -rf "$stale" || {
         echo "corpus: could not remove the stale cached spec $stale for $name — delete it" \
              "(rm -rf $stale), then re-run" >&2
         return 1

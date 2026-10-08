@@ -39,6 +39,11 @@ pinned() {
 }
 
 case "${1:-}" in
+  samples|parsers)
+    [ "$#" -eq 1 ] || { echo "usage: tests/census_fallback/run.sh samples|parsers|pin SCRIPT" >&2; exit 2; }
+    ;;
+esac
+case "${1:-}" in
   samples)
     search_pin="$(pinned tools/surface-census/golden-reach-search.py)"
     python3 tools/corpus/corpus_sources.py check

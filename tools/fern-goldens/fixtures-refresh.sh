@@ -30,7 +30,10 @@ CORPUS=(
   "query-parameters-openapi:test-definitions/fern/apis/query-parameters-openapi/openapi.yml:seed/python-sdk/query-parameters-openapi/no-custom-config"
 )
 
-repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
+repo_root="$(cd "$(dirname "$0")/../.." && pwd)" || {
+  echo "fixtures-refresh: cannot resolve the checkout from $0 — run it by its path from a readable checkout, then re-run" >&2
+  exit 1
+}
 crozier_bin="$repo_root/target/release/crozier"
 [ -x "$crozier_bin" ] || { echo "fixtures-refresh: build crozier first (cargo build --release)" >&2; exit 1; }
 

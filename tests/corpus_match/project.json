@@ -62,7 +62,8 @@
       "options": {
         "commands": [
           "python3 tests/corpus_match/corpus_offline_test.py",
-          "python3 tests/corpus_match/corpus_offline_recovery_test.py"
+          "python3 tests/corpus_match/corpus_offline_recovery_test.py",
+          "python3 tests/corpus_match/match_usage_test.py"
         ],
         "parallel": false
       },

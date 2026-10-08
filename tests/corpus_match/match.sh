@@ -21,6 +21,7 @@ cd "$(dirname "$0")/../.." || {
   exit 1
 }
 
+[ "$#" -le 1 ] || { echo "usage: tests/corpus_match/match.sh [--strict]" >&2; exit 2; }
 case "${1:-}" in
   "") ;;
   --strict)

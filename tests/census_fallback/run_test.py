@@ -82,7 +82,7 @@ class ThePinIsRequired(unittest.TestCase):
         self.assertNotIn("declares no single pinned dependency", result.stderr)
 
     def test_an_invocation_it_cannot_read_exits_two_with_the_usage(self) -> None:
-        for args in (["pin"], ["pin", "a.py", "b.py"], ["sideways"], []):
+        for args in (["pin"], ["pin", "a.py", "b.py"], ["sideways"], [], ["samples", "extra"], ["parsers", "--all"]):
             with self.subTest(args=args):
                 result = subprocess.run(["bash", str(RUNNER), *args], cwd=REPO, capture_output=True, text=True)
                 self.assertEqual(2, result.returncode, result.stderr)
