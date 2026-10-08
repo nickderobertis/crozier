@@ -2,6 +2,8 @@
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
     "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/json-binary-path-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/json-request-shapes-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-alias-object-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-json-module-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected": {},
@@ -73,6 +75,8 @@
     "docs/openapi-surface/handwritten/inline-anyof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-property-unions/fern-expected": {},
+    "docs/openapi-surface/handwritten/json-binary-path/fern-expected": {},
+    "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
     "docs/openapi-surface/handwritten/meadow-tag-code/fern-expected": {},
     "docs/openapi-surface/handwritten/multipart-alias-object/fern-expected": {},
     "docs/openapi-surface/handwritten/multipart-json-module/fern-expected": {},

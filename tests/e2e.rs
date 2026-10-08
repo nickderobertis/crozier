@@ -2690,6 +2690,132 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
     }
 }
 
+/// Each full tree covers the request's signature, serialization, retained
+/// models and worked examples together, including the reference-header controls.
+#[test]
+fn json_request_shapes_match_certified_output_in_both_enum_modes() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    for shape in ["json-request-shapes", "json-binary-path"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(fixture.join("openapi.yml"))
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+            let group = if shape == "json-binary-path" {
+                "depository"
+            } else {
+                "vault"
+            };
+            let client = out.path().join(format!("src/fern/{group}/client.py"));
+            let text = std::fs::read_to_string(&client).unwrap();
+            assert!(text.contains("request=b\"string\""));
+            std::fs::write(
+                client,
+                text.replace("request=b\"string\"", "request=b\"unexplained\""),
+            )
+            .unwrap();
+            let failures = golden_tree_failures(
+                mode,
+                "unexplained binary example value",
+                &ledger,
+                &expected,
+                out.path(),
+            );
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains("client.py differs")),
+                "{failures:?}"
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let script = root.join("docs/departures/evidence/binary-json-body-example.py");
+    let python = runtime_python_env().expect("SDK runtime environment");
+    for (shape, group, method) in [
+        ("json-request-shapes", "vault", "deposit_bundle"),
+        ("json-binary-path", "depository", "deposit_parcel"),
+    ] {
+        for mode in ["python-enums", "literals"] {
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(
+                    root.join("docs/openapi-surface/handwritten")
+                        .join(shape)
+                        .join("openapi.yml"),
+                )
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let run = std::process::Command::new(&python)
+                .arg(&script)
+                .arg(out.path().join("src"))
+                .arg(group)
+                .arg(method)
+                .args(["--examples", "valid"])
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .output()
+                .unwrap();
+            assert!(
+                run.status.success(),
+                "{shape}/{mode}: {}{}",
+                String::from_utf8_lossy(&run.stdout),
+                String::from_utf8_lossy(&run.stderr)
+            );
+        }
+    }
+}
+
 /// Every `date-time` value crozier's worked examples write over the
 /// `unread-date-time-examples` hand-written fixture is an instant
 /// `datetime.datetime.fromisoformat` reads: a UTC `YYYY-MM-DD[T ]HH:MM:SS+00:00`

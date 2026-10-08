@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: Courier Depository
+  version: 1.0.0
+paths:
+  /depository/{locker}:
+    post:
+      tags: [Depository]
+      operationId: depositParcel
+      parameters:
+        - in: path
+          name: locker
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Stored
+  /depository:
+    get:
+      tags: [Depository]
+      operationId: listParcels
+      responses:
+        '200':
+          description: Parcel names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

@@ -287,7 +287,7 @@ pub struct Context {
     crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
     reference_nullable_items: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
-    multipart_examples: OnceLock<MultipartExampleContext>,
+    request_examples: OnceLock<RequestExampleContext>,
 }
 
 impl Context {
@@ -315,7 +315,7 @@ impl Context {
                     .map(|(_, text)| *text),
             )),
             crozier_project: OnceLock::from(project),
-            multipart_examples: OnceLock::from(multipart_example_context(crozier.iter().copied())),
+            request_examples: OnceLock::from(request_example_context(crozier.iter().copied())),
         }
     }
 
@@ -398,13 +398,13 @@ impl Context {
             .as_deref()
     }
 
-    fn multipart_examples(&self) -> &MultipartExampleContext {
-        self.multipart_examples.get_or_init(|| {
+    fn request_examples(&self) -> &RequestExampleContext {
+        self.request_examples.get_or_init(|| {
             let Some((_, root)) = &self.roots else {
-                return MultipartExampleContext::default();
+                return RequestExampleContext::default();
             };
             let sources = python_sources(root);
-            multipart_example_context(
+            request_example_context(
                 sources
                     .iter()
                     .map(|(rel, text)| (rel.as_str(), text.as_str())),
@@ -430,7 +430,8 @@ impl Context {
 }
 
 #[derive(Debug, Default)]
-struct MultipartExampleContext {
+struct RequestExampleContext {
+    binary_json_methods: BTreeSet<(String, String)>,
     object_aliases: BTreeSet<String>,
     encoded_fields: std::collections::BTreeMap<(String, String), BTreeSet<String>>,
     wire_fields:
@@ -461,9 +462,9 @@ fn optional_annotation(mut annotation: &str) -> &str {
     annotation
 }
 
-fn multipart_example_context<'a>(
+fn request_example_context<'a>(
     sources: impl IntoIterator<Item = (&'a str, &'a str)>,
-) -> MultipartExampleContext {
+) -> RequestExampleContext {
     let sources: Vec<_> = sources.into_iter().collect();
     let model_names = classes(sources.iter().copied());
     let aliases: std::collections::BTreeMap<_, _> = sources
@@ -473,7 +474,7 @@ fn multipart_example_context<'a>(
         .filter_map(|line| line.split_once(" = "))
         .filter(|(name, _)| python_identifier(name))
         .collect();
-    let mut out = MultipartExampleContext::default();
+    let mut out = RequestExampleContext::default();
     for (name, target) in &aliases {
         let mut current = *target;
         let mut seen = BTreeSet::new();
@@ -489,19 +490,40 @@ fn multipart_example_context<'a>(
             current = next;
         }
     }
+    let mut bytes_methods = BTreeSet::new();
+    let mut json_methods = BTreeSet::new();
+    let mut json_headers = BTreeSet::new();
     for (rel, text) in sources
         .iter()
         .filter(|(rel, _)| *rel == "raw_client.py" || rel.ends_with("/raw_client.py"))
     {
         let mut method = None;
+        let mut signature = false;
         for line in text.lines() {
             if let Some(name) = python_method_name(line) {
                 method = Some(name);
+                signature = true;
             }
             let Some(method) = method else {
                 continue;
             };
             let key = ((*rel).to_string(), method.to_string());
+            if signature
+                && compact_python(&[line])
+                    .split(',')
+                    .any(|field| field == "request:bytes")
+            {
+                bytes_methods.insert(key.clone());
+            }
+            if line.trim_end().ends_with(':') {
+                signature = false;
+            }
+            if line.trim() == "json=request," {
+                json_methods.insert(key.clone());
+            }
+            if line.trim() == "\"content-type\": \"application/json\"," {
+                json_headers.insert(key.clone());
+            }
             if let Some(field) = line
                 .split_once(".dumps(jsonable_encoder(")
                 .and_then(|(_, after)| after.split_once("))").map(|(field, _)| field))
@@ -532,6 +554,10 @@ fn multipart_example_context<'a>(
             }
         }
     }
+    out.binary_json_methods = bytes_methods
+        .into_iter()
+        .filter(|key| json_methods.contains(key) && json_headers.contains(key))
+        .collect();
     out
 }
 
@@ -588,7 +614,7 @@ fn example_call_arguments(call: &str) -> Option<(&str, Vec<&str>)> {
 fn multipart_example_lines<'a>(
     lines: &'a [&'a str],
     raw_rel: &str,
-    context: &MultipartExampleContext,
+    context: &RequestExampleContext,
     remove_files: bool,
 ) -> Option<(Vec<String>, bool)> {
     let mut kept = Vec::new();
@@ -705,7 +731,7 @@ fn multipart_object_required_file_example(pair: &Pair<'_>) -> Result<Option<Regi
         return Ok(None);
     }
     let raw_rel = format!("{prefix}raw_client.py");
-    let context = pair.context.multipart_examples();
+    let context = pair.context.request_examples();
     let Some((reference, _)) = multipart_example_lines(pair.fern, &raw_rel, context, false) else {
         return Ok(None);
     };
@@ -714,6 +740,154 @@ fn multipart_object_required_file_example(pair: &Pair<'_>) -> Result<Option<Regi
         return Ok(None);
     };
     Ok((removed && reference == corrected)
+        .then(|| differing_window(pair.fern, pair.crozier))
+        .flatten())
+}
+
+/// Permit only the default string-to-bytes example correction for a method
+/// whose actual raw signature and JSON request establish the mismatch.
+fn binary_json_example_lines(
+    lines: &[&str],
+    rel: &str,
+    context: &RequestExampleContext,
+    corrected: bool,
+) -> Option<(Vec<String>, bool)> {
+    let reference = rel == "reference.md";
+    let readme = rel == "README.md";
+    let raw = rel
+        .strip_suffix("client.py")
+        .filter(|prefix| prefix.is_empty() || prefix.ends_with('/'))
+        .map(|prefix| format!("{prefix}raw_client.py"));
+    if !reference && !readme && raw.is_none() {
+        return None;
+    }
+    let mut method = None;
+    let mut doc = false;
+    let mut example = false;
+    let mut kept = Vec::new();
+    let mut changed = false;
+    let mut index = 0;
+    while index < lines.len() {
+        let line = lines[index];
+        if reference {
+            if let Some((_, after)) = line.split_once("<details><summary><code>client.") {
+                method = after
+                    .split_once("<a href=\"")
+                    .and_then(|(_, after)| after.split_once("\">"))
+                    .and_then(|(path, after)| {
+                        after.split_once("</a>").map(|(name, _)| (path, name))
+                    })
+                    .and_then(|(path, name)| {
+                        path.strip_suffix("client.py")
+                            .map(|prefix| (format!("{prefix}raw_client.py"), name.to_string()))
+                    })
+                    .filter(|key| context.binary_json_methods.contains(key));
+            }
+        } else {
+            if let Some(name) = python_method_name(line) {
+                method = raw
+                    .as_ref()
+                    .map(|raw| (raw.clone(), name.to_string()))
+                    .filter(|key| context.binary_json_methods.contains(key));
+                doc = false;
+                example = false;
+            }
+            if line.trim() == "\"\"\"" {
+                doc = !doc;
+                example = false;
+            } else if doc && line.trim() == "Examples" {
+                example = true;
+            }
+        }
+        let head = line.trim().strip_prefix("await ").unwrap_or(line.trim());
+        if readme {
+            let qualified = head
+                .strip_prefix("client.")
+                .and_then(|head| head.split_once('('))
+                .map(|(name, _)| name);
+            method = qualified.and_then(|qualified| {
+                context
+                    .binary_json_methods
+                    .iter()
+                    .find(|(raw, name)| {
+                        let prefix = raw
+                            .strip_suffix("raw_client.py")
+                            .unwrap_or("")
+                            .trim_end_matches('/');
+                        let module = prefix
+                            .strip_prefix("src/")
+                            .map_or(prefix, |prefix| {
+                                prefix.split_once('/').map_or("", |(_, module)| module)
+                            })
+                            .replace('/', ".");
+                        let expected = if module.is_empty() {
+                            name.clone()
+                        } else {
+                            format!("{module}.{name}")
+                        };
+                        qualified == expected
+                    })
+                    .cloned()
+            });
+        }
+        let call_method = head
+            .strip_prefix("client.")
+            .and_then(|head| head.split_once('('))
+            .and_then(|(name, _)| name.rsplit('.').next());
+        if (reference || readme || doc && example)
+            && method
+                .as_ref()
+                .is_some_and(|(_, name)| call_method == Some(name))
+        {
+            let mut end = index;
+            loop {
+                let compact = compact_python(&lines[index..=end]);
+                if let Some((prefix, arguments)) = example_call_arguments(&compact) {
+                    let arguments: Vec<_> = arguments
+                        .into_iter()
+                        .map(|argument| {
+                            if corrected && argument == "request=b\"string\"" {
+                                changed = true;
+                                "request=\"string\""
+                            } else {
+                                argument
+                            }
+                        })
+                        .collect();
+                    kept.push(format!("{prefix}({})", arguments.join(",")));
+                    index = end + 1;
+                    break;
+                }
+                end += 1;
+                if end >= lines.len() || lines[end].trim() == "\"\"\"" {
+                    return None;
+                }
+            }
+        } else {
+            if reference && method.is_some() && corrected && line.trim() == "**request:** `bytes`" {
+                kept.push(line.replace("**request:** `bytes`", "**request:** `str`"));
+                changed = true;
+            } else {
+                kept.push(line.to_string());
+            }
+            index += 1;
+        }
+    }
+    Some((kept, changed))
+}
+
+fn binary_json_body_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    let context = pair.context.request_examples();
+    let Some((reference, _)) = binary_json_example_lines(pair.fern, pair.rel, context, false)
+    else {
+        return Ok(None);
+    };
+    let Some((corrected, changed)) =
+        binary_json_example_lines(pair.crozier, pair.rel, context, true)
+    else {
+        return Ok(None);
+    };
+    Ok((changed && reference == corrected)
         .then(|| differing_window(pair.fern, pair.crozier))
         .flatten())
 }
@@ -900,7 +1074,8 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 12] = [
+pub const RULE_IDS: [&str; 13] = [
+    "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
     "constant-header-docs-arguments",
@@ -936,6 +1111,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
             ..none
+        },
+        "binary-json-body-example" => Rule {
+            region: Some(binary_json_body_example),
+            ..Rule::default()
         },
         "multipart-object-required-file-example" => Rule {
             region: Some(multipart_object_required_file_example),
@@ -2374,6 +2553,90 @@ mod tests {
     }
 
     #[test]
+    fn binary_json_examples_require_the_actual_bytes_json_signature_and_exact_doc_changes() {
+        let raw = "    def ship(self, *, request: bytes, request_options=None):\n        json=request,\n        \"content-type\": \"application/json\",\n";
+        let context = Context::from_sources([], [("src/acme/vault/raw_client.py", raw)]);
+        let fern = "    def ship(self, *, request: bytes, request_options=None):\n        \"\"\"\n        Examples\n        --------\n        client.vault.ship(request=\"string\")\n        \"\"\"\n";
+        let corrected = fern.replace("request=\"string\"", "request=b\"string\"");
+        let rule: RegionRule = binary_json_body_example;
+        assert!(region_of(rule, "src/acme/vault/client.py", fern, &corrected, &context).is_some());
+        let reference = "<details><summary><code>client.vault.<a href=\"src/acme/vault/client.py\">ship</a>(...)</code></summary>\nclient.vault.ship(\n    request=\"string\",\n)\n**request:** `str` \n</details>\n";
+        let correct_reference = reference
+            .replace("request=\"string\"", "request=b\"string\"")
+            .replace("**request:** `str`", "**request:** `bytes`");
+        assert!(region_of(
+            rule,
+            "reference.md",
+            reference,
+            &correct_reference,
+            &context
+        )
+        .is_some());
+        let readme = "client.vault.ship(\n    request=\"string\",\n)\n";
+        let correct_readme = readme.replace("request=\"string\"", "request=b\"string\"");
+        assert!(region_of(rule, "README.md", readme, &correct_readme, &context).is_some());
+        for wrong in [
+            corrected.replace("b\"string\"", "b\"other\""),
+            corrected.replace("client.vault.ship", "client.other.ship"),
+            corrected.replace("Examples", "Parameters"),
+            corrected.replace("request=b\"string\"", "extra=b\"string\""),
+            corrected.replace("request=b\"string\"", "request=Model(request=b\"string\")"),
+        ] {
+            // Client receiver group is left exact even when the leaf method matches.
+            assert!(
+                region_of(rule, "src/acme/vault/client.py", fern, &wrong, &context).is_none(),
+                "{wrong}"
+            );
+        }
+        for source in [
+            raw.replace("request: bytes", "request: str"),
+            raw.replace("request: bytes", "otherrequest: bytes"),
+            raw.replace("json=request", "data=request"),
+            raw.replace("application/json", "text/plain"),
+            raw.replace("request: bytes", "request: str")
+                .replace("json=request", "request : bytes\n        json=request"),
+        ] {
+            let context =
+                Context::from_sources([], [("src/acme/vault/raw_client.py", source.as_str())]);
+            assert!(
+                region_of(rule, "src/acme/vault/client.py", fern, &corrected, &context).is_none()
+            );
+        }
+        assert!(region_of(
+            rule,
+            "reference.md",
+            reference,
+            &correct_reference.replace("`bytes`", "`int`"),
+            &context
+        )
+        .is_none());
+        assert!(region_of(
+            rule,
+            "README.md",
+            readme,
+            &correct_readme.replace("vault.ship", "other.ship"),
+            &context
+        )
+        .is_none());
+        assert!(region_of(
+            rule,
+            "src/acme/vault/raw_client.py",
+            fern,
+            &corrected,
+            &context
+        )
+        .is_none());
+        assert!(region_of(
+            rule,
+            "README.md",
+            readme,
+            &correct_readme,
+            &Context::default()
+        )
+        .is_none());
+    }
+
+    #[test]
     fn multipart_required_file_examples_allow_only_the_proven_missing_argument() {
         for (field, annotation, declaration) in [
             (
@@ -2440,7 +2703,7 @@ mod tests {
         for invalid in ["no_call", "call(", "call(\"unterminated)", "call(x))"] {
             assert!(example_call_arguments(invalid).is_none(), "{invalid}");
         }
-        let context = multipart_example_context([(
+        let context = request_example_context([(
             "types.py",
             "class Plan(Model):\n    pass\nA = B\nB = typing.Optional[Plan]\nC = C\nD = str\n",
         )]);

@@ -1055,7 +1055,8 @@ fn inline_body_source_names(
             if !is_enum
                 && !is_union
                 && !is_alias
-                && !is_map(target)
+                && !is_optional(target)
+                && (!is_map(target) || target.all_of.is_some())
                 && (target.properties.declared() || target.all_of.is_some())
             {
                 *counts.entry(ref_to_class(reference)).or_default() += 1;
@@ -4331,8 +4332,13 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
         .as_ref()
         .and_then(|body| body.content.get("application/json"))
         .and_then(|media| media.schema.as_ref())
-        .and_then(|schema| schema.reference.as_deref())
-        .and_then(|reference| resolve_ref(doc, reference))
+        .and_then(|schema| {
+            schema
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref(doc, reference))
+                .or_else(|| (!schema.properties.is_empty()).then_some(schema))
+        })
         // An `allOf` of nothing but inline objects is one object to Fern's
         // importer, not a composition: Fergus's `CreateContactPayload` merges two
         // inline members, so its worked example keeps the merged object's field
@@ -5173,7 +5179,16 @@ fn resolve_request_body(
         });
     }
     let (media_type, media) = selected_json_request_media(rb)?;
-    let schema = media.schema.as_ref()?;
+    let Some(schema) = media.schema.as_ref() else {
+        // An example supplies an untyped JSON payload; an empty media object
+        // remains bodyless through `request_body_ignored`.
+        let example = media.example.as_ref()?;
+        let mut body = single(TypeRef::Primitive(Prim::Any), true, false, false);
+        if let RequestBody::Single(single) = &mut body {
+            single.example = Some(example.to_string());
+        }
+        return Some(body);
+    };
     // Fern treats a schema-bearing request body as required unless the document
     // explicitly opts out. Wildcard request schemas remain required even when the
     // OpenAPI wrapper says otherwise: the importer models the wildcard payload
@@ -5194,8 +5209,16 @@ fn resolve_request_body(
                 || (target.properties.is_empty()
                     && (target.one_of.is_some() || target.any_of.is_some()))
         });
-    let required =
-        (media_type == "*/*" || rb.required != Some(false) || passed_whole) && !is_optional(schema);
+    let required = (media_type == "*/*"
+        || rb.required != Some(false)
+        || passed_whole
+        || is_map(schema)
+            && schema.all_of.is_none()
+            && matches!(
+                schema.additional_properties,
+                Some(AdditionalProperties::Bool(true))
+            ))
+        && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
@@ -5206,6 +5229,9 @@ fn resolve_request_body(
             && target.additional_properties.is_none()
         {
             return Some(RequestBody::Inline(Vec::new()));
+        }
+        if is_optional(target) && (target.properties.declared() || target.all_of.is_some()) {
+            return Some(single(TypeRef::Named(class), false, true, false));
         }
         // A `$ref` to an enum — string (extensible) or integer (a plain `int`
         // alias) — serializes as a plain `json=request` with the content-type
@@ -5242,7 +5268,7 @@ fn resolve_request_body(
         }
         // A `$ref` to a map (object with `additionalProperties`, no declared
         // properties) is passed straight through as `json=request`.
-        if is_map(target) {
+        if is_map(target) && target.all_of.is_none() {
             return Some(single(TypeRef::Named(class), required, false, true));
         }
         if target.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
@@ -5456,6 +5482,33 @@ fn resolve_request_body(
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
         return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
+            // Own fields precede inherited fields. Preserve an own declaration
+            // when it overrides a parent, and reuse the parent's resolved types.
+            let own_count = fields.len();
+            for reference in schema
+                .all_of
+                .iter()
+                .flatten()
+                .filter_map(|member| member.reference.as_deref())
+            {
+                if let Some(parent) = hoist_fields(&ref_to_class(reference), types) {
+                    for mut field in parent {
+                        if !fields.iter().any(|own| own.wire_name == field.wire_name) {
+                            let inherited_order = fields.len() - own_count;
+                            field.reference_order = inherited_order;
+                            field.declaration_order = inherited_order;
+                            field.markdown_order = inherited_order;
+                            fields.push(field);
+                        }
+                    }
+                }
+            }
+            let inherited_count = fields.len() - own_count;
+            for field in fields.iter_mut().take(own_count) {
+                field.reference_order += inherited_count;
+                field.declaration_order += inherited_count;
+                field.markdown_order += inherited_count;
+            }
             // An inline body carries its example on the schema as readily as a
             // `$ref` body does — VTEX puts the whole `rules` array on the request
             // schema — so both are applied here in the same order the `$ref` path
@@ -5764,6 +5817,7 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
     let schemaless_json = !rb.content.is_empty()
         && rb.content.iter().all(|(media_type, media)| {
             media.schema.is_none()
+                && media.example.is_none()
                 && (media_type == "application/json" || is_json_like_media_type(media_type))
         });
     schemaless_json
@@ -7519,7 +7573,7 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
             Some("email" | "hostname" | "ipv4" | "password" | "uri") => {
                 return Some((TypeRef::Primitive(Prim::Str), true))
             }
-            Some("binary") => return None,
+            Some("binary") => return Some((TypeRef::Primitive(Prim::Bytes), true)),
             // Any other format is an unformatted `str` with no header: the same
             // fixture's `duration`, `time`, `iri`, `regex`, … and `custom-thing`.
             _ => TypeRef::Primitive(Prim::Str),
@@ -15009,8 +15063,12 @@ mod tests {
                 Some((TypeRef::Primitive(Prim::Str), false))
             ));
         }
-        // A binary string and non-scalar shapes are excluded.
-        assert!(scalar("string", Some("binary")).is_none());
+        // An inline JSON binary string stays a bytes-typed JSON payload.
+        assert!(matches!(
+            scalar("string", Some("binary")),
+            Some((TypeRef::Primitive(Prim::Bytes), true))
+        ));
+        // Non-scalar shapes use their dedicated dispatch.
         assert!(scalar("object", None).is_none());
         assert!(scalar("array", None).is_none());
     }
@@ -17093,6 +17151,140 @@ mod tests {
             declaration,
             TypeDecl::DiscriminatedUnion(union) if union.name == "MessagesResponseItem"
         )));
+    }
+
+    fn request_shape_ir() -> super::Ir {
+        build_document(
+            serde_yaml_ng::from_str(include_str!(
+                "../docs/openapi-surface/handwritten/json-request-shapes/openapi.yml"
+            ))
+            .unwrap(),
+        )
+    }
+
+    #[test]
+    fn referenced_allof_map_flattens_and_nullable_component_stays_whole() {
+        let ir = request_shape_ir();
+        let endpoint = |name: &str| {
+            ir.endpoints
+                .iter()
+                .find(|endpoint| endpoint.method_name == name)
+                .unwrap()
+        };
+        let Some(RequestBody::Inline(fields)) = &endpoint("register_crate").request_body else {
+            panic!("flattened allOf body")
+        };
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["aisle", "batch"]
+        );
+        assert!(!ir
+            .types
+            .iter()
+            .any(|decl| decl.name() == "CrateRegistration"));
+        let Some(RequestBody::Single(body)) = &endpoint("update_preference").request_body else {
+            panic!("whole nullable model")
+        };
+        assert_eq!(body.type_ref, TypeRef::Named("Preference".to_string()));
+        assert!(!body.required);
+        assert!(body.convert);
+        assert!(!body.content_type);
+        assert!(ir.types.iter().any(|decl| decl.name() == "Preference"));
+    }
+
+    #[test]
+    fn inline_body_inherits_parent_fields_and_keeps_signature_and_document_orders() {
+        let ir = request_shape_ir();
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == "submit_run")
+            .unwrap();
+        let Some(RequestBody::Inline(fields)) = &endpoint.request_body else {
+            panic!("inline body")
+        };
+        assert_eq!(endpoint.body_composition, super::BodyComposition::AllOf);
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["cycles", "station"]
+        );
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.declaration_order)
+                .collect::<Vec<_>>(),
+            [1, 0]
+        );
+        assert!(fields
+            .iter()
+            .all(|field| field.spec_required && !field.optional));
+    }
+
+    #[test]
+    fn optional_freeform_payload_is_required_and_schemaless_example_supplies_any() {
+        let ir = request_shape_ir();
+        for (name, expected, example) in [
+            (
+                "set_labels",
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Any)),
+                ),
+                None,
+            ),
+            (
+                "define_marker",
+                TypeRef::Primitive(Prim::Any),
+                Some("azimuth"),
+            ),
+        ] {
+            let endpoint = ir
+                .endpoints
+                .iter()
+                .find(|endpoint| endpoint.method_name == name)
+                .unwrap();
+            let Some(RequestBody::Single(body)) = &endpoint.request_body else {
+                panic!("whole payload")
+            };
+            assert_eq!(body.type_ref, expected);
+            assert!(body.required);
+            if let Some(value) = example {
+                assert!(body.example.as_deref().unwrap().contains(value));
+            }
+        }
+        let media =
+            serde_json::json!({"content": {"application/json": {"example": {"marker":"azimuth"}}}});
+        let body = serde_json::from_value(media).unwrap();
+        assert!(!super::request_body_ignored(&body));
+        let empty =
+            serde_json::from_value(serde_json::json!({"content": {"application/json": {}}}))
+                .unwrap();
+        assert!(super::request_body_ignored(&empty));
+    }
+
+    #[test]
+    fn inline_binary_json_body_keeps_its_tagged_client_and_is_typed_bytes() {
+        let ir = request_shape_ir();
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == "deposit_bundle")
+            .unwrap();
+        let Some(RequestBody::Single(body)) = &endpoint.request_body else {
+            panic!("JSON binary payload")
+        };
+        assert_eq!(body.type_ref, TypeRef::Primitive(Prim::Bytes));
+        assert!(body.content_type && body.required);
+        assert!(ir
+            .endpoints
+            .iter()
+            .any(|endpoint| endpoint.module == "vault" && endpoint.method_name == "list_bundles"));
     }
 
     #[test]
