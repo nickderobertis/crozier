@@ -57,7 +57,7 @@ class {{ class_name }}:
 {{ tr_ctor }}    ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else {{ default_max_retries }}
-{{ server_variable_init }}        self._client_wrapper = {{ wrapper }}(
+{{ auth_check }}{{ server_variable_init }}        self._client_wrapper = {{ wrapper }}(
             base_url={{ wrapper_base_url }},
 {{ client_param_wrapper }}{{ wrapper_arg }}
             headers=headers,

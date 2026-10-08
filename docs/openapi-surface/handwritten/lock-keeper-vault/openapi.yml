@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Lock Keeper Vault
+  version: 0.8.0
+  description: Safe-deposit boxes behind a keeper's desk.
+servers:
+  - url: https://vault.keeper.test
+security:
+  - Keeper: []
+paths:
+  /boxes/{boxId}:
+    get:
+      operationId: openBox
+      parameters:
+        - name: boxId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The box's contents list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Box'
+components:
+  securitySchemes:
+    Keeper:
+      type: http
+      scheme: basic
+      x-fern-basic:
+        username:
+          env: VAULT_KEEPER
+        password:
+          name: passPhrase
+          env: VAULT_PASS_PHRASE
+  schemas:
+    Box:
+      type: object
+      required: [id, size]
+      properties:
+        id:
+          type: integer
+        size:
+          type: string
+          enum: [small, large]
+        items:
+          type: array
+          items:
+            type: string

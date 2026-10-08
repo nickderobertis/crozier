@@ -175,6 +175,25 @@
     contradicts the generated code: the import fails, so the snippet cannot run.
   evidence: docs/departures/evidence/readme-client-class-casing.md
 
+- id: repeated-credential-example-keyword
+  kind: fern-defect
+  trigger: >-
+    Two credentials that resolve to one constructor parameter: two header
+    `apiKey` schemes naming the same `X-Api-Key` header, two whose headers
+    stem to one name (`X-API-KEY` and `API-KEY`), or a bearer scheme whose
+    `x-fern-token-variable-name` is `apiKey` beside such a header scheme:
+    `README.md`, `reference.md` and every `client.py`.
+  fern: >-
+    Client constructor examples passing the shared keyword twice
+    (`FernApi(api_key="YOUR_API_KEY", api_key="YOUR_API_KEY", ...)`).
+  crozier: >-
+    The keyword once, as the constructor declares it.
+  reason: >-
+    A call repeating a keyword argument does not bind: Python rejects it as a
+    `SyntaxError` before the example runs, so the documented client cannot be
+    built as written.
+  evidence: docs/departures/evidence/repeated-credential-example-keyword.md
+
 - id: sdk-identity-header-prefix
   kind: branding
   trigger: >-

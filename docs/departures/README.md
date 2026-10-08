@@ -162,7 +162,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 7 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 8 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -248,6 +248,15 @@ when the two differ.
 - **crozier writes:** The class names the package defines (`LanternHarborApi`, `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`).
 - **Why:** An example that imports a class the generated package does not define contradicts the generated code: the import fails, so the snippet cannot run.
 - **Evidence:** [`docs/departures/evidence/readme-client-class-casing.md`](../../docs/departures/evidence/readme-client-class-casing.md)
+
+### `repeated-credential-example-keyword`
+
+- **Kind:** `fern-defect`
+- **Trigger:** Two credentials that resolve to one constructor parameter: two header `apiKey` schemes naming the same `X-Api-Key` header, two whose headers stem to one name (`X-API-KEY` and `API-KEY`), or a bearer scheme whose `x-fern-token-variable-name` is `apiKey` beside such a header scheme: `README.md`, `reference.md` and every `client.py`.
+- **Fern writes:** Client constructor examples passing the shared keyword twice (`FernApi(api_key="YOUR_API_KEY", api_key="YOUR_API_KEY", ...)`).
+- **crozier writes:** The keyword once, as the constructor declares it.
+- **Why:** A call repeating a keyword argument does not bind: Python rejects it as a `SyntaxError` before the example runs, so the documented client cannot be built as written.
+- **Evidence:** [`docs/departures/evidence/repeated-credential-example-keyword.md`](../../docs/departures/evidence/repeated-credential-example-keyword.md)
 
 ### `sdk-identity-header-prefix`
 

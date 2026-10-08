@@ -1943,13 +1943,28 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "grid-valve-console-literals",
+        "docs/openapi-surface/handwritten/grid-valve-console/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "impedance-complex-reading-literals",
         "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
+        "lock-keeper-vault-literals",
+        "docs/openapi-surface/handwritten/lock-keeper-vault/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "locker-bank-claims-literals",
         "docs/openapi-surface/handwritten/locker-bank-claims/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "meter-reader-gateway-literals",
+        "docs/openapi-surface/handwritten/meter-reader-gateway/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -1960,6 +1975,16 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     (
         "signal-box-relays-literals",
         "docs/openapi-surface/handwritten/signal-box-relays/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "ski-lift-gates-literals",
+        "docs/openapi-surface/handwritten/ski-lift-gates/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "twin-key-relay-literals",
+        "docs/openapi-surface/handwritten/twin-key-relay/openapi.yml",
         &["--enum-type", "literals"],
     ),
 ];
@@ -2667,6 +2692,76 @@ fn handwritten_documents(
         })
         .unwrap_or_default();
     (evidence, failures)
+}
+
+/// The security-scheme naming extensions read crozier's spelling on its own and
+/// win over a conflicting Fern spelling on the same scheme: the header key's
+/// parameter and prefix, the bearer's parameter (from `x-*-bearer` or, failing
+/// that, `x-*-token-variable-name`), and basic auth's parameter names. Each
+/// credential is declared, assigned and sent under the winning name, and the
+/// losing Fern-spelled name appears nowhere.
+#[test]
+fn security_scheme_naming_extensions_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cases: [(&str, &str, &[&str], &[&str]); 5] = [
+        (
+            "header",
+            "type: apiKey\n      in: header\n      name: X-Valve-Key\n      x-crozier-header: {name: valveToken, prefix: Valve}",
+            &["valve_token: str", "headers[\"X-Valve-Key\"] = f\"Valve {self.valve_token}\""],
+            &["api_key"],
+        ),
+        (
+            "header-conflict",
+            "type: apiKey\n      in: header\n      name: X-Valve-Key\n      x-fern-header: {name: meterToken, prefix: Meter}\n      x-crozier-header: {name: gateToken}",
+            &["gate_token: str", "headers[\"X-Valve-Key\"] = self.gate_token"],
+            &["meter_token", "Meter "],
+        ),
+        (
+            "bearer-conflict",
+            "type: http\n      scheme: bearer\n      x-fern-bearer: {name: liftPass}\n      x-crozier-bearer: {name: rider}",
+            &["rider: typing.Union[str, typing.Callable[[], str]]", "def _get_rider(self) -> str:"],
+            &["lift_pass", "_get_token"],
+        ),
+        (
+            "token-variable-conflict",
+            "type: http\n      scheme: bearer\n      x-fern-token-variable-name: apiKey\n      x-crozier-token-variable-name: rideKey",
+            &["ride_key: typing.Union[str, typing.Callable[[], str]]", "def _get_ride_key(self) -> str:"],
+            &["api_key", "_get_token"],
+        ),
+        (
+            "basic-conflict",
+            "type: http\n      scheme: basic\n      x-fern-basic: {username: {name: keeper}}\n      x-crozier-basic: {username: {name: clerk}}",
+            &["clerk: typing.Union[str, typing.Callable[[], str]]", "httpx.BasicAuth(self._get_clerk(), self._get_password())"],
+            &["keeper", "_get_username"],
+        ),
+    ];
+    for (name, scheme, present, absent) in cases {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Gates, version: '1'}}\nsecurity: [{{Cred: []}}]\npaths:\n  /gates:\n    get:\n      operationId: listGates\n      responses: {{'204': {{description: ok}}}}\ncomponents:\n  securitySchemes:\n    Cred:\n      {scheme}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        let wrapper =
+            std::fs::read_to_string(out.join("src/fern/core/client_wrapper.py")).expect("wrapper");
+        let client = std::fs::read_to_string(out.join("src/fern/client.py")).expect("client");
+        for text in present {
+            assert!(
+                wrapper.contains(text),
+                "{name}: the wrapper lacks `{text}`:\n{wrapper}"
+            );
+        }
+        for text in absent {
+            assert!(
+                !wrapper.contains(text) && !client.contains(text),
+                "{name}: `{text}` survives the crozier spelling"
+            );
+        }
+    }
 }
 
 /// An SDK method name written as a sequence generates under either spelling, the

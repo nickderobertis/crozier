@@ -595,7 +595,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 11] = [
+pub const RULE_IDS: [&str; 12] = [
     "body-query-parameter-value",
     "closed-empty-object-example",
     "constant-header-docs-arguments",
@@ -605,6 +605,7 @@ pub const RULE_IDS: [&str; 11] = [
     "lifted-base-path-positional-example",
     "nullable-items-docs",
     "readme-client-class-casing",
+    "repeated-credential-example-keyword",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
 ];
@@ -649,6 +650,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "readme-client-class-casing" => Rule {
             line: Some(readme_client_class_casing),
+            ..none
+        },
+        "repeated-credential-example-keyword" => Rule {
+            region: Some(repeated_credential_example_keyword),
             ..none
         },
         "sdk-identity-header-prefix" => Rule {
@@ -1251,6 +1256,46 @@ fn lifted_argument<'l>(line: &'l str, names: &BTreeSet<String>) -> Option<&'l st
     }
     let (name, _) = trimmed.split_once('=')?;
     names.contains(name).then_some(name)
+}
+
+/// `repeated-credential-example-keyword`: in `README.md`, `reference.md` or a
+/// `client.py`, Fern's file is crozier's once every keyword argument line of a
+/// client constructor call (`client = <Class>(`) that repeats a keyword an
+/// earlier line of the same call passed is removed — Fern's two credentials
+/// sharing one parameter, written `api_key=…` twice. The region is the two
+/// files' differing window.
+fn repeated_credential_example_keyword(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel)
+        && pair.rel != "client.py"
+        && !pair.rel.ends_with("/client.py")
+    {
+        return Ok(None);
+    }
+    let mut kept: Vec<&str> = Vec::with_capacity(pair.fern.len());
+    let mut keywords: Option<(usize, BTreeSet<&str>)> = None;
+    let mut removed = false;
+    for line in pair.fern {
+        let trimmed = line.trim_start();
+        let indent = line.len() - trimmed.len();
+        if opens_constructor_call(trimmed) {
+            keywords = Some((indent, BTreeSet::new()));
+        } else if let Some((opened, seen)) = keywords.as_mut() {
+            if trimmed == ")" && indent == *opened {
+                keywords = None;
+            } else if let Some((name, _)) = trimmed.split_once('=').filter(|_| line.ends_with(','))
+            {
+                if !seen.insert(name) {
+                    removed = true;
+                    continue;
+                }
+            }
+        }
+        kept.push(line);
+    }
+    if !removed || kept != pair.crozier {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
 }
 
 /// The line opening the call whose argument list holds line `index`: the
@@ -2335,6 +2380,77 @@ mod tests {
                 &["    profile={},"]
             )),
             Ok(None)
+        );
+    }
+
+    #[test]
+    fn the_repeated_keyword_rule_takes_only_a_constructor_call_repeat() {
+        let fern = [
+            "client = FernApi(",
+            "    api_key=\"<value>\",",
+            "    api_key=\"<X-Api-Key>\",",
+            ")",
+            "client.relay(",
+            "    to=\"to\",",
+            ")",
+        ];
+        let crozier = [
+            "client = FernApi(",
+            "    api_key=\"<value>\",",
+            ")",
+            "client.relay(",
+            "    to=\"to\",",
+            ")",
+        ];
+        let found =
+            repeated_credential_example_keyword(&pair("README.md", &fern, &crozier)).unwrap();
+        assert_eq!(
+            found,
+            Some(Region {
+                fern: 2..3,
+                crozier: 2..2
+            })
+        );
+        // Any `client.py` reads the same; another file does not.
+        assert!(
+            repeated_credential_example_keyword(&pair("src/fern/client.py", &fern, &crozier))
+                .unwrap()
+                .is_some()
+        );
+        assert!(repeated_credential_example_keyword(&pair(
+            "src/fern/raw_client.py",
+            &fern,
+            &crozier
+        ))
+        .unwrap()
+        .is_none());
+        // crozier keeping the repeat, or dropping the first keyword instead, is
+        // not the departure.
+        assert!(
+            repeated_credential_example_keyword(&pair("README.md", &fern, &fern))
+                .unwrap()
+                .is_none()
+        );
+        let wrong = [
+            "client = FernApi(",
+            "    api_key=\"<X-Api-Key>\",",
+            ")",
+            "client.relay(",
+            "    to=\"to\",",
+            ")",
+        ];
+        assert!(
+            repeated_credential_example_keyword(&pair("README.md", &fern, &wrong))
+                .unwrap()
+                .is_none()
+        );
+        // A repeated keyword in a method call is no constructor call.
+        let method = ["client.relay(", "    to=\"a\",", "    to=\"b\",", ")"];
+        let once = ["client.relay(", "    to=\"a\",", ")"];
+        assert!(
+            repeated_credential_example_keyword(&pair("README.md", &method, &once))
+                .unwrap()
+                .is_none()
         );
     }
 

@@ -750,17 +750,27 @@ pub enum Auth {
         header: String,
         /// Whether every operation is authenticated (the credential is required).
         required: bool,
+        /// The credential's parameter (`api_key` unless the scheme names it).
+        credential: Credential,
+        /// The text the key is sent behind (`f"Meter {self.meter_token}"`).
+        prefix: Option<String>,
     },
     /// A bearer `token` (str or callable), sent as `Authorization: Bearer`.
     Bearer {
         /// Whether every operation is authenticated (the token is required).
         required: bool,
+        /// The credential's parameter (`token` unless the scheme names it).
+        credential: Credential,
     },
     /// HTTP `basic` credentials: a required `username`/`password` pair (each a
     /// `str` or callable), sent via `httpx.BasicAuth` as `Authorization: Basic`.
     Basic {
         /// Whether every operation requires Basic auth.
         required: bool,
+        /// The username's parameter (`username` unless the scheme names it).
+        username: Credential,
+        /// The password's parameter (`password` unless the scheme names it).
+        password: Credential,
     },
     /// No authentication: the document declares no security schemes, so the client
     /// wrapper carries no credential and adds no `Authorization` header — matching
@@ -829,6 +839,7 @@ fn auth_model(doc: &OpenApi) -> Auth {
             if s.ty == SecuritySchemeType::ApiKey
                 && s.location == Some(ParameterLocation::Header) =>
         {
+            let naming = s.header_credential();
             Auth::ApiKey {
                 header: s.name.clone().unwrap_or_default(),
                 required: doc
@@ -837,19 +848,28 @@ fn auth_model(doc: &OpenApi) -> Auth {
                     .is_some_and(|requirements| requirements.iter().any(|r| !r.is_empty()))
                     || all_operations_authenticated(doc)
                     || doc.security.is_none(),
+                credential: Credential::named("api_key", &naming),
+                prefix: naming.prefix,
             }
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Bearer) => {
             let required = all_operations_authenticated(doc);
-            Auth::Bearer { required }
+            Auth::Bearer {
+                required,
+                credential: Credential::named("token", &s.bearer_credential()),
+            }
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
+            let (username, password) = s.basic_credentials();
             Auth::Basic {
                 required: all_operations_authenticated(doc),
+                username: Credential::named("username", &username),
+                password: Credential::named("password", &password),
             }
         }
         Some(s) if s.ty == SecuritySchemeType::OAuth2 => Auth::Bearer {
             required: all_operations_authenticated(doc),
+            credential: Credential::plain("token"),
         },
         // An `openIdConnect` scheme is a bearer token to Fern, required on the
         // same terms as OAuth2's: the Virtual Cell's `openId` scheme leaves
@@ -857,6 +877,7 @@ fn auth_model(doc: &OpenApi) -> Auth {
         // scheme on every operation makes it required.
         Some(s) if s.ty == SecuritySchemeType::OpenIdConnect => Auth::Bearer {
             required: all_operations_authenticated(doc),
+            credential: Credential::plain("token"),
         },
         // No scheme Fern supports: it defines no auth at all. OneVoice's
         // requirement names a cookie `apiKey` and its other scheme is
@@ -864,6 +885,40 @@ fn auth_model(doc: &OpenApi) -> Auth {
         // whose operations require such a scheme are refused outright (*Endpoint
         // requires auth, but no auth is defined*).
         _ => Auth::None,
+    }
+}
+
+/// A credential's constructor parameter: its Python name, and the environment
+/// variable the root client defaults it to (`x-fern-bearer: {env: …}`), whose
+/// absence it then reports with an `ApiError`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Credential {
+    /// The parameter's Python name (`token`, `lift_pass`).
+    pub param: String,
+    /// The environment variable the root client reads it from, if any.
+    pub env: Option<String>,
+}
+
+impl Credential {
+    /// The credential named `default` unless `naming` declares a name.
+    #[must_use]
+    pub fn named(default: &str, naming: &crate::openapi::CredentialNaming) -> Self {
+        Credential {
+            param: naming.name.as_deref().map_or_else(
+                || default.to_string(),
+                |name| naming::sanitize_identifier(&naming::to_snake_case(name)),
+            ),
+            env: naming.env.clone(),
+        }
+    }
+
+    /// The credential named `default`, with no environment default.
+    #[must_use]
+    pub fn plain(default: &str) -> Self {
+        Credential {
+            param: default.to_string(),
+            env: None,
+        }
     }
 }
 
@@ -14720,7 +14775,10 @@ mod tests {
         )
         .expect("document deserializes");
 
-        let Auth::ApiKey { header, required } = auth_model(&doc) else {
+        let Auth::ApiKey {
+            header, required, ..
+        } = auth_model(&doc)
+        else {
             panic!("the supported header key should be primary");
         };
         assert_eq!(header, "X-Api-Key");

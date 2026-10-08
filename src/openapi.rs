@@ -306,6 +306,106 @@ pub struct SecurityScheme {
     /// For `type: oauth2`, the available flows and their scope descriptions.
     #[serde(default)]
     pub flows: Option<OAuthFlows>,
+    /// `x-crozier-header` / `x-fern-header`: a header `apiKey` credential's
+    /// parameter `name`, the `prefix` its value is sent with, and the `env`
+    /// variable it defaults to. Read through [`SecurityScheme::header_credential`].
+    #[serde(rename = "x-crozier-header", default)]
+    pub(crate) header_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-header", default)]
+    pub(crate) header_fern: Option<serde_json::Value>,
+    /// `x-crozier-bearer` / `x-fern-bearer`: a bearer credential's parameter
+    /// `name` and `env` variable. Read through [`SecurityScheme::bearer_credential`].
+    #[serde(rename = "x-crozier-bearer", default)]
+    pub(crate) bearer_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-bearer", default)]
+    pub(crate) bearer_fern: Option<serde_json::Value>,
+    /// `x-crozier-basic` / `x-fern-basic`: the `username` and `password`
+    /// credentials' `name` and `env`. Read through [`SecurityScheme::basic_credentials`].
+    #[serde(rename = "x-crozier-basic", default)]
+    pub(crate) basic_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-basic", default)]
+    pub(crate) basic_fern: Option<serde_json::Value>,
+    /// `x-crozier-token-variable-name` / `x-fern-token-variable-name`: a bearer
+    /// credential's parameter name. Read through [`SecurityScheme::bearer_credential`].
+    #[serde(rename = "x-crozier-token-variable-name", default)]
+    pub(crate) token_variable_name_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-token-variable-name", default)]
+    pub(crate) token_variable_name_fern: Option<serde_json::Value>,
+}
+
+/// How a security scheme's credential is named in the generated client: the
+/// declared parameter `name`, the `env` variable it defaults to, and (for a
+/// header key) the `prefix` its value is sent behind. Each is `None` when the
+/// extension leaves it out or gives it a blank or non-string value.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct CredentialNaming {
+    pub name: Option<String>,
+    pub env: Option<String>,
+    pub prefix: Option<String>,
+}
+
+impl CredentialNaming {
+    fn from_value(value: Option<&serde_json::Value>) -> Self {
+        let field = |key: &str| {
+            value
+                .and_then(|value| value.get(key))
+                .and_then(serde_json::Value::as_str)
+                .map(str::trim)
+                .filter(|text| !text.is_empty())
+                .map(str::to_string)
+        };
+        CredentialNaming {
+            name: field("name"),
+            env: field("env"),
+            prefix: field("prefix"),
+        }
+    }
+}
+
+impl SecurityScheme {
+    /// The header `apiKey` credential's naming, canonicalizing on
+    /// `x-crozier-header` over `x-fern-header` (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn header_credential(&self) -> CredentialNaming {
+        CredentialNaming::from_value(self.header_crozier.as_ref().or(self.header_fern.as_ref()))
+    }
+
+    /// The bearer credential's naming: `x-crozier-bearer` over `x-fern-bearer`,
+    /// whose `name` outranks `x-crozier-token-variable-name` over
+    /// `x-fern-token-variable-name`.
+    #[must_use]
+    pub fn bearer_credential(&self) -> CredentialNaming {
+        let mut naming = CredentialNaming::from_value(
+            self.bearer_crozier.as_ref().or(self.bearer_fern.as_ref()),
+        );
+        naming.prefix = None;
+        if naming.name.is_none() {
+            naming.name = self
+                .token_variable_name_crozier
+                .as_ref()
+                .or(self.token_variable_name_fern.as_ref())
+                .and_then(serde_json::Value::as_str)
+                .map(str::trim)
+                .filter(|text| !text.is_empty())
+                .map(str::to_string);
+        }
+        naming
+    }
+
+    /// The basic credentials' naming, `(username, password)`: `x-crozier-basic`
+    /// over `x-fern-basic`, each part's `name` and `env`.
+    #[must_use]
+    pub fn basic_credentials(&self) -> (CredentialNaming, CredentialNaming) {
+        let declared = self.basic_crozier.as_ref().or(self.basic_fern.as_ref());
+        let part = |key: &str| {
+            let mut naming =
+                CredentialNaming::from_value(declared.and_then(|value| value.get(key)));
+            naming.prefix = None;
+            naming
+        };
+        (part("username"), part("password"))
+    }
 }
 
 /// OAuth2 flow declarations. crozier only needs the scope maps to reproduce

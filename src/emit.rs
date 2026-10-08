@@ -17,9 +17,9 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Endpoint,
-    EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim,
-    QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Credential,
+    Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType,
+    Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -3577,80 +3577,133 @@ fn core_init_with_pagination(asset: &str) -> String {
 /// argument. Each fragment carries its own trailing newline where the template
 /// expects one.
 struct AuthWrapper {
-    param: String,
+    /// Each credential's `(name, constructor parameter line)`; a credential a
+    /// promoted header of the same name already declares is not declared again.
+    params: Vec<(String, String)>,
     assign: String,
     header_block: String,
     token_method: String,
-    super_arg: String,
+}
+
+impl AuthWrapper {
+    /// The constructor parameters no name in `taken` already declares.
+    fn param(&self, taken: &std::collections::HashSet<&str>) -> String {
+        self.params
+            .iter()
+            .filter(|(name, _)| !taken.contains(name.as_str()))
+            .map(|(_, line)| line.as_str())
+            .collect()
+    }
+
+    /// The `super().__init__` arguments no name in `taken` already passes.
+    fn super_arg(&self, taken: &std::collections::HashSet<&str>) -> String {
+        self.params
+            .iter()
+            .filter(|(name, _)| !taken.contains(name.as_str()))
+            .map(|(name, _)| format!("{name}={name}, "))
+            .collect()
+    }
 }
 
 fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
+    // The callable-or-string getter Fern writes for a bearer or basic credential.
+    let getter = |param: &str, required: bool| {
+        if required {
+            format!("    def _get_{param}(self) -> str:\n        if isinstance(self._{param}, str):\n            return self._{param}\n        else:\n            return self._{param}()\n\n")
+        } else {
+            format!("    def _get_{param}(self) -> typing.Optional[str]:\n        if isinstance(self._{param}, str) or self._{param} is None:\n            return self._{param}\n        else:\n            return self._{param}()\n\n")
+        }
+    };
+    let callable = |required: bool| {
+        if required {
+            "typing.Union[str, typing.Callable[[], str]]".to_string()
+        } else {
+            "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string()
+        }
+    };
     match auth {
-        Auth::ApiKey { header, required } => {
-            let param = if *required {
-                "        api_key: str,\n".to_string()
+        Auth::ApiKey {
+            header,
+            required,
+            credential,
+            prefix,
+        } => {
+            let p = &credential.param;
+            let value = prefix.as_ref().map_or_else(
+                || format!("self.{p}"),
+                |prefix| format!("f\"{} {{self.{p}}}\"", escape_py_str(prefix)),
+            );
+            let (ty, header_block) = if *required {
+                (
+                    "str".to_string(),
+                    format!("        headers[\"{header}\"] = {value}\n"),
+                )
             } else {
-                "        api_key: typing.Optional[str] = None,\n".to_string()
-            };
-            let header_block = if *required {
-                format!("        headers[\"{header}\"] = self.api_key\n")
-            } else {
-                format!(
-                    "        if self.api_key is not None:\n            headers[\"{header}\"] = self.api_key\n"
+                (
+                    "typing.Optional[str] = None".to_string(),
+                    format!("        if self.{p} is not None:\n            headers[\"{header}\"] = {value}\n"),
                 )
             };
             AuthWrapper {
-                param,
-                assign: "        self.api_key = api_key\n".to_string(),
+                params: vec![(p.clone(), format!("        {p}: {ty},\n"))],
+                assign: format!("        self.{p} = {p}\n"),
                 header_block,
                 token_method: String::new(),
-                super_arg: "api_key=api_key, ".to_string(),
             }
         }
-        Auth::Bearer { required } => {
-            let (param, header_block, token_method) = if *required {
-                (
-                    "        token: typing.Union[str, typing.Callable[[], str]],\n".to_string(),
-                    "        headers[\"Authorization\"] = f\"Bearer {self._get_token()}\"\n"
-                        .to_string(),
-                    "    def _get_token(self) -> str:\n        if isinstance(self._token, str):\n            return self._token\n        else:\n            return self._token()\n\n".to_string(),
-                )
+        Auth::Bearer {
+            required,
+            credential,
+        } => {
+            let p = &credential.param;
+            let header_block = if *required {
+                format!("        headers[\"Authorization\"] = f\"Bearer {{self._get_{p}()}}\"\n")
             } else {
-                (
-                    "        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n".to_string(),
-                    "        token = self._get_token()\n        if token is not None:\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n".to_string(),
-                    "    def _get_token(self) -> typing.Optional[str]:\n        if isinstance(self._token, str) or self._token is None:\n            return self._token\n        else:\n            return self._token()\n\n".to_string(),
-                )
+                format!("        {p} = self._get_{p}()\n        if {p} is not None:\n            headers[\"Authorization\"] = f\"Bearer {{{p}}}\"\n")
             };
             AuthWrapper {
-                param,
-                assign: "        self._token = token\n".to_string(),
+                params: vec![(
+                    p.clone(),
+                    format!("        {p}: {},\n", callable(*required)),
+                )],
+                assign: format!("        self._{p} = {p}\n"),
                 header_block,
-                token_method,
-                super_arg: "token=token, ".to_string(),
+                token_method: getter(p, *required),
             }
         }
-        Auth::Basic { required: true } => AuthWrapper {
-            param: "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n".to_string(),
-            assign: "        self._username = username\n        self._password = password\n".to_string(),
-            header_block: "        headers[\"Authorization\"] = httpx.BasicAuth(self._get_username(), self._get_password())._auth_header\n".to_string(),
-            token_method: "    def _get_username(self) -> str:\n        if isinstance(self._username, str):\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> str:\n        if isinstance(self._password, str):\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
-            super_arg: "username=username, password=password, ".to_string(),
-        },
-        Auth::Basic { required: false } => AuthWrapper {
-            param: "        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n        password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n".to_string(),
-            assign: "        self._username = username\n        self._password = password\n".to_string(),
-            header_block: "        username = self._get_username()\n        password = self._get_password()\n        if username is not None and password is not None:\n            headers[\"Authorization\"] = httpx.BasicAuth(username, password)._auth_header\n".to_string(),
-            token_method: "    def _get_username(self) -> typing.Optional[str]:\n        if isinstance(self._username, str) or self._username is None:\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> typing.Optional[str]:\n        if isinstance(self._password, str) or self._password is None:\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
-            super_arg: "username=username, password=password, ".to_string(),
-        },
+        Auth::Basic {
+            required,
+            username,
+            password,
+        } => {
+            let (u, w) = (&username.param, &password.param);
+            let header_block = if *required {
+                format!("        headers[\"Authorization\"] = httpx.BasicAuth(self._get_{u}(), self._get_{w}())._auth_header\n")
+            } else {
+                format!("        {u} = self._get_{u}()\n        {w} = self._get_{w}()\n        if {u} is not None and {w} is not None:\n            headers[\"Authorization\"] = httpx.BasicAuth({u}, {w})._auth_header\n")
+            };
+            AuthWrapper {
+                params: vec![
+                    (
+                        u.clone(),
+                        format!("        {u}: {},\n", callable(*required)),
+                    ),
+                    (
+                        w.clone(),
+                        format!("        {w}: {},\n", callable(*required)),
+                    ),
+                ],
+                assign: format!("        self._{u} = {u}\n        self._{w} = {w}\n"),
+                header_block,
+                token_method: getter(u, *required) + &getter(w, *required),
+            }
+        }
         // No auth: no credential parameter, assignment, header, or token helper.
         Auth::None => AuthWrapper {
-            param: String::new(),
+            params: Vec::new(),
             assign: String::new(),
             header_block: String::new(),
             token_method: String::new(),
-            super_arg: String::new(),
         },
     }
 }
@@ -3663,88 +3716,137 @@ struct AuthClient {
     wrapper_arg: String,
     doc_param: String,
     example_line: String,
+    /// The checks a required credential read from the environment gets once the
+    /// client is built.
+    check: String,
 }
 
-fn auth_client_parts(auth: &Auth) -> AuthClient {
-    // Each credential is a `(name, type)` pair; basic auth carries two
-    // (`username`/`password`), every other scheme exactly one.
-    let creds: Vec<(&str, String)> = match auth {
-        Auth::ApiKey { required: true, .. } => vec![("api_key", "str".to_string())],
+fn auth_client_parts(auth: &Auth, taken: &std::collections::HashSet<&str>) -> AuthClient {
+    // Each credential: its parameter, its type, and whether the client requires
+    // it; basic auth carries two (`username`/`password`), every other scheme one.
+    let callable = "typing.Union[str, typing.Callable[[], str]]";
+    let creds: Vec<(&Credential, &str, bool)> = match auth {
         Auth::ApiKey {
-            required: false, ..
-        } => vec![("api_key", "typing.Optional[str] = None".to_string())],
-        Auth::Bearer { required: true } => vec![(
-            "token",
-            "typing.Union[str, typing.Callable[[], str]]".to_string(),
-        )],
-        Auth::Bearer { required: false } => vec![(
-            "token",
-            "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
-        )],
-        Auth::Basic { required: true } => vec![
-            (
-                "username",
-                "typing.Union[str, typing.Callable[[], str]]".to_string(),
-            ),
-            (
-                "password",
-                "typing.Union[str, typing.Callable[[], str]]".to_string(),
-            ),
-        ],
-        Auth::Basic { required: false } => vec![
-            (
-                "username",
-                "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
-            ),
-            (
-                "password",
-                "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
-            ),
+            required,
+            credential,
+            ..
+        } => vec![(credential, "str", *required)],
+        Auth::Bearer {
+            required,
+            credential,
+        } => vec![(credential, callable, *required)],
+        Auth::Basic {
+            required,
+            username,
+            password,
+        } => vec![
+            (username, callable, *required),
+            (password, callable, *required),
         ],
         Auth::None => Vec::new(),
     };
+    // A credential read from the environment is optional in the signature,
+    // defaulting to the variable, and a required one is checked once the client
+    // is built (`x-fern-bearer: {env: …}`).
+    let ctor_ty = |credential: &Credential, ty: &str, required: bool| match &credential.env {
+        Some(env) => format!(
+            "typing.Optional[{ty}] = os.getenv(\"{}\")",
+            escape_py_str(env)
+        ),
+        None if required => ty.to_string(),
+        None => format!("typing.Optional[{ty}] = None"),
+    };
+    let doc_ty = |credential: &Credential, ty: &str, required: bool| {
+        if required && credential.env.is_none() {
+            ty.to_string()
+        } else {
+            format!("typing.Optional[{ty}]")
+        }
+    };
+    let declared = |credential: &&Credential| !taken.contains(credential.param.as_str());
     let ctor_param: String = creds
         .iter()
-        .map(|(name, ty)| format!("        {name}: {ty},\n"))
+        .filter(|(credential, _, _)| declared(credential))
+        .map(|(credential, ty, required)| {
+            format!(
+                "        {}: {},\n",
+                credential.param,
+                ctor_ty(credential, ty, *required)
+            )
+        })
         .collect();
-    // The docstring type drops the ` = None` default suffix a parameter carries.
     let doc_param: String = creds
         .iter()
-        .map(|(name, ty)| {
-            let doc_ty = ty.strip_suffix(" = None").unwrap_or(ty);
-            format!("    {name} : {doc_ty}\n")
+        .map(|(credential, ty, required)| {
+            format!(
+                "    {} : {}\n",
+                credential.param,
+                doc_ty(credential, ty, *required)
+            )
         })
         .collect();
     // The wrapper call passes each credential through; the template supplies the
     // final newline, so the joined block carries none.
     let wrapper_arg = creds
         .iter()
-        .map(|(name, _)| format!("            {name}={name},\n"))
+        .filter(|(credential, _, _)| declared(credential))
+        .map(|(credential, _, _)| format!("            {0}={0},\n", credential.param))
         .collect::<String>()
         .trim_end_matches('\n')
         .to_string();
+    // A credential sharing a promoted header's parameter is passed once (the
+    // `repeated-credential-example-keyword` departure).
     let example_line: String = auth_example_args(auth)
         .iter()
+        .filter(|arg| !taken.contains(keyword_name(arg)))
         .map(|arg| format!("        {arg},\n"))
+        .collect();
+    let check: String = creds
+        .iter()
+        .filter(|(credential, _, required)| *required && declared(credential))
+        .filter_map(|(credential, _, _)| {
+            let env = credential.env.as_ref()?;
+            Some(format!(
+                "        if {0} is None:\n            raise ApiError(body=\"The client must be instantiated be either passing in {0} or setting {1}\")\n",
+                credential.param,
+                escape_py_str(env)
+            ))
+        })
         .collect();
     AuthClient {
         ctor_param,
         wrapper_arg,
         doc_param,
         example_line,
+        check,
+    }
+}
+
+/// Every credential of `auth`, in constructor order.
+fn auth_credentials(auth: &Auth) -> Vec<&Credential> {
+    match auth {
+        Auth::ApiKey { credential, .. } | Auth::Bearer { credential, .. } => vec![credential],
+        Auth::Basic {
+            username, password, ..
+        } => vec![username, password],
+        Auth::None => Vec::new(),
     }
 }
 
 /// The credential arguments in a worked `Examples` client instantiation, e.g.
 /// `["token=\"YOUR_TOKEN\""]` or, for basic auth, both `username`/`password` lines
 /// (each with no indent or trailing comma — the caller adds those).
-fn auth_example_args(auth: &Auth) -> Vec<&'static str> {
-    match auth {
-        Auth::ApiKey { .. } => vec!["api_key=\"YOUR_API_KEY\""],
-        Auth::Bearer { .. } => vec!["token=\"YOUR_TOKEN\""],
-        Auth::Basic { .. } => vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""],
-        Auth::None => Vec::new(),
-    }
+fn auth_example_args(auth: &Auth) -> Vec<String> {
+    auth_credentials(auth)
+        .into_iter()
+        .map(|credential| {
+            format!(
+                "{}=\"YOUR_{}\"",
+                credential.param,
+                credential.param.to_ascii_uppercase()
+            )
+        })
+        .collect()
 }
 
 /// A header parameter's synthesized example. Fern fills a header with its own
@@ -3801,6 +3903,11 @@ fn client_wrapper_file(
         .iter()
         .cloned()
         .partition(|h| h.default().is_some());
+    // A credential a promoted header of the same name already declares is not
+    // declared or passed again: Fern's two `X-Api-Key` schemes, or a bearer named
+    // `api_key` beside one, share the header's `api_key` parameter.
+    let taken: std::collections::HashSet<&str> =
+        leading.iter().map(|h| h.py_name.as_str()).collect();
     let tr_param: String = trailing
         .iter()
         .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
@@ -3914,7 +4021,7 @@ fn client_wrapper_file(
     c.push_str(HEADER);
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&client_param);
-    c.push_str(&a.param);
+    c.push_str(&a.param(&taken));
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}    ):\n"));
     c.push_str(&client_assign);
     c.push_str(&a.assign);
@@ -3939,18 +4046,18 @@ fn client_wrapper_file(
     c.push_str(&a.token_method);
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&client_param);
-    c.push_str(&a.param);
+    c.push_str(&a.param(&taken));
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            "));
     c.push_str(&client_super);
-    c.push_str(&a.super_arg);
+    c.push_str(&a.super_arg(&taken));
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
     c.push_str("        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&client_param);
-    c.push_str(&a.param);
+    c.push_str(&a.param(&taken));
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            "));
     c.push_str(&client_super);
-    c.push_str(&a.super_arg);
+    c.push_str(&a.super_arg(&taken));
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
     c.push_str("        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
@@ -6278,6 +6385,15 @@ fn root_client_file(
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
     imports.add_plain("typing");
     imports.add_plain("httpx");
+    // A credential read from the environment defaults to `os.getenv`, and a
+    // required one is reported missing with an `ApiError`.
+    if auth_credentials(auth)
+        .iter()
+        .any(|credential| credential.env.is_some())
+    {
+        imports.add_plain("os");
+        imports.add_core("api_error", "ApiError");
+    }
     imports.add_core("client_wrapper", "AsyncClientWrapper");
     imports.add_core("client_wrapper", "SyncClientWrapper");
     imports.add_core("logging", "LogConfig");
@@ -6521,7 +6637,13 @@ fn root_client_class(
     } else {
         (client_name.to_string(), "SyncClientWrapper", "httpx.Client")
     };
-    let a = auth_client_parts(auth);
+    let leading_names: std::collections::HashSet<&str> = cfg
+        .global_headers
+        .iter()
+        .filter(|h| h.default().is_none())
+        .map(|h| h.py_name.as_str())
+        .collect();
+    let a = auth_client_parts(auth, &leading_names);
     // With an environment, `base_url` becomes optional, an `environment` parameter
     // (defaulting to the first server) is added, and the wrapper's `base_url` is
     // resolved through `_get_base_url`.
@@ -6610,16 +6732,22 @@ fn root_client_class(
                 }),
         )
         .collect();
+    // Two promoted headers sharing a parameter pass it once (the
+    // `repeated-credential-example-keyword` departure): Fern repeats it.
     let client_param_example: String = client_path_parameters
         .iter()
         .map(|parameter| format!("        {},\n", client_path_parameter_example(parameter)))
-        .chain(global_headers.iter().map(|h| {
-            format!(
-                "        {}=\"YOUR_{}\",\n",
-                h.py_name,
-                h.py_name.to_uppercase()
-            )
-        }))
+        .chain(
+            distinct_global_header_params(global_headers)
+                .into_iter()
+                .map(|h| {
+                    format!(
+                        "        {}=\"YOUR_{}\",\n",
+                        h.py_name,
+                        h.py_name.to_uppercase()
+                    )
+                }),
+        )
         .collect();
     let client_param_wrapper: String = client_path_parameters
         .iter()
@@ -6665,6 +6793,7 @@ fn root_client_class(
         wrapper_arg: a.wrapper_arg,
         doc_param: a.doc_param,
         example_line: a.example_line,
+        auth_check: a.check,
         base_url_doc_ty: base_url_doc_ty.to_string(),
         env_doc,
         server_variable_doc,
@@ -6751,6 +6880,8 @@ struct RootClientView {
     wrapper_arg: String,
     doc_param: String,
     example_line: String,
+    /// The checks a required credential read from the environment gets.
+    auth_check: String,
     /// The docstring type for `base_url` (`str`, or `typing.Optional[str]` with an
     /// environment).
     base_url_doc_ty: String,
@@ -10414,15 +10545,29 @@ fn build_example_inner(
         for parameter in ctx.client_path_parameters {
             client_args.push(format!("    {},", client_path_parameter_example(parameter)));
         }
-        for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
+        let leading: Vec<GlobalHeader> = ctx
+            .global_headers
+            .iter()
+            .filter(|h| h.default().is_none())
+            .cloned()
+            .collect();
+        for h in distinct_global_header_params(&leading) {
             client_args.push(format!(
                 "    {}=\"YOUR_{}\",",
                 h.py_name,
                 h.py_name.to_uppercase()
             ));
         }
+        // A credential sharing a promoted header's parameter is passed once (the
+        // `repeated-credential-example-keyword` departure): Fern repeats it.
         for arg in auth_example_args(ctx.auth) {
-            client_args.push(format!("    {arg},"));
+            if !ctx
+                .global_headers
+                .iter()
+                .any(|h| h.default().is_none() && keyword_name(&arg) == h.py_name)
+            {
+                client_args.push(format!("    {arg},"));
+            }
         }
     }
     if !ctx.has_environment {
@@ -10534,16 +10679,34 @@ fn documentation_client_example_args(
                 .filter(|header| header.required() && !header.py_type().is_list())
                 .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
         )
-        .collect()
+        .fold(Vec::new(), |mut args: Vec<String>, arg| {
+            // Each keyword once (the `repeated-credential-example-keyword`
+            // departure): a credential and a promoted header sharing a parameter
+            // are one argument, where Fern writes the keyword twice.
+            if !args
+                .iter()
+                .any(|seen| keyword_name(seen) == keyword_name(&arg))
+            {
+                args.push(arg);
+            }
+            args
+        })
+}
+
+/// The keyword of a `name=value` example argument.
+fn keyword_name(arg: &str) -> &str {
+    arg.split_once('=').map_or(arg, |(name, _)| name)
 }
 
 fn documentation_auth_example_args(auth: &Auth) -> Vec<String> {
     match auth {
-        Auth::ApiKey { .. } => vec!["api_key=\"<value>\"".to_string()],
-        Auth::Bearer { .. } => vec!["token=\"<token>\"".to_string()],
-        Auth::Basic { .. } => vec![
-            "username=\"<username>\"".to_string(),
-            "password=\"<password>\"".to_string(),
+        Auth::ApiKey { credential, .. } => vec![format!("{}=\"<value>\"", credential.param)],
+        Auth::Bearer { credential, .. } => vec![format!("{}=\"<token>\"", credential.param)],
+        Auth::Basic {
+            username, password, ..
+        } => vec![
+            format!("{}=\"<username>\"", username.param),
+            format!("{}=\"<password>\"", password.param),
         ],
         Auth::None => Vec::new(),
     }
@@ -11096,6 +11259,7 @@ mod tests {
         DeclSettings, Example, ExampleCtx, FieldView, ForwardRepair, Imports, ParamRow, RefLoc,
         ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
+    use crate::ir::Credential;
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
         ErrorResponse, Field, FormBody, GlobalHeader, HeaderParam, HeaderType, Ir, ObjectType,
@@ -11490,6 +11654,7 @@ mod tests {
             wrapper_arg: "            token=token,".to_string(),
             doc_param: "    token : str\n\n".to_string(),
             example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
+            auth_check: String::new(),
             base_url_doc_ty: "str".to_string(),
             env_doc: String::new(),
             server_variable_doc: String::new(),
@@ -11774,14 +11939,36 @@ mod tests {
         );
     }
 
+    fn api_key_auth(header: &str, required: bool) -> Auth {
+        Auth::ApiKey {
+            header: header.to_string(),
+            required,
+            credential: Credential::plain("api_key"),
+            prefix: None,
+        }
+    }
+
+    fn bearer_auth(required: bool) -> Auth {
+        Auth::Bearer {
+            required,
+            credential: Credential::plain("token"),
+        }
+    }
+
+    fn basic_auth(required: bool) -> Auth {
+        Auth::Basic {
+            required,
+            username: Credential::plain("username"),
+            password: Credential::plain("password"),
+        }
+    }
+
     #[test]
     fn auth_fragments_cover_every_scheme() {
+        let free = std::collections::HashSet::new();
         // api-key required: public `api_key`, unconditional header, no token helper.
-        let w = auth_wrapper_parts(&Auth::ApiKey {
-            header: "X-API-Key".to_string(),
-            required: true,
-        });
-        assert_eq!(w.param, "        api_key: str,\n");
+        let w = auth_wrapper_parts(&api_key_auth("X-API-Key", true));
+        assert_eq!(w.param(&free), "        api_key: str,\n");
         assert_eq!(w.assign, "        self.api_key = api_key\n");
         assert_eq!(
             w.header_block,
@@ -11790,78 +11977,75 @@ mod tests {
         assert!(w.token_method.is_empty());
         // The `super().__init__` arg carries a trailing separator so the following
         // `headers=` kwarg needs no leading comma (which the no-auth arm would omit).
-        assert_eq!(w.super_arg, "api_key=api_key, ");
+        assert_eq!(w.super_arg(&free), "api_key=api_key, ");
 
         // No auth: every credential fragment is empty, so the wrapper carries no
         // token and `super().__init__(headers=...)` has no dangling comma.
         let none = auth_wrapper_parts(&Auth::None);
-        assert!(none.param.is_empty());
+        assert!(none.param(&free).is_empty());
         assert!(none.assign.is_empty());
         assert!(none.header_block.is_empty());
         assert!(none.token_method.is_empty());
-        assert!(none.super_arg.is_empty());
-        assert!(auth_client_parts(&Auth::None).ctor_param.is_empty());
+        assert!(none.super_arg(&free).is_empty());
+        assert!(auth_client_parts(&Auth::None, &free).ctor_param.is_empty());
         assert!(auth_example_args(&Auth::None).is_empty());
 
         // api-key optional: nullable param and a guarded header write.
-        let w = auth_wrapper_parts(&Auth::ApiKey {
-            header: "X-Key".to_string(),
-            required: false,
-        });
-        assert_eq!(w.param, "        api_key: typing.Optional[str] = None,\n");
+        let w = auth_wrapper_parts(&api_key_auth("X-Key", false));
+        assert_eq!(
+            w.param(&free),
+            "        api_key: typing.Optional[str] = None,\n"
+        );
         assert_eq!(
             w.header_block,
             "        if self.api_key is not None:\n            headers[\"X-Key\"] = self.api_key\n"
         );
 
         // bearer required vs optional: the token helper's signature differs.
-        let req = auth_wrapper_parts(&Auth::Bearer { required: true });
+        let req = auth_wrapper_parts(&bearer_auth(true));
         assert!(req.token_method.contains("-> str:"));
         assert!(req.header_block.contains("f\"Bearer {self._get_token()}\""));
-        let opt = auth_wrapper_parts(&Auth::Bearer { required: false });
+        let opt = auth_wrapper_parts(&bearer_auth(false));
         assert!(opt.token_method.contains("-> typing.Optional[str]:"));
-        assert!(opt.param.contains("typing.Optional[typing.Union[str"));
+        assert!(opt
+            .param(&free)
+            .contains("typing.Optional[typing.Union[str"));
 
         // The root-client fragments and example arg track the same schemes.
-        let c = auth_client_parts(&Auth::ApiKey {
-            header: "X-API-Key".to_string(),
-            required: true,
-        });
+        let c = auth_client_parts(&api_key_auth("X-API-Key", true), &free);
         assert_eq!(c.ctor_param, "        api_key: str,\n");
         assert_eq!(c.doc_param, "    api_key : str\n");
         assert_eq!(c.example_line, "        api_key=\"YOUR_API_KEY\",\n");
+        assert!(c.check.is_empty());
 
         // The remaining root-client arms (the docstring drops a ` = None` default).
-        let c = auth_client_parts(&Auth::ApiKey {
-            header: "X-Key".to_string(),
-            required: false,
-        });
+        let c = auth_client_parts(&api_key_auth("X-Key", false), &free);
         assert_eq!(
             c.ctor_param,
             "        api_key: typing.Optional[str] = None,\n"
         );
         assert_eq!(c.doc_param, "    api_key : typing.Optional[str]\n");
-        let c = auth_client_parts(&Auth::Bearer { required: true });
+        let c = auth_client_parts(&bearer_auth(true), &free);
         assert_eq!(
             c.ctor_param,
             "        token: typing.Union[str, typing.Callable[[], str]],\n"
         );
-        let c = auth_client_parts(&Auth::Bearer { required: false });
+        let c = auth_client_parts(&bearer_auth(false), &free);
         assert!(c.ctor_param.contains("typing.Optional[typing.Union[str"));
         assert!(!c.doc_param.contains(" = None"));
 
         // basic: a required `username`/`password` pair everywhere a single
         // credential would otherwise appear.
-        let w = auth_wrapper_parts(&Auth::Basic { required: true });
-        assert!(w.param.contains("username: typing.Union[str"));
-        assert!(w.param.contains("password: typing.Union[str"));
+        let w = auth_wrapper_parts(&basic_auth(true));
+        assert!(w.param(&free).contains("username: typing.Union[str"));
+        assert!(w.param(&free).contains("password: typing.Union[str"));
         assert!(w.assign.contains("self._username = username"));
         assert!(w.assign.contains("self._password = password"));
         assert!(w.header_block.contains("httpx.BasicAuth("));
         assert!(w.token_method.contains("def _get_username(self) -> str:"));
         assert!(w.token_method.contains("def _get_password(self) -> str:"));
-        assert_eq!(w.super_arg, "username=username, password=password, ");
-        let c = auth_client_parts(&Auth::Basic { required: true });
+        assert_eq!(w.super_arg(&free), "username=username, password=password, ");
+        let c = auth_client_parts(&basic_auth(true), &free);
         assert_eq!(
             c.ctor_param,
             "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n"
@@ -11878,22 +12062,76 @@ mod tests {
             c.example_line,
             "        username=\"YOUR_USERNAME\",\n        password=\"YOUR_PASSWORD\",\n"
         );
+        let w = auth_wrapper_parts(&basic_auth(false));
+        assert!(w
+            .header_block
+            .contains("if username is not None and password is not None:"));
 
         assert_eq!(
-            auth_example_args(&Auth::Bearer { required: true }),
+            auth_example_args(&bearer_auth(true)),
             vec!["token=\"YOUR_TOKEN\""]
         );
         assert_eq!(
-            auth_example_args(&Auth::ApiKey {
-                header: "X".to_string(),
-                required: false
-            }),
+            auth_example_args(&api_key_auth("X", false)),
             vec!["api_key=\"YOUR_API_KEY\""]
         );
         assert_eq!(
-            auth_example_args(&Auth::Basic { required: true }),
+            auth_example_args(&basic_auth(true)),
             vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""]
         );
+    }
+
+    #[test]
+    fn named_credentials_carry_their_name_prefix_and_environment() {
+        let free = std::collections::HashSet::new();
+        let meter = Auth::ApiKey {
+            header: "X-Meter-Key".to_string(),
+            required: true,
+            credential: Credential::plain("meter_token"),
+            prefix: Some("Meter".to_string()),
+        };
+        let w = auth_wrapper_parts(&meter);
+        assert_eq!(
+            w.header_block,
+            "        headers[\"X-Meter-Key\"] = f\"Meter {self.meter_token}\"\n"
+        );
+        assert_eq!(
+            auth_example_args(&meter),
+            vec!["meter_token=\"YOUR_METER_TOKEN\""]
+        );
+        let lift = Auth::Bearer {
+            required: true,
+            credential: Credential {
+                param: "lift_pass".to_string(),
+                env: Some("LIFT_PASS".to_string()),
+            },
+        };
+        let c = auth_client_parts(&lift, &free);
+        assert_eq!(
+            c.ctor_param,
+            "        lift_pass: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv(\"LIFT_PASS\"),\n"
+        );
+        assert_eq!(
+            c.doc_param,
+            "    lift_pass : typing.Optional[typing.Union[str, typing.Callable[[], str]]]\n"
+        );
+        assert!(c.check.contains("if lift_pass is None:"));
+        assert!(c
+            .check
+            .contains("passing in lift_pass or setting LIFT_PASS"));
+        assert!(auth_wrapper_parts(&lift)
+            .token_method
+            .contains("def _get_lift_pass(self) -> str:"));
+        // A credential a promoted header already declares is neither declared,
+        // passed nor exampled again, but still documented and assigned.
+        let taken: std::collections::HashSet<&str> = ["api_key"].into_iter().collect();
+        let shared = api_key_auth("X-Api-Key", true);
+        let c = auth_client_parts(&shared, &taken);
+        assert!(c.ctor_param.is_empty() && c.wrapper_arg.is_empty() && c.example_line.is_empty());
+        assert_eq!(c.doc_param, "    api_key : str\n");
+        let w = auth_wrapper_parts(&shared);
+        assert!(w.param(&taken).is_empty() && w.super_arg(&taken).is_empty());
+        assert_eq!(w.assign, "        self.api_key = api_key\n");
     }
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
@@ -13954,7 +14192,10 @@ mod tests {
         }));
         ep.response_doc = Some("Created widget.".to_string());
 
-        let auth = Auth::Bearer { required: true };
+        let auth = Auth::Bearer {
+            required: true,
+            credential: Credential::plain("token"),
+        };
         let global_headers = [GlobalHeader {
             wire_name: "X-Tenant".to_string(),
             py_name: "tenant".to_string(),

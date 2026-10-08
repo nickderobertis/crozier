@@ -101,6 +101,57 @@ The shape: an operation whose SDK method name is written as a sequence of string
 |---|---|---|
 | `operation-sdk-method-name-sequence` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Header credential extension
+
+The shape: a header `apiKey` scheme whose `x-fern-header` (or `x-crozier-header`) names the credential (`securityScheme.x-fern-header:named`). Fern names the constructor parameter from it and sends the key behind its `prefix` (`meter_token`, `f"Meter {self.meter_token}"`).
+
+| key | verdict | remaining work |
+|---|---|---|
+| `security-scheme-header-extension-named` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Bearer credential extension
+
+The shape: an http `bearer` scheme whose `x-fern-bearer` (or `x-crozier-bearer`) names the credential (`securityScheme.x-fern-bearer:named`). Fern names the constructor parameter, private field and getter from it (`lift_pass`, `_get_lift_pass`); with an `env` it defaults to that variable and raises `ApiError` when neither is given.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `security-scheme-bearer-extension-named` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Basic credential extension
+
+The shape: an http `basic` scheme whose `x-fern-basic` (or `x-crozier-basic`) gives its username or password a `name` or `env` (`securityScheme.x-fern-basic:named-or-env`). Fern names each parameter and defaults each to its variable, raising `ApiError` when one is missing.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `security-scheme-basic-extension-named` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Token variable name extension
+
+The shape: the http `bearer` scheme Fern names the credential from, declaring `x-fern-token-variable-name` (or `x-crozier-token-variable-name`) (`securityScheme.x-fern-token-variable-name:bearer`). Fern names the bearer parameter from it; beside a header key promoted under the same name the two share one parameter.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `security-scheme-token-variable-name` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Duplicate api-key header schemes
+
+The shape: two header `apiKey` schemes naming one header whose name stems to `api_key`, both offered by the document's `security` (`components.securitySchemes:duplicate-api-key-header`). Fern declares one `api_key` parameter and writes the header twice.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `security-schemes-duplicate-api-key-header` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+Two walked documents declare two header `apiKey` schemes naming one header, and
+each is a partial candidate: `APIs/britbox.co.uk/3.730.300-ref-1-39-0/openapi.yaml`
+(`resetPasswordAuth` and `verifyEmailAuth`, both `authorization`; no
+`info.license`, so it also fails the licence screen) and
+`APIs/kumpeapps.com/5.0.0/openapi.yaml` (`app_key` and `auth_key`, both
+`X-Auth`). Neither names a header that stems to `api_key`, and neither offers
+both schemes in the document's `security`, the missing portions of this
+trigger. The registered `openepcis-dpp-ready` reaches the shared-parameter
+emission from another direction, two headers (`X-API-KEY`, `API-KEY`) that stem
+to one name; it is no declarer of this key.
+
 ## Results
 
 | key | result | fixture |
@@ -112,3 +163,8 @@ The shape: an operation whose SDK method name is written as a sequence of string
 | `operation-sdk-group-name-leading-underscore` | `none-registrable` | `signal-box-relays` |
 | `operation-sdk-group-name-without-method-name` | `none-registrable` | `cargo-hold-pallets` |
 | `operation-sdk-method-name-sequence` | `none-registrable` | `locker-bank-claims` |
+| `security-scheme-header-extension-named` | `none-registrable` | `meter-reader-gateway` |
+| `security-scheme-bearer-extension-named` | `none-registrable` | `ski-lift-gates` |
+| `security-scheme-basic-extension-named` | `none-registrable` | `lock-keeper-vault` |
+| `security-scheme-token-variable-name` | `none-registrable` | `grid-valve-console` |
+| `security-schemes-duplicate-api-key-header` | `none-registrable` | `twin-key-relay` |

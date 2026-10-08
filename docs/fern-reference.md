@@ -129,6 +129,10 @@ extension not listed here does not change crozier's output.
 | `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response; a `stream-condition` splits the method in two. |
 | `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name for each value. |
 | `x-fern-property-name` | `x-crozier-property-name` | object property | The property's Python name, both the model field and the request keyword argument. Its JSON key on the wire stays the property's key. |
+| `x-fern-header` | `x-crozier-header` | header `apiKey` security scheme | The credential's constructor parameter (`name`), the text its value is sent behind (`prefix`), and the environment variable it defaults to (`env`). |
+| `x-fern-bearer` | `x-crozier-bearer` | http `bearer` security scheme | The credential's constructor parameter (`name`) and the environment variable it defaults to (`env`). |
+| `x-fern-token-variable-name` | `x-crozier-token-variable-name` | http `bearer` security scheme | The credential's constructor parameter, when the bearer extension names none. |
+| `x-fern-basic` | `x-crozier-basic` | http `basic` security scheme | The `username` and `password` parameters' `name` and `env`. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
 
 ## The script
