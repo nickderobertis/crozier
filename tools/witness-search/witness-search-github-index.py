@@ -134,6 +134,18 @@ LEDGER_SHA1 = re.compile(r"[0-9a-f]{40}")
 LEDGER_SHA256 = re.compile(r"[0-9a-f]{64}")
 
 
+def pinned_value(value: Any, pattern: re.Pattern[str]) -> bool:
+    """A digest or object id in `pattern`'s shape, or the opaque identity that stands in its place."""
+    if not isinstance(value, str):
+        return False
+    if pattern.fullmatch(value):
+        return True
+    try:
+        return opaque_identity(value) is not None
+    except ValueError:
+        return False
+
+
 def identity_failure(row: dict[str, Any]) -> str | None:
     """Why a candidate or document row's identity fields are malformed, or None."""
     if not LEDGER_REPOSITORY.fullmatch(row["repository"]) or {".", ".."} & set(row["repository"].split("/")):
@@ -142,12 +154,12 @@ def identity_failure(row: dict[str, Any]) -> str | None:
     # Repository-relative on every host: no root, drive (`C:/x`, `C:x`), backslash or `..`.
     if path.startswith("/") or re.match(r"[A-Za-z]:", path) or "\\" in path or ".." in path.split("/"):
         return f"path {path!r} is not a path inside its repository"
-    if row.get("commit") is not None and not (isinstance(row["commit"], str) and LEDGER_SHA1.fullmatch(row["commit"])):
+    if row.get("commit") is not None and not pinned_value(row["commit"], LEDGER_SHA1):
         return f"commit {row['commit']!r} is no commit SHA"
     for field in ("supersedes", "blob"):
-        if field in row and not (isinstance(row[field], str) and LEDGER_SHA1.fullmatch(row[field])):
+        if field in row and not pinned_value(row[field], LEDGER_SHA1):
             return f"{field} {row[field]!r} is no 40-hex object id"
-    if "sha256" in row and not (isinstance(row["sha256"], str) and LEDGER_SHA256.fullmatch(row["sha256"])):
+    if "sha256" in row and not pinned_value(row["sha256"], LEDGER_SHA256):
         return f"sha256 {row['sha256']!r} is no SHA-256 digest"
     return None
 
@@ -228,6 +240,12 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
                 for item in results
             ):
                 raise ValueError(f"{path}:{number}: invalid answered query results")
+        # The opaque-identity contract first, so a malformed token is named as
+        # one rather than as the digest or commit it stands in for.
+        try:
+            validate_opaque_values(row)
+        except ValueError as error:
+            raise ValueError(f"{path}:{number}: {error}") from error
         if path.name in ("candidates.jsonl", "documents.jsonl"):
             failure = identity_failure(row)
             if failure:
@@ -241,10 +259,6 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
             not isinstance(row["duration_s"], (int, float)) or isinstance(row["duration_s"], bool)
         ):
             raise ValueError(f"{path}:{number}: duration_s is not a number")
-        try:
-            validate_opaque_values(row)
-        except ValueError as error:
-            raise ValueError(f"{path}:{number}: {error}") from error
         rows.append((number, row))
     return rows
 

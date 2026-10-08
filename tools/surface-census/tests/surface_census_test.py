@@ -1361,7 +1361,7 @@ def completeness_failures(
         elif record is None and category == "gap" and named.get(key, "").startswith(NOT_SEARCHED):
             continue
         elif record is None and category == "handwritten":
-            gate = load_script("handwritten-fixtures.py")
+            gate = load_script("tools/surface-census/handwritten-fixtures.py")
             validated = gate.gate(root)
             covers = []
             for name in validated["fixtures"]:
@@ -8181,7 +8181,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(set(), covered & refused, "an arm is both hand-written and Fern-refused")
         searches = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
         cover_verdicts: dict[tuple[str, str], set[str]] = {}
-        gate = load_script("handwritten-fixtures.py")
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
         for directory in sorted(HANDWRITTEN.iterdir()):
             if not directory.is_dir():
                 continue

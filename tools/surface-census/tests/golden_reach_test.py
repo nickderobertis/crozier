@@ -2224,13 +2224,15 @@ class ArmSearchNetworkStageTests(_StageScratch):
         queries = self.scratch / "queries.tsv"
         queries.write_text(
             f"key\tsource\tphrasing\n{self.KEY}\tsourcegraph\trefused anyOf\n"
-            f"{self.KEY}\tsourcegraph\tanyOf oneOf\n", encoding="utf-8")
+            f"{self.KEY}\tsourcegraph\tanyOf oneOf\n", encoding="utf-8", newline="\n")
         self.addCleanup(setattr, golden_reach_search, "QUERIES", golden_reach_search.QUERIES)
         golden_reach_search.QUERIES = queries
         with contextlib.redirect_stdout(io.StringIO()) as printed:
             self.assertEqual(0, golden_reach_search.main(["query", "--source", "sourcegraph", "--key", self.KEY]))
         self.assertTrue(printed.getvalue().startswith("golden-reach-search: sourcegraph: "), printed.getvalue())
-        candidate = f"github.com/example/api:openapi.yaml@{_Loopback.COMMIT}"
+        # Records name the candidate as the index does, `<owner>/<repo>:<path>`,
+        # whatever host prefix Sourcegraph's own repository field carries.
+        candidate = f"example/api:openapi.yaml@{_Loopback.COMMIT}"
         rows = {(r["kind"], r["subject"]): r["result"] for r in golden_reach_search.read_records("sourcegraph")}
         self.assertEqual("1", rows[("query", "anyOf oneOf")])
         self.assertEqual("unanswered: Sourcegraph refused search 'refused anyOf': HTTP 400; "
