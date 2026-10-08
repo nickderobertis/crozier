@@ -44,5 +44,7 @@ security-scheme-capitalised-http	securityScheme.scheme:capitalised-http	security
 security-scheme-header-extension-named	securityScheme.x-fern-header:named	security.md	supported
 security-scheme-token-variable-name	securityScheme.x-fern-token-variable-name:bearer	security.md	supported
 security-schemes-duplicate-api-key-header	components.securitySchemes:duplicate-api-key-header	security.md	supported
+server-default-url-templated	server.x-fern-default-url:templated	document-paths.md	supported
+server-name-several	server.x-fern-server-name:several-undescribed	document-paths.md	supported
 type-misspelled-scalar	schema.type:misspelled-scalar	schemas.md	supported
 unread-date-time-example	schema.example:unread-date-time	schemas.md	supported

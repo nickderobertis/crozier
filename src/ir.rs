@@ -262,24 +262,31 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     // are not — and the URL shape does not enter into it (a templated or
     // root-relative URL described `Production` is still `PRODUCTION`).
     const NAMED_ENVIRONMENTS: [&str; 2] = ["production", "sandbox"];
-    let mut named: IndexMap<&str, &crate::openapi::Server> = IndexMap::new();
+    // A server naming itself by `x-fern-server-name` (or crozier's spelling) is
+    // that member, the declared name in SCREAMING_SNAKE (`main` is `MAIN`), and
+    // every such server is one: two named servers are `MAIN` and `BACKUP`.
+    let mut named: IndexMap<String, &crate::openapi::Server> = IndexMap::new();
     for server in &doc.servers {
         let name = server
-            .description
-            .as_deref()
-            .map(str::trim)
-            .and_then(|description| {
-                NAMED_ENVIRONMENTS
-                    .into_iter()
-                    .find(|named| description.eq_ignore_ascii_case(named))
+            .server_name()
+            .map(|name| naming::to_snake_case(name).to_ascii_uppercase())
+            .or_else(|| {
+                server
+                    .description
+                    .as_deref()
+                    .map(str::trim)
+                    .and_then(|description| {
+                        NAMED_ENVIRONMENTS
+                            .into_iter()
+                            .find(|named| description.eq_ignore_ascii_case(named))
+                    })
+                    .map(str::to_ascii_uppercase)
             });
         if let Some(name) = name {
-            named.insert(name, server);
+            named.entry(name).or_insert(server);
         }
     }
-    let mut named = named
-        .into_iter()
-        .map(|(name, server)| (name.to_ascii_uppercase(), server));
+    let mut named = named.into_iter();
     let (default_name, default) = named.next().unwrap_or(("DEFAULT".to_string(), first));
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
@@ -340,7 +347,11 @@ fn server_variable_py_name(wire_name: &str) -> String {
 /// variable `default` (`https://.../{basePath}` + `/v1` →
 /// `https://.../%2Fv1`), matching Fern's URI-template expansion.
 fn resolve_server_url(server: &crate::openapi::Server) -> String {
-    let mut url = server.url.clone();
+    // `x-fern-default-url` replaces the expansion outright (a templated
+    // `https://{region}.lockers.test/v2` is `https://lockers.test/v2`).
+    let mut url = server
+        .default_url()
+        .map_or_else(|| server.url.clone(), str::to_string);
     for (name, var) in &server.variables {
         url = url.replace(
             &format!("{{{name}}}"),

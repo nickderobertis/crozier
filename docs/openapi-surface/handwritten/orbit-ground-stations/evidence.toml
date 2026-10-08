@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "5c1ae53ec2fc96f5bd132dfb7c5937258120194dd01ecc497202d48861ebef35"
+
+[[covers]]
+key = "server-name-several"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#named-document-servers"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

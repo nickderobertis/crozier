@@ -133,6 +133,8 @@ extension not listed here does not change crozier's output.
 | `x-fern-bearer` | `x-crozier-bearer` | http `bearer` security scheme | The credential's constructor parameter (`name`) and the environment variable it defaults to (`env`). |
 | `x-fern-token-variable-name` | `x-crozier-token-variable-name` | http `bearer` security scheme | The credential's constructor parameter, when the bearer extension names none. |
 | `x-fern-basic` | `x-crozier-basic` | http `basic` security scheme | The `username` and `password` parameters' `name` and `env`. |
+| `x-fern-server-name` | `x-crozier-server-name` | server | The environment member's name (`primary` is `PRIMARY`); every server naming itself is a member, the first the default. |
+| `x-fern-default-url` | `x-crozier-default-url` | server | The environment member's value, in place of the expanded `url`. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
 
 ## The script

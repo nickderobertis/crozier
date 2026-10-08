@@ -160,6 +160,22 @@ The shape: an http security scheme whose `scheme` is `bearer` or `basic` spelled
 |---|---|---|
 | `security-scheme-capitalised-http` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Server default URL extension
+
+The shape: a document server with a templated `url` declaring `x-fern-default-url` (or `x-crozier-default-url`) (`server.x-fern-default-url:templated`). Fern makes the default URL the environment member's value in place of the expanded template.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `server-default-url-templated` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Named document servers
+
+The shape: two or more document servers naming themselves by `x-fern-server-name` (or `x-crozier-server-name`) with no `description` (`server.x-fern-server-name:several-undescribed`). Fern makes each an environment member under its name, the first the default.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `server-name-several` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -177,3 +193,5 @@ The shape: an http security scheme whose `scheme` is `bearer` or `basic` spelled
 | `security-scheme-token-variable-name` | `none-registrable` | `grid-valve-console` |
 | `security-schemes-duplicate-api-key-header` | `none-registrable` | `twin-key-relay` |
 | `security-scheme-capitalised-http` | `none-registrable` | `tide-gauge-sessions` |
+| `server-default-url-templated` | `none-registrable` | `harbour-pilot-regions` |
+| `server-name-several` | `none-registrable` | `orbit-ground-stations` |

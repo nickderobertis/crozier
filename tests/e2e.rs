@@ -1948,6 +1948,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "harbour-pilot-regions-literals",
+        "docs/openapi-surface/handwritten/harbour-pilot-regions/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "impedance-complex-reading-literals",
         "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
         &["--enum-type", "literals"],
@@ -1965,6 +1970,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     (
         "meter-reader-gateway-literals",
         "docs/openapi-surface/handwritten/meter-reader-gateway/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "orbit-ground-stations-literals",
+        "docs/openapi-surface/handwritten/orbit-ground-stations/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -2697,6 +2707,60 @@ fn handwritten_documents(
         })
         .unwrap_or_default();
     (evidence, failures)
+}
+
+/// The server extensions read crozier's spelling on its own and win over a
+/// conflicting Fern spelling on the same server: `x-*-server-name` names the
+/// environment member and `x-*-default-url` gives its value.
+#[test]
+fn server_extensions_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cases: [(&str, &str, &[&str], &[&str]); 3] = [
+        (
+            "name",
+            "  - url: https://a.test\n    x-crozier-server-name: primary\n  - url: https://b.test\n    x-crozier-server-name: failover\n",
+            &["PRIMARY = \"https://a.test\"", "FAILOVER = \"https://b.test\""],
+            &["DEFAULT"],
+        ),
+        (
+            "name-conflict",
+            "  - url: https://a.test\n    x-fern-server-name: main\n    x-crozier-server-name: primary\n",
+            &["PRIMARY = \"https://a.test\""],
+            &["MAIN", "DEFAULT"],
+        ),
+        (
+            "default-url-conflict",
+            "  - url: https://{r}.a.test\n    variables: {r: {default: north}}\n    x-fern-default-url: https://fern.a.test\n    x-crozier-default-url: https://crozier.a.test\n",
+            &["DEFAULT = \"https://crozier.a.test\""],
+            &["fern.a.test", "north.a.test"],
+        ),
+    ];
+    for (name, servers, present, absent) in cases {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Stations, version: '1'}}\nservers:\n{servers}paths:\n  /passes:\n    get:\n      operationId: listPasses\n      responses: {{'204': {{description: ok}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        let environment =
+            std::fs::read_to_string(out.join("src/fern/environment.py")).expect("environment");
+        for text in present {
+            assert!(
+                environment.contains(text),
+                "{name}: lacks `{text}`:\n{environment}"
+            );
+        }
+        for text in absent {
+            assert!(
+                !environment.contains(text),
+                "{name}: `{text}` survives:\n{environment}"
+            );
+        }
+    }
 }
 
 /// An `http` scheme's name is case-insensitive, as Fern reads it: an operation
@@ -7011,7 +7075,6 @@ const WEBFLOW_V2: Corpus = Corpus {
     client_class_name: None,
     extra_fields: None,
     unmatched: &[
-        "README.md",
         "reference.md",
         "src/fern/__init__.py",
         "src/fern/analyze/__init__.py",

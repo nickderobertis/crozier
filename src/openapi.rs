@@ -230,6 +230,52 @@ pub struct Server {
     /// URL template variables, each with a `default` Fern substitutes into the URL.
     #[serde(default)]
     pub variables: IndexMap<String, ServerVariable>,
+    /// `x-crozier-server-name` / `x-fern-server-name`: the environment member's
+    /// name. Read through [`Server::server_name`].
+    #[serde(rename = "x-crozier-server-name", default)]
+    pub(crate) server_name_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-server-name", default)]
+    pub(crate) server_name_fern: Option<serde_json::Value>,
+    /// `x-crozier-default-url` / `x-fern-default-url`: the environment member's
+    /// value in place of the expanded `url`. Read through [`Server::default_url`].
+    #[serde(rename = "x-crozier-default-url", default)]
+    pub(crate) default_url_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-default-url", default)]
+    pub(crate) default_url_fern: Option<serde_json::Value>,
+}
+
+impl Server {
+    fn extension_text<'a>(
+        crozier: Option<&'a serde_json::Value>,
+        fern: Option<&'a serde_json::Value>,
+    ) -> Option<&'a str> {
+        crozier
+            .or(fern)
+            .and_then(serde_json::Value::as_str)
+            .map(str::trim)
+            .filter(|text| !text.is_empty())
+    }
+
+    /// The environment member name this server declares, canonicalizing on
+    /// `x-crozier-server-name` over `x-fern-server-name` (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn server_name(&self) -> Option<&str> {
+        Self::extension_text(
+            self.server_name_crozier.as_ref(),
+            self.server_name_fern.as_ref(),
+        )
+    }
+
+    /// The URL this server's environment member takes in place of its expanded
+    /// `url`: `x-crozier-default-url` over `x-fern-default-url`.
+    #[must_use]
+    pub fn default_url(&self) -> Option<&str> {
+        Self::extension_text(
+            self.default_url_crozier.as_ref(),
+            self.default_url_fern.as_ref(),
+        )
+    }
 }
 
 /// A server URL template variable. Only the `default` is modeled — Fern substitutes
@@ -3525,6 +3571,27 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn server_extensions_canonicalize_on_the_crozier_spelling() {
+        let server: Server = serde_json::from_value(serde_json::json!({
+            "url": "https://{r}.a.test",
+            "x-fern-server-name": "main",
+            "x-crozier-server-name": " primary ",
+            "x-fern-default-url": "https://fern.a.test",
+        }))
+        .expect("a server");
+        assert_eq!(server.server_name(), Some("primary"));
+        assert_eq!(server.default_url(), Some("https://fern.a.test"));
+        let blank: Server = serde_json::from_value(serde_json::json!({
+            "url": "https://a.test",
+            "x-fern-server-name": " ",
+            "x-crozier-default-url": 7,
+        }))
+        .expect("a server");
+        assert_eq!(blank.server_name(), None);
+        assert_eq!(blank.default_url(), None);
+    }
 
     #[test]
     fn an_http_scheme_name_reads_case_insensitively() {
