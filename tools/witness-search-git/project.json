@@ -10,7 +10,11 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "sh scripts/census-python.sh tools/witness-search-git/tests/witness_search_git_test.py"
+        "commands": [
+          "sh scripts/census-python.sh tools/witness-search-git/tests/witness_search_git_test.py",
+          "sh scripts/census-python.sh tools/witness-search-git/tests/witness_scrape_wide_test.py"
+        ],
+        "parallel": false
       },
       "cache": true,
       "inputs": [
