@@ -9,10 +9,12 @@ keeps the statement single.
 These tests drive the REAL script over the REAL repository — the same
 invocation `just lint-corpus-licensing` runs — rather than over a tree of
 fixtures standing in for it, because a gate that reads only its own fixtures
-proves nothing about the documents it exists to hold. The discriminating case
-plants a second enumeration in the real tree, requires the script to fail
-naming that file, and removes it again: without that, "the check passes" would
-be indistinguishable from "the check matches nothing at all".
+proves nothing about the documents it exists to hold. The discriminating cases
+plant a second enumeration, or gut the rule, in a scratch repository holding
+the real script and a copy of every tracked Markdown document, and require the
+script to fail naming the file: without that, "the check passes" would be
+indistinguishable from "the check matches nothing at all". They never write the
+real tree, which other gate targets read while this one runs.
 
 Run: `just test-corpus-licensing` (part of `just check`).
 """
@@ -22,6 +24,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -41,14 +44,38 @@ def load_gate():
     return module
 
 
-def run_gate() -> subprocess.CompletedProcess[str]:
-    """The gate exactly as `just lint-corpus-licensing` runs it."""
+def run_gate(root: Path = REPO) -> subprocess.CompletedProcess[str]:
+    """The gate exactly as its `lint-licensing` target runs it, from `root`'s copy."""
     return subprocess.run(
-        [sys.executable, str(SCRIPT)],
-        cwd=REPO,
+        [sys.executable, str(root / SCRIPT.relative_to(REPO))],
+        cwd=root,
         capture_output=True,
         text=True,
     )
+
+
+def git(root: Path, *args: str) -> None:
+    subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
+
+
+class ScratchTree(unittest.TestCase):
+    """A scratch repository holding the real script and every tracked Markdown
+    document as the checkout has them, for the cases that must write the tree."""
+
+    def setUp(self) -> None:
+        scratch = tempfile.TemporaryDirectory(prefix="corpus-licensing-test-")
+        self.addCleanup(scratch.cleanup)
+        self.root = Path(scratch.name)
+        listing = subprocess.run(
+            ["git", "ls-files", "-z", "--", "*.md"], cwd=REPO, check=True, capture_output=True
+        ).stdout.decode("utf-8")
+        for path in [*filter(None, listing.split("\0")), SCRIPT.relative_to(REPO).as_posix()]:
+            target = self.root / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(REPO / path, target)
+        git(self.root, "init", "--quiet")
+        git(self.root, "add", "--all")
+        self.assertEqual(run_gate(self.root).returncode, 0, "the copied tree does not pass as the real one does")
 
 
 class TheGateHoldsTheFinishedTree(unittest.TestCase):
@@ -67,12 +94,12 @@ class TheGateHoldsTheFinishedTree(unittest.TestCase):
         self.assertEqual(result.stderr, "")
 
 
-class TheGateStillDiscriminates(unittest.TestCase):
-    """Plant a second enumeration in the real tree; require a named failure."""
+class TheGateStillDiscriminates(ScratchTree):
+    """Plant a second enumeration in the tree; require a named failure."""
 
     def plant(self, body: str) -> str:
         handle = tempfile.NamedTemporaryFile(
-            dir=REPO / "docs",
+            dir=self.root / "docs",
             prefix="corpus-licensing-drift-probe-",
             suffix=".md",
             mode="w",
@@ -82,33 +109,20 @@ class TheGateStillDiscriminates(unittest.TestCase):
         with handle:
             handle.write(body)
         planted = Path(handle.name)
-        self.addCleanup(planted.unlink, missing_ok=True)
         # `git ls-files` only reports tracked paths, so the probe has to be
         # staged for the walk to reach it — the same way a real drifting
         # document would arrive.
-        subprocess.run(
-            ["git", "add", "--intent-to-add", "--", str(planted)],
-            cwd=REPO,
-            check=True,
-            capture_output=True,
-        )
-        self.addCleanup(
-            subprocess.run,
-            ["git", "rm", "--cached", "--force", "--quiet", "--", str(planted)],
-            cwd=REPO,
-            check=False,
-            capture_output=True,
-        )
+        git(self.root, "add", "--intent-to-add", "--", str(planted))
         # Git spells paths with forward slashes on every platform, and so does
         # the gate; compare against that spelling, not the host's.
-        return planted.relative_to(REPO).as_posix()
+        return planted.relative_to(self.root).as_posix()
 
     def test_a_planted_second_enumeration_fails_naming_the_file(self) -> None:
         planted = self.plant(
             "# probe\n\nThis document restates the rule: the corpus admits"
             " Apache-2.0/MIT/BSD/CC0 and nothing else.\n"
         )
-        result = run_gate()
+        result = run_gate(self.root)
         self.assertEqual(
             result.returncode,
             1,
@@ -124,7 +138,7 @@ class TheGateStillDiscriminates(unittest.TestCase):
             "# probe\n\nRegistrable sources are MIT, Apache-2.0, BSD-3-Clause"
             " and CC0-1.0.\n"
         )
-        result = run_gate()
+        result = run_gate(self.root)
         self.assertEqual(result.returncode, 1)
         self.assertIn(planted, result.stderr)
 
@@ -136,7 +150,7 @@ class TheGateStillDiscriminates(unittest.TestCase):
             " | CC0-1.0 (the aggregating repository's `LICENSE`); the document"
             " declares no `info.license` |\n"
         )
-        result = run_gate()
+        result = run_gate(self.root)
         self.assertEqual(
             result.returncode,
             0,
@@ -150,29 +164,27 @@ class TheGateStillDiscriminates(unittest.TestCase):
             " set ([the rule](corpus-licensing.md)), which is stated once and"
             " not restated here.\n"
         )
-        self.assertEqual(run_gate().returncode, 0)
+        self.assertEqual(run_gate(self.root).returncode, 0)
 
 
-class TheRuleFileIsWhereTheGateSaysItIs(unittest.TestCase):
+class TheRuleFileIsWhereTheGateSaysItIs(ScratchTree):
     """A gate whose subject can vanish silently is not a gate."""
 
     def test_removing_the_canonical_enumeration_fails(self) -> None:
-        rule = REPO / RULE
+        rule = self.root / RULE
         original = rule.read_text(encoding="utf-8")
-        self.addCleanup(rule.write_text, original, encoding="utf-8")
         rule.write_text(
             original.replace("corpus-licence-set:", "no-longer-the-marker:"),
             encoding="utf-8",
         )
-        result = run_gate()
+        result = run_gate(self.root)
         self.assertEqual(result.returncode, 1)
         self.assertIn("the canonical enumeration is gone", result.stderr)
 
     def test_gutting_the_enumeration_under_the_marker_fails_differently(self) -> None:
         """The marker can survive an edit that empties the list beneath it."""
-        rule = REPO / RULE
+        rule = self.root / RULE
         original = rule.read_text(encoding="utf-8")
-        self.addCleanup(rule.write_text, original, encoding="utf-8")
         gutted = re.sub(
             r"\*\*Admissible[^\n]*\n(?:[^\n]*\n)*?\n",
             "**Admissible — any licence that grants redistribution.**\n\n",
@@ -181,7 +193,7 @@ class TheRuleFileIsWhereTheGateSaysItIs(unittest.TestCase):
         )
         self.assertNotEqual(gutted, original, "the rule's wording moved; retarget this")
         rule.write_text(gutted, encoding="utf-8")
-        result = run_gate()
+        result = run_gate(self.root)
         self.assertEqual(result.returncode, 1)
         self.assertIn("no longer lists three or more", result.stderr)
 
