@@ -29,7 +29,7 @@ rows in each `search-index.tsv` name the file.
 Adding a candidate here requires a selector output over the parsed document;
 an earlier keyword hit or another key's census output does not qualify.
 
-`python3 scripts/witness-search-registries-index.py` rebuilds `candidates.tsv`
+`python3 tools/witness-search/witness-search-registries-index.py` rebuilds `candidates.tsv`
 from each of this node's sources' `records.tsv`, and `outstanding.tsv` from their ledgers.
 Its `--check` option, run by `just test-witness-search-acquisition`, fails when
 either committed file is stale.

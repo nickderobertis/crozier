@@ -10,7 +10,7 @@ acquisition failure; unfetched query results stay outstanding. The only result r
 path, and pinned revision. Each source's `records.tsv` retains the resulting
 candidate identity, digest when fetched, classification, screens, and disposition.
 `candidates.tsv` is their consolidated index; regenerate and check both with
-`python3 scripts/witness-search-github-index.py` and its `--check` option.
+`python3 tools/witness-search/witness-search-github-index.py` and its `--check` option.
 
 GitHub refuses a pushed file over 100 MB, so a ledger larger than 45 MB is
 stored in parts split at line boundaries. The first part keeps the ledger's

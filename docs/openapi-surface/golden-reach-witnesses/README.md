@@ -57,7 +57,7 @@ files it here.
   `openapi` or `swagger` version. A refused document is no description a
   witness could be, so it is not outstanding; one only the census fails on
   stays outstanding as the census's own bug until `recensus` reads it.
-  `refuse` writes it (run as `uv run scripts/golden-reach-search.py refuse`,
+  `refuse` writes it (run as `uv run tools/surface-census/golden-reach-search.py refuse`,
   whose inline metadata pins ruamel.yaml), and a refusal never makes a search
   `exhausted` on its own.
 - `<source>/census-fallback.tsv` — the documents the census's stdlib loader
