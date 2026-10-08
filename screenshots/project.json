@@ -7,6 +7,9 @@
     "cost:expensive",
     "tier:promoted"
   ],
+  "metadata": {
+    "description": "llmlint: ignore-file[new_projects_keep_the_graph_uniform] The screenshots project's capture and demo-gif generation needs `freeze` and the screencomp toolchain, which the check, sdk-env and live-e2e legs do not carry; a `build` target would pull that generation into every `--sweep` build fan-out; and its drift is gated separately by the visual-docs PR check."
+  },
   "targets": {
     "capture": {
       "executor": "nx:run-commands",
