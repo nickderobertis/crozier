@@ -4718,6 +4718,9 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         schema.and_then(|schema| schema.one_of.as_ref().or(schema.any_of.as_ref()))
     {
         return match members.as_slice() {
+            [only] if only.reference.is_none() && is_inline_struct(only) => {
+                TypeRef::Named(format!("{class}Body"))
+            }
             [only] => base_type_ref(only),
             _ => TypeRef::Named(format!("{class}Body")),
         };
@@ -4786,6 +4789,24 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 // [VALIDATION_ERROR]}` objects before their final `anyOf`, and
                 // `BadRequestErrorBodyCode` outlives them.
                 if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                    if let [only] = members.as_slice() {
+                        if only.reference.is_none() && is_inline_struct(only) {
+                            bodies.insert(name, only.clone());
+                        }
+                        continue;
+                    }
+                    // A status-named component already owns the body declaration.
+                    // Fern retains that object when the inline union refers to it.
+                    if schema.discriminator.is_some()
+                        && members.iter().any(|member| {
+                            member.reference.as_deref().is_some_and(|reference| {
+                                ref_to_class(reference) == name
+                                    && doc.components.schemas.contains_key(&name)
+                            })
+                        })
+                    {
+                        continue;
+                    }
                     if members.len() > 1 {
                         if let Some(existing) = bodies.get(&name).filter(|existing| {
                             existing.one_of.is_none() && existing.any_of.is_none()
@@ -17151,6 +17172,63 @@ mod tests {
             declaration,
             TypeDecl::DiscriminatedUnion(union) if union.name == "MessagesResponseItem"
         )));
+    }
+
+    #[test]
+    fn error_body_shapes_keep_the_status_component_and_hoist_single_inline_members() {
+        let doc = crate::openapi::load(
+            &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/openapi-surface/handwritten/error-body-shapes/openapi.yml"),
+        )
+        .unwrap();
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Nursery",
+        )
+        .unwrap();
+        let ir = super::build(&doc, &config);
+        assert!(ir.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object) if object.name == "BadRequestErrorBody"
+                && object.docstring.as_deref() == Some("The reservation is already occupied.")
+        )));
+        assert!(!ir.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::DiscriminatedUnion(union) if union.name == "BadRequestErrorBody"
+        )));
+        assert!(ir.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object) if object.name == "ConflictErrorBody"
+                && object.fields.iter().any(|field| field.py_name == "state"
+                    && field.type_ref == TypeRef::Named("ConflictErrorBodyState".into()))
+        )));
+        let response: crate::openapi::Response = serde_json::from_value(serde_json::json!({
+            "description": "Conflict",
+            "content": { "application/json": { "schema": { "oneOf": [{
+                "type": "object", "properties": { "state": { "type": "string" } }
+            }] } } }
+        }))
+        .unwrap();
+        assert_eq!(
+            super::error_body_type(&response, "ConflictError"),
+            TypeRef::Named("ConflictErrorBody".into())
+        );
+        let response: crate::openapi::Response = serde_json::from_value(serde_json::json!({
+            "description": "Conflict",
+            "content": { "application/json": { "schema": { "oneOf": [{
+                "$ref": "#/components/schemas/JournalContext"
+            }] } } }
+        }))
+        .unwrap();
+        assert_eq!(
+            super::error_body_type(&response, "ConflictError"),
+            TypeRef::Named("JournalContext".into())
+        );
     }
 
     fn request_shape_ir() -> super::Ir {

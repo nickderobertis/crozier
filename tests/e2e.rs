@@ -2690,6 +2690,76 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
     }
 }
 
+/// Complete error declarations, exports and parsing agree in both enum modes.
+#[test]
+fn error_body_shapes_match_certified_output_in_both_enum_modes() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    for shape in ["error-body-shapes"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(fixture.join("openapi.yml"))
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+            let client = out.path().join("src/fern/types/conflict_error_body.py");
+            let text = std::fs::read_to_string(&client).unwrap();
+            assert!(text.contains("state: ConflictErrorBodyState"));
+            std::fs::write(
+                client,
+                text.replace("state: ConflictErrorBodyState", "state: str"),
+            )
+            .unwrap();
+            let failures = golden_tree_failures(
+                mode,
+                "unexplained error annotation",
+                &ledger,
+                &expected,
+                out.path(),
+            );
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains("conflict_error_body.py differs")),
+                "{failures:?}"
+            );
+        }
+    }
+}
+
 /// Each full tree covers the request's signature, serialization, retained
 /// models and worked examples together, including the reference-header controls.
 #[test]
