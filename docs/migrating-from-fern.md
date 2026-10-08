@@ -67,12 +67,29 @@ support is tracked in
 [#83](https://github.com/nickderobertis/crozier/issues/83)), so apply them first
 and point `spec` at the result. For an overlay:
 
+<!-- llmlint: ignore-block[changed_behavior_has_e2e] These recipes are workspace guidance users execute, outside crozier's runtime. Their outputs are measured against the certified pair in docs/fern-measurements/workspace-presteps/README.md; the migration doc gate holds the guide to that pair. -->
 ```sh
-npx openapi-format@1.33.5 fern/openapi/openapi.yml \
-  --overlayFile fern/openapi/overlay.yml --no-sort -o build/openapi.yml
+set -eu
+npm install --no-save --package-lock=false openapi-format@1.33.5
+node <<'JS'
+const format = require("openapi-format");
+(async () => {
+  const spec = await format.parseFile("fern/openapi/openapi.yml");
+  const overlay = await format.parseFile("fern/openapi/overlay.yml");
+  if (spec instanceof Error) throw spec;
+  if (overlay instanceof Error) throw overlay;
+  const result = await format.openapiOverlay(spec, { overlaySet: overlay });
+  await format.writeFile("build/openapi.yml", result.data);
+})().catch(error => { console.error(error); process.exitCode = 1; });
+JS
 ```
+<!-- llmlint: ignore-end[changed_behavior_has_e2e] -->
 
-`--no-sort` keeps the document's own order (`openapi-format` sorts by default).
+Use the overlay API directly: the CLI's formatting pass removes empty objects,
+including `properties: {}` and `example: {}`. Fern keeps those fields. Removing
+`properties: {}` from a closed request body changes a zero-field inline request
+into a free-form body. The API above preserves these fields and the document's
+order ([measured example](fern-measurements/workspace-presteps/README.md#overlays)).
 Overrides are Fern's own format; Fern's Overlays page recommends overlays over
 them, so rewrite an overrides file as an overlay and apply it the same way.
 Apply them in Fern's order, overrides first. Run this before `crozier compare`
@@ -83,16 +100,39 @@ and before `crozier generate`.
 crozier reads OpenAPI 3.x only: given a Swagger 2.0 document it exits 1, naming
 the missing `openapi` version field (Swagger support is tracked in
 [#60](https://github.com/nickderobertis/crozier/issues/60)). Fern converts one
-with `swagger2openapi` 7.0.8 and default options
-([`convertOpenAPIV2ToV3.ts`](https://github.com/fern-api/fern/blob/b8414a6f56a875fc828f16af0d49ca93f22fd082/packages/cli/workspace/lazy-fern-workspace/src/utils/convertOpenAPIV2ToV3.ts),
-version pinned in
-[`pnpm-workspace.yaml`](https://github.com/fern-api/fern/blob/b8414a6f56a875fc828f16af0d49ca93f22fd082/pnpm-workspace.yaml),
-both at CLI 5.67.1). Convert with the same release, and without `--patch`, which
-Fern does not pass:
+with `swagger2openapi` 7.0.8 after defaulting an absent `schemes` field to
+`["https"]`. With `host` and `basePath`, the converter alone emits a
+scheme-relative URL; Fern emits `https://` ([measured example](fern-measurements/workspace-presteps/README.md#swagger)).
+Prepare that default, preserve an explicitly supplied `schemes` field, then
+convert without `--patch`:
 
+<!-- llmlint: ignore-block[changed_behavior_has_e2e] These recipes are workspace guidance users execute, outside crozier's runtime. Their outputs are measured against the certified pair in docs/fern-measurements/workspace-presteps/README.md; the migration doc gate holds the guide to that pair. -->
 ```sh
-npx swagger2openapi@7.0.8 fern/openapi/swagger.yml -o build/openapi.json
+set -eu
+npm install --no-save --package-lock=false openapi-format@1.33.5 swagger2openapi@7.0.8
+node <<'JS'
+const format = require("openapi-format");
+(async () => {
+  const spec = await format.parseFile("fern/openapi/swagger.yml");
+  if (spec instanceof Error) throw spec;
+  if (spec.schemes === undefined) spec.schemes = ["https"];
+  await format.writeFile("build/swagger.json", spec);
+})().catch(error => { console.error(error); process.exitCode = 1; });
+JS
+npx swagger2openapi@7.0.8 build/swagger.json -o build/openapi.json
 ```
+<!-- llmlint: ignore-end[changed_behavior_has_e2e] -->
+
+### Referenced-schema pruning
+
+Fern CLI 5.67.1 ignores range-status responses such as `4XX` when deciding which
+schemas `only-include-referenced-schemas` retains. A component reachable only
+through such a response is removed. `openapi-format`'s `unusedComponents`
+follows those references and retains it, so that filter does not reproduce
+Fern's workspace setting. The [measurement](fern-measurements/workspace-presteps/README.md#pruning)
+records the retained models on both sides. This guide gives no equivalent
+pruning recipe; compare against Fern before migrating a workspace using that
+setting.
 
 ### Keep your post-generation patches
 

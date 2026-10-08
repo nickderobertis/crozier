@@ -1,0 +1,362 @@
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (531 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Organizationlogo
+- <details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">show</a>(...)</code></summary>
++ ## OrganizationLogo
++ <details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">organization_logo_show</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (29 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.organizationlogo.show(
++ client.organizationlogo.organization_logo_show(
+      organization="organization",
+  )
+  
+      ⋮ (31 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">update</a>(...) -> OrganizationResource</code></summary>
++ <details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">organization_logo_update</a>(...) -> OrganizationResource</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (13 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.organizationlogo.update(
++ client.organizationlogo.organization_logo_update(
+      organization="organization",
+      logo="example_logo",
+  )
+      ⋮ (40 unchanged line(s))
+  </dl>
+  </details>
+  
+- <details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">destroy</a>(...)</code></summary>
++ <details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">organization_logo_destroy</a>(...)</code></summary>
+  <dl>
+  <dd>
+  
+      ⋮ (13 unchanged line(s))
+      environment=FernApiEnvironment.DEFAULT,
+  )
+  
+- client.organizationlogo.destroy(
++ client.organizationlogo.organization_logo_destroy(
+      organization="organization",
+  )
+  
+      ⋮ (597 unchanged line(s))
+
+--- reference/src/fern/__init__.py
++++ crozier/src/fern/__init__.py
+      ⋮ (5 unchanged line(s))
+          AuthenticationResource,
+          AuthenticationResourceTokenType,
+          AuthenticationResourceUser,
+-         BadRequestErrorBody,
+-         NotFoundErrorBody,
+          OrganizationResource,
+-         UnauthorizedErrorBody,
+          UserResource,
+          UserRole,
+          UserStatus,
+      ⋮ (1 unchanged line(s))
+      from .errors import BadRequestError, NotFoundError, UnauthorizedError
+      from . import auth, organization, organizationlogo, user
+      from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+-     from .auth import AuthMeResponse
+      from .client import AsyncFernApi, FernApi
+      from .environment import FernApiEnvironment
++     from .auth import AuthMeResponse
+      from .organization import OrganizationIndexResponse
+      from .user import (
+          UserIndexResponse,
+      ⋮ (11 unchanged line(s))
+      "AuthenticationResourceTokenType": ".types",
+      "AuthenticationResourceUser": ".types",
+      "BadRequestError": ".errors",
+-     "BadRequestErrorBody": ".types",
+      "DefaultAioHttpClient": "._default_clients",
+      "DefaultAsyncHttpxClient": "._default_clients",
+      "FernApi": ".client",
+      "FernApiEnvironment": ".environment",
+      "NotFoundError": ".errors",
+-     "NotFoundErrorBody": ".types",
+      "OrganizationIndexResponse": ".organization",
+      "OrganizationResource": ".types",
+      "UnauthorizedError": ".errors",
+-     "UnauthorizedErrorBody": ".types",
+      "UserIndexResponse": ".user",
+      "UserInviteResponse": ".user",
+      "UserResource": ".types",
+      ⋮ (39 unchanged line(s))
+      "AuthenticationResourceTokenType",
+      "AuthenticationResourceUser",
+      "BadRequestError",
+-     "BadRequestErrorBody",
+      "DefaultAioHttpClient",
+      "DefaultAsyncHttpxClient",
+      "FernApi",
+      "FernApiEnvironment",
+      "NotFoundError",
+-     "NotFoundErrorBody",
+      "OrganizationIndexResponse",
+      "OrganizationResource",
+      "UnauthorizedError",
+-     "UnauthorizedErrorBody",
+      "UserIndexResponse",
+      "UserInviteResponse",
+      "UserResource",
+      ⋮ (12 unchanged line(s))
+
+--- reference/src/fern/organizationlogo/client.py
++++ crozier/src/fern/organizationlogo/client.py
+      ⋮ (26 unchanged line(s))
+          """
+          return self._raw_client
+  
+-     def show(self, organization: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
++     def organization_logo_show(
++         self, organization: str, *, request_options: typing.Optional[RequestOptions] = None
++     ) -> None:
+          """
+          Behind the bearer token like everything else here, because which organizations exist is not
+          public. A browser cannot put a token on an `<img src>`, so a client fetches this and hands
+      ⋮ (16 unchanged line(s))
+          from fern import FernApi
+  
+          client = FernApi()
+-         client.organizationlogo.show(
++         client.organizationlogo.organization_logo_show(
+              organization="organization",
+          )
+          """
+-         _response = self._raw_client.show(organization, request_options=request_options)
++         _response = self._raw_client.organization_logo_show(organization, request_options=request_options)
+          return _response.data
+  
+-     def update(
++     def organization_logo_update(
+          self, organization: str, *, logo: core.File, request_options: typing.Optional[RequestOptions] = None
+      ) -> OrganizationResource:
+          """
+      ⋮ (18 unchanged line(s))
+          from fern import FernApi
+  
+          client = FernApi()
+-         client.organizationlogo.update(
++         client.organizationlogo.organization_logo_update(
+              organization="organization",
+          )
+          """
+-         _response = self._raw_client.update(organization, logo=logo, request_options=request_options)
++         _response = self._raw_client.organization_logo_update(organization, logo=logo, request_options=request_options)
+          return _response.data
+  
+-     def destroy(self, organization: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
++     def organization_logo_destroy(
++         self, organization: str, *, request_options: typing.Optional[RequestOptions] = None
++     ) -> None:
+          """
+          Parameters
+          ----------
+      ⋮ (12 unchanged line(s))
+          from fern import FernApi
+  
+          client = FernApi()
+-         client.organizationlogo.destroy(
++         client.organizationlogo.organization_logo_destroy(
+              organization="organization",
+          )
+          """
+-         _response = self._raw_client.destroy(organization, request_options=request_options)
++         _response = self._raw_client.organization_logo_destroy(organization, request_options=request_options)
+          return _response.data
+  
+  
+      ⋮ (12 unchanged line(s))
+          """
+          return self._raw_client
+  
+-     async def show(self, organization: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
++     async def organization_logo_show(
++         self, organization: str, *, request_options: typing.Optional[RequestOptions] = None
++     ) -> None:
+          """
+          Behind the bearer token like everything else here, because which organizations exist is not
+          public. A browser cannot put a token on an `<img src>`, so a client fetches this and hands
+      ⋮ (21 unchanged line(s))
+  
+  
+          async def main() -> None:
+-             await client.organizationlogo.show(
++             await client.organizationlogo.organization_logo_show(
+                  organization="organization",
+              )
+  
+  
+          asyncio.run(main())
+          """
+-         _response = await self._raw_client.show(organization, request_options=request_options)
++         _response = await self._raw_client.organization_logo_show(organization, request_options=request_options)
+          return _response.data
+  
+-     async def update(
++     async def organization_logo_update(
+          self, organization: str, *, logo: core.File, request_options: typing.Optional[RequestOptions] = None
+      ) -> OrganizationResource:
+          """
+      ⋮ (23 unchanged line(s))
+  
+  
+          async def main() -> None:
+-             await client.organizationlogo.update(
++             await client.organizationlogo.organization_logo_update(
+                  organization="organization",
+              )
+  
+  
+          asyncio.run(main())
+          """
+-         _response = await self._raw_client.update(organization, logo=logo, request_options=request_options)
++         _response = await self._raw_client.organization_logo_update(
++             organization, logo=logo, request_options=request_options
++         )
+          return _response.data
+  
+-     async def destroy(self, organization: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
++     async def organization_logo_destroy(
++         self, organization: str, *, request_options: typing.Optional[RequestOptions] = None
++     ) -> None:
+          """
+          Parameters
+          ----------
+      ⋮ (17 unchanged line(s))
+  
+  
+          async def main() -> None:
+-             await client.organizationlogo.destroy(
++             await client.organizationlogo.organization_logo_destroy(
+                  organization="organization",
+              )
+  
+  
+          asyncio.run(main())
+          """
+-         _response = await self._raw_client.destroy(organization, request_options=request_options)
++         _response = await self._raw_client.organization_logo_destroy(organization, request_options=request_options)
+          return _response.data
+
+--- reference/src/fern/organizationlogo/raw_client.py
++++ crozier/src/fern/organizationlogo/raw_client.py
+      ⋮ (24 unchanged line(s))
+      def __init__(self, *, client_wrapper: SyncClientWrapper):
+          self._client_wrapper = client_wrapper
+  
+-     def show(self, organization: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
++     def organization_logo_show(
++         self, organization: str, *, request_options: typing.Optional[RequestOptions] = None
++     ) -> HttpResponse[None]:
+          """
+          Behind the bearer token like everything else here, because which organizations exist is not
+          public. A browser cannot put a token on an `<img src>`, so a client fetches this and hands
+      ⋮ (50 unchanged line(s))
+              )
+          raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+  
+-     def update(
++     def organization_logo_update(
+          self, organization: str, *, logo: core.File, request_options: typing.Optional[RequestOptions] = None
+      ) -> HttpResponse[OrganizationResource]:
+          """
+      ⋮ (76 unchanged line(s))
+              )
+          raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+  
+-     def destroy(
++     def organization_logo_destroy(
+          self, organization: str, *, request_options: typing.Optional[RequestOptions] = None
+      ) -> HttpResponse[None]:
+          """
+      ⋮ (53 unchanged line(s))
+      def __init__(self, *, client_wrapper: AsyncClientWrapper):
+          self._client_wrapper = client_wrapper
+  
+-     async def show(
++     async def organization_logo_show(
+          self, organization: str, *, request_options: typing.Optional[RequestOptions] = None
+      ) -> AsyncHttpResponse[None]:
+          """
+      ⋮ (52 unchanged line(s))
+              )
+          raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+  
+-     async def update(
++     async def organization_logo_update(
+          self, organization: str, *, logo: core.File, request_options: typing.Optional[RequestOptions] = None
+      ) -> AsyncHttpResponse[OrganizationResource]:
+          """
+      ⋮ (76 unchanged line(s))
+              )
+          raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+  
+-     async def destroy(
++     async def organization_logo_destroy(
+          self, organization: str, *, request_options: typing.Optional[RequestOptions] = None
+      ) -> AsyncHttpResponse[None]:
+          """
+      ⋮ (50 unchanged line(s))
+
+--- reference/src/fern/types/__init__.py
++++ crozier/src/fern/types/__init__.py
+      ⋮ (4 unchanged line(s))
+      from .authentication_resource import AuthenticationResource
+      from .authentication_resource_token_type import AuthenticationResourceTokenType
+      from .authentication_resource_user import AuthenticationResourceUser
+-     from .bad_request_error_body import BadRequestErrorBody
+-     from .not_found_error_body import NotFoundErrorBody
+      from .organization_resource import OrganizationResource
+-     from .unauthorized_error_body import UnauthorizedErrorBody
+      from .user_resource import UserResource
+      from .user_role import UserRole
+      from .user_status import UserStatus
+      ⋮ (1 unchanged line(s))
+      "AuthenticationResource": ".authentication_resource",
+      "AuthenticationResourceTokenType": ".authentication_resource_token_type",
+      "AuthenticationResourceUser": ".authentication_resource_user",
+-     "BadRequestErrorBody": ".bad_request_error_body",
+-     "NotFoundErrorBody": ".not_found_error_body",
+      "OrganizationResource": ".organization_resource",
+-     "UnauthorizedErrorBody": ".unauthorized_error_body",
+      "UserResource": ".user_resource",
+      "UserRole": ".user_role",
+      "UserStatus": ".user_status",
+      ⋮ (25 unchanged line(s))
+      "AuthenticationResource",
+      "AuthenticationResourceTokenType",
+      "AuthenticationResourceUser",
+-     "BadRequestErrorBody",
+-     "NotFoundErrorBody",
+      "OrganizationResource",
+-     "UnauthorizedErrorBody",
+      "UserResource",
+      "UserRole",
+      "UserStatus",
+      ⋮ (1 unchanged line(s))
+
+Only in reference: src/fern/types/bad_request_error_body.py
+
+Only in reference: src/fern/types/not_found_error_body.py
+
+Only in reference: src/fern/types/unauthorized_error_body.py

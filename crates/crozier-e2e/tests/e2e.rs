@@ -5108,6 +5108,7 @@ const CORPORA: &[&Corpus] = &[
     &OIP_WEB_API,
     &WAYLAY_QUERIES,
     &CONFLUENT_KAFKA_CONNECT,
+    &NETGSM_SMS,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -8143,6 +8144,17 @@ const CONFLUENT_KAFKA_CONNECT: Corpus = Corpus {
     unmatched: &[],
 };
 
+const NETGSM_SMS: Corpus = Corpus {
+    api: "netgsm-sms",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `millenium-falcon-challenge`: corpus row 319, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
@@ -8883,6 +8895,11 @@ fn sigstore_rekor_matches_fern_output() {
 #[test]
 fn confluent_kafka_connect_matches_fern_output() {
     assert_committed_corpus_matches(&CONFLUENT_KAFKA_CONNECT);
+}
+
+#[test]
+fn netgsm_sms_matches_fern_output() {
+    assert_committed_corpus_matches(&NETGSM_SMS);
 }
 
 #[test]

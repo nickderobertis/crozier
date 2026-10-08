@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 211 of the 242 registered sources live in `corpus-sources/` (a split
+  and 212 of the 243 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1517,14 +1517,16 @@ CONJUNCTIONS = {
     "schema.properties>schema.enum:string-valued": "one per Schema Object one of whose properties declares a string-valued `enum`",
     "schema.properties>schema.const:string-valued": "one per Schema Object one of whose properties declares a string-valued `const`",
     "schema.properties>schema.properties:non-empty": "one per Schema Object one of whose properties declares a non-empty `properties` map",
-    "schema.properties>schema.additionalProperties=false": "one per Schema Object one of whose properties declares `additionalProperties: false`",
+    "schema.properties>schema.additionalProperties=false&schema.properties": "one per Schema Object one of whose properties writes both `additionalProperties: false` and `properties`, including an empty map",
     "schema.properties>schema.oneOf:sole-non-null-member": "one per Schema Object one of whose properties declares a `oneOf` with one non-`null` member beside a `null` one",
     "schema.properties>schema.anyOf:sole-non-null-member": "one per Schema Object one of whose properties declares an `anyOf` with one non-`null` member beside a `null` one",
     "schema.properties>schema.type:primary=array": "one per Schema Object one of whose properties declares `array` as its primary type",
     "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member declares a non-empty `properties` map",
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares a non-empty `properties` map",
-    "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member declares `additionalProperties: false`",
-    "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares `additionalProperties: false`",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member writes `additionalProperties: false`, whether or not it writes `properties`",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member writes both `additionalProperties: false` and `properties`, including an empty map",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member writes `additionalProperties: false`, whether or not it writes `properties`",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member writes both `additionalProperties: false` and `properties`, including an empty map",
     "schema.properties>schema.allOf:annotated-ref": "one per Schema Object one of whose properties is an annotated `$ref` — an `allOf` of at least two members, exactly one a Reference Object and every other declaring nothing",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares a string-valued `enum`",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares a string-valued `const`",
@@ -1756,15 +1758,15 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("8a", block="prop_type_ref", selector="schema.properties>schema.properties:non-empty"),
         Case("8b", block="prop_type_ref", selector="schema.properties>!schema.type:primary-scalar&schema.allOf"),
         Case("8c", block="prop_type_ref", selector="schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
-        Case("8d", block="prop_type_ref", selector="schema.properties>schema.additionalProperties=false"),
+        Case("8d", block="prop_type_ref", selector="schema.properties>schema.additionalProperties=false&schema.properties"),
         Case("9", block="prop_type_ref", selector="schema.properties>schema.oneOf", opens="prop_type_ref/oneOf"),
         Case("10", block="prop_type_ref", selector="schema.properties>schema.anyOf", opens="prop_type_ref/anyOf"),
         Case("11a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-non-null-member"),
         Case("11b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-non-null-member"),
         Case("12a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty"),
         Case("12b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty"),
-        Case("12c", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false"),
-        Case("12d", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false"),
+        Case("12c", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties"),
+        Case("12d", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties"),
         Case("12e", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf"),
         Case("12f", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf"),
         Case("12g", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
@@ -2120,6 +2122,16 @@ def case_verdict(function: str, case: Case) -> str:
 # read; its conjunction stays while a region row's key, and the witness search
 # that key ran, are spelled by it.
 RETIRED_CASE_CONJUNCTIONS = {
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": (
+        "`prop_type_ref`'s closed-member search before cases 12c and 12d were "
+        "narrowed to members writing `properties`; the frozen witness search "
+        "keeps this broader spelling and its original counts"
+    ),
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": (
+        "`prop_type_ref`'s closed-member search before cases 12c and 12d were "
+        "narrowed to members writing `properties`; the frozen witness search "
+        "keeps this broader spelling and its original counts"
+    ),
     "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": (
         "`hoist_union_variant`'s case 11, removed with the arm it read once Fern was "
         "shown to type every bare object member a map (the hand-written "

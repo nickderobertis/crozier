@@ -1,0 +1,31 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Scheme measurement",
+        "version": "1"
+    },
+    "paths": {
+        "/ping": {
+            "get": {
+                "operationId": "ping",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "https://conversion.example.com/v2"
+        }
+    ]
+}

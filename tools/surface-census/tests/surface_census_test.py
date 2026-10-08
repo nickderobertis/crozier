@@ -3182,7 +3182,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "nested-core-imports": 1,
             "nexmo-messages": 37
         },
-        "schema.properties>schema.additionalProperties=false": {},
+        "schema.properties>schema.additionalProperties=false&schema.properties": {},
         "schema.properties>schema.oneOf:sole-non-null-member": {},
         "schema.properties>schema.anyOf:sole-non-null-member": {},
         "schema.properties>schema.type:primary=array": {
@@ -3198,7 +3198,9 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": {},
+        "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": {},
+        "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties": {},
         "schema.properties>schema.allOf:annotated-ref": {
             "groupe-psa": 5
         },
@@ -3276,7 +3278,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "groupe-psa": 2
         },
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf": {},
-        "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {
+        "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {
             "audience-filter": 3,
             "audience-filter-strict": 4,
             "auth-schemes": 2,
@@ -3946,7 +3948,7 @@ NEGATION_SELECTORS = frozenset({
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
     "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
     "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
-    "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+    "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
 })
 
 
@@ -4333,11 +4335,11 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.properties>schema.oneOf",
         },
         {
-            "selector": "schema.properties>schema.additionalProperties=false",
+            "selector": "schema.properties>schema.additionalProperties=false&schema.properties",
             "slug": "ptr-8d",
             "branch": "prop_type_ref case 8d",
-            "select": ("schema", {"properties": {"bag": CLOSED_OBJECT}}),
-            "near": ("schema", {"properties": {"bag": OPEN_OBJECT}}),
+            "select": ("schema", {"properties": {"bag": {**CLOSED_OBJECT, "properties": {}}}}),
+            "near": ("schema", {"properties": {"bag": CLOSED_OBJECT}}),
             "overlap": ("schema", {"properties": {"bag": {**STRUCT, "additionalProperties": False}}}),
             "overlap_selector": "schema.properties>schema.properties:non-empty",
         },
@@ -4391,26 +4393,44 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.properties>schema.properties:non-empty",
         },
         {
-            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false",
+            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
             "slug": "ptr-12c",
             "branch": "prop_type_ref case 12c",
-            "select": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
-            "near": ("schema", {"properties": {"wrapper": {"oneOf": [OPEN_OBJECT]}}}),
+            "select": ("schema", {"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
             "overlap": ("schema", {"properties": {"wrapper": {
                 "oneOf": [{**STRUCT, "additionalProperties": False}]
             }}}),
             "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
         },
         {
-            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false",
+            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
             "slug": "ptr-12d",
             "branch": "prop_type_ref case 12d",
-            "select": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
-            "near": ("schema", {"properties": {"wrapper": {"anyOf": [OPEN_OBJECT]}}}),
+            "select": ("schema", {"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
             "overlap": ("schema", {"properties": {"wrapper": {
                 "anyOf": [{**STRUCT, "additionalProperties": False}]
             }}}),
             "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false",
+            "slug": "historical-closed-oneof",
+            "branch": "historical closed-member witness search",
+            "select": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"oneOf": [{"type": "object", "additionalProperties": True}]}}}),
+            "overlap": ("schema", {"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
+        },
+        {
+            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false",
+            "slug": "historical-closed-anyof",
+            "branch": "historical closed-member witness search",
+            "select": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"anyOf": [{"type": "object", "additionalProperties": True}]}}}),
+            "overlap": ("schema", {"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
         },
     )
 
@@ -6211,7 +6231,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
         },
         {
-            "selector": "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+            "selector": "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
             "slug": "ptr-16",
             "branch": "prop_type_ref case 16, the function's own residual",
             "select": {"Root": {"properties": {"p": {"type": "string"}}}},
@@ -6307,6 +6327,20 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
              if not census.is_conjunction(selector)},
             exempt,
         )
+
+    def test_property_residual_counts_closed_objects_without_properties(self) -> None:
+        residual = "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array"
+        reported = self.censused({
+            "closed-without-properties": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": False}}}},
+            "closed-empty-properties": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": False, "properties": {}}}}},
+            "closed-nonempty-properties": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": False, "properties": {"id": {"type": "string", "enum": ["signal"]}}}}}},
+        })
+        self.assertEqual(1, reported.get((residual, "closed-without-properties")))
+        # A multi-atom case cannot be complemented by the census grammar:
+        # explicitly empty properties overlap case 8d and the residual.
+        self.assertEqual(1, reported.get((residual, "closed-empty-properties")))
+        self.assertEqual(1, reported.get(("schema.properties>schema.additionalProperties=false&schema.properties", "closed-empty-properties")))
+        self.assertNotIn((residual, "closed-nonempty-properties"), reported)
 
     def test_a_residual_inside_a_gate_counts_no_node_the_gate_excludes(self) -> None:
         """The scoping property, over a document constructed for it.
@@ -7984,13 +8018,17 @@ class RankedBacklogTests(unittest.TestCase):
         """`src/` file -> (printed count, per-tier breakdown, the ranked-gaps cell)."""
         found = {}
         for line in self.section("| `src/` file | printed |", "**Where the two").splitlines():
-            row = re.match(r"\| `(src/[a-z_]+\.rs)` \| (\d+) \| ([^|]+) \| ([^|]+) \|", line)
+            row = re.match(r"\| `(src/(?:[a-z_]+/)*[a-z_]+\.rs)` \| (\d+) \| ([^|]+) \| ([^|]+) \|", line)
             if row:
                 found[row.group(1)] = (
                     int(row.group(2)), row.group(3).strip(), row.group(4).strip()
                 )
         self.assertTrue(found, "the golden blind spots join table no longer parses")
         return found
+
+    def test_the_blind_spot_reader_includes_nested_module_paths(self) -> None:
+        self.assertIn("src/compare/mod.rs", self.blind_spot_table())
+        self.assertIn("src/document_refusals/examples.rs", self.blind_spot_table())
 
     def test_every_enumerated_feature_is_classified_exactly_once(self) -> None:
         """One key per feature, and no spec location owned by two regions."""
@@ -12179,6 +12217,47 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         self.assertIsNotNone(stated, "document-paths no longer states the counts this check reconciles")
         self.assertEqual((census_rows, ledger_keys, gaps), tuple(int(g) for g in stated.groups()))
 
+    def test_extension_tail_joins_and_counts_match_the_registered_source_walk(self) -> None:
+        text = (self.REGIONS / "oas31-extensions.md").read_text(encoding="utf-8")
+        rows = {key.strip("`"): cells for key, cells in self.entries(text).items()}
+        sources = {source["fixture"] for source in self.payload["sources"]}
+        paths = set(self.measured["openapi.paths"])
+        webhooks = set(self.measured["openapi.webhooks"])
+        ignore_selectors = (
+            "operation.x-fern-ignore", "operation.x-crozier-ignore",
+            "schema.x-fern-ignore", "schema.x-crozier-ignore",
+        )
+        ignored = Counter()
+        for selector in ignore_selectors:
+            ignored.update(self.measured.get(selector, {}))
+        expected = {
+            "json-schema-dialect": self.measured["openapi.jsonSchemaDialect"],
+            "webhooks": self.measured["openapi.webhooks"],
+            "info-summary": self.measured["info.summary"],
+            "license-identifier": self.measured["info.license.identifier"],
+            "reference-description": self.measured["reference.description"],
+            "paths-absent": {name: 1 for name in sources - paths},
+            "webhooks-without-paths": {name: 1 for name in webhooks - paths},
+            "x-fern-or-crozier-ignore": dict(ignored),
+        }
+        for key, witnesses in expected.items():
+            with self.subTest(key=key):
+                cell = rows[key][4]
+                stated = re.search(r": (\d+) declarations across (\d+) registered golden sources;", cell)
+                self.assertIsNotNone(stated, f"{key} must state its measured counts")
+                self.assertEqual((sum(witnesses.values()), len(witnesses)),
+                                 tuple(int(value) for value in stated.groups()))
+                self.assertEqual(witnesses, {name: int(count) for name, count in self.PAIR.findall(cell)})
+        self.assertIn(f"Of the {len(sources)} registered golden sources, {len(paths)} declare paths",
+                      rows["paths-absent"][4])
+        self.assertIn(f"The other {len(webhooks & paths)} webhook declarers also declare paths",
+                      rows["webhooks-without-paths"][4])
+        self.assertIn(f"All {sum(ignored.values())} declarations are on operations under the Fern spelling",
+                      rows["x-fern-or-crozier-ignore"][4])
+        for selector in ignore_selectors[1:]:
+            self.assertEqual({}, self.measured.get(selector, {}),
+                             "the cell's zero-declaration claim must change with this selector")
+
 
 class NamingMirrorTests(unittest.TestCase):
     """`openapi.paths:normalized-collision` normalizes the way crozier does.
@@ -13549,6 +13628,36 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
             }},
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+
+class ParityProofIndexTests(unittest.TestCase):
+    """The public proof index names complete goldens and every catalogued defect once."""
+
+    def test_the_proof_index_matches_the_departure_catalog_and_real_gate_tests(self) -> None:
+        index = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+        section = index.split("## Parity repair proof index", 1)[1].split("### Handed-off real witnesses", 1)[0]
+        rows = [cells for line in section.splitlines()
+                if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}]
+        self.assertEqual(33, len(rows))
+        self.assertEqual(len(rows), len({row[0] for row in rows}))
+        catalog = census.load_document(REPO / "assets/departures.yml")
+        defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
+        indexed = [name.strip() for row in rows if row[6] != "—"
+                   for name in row[6].strip("`").split(",")]
+        self.assertEqual(defects, set(indexed))
+        self.assertEqual(len(indexed), len(set(indexed)), "a defect belongs to exactly one gap")
+        test_sources = "\n".join(path.read_text(encoding="utf-8") for path in
+                                 [REPO / "crates/crozier-e2e/tests/e2e.rs",
+                                  *(REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs")])
+        for row in rows:
+            with self.subTest(gap=row[0]):
+                for proof in row[4].split(";"):
+                    tree = REPO / proof.strip()
+                    self.assertTrue(tree.is_dir(), f"missing committed proof {proof}")
+                    self.assertTrue((tree / ".fern/metadata.json").is_file(), f"incomplete SDK proof {proof}")
+                for test in row[5].strip("`").split(";"):
+                    name = test.strip().rsplit("::", 1)[-1]
+                    self.assertRegex(test_sources, rf"fn {re.escape(name)}\(", f"missing comparison test {test}")
 
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])

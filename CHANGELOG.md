@@ -6,6 +6,13 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.107](https://github.com/nickderobertis/crozier/compare/v0.0.106...v0.0.107) - 2026-10-08
+
+### Fixed
+
+- *(coverage)* restate coverage and correct the Fern pre-step recipes ([#427](https://github.com/nickderobertis/crozier/pull/427))
+- *(emit)* render a string-map request body's own example in reference.md ([#425](https://github.com/nickderobertis/crozier/pull/425))
+
 ## [0.0.106](https://github.com/nickderobertis/crozier/compare/v0.0.105...v0.0.106) - 2026-10-07
 
 ### Fixed

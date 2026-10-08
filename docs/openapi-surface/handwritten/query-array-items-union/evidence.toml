@@ -7,3 +7,17 @@ key = "query-array-items-union"
 search = "docs/openapi-surface/parameters.md#witness-search-exhaustive"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-parameter-lowering/README.md"
+
+[[covers]]
+key = "parameter-schema"
+arm = 'src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/parameter-schema.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/golden-reach-witnesses/searches/parameter-schema.md"
+
+[[covers]]
+key = "parameter-schema"
+arm = 'src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/parameter-schema.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/golden-reach-witnesses/searches/parameter-schema.md"

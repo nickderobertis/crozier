@@ -1,0 +1,923 @@
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (3556 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **assistant_id:** `str` 
++ **assistant_id:** `str` — The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+      
+  </dd>
+  </dl>
+      ⋮ (193 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **assistant_id:** `str` 
++ **assistant_id:** `str` — The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+      
+  </dd>
+  </dl>
+      ⋮ (1455 unchanged line(s))
+  
+  ```python
+  from fern import FernApi
+- from fern.a2a import PostA2ARequestJsonrpc, PostA2ARequestMethod, PostA2ARequestParamsMessage, PostA2ARequestParamsMessageMessage, PostA2ARequestParamsMessageMessageRole, PostA2ARequestParamsMessageMessagePartsItem_Text, PostA2ARequestParamsMessageMessagePartsItem_Data
++ from fern.a2a import PostA2ARequestJsonrpc, PostA2ARequestMethod, PostA2ARequestParamsMessage, PostA2ARequestParamsMessageMessage, PostA2ARequestParamsMessageMessageRole
+  
+  client = FernApi(
+      base_url="https://yourhost.com/path/to/api",
+      ⋮ (9 unchanged line(s))
+          message=PostA2ARequestParamsMessageMessage(
+              role=PostA2ARequestParamsMessageMessageRole.USER,
+              parts=[
+-                 PostA2ARequestParamsMessageMessagePartsItem_Text(
+-                     text="Hello from A2A",
+-                 ),
+-                 PostA2ARequestParamsMessageMessagePartsItem_Data(
+-                     data={
+-                         "locale": "en-US"
+-                     },
+-                 )
++                 {"kind": "text", "text": "Hello from A2A"},
++                 {"kind": "data", "data": {"locale": "en-US"}}
+              ],
+              message_id="msg-1",
+              context_id="f5bd2a40-74b6-4f7a-b649-ea3f09890003",
+      ⋮ (557 unchanged line(s))
+
+--- reference/src/fern/__init__.py
++++ crozier/src/fern/__init__.py
+      ⋮ (47 unchanged line(s))
+          RunCreateStatefulMultitaskStrategy,
+          RunCreateStatefulStreamMode,
+          RunCreateStatefulStreamModeOne,
+-         RunCreateStatefulStreamModeZeroItem,
+          RunCreateStateless,
+          RunCreateStatelessConfig,
+          RunCreateStatelessDurability,
+      ⋮ (1 unchanged line(s))
+          RunCreateStatelessOnCompletion,
+          RunCreateStatelessStreamMode,
+          RunCreateStatelessStreamModeOne,
+-         RunCreateStatelessStreamModeZeroItem,
+          RunCreateStreamingStateful,
+          RunCreateStreamingStatefulOnDisconnect,
+          RunCreateStreamingStateless,
+      ⋮ (33 unchanged line(s))
+      )
+      from . import a2a, assistants, crons, mcp, stateless_runs, store, streaming, system, thread_runs, threads
+      from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
++     from .client import AsyncFernApi, FernApi
+      from .a2a import (
+          PostA2ARequestJsonrpc,
+          PostA2ARequestMethod,
+      ⋮ (18 unchanged line(s))
+          AssistantSearchRequestSortBy,
+          AssistantSearchRequestSortOrder,
+      )
+-     from .client import AsyncFernApi, FernApi
+      from .crons import (
+          CronCreateConfig,
+          CronCreateDurability,
+      ⋮ (5 unchanged line(s))
+          CronCreateOnRunCompleted,
+          CronCreateStreamMode,
+          CronCreateStreamModeOne,
+-         CronCreateStreamModeZeroItem,
+          CronPatchConfig,
+          CronPatchDurability,
+          CronPatchInput,
+      ⋮ (4 unchanged line(s))
+          CronPatchOnRunCompleted,
+          CronPatchStreamMode,
+          CronPatchStreamModeOne,
+-         CronPatchStreamModeZeroItem,
+          CronSearchSelectItem,
+          CronSearchSortBy,
+          CronSearchSortOrder,
+      ⋮ (7 unchanged line(s))
+          ThreadCronCreateMultitaskStrategy,
+          ThreadCronCreateStreamMode,
+          ThreadCronCreateStreamModeOne,
+-         ThreadCronCreateStreamModeZeroItem,
+      )
+      from .mcp import PostMcpRequestAccept
+      from .store import StorePutRequestIndex
+      ⋮ (56 unchanged line(s))
+      "CronCreateOnRunCompleted": ".crons",
+      "CronCreateStreamMode": ".crons",
+      "CronCreateStreamModeOne": ".crons",
+-     "CronCreateStreamModeZeroItem": ".crons",
+      "CronPatchConfig": ".crons",
+      "CronPatchDurability": ".crons",
+      "CronPatchInput": ".crons",
+      ⋮ (4 unchanged line(s))
+      "CronPatchOnRunCompleted": ".crons",
+      "CronPatchStreamMode": ".crons",
+      "CronPatchStreamModeOne": ".crons",
+-     "CronPatchStreamModeZeroItem": ".crons",
+      "CronSearchSelectItem": ".crons",
+      "CronSearchSortBy": ".crons",
+      "CronSearchSortOrder": ".crons",
+      ⋮ (60 unchanged line(s))
+      "RunCreateStatefulMultitaskStrategy": ".types",
+      "RunCreateStatefulStreamMode": ".types",
+      "RunCreateStatefulStreamModeOne": ".types",
+-     "RunCreateStatefulStreamModeZeroItem": ".types",
+      "RunCreateStateless": ".types",
+      "RunCreateStatelessConfig": ".types",
+      "RunCreateStatelessDurability": ".types",
+      ⋮ (1 unchanged line(s))
+      "RunCreateStatelessOnCompletion": ".types",
+      "RunCreateStatelessStreamMode": ".types",
+      "RunCreateStatelessStreamModeOne": ".types",
+-     "RunCreateStatelessStreamModeZeroItem": ".types",
+      "RunCreateStreamingStateful": ".types",
+      "RunCreateStreamingStatefulOnDisconnect": ".types",
+      "RunCreateStreamingStateless": ".types",
+      ⋮ (25 unchanged line(s))
+      "ThreadCronCreateMultitaskStrategy": ".crons",
+      "ThreadCronCreateStreamMode": ".crons",
+      "ThreadCronCreateStreamModeOne": ".crons",
+-     "ThreadCronCreateStreamModeZeroItem": ".crons",
+      "ThreadPatchTtl": ".threads",
+      "ThreadPatchTtlStrategy": ".threads",
+      "ThreadPruneRequestStrategy": ".threads",
+      ⋮ (84 unchanged line(s))
+      "CronCreateOnRunCompleted",
+      "CronCreateStreamMode",
+      "CronCreateStreamModeOne",
+-     "CronCreateStreamModeZeroItem",
+      "CronPatchConfig",
+      "CronPatchDurability",
+      "CronPatchInput",
+      ⋮ (4 unchanged line(s))
+      "CronPatchOnRunCompleted",
+      "CronPatchStreamMode",
+      "CronPatchStreamModeOne",
+-     "CronPatchStreamModeZeroItem",
+      "CronSearchSelectItem",
+      "CronSearchSortBy",
+      "CronSearchSortOrder",
+      ⋮ (60 unchanged line(s))
+      "RunCreateStatefulMultitaskStrategy",
+      "RunCreateStatefulStreamMode",
+      "RunCreateStatefulStreamModeOne",
+-     "RunCreateStatefulStreamModeZeroItem",
+      "RunCreateStateless",
+      "RunCreateStatelessConfig",
+      "RunCreateStatelessDurability",
+      ⋮ (1 unchanged line(s))
+      "RunCreateStatelessOnCompletion",
+      "RunCreateStatelessStreamMode",
+      "RunCreateStatelessStreamModeOne",
+-     "RunCreateStatelessStreamModeZeroItem",
+      "RunCreateStreamingStateful",
+      "RunCreateStreamingStatefulOnDisconnect",
+      "RunCreateStreamingStateless",
+      ⋮ (25 unchanged line(s))
+      "ThreadCronCreateMultitaskStrategy",
+      "ThreadCronCreateStreamMode",
+      "ThreadCronCreateStreamModeOne",
+-     "ThreadCronCreateStreamModeZeroItem",
+      "ThreadPatchTtl",
+      "ThreadPatchTtlStrategy",
+      "ThreadPruneRequestStrategy",
+      ⋮ (33 unchanged line(s))
+
+--- reference/src/fern/a2a/client.py
++++ crozier/src/fern/a2a/client.py
+      ⋮ (92 unchanged line(s))
+              PostA2ARequestMethod,
+              PostA2ARequestParamsMessage,
+              PostA2ARequestParamsMessageMessage,
+-             PostA2ARequestParamsMessageMessagePartsItem_Data,
+-             PostA2ARequestParamsMessageMessagePartsItem_Text,
+              PostA2ARequestParamsMessageMessageRole,
+          )
+  
+      ⋮ (12 unchanged line(s))
+                  message=PostA2ARequestParamsMessageMessage(
+                      role=PostA2ARequestParamsMessageMessageRole.USER,
+                      parts=[
+-                         PostA2ARequestParamsMessageMessagePartsItem_Text(
+-                             text="Hello from A2A",
+-                         ),
+-                         PostA2ARequestParamsMessageMessagePartsItem_Data(
+-                             data={"locale": "en-US"},
+-                         ),
++                         {"kind": "text", "text": "Hello from A2A"},
++                         {"kind": "data", "data": {"locale": "en-US"}},
+                      ],
+                      message_id="msg-1",
+                      context_id="f5bd2a40-74b6-4f7a-b649-ea3f09890003",
+      ⋮ (94 unchanged line(s))
+              PostA2ARequestMethod,
+              PostA2ARequestParamsMessage,
+              PostA2ARequestParamsMessageMessage,
+-             PostA2ARequestParamsMessageMessagePartsItem_Data,
+-             PostA2ARequestParamsMessageMessagePartsItem_Text,
+              PostA2ARequestParamsMessageMessageRole,
+          )
+  
+      ⋮ (15 unchanged line(s))
+                      message=PostA2ARequestParamsMessageMessage(
+                          role=PostA2ARequestParamsMessageMessageRole.USER,
+                          parts=[
+-                             PostA2ARequestParamsMessageMessagePartsItem_Text(
+-                                 text="Hello from A2A",
+-                             ),
+-                             PostA2ARequestParamsMessageMessagePartsItem_Data(
+-                                 data={"locale": "en-US"},
+-                             ),
++                             {"kind": "text", "text": "Hello from A2A"},
++                             {"kind": "data", "data": {"locale": "en-US"}},
+                          ],
+                          message_id="msg-1",
+                          context_id="f5bd2a40-74b6-4f7a-b649-ea3f09890003",
+      ⋮ (17 unchanged line(s))
+
+--- reference/src/fern/crons/__init__.py
++++ crozier/src/fern/crons/__init__.py
+      ⋮ (12 unchanged line(s))
+          CronCreateOnRunCompleted,
+          CronCreateStreamMode,
+          CronCreateStreamModeOne,
+-         CronCreateStreamModeZeroItem,
+          CronPatchConfig,
+          CronPatchDurability,
+          CronPatchInput,
+      ⋮ (4 unchanged line(s))
+          CronPatchOnRunCompleted,
+          CronPatchStreamMode,
+          CronPatchStreamModeOne,
+-         CronPatchStreamModeZeroItem,
+          CronSearchSelectItem,
+          CronSearchSortBy,
+          CronSearchSortOrder,
+      ⋮ (7 unchanged line(s))
+          ThreadCronCreateMultitaskStrategy,
+          ThreadCronCreateStreamMode,
+          ThreadCronCreateStreamModeOne,
+-         ThreadCronCreateStreamModeZeroItem,
+      )
+  _dynamic_imports: typing.Dict[str, str] = {
+      "CronCreateConfig": ".types",
+      ⋮ (6 unchanged line(s))
+      "CronCreateOnRunCompleted": ".types",
+      "CronCreateStreamMode": ".types",
+      "CronCreateStreamModeOne": ".types",
+-     "CronCreateStreamModeZeroItem": ".types",
+      "CronPatchConfig": ".types",
+      "CronPatchDurability": ".types",
+      "CronPatchInput": ".types",
+      ⋮ (4 unchanged line(s))
+      "CronPatchOnRunCompleted": ".types",
+      "CronPatchStreamMode": ".types",
+      "CronPatchStreamModeOne": ".types",
+-     "CronPatchStreamModeZeroItem": ".types",
+      "CronSearchSelectItem": ".types",
+      "CronSearchSortBy": ".types",
+      "CronSearchSortOrder": ".types",
+      ⋮ (7 unchanged line(s))
+      "ThreadCronCreateMultitaskStrategy": ".types",
+      "ThreadCronCreateStreamMode": ".types",
+      "ThreadCronCreateStreamModeOne": ".types",
+-     "ThreadCronCreateStreamModeZeroItem": ".types",
+  }
+  
+  
+      ⋮ (29 unchanged line(s))
+      "CronCreateOnRunCompleted",
+      "CronCreateStreamMode",
+      "CronCreateStreamModeOne",
+-     "CronCreateStreamModeZeroItem",
+      "CronPatchConfig",
+      "CronPatchDurability",
+      "CronPatchInput",
+      ⋮ (4 unchanged line(s))
+      "CronPatchOnRunCompleted",
+      "CronPatchStreamMode",
+      "CronPatchStreamModeOne",
+-     "CronPatchStreamModeZeroItem",
+      "CronSearchSelectItem",
+      "CronSearchSortBy",
+      "CronSearchSortOrder",
+      ⋮ (7 unchanged line(s))
+      "ThreadCronCreateMultitaskStrategy",
+      "ThreadCronCreateStreamMode",
+      "ThreadCronCreateStreamModeOne",
+-     "ThreadCronCreateStreamModeZeroItem",
+  ]
+
+--- reference/src/fern/crons/client.py
++++ crozier/src/fern/crons/client.py
+      ⋮ (85 unchanged line(s))
+              The cron schedule to execute this job on.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+  
+          timezone : typing.Optional[str]
+              IANA timezone for the cron schedule (e.g. 'America/New_York'). Defaults to null, which is treated as UTC.
+      ⋮ (115 unchanged line(s))
+              The cron schedule to execute this job on.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+  
+          timezone : typing.Optional[str]
+              IANA timezone for the cron schedule (e.g. 'America/New_York'). Defaults to null, which is treated as UTC.
+      ⋮ (432 unchanged line(s))
+              The cron schedule to execute this job on.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+  
+          timezone : typing.Optional[str]
+              IANA timezone for the cron schedule (e.g. 'America/New_York'). Defaults to null, which is treated as UTC.
+      ⋮ (123 unchanged line(s))
+              The cron schedule to execute this job on.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+  
+          timezone : typing.Optional[str]
+              IANA timezone for the cron schedule (e.g. 'America/New_York'). Defaults to null, which is treated as UTC.
+      ⋮ (431 unchanged line(s))
+
+--- reference/src/fern/crons/raw_client.py
++++ crozier/src/fern/crons/raw_client.py
+      ⋮ (84 unchanged line(s))
+              The cron schedule to execute this job on.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+  
+          timezone : typing.Optional[str]
+              IANA timezone for the cron schedule (e.g. 'America/New_York'). Defaults to null, which is treated as UTC.
+      ⋮ (158 unchanged line(s))
+              The cron schedule to execute this job on.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+  
+          timezone : typing.Optional[str]
+              IANA timezone for the cron schedule (e.g. 'America/New_York'). Defaults to null, which is treated as UTC.
+      ⋮ (647 unchanged line(s))
+              The cron schedule to execute this job on.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+  
+          timezone : typing.Optional[str]
+              IANA timezone for the cron schedule (e.g. 'America/New_York'). Defaults to null, which is treated as UTC.
+      ⋮ (158 unchanged line(s))
+              The cron schedule to execute this job on.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to the assistant automatically created from that graph by the server.
+  
+          timezone : typing.Optional[str]
+              IANA timezone for the cron schedule (e.g. 'America/New_York'). Defaults to null, which is treated as UTC.
+      ⋮ (611 unchanged line(s))
+
+--- reference/src/fern/crons/types/__init__.py
++++ crozier/src/fern/crons/types/__init__.py
+      ⋮ (11 unchanged line(s))
+      from .cron_create_on_run_completed import CronCreateOnRunCompleted
+      from .cron_create_stream_mode import CronCreateStreamMode
+      from .cron_create_stream_mode_one import CronCreateStreamModeOne
+-     from .cron_create_stream_mode_zero_item import CronCreateStreamModeZeroItem
+      from .cron_patch_config import CronPatchConfig
+      from .cron_patch_durability import CronPatchDurability
+      from .cron_patch_input import CronPatchInput
+      ⋮ (4 unchanged line(s))
+      from .cron_patch_on_run_completed import CronPatchOnRunCompleted
+      from .cron_patch_stream_mode import CronPatchStreamMode
+      from .cron_patch_stream_mode_one import CronPatchStreamModeOne
+-     from .cron_patch_stream_mode_zero_item import CronPatchStreamModeZeroItem
+      from .cron_search_select_item import CronSearchSelectItem
+      from .cron_search_sort_by import CronSearchSortBy
+      from .cron_search_sort_order import CronSearchSortOrder
+      ⋮ (7 unchanged line(s))
+      from .thread_cron_create_multitask_strategy import ThreadCronCreateMultitaskStrategy
+      from .thread_cron_create_stream_mode import ThreadCronCreateStreamMode
+      from .thread_cron_create_stream_mode_one import ThreadCronCreateStreamModeOne
+-     from .thread_cron_create_stream_mode_zero_item import ThreadCronCreateStreamModeZeroItem
+  _dynamic_imports: typing.Dict[str, str] = {
+      "CronCreateConfig": ".cron_create_config",
+      "CronCreateDurability": ".cron_create_durability",
+      ⋮ (5 unchanged line(s))
+      "CronCreateOnRunCompleted": ".cron_create_on_run_completed",
+      "CronCreateStreamMode": ".cron_create_stream_mode",
+      "CronCreateStreamModeOne": ".cron_create_stream_mode_one",
+-     "CronCreateStreamModeZeroItem": ".cron_create_stream_mode_zero_item",
+      "CronPatchConfig": ".cron_patch_config",
+      "CronPatchDurability": ".cron_patch_durability",
+      "CronPatchInput": ".cron_patch_input",
+      ⋮ (4 unchanged line(s))
+      "CronPatchOnRunCompleted": ".cron_patch_on_run_completed",
+      "CronPatchStreamMode": ".cron_patch_stream_mode",
+      "CronPatchStreamModeOne": ".cron_patch_stream_mode_one",
+-     "CronPatchStreamModeZeroItem": ".cron_patch_stream_mode_zero_item",
+      "CronSearchSelectItem": ".cron_search_select_item",
+      "CronSearchSortBy": ".cron_search_sort_by",
+      "CronSearchSortOrder": ".cron_search_sort_order",
+      ⋮ (7 unchanged line(s))
+      "ThreadCronCreateMultitaskStrategy": ".thread_cron_create_multitask_strategy",
+      "ThreadCronCreateStreamMode": ".thread_cron_create_stream_mode",
+      "ThreadCronCreateStreamModeOne": ".thread_cron_create_stream_mode_one",
+-     "ThreadCronCreateStreamModeZeroItem": ".thread_cron_create_stream_mode_zero_item",
+  }
+  
+  
+      ⋮ (29 unchanged line(s))
+      "CronCreateOnRunCompleted",
+      "CronCreateStreamMode",
+      "CronCreateStreamModeOne",
+-     "CronCreateStreamModeZeroItem",
+      "CronPatchConfig",
+      "CronPatchDurability",
+      "CronPatchInput",
+      ⋮ (4 unchanged line(s))
+      "CronPatchOnRunCompleted",
+      "CronPatchStreamMode",
+      "CronPatchStreamModeOne",
+-     "CronPatchStreamModeZeroItem",
+      "CronSearchSelectItem",
+      "CronSearchSortBy",
+      "CronSearchSortOrder",
+      ⋮ (7 unchanged line(s))
+      "ThreadCronCreateMultitaskStrategy",
+      "ThreadCronCreateStreamMode",
+      "ThreadCronCreateStreamModeOne",
+-     "ThreadCronCreateStreamModeZeroItem",
+  ]
+
+--- reference/src/fern/crons/types/cron_create_stream_mode.py
++++ crozier/src/fern/crons/types/cron_create_stream_mode.py
+      ⋮ (2 unchanged line(s))
+  import typing
+  
+  from .cron_create_stream_mode_one import CronCreateStreamModeOne
+- from .cron_create_stream_mode_zero_item import CronCreateStreamModeZeroItem
+  
+- CronCreateStreamMode = typing.Union[typing.List[CronCreateStreamModeZeroItem], CronCreateStreamModeOne]
++ CronCreateStreamMode = typing.Union[
++     typing.List[
++         typing.Union[
++             typing.Literal[
++                 "values", "messages", "messages-tuple", "tasks", "checkpoints", "updates", "events", "debug", "custom"
++             ],
++             typing.Any,
++         ]
++     ],
++     CronCreateStreamModeOne,
++ ]
+
+Only in reference: src/fern/crons/types/cron_create_stream_mode_zero_item.py
+
+--- reference/src/fern/crons/types/cron_patch_stream_mode.py
++++ crozier/src/fern/crons/types/cron_patch_stream_mode.py
+      ⋮ (2 unchanged line(s))
+  import typing
+  
+  from .cron_patch_stream_mode_one import CronPatchStreamModeOne
+- from .cron_patch_stream_mode_zero_item import CronPatchStreamModeZeroItem
+  
+- CronPatchStreamMode = typing.Union[typing.List[CronPatchStreamModeZeroItem], CronPatchStreamModeOne]
++ CronPatchStreamMode = typing.Union[
++     typing.List[
++         typing.Union[
++             typing.Literal[
++                 "values", "messages", "messages-tuple", "tasks", "checkpoints", "updates", "events", "debug", "custom"
++             ],
++             typing.Any,
++         ]
++     ],
++     CronPatchStreamModeOne,
++ ]
+
+Only in reference: src/fern/crons/types/cron_patch_stream_mode_zero_item.py
+
+--- reference/src/fern/crons/types/thread_cron_create_stream_mode.py
++++ crozier/src/fern/crons/types/thread_cron_create_stream_mode.py
+      ⋮ (2 unchanged line(s))
+  import typing
+  
+  from .thread_cron_create_stream_mode_one import ThreadCronCreateStreamModeOne
+- from .thread_cron_create_stream_mode_zero_item import ThreadCronCreateStreamModeZeroItem
+  
+  ThreadCronCreateStreamMode = typing.Union[
+-     typing.List[ThreadCronCreateStreamModeZeroItem], ThreadCronCreateStreamModeOne
++     typing.List[
++         typing.Union[
++             typing.Literal[
++                 "values", "messages", "messages-tuple", "tasks", "checkpoints", "updates", "events", "debug", "custom"
++             ],
++             typing.Any,
++         ]
++     ],
++     ThreadCronCreateStreamModeOne,
+  ]
+
+Only in reference: src/fern/crons/types/thread_cron_create_stream_mode_zero_item.py
+
+--- reference/src/fern/stateless_runs/client.py
++++ crozier/src/fern/stateless_runs/client.py
+      ⋮ (59 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatelessOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (113 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatelessOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (110 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          input : typing.Optional[RunCreateStatelessInput]
+              The input to the graph.
+      ⋮ (159 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatelessOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (122 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatelessOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (118 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          input : typing.Optional[RunCreateStatelessInput]
+              The input to the graph.
+      ⋮ (136 unchanged line(s))
+
+--- reference/src/fern/stateless_runs/raw_client.py
++++ crozier/src/fern/stateless_runs/raw_client.py
+      ⋮ (62 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatelessOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (195 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatelessOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (167 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          input : typing.Optional[RunCreateStatelessInput]
+              The input to the graph.
+      ⋮ (159 unchanged line(s))
+              "runs/batch",
+              method="POST",
+              json=convert_and_respect_annotation_metadata(object_=request, annotation=RunBatchCreate, direction="write"),
+-             headers={
+-                 "content-type": "application/json",
+-             },
+              request_options=request_options,
+              omit=OMIT,
+          )
+      ⋮ (84 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatelessOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (195 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatelessOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (167 unchanged line(s))
+          Parameters
+          ----------
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          input : typing.Optional[RunCreateStatelessInput]
+              The input to the graph.
+      ⋮ (159 unchanged line(s))
+              "runs/batch",
+              method="POST",
+              json=convert_and_respect_annotation_metadata(object_=request, annotation=RunBatchCreate, direction="write"),
+-             headers={
+-                 "content-type": "application/json",
+-             },
+              request_options=request_options,
+              omit=OMIT,
+          )
+      ⋮ (53 unchanged line(s))
+
+--- reference/src/fern/thread_runs/client.py
++++ crozier/src/fern/thread_runs/client.py
+      ⋮ (136 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          checkpoint : typing.Optional[CheckpointConfig]
+              The checkpoint to resume from.
+      ⋮ (133 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (139 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (264 unchanged line(s))
+          client = FernApi(
+              base_url="https://yourhost.com/path/to/api",
+          )
+-         response = (
+-             client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
+-                 thread_id="thread_id",
+-                 run_id="run_id",
+-             )
++         response = client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
++             thread_id="thread_id",
++             run_id="run_id",
+          )
+          for chunk in response:
+              yield chunk
+      ⋮ (207 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          checkpoint : typing.Optional[CheckpointConfig]
+              The checkpoint to resume from.
+      ⋮ (141 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (148 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (428 unchanged line(s))
+
+--- reference/src/fern/thread_runs/raw_client.py
++++ crozier/src/fern/thread_runs/raw_client.py
+      ⋮ (175 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          checkpoint : typing.Optional[CheckpointConfig]
+              The checkpoint to resume from.
+      ⋮ (193 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (225 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (783 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          checkpoint : typing.Optional[CheckpointConfig]
+              The checkpoint to resume from.
+      ⋮ (193 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (225 unchanged line(s))
+              The ID of the thread.
+  
+          assistant_id : str
++             The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
+  
+          on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
+              The disconnect mode to use. Must be one of 'cancel' or 'continue'.
+      ⋮ (655 unchanged line(s))
+
+--- reference/src/fern/thread_runs/types/list_runs_http_threads_thread_id_runs_get_request_select_item.py
++++ crozier/src/fern/thread_runs/types/list_runs_http_threads_thread_id_runs_get_request_select_item.py
+      ⋮ (27 unchanged line(s))
+          updated_at: typing.Callable[[], T_Result],
+          status: typing.Callable[[], T_Result],
+          metadata: typing.Callable[[], T_Result],
+-         kwargs_: typing.Callable[[], T_Result],
++         kwargs: typing.Callable[[], T_Result],
+          multitask_strategy: typing.Callable[[], T_Result],
+          langsmith_session_name: typing.Callable[[], T_Result],
+      ) -> T_Result:
+      ⋮ (12 unchanged line(s))
+          if self is ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem.METADATA:
+              return metadata()
+          if self is ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem.KWARGS:
+-             return kwargs_()
++             return kwargs()
+          if self is ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem.MULTITASK_STRATEGY:
+              return multitask_strategy()
+          if self is ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem.LANGSMITH_SESSION_NAME:
+      ⋮ (1 unchanged line(s))
+
+--- reference/src/fern/types/__init__.py
++++ crozier/src/fern/types/__init__.py
+      ⋮ (54 unchanged line(s))
+      from .run_create_stateful_multitask_strategy import RunCreateStatefulMultitaskStrategy
+      from .run_create_stateful_stream_mode import RunCreateStatefulStreamMode
+      from .run_create_stateful_stream_mode_one import RunCreateStatefulStreamModeOne
+-     from .run_create_stateful_stream_mode_zero_item import RunCreateStatefulStreamModeZeroItem
+      from .run_create_stateless import RunCreateStateless
+      from .run_create_stateless_config import RunCreateStatelessConfig
+      from .run_create_stateless_durability import RunCreateStatelessDurability
+      ⋮ (1 unchanged line(s))
+      from .run_create_stateless_on_completion import RunCreateStatelessOnCompletion
+      from .run_create_stateless_stream_mode import RunCreateStatelessStreamMode
+      from .run_create_stateless_stream_mode_one import RunCreateStatelessStreamModeOne
+-     from .run_create_stateless_stream_mode_zero_item import RunCreateStatelessStreamModeZeroItem
+      from .run_create_streaming_stateful import RunCreateStreamingStateful
+      from .run_create_streaming_stateful_on_disconnect import RunCreateStreamingStatefulOnDisconnect
+      from .run_create_streaming_stateless import RunCreateStreamingStateless
+      ⋮ (68 unchanged line(s))
+      "RunCreateStatefulMultitaskStrategy": ".run_create_stateful_multitask_strategy",
+      "RunCreateStatefulStreamMode": ".run_create_stateful_stream_mode",
+      "RunCreateStatefulStreamModeOne": ".run_create_stateful_stream_mode_one",
+-     "RunCreateStatefulStreamModeZeroItem": ".run_create_stateful_stream_mode_zero_item",
+      "RunCreateStateless": ".run_create_stateless",
+      "RunCreateStatelessConfig": ".run_create_stateless_config",
+      "RunCreateStatelessDurability": ".run_create_stateless_durability",
+      ⋮ (1 unchanged line(s))
+      "RunCreateStatelessOnCompletion": ".run_create_stateless_on_completion",
+      "RunCreateStatelessStreamMode": ".run_create_stateless_stream_mode",
+      "RunCreateStatelessStreamModeOne": ".run_create_stateless_stream_mode_one",
+-     "RunCreateStatelessStreamModeZeroItem": ".run_create_stateless_stream_mode_zero_item",
+      "RunCreateStreamingStateful": ".run_create_streaming_stateful",
+      "RunCreateStreamingStatefulOnDisconnect": ".run_create_streaming_stateful_on_disconnect",
+      "RunCreateStreamingStateless": ".run_create_streaming_stateless",
+      ⋮ (92 unchanged line(s))
+      "RunCreateStatefulMultitaskStrategy",
+      "RunCreateStatefulStreamMode",
+      "RunCreateStatefulStreamModeOne",
+-     "RunCreateStatefulStreamModeZeroItem",
+      "RunCreateStateless",
+      "RunCreateStatelessConfig",
+      "RunCreateStatelessDurability",
+      ⋮ (1 unchanged line(s))
+      "RunCreateStatelessOnCompletion",
+      "RunCreateStatelessStreamMode",
+      "RunCreateStatelessStreamModeOne",
+-     "RunCreateStatelessStreamModeZeroItem",
+      "RunCreateStreamingStateful",
+      "RunCreateStreamingStatefulOnDisconnect",
+      "RunCreateStreamingStateless",
+      ⋮ (26 unchanged line(s))
+
+--- reference/src/fern/types/run_create_stateful.py
++++ crozier/src/fern/types/run_create_stateful.py
+      ⋮ (20 unchanged line(s))
+      Payload for creating a run.
+      """
+  
+-     assistant_id: str
++     assistant_id: str = pydantic.Field()
++     """
++     The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
++     """
++ 
+      checkpoint: typing.Optional[CheckpointConfig] = pydantic.Field(default=None)
+      """
+      The checkpoint to resume from.
+      ⋮ (99 unchanged line(s))
+
+--- reference/src/fern/types/run_create_stateful_stream_mode.py
++++ crozier/src/fern/types/run_create_stateful_stream_mode.py
+      ⋮ (2 unchanged line(s))
+  import typing
+  
+  from .run_create_stateful_stream_mode_one import RunCreateStatefulStreamModeOne
+- from .run_create_stateful_stream_mode_zero_item import RunCreateStatefulStreamModeZeroItem
+  
+  RunCreateStatefulStreamMode = typing.Union[
+-     typing.List[RunCreateStatefulStreamModeZeroItem], RunCreateStatefulStreamModeOne
++     typing.List[
++         typing.Union[
++             typing.Literal[
++                 "values", "messages", "messages-tuple", "tasks", "checkpoints", "updates", "events", "debug", "custom"
++             ],
++             typing.Any,
++         ]
++     ],
++     RunCreateStatefulStreamModeOne,
+  ]
+
+Only in reference: src/fern/types/run_create_stateful_stream_mode_zero_item.py
+
+--- reference/src/fern/types/run_create_stateless.py
++++ crozier/src/fern/types/run_create_stateless.py
+      ⋮ (16 unchanged line(s))
+      Payload for creating a run.
+      """
+  
+-     assistant_id: str
++     assistant_id: str = pydantic.Field()
++     """
++     The assistant ID or graph name to run. If using graph name, will default to first assistant created from that graph.
++     """
++ 
+      input: typing.Optional[RunCreateStatelessInput] = pydantic.Field(default=None)
+      """
+      The input to the graph.
+      ⋮ (79 unchanged line(s))
+
+--- reference/src/fern/types/run_create_stateless_stream_mode.py
++++ crozier/src/fern/types/run_create_stateless_stream_mode.py
+      ⋮ (2 unchanged line(s))
+  import typing
+  
+  from .run_create_stateless_stream_mode_one import RunCreateStatelessStreamModeOne
+- from .run_create_stateless_stream_mode_zero_item import RunCreateStatelessStreamModeZeroItem
+  
+  RunCreateStatelessStreamMode = typing.Union[
+-     typing.List[RunCreateStatelessStreamModeZeroItem], RunCreateStatelessStreamModeOne
++     typing.List[
++         typing.Union[
++             typing.Literal[
++                 "values", "messages", "messages-tuple", "tasks", "checkpoints", "updates", "events", "debug", "custom"
++             ],
++             typing.Any,
++         ]
++     ],
++     RunCreateStatelessStreamModeOne,
+  ]
+
+Only in reference: src/fern/types/run_create_stateless_stream_mode_zero_item.py

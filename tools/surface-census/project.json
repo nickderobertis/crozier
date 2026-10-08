@@ -32,6 +32,7 @@
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/tests/resolving-arm-inputs.json",
         "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e/*.rs",
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
