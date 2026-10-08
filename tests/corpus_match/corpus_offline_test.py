@@ -97,12 +97,16 @@ class OfflineCorpusRecipes(unittest.TestCase):
                 self.assertNotEqual(0, probe.returncode)
                 self.assertIn("Operation not permitted", probe.stderr)
                 warm_dependencies(self, os.environ)
-                for recipe in ("test-corpus-match", "test-corpus-match-strict", "surface-census",
-                               "test-fern-refusals", "test-census-fallback-samples"):
-                    with self.subTest(recipe=recipe):
+                # The refusal-class gate is the offline `fern-refusals` project's
+                # target, not the `test-fern-refusals` alias: that alias also runs
+                # fern-refusals-strict, whose `measure` journeys fetch from a
+                # loopback server, and a denied socket() denies loopback too.
+                for recipe in (("test-corpus-match",), ("test-corpus-match-strict",), ("surface-census",),
+                               ("nx", "run", "fern-refusals:test"), ("test-census-fallback-samples",)):
+                    with self.subTest(recipe=" ".join(recipe)):
                         result = subprocess.run(
                             [sys.executable, str(Path(__file__).resolve()), "--deny-network",
-                             "just", recipe], cwd=REPO, capture_output=True, text=True,
+                             "just", *recipe], cwd=REPO, capture_output=True, text=True,
                             # A user-level sccache daemon needs a socket; the repo
                             # build contract has no wrapper and works offline.
                             # A replayed cache entry would prove nothing about the
