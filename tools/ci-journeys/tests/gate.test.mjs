@@ -113,6 +113,21 @@ test("a promoted project leaves the affected tier unless --projects names it", (
   assert.ok(ran(root, "b"), named.output);
 });
 
+test("--sweep runs a promoted project without --projects naming it", (t) => {
+  const root = scratchWorkspace(t);
+  commitChange(root, "b/project.json", JSON.stringify({
+    name: "b", tags: ["type:tooling", "tier:promoted"],
+    targets: { test: { command: "node -e \"require('fs').writeFileSync('ran-b', '')\"" } },
+  }));
+
+  const run = just(root, ["check", "--sweep"]);
+
+  assert.equal(run.status, 0, run.output);
+  assert.match(run.stdout, /gate: projects: a, b\n/);
+  assert.doesNotMatch(run.stdout, /promoted, run by their own CI legs/);
+  assert.ok(ran(root, "a") && ran(root, "b"), run.output);
+});
+
 test("an unknown argument or project is refused before anything runs", (t) => {
   const root = scratchWorkspace(t);
   for (const args of [["check", "--sweap"], ["check", "--projects=nope"], ["check", "--targets=te;st"]]) {
