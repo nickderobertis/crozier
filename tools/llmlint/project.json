@@ -16,15 +16,7 @@
       "inputs": [
         "default",
         "{workspaceRoot}/llmlint.yml",
-        "{workspaceRoot}/llmlint-plugins/**/*",
-        "{workspaceRoot}/.github/workflows/ci.yml",
-        "{workspaceRoot}/justfile",
-        {
-          "env": "CROZIER_REQUIRE_LLMLINT"
-        },
-        {
-          "runtime": "llmlint --version || echo llmlint-absent"
-        }
+        "{workspaceRoot}/llmlint-plugins/**/*"
       ]
     },
     "test-diff": {

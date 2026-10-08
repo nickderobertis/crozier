@@ -132,7 +132,7 @@ plugin's rules without upstream bumping its `version:` fails there too.
 
 ## Proving it: `just test-llmlint-plugins`
 
-`tools/llmlint/tests/llmlint_plugins_test.py` drives the **real** llmlint binary over this
+`tools/llmlint-resolution/tests/llmlint_resolution_test.py` drives the **real** llmlint binary over this
 repo's **real** `llmlint.yml` with the plugin origin made unreachable from the
 test process:
 

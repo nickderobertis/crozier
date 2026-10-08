@@ -15,7 +15,7 @@ Usage (needs network, plus `llmlint` on PATH to name each plugin's rules):
 `url`/`pin`/`file`/`name` in the lock are the hand-edited inputs — add a plugin
 by adding an entry with those four fields (and its path to `llmlint.yml`), then
 refresh. Every other field is generated; editing one by hand is what the
-boundary test in `tools/llmlint/tests/llmlint_plugins_test.py` catches.
+offline suite in `tools/llmlint/tests/llmlint_plugins_test.py` catches.
 """
 
 from __future__ import annotations

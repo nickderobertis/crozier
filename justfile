@@ -408,6 +408,7 @@ llmlint-plugins-refresh:
 # Prove the judged tier resolves its rules with the plugin origin unreachable.
 test-llmlint-plugins:
     @just nx run llmlint-tooling:test-plugins
+    @just nx run llmlint-resolution:test
 
 # Set up local Fern-golden reproduction (Fern CLI, Docker daemon, release binary).
 # Idempotent; also run by the SessionStart hook. The hosted workflow is the normal
