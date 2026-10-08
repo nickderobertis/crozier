@@ -1,0 +1,15 @@
+# The workflow contracts: tests that hold the committed GitHub workflows (and the
+# scripts they run) to the properties a pull request cannot exercise, plus the
+# gate's own drivers beside them. Test-only and never published; its own Nx
+# project (`ci`). See AGENTS.md.
+[package]
+name = "crozier-ci"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dev-dependencies]
+serde_yaml_ng = { workspace = true }
+tempfile = { workspace = true }

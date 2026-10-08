@@ -12,11 +12,11 @@ file's own `search-incomplete` line and this record as its renewed search.
 ## Renewed search
 
 One bounded GitHub code search, issued on 2026-10-04 through the acquirer of
-`scripts/witness-search-github.py` under `scripts/rate_limit_guard.py`: eight
+`tools/witness-search/witness-search-github.py` under `tools/witness-search/rate_limit_guard.py`: eight
 phrasings, two per shape, each answered and recorded with its count in
 [`queries.tsv`](queries.tsv). The first page of each (100 results) was fetched at
 its indexed commit through the guard's raw lane, 693 distinct documents in all.
-Every one was read by `scripts/openapi-surface-census.py` for this key's
+Every one was read by `tools/surface-census/openapi-surface-census.py` for this key's
 selector, one document at a time; [`census.tsv`](census.tsv) records the count
 per document, or the parser's reason it could not be read. Every declarer was
 screened on licence, immutable reference and pinned Fern (CLI 5.67.1,

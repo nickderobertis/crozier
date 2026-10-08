@@ -1,5 +1,5 @@
 //! In-process integration tests over the generation pipeline. Unlike the binary
-//! e2e (`tests/e2e.rs`), these call the library directly so they are measured by
+//! e2e (`crates/crozier-e2e/tests/e2e.rs`), these call the library directly so they are measured by
 //! coverage; they exercise the type-mapping and emit branches a single fixture
 //! cannot, while still driving real parsing over real temp files.
 
@@ -14,7 +14,7 @@ use crozier::{generate, render_files, GenerateArgs};
     reason = "this binary loads, validates and checks the ledger; the overlay, recording, \
               merging and inventory-rendering helpers belong to the e2e gate, which uses the rest"
 )]
-#[path = "e2e/departures_ledger.rs"]
+#[path = "support/departures_ledger.rs"]
 mod departures_ledger;
 
 /// Write `spec` to a temp `.yml` and render it in-process, returning
@@ -371,7 +371,7 @@ fn remote_model_types_resolve_through_a_real_http_document() {
                 break;
             }
         }
-        let body = include_str!("e2e/fixtures/models-refs-remote/library-records/models.yml");
+        let body = include_str!("../docs/fern-measurements/models-refs-remote/library-records/documents/models.yml");
         write!(
             stream,
             "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
@@ -379,7 +379,7 @@ fn remote_model_types_resolve_through_a_real_http_document() {
         )
         .unwrap();
     });
-    let spec = include_str!("e2e/fixtures/models-refs-remote/library-records/openapi.yml")
+    let spec = include_str!("../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml")
         .replace("@REMOTE_URL@", &format!("http://{address}"));
     let files = render(&spec);
     server.join().expect("the document was fetched once");

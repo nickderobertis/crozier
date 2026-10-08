@@ -147,8 +147,8 @@ Response Object beneath it, and every Header and Example Object inside those.
 Two registered sources this region's cells rest on write their status codes that
 way, `free5gc-namf-communication` and `free5gc-pdu-session`, and a third,
 `worldcoin-signup-sequencer`, hides its Example Objects the same way. The repair
-is in `scripts/openapi-surface-census.py` and `FreeMapKeyWalkTests` in
-`tests/surface_census_test.py` holds it. Six cells above carry the repaired
+is in `tools/surface-census/openapi-surface-census.py` and `FreeMapKeyWalkTests` in
+`tools/surface-census/tests/surface_census_test.py` holds it. Six cells above carry the repaired
 walk's numbers, applied as the difference the repair makes to each source rather
 than as a re-transcription of the whole walk, so a count that moved here moved
 because the instrument was repaired and for no other reason: `header-description`
@@ -163,7 +163,7 @@ taken on and is not added to them here.
 **The conjunction pass.** The census emits one row per *field*, so it cannot on
 its own answer whether a `style`, an `in` and a schema shape meet on the same
 node. A read-only pass supplies that, and it re-uses the census rather than
-re-implementing it: import `scripts/openapi-surface-census.py`, call its
+re-implementing it: import `tools/surface-census/openapi-surface-census.py`, call its
 `registered_sources()` and `load_document()` so the source set and the loader are
 identical, then
 

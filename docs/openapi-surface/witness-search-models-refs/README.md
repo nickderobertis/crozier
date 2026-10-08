@@ -64,7 +64,7 @@ stand as a complete witness. This bounded search remains incomplete outside
 that population.
 
 The independently authored Library Records proof uses two committed documents
-under `tests/e2e/fixtures/models-refs-remote/library-records`. A real loopback
+under `docs/fern-measurements/models-refs-remote/library-records/documents`. A real loopback
 HTTP server serves the second document; no network acquisition is needed in
 CI. It combines a root Catalogue alias, its remote Curator dependency, and a
 direct Curator response. It proves both named identities and a failed-fetch

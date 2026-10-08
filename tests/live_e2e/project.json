@@ -1,0 +1,44 @@
+{
+  "name": "live-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/live_e2e/run.sh"
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "crateSource",
+        "generator",
+        "{workspaceRoot}/tests/fixtures/*.*",
+        "{workspaceRoot}/tests/fixtures/apache.org-qakka/**/*",
+        "{workspaceRoot}/tests/fixtures/apideck.com-crm/**/*",
+        "{workspaceRoot}/tests/fixtures/bunq.com/**/*",
+        "{workspaceRoot}/tests/fixtures/corpus-sources/apache.org-qakka/**/*",
+        "{workspaceRoot}/tests/fixtures/corpus-sources/apideck.com-crm/**/*",
+        "{workspaceRoot}/tests/fixtures/corpus-sources/bunq.com/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs live-e2e"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

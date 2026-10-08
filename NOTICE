@@ -26,8 +26,8 @@ are recorded in tests/fixtures/corpus-sources.tsv. The per-document licence
 attributions below apply to these sources as well as their generated fixtures.
 
 Census-fallback sample documents are committed under
-tests/data/census-fallback-sample/, one file per row of
-tests/data/census-fallback-sample.tsv, which records each file's pinned source
+tools/surface-census/tests/data/census-fallback-sample/, one file per row of
+tools/surface-census/tests/data/census-fallback-sample.tsv, which records each file's pinned source
 URL, SHA-256 and repository licence. They are used unmodified, only to hold the
 census's YAML fallback reader to the stdlib loader:
 

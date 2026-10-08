@@ -15,6 +15,9 @@
 //! **internal API with no semver guarantee** — it may change in any release.
 //! Depend on the CLI, not on these items.
 
+/// The version Cargo built this crate as — what `crozier --version` prints.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub mod cli;
 pub mod compare;
 pub mod config;

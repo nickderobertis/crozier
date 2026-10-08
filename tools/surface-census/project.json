@@ -1,0 +1,140 @@
+{
+  "name": "surface-census",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "measures:crozier-e2e",
+    "lang:python"
+  ],
+  "targets": {
+    "test-census": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 219 s (measured with `just nx run surface-census:test-census --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "sh scripts/census-python.sh tools/surface-census/tests/surface_census_test.py",
+          "sh scripts/census-python.sh tools/surface-census/tests/apis_guru_gap_screen_test.py"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/fern-measurements/**/*",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tests/resolving-arm-inputs.json",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e/*.rs",
+        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
+        "witnessIndexReads",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/llmlint.yml"
+      ]
+    },
+    "test-reach": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 89 s (measured with `just nx run surface-census:test-reach --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/surface-census/tests/golden_reach_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateTests",
+        "e2eSource",
+        "generator",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "witnessIndexReads",
+        "{workspaceRoot}/tools/witness-search/witness-scrape-wide.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-local-census.py",
+        "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
+        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test-reach-portable": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 102 s (measured with `just nx run surface-census:test-reach-portable --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/surface-census/tests/golden_reach_test.py",
+        "env": {
+          "PYTHONPATH": "tools/surface-census/tests/without-posix-modules"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateTests",
+        "e2eSource",
+        "generator",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "witnessIndexReads",
+        "{workspaceRoot}/tools/witness-search/witness-scrape-wide.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-local-census.py",
+        "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
+        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "test-fixtures-coverage": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-reach",
+        "test-reach-portable"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-census",
+        "test-fixtures-coverage"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs surface-census"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

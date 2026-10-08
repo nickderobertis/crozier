@@ -1,7 +1,7 @@
 # Library Records remote components
 
 Independently authored inputs:
-`tests/e2e/fixtures/models-refs-remote/library-records/openapi.yml` and
+`docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml` and
 `models.yml`. `@REMOTE_URL@` is replaced with the ephemeral real loopback HTTP
 server URL, both for certification and the real-binary proof. The source is
 handwritten, not a publisher witness.

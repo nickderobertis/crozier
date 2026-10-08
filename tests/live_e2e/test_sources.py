@@ -1,5 +1,5 @@
-# llmlint: ignore-file[new_code_lands_in_a_project] crozier uses Cargo and just rather than Nx; this test belongs to the existing pytest live-e2e suite run by test-live-e2e.
 """The live harness reads committed corpus inputs through its real staging CLI."""
+import json
 import subprocess
 
 import pytest
@@ -23,3 +23,16 @@ def test_missing_live_source_reports_recovery(tmp_path):
     with pytest.raises(subprocess.CalledProcessError) as failure:
         _spec_path(fixture, tmp_path)
     assert "just lint-corpus-sources" in failure.value.stderr
+
+
+def test_the_project_inputs_name_exactly_the_driven_fixtures():
+    """`project.json` lists each driven fixture's files as cache and affected inputs:
+    a fixture added to FIXTURES without its inputs would never rerun this suite."""
+    project = json.loads((_FIXTURES.parent / "live_e2e" / "project.json").read_text(encoding="utf-8"))
+    named = {entry for entry in project["targets"]["test"]["inputs"]
+             if isinstance(entry, str) and entry.startswith("{workspaceRoot}/tests/fixtures/")
+             and entry != "{workspaceRoot}/tests/fixtures/*.*"}
+    expected = {f"{{workspaceRoot}}/tests/fixtures/{fixture.name}/**/*" for fixture in FIXTURES}
+    expected |= {f"{{workspaceRoot}}/tests/fixtures/corpus-sources/{fixture.name}/**/*"
+                 for fixture in FIXTURES if fixture.registered_source}
+    assert named == expected

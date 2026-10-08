@@ -244,7 +244,7 @@ numbers again.
 Everything this table transcribes is owned somewhere else — the fixture counts by
 the census, the verdicts by `docs/fern-limitations.md`, the `crozier sites` counts
 by `src/`, and the one-classification-per-feature rule by the six region files
-together. `DocumentPathsSnapshotTests` in `tests/surface_census_test.py` is this
+together. `DocumentPathsSnapshotTests` in `tools/surface-census/tests/surface_census_test.py` is this
 document's drift check over all four, and `just test-surface-census` runs it
 inside `just check`, offline over the committed sources. It walks every registered
 golden source through the real census, hashes the walk's canonical JSON (sorted
@@ -413,7 +413,7 @@ could not run past the digest, and every other cell in this table stayed on the
 adds three selectors.** `openapi.paths:templated-key`,
 `openapi.paths:several-template-expressions` and
 `components.schemas:normalized-collision` join
-`scripts/openapi-surface-census.py`, over the same **164** registered sources and
+`tools/surface-census/openapi-surface-census.py`, over the same **164** registered sources and
 **147** golden-bearing. A selector is census output, so the walk hashes to
 `11faecc0…` on **2026-09-05**. Its two rows carry that walk's numbers
 (`openapi.paths:templated-key` 3421 sites over 104 sources, 2470 of them in the 93
@@ -631,7 +631,7 @@ them, `servers-multiple-path-or-operation`, on two rows.
 `just check`.** The census had counted every numbered `CORPUS.md` row as a golden
 source, including rows Fern dropped and rows acquired as evidence only; it now
 counts the registered rows whose committed Fern golden a golden test of
-`tests/e2e.rs` byte-compares (#352). Over the tree of 2026-10-03 that is **222**
+`crates/crozier-e2e/tests/e2e.rs` byte-compares (#352). Over the tree of 2026-10-03 that is **222**
 sources (33 original fixtures, 189 corpus sources) of the 239 acquired, and the
 pin above is that walk. Every census cell of this table is re-transcribed from it.
 What moved is of two kinds. The 17 acquired rows with no golden left every list
@@ -691,7 +691,7 @@ and a real `fern generate --group python-sdk --preview` against
 `fernapi/fern-python-sdk` **5.20.0** — the version every
 `tests/fixtures/*/expected/.crozier-fern-golden.json` records — with Fern CLI
 **5.67.1** pinned in `fern.config.json` and `pydantic_config.enum_type:
-python_enums`, over the workspace shape `scripts/generate-fern-fixture.sh`
+python_enums`, over the workspace shape `tools/fern-goldens/generate-fern-fixture.sh`
 scaffolds. Both halves are recorded because this repository's rejected ledger is
 full of documents that pass the first and are refused by the second, so a check
 alone is not an acceptance.
@@ -700,7 +700,7 @@ alone is not an acceptance.
 region's two shapes is a literal string: one is *two path templates that collide
 only after normalization*, the other is *a value written twice in one document*.
 No text index can express either, so every count below that reads a document
-rather than a search result comes from `scripts/openapi-surface-census.py`'s own
+rather than a search result comes from `tools/surface-census/openapi-surface-census.py`'s own
 loader and object-model walk — `Census.record_normalized_collisions`, which
 normalizes each Paths Object key with crozier's own `naming::field_name` and
 records one site per colliding key, and `Census.finish`, which counts every

@@ -6,7 +6,7 @@
 # Deliberately NOT a required status check. It skips fork pull requests (whose
 # read-only token cannot upsert a comment), and a required context that never
 # reports would block them forever. It is a review artifact, not a gate — the gate
-# is `just check`. tests/notignored_workflow.rs holds that no ci.yml context shares
+# is `just check`. tools/ci/tests/notignored_workflow.rs holds that no ci.yml context shares
 # this job's name or depends on it.
 
 name: notignored

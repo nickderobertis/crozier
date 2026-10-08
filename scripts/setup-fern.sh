@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Idempotent setup for the GENERATED fixture path (scripts/generate-fern-fixture.sh):
+# Idempotent setup for the GENERATED fixture path (tools/fern-goldens/generate-fern-fixture.sh):
 # make Fern runnable end-to-end from a spec. Each step runs ONLY when its target is
 # not already available, so re-running is cheap and running where things already
 # exist is a no-op.

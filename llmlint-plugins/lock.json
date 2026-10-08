@@ -108,6 +108,20 @@
         "relevance_scopes_conditional_rules",
         "relevance_scopes_without_deciding_the_verdict"
       ]
+    },
+    {
+      "name": "project-graph",
+      "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/project-graph.llmlint.yml",
+      "pin": "1",
+      "file": "llmlint-plugins/project-graph.llmlint.yml",
+      "version": "1.4.0",
+      "sha256": "94e4fff36c87248987e48092d388c6e9cdc328d9c6eeb40cfcd8ff93e8c7e339",
+      "rules": [
+        "code_lands_in_the_domain_that_owns_it",
+        "expensive_tests_stay_behind_their_own_edge",
+        "instruction_layer_localized",
+        "new_projects_keep_the_graph_uniform"
+      ]
     }
   ]
 }

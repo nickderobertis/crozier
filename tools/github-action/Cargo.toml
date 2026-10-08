@@ -1,0 +1,14 @@
+# The GitHub Action's committed surfaces held to each other (`action.yml`, its
+# docs page and the consumer example). Test-only and never published; its own Nx
+# project (`github-action`), which also owns the Action's scripts beside it. The
+# Action's behaviour over a real binary is driven by crozier-e2e's action.rs.
+[package]
+name = "crozier-github-action"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dev-dependencies]
+serde_yaml_ng = { workspace = true }
