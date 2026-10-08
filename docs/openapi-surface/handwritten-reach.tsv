@@ -4,6 +4,7 @@ byte-text-response	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return t
 byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	9	9
+error-body-shapes	oneof	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	10	10
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
 format-scalar-bodies	format-hostname	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
 format-scalar-bodies	format-idn-hostname	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
@@ -36,7 +37,17 @@ inline-oneof-variants	oneof-string-const-variant	src/ir.rs::InlineHoister::hoist
 inline-property-unions	annotated-ref-target-anyof	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	5	6
 inline-property-unions	property-sole-anyof-closed-object-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
 inline-property-unions	property-sole-anyof-struct-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
+json-binary-path	format-binary	src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]	2	2
+json-binary-path	format-binary	src/ir.rs::scalar_body[=Some\("binary"\)]	2	2
+json-request-shapes	format-binary	src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]	2	2
+json-request-shapes	format-binary	src/ir.rs::scalar_body[=Some\("binary"\)]	2	2
+json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]	1	1
+json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	17	19
 meadow-tag-code	format-uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	2	3
+multipart-alias-object	media-type-multipart	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	1	1
+multipart-json-module	media-type-multipart	src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]	1	1
+multipart-nullable-array	format-binary	src/ir.rs::hoist_form_object[if nullable_binary]	1	1
+multipart-request-name	request-body-content	src/name_refusals.rs::validate_ir[=body\.content\.len\(\) == 1]	1	1
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]	9	9
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-discriminated-unions	array-item-anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
@@ -62,6 +73,10 @@ ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::ref_to_class["items" => \{]
 ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	2	3
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::ref_to_class["properties" if index]	4	4
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6
+request-alias	request-body-content	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	1	1
+request-media-methods	request-body-content	src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]	4	4
+request-media-methods	request-body-content	src/openapi.rs::Operation::with_sdk_method_name	8	8
 skyglass-observation-date	format-date	src/ir.rs::scalar_body[=Some\("date"\) =>]	2	2
+slashless-json-response	media-type-malformed-key	src/ir.rs::has_dispatchable_media[=^ {16}return true;$]	1	1
 sonar-packet-envelope	format-byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	3	3
 x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2
