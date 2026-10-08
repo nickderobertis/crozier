@@ -200,6 +200,14 @@ The shape: an inline property schema, not a `components.schemas` entry, declarin
 |---|---|---|
 | `schema-type-name-inline-property` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Webhook-marked path operation
+
+The shape: a path operation marked `x-fern-webhook: true` (or `x-crozier-webhook`) (`operation.x-fern-webhook:true`). Fern gives the client no method for it, and the schemas it names stay ordinary types.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-webhook-extension` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -222,3 +230,4 @@ The shape: an inline property schema, not a `components.schemas` entry, declarin
 | `operation-idempotent-with-root-headers` | `none-registrable` | `parcel-courier-desk` |
 | `operation-retries-disabled` | `none-registrable` | `parcel-courier-desk` |
 | `schema-type-name-inline-property` | `none-registrable` | `film-shot-planner` |
+| `operation-webhook-extension` | `none-registrable` | `auction-house-bids` |

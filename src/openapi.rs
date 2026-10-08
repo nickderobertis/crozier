@@ -671,6 +671,13 @@ pub struct Operation {
     pub(crate) idempotent_crozier: Option<serde_json::Value>,
     #[serde(rename = "x-fern-idempotent", default)]
     pub(crate) idempotent_fern: Option<serde_json::Value>,
+    /// `x-crozier-webhook` / `x-fern-webhook`: the operation describes a webhook
+    /// the API sends rather than an endpoint the SDK calls. Read through
+    /// [`Operation::webhook_marked`].
+    #[serde(rename = "x-crozier-webhook", default)]
+    pub(crate) webhook_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-webhook", default)]
+    pub(crate) webhook_fern: Option<serde_json::Value>,
     /// `x-crozier-retries` / `x-fern-retries`: the operation's retry policy.
     /// Read through [`Operation::retries_disabled`].
     #[serde(rename = "x-crozier-retries", default)]
@@ -838,6 +845,14 @@ impl Operation {
         self.idempotent_crozier
             .as_ref()
             .or(self.idempotent_fern.as_ref())
+            == Some(&serde_json::Value::Bool(true))
+    }
+
+    /// Whether the operation is marked a webhook (`x-crozier-webhook` over
+    /// `x-fern-webhook`): only the boolean `true` marks it.
+    #[must_use]
+    pub fn webhook_marked(&self) -> bool {
+        self.webhook_crozier.as_ref().or(self.webhook_fern.as_ref())
             == Some(&serde_json::Value::Bool(true))
     }
 
@@ -2122,6 +2137,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
+    normalize_webhook_operations(&mut doc);
     normalize_declared_type_names(&mut doc);
     normalize_inline_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
@@ -2781,6 +2797,20 @@ fn normalize_declared_type_names(doc: &mut OpenApi) {
         })
         .collect();
     rename_component_schemas(doc, &renames);
+}
+
+/// Drop every path operation marked `x-fern-webhook: true` (or crozier's
+/// spelling): it describes a request the API sends, so Fern gives the client no
+/// method for it, while the schemas it names stay ordinary types (a `$ref` body
+/// `Bid` is still `types/bid.py`, no longer folded into a method's arguments).
+fn normalize_webhook_operations(doc: &mut OpenApi) {
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            if slot.as_ref().is_some_and(Operation::webhook_marked) {
+                *slot = None;
+            }
+        }
+    }
 }
 
 /// Lift every inline schema that declares a type name (`x-crozier-type-name`,
@@ -3712,6 +3742,25 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_webhook_marked_operation_is_dropped_and_its_neighbour_kept() {
+        let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "paths": {"/hooks": {
+                "post": {"x-fern-webhook": true, "responses": {}},
+                "put": {"x-fern-webhook": true, "x-crozier-webhook": false, "responses": {}},
+                "get": {"x-fern-webhook": "yes", "responses": {}},
+            }},
+        }))
+        .expect("a document");
+        normalize_webhook_operations(&mut doc);
+        let methods: Vec<&str> = doc.paths["/hooks"]
+            .operations()
+            .into_iter()
+            .map(|(m, _)| m)
+            .collect();
+        assert_eq!(methods, ["GET", "PUT"]);
+    }
 
     #[test]
     fn an_inline_schema_declaring_a_type_name_is_lifted_to_that_component() {

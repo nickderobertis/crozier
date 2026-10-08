@@ -1928,6 +1928,11 @@ const CLIENTS_EXTENSIONS_DIR: &str = "docs/fern-measurements/clients-extensions"
 /// generates it from, and the setting Fern's tree was measured under.
 const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     (
+        "auction-house-bids-literals",
+        "docs/openapi-surface/handwritten/auction-house-bids/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "cargo-hold-pallets-literals",
         "docs/openapi-surface/handwritten/cargo-hold-pallets/openapi.yml",
         &["--enum-type", "literals"],
@@ -16943,6 +16948,42 @@ print(seen[:2], attempts(lambda: client.cancel_parcel("p-1")), attempts(lambda: 
     assert_eq!(
         String::from_utf8_lossy(&run.stdout).trim(),
         "[('POST', 't-1'), ('POST', None)] 1 3"
+    );
+}
+
+/// A path operation marked a webhook in crozier's spelling has no method and its
+/// `$ref` body stays an ordinary type; a conflicting `x-crozier-webhook: false`
+/// beside `x-fern-webhook: true` keeps the method.
+#[test]
+fn webhook_marks_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, marks: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Auction, version: '1'}}\npaths:\n  /lots:\n    get:\n      operationId: listLots\n      responses: {{'204': {{description: ok}}}}\n  /hooks/bid:\n    post:\n      operationId: bidPlaced\n{marks}      requestBody:\n        content:\n          application/json:\n            schema: {{$ref: '#/components/schemas/Bid'}}\n      responses: {{'204': {{description: ok}}}}\ncomponents:\n  schemas:\n    Bid:\n      type: object\n      properties: {{lot: {{type: string}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        let client = std::fs::read_to_string(out.join("src/fern/client.py")).expect("client");
+        (
+            client.contains("def bid_placed("),
+            out.join("src/fern/types/bid.py").is_file(),
+        )
+    };
+    assert_eq!(
+        generate("crozier", "      x-crozier-webhook: true\n"),
+        (false, true)
+    );
+    assert_eq!(
+        generate(
+            "conflict",
+            "      x-fern-webhook: true\n      x-crozier-webhook: false\n"
+        ),
+        (true, false)
     );
 }
 

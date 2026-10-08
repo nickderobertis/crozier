@@ -16,6 +16,12 @@ docs/departures/evidence/readme-client-class-casing/fern-reference	core/client_w
 docs/departures/evidence/readme-client-class-casing/fern-reference	core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/departures/evidence/readme-client-class-casing/fern-reference	reference.md	16	readme-client-class-casing
 docs/departures/evidence/readme-client-class-casing/fern-reference	reference.md	19	readme-client-class-casing
+docs/fern-measurements/clients-extensions/auction-house-bids-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/clients-extensions/auction-house-bids-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/auction-house-bids-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/auction-house-bids-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/auction-house-bids-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/auction-house-bids-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/cargo-hold-pallets-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/clients-extensions/cargo-hold-pallets-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/cargo-hold-pallets-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -405,6 +411,11 @@ docs/openapi-surface/handwritten/array-item-pointer-walk-oneof/fern-expected	src
 docs/openapi-surface/handwritten/array-item-pointer-walk-oneof/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/array-item-pointer-walk-oneof/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/array-item-pointer-walk-oneof/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/auction-house-bids/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/auction-house-bids/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/auction-house-bids/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/auction-house-bids/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/auction-house-bids/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/base-path-client-argument/fern-expected	README.md	40	lifted-base-path-docs-examples
 docs/openapi-surface/handwritten/base-path-client-argument/fern-expected	reference.md	20	lifted-base-path-docs-examples
 docs/openapi-surface/handwritten/base-path-client-argument/fern-expected	src/fern/client.py	64	lifted-base-path-positional-example

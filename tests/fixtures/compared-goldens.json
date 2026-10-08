@@ -1,6 +1,7 @@
 {
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
+    "docs/fern-measurements/clients-extensions/auction-house-bids-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/cargo-hold-pallets-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/ferry-berth-desk-literals/fern-expected": {},
@@ -68,6 +69,7 @@
     "docs/openapi-surface/handwritten/allof-parent-body-order/fern-expected": {},
     "docs/openapi-surface/handwritten/array-item-inheritance-union/fern-expected": {},
     "docs/openapi-surface/handwritten/array-item-pointer-walk-oneof/fern-expected": {},
+    "docs/openapi-surface/handwritten/auction-house-bids/fern-expected": {},
     "docs/openapi-surface/handwritten/base-path-client-argument/fern-expected": {},
     "docs/openapi-surface/handwritten/cargo-hold-pallets/fern-expected": {},
     "docs/openapi-surface/handwritten/chained-reference-cycles/fern-expected": {},

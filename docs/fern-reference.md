@@ -138,6 +138,7 @@ extension not listed here does not change crozier's output.
 | `x-fern-idempotency-headers` | `x-crozier-idempotency-headers` | document | The headers (`[{header: X-Dedupe-Token}]`) an idempotent operation takes. |
 | `x-fern-idempotent` | `x-crozier-idempotent` | operation | Gives the method an optional argument per idempotency header after its body fields (`dedupe_token`), sent as that header. |
 | `x-fern-retries` | `x-crozier-retries` | operation | `{disabled: true}` sends the request with `max_retries` 0, whatever the caller's options say. |
+| `x-fern-webhook` | `x-crozier-webhook` | path operation | `true` leaves the operation out of the client; the schemas it names stay ordinary types. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
 
 ## The script
