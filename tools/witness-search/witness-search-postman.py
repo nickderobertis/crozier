@@ -155,8 +155,18 @@ def classify_body(status: int | None, content_type: str, body: bytes,
             "document_kind": "postman-collection" if "getpostman.com" in str(schema) else "other-json"}
 
 
-# What `witness-search-region-keys.py` writes in a row's `census_status`.
-CENSUS_STATUSES = ("supported", "unsupported-by-census")
+def load_region_keys():
+    path = REPO / "tools/surface-census/witness-search-region-keys.py"
+    spec = importlib.util.spec_from_file_location("witness_postman_region_keys", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+# What `witness-search-region-keys.py` writes in a row's `census_status`, as it names it.
+CENSUS_STATUSES = load_region_keys().CENSUS_STATUSES
 
 
 def read_keys(path: Path, census) -> list[dict]:

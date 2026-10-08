@@ -870,6 +870,11 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 ("census status", root / "witness-search-keys.tsv",
                  "key\tselector\tregion\tcensus_status\nshape-a\tx\ts.md\tmaybe\n",
                  "witness-search-keys.tsv:2 has census_status 'maybe', not one of supported, unsupported-by-census"),
+                # A repeated key would count its documents twice, or under two statuses at once.
+                ("repeated key", root / "witness-search-keys.tsv",
+                 "key\tselector\tregion\tcensus_status\nshape-a\tx\ts.md\tsupported\n"
+                 "shape-a\tsecurityScheme:$ref\ts.md\tunsupported-by-census\n",
+                 "witness-search-keys.tsv:3 repeats key 'shape-a' (first at line 2)"),
                 ("unreadable without its reason", portals / "enumeration.tsv",
                  "walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\nk\tx.json\tabc\t-\t\tunreadable: \n",
                  "enumeration.tsv:2 has status 'unreadable: ', not readable or unreadable: <reason>"),

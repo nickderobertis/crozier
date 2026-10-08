@@ -30,7 +30,8 @@ KINDS = ("selector-unavailable", "inconclusive-screen", "unreadable-document", "
 
 
 def _load(name: str, file: str):
-    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(file))
+    """The module `file` names, relative to this directory."""
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / file)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -42,8 +43,8 @@ def _load(name: str, file: str):
 # disposition grammar, both named once by the GitHub index that also writes them.
 GITHUB_INDEX = _load("registries_github_index", "witness-search-github-index.py")
 RECORD_FIELDS = GITHUB_INDEX.FIELDS
-# What the region-key derivation writes in `census_status`.
-CENSUS_STATUSES = ("supported", "unsupported-by-census")
+# What the region-key derivation writes in `census_status`, as it names it.
+CENSUS_STATUSES = _load("registries_region_keys", "../surface-census/witness-search-region-keys.py").CENSUS_STATUSES
 # A portal-plan row's `acquisition`: refused by its source, acquired at a
 # mutable ref, or acquired (at the pinned commit, saying where its digest is).
 # Only a refusal keeps a key's search open.
@@ -115,7 +116,13 @@ def records(root: Path, source: str) -> list[tuple[int, dict[str, str]]]:
 
 def outstanding_rows(root: Path) -> list[dict[str, str]]:
     keys = read_tsv(root / "witness-search-keys.tsv", ("key", "selector", "census_status"))
+    seen: dict[str, int] = {}
     for number, row in enumerate(keys, 2):
+        if row["key"] in seen:
+            raise ValueError(f"{root / 'witness-search-keys.tsv'}:{number} repeats key {row['key']!r} "
+                             f"(first at line {seen[row['key']]}); regenerate it with "
+                             "tools/surface-census/witness-search-region-keys.py")
+        seen[row["key"]] = number
         if row["census_status"] not in CENSUS_STATUSES:
             raise ValueError(f"{root / 'witness-search-keys.tsv'}:{number} has census_status "
                              f"{row['census_status']!r}, not one of {', '.join(CENSUS_STATUSES)}")

@@ -22,6 +22,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 COVERAGE = REPO / "docs/openapi-surface-coverage.md"
 CATEGORIES = ("golden", "limitations", "handwritten", "gap")
+# Every `census_status` a key row carries: the one vocabulary its readers import.
+CENSUS_STATUSES = ("supported", "unsupported-by-census")
 
 
 def region_rows(text: str) -> list[list[str]]:
@@ -110,7 +112,7 @@ def keys(regions: Path) -> list[tuple[str, str, str, str]]:
                 if not match:
                     raise ValueError(f"{path}: gap {key} has no selector")
                 selector = match.group(1) or match.group(2)
-            status = "supported" if census.selector_error(selector) is None else "unsupported-by-census"
+            status = CENSUS_STATUSES[0] if census.selector_error(selector) is None else CENSUS_STATUSES[1]
             if key in found:
                 raise ValueError(f"duplicate gap key {key}")
             found[key] = (key, selector, name, status)
