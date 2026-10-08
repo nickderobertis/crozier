@@ -33,8 +33,16 @@ cargo build --release --locked --bin crozier >&2
 venv="$root/.crozier-tmp/live-e2e-venv"
 py="$venv/bin/python"
 if [ ! -x "$py" ] || ! "$py" -c "import httpx, pydantic, pytest, yaml" 2>/dev/null; then
-  uv venv "$venv" >&2
-  uv pip install --python "$py" --quiet httpx pydantic pytest pyyaml >&2
+  uv venv "$venv" >&2 || {
+    echo "live-e2e: could not create the test venv at $venv — check that directory's" \
+         "permissions and free space, delete it (rm -rf '$venv'), then re-run" >&2
+    exit 1
+  }
+  uv pip install --python "$py" --quiet httpx pydantic pytest pyyaml >&2 || {
+    echo "live-e2e: could not install httpx, pydantic, pytest and pyyaml into $venv —" \
+         "check that PyPI is reachable, then re-run (the incomplete venv is rebuilt)" >&2
+    exit 1
+  }
 fi
 
 # CROZIER_BIN is the compiled binary the suite generates each SDK with.
