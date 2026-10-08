@@ -1998,3 +1998,64 @@ fn compare_reports_the_body_query_departure_and_rejects_another_changed_line() {
         serde_json::json!(["src/fern/execute/raw_client.py"])
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn compare_validates_pattern_narrowed_examples_and_rejects_adjacent_changes() {
+    let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixture = manifest.join("docs/openapi-surface/handwritten/measurement-phase");
+    let repo = tempfile::tempdir().expect("pattern comparison repository");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yml",
+        &std::fs::read_to_string(fixture.join("openapi.yml")).unwrap(),
+    );
+    for (mode, golden) in [
+        ("python-enums", fixture.join("fern-expected")),
+        (
+            "literals",
+            manifest.join(
+                "docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected",
+            ),
+        ),
+    ] {
+        write_script(root, "reference.sh", &format!(
+            "cp -R '{}'/. \"$CROZIER_REFERENCE_OUTPUT\"\nif [ -f adjacent ]; then\n sed 's|https://yourhost.com/path/to/api|https://unexplained.example|' \"$CROZIER_REFERENCE_OUTPUT/README.md\" > \"$CROZIER_REFERENCE_OUTPUT/README.tmp\"\n mv \"$CROZIER_REFERENCE_OUTPUT/README.tmp\" \"$CROZIER_REFERENCE_OUTPUT/README.md\"\nfi\n", golden.display()));
+        write(
+            root,
+            "crozier.yml",
+            &format!(
+                "spec: ./openapi.yml\n{}reference:\n  command: ./reference.sh\ngenerators:\n  python:\n    enum-type: {mode}\n",
+                "package-name: fern\nproject-name: default_package_name\n"
+            ),
+        );
+        let output = compare_cmd(root)
+            .args(["--json", "-", "crozier.yml"])
+            .assert()
+            .success();
+        let report: serde_json::Value =
+            serde_json::from_slice(&output.get_output().stdout).unwrap();
+        let departures = result(&report, "crozier.yml", "python")["comparison"]["departures"]
+            .as_array()
+            .unwrap();
+        assert_eq!(
+            departures
+                .iter()
+                .filter(|entry| entry["id"] == "pattern-narrowed-enum-example")
+                .count(),
+            8
+        );
+        write(root, "adjacent", "");
+        compare_cmd(root)
+            .args(["--json", "-", "crozier.yml"])
+            .assert()
+            .code(3);
+        std::fs::remove_file(root.join("adjacent")).unwrap();
+        compare_cmd(root)
+            .args(["--json", "-", "crozier.yml"])
+            .assert()
+            .success();
+    }
+}

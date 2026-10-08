@@ -1740,3 +1740,25 @@ now `golden` on.
 | nullable-single-allof-ref-component-not-optional | both | Composed object schema | handwritten | handwritten: nullable-store; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |
 
 | allof-union-branch-not-schema-overrides-property | both | Composed object schema | handwritten | handwritten: sampling-branches; search: search-incomplete ([record](witness-search-models-refs/README.md#composition-models)) |  |  |  |
+
+| empty-description-inline-response-docstring | both | Object property or response schema metadata | handwritten | handwritten: blank-reading-description; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
+
+| enum-value-description-extension-dropped | both | Object property or response schema metadata | handwritten | handwritten: compass-member-notes; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
+
+| ignore-extension-on-property-kept | both | Object property or response schema metadata | handwritten | handwritten: gauge-public-fields; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
+
+| literal-type-extension-ignored | both | Object property or response schema metadata | handwritten | handwritten: verified-seal; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
+
+| nullable-anyof-member-description-dropped | both | Object property or response schema metadata | handwritten | handwritten: nullable-observer-notes; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
+
+| property-ref-to-nullable-component-annotation | both | Object property or response schema metadata | handwritten | handwritten: reservoir-ledger; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
+
+| ref-with-nullable-sibling-made-optional | both | Object property or response schema metadata | handwritten | handwritten: required-marker-point; search: search-incomplete ([record](witness-search-models-refs/README.md#property-metadata)) |  |  |  |
+
+| allof-enum-ref-narrowed-by-scalar-member | both | Object property or response schema metadata | handwritten | handwritten: measurement-phase; search: search-incomplete ([record](witness-search-models-refs/README.md#remaining-model-identities)) |  |  |  |
+
+| allof-extends-oneof-object-refused | both | Object property or response schema metadata | handwritten | handwritten: union-sample; search: search-incomplete ([record](witness-search-models-refs/README.md#remaining-model-identities)) |  |  |  |
+
+| forward-refs-omit-hoisted-variant-models | both | Object property or response schema metadata | handwritten | handwritten: woven-thread; search: search-incomplete ([record](witness-search-models-refs/README.md#remaining-model-identities)) |  |  |  |
+
+| ref-into-component-response-schema-named-by-last-segment | both | Object property or response schema metadata | handwritten | handwritten: parcel-response; search: search-incomplete ([record](witness-search-models-refs/README.md#remaining-model-identities)) |  |  |  |

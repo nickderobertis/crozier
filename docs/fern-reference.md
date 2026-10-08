@@ -122,12 +122,13 @@ extension not listed here does not change crozier's output.
 | Fern | crozier alias | On | Effect |
 | --- | --- | --- | --- |
 | `x-fern-audiences` | `x-crozier-audiences` | operation | The audience labels the `audiences` setting filters on. |
-| `x-fern-ignore` | `x-crozier-ignore` | operation, component schema | Leaves the node out of the SDK. |
+| `x-fern-ignore` | `x-crozier-ignore` | operation, component schema, object property | Leaves the node out of the SDK. |
 | `x-fern-sdk-group-name` | `x-crozier-sdk-group-name` | operation | The sub-client the method belongs to; a list nests it. |
 | `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | operation | The method's name. |
 | `x-fern-pagination` | `x-crozier-pagination` | operation | Returns a pager over the response's items. |
 | `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response; a `stream-condition` splits the method in two. |
-| `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name for each value. |
+| `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name and, in Python-enums mode, description for each value. |
+| `x-fern-type` | `x-crozier-type` | boolean schema | `literal<true>` and `literal<false>` preserve a boolean literal annotation. |
 | `x-fern-property-name` | `x-crozier-property-name` | object property | The property's Python name, both the model field and the request keyword argument. Its JSON key on the wire stays the property's key. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
 

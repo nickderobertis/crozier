@@ -1692,7 +1692,13 @@ fn golden_tree_failures(
         ));
         return failures;
     }
-    let context = Context::from_trees(expected_root, out);
+    let mut context = Context::from_trees(expected_root, out);
+    if Path::new(source).is_file() {
+        context = context.with_source_document(
+            crozier::openapi::load(Path::new(source))
+                .expect("the generated proof source remains valid"),
+        );
+    }
     let mut observed = Vec::new();
     for rel in expected_files {
         let generated = std::fs::read_to_string(out.join(&rel)).unwrap_or_default();
@@ -2520,6 +2526,169 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
         ));
     }
     assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
+}
+
+#[test]
+fn property_metadata_shapes_match_the_certified_fern_trees() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut all_failures = Vec::new();
+    for name in [
+        "blank-reading-description",
+        "compass-member-notes",
+        "gauge-public-fields",
+        "verified-seal",
+        "nullable-observer-notes",
+        "reservoir-ledger",
+        "required-marker-point",
+    ] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
+        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let failures = filtered_tree_failures(
+            name,
+            &golden,
+            &fixture.join("openapi.yml"),
+            &fixture.join("fern-expected"),
+            &[],
+        );
+        all_failures.extend(failures);
+        let out = tempfile::tempdir().expect("property metadata literals SDK");
+        probe_command(&fixture.join("openapi.yml"), out.path())
+            .args(["--enum-type", "literals"])
+            .assert()
+            .success();
+        let literal_golden = format!("{MODELS_REFS_LITERALS_DIR}/{name}/fern-expected");
+        let ledger = departure_ledger()
+            .golden(&literal_golden, &[])
+            .expect("property metadata literals golden");
+        all_failures.extend(golden_tree_failures(
+            name,
+            &fixture.join("openapi.yml").display().to_string(),
+            &ledger,
+            &root.join(&literal_golden),
+            out.path(),
+        ));
+    }
+    assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
+}
+
+#[test]
+fn object_union_extension_keeps_nearby_refusals_and_recovers() {
+    let original = include_str!("../docs/openapi-surface/handwritten/union-sample/openapi.yml");
+    let controls = [
+        original.replace("    Signal:\n      type: object\n", "    Signal:\n"),
+        original.replace("    Signal:\n      type: object\n      oneOf:", "    Signal:\n      type: object\n      anyOf:"),
+        original.replace("    Analog:\n      type: object\n      properties:\n        voltage:\n          type: number\n", "    Analog:\n      type: string\n"),
+    ];
+    for source in controls {
+        assert_ne!(source, original);
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("openapi.yml");
+        let out = dir.path().join("sdk");
+        std::fs::write(&spec, source).unwrap();
+        for strict in [false, true] {
+            let mut command = probe_command(&spec, &out);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            command
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains("object-extends-non-object"));
+            assert!(!out.exists());
+        }
+        std::fs::write(&spec, original).unwrap();
+        probe_command(&spec, &out).assert().success();
+        assert!(
+            std::fs::read_to_string(out.join("src/fern/types/sample.py"))
+                .unwrap()
+                .contains("voltage: typing.Optional[float]")
+        );
+    }
+}
+
+#[test]
+fn remaining_model_shapes_match_the_certified_fern_trees() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut all_failures = Vec::new();
+    for name in [
+        "measurement-phase",
+        "union-sample",
+        "woven-thread",
+        "parcel-response",
+    ] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
+        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let failures = filtered_tree_failures(
+            name,
+            &golden,
+            &fixture.join("openapi.yml"),
+            &fixture.join("fern-expected"),
+            &[],
+        );
+        all_failures.extend(failures);
+        let out = tempfile::tempdir().expect("property metadata literals SDK");
+        probe_command(&fixture.join("openapi.yml"), out.path())
+            .args(["--enum-type", "literals"])
+            .assert()
+            .success();
+        let literal_golden = format!("{MODELS_REFS_LITERALS_DIR}/{name}/fern-expected");
+        let ledger = departure_ledger()
+            .golden(&literal_golden, &[])
+            .expect("property metadata literals golden");
+        all_failures.extend(golden_tree_failures(
+            name,
+            &fixture.join("openapi.yml").display().to_string(),
+            &ledger,
+            &root.join(&literal_golden),
+            out.path(),
+        ));
+    }
+    assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
+}
+
+#[test]
+fn property_extensions_accept_aliases_and_crozier_precedence() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    for (fixture, extension, conflict, module, expected) in [
+        ("verified-seal", "type", "          x-crozier-type: literal<false>\n", "seal", "verified: typing.Optional[typing.Literal[False]]"),
+        ("gauge-public-fields", "ignore", "          x-crozier-ignore: false\n", "gauge", "calibration_note: typing.Optional[str]"),
+        ("compass-member-notes", "enum", "      x-crozier-enum:\n        south:\n          description: A revised southern direction.\n", "compass", "A revised southern direction."),
+    ] {
+        let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        for spec in [original.replace(&format!("x-fern-{extension}"), &format!("x-crozier-{extension}")), if extension == "type" {
+            let needle = "          x-fern-type: literal<true>\n";
+            assert_eq!(original.matches(needle).count(), 1);
+            original.replace(needle, &format!("{needle}{conflict}"))
+        } else { format!("{original}{conflict}") }] {
+            let dir = tempfile::tempdir().unwrap();
+            let source = dir.path().join("openapi.yml");
+            std::fs::write(&source, &spec).unwrap();
+            let out = dir.path().join("sdk");
+            probe_command(&source, &out).assert().success();
+            let model = std::fs::read_to_string(out.join(format!("src/fern/types/{module}.py"))).unwrap();
+            if spec.contains(conflict) {
+                assert!(model.contains(expected), "{fixture}: {model}");
+            } else {
+                let reference = root.join(fixture).join("fern-expected");
+                let golden = format!("docs/openapi-surface/handwritten/{fixture}/fern-expected");
+                let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+                let failures = golden_tree_failures(fixture, &source.display().to_string(), &ledger, &reference, &out);
+                assert!(failures.is_empty(), "{}", failures.join("\n"));
+            }
+        }
+    }
+    let original = std::fs::read_to_string(root.join("verified-seal/openapi.yml")).unwrap();
+    let source = original.replace(
+        "          x-fern-type: literal<true>\n",
+        "          x-fern-type: literal<true>\n          x-crozier-type: literal<unsupported>\n",
+    );
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    std::fs::write(&spec, source).unwrap();
+    let out = dir.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let model = std::fs::read_to_string(out.join("src/fern/types/seal.py")).unwrap();
+    assert!(model.contains("verified: typing.Optional[bool]"), "{model}");
 }
 
 /// Every `date-time` value crozier's worked examples write over the
@@ -20687,5 +20856,234 @@ fn sdk_env_body_query_collision_keeps_both_callers_values() {
             String::from_utf8_lossy(&run.stdout),
             String::from_utf8_lossy(&run.stderr)
         );
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_pattern_narrowed_evidence_validates_certified_examples_and_recovers() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixture = root.join("docs/openapi-surface/handwritten/measurement-phase");
+    let script = root.join("docs/departures/evidence/pattern-narrowed-enum-example.py");
+    let mut requirements = pyproject_requirements(
+        &std::fs::read_to_string(fixture.join("fern-expected/pyproject.toml")).unwrap(),
+    );
+    requirements.extend(["jsonschema==4.26.0".into(), "PyYAML==6.0.3".into()]);
+    let python = cached_python_env(
+        &python_env_root(),
+        "crozier-narrowing-evidence",
+        &requirements,
+        uv_available(),
+    )
+    .expect("certified SDK evidence environment");
+    let source_text = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
+    let source_document: serde_json::Value = serde_yaml_ng::from_str(&source_text).unwrap();
+    for golden in [
+        fixture.join("fern-expected"),
+        root.join("docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected"),
+    ] {
+        let sdk = tempfile::tempdir().unwrap();
+        copy_dir(&golden, sdk.path());
+        let source = sdk.path().join("source.yml");
+        std::fs::write(&source, &source_text).unwrap();
+        let run = || {
+            let mut command = Command::new(&python);
+            command.arg(&script).arg(sdk.path()).arg(&source);
+            command
+        };
+        run().assert().success().stdout(predicate::str::contains(
+            "8 generated phase arguments rejected",
+        ));
+        std::fs::remove_file(&source).unwrap();
+        run()
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("source file missing"));
+        std::fs::write(&source, &source_text).unwrap();
+        run().assert().success();
+
+        let empty = tempfile::tempdir().unwrap();
+        Command::new(python_interpreter().expect("Python 3 for an isolated empty environment"))
+            .args(["-m", "venv", "--without-pip"])
+            .arg(empty.path())
+            .assert()
+            .success();
+        Command::new(venv_python(empty.path()))
+            .arg(&script)
+            .arg(sdk.path())
+            .arg(&source)
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains(
+                "install the certified SDK requirements",
+            ));
+        run().assert().success();
+
+        for (case, expected) in [
+            ("structure", "invalid narrowing proof source"),
+            ("cardinality", "exactly two allOf members"),
+            ("reference", "first member must reference Phase"),
+            ("invalid-schema", "invalid narrowing proof source"),
+            (
+                "accepted-default",
+                "does not demonstrate the certified invalid default",
+            ),
+            ("replacement", "replacement recording is invalid"),
+        ] {
+            let mut document = source_document.clone();
+            let members = &mut document["components"]["schemas"]["Measurement"]["properties"]
+                ["phase"]["allOf"];
+            match case {
+                "structure" => document["components"] = serde_json::json!([]),
+                "cardinality" => {
+                    members.as_array_mut().unwrap().pop();
+                }
+                "reference" => members[0]["$ref"] = serde_json::json!("#/components/schemas/Other"),
+                "invalid-schema" => members[1]["type"] = serde_json::json!(17),
+                "accepted-default" => members[1]["pattern"] = serde_json::json!("^.*$"),
+                "replacement" => members[1]["pattern"] = serde_json::json!("^excluded$"),
+                _ => unreachable!(),
+            }
+            std::fs::write(&source, document.to_string()).unwrap();
+            run()
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains(expected));
+            std::fs::write(&source, &source_text).unwrap();
+            run().assert().success();
+        }
+
+        let entry = sdk.path().join("src/fern/__init__.py");
+        let original_entry = std::fs::read_to_string(&entry).unwrap();
+        std::fs::remove_file(&entry).unwrap();
+        run().assert().failure().stderr(predicate::str::contains(
+            "no certified src/fern/__init__.py",
+        ));
+        std::fs::write(&entry, &original_entry).unwrap();
+        run().assert().success();
+        std::fs::write(&entry, "raise ImportError('corrupted entry point')\n").unwrap();
+        run().assert().failure().stderr(predicate::str::contains(
+            "certified entry point failed to import",
+        ));
+        std::fs::write(&entry, original_entry).unwrap();
+        run().assert().success();
+
+        let readme = sdk.path().join("README.md");
+        let original = std::fs::read_to_string(&readme).unwrap();
+        std::fs::remove_file(&readme).unwrap();
+        run().assert().failure().stderr(predicate::str::contains(
+            "invalid certified example evidence",
+        ));
+        std::fs::write(&readme, &original).unwrap();
+        run().assert().success();
+        let corrupted_expression = if original.contains("phase=MeasurementPhase.PREPARATION,") {
+            original.replace("phase=MeasurementPhase.PREPARATION,", "phase=object(),")
+        } else {
+            original.replace("phase=\"preparation\",", "phase=object(),")
+        };
+        assert_ne!(corrupted_expression, original);
+        let wrong_default = original
+            .replace("Phase.PREPARATION,", "Phase.RECORDING,")
+            .replace("phase=\"preparation\",", "phase=\"recording\",");
+        assert_ne!(wrong_default, original);
+        let incomplete = original
+            .lines()
+            .filter(|line| !line.contains("phase="))
+            .collect::<Vec<_>>()
+            .join("\n");
+        for (changed, expected) in [
+            (corrupted_expression, "unsupported phase expression"),
+            (
+                wrong_default,
+                "does not demonstrate the certified invalid default",
+            ),
+            (incomplete, "expected 8 invalid phase arguments"),
+            (
+                original.replace("```python\n", "```python\n(\n"),
+                "invalid certified example evidence",
+            ),
+        ] {
+            std::fs::write(&readme, changed).unwrap();
+            run()
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains(expected));
+            std::fs::write(&readme, &original).unwrap();
+            run().assert().success();
+        }
+        let client = sdk.path().join("src/fern/client.py");
+        let original_client = std::fs::read_to_string(&client).unwrap();
+        std::fs::write(&client, format!("{original_client}\n(\n")).unwrap();
+        run().assert().failure().stderr(predicate::str::contains(
+            "invalid certified example evidence",
+        ));
+        std::fs::write(&client, original_client).unwrap();
+        run().assert().success();
+    }
+}
+
+#[test]
+fn remote_external_component_control_keeps_nested_document_inlining() {
+    let server = LocalDocumentServer::start(&[
+        (
+            "/nested-control.yml",
+            include_str!("e2e/fixtures/models-refs-remote/library-records/nested-control.yml"),
+        ),
+        (
+            "/models.yml",
+            include_str!("e2e/fixtures/models-refs-remote/library-records/models.yml"),
+        ),
+    ]);
+    let source = tempfile::tempdir().unwrap();
+    let spec = source.path().join("openapi.yml");
+    let text = include_str!("e2e/fixtures/models-refs-remote/library-records/openapi.yml")
+        .replace(
+            "@REMOTE_URL@/models.yml#/components/schemas/Catalogue",
+            "@REMOTE_URL@/nested-control.yml#/components/schemas/Catalogue",
+        )
+        .replace("@REMOTE_URL@", &server.base_url);
+    std::fs::write(&spec, text).unwrap();
+    let out = source.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let catalogue = std::fs::read_to_string(out.join("src/fern/types/catalogue.py")).unwrap();
+    assert!(
+        catalogue.contains("curator: typing.Optional[CatalogueCurator]"),
+        "{catalogue}"
+    );
+    assert!(out.join("src/fern/types/catalogue_curator.py").is_file());
+    assert!(out.join("src/fern/types/curator.py").is_file());
+    assert!(unwritten_module_imports(&out).is_empty());
+}
+
+#[test]
+fn response_component_collision_keeps_the_existing_schema_identity() {
+    let original = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/openapi-surface/handwritten/parcel-response/openapi.yml"),
+    )
+    .unwrap();
+    let source = original.replace(
+        "  schemas:\n",
+        "  schemas:\n    Purged:\n      type: string\n",
+    );
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    std::fs::write(&spec, source).unwrap();
+    for mode in ["python-enums", "literals"] {
+        let out = dir.path().join(mode);
+        probe_command(&spec, &out)
+            .args(["--enum-type", mode])
+            .assert()
+            .success();
+        let existing = std::fs::read_to_string(out.join("src/fern/types/purged.py")).unwrap();
+        assert!(existing.contains("Purged = str"), "{existing}");
+        assert!(!existing.contains("removed_at"));
+        let response =
+            std::fs::read_to_string(out.join("src/fern/types/read_parcel_response.py")).unwrap();
+        assert!(
+            response.contains("typing.Union[Parcel, Purged]"),
+            "{response}"
+        );
+        assert!(unwritten_module_imports(&out).is_empty());
     }
 }

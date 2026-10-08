@@ -7,3 +7,10 @@ key = "nullable-single-allof-ref-component-not-optional"
 search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+key = "allof"
+arm = 'src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

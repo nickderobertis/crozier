@@ -156,6 +156,22 @@
     items that the signature's `Sequence[T]` rejects.
   evidence: docs/departures/evidence/nullable-items-docs.md
 
+- id: pattern-narrowed-enum-example
+  kind: fern-defect
+  trigger: >-
+    A string enum reference intersected with a scalar string pattern, whose first
+    declared enum value is rejected by that pattern, in a generated default
+    usage example. The comparison has the parsed source document.
+  fern: >-
+    The first enum member, or its literal string, as the example argument.
+  crozier: >-
+    The first declared enum value admitted by the scalar-member pattern,
+    retaining the enum alias, annotation, description and all other output.
+  reason: >-
+    Validating Fern's generated example value against the property's allOf
+    schema rejects it; the replacement satisfies both the enum and pattern.
+  evidence: docs/departures/evidence/pattern-narrowed-enum-example.md
+
 - id: readme-client-class-casing
   kind: fern-defect
   trigger: >-

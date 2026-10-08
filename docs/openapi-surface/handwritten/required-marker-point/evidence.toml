@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "ef042c42200d9a32c9673d10c10a3db9da4829418f3452be7424bbf19f9571bb"
+
+[[covers]]
+key = "ref-with-nullable-sibling-made-optional"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

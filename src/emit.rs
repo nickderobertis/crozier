@@ -722,6 +722,13 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
             Prim::Int | Prim::Long => Doc::atom("int"),
             Prim::Float => Doc::atom("float"),
             Prim::Bool => Doc::atom("bool"),
+            Prim::LiteralBool(value) => {
+                imports.add_plain("typing");
+                Doc::atom(format!(
+                    "typing.Literal[{}]",
+                    if *value { "True" } else { "False" }
+                ))
+            }
             Prim::Any => {
                 imports.add_plain("typing");
                 Doc::atom("typing.Any")
@@ -1466,13 +1473,17 @@ fn forward_repair_map(
             // Each wrapper resolves its own reach, minus the model it flattened —
             // a wrapper cannot be asked to resolve its own source.
             let mut all = HashSet::new();
-            for member in &union.members {
+            for (index, member) in union.members.iter().enumerate() {
                 let mut refs = Vec::new();
                 for field in &member.fields {
                     collect_named_refs(&field.type_ref, &mut refs);
                 }
                 let mut names = closure(refs.iter().map(String::as_str).collect());
-                if let Some(source) = &member.source {
+                if let Some(source) = member
+                    .source
+                    .as_ref()
+                    .or_else(|| union.variant_targets.get(index).filter(|_| !member.wrapped))
+                {
                     names.remove(source);
                 }
                 let mut ordered: Vec<String> = names.iter().cloned().collect();
@@ -4590,6 +4601,10 @@ fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
         TypeRef::Primitive(Prim::Int | Prim::Long) => "int".to_string(),
         TypeRef::Primitive(Prim::Float) => "float".to_string(),
         TypeRef::Primitive(Prim::Bool) => "bool".to_string(),
+        TypeRef::Primitive(Prim::LiteralBool(value)) => {
+            imports.add_plain("typing");
+            format!("typing.Literal[{}]", if *value { "True" } else { "False" })
+        }
         TypeRef::Primitive(Prim::Any) => {
             imports.add_plain("typing");
             "typing.Any".to_string()
@@ -7964,7 +7979,7 @@ impl<'a> ExampleCtx<'a> {
                 {
                     format!("{example}.0")
                 }
-                TypeRef::Primitive(Prim::Bool) => match example {
+                TypeRef::Primitive(Prim::Bool | Prim::LiteralBool(_)) => match example {
                     "true" => "True".to_string(),
                     "false" => "False".to_string(),
                     _ => example.to_string(),
@@ -8560,6 +8575,7 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Primitive(Prim::Int | Prim::Long) => value.as_i64().is_some(),
             TypeRef::Primitive(Prim::Float) => value.is_number(),
             TypeRef::Primitive(Prim::Bool) => value.is_boolean(),
+            TypeRef::Primitive(Prim::LiteralBool(expected)) => value.as_bool() == Some(*expected),
             TypeRef::Primitive(Prim::Any) => true,
         }
     }
@@ -8732,6 +8748,9 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Primitive(Prim::Long) => Example::Atom("1000000".to_string()),
             TypeRef::Primitive(Prim::Float) => Example::Atom("1.1".to_string()),
             TypeRef::Primitive(Prim::Bool) => Example::Atom("True".to_string()),
+            TypeRef::Primitive(Prim::LiteralBool(value)) => {
+                Example::Atom(if *value { "True" } else { "False" }.to_string())
+            }
             TypeRef::Primitive(Prim::Datetime) => {
                 self.note_datetime();
                 Example::Call(
@@ -8957,7 +8976,7 @@ impl<'a> ExampleCtx<'a> {
             // A literal enum's example is its first value as a plain string, which
             // needs no import.
             Some(TypeDecl::Enum(e)) if self.enum_type == EnumType::Literals => {
-                match e.members.first() {
+                match e.example_member() {
                     Some(m) => Example::Atom(literal_enum_value(&m.value)),
                     None => Example::Atom("None".to_string()),
                 }
@@ -8966,7 +8985,7 @@ impl<'a> ExampleCtx<'a> {
             // (`TypesWeatherReport.SUNNY`), importing the enum by name.
             Some(TypeDecl::Enum(e)) => {
                 self.record_ref(name);
-                match e.members.first() {
+                match e.example_member() {
                     Some(m) => Example::Atom(format!("{name}.{}", m.name)),
                     None => Example::Atom("None".to_string()),
                 }
@@ -9277,6 +9296,7 @@ fn path_field_render(
             | Prim::Long
             | Prim::Float
             | Prim::Bool
+            | Prim::LiteralBool(_)
             | Prim::Datetime
             | Prim::Date,
         ) => Some(PathFieldRender::Plain),
@@ -9437,7 +9457,13 @@ fn example_scalar(t: &TypeRef) -> bool {
         TypeRef::Primitive(p) => {
             matches!(
                 p,
-                Prim::Str | Prim::Bytes | Prim::Int | Prim::Long | Prim::Float | Prim::Bool
+                Prim::Str
+                    | Prim::Bytes
+                    | Prim::Int
+                    | Prim::Long
+                    | Prim::Float
+                    | Prim::Bool
+                    | Prim::LiteralBool(_)
             )
         }
         _ => false,
@@ -13152,6 +13178,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Enum(EnumType {
+                example_selection: None,
                 name: "Color".to_string(),
                 module: "color".to_string(),
                 members: vec![EnumMember {
@@ -13293,6 +13320,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Enum(EnumType {
+                example_selection: None,
                 name: "Color".to_string(),
                 module: "color".to_string(),
                 members: vec![EnumMember {
@@ -13580,6 +13608,7 @@ mod tests {
             docstring: None,
         });
         let kind = TypeDecl::Enum(EnumType {
+            example_selection: None,
             name: "Kind".to_string(),
             module: "kind".to_string(),
             members: vec![EnumMember {
@@ -13821,6 +13850,7 @@ mod tests {
             docstring: None,
         });
         let empty_enum = TypeDecl::Enum(EnumType {
+            example_selection: None,
             name: "EmptyEnum".to_string(),
             module: "empty_enum".to_string(),
             members: Vec::new(),
@@ -14603,6 +14633,7 @@ mod tests {
         let enum_output = render_enum(
             &environment(),
             &EnumType {
+                example_selection: None,
                 name: "State".to_string(),
                 module: "state".to_string(),
                 members: vec![EnumMember {

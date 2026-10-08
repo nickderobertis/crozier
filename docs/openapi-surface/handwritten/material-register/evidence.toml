@@ -13,3 +13,10 @@ key = "string-json-format-typed-any"
 search = "docs/openapi-surface/witness-search-models-refs/README.md#scalar-formats"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+key = "type-single"
+arm = 'src/ir.rs::base_type_ref[=Some\("json-string"\) => TypeRef::Primitive\(Prim::Any\)]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

@@ -583,7 +583,37 @@ fn check_object_extension(
             .and_then(|name| context.names.get(name))
             .copied()
             .unwrap_or_else(|| schema_is_model(target, context.root, &mut Vec::new()));
-        if !model {
+        // An explicitly object-typed union can contribute an object shape to a
+        // child with its own fields. Untyped and scalar unions remain refused.
+        let object_union = schema
+            .get("properties")
+            .and_then(serde_yaml_ng::Value::as_mapping)
+            .is_some_and(|properties| !properties.is_empty())
+            && schema_type(target)
+                .as_ref()
+                .and_then(crate::openapi::TypeField::primary)
+                == Some("object")
+            && target
+                .get("properties")
+                .and_then(serde_yaml_ng::Value::as_mapping)
+                .is_none_or(serde_yaml_ng::Mapping::is_empty)
+            && target
+                .get("oneOf")
+                .and_then(serde_yaml_ng::Value::as_sequence)
+                .is_some_and(|variants| {
+                    variants.len() >= 2
+                        && variants.iter().all(|variant| {
+                            variant
+                                .get("$ref")
+                                .and_then(serde_yaml_ng::Value::as_str)
+                                .and_then(|reference| reference.strip_prefix('#'))
+                                .and_then(|pointer| yaml_pointer(context.root, pointer))
+                                .is_some_and(|member| {
+                                    schema_is_model(member, context.root, &mut Vec::new())
+                                })
+                        })
+                });
+        if !model && !object_union {
             return refusal(
                 context.path,
                 context.strict,

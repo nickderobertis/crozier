@@ -1,5 +1,6 @@
 fixture	key	site	regions_executed	regions
 base-path-client-argument	parameter-in-path	src/ir.rs::base_path_client_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	4	4
+blank-reading-description	description	src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]	1	1
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	9	9
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
@@ -34,7 +35,11 @@ inline-oneof-variants	oneof-string-const-variant	src/ir.rs::InlineHoister::hoist
 inline-property-unions	annotated-ref-target-anyof	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	5	6
 inline-property-unions	property-sole-anyof-closed-object-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
 inline-property-unions	property-sole-anyof-struct-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
+material-register	type-single	src/ir.rs::base_type_ref[=Some\("json-string"\) => TypeRef::Primitive\(Prim::Any\)]	2	2
 meadow-tag-code	format-uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	2	3
+measurement-phase	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
+measurement-phase	allof	src/ir.rs::InlineHoister::prop_type_ref[if let Some\(declaration\) = self\.schemas\.and_then\(]	7	7
+measurement-phase	enum	src/ir.rs::EnumType::example_member[if let Some\(value\) = &self\.example_value \{]	6	7
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]	9	9
 nested-array-discriminated-unions	anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-discriminated-unions	array-item-anyof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
@@ -44,6 +49,7 @@ nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::
 nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
 nested-array-elements	items-oneof-element	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]	21	21
 nullable-query-union-items	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]	2	2
+nullable-store	allof	src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]	2	2
 ore-bin-screen	parameter-style-form-query-object	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30
 query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]	2	2
 query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]	17	19
@@ -62,4 +68,6 @@ ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::ref_to_class["properti
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6
 skyglass-observation-date	format-date	src/ir.rs::scalar_body[=Some\("date"\) =>]	2	2
 sonar-packet-envelope	format-byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	3	3
+union-sample	allof	src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]	18	19
+verified-seal	type-single	src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]	1	1
 x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2

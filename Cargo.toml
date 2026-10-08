@@ -49,6 +49,7 @@ schemars = "1"
 # temporary directories, never in the searched repository.
 tempfile = "3"
 thiserror = "2"
+fancy-regex = "0.16"
 
 [dev-dependencies]
 assert_cmd = "2"

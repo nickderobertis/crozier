@@ -45,6 +45,189 @@ fn render(spec: &str) -> HashMap<String, String> {
 }
 
 #[test]
+fn promoted_response_and_inline_cycle_models_keep_their_component_names() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    let response =
+        render(&std::fs::read_to_string(root.join("parcel-response/openapi.yml")).unwrap());
+    assert!(response["src/acme/types/purged.py"].contains("class Purged(UniversalBaseModel)"));
+    assert!(
+        response["src/acme/types/read_parcel_response.py"].contains("typing.Union[Parcel, Purged]")
+    );
+    assert!(!response.contains_key("src/acme/types/schema.py"));
+    let cycle = render(&std::fs::read_to_string(root.join("woven-thread/openapi.yml")).unwrap());
+    assert!(cycle["src/acme/types/weave.py"].contains(
+        "update_forward_refs(Weave_Joined, Thread=Thread, ThreadWoven=ThreadWoven, Weave=Weave)"
+    ));
+    assert!(cycle["src/acme/types/thread.py"].contains(
+        "update_forward_refs(Thread_Woven, Thread=Thread, Weave=Weave, WeaveJoined=WeaveJoined)"
+    ));
+    assert!(!cycle["src/acme/types/weave_loose.py"].contains("update_forward_refs"));
+    let child = render(&std::fs::read_to_string(root.join("union-sample/openapi.yml")).unwrap());
+    assert!(child["src/acme/types/sample.py"].contains("voltage: typing.Optional[float]"));
+    assert!(child["src/acme/types/sample.py"].contains("bits: typing.Optional[int]"));
+}
+
+#[test]
+fn narrowed_enum_defaults_respect_the_pattern_without_changing_the_type() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/measurement-phase");
+    let source = std::fs::read_to_string(root.join("openapi.yml")).unwrap();
+    let files = render(&source);
+    assert!(files["README.md"].contains("phase=MeasurementPhase.RECORDING,"));
+    assert!(files["reference.md"].contains("phase=StoreInlineMeasurementRequestPhase.RECORDING,"));
+    assert!(files["src/acme/types/measurement_phase.py"].contains("PREPARATION = \"preparation\""));
+    let accepted_first = source.replace("^(?!preparation$).*$", "^.*$");
+    assert!(render(&accepted_first)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
+    let malformed = source.replace("^(?!preparation$).*$", "'['");
+    assert!(render(&malformed)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
+    let further_constraint = source.replace(
+        "\n            pattern: ^(?!preparation$).*$",
+        "\n            minLength: 100\n            pattern: ^(?!preparation$).*$",
+    );
+    assert!(
+        render(&further_constraint)["README.md"].contains("phase=MeasurementPhase.PREPARATION,")
+    );
+    let no_valid = source.replace("^(?!preparation$).*$", "^excluded$");
+    assert!(render(&no_valid)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
+}
+
+#[test]
+fn narrowed_enum_departure_requires_source_validity_and_rejects_other_changes() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/measurement-phase");
+    let reference = std::fs::read_to_string(root.join("fern-expected/README.md")).unwrap();
+    let corrected = reference.replace(
+        "phase=MeasurementPhase.PREPARATION,",
+        "phase=MeasurementPhase.RECORDING,",
+    );
+    assert_ne!(corrected, reference);
+    let context = crozier::departures::Context::default()
+        .with_source_document(crozier::openapi::load(&root.join("openapi.yml")).unwrap());
+    let accepted =
+        crozier::parity::compare_file(&context, "README.md", &corrected, &reference).unwrap();
+    assert!(accepted.matches(), "{:?}", accepted.diff());
+    assert_eq!(accepted.departures.len(), 2);
+    assert!(accepted
+        .departures
+        .iter()
+        .all(|departure| departure.id == "pattern-narrowed-enum-example"));
+    for changed in [
+        corrected.replace(
+            "https://yourhost.com/path/to/api",
+            "https://unexplained.example",
+        ),
+        corrected.replace("MeasurementPhase.RECORDING", "MeasurementPhase.EXCLUDED"),
+        corrected.replace("phase=", "different_phase="),
+    ] {
+        assert!(
+            !crozier::parity::compare_file(&context, "README.md", &changed, &reference)
+                .unwrap()
+                .matches()
+        );
+    }
+    assert!(!crozier::parity::compare_file(
+        &crozier::departures::Context::default(),
+        "README.md",
+        &corrected,
+        &reference
+    )
+    .unwrap()
+    .matches());
+    assert!(!crozier::parity::compare_file(
+        &context,
+        "src/fern/raw_client.py",
+        &corrected,
+        &reference
+    )
+    .unwrap()
+    .matches());
+    let outside_reference = reference.replace("```python", "```text");
+    let outside_corrected = corrected.replace("```python", "```text");
+    assert!(!crozier::parity::compare_file(
+        &context,
+        "README.md",
+        &outside_corrected,
+        &outside_reference
+    )
+    .unwrap()
+    .matches());
+    let client = std::fs::read_to_string(root.join("fern-expected/src/fern/client.py")).unwrap();
+    let runtime_line = client
+        .lines()
+        .find(|line| line.contains("phase=MeasurementPhase.PREPARATION,"))
+        .unwrap();
+    let changed_client = client.replace("Phase.PREPARATION,", "Phase.RECORDING,");
+    let runtime_suffix = format!("\ndef outside_examples():\n{runtime_line}\n");
+    assert!(!crozier::parity::compare_file(
+        &context,
+        "src/fern/client.py",
+        &(changed_client + &runtime_suffix),
+        &(client.clone() + &runtime_suffix)
+    )
+    .unwrap()
+    .matches());
+}
+
+#[test]
+fn property_metadata_survives_the_public_generation_pipeline() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    for (fixture, file, expected) in [
+        (
+            "blank-reading-description",
+            "src/acme/types/read_records_response.py",
+            "\"\"\" \"\"\"",
+        ),
+        (
+            "compass-member-notes",
+            "src/acme/types/compass.py",
+            "Towards the southern horizon.",
+        ),
+        (
+            "verified-seal",
+            "src/acme/types/seal.py",
+            "verified: typing.Optional[typing.Literal[True]]",
+        ),
+        (
+            "nullable-observer-notes",
+            "src/acme/types/read_records_response_observer.py",
+            "Observer of the measurement.",
+        ),
+        (
+            "required-marker-point",
+            "src/acme/types/marker.py",
+            "point: Point",
+        ),
+    ] {
+        let source = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        let files = render(&source);
+        assert!(files[file].contains(expected), "{fixture}: {}", files[file]);
+    }
+    let source = std::fs::read_to_string(root.join("gauge-public-fields/openapi.yml")).unwrap();
+    let files = render(&source);
+    assert!(!files["src/acme/types/gauge.py"].contains("calibration_note"));
+    let required = source.replace(
+        "      type: object\n",
+        "      type: object\n      required: [display, calibration_note]\n",
+    );
+    let required_files = render(&required);
+    assert!(!required_files["src/acme/types/gauge.py"].contains("calibration_note"));
+    assert!(required_files["src/acme/types/gauge.py"].contains("display: str"));
+    let source_dir = tempfile::tempdir().unwrap();
+    let spec = source_dir.path().join("openapi.yml");
+    std::fs::write(&spec, &required).unwrap();
+    let mut parsed = crozier::openapi::load(&spec).unwrap();
+    crozier::openapi::filter_ignored(&mut parsed);
+    assert!(
+        matches!(&parsed.components.schemas["Gauge"].required, crozier::openapi::RequiredNames::Listed(names) if names == &["display"])
+    );
+    let restored = source.replace("x-fern-ignore: true", "x-crozier-ignore: false");
+    assert!(render(&restored)["src/acme/types/gauge.py"].contains("calibration_note"));
+    let source = std::fs::read_to_string(root.join("reservoir-ledger/openapi.yml")).unwrap();
+    let files = render(&source);
+    assert!(files["src/acme/raw_client.py"].contains("annotation=typing.Optional[Reservoir]"));
+}
+
+#[test]
 fn composed_models_keep_flat_fields_aliases_and_eager_superclasses() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
     let cases = [
@@ -14679,4 +14862,84 @@ components:
         ["id", "url", "state"],
         "{reference}"
     );
+}
+
+#[test]
+fn narrowing_evidence_command_validates_inputs_before_importing_sdk() {
+    let script = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/departures/evidence/pattern-narrowed-enum-example.py");
+    let python = ["python3", "python"]
+        .into_iter()
+        .find(|candidate| {
+            std::process::Command::new(candidate)
+                .arg("--version")
+                .output()
+                .is_ok_and(|output| output.status.success())
+        })
+        .expect("Python 3 required for repository evidence tools");
+    let run = |args: &[&str]| {
+        std::process::Command::new(python)
+            .arg(&script)
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    assert!(run(&["--help"]).status.success());
+    let missing = run(&[]);
+    assert!(!missing.status.success());
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("usage:"));
+    let absent = run(&["absent-sdk", "absent-source"]);
+    assert!(!absent.status.success());
+    assert!(String::from_utf8_lossy(&absent.stderr).contains("supply the complete SDK"));
+    assert!(run(&["--help"]).status.success());
+}
+
+#[test]
+fn literal_boolean_request_and_path_examples_preserve_the_declared_value() {
+    let mut source = serde_json::json!({
+        "openapi":"3.0.3", "info":{"title":"Marker Controls","version":"1.0.0"},
+        "paths":{
+            "/markers":{"post":{"operationId":"store_marker", "requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","required":["enabled","disabled","choice"],"properties":{
+                "enabled":{"type":"boolean","x-fern-type":"literal<true>"},
+                "disabled":{"type":"boolean","x-crozier-type":"literal<false>"},
+                "choice":{"anyOf":[{"type":"boolean","x-crozier-type":"literal<false>"},{"type":"string"}]}
+            }}}}}, "responses":{"204":{"description":"Stored"}}}},
+            "/markers/{marker}":{"get":{"operationId":"read_marker","parameters":[{"name":"marker","in":"path","required":true,"schema":{"$ref":"#/components/schemas/Marker"}}],"responses":{"204":{"description":"Read"}}}}
+        },
+        "components":{"schemas":{"Marker":{"type":"object","required":["enabled","disabled"],"properties":{
+            "enabled":{"type":"boolean","x-crozier-type":"literal<true>"},
+            "disabled":{"type":"boolean","x-fern-type":"literal<false>"}
+        }}}}
+    });
+    let files = render(&source.to_string());
+    assert!(files["src/acme/client.py"].contains("enabled: typing.Literal[True]"));
+    assert!(files["src/acme/client.py"].contains("disabled: typing.Literal[False]"));
+    assert!(
+        files["README.md"].contains("enabled=True,"),
+        "{}",
+        files["README.md"]
+    );
+    assert!(files["README.md"].contains("disabled=False,"));
+    assert!(files["reference.md"].contains("marker=Marker("));
+    let media =
+        &mut source["paths"]["/markers"]["post"]["requestBody"]["content"]["application/json"];
+    media["example"] = serde_json::json!({"enabled":true,"disabled":false,"choice":false});
+    let matching = render(&source.to_string());
+    assert!(matching["README.md"].contains("choice=False,"));
+    for value in [serde_json::json!(true), serde_json::json!(17)] {
+        source["paths"]["/markers"]["post"]["requestBody"]["content"]["application/json"]
+            ["example"]["choice"] = value;
+        let files = render(&source.to_string());
+        assert!(
+            files["README.md"].contains("choice=False,"),
+            "{}",
+            files["README.md"]
+        );
+        assert!(!files["README.md"].contains("choice=True,"));
+        assert!(!files["README.md"].contains("choice=17,"));
+    }
+    source["paths"]["/markers"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["properties"]["enabled"]["x-crozier-type"] = serde_json::json!("literal<unsupported>");
+    let unsupported = render(&source.to_string());
+    assert!(unsupported["src/acme/client.py"].contains("enabled: bool"));
 }

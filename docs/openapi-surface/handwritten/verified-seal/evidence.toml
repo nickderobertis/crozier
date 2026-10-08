@@ -1,0 +1,16 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "c2168fa8b1e610f4e7a8c0ab587da33216d4b50ee225dda4d0b7061dd7351a01"
+
+[[covers]]
+key = "literal-type-extension-ignored"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+key = "type-single"
+arm = 'src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

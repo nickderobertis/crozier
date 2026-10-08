@@ -908,6 +908,7 @@ fn oauth_scope_enum(doc: &OpenApi) -> Option<EnumType> {
         })
         .collect();
     Some(EnumType {
+        example_selection: None,
         name: "OauthScope".to_string(),
         module: "oauth_scope".to_string(),
         members,
@@ -1904,10 +1905,50 @@ pub struct EnumType {
     pub name: String,
     /// Module (file stem).
     pub module: String,
+    /// A validated member selection for the scalar-narrowed default example.
+    /// Only select_example_member assigns a selection; type emission ignores it.
+    pub(crate) example_selection: Option<EnumExampleSelection>,
     /// The members, in declaration order.
     pub members: Vec<EnumMember>,
     /// Optional docstring.
     pub docstring: Option<String>,
+}
+
+/// A selection can be constructed only after checking this enum's members.
+#[derive(Debug, Clone)]
+pub(crate) struct EnumExampleSelection {
+    index: usize,
+    value: String,
+}
+
+impl EnumType {
+    /// Select only a member this declaration actually contains.
+    pub(crate) fn select_example_member(&mut self, value: &str) -> bool {
+        let Some(index) = self.members.iter().position(|member| member.value == value) else {
+            return false;
+        };
+        self.example_selection = Some(EnumExampleSelection {
+            index,
+            value: self.members[index].value.clone(),
+        });
+        true
+    }
+
+    pub(crate) fn has_corrected_example(&self) -> bool {
+        self.example_selection.is_some() && self.example_member().is_some()
+    }
+
+    /// The synthesized example's member, retaining declaration order when no
+    /// use-site pattern requires a different default.
+    pub(crate) fn example_member(&self) -> Option<&EnumMember> {
+        if let Some(selection) = &self.example_selection {
+            return self
+                .members
+                .get(selection.index)
+                .filter(|member| member.value == selection.value);
+        }
+        self.members.first()
+    }
 }
 
 /// One member of an [`EnumType`].
@@ -1988,15 +2029,17 @@ fn build_enum(
                 member_params.insert(name.clone(), param.clone());
                 param
             };
+            let docstring = clean_doc(schema.enum_member_description(&value));
             Some(EnumMember {
                 name,
                 visit_param,
                 value,
-                docstring: None,
+                docstring,
             })
         })
         .collect();
     EnumType {
+        example_selection: None,
         name: name.to_string(),
         module: naming::module_name(name),
         members,
@@ -2075,6 +2118,8 @@ pub enum Prim {
     Float,
     /// `bool`.
     Bool,
+    /// A Boolean constrained by the literal type extension.
+    LiteralBool(bool),
     /// `dt.datetime`.
     Datetime,
     /// `dt.date`.
@@ -5784,7 +5829,8 @@ fn hoist_inline_object(
             // body declares `members` as `type: [array, null]` and Fern passes
             // `annotation=Optional[Sequence[LobbyMemberRequest]]`. A `nullable`
             // beside a `$ref` is not that — 3.0 ignores a reference's siblings.
-            nullable: is_optional(prop_schema) && prop_schema.reference.is_none(),
+            nullable: is_optional(prop_schema)
+                && (prop_schema.reference.is_none() || prop_schema.reference_nullable),
             spec_required,
             // A property written as a `$ref` takes its example from the schema
             // it names, exactly as a parameter does: Audiobookshelf's
@@ -5797,7 +5843,10 @@ fn hoist_inline_object(
             }),
             media_example: false,
             schema_body_example: false,
-            docstring: declared_doc(prop_schema.description.as_deref()),
+            docstring: declared_doc(prop_schema.description.as_deref().or_else(|| {
+                scalar_narrowed_enum_ref(prop_schema, hoister.schemas?)
+                    .and_then(|(_, member)| member.description.as_deref())
+            })),
             is_file: false,
             form_json: false,
             form_content_type: None,
@@ -5997,7 +6046,12 @@ impl InlineHoister<'_> {
     /// Build a named [`ObjectType`] from an inline object schema, recursively
     /// hoisting its nested inline-object properties, and push it to `out`.
     fn hoist_object(&mut self, name: &str, schema: &Schema) {
-        self.hoist_object_with_doc(name, schema, clean_doc(schema.description.as_deref()));
+        let docstring = if schema.description.as_deref() == Some("") {
+            Some(String::new())
+        } else {
+            clean_doc(schema.description.as_deref())
+        };
+        self.hoist_object_with_doc(name, schema, docstring);
     }
 
     fn hoist_object_with_doc(&mut self, name: &str, schema: &Schema, docstring: Option<String>) {
@@ -6339,8 +6393,11 @@ impl InlineHoister<'_> {
                 spec_required,
                 docstring: declared_doc(property_description(prop_schema, optional).or_else(
                     || {
-                        self.schemas
-                            .and_then(|schemas| merged_all_of_ref_description(prop_schema, schemas))
+                        self.schemas.and_then(|schemas| {
+                            scalar_narrowed_enum_ref(prop_schema, schemas)
+                                .and_then(|(_, member)| member.description.as_deref())
+                                .or_else(|| merged_all_of_ref_description(prop_schema, schemas))
+                        })
                     },
                 )),
                 example: schema_example_literal(prop_schema).or_else(|| {
@@ -6404,6 +6461,13 @@ impl InlineHoister<'_> {
     /// item) into `{parent}{PascalCase(prop)}`. A `$ref` or scalar passes through
     /// [`base_type_ref`].
     fn prop_type_ref(&mut self, parent: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if let Some(declaration) = self.schemas.and_then(|schemas| {
+            scalar_narrowed_enum_type(naming::child_class_name(parent, prop), prop_schema, schemas)
+        }) {
+            let name = declaration.name.clone();
+            self.out.push(TypeDecl::Enum(declaration));
+            return TypeRef::Named(name);
+        }
         if let (Some(schemas), Some((reference, description))) =
             (self.schemas, described_all_of_ref(prop_schema))
         {
@@ -6480,8 +6544,12 @@ impl InlineHoister<'_> {
                 if non_null.len() == 1 && non_null.len() != members.len() {
                     let member = non_null[0];
                     if let Some(values) = string_enum_values(member) {
-                        self.out
-                            .push(TypeDecl::Enum(build_enum(member, &name, values, None)));
+                        self.out.push(TypeDecl::Enum(build_enum(
+                            member,
+                            &name,
+                            values,
+                            clean_doc(member.description.as_deref()),
+                        )));
                         return TypeRef::Named(name);
                     }
                     if let Some(reference) = member.reference.as_deref() {
@@ -6497,7 +6565,12 @@ impl InlineHoister<'_> {
                         self.hoist_object_with_doc(
                             &name,
                             member,
-                            clean_doc(prop_schema.description.as_deref()),
+                            clean_doc(
+                                prop_schema
+                                    .description
+                                    .as_deref()
+                                    .or(member.description.as_deref()),
+                            ),
                         );
                         return TypeRef::Named(name);
                     }
@@ -10125,6 +10198,34 @@ impl Builder<'_> {
             }
         }
         self.collect_fields(name, schema, &required, &mut fields);
+        if !schema.properties.is_empty() {
+            for member in schema.all_of.iter().flatten() {
+                let Some(parent) = member
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                else {
+                    continue;
+                };
+                if parent.ty.as_ref().and_then(TypeField::primary) != Some("object")
+                    || !parent.properties.is_empty()
+                {
+                    continue;
+                }
+                if let Some(branches) = &parent.one_of {
+                    for branch in branches {
+                        if let Some(target) = branch
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                        {
+                            let flattened = all_properties_of(schemas, target, 0);
+                            self.collect_fields(name, &flattened, &[], &mut fields);
+                        }
+                    }
+                }
+            }
+        }
         if let Some(example) = schema_example(schema).and_then(serde_json::Value::as_object) {
             for field in &mut fields {
                 if let Some(value) = example.get(&field.wire_name) {
@@ -10420,6 +10521,10 @@ impl Builder<'_> {
                                 })
                                 .and_then(|target| target.description.as_deref())
                         })
+                        .or_else(|| {
+                            scalar_narrowed_enum_ref(prop_schema, self.schemas)
+                                .and_then(|(_, member)| member.description.as_deref())
+                        })
                         .or_else(|| merged_all_of_ref_description(prop_schema, self.schemas)),
                 ),
                 example: schema_example_literal(prop_schema)
@@ -10535,6 +10640,7 @@ impl Builder<'_> {
                 if let Some(target_name) = &target_name {
                     variant_targets.push(target_name.clone());
                 } else {
+                    variant_targets.push(variant_name.clone());
                     let mut standalone = variant.clone();
                     if origin_name.is_none() {
                         standalone.properties.shift_remove(&property_name);
@@ -10862,6 +10968,15 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if let Some(declaration) = scalar_narrowed_enum_type(
+            format!("{owner}{}", naming::class_name(prop)),
+            prop_schema,
+            self.schemas,
+        ) {
+            let name = declaration.name.clone();
+            self.types.push(TypeDecl::Enum(declaration));
+            return TypeRef::Named(name);
+        }
         if let Some((target, values)) = narrowed_string_ref(prop_schema, self.schemas) {
             let name = format!("{owner}{}", naming::class_name(prop));
             let docstring = prop_schema
@@ -12815,7 +12930,12 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         },
         Some("integer") => TypeRef::Primitive(int_prim(schema)),
         Some("number") => TypeRef::Primitive(number_prim(schema)),
-        Some("boolean") => TypeRef::Primitive(Prim::Bool),
+        Some("boolean") => {
+            if let Some(value) = schema.bool_literal() {
+                return TypeRef::Primitive(Prim::LiteralBool(value));
+            }
+            TypeRef::Primitive(Prim::Bool)
+        }
         Some("array") => {
             let item = schema
                 .items
@@ -13041,6 +13161,96 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
                 _ => None,
             },
         )
+}
+
+/// Lower the same scalar-narrowed enum at a named or inline object's use site.
+fn scalar_narrowed_enum_type(
+    name: String,
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<EnumType> {
+    let (target, member) = scalar_narrowed_enum_ref(schema, schemas)?;
+    let values = target
+        .enum_values
+        .iter()
+        .flatten()
+        .filter_map(|value| value.as_str().map(str::to_owned))
+        .collect();
+    let mut declaration = build_enum(
+        target,
+        &name,
+        values,
+        clean_doc(
+            schema
+                .description
+                .as_deref()
+                .or(member.description.as_deref())
+                .or(target.description.as_deref()),
+        ),
+    );
+    if let Some(value) = narrowed_enum_example(schema, schemas) {
+        declaration.select_example_member(&value);
+    }
+    Some(declaration)
+}
+
+/// Select a schema-valid default example without changing the enum's public
+/// values: the scalar allOf member constrains those values at this use site.
+fn narrowed_enum_example(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<String> {
+    let (target, member) = scalar_narrowed_enum_ref(schema, schemas)?;
+    // A pattern-only correction cannot certify additional string constraints.
+    if [target, member].iter().any(|node| {
+        node.min_length.is_some()
+            || node.max_length.is_some()
+            || node.const_value.is_some()
+            || node.not_schema.is_some()
+            || node.format.is_some()
+    }) || target.pattern.is_some()
+        || target.all_of.is_some()
+        || target.any_of.is_some()
+        || target.one_of.is_some()
+    {
+        return None;
+    }
+    let pattern = fancy_regex::Regex::new(member.pattern.as_deref()?).ok()?;
+    let values = target.enum_values.as_ref()?;
+    let first = values.first()?.as_str()?;
+    if pattern.is_match(first).ok()? {
+        return None;
+    }
+    values
+        .iter()
+        .filter_map(serde_json::Value::as_str)
+        .find(|value| pattern.is_match(value).unwrap_or(false))
+        .map(str::to_owned)
+}
+
+/// An enum component intersected with one scalar string member.
+fn scalar_narrowed_enum_ref<'a>(
+    schema: &'a Schema,
+    schemas: &'a IndexMap<String, Schema>,
+) -> Option<(&'a Schema, &'a Schema)> {
+    let members = schema.all_of.as_deref()?;
+    let [first, second] = members else {
+        return None;
+    };
+    let reference = first.reference.as_deref()?;
+    let member = second;
+    let target = resolve_ref_from_schemas(schemas, reference)?;
+    (target.ty.as_ref().and_then(TypeField::primary) == Some("string")
+        && target
+            .enum_values
+            .as_ref()
+            .is_some_and(|values| values.iter().all(|value| value.is_string()))
+        && member.reference.is_none()
+        && member.ty.as_ref().and_then(TypeField::primary) == Some("string")
+        && member.enum_values.is_none()
+        && member.pattern.is_some()
+        && member.properties.is_empty()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && member.all_of.is_none())
+    .then_some((target, member))
 }
 
 /// A `$ref` to a plain string schema narrowed by inline `allOf` members that
@@ -13377,7 +13587,7 @@ fn own_deprecated(schema: &Schema) -> bool {
 /// an unknown (untyped) schema is bare `Any` and a containing field separately
 /// models whether the property may be absent.
 fn is_optional(schema: &Schema) -> bool {
-    is_explicitly_nullable(schema)
+    (schema.reference.is_none() || schema.reference_nullable) && is_explicitly_nullable(schema)
         || is_null_variant(schema)
         || schema.all_of.iter().flatten().any(is_nullable_annotation)
 }
@@ -16099,7 +16309,7 @@ mod tests {
                 .collect::<Vec<_>>(),
             ["cat", "dog"]
         );
-        assert!(union.variant_targets.is_empty());
+        assert_eq!(union.variant_targets, ["PetCat", "PetDog"]);
         assert_eq!(union.members[0].docstring.as_deref(), Some("A pet."));
         assert_eq!(union.members[1].docstring.as_deref(), Some("A pet."));
         assert_eq!(inferred_builder.types.len(), 2);
@@ -20504,5 +20714,33 @@ mod tests {
             Some(TypeRef::Primitive(Prim::Str))
         );
         assert!(!ir.endpoints[0].response_may_be_empty);
+    }
+    #[test]
+    fn enum_example_selection_accepts_only_declared_members() {
+        let source = Schema::default();
+        let mut enumeration = build_enum(
+            &source,
+            "Phase",
+            vec!["preparation".into(), "recording".into()],
+            None,
+        );
+        assert!(!enumeration.has_corrected_example());
+        assert_eq!(enumeration.example_member().unwrap().value, "preparation");
+        assert!(!enumeration.select_example_member("absent"));
+        assert!(!enumeration.has_corrected_example());
+        assert!(enumeration.select_example_member("recording"));
+        assert!(enumeration.has_corrected_example());
+        assert_eq!(enumeration.example_member().unwrap().value, "recording");
+        assert!(!enumeration.select_example_member("absent"));
+        assert_eq!(enumeration.example_member().unwrap().value, "recording");
+        enumeration.members[1].value = "changed".into();
+        assert!(enumeration.example_member().is_none());
+        assert!(!enumeration.has_corrected_example());
+        assert!(enumeration.select_example_member("changed"));
+        enumeration.members.pop();
+        assert!(enumeration.example_member().is_none());
+        assert!(!enumeration.has_corrected_example());
+        let empty = build_enum(&source, "Empty", Vec::new(), None);
+        assert!(empty.example_member().is_none());
     }
 }

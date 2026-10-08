@@ -475,6 +475,28 @@ pub fn compare_trees(
     file_filter: Option<&str>,
     include_text_diffs: bool,
 ) -> Result<TreeComparison, String> {
+    compare_trees_with_document(
+        reference_root,
+        crozier_root,
+        file_filter,
+        include_text_diffs,
+        None,
+    )
+}
+
+/// Compare complete trees with optional parsed source constraints for example
+/// defects whose constraints do not survive in emitted Python.
+///
+/// # Errors
+///
+/// Reports the same filesystem and empty-reference errors as [`compare_trees`].
+pub(crate) fn compare_trees_with_document(
+    reference_root: &Path,
+    crozier_root: &Path,
+    file_filter: Option<&str>,
+    include_text_diffs: bool,
+    source: Option<crate::openapi::OpenApi>,
+) -> Result<TreeComparison, String> {
     let reference_files: BTreeSet<String> = walk_files(reference_root)?.into_iter().collect();
     if reference_files.is_empty() && file_filter.is_none() {
         return Err(format!(
@@ -483,7 +505,12 @@ pub fn compare_trees(
         ));
     }
     let crozier_files: BTreeSet<String> = walk_files(crozier_root)?.into_iter().collect();
-    let context = Context::from_trees(reference_root, crozier_root);
+    let context = match source {
+        Some(source) => {
+            Context::from_trees(reference_root, crozier_root).with_source_document(source)
+        }
+        None => Context::from_trees(reference_root, crozier_root),
+    };
     let paths: BTreeSet<&String> = reference_files.union(&crozier_files).collect();
     let mut comparison = TreeComparison::default();
 
