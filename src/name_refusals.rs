@@ -806,11 +806,36 @@ pub(crate) fn validate_ir(
                             .insert(id.to_owned(), namespace.clone())
                             .is_some_and(|previous| previous != namespace)
                     });
-                if (inline_body
+                // A multipart field uses this existing component; no second
+                // whole-request type is declared for its flattened form.
+                let request_collision = inline_body
                     && roots.contains(&name)
-                    && ir.types.iter().any(|decl| decl.name() == name))
-                    || duplicate
-                {
+                    && ir.types.iter().any(|decl| decl.name() == name);
+                let multipart_existing_request = request_collision
+                    && ir.types.iter().any(|decl| {
+                        matches!(decl, crate::ir::TypeDecl::Object(object) if object.name == name)
+                    })
+                    && op.request_body.as_ref().is_some_and(|body| {
+                        body.content.len() == 1
+                            && body
+                                .content
+                                .get("multipart/form-data")
+                                .is_some_and(|media| {
+                                    media.schema.as_ref().is_some_and(|schema| {
+                                        schema.reference.is_none()
+                                            && schema.properties.values().any(|field| {
+                                                field.reference.as_deref().is_some_and(
+                                                    |reference| {
+                                                        reference
+                                                            .strip_prefix("#/components/schemas/")
+                                                            == Some(name.as_str())
+                                                    },
+                                                )
+                                            })
+                                    })
+                                })
+                    });
+                if (request_collision && !multipart_existing_request) || duplicate {
                     return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("{method} {route} request type {name} collides with another declaration; give the types distinct declared names")), strict));
                 }
             }
@@ -1053,6 +1078,53 @@ fn property_reference_cycle(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn multipart_existing_request_component_is_not_a_second_declaration() {
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/openapi-surface/handwritten/multipart-request-name/openapi.yml");
+        let mut doc = crate::openapi::load(&fixture).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            fixture.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Cabinet",
+        )
+        .unwrap();
+        let check =
+            |doc: &OpenApi| validate_ir(&crate::ir::build(doc, &config), doc, &fixture, false);
+        check(&doc).unwrap();
+        let object = doc
+            .components
+            .schemas
+            .get_mut("UploadEmblemRequest")
+            .unwrap();
+        let original = object.clone();
+        *object = serde_yaml_ng::from_str("type: string\nenum: [blue, green]\n").unwrap();
+        let error = check(&doc).unwrap_err().to_string();
+        assert!(error.contains("type-name-collision"), "{error}");
+        doc.components
+            .schemas
+            .insert("UploadEmblemRequest".into(), original);
+        let operation = doc
+            .paths
+            .get_mut("/emblems")
+            .unwrap()
+            .post
+            .as_mut()
+            .unwrap();
+        let content = &mut operation.request_body.as_mut().unwrap().content;
+        let media = content.shift_remove("multipart/form-data").unwrap();
+        content.insert("application/json".into(), media);
+        let error = check(&doc).unwrap_err().to_string();
+        assert!(
+            error.contains("type-name-collision") && error.contains("UploadEmblemRequest"),
+            "{error}"
+        );
+    }
 
     #[test]
     fn every_class_id_is_a_registered_names_class() {
