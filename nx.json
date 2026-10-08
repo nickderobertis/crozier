@@ -86,6 +86,12 @@
       "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
       "{workspaceRoot}/tools/fern-goldens/golden_overlay.py"
     ],
+    "witnessIndexReads": [
+      "{workspaceRoot}/tools/witness-search/witness-search-github-index.py",
+      "{workspaceRoot}/tools/witness-search/witness_screen.py",
+      "{workspaceRoot}/tools/witness-search/witness-search-github.py",
+      "{workspaceRoot}/tools/witness-search/rate_limit_guard.py"
+    ],
     "generator": [
       "{workspaceRoot}/.ruff-version",
       {
