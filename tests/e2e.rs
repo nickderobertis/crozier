@@ -12202,7 +12202,7 @@ fn enums_referenced_by_retained_models_remain_root_types() {
 }
 
 #[test]
-fn nullable_body_fields_and_array_items_use_optional_annotations() {
+fn body_conversion_ignores_ref_nullable_siblings_and_preserves_nullable_inline_and_array_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '200':\n          description: Updated\n          content:\n            application/json:\n              schema: { $ref: '#/components/schemas/UpdateWidget' }\ncomponents:\n  schemas:\n    Language: { type: string, nullable: true }\n    WidgetMeta:\n      type: object\n      properties:\n        type: { type: string }\n    UpdateWidget:\n      type: object\n      properties:\n        languages: { type: array, items: { $ref: '#/components/schemas/Language' } }\n        metadata: { $ref: '#/components/schemas/WidgetMeta', nullable: true, readOnly: true }\n        team:\n          type: object\n          nullable: true\n          properties:\n            name: { type: string }\n",
     );
@@ -12211,7 +12211,7 @@ fn nullable_body_fields_and_array_items_use_optional_annotations() {
     let model = std::fs::read_to_string(out.join("src/acme/types/update_widget.py"))
         .expect("update widget model is generated");
     assert!(
-        raw.contains("annotation=typing.Optional[WidgetMeta], direction=\"write\"")
+        raw.contains("annotation=WidgetMeta, direction=\"write\"")
             && raw.contains("metadata: typing.Optional[WidgetMeta] = OMIT")
             && raw.contains("annotation=typing.Optional[UpdateWidgetTeam], direction=\"write\"")
             && raw.contains("team: typing.Optional[UpdateWidgetTeam] = OMIT")
@@ -12221,7 +12221,7 @@ fn nullable_body_fields_and_array_items_use_optional_annotations() {
             && model.contains(
                 "languages: typing.Optional[typing.List[typing.Optional[Language]]] = None"
             ),
-        "nullable conversion metadata and referenced array items should remain optional:\n{raw}\n{model}"
+        "nullable ref siblings are ignored; nullable array targets and inline objects remain optional:\n{raw}\n{model}"
     );
 }
 
