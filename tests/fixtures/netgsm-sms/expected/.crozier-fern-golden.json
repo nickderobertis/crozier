@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "netgsm-sms",
+  "corpus_spec_ref": "33ca38622067e3730479aded9e56f6b1151bfeb5",
+  "corpus_spec_url": "https://raw.githubusercontent.com/netgsm/netgsm-sms-js/33ca38622067e3730479aded9e56f6b1151bfeb5/openapi.json"
+}

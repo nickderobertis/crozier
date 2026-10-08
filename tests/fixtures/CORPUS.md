@@ -257,6 +257,7 @@ compares it. Row 224 is the one so far.
 | 329 | `waylay-queries` | github-raw | https://raw.githubusercontent.com/waylayio/waylay-sdk-queries-py/8ab6c18e10f96c3665dbb849ebe2193c16a1659c/openapi/queries.openapi.yaml | `8ab6c18e10f96c3665dbb849ebe2193c16a1659c` | ISC (the publisher repository's pinned `LICENSE.txt`; the document declares no `info.license`) | committed | Waylay's published time-series query API: `execute_query` accepts query overrides and distinct renamed JSON body arguments for the same keys; the `body-query-parameter-value` departure preserves those body values where Fern sends the query values |
 | 330 | `marimo-client-class-name` | github-raw | https://raw.githubusercontent.com/marimo-team/marimo/257ea7a983e2dbe4627f0168072fdcd538c93c5c/packages/openapi/api.yaml | `257ea7a983e2dbe4627f0168072fdcd538c93c5c` | Apache-2.0 | committed | Row 95 with `client_class_name: DispatchClient`, proving configured client and raw-client names for package-root operations |
 | 331 | `confluent-kafka-connect` | github-raw | https://raw.githubusercontent.com/confluentinc/ccloud-sdk-go-v2/8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2/connect/v1/api/openapi.yaml | `8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Confluent's Kafka Connect API: connector-plugin configuration validation posts a plain string map with a declared request example; source SHA-256 `4d183aef6bb6e0b176e334c7e2d7ebc28e9cb022c4c0ef69956de9347a596839` |
+| 332 | `netgsm-sms` | github-raw | https://raw.githubusercontent.com/netgsm/netgsm-sms-js/33ca38622067e3730479aded9e56f6b1151bfeb5/openapi.json | `33ca38622067e3730479aded9e56f6b1151bfeb5` | MIT (the publisher repository's pinned `LICENSE`) | committed | NetGSM's SMS API: required query arrays beside JSON responses and JSON request-body content-type headers; source SHA-256 `9b728d109dc796d8dd166616d5be2425f4530703ef059ec0a561709421509ae3` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1617,3 +1618,12 @@ renamed body argument under the body key. That one substitution is the
 catalogued `body-query-parameter-value` departure, a Fern defect
 ([evidence](../../docs/departures/evidence/body-query-parameter-value.md)),
 pinned line by line in `departures-ledger.tsv`.
+
+
+## Row 332 — query-array examples beside JSON bodies
+
+The publisher's SMS description carries required query arrays and JSON request
+bodies. Its whole generated tree now byte-matches the certified pair; the
+request-body content-type repair removed the differences that previously
+blocked this real witness. `netgsm_sms_matches_fern_output` compares it in the
+deterministic corpus gate, with no unmatched files.

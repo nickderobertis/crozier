@@ -402,6 +402,12 @@ docs/openapi-surface/handwritten/nested-array-elements/fern-expected	src/fern/co
 docs/openapi-surface/handwritten/nested-array-elements/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/nested-array-elements/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/nested-array-elements/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected	reference.md	39	nullable-items-docs
+docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ore-bin-screen/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ore-bin-screen/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ore-bin-screen/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -432,6 +438,11 @@ docs/openapi-surface/handwritten/query-array-items-union/fern-expected	src/fern/
 docs/openapi-surface/handwritten/query-array-items-union/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/query-array-items-union/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/query-array-items-union/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/query-union-array-enum-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/query-union-array-enum-member/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/query-union-array-enum-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/query-union-array-enum-member/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/query-union-array-enum-member/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ref-pointer-ignored-head/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ref-pointer-ignored-head/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ref-pointer-ignored-head/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -2005,6 +2016,12 @@ tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	37	sdk-identi
 tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/netgsm-sms/expected	src/fern/__init__.py	26	init-type-checking-import-order
+tests/fixtures/netgsm-sms/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/netgsm-sms/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/netgsm-sms/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/netgsm-sms/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
+tests/fixtures/netgsm-sms/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/nexmo-messages/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/nexmo-messages/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/nexmo-messages/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix

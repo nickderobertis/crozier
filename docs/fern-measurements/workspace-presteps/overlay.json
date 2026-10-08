@@ -1,0 +1,15 @@
+{
+  "overlay": "1.0.0",
+  "info": {
+    "title": "Change summary",
+    "version": "1"
+  },
+  "actions": [
+    {
+      "target": "$.paths[\"/ping\"].post",
+      "update": {
+        "summary": "Send an empty object"
+      }
+    }
+  ]
+}

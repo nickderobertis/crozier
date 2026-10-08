@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .inspect_signals_request_kind_one_item import InspectSignalsRequestKindOneItem
+from .inspect_signals_request_kind_zero import InspectSignalsRequestKindZero
+
+InspectSignalsRequestKind = typing.Union[InspectSignalsRequestKindZero, typing.List[InspectSignalsRequestKindOneItem]]

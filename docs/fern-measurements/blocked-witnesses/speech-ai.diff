@@ -1,0 +1,833 @@
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (1173 unchanged line(s))
+  </details>
+  
+  ## Ssml
+- <details><summary><code>client.ssml.<a href="src/fern/ssml/client.py">synthesize_ssml_api</a>(...)</code></summary>
+- <dl>
+- <dd>
+- 
+- #### 📝 Description
+- 
+- <dl>
+- <dd>
+- 
+- <dl>
+- <dd>
+- 
+- Synthesize speech from SSML-formatted input using a specified TTS model.
+- 
+- This endpoint supports multi-speaker, multi-style speech synthesis based on structured SSML input.
+- It can return audio in various formats (e.g., `raw`, `wav`, `mp3`), with optional enhancements and prosody adjustments.
+- 
+- ### Supported Features
+- - Multiple speakers via `<voice spk="...">`
+- - Arbitrary text segmentation with sentence break markers (e.g., `eos="[uv_break]"`)
+- - Streaming or full-response audio
+- - Audio enhancement & pitch/speed adjustment via `EnhancerConfig` / `AdjustConfig`
+- - Custom batch size & segment length control via `batch_size` / `spliter_thr`
+- 
+- ### Parameters
+- - `ssml` (str): SSML XML string containing structured speech content (required)
+- - `format` (str): Output audio format. One of: `raw`, `wav`, `mp3` (default: `raw`)
+- - `batch_size` (int): Batch size for internal TTS inference, must be > 0
+- - `eos` (str): End-of-sentence token for segmentation (default: `[uv_break]`)
+- - `model` (str): TTS model identifier to be used (default: `chat-tts`)
+- - `spliter_thr` (int): Threshold to split long texts (default: 100, minimum: 50)
+- - `enhancer` (EnhancerConfig): Optional audio enhancer settings
+- - `adjuster` (AdjustConfig): Optional pitch/speed/volume control
+- - `stream` (bool): If true, returns a streaming response; otherwise, file response
+- 
+- ### Example SSML Input
+- 
+- ```xml
+- <speak version="0.1">
+-     <voice spk="mona">ChatTTS 用于合成多角色多情感的有声书示例</voice>
+-     <voice spk="mona">黛玉冷笑道：</voice>
+-     <voice spk="doubao" emotion="happy">我说呢，亏了绊住，不然，早就飞起来了。</voice>
+-     <voice spk="mona">宝玉道：</voice>
+-     <voice spk="mona">“只许和你玩，替你解闷。不过偶然到他那里，就说这些闲话。”</voice>
+-     <voice spk="doubao" emotion="angry">“好没意思的话！ 去不去，关我什么事儿？ 又没叫你替我解闷儿 ，还许你不理我呢”</voice>
+-     <voice spk="mona">说着，便赌气回房去了。</voice>
+- </speak>
+- ````
+- 
+- The endpoint returns a synthesized audio file or stream based on the provided SSML and configuration.
+- </dd>
+- </dl>
+- </dd>
+- </dl>
+- 
+- #### 🔌 Usage
+- 
+- <dl>
+- <dd>
+- 
+- <dl>
+- <dd>
+- 
+- ```python
+- from fern import FernApi
+- from fern.environment import FernApiEnvironment
+- 
+- client = FernApi(
+-     environment=FernApiEnvironment.DEFAULT,
+- )
+- 
+- client.ssml.synthesize_ssml_api(
+-     ssml="ssml",
+- )
+- 
+- ```
+- </dd>
+- </dl>
+- </dd>
+- </dl>
+- 
+- #### ⚙️ Parameters
+- 
+- <dl>
+- <dd>
+- 
+- <dl>
+- <dd>
+- 
+- **ssml:** `str` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **format:** `typing.Optional[AudioFormat]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **batch_size:** `typing.Optional[int]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **eos:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **model:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **spliter_thr:** `typing.Optional[int]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **enhancer:** `typing.Optional[EnhancerConfig]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **adjuster:** `typing.Optional[AdjustConfig]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **stream:** `typing.Optional[bool]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+-     
+- </dd>
+- </dl>
+- </dd>
+- </dl>
+- 
+- 
+- </dd>
+- </dl>
+- </details>
+- 
+  ## GoogleApi
+  <details><summary><code>client.google_api.<a href="src/fern/google_api/client.py">google_text_synthesize</a>(...) -> GoogleTextSynthesizeResponse</code></summary>
+  <dl>
+      ⋮ (226 unchanged line(s))
+  </details>
+  
+  ## OpenAiApi
+- <details><summary><code>client.open_ai_api.<a href="src/fern/open_ai_api/client.py">openai_speech_api</a>(...) -> typing.Any</code></summary>
+- <dl>
+- <dd>
+- 
+- #### 📝 Description
+- 
+- <dl>
+- <dd>
+- 
+- <dl>
+- <dd>
+- 
+- openai api document: 
+- [https://platform.openai.com/docs/guides/text-to-speech](https://platform.openai.com/docs/guides/text-to-speech)
+- 
+- 以下属性为本系统自定义属性，不在openai文档中：
+- - batch_size: 是否开启batch合成，小于等于1表示不使用batch （不推荐）
+- - spliter_threshold: 开启batch合成时，句子分割的阈值
+- - style: 风格
+- 
+- > model 可填任意值
+- </dd>
+- </dl>
+- </dd>
+- </dl>
+- 
+- #### 🔌 Usage
+- 
+- <dl>
+- <dd>
+- 
+- <dl>
+- <dd>
+- 
+- ```python
+- from fern import FernApi
+- from fern.environment import FernApiEnvironment
+- 
+- client = FernApi(
+-     environment=FernApiEnvironment.DEFAULT,
+- )
+- 
+- client.open_ai_api.openai_speech_api(
+-     input="input",
+- )
+- 
+- ```
+- </dd>
+- </dl>
+- </dd>
+- </dl>
+- 
+- #### ⚙️ Parameters
+- 
+- <dl>
+- <dd>
+- 
+- <dl>
+- <dd>
+- 
+- **input:** `str` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **model:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **voice:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **response_format:** `typing.Optional[AudioFormat]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **speed:** `typing.Optional[float]` — Speed of the audio
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **seed:** `typing.Optional[int]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **temperature:** `typing.Optional[float]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **top_k:** `typing.Optional[int]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **top_p:** `typing.Optional[float]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **style:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **batch_size:** `typing.Optional[int]` — Batch size
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **spliter_threshold:** `typing.Optional[float]` — Threshold for sentence spliter
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **eos:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **enhance:** `typing.Optional[bool]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **denoise:** `typing.Optional[bool]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **stream:** `typing.Optional[bool]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **bitrate:** `typing.Optional[str]` 
+-     
+- </dd>
+- </dl>
+- 
+- <dl>
+- <dd>
+- 
+- **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+-     
+- </dd>
+- </dl>
+- </dd>
+- </dl>
+- 
+- 
+- </dd>
+- </dl>
+- </details>
+- 
+  <details><summary><code>client.open_ai_api.<a href="src/fern/open_ai_api/client.py">transcribe</a>(...) -> typing.Any</code></summary>
+  <dl>
+  <dd>
+      ⋮ (1264 unchanged line(s))
+  
+  client.voice_clone.voice_clone(
+      src_audio="example_src_audio",
+-     ref_audio="example_ref_audio",
+  )
+  
+  ```
+      ⋮ (58 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **ref_audio:** `typing.Optional[core.File]` 
++ **ref_audio:** `typing.Optional[bytes]` 
+      
+  </dd>
+  </dl>
+      ⋮ (425 unchanged line(s))
+
+--- reference/src/fern/__init__.py
++++ crozier/src/fern/__init__.py
+      ⋮ (6 unchanged line(s))
+          AudioConfig,
+          AudioFormat,
+          AudioReference,
++         AudioSpeechParams,
+          BaseResponse,
+          EncoderConfig,
+          EnhancerConfig,
+      ⋮ (5 unchanged line(s))
+          InputAudio,
+          SpeakerConfig,
+          SpeakerReference,
++         SsmlParams,
+          SttOutputFormat,
+          SubtitleSegment,
+          SynthesisInput,
+      ⋮ (9 unchanged line(s))
+          VoiceSelectionParams,
+      )
+      from .errors import UnprocessableEntityError
+-     from . import (
+-         forge_v2,
+-         google_api,
+-         models,
+-         open_ai_api,
+-         speaker,
+-         ssml,
+-         stt,
+-         style,
+-         system,
+-         text,
+-         tts,
+-         voice_clone,
+-         xtts,
+-     )
++     from . import forge_v2, google_api, models, speaker, stt, style, system, text, tts, voice_clone, xtts
+      from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+      from .client import AsyncFernApi, FernApi
+      from .environment import FernApiEnvironment
+      ⋮ (5 unchanged line(s))
+      "AudioConfig": ".types",
+      "AudioFormat": ".types",
+      "AudioReference": ".types",
++     "AudioSpeechParams": ".types",
+      "BaseResponse": ".types",
+      "DefaultAioHttpClient": "._default_clients",
+      "DefaultAsyncHttpxClient": "._default_clients",
+      ⋮ (9 unchanged line(s))
+      "InputAudio": ".types",
+      "SpeakerConfig": ".types",
+      "SpeakerReference": ".types",
++     "SsmlParams": ".types",
+      "SttOutputFormat": ".types",
+      "SubtitleSegment": ".types",
+      "SynthesisInput": ".types",
+      ⋮ (13 unchanged line(s))
+      "forge_v2": ".forge_v2",
+      "google_api": ".google_api",
+      "models": ".models",
+-     "open_ai_api": ".open_ai_api",
+      "speaker": ".speaker",
+-     "ssml": ".ssml",
+      "stt": ".stt",
+      "style": ".style",
+      "system": ".system",
+      ⋮ (31 unchanged line(s))
+      "AudioConfig",
+      "AudioFormat",
+      "AudioReference",
++     "AudioSpeechParams",
+      "BaseResponse",
+      "DefaultAioHttpClient",
+      "DefaultAsyncHttpxClient",
+      ⋮ (9 unchanged line(s))
+      "InputAudio",
+      "SpeakerConfig",
+      "SpeakerReference",
++     "SsmlParams",
+      "SttOutputFormat",
+      "SubtitleSegment",
+      "SynthesisInput",
+      ⋮ (13 unchanged line(s))
+      "forge_v2",
+      "google_api",
+      "models",
+-     "open_ai_api",
+      "speaker",
+-     "ssml",
+      "stt",
+      "style",
+      "system",
+      ⋮ (5 unchanged line(s))
+
+--- reference/src/fern/client.py
++++ crozier/src/fern/client.py
+      ⋮ (12 unchanged line(s))
+      from .forge_v2.client import AsyncForgeV2Client, ForgeV2Client
+      from .google_api.client import AsyncGoogleApiClient, GoogleApiClient
+      from .models.client import AsyncModelsClient, ModelsClient
+-     from .open_ai_api.client import AsyncOpenAiApiClient, OpenAiApiClient
+      from .speaker.client import AsyncSpeakerClient, SpeakerClient
+-     from .ssml.client import AsyncSsmlClient, SsmlClient
+      from .stt.client import AsyncSttClient, SttClient
+      from .style.client import AsyncStyleClient, StyleClient
+      from .system.client import AsyncSystemClient, SystemClient
+      ⋮ (87 unchanged line(s))
+          self._style: typing.Optional[StyleClient] = None
+          self._speaker: typing.Optional[SpeakerClient] = None
+          self._tts: typing.Optional[TtsClient] = None
+-         self._ssml: typing.Optional[SsmlClient] = None
+          self._google_api: typing.Optional[GoogleApiClient] = None
+-         self._open_ai_api: typing.Optional[OpenAiApiClient] = None
+          self._text: typing.Optional[TextClient] = None
+          self._xtts: typing.Optional[XttsClient] = None
+          self._stt: typing.Optional[SttClient] = None
+      ⋮ (41 unchanged line(s))
+          return self._tts
+  
+      @property
+-     def ssml(self):
+-         if self._ssml is None:
+-             from .ssml.client import SsmlClient
+- 
+-             self._ssml = SsmlClient(client_wrapper=self._client_wrapper)
+-         return self._ssml
+- 
+-     @property
+      def google_api(self):
+          if self._google_api is None:
+              from .google_api.client import GoogleApiClient
+      ⋮ (2 unchanged line(s))
+          return self._google_api
+  
+      @property
+-     def open_ai_api(self):
+-         if self._open_ai_api is None:
+-             from .open_ai_api.client import OpenAiApiClient
+- 
+-             self._open_ai_api = OpenAiApiClient(client_wrapper=self._client_wrapper)
+-         return self._open_ai_api
+- 
+-     @property
+      def text(self):
+          if self._text is None:
+              from .text.client import TextClient
+      ⋮ (134 unchanged line(s))
+          self._style: typing.Optional[AsyncStyleClient] = None
+          self._speaker: typing.Optional[AsyncSpeakerClient] = None
+          self._tts: typing.Optional[AsyncTtsClient] = None
+-         self._ssml: typing.Optional[AsyncSsmlClient] = None
+          self._google_api: typing.Optional[AsyncGoogleApiClient] = None
+-         self._open_ai_api: typing.Optional[AsyncOpenAiApiClient] = None
+          self._text: typing.Optional[AsyncTextClient] = None
+          self._xtts: typing.Optional[AsyncXttsClient] = None
+          self._stt: typing.Optional[AsyncSttClient] = None
+      ⋮ (41 unchanged line(s))
+          return self._tts
+  
+      @property
+-     def ssml(self):
+-         if self._ssml is None:
+-             from .ssml.client import AsyncSsmlClient
+- 
+-             self._ssml = AsyncSsmlClient(client_wrapper=self._client_wrapper)
+-         return self._ssml
+- 
+-     @property
+      def google_api(self):
+          if self._google_api is None:
+              from .google_api.client import AsyncGoogleApiClient
+  
+              self._google_api = AsyncGoogleApiClient(client_wrapper=self._client_wrapper)
+          return self._google_api
+- 
+-     @property
+-     def open_ai_api(self):
+-         if self._open_ai_api is None:
+-             from .open_ai_api.client import AsyncOpenAiApiClient
+- 
+-             self._open_ai_api = AsyncOpenAiApiClient(client_wrapper=self._client_wrapper)
+-         return self._open_ai_api
+  
+      @property
+      def text(self):
+      ⋮ (46 unchanged line(s))
+
+Only in reference: src/fern/open_ai_api/client.py
+
+Only in reference: src/fern/open_ai_api/raw_client.py
+
+Only in reference: src/fern/ssml/client.py
+
+Only in reference: src/fern/ssml/raw_client.py
+
+--- reference/src/fern/stt/raw_client.py
++++ crozier/src/fern/stt/raw_client.py
+  
+  
++ import json
+  import typing
+  from json.decoder import JSONDecodeError
+  
+      ⋮ (1 unchanged line(s))
+  from ..core.api_error import ApiError
+  from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+  from ..core.http_response import AsyncHttpResponse, HttpResponse
++ from ..core.jsonable_encoder import jsonable_encoder
+  from ..core.parse_error import ParsingError
+  from ..core.pydantic_utilities import parse_obj_as
+  from ..core.request_options import RequestOptions
+      ⋮ (92 unchanged line(s))
+                  "beam_size": beam_size,
+                  "patience": patience,
+                  "length_penalty": length_penalty,
+-                 "format": format,
++                 "format": json.dumps(jsonable_encoder(format)) if format is not OMIT else OMIT,
+                  "highlight_words": highlight_words,
+                  "max_line_count": max_line_count,
+                  "max_line_width": max_line_width,
+      ⋮ (119 unchanged line(s))
+                  "beam_size": beam_size,
+                  "patience": patience,
+                  "length_penalty": length_penalty,
+-                 "format": format,
++                 "format": json.dumps(jsonable_encoder(format)) if format is not OMIT else OMIT,
+                  "highlight_words": highlight_words,
+                  "max_line_count": max_line_count,
+                  "max_line_width": max_line_width,
+      ⋮ (124 unchanged line(s))
+                  "beam_size": beam_size,
+                  "patience": patience,
+                  "length_penalty": length_penalty,
+-                 "format": format,
++                 "format": json.dumps(jsonable_encoder(format)) if format is not OMIT else OMIT,
+                  "highlight_words": highlight_words,
+                  "max_line_count": max_line_count,
+                  "max_line_width": max_line_width,
+      ⋮ (119 unchanged line(s))
+                  "beam_size": beam_size,
+                  "patience": patience,
+                  "length_penalty": length_penalty,
+-                 "format": format,
++                 "format": json.dumps(jsonable_encoder(format)) if format is not OMIT else OMIT,
+                  "highlight_words": highlight_words,
+                  "max_line_count": max_line_count,
+                  "max_line_width": max_line_width,
+      ⋮ (40 unchanged line(s))
+
+--- reference/src/fern/types/__init__.py
++++ crozier/src/fern/types/__init__.py
+      ⋮ (5 unchanged line(s))
+      from .audio_config import AudioConfig
+      from .audio_format import AudioFormat
+      from .audio_reference import AudioReference
++     from .audio_speech_params import AudioSpeechParams
+      from .base_response import BaseResponse
+      from .encoder_config import EncoderConfig
+      from .enhancer_config import EnhancerConfig
+      ⋮ (5 unchanged line(s))
+      from .input_audio import InputAudio
+      from .speaker_config import SpeakerConfig
+      from .speaker_reference import SpeakerReference
++     from .ssml_params import SsmlParams
+      from .stt_output_format import SttOutputFormat
+      from .subtitle_segment import SubtitleSegment
+      from .synthesis_input import SynthesisInput
+      ⋮ (12 unchanged line(s))
+      "AudioConfig": ".audio_config",
+      "AudioFormat": ".audio_format",
+      "AudioReference": ".audio_reference",
++     "AudioSpeechParams": ".audio_speech_params",
+      "BaseResponse": ".base_response",
+      "EncoderConfig": ".encoder_config",
+      "EnhancerConfig": ".enhancer_config",
+      ⋮ (5 unchanged line(s))
+      "InputAudio": ".input_audio",
+      "SpeakerConfig": ".speaker_config",
+      "SpeakerReference": ".speaker_reference",
++     "SsmlParams": ".ssml_params",
+      "SttOutputFormat": ".stt_output_format",
+      "SubtitleSegment": ".subtitle_segment",
+      "SynthesisInput": ".synthesis_input",
+      ⋮ (36 unchanged line(s))
+      "AudioConfig",
+      "AudioFormat",
+      "AudioReference",
++     "AudioSpeechParams",
+      "BaseResponse",
+      "EncoderConfig",
+      "EnhancerConfig",
+      ⋮ (5 unchanged line(s))
+      "InputAudio",
+      "SpeakerConfig",
+      "SpeakerReference",
++     "SsmlParams",
+      "SttOutputFormat",
+      "SubtitleSegment",
+      "SynthesisInput",
+      ⋮ (11 unchanged line(s))
+
+Only in crozier: src/fern/types/audio_speech_params.py
+
+Only in crozier: src/fern/types/ssml_params.py
+
+--- reference/src/fern/voice_clone/client.py
++++ crozier/src/fern/voice_clone/client.py
+      ⋮ (34 unchanged line(s))
+          model: typing.Optional[str] = None,
+          tau: typing.Optional[float] = None,
+          format: typing.Optional[str] = None,
+-         ref_audio: typing.Optional[core.File] = OMIT,
++         ref_audio: typing.Optional[bytes] = OMIT,
+          request_options: typing.Optional[RequestOptions] = None,
+      ) -> None:
+          """
+      ⋮ (18 unchanged line(s))
+  
+          format : typing.Optional[str]
+  
+-         ref_audio : typing.Optional[core.File]
+-             See core.File for more documentation
++         ref_audio : typing.Optional[bytes]
+  
+          request_options : typing.Optional[RequestOptions]
+              Request-specific configuration.
+      ⋮ (46 unchanged line(s))
+          model: typing.Optional[str] = None,
+          tau: typing.Optional[float] = None,
+          format: typing.Optional[str] = None,
+-         ref_audio: typing.Optional[core.File] = OMIT,
++         ref_audio: typing.Optional[bytes] = OMIT,
+          request_options: typing.Optional[RequestOptions] = None,
+      ) -> None:
+          """
+      ⋮ (18 unchanged line(s))
+  
+          format : typing.Optional[str]
+  
+-         ref_audio : typing.Optional[core.File]
+-             See core.File for more documentation
++         ref_audio : typing.Optional[bytes]
+  
+          request_options : typing.Optional[RequestOptions]
+              Request-specific configuration.
+      ⋮ (31 unchanged line(s))
+
+--- reference/src/fern/voice_clone/raw_client.py
++++ crozier/src/fern/voice_clone/raw_client.py
+      ⋮ (30 unchanged line(s))
+          model: typing.Optional[str] = None,
+          tau: typing.Optional[float] = None,
+          format: typing.Optional[str] = None,
+-         ref_audio: typing.Optional[core.File] = OMIT,
++         ref_audio: typing.Optional[bytes] = OMIT,
+          request_options: typing.Optional[RequestOptions] = None,
+      ) -> HttpResponse[None]:
+          """
+      ⋮ (18 unchanged line(s))
+  
+          format : typing.Optional[str]
+  
+-         ref_audio : typing.Optional[core.File]
+-             See core.File for more documentation
++         ref_audio : typing.Optional[bytes]
+  
+          request_options : typing.Optional[RequestOptions]
+              Request-specific configuration.
+      ⋮ (12 unchanged line(s))
+                  "tau": tau,
+                  "format": format,
+              },
+-             data={},
++             data={
++                 "ref_audio": ref_audio,
++             },
+              files={
+                  "src_audio": src_audio,
+-                 **({"ref_audio": ref_audio} if ref_audio is not None else {}),
+              },
+              request_options=request_options,
+              omit=OMIT,
+      ⋮ (36 unchanged line(s))
+          model: typing.Optional[str] = None,
+          tau: typing.Optional[float] = None,
+          format: typing.Optional[str] = None,
+-         ref_audio: typing.Optional[core.File] = OMIT,
++         ref_audio: typing.Optional[bytes] = OMIT,
+          request_options: typing.Optional[RequestOptions] = None,
+      ) -> AsyncHttpResponse[None]:
+          """
+      ⋮ (18 unchanged line(s))
+  
+          format : typing.Optional[str]
+  
+-         ref_audio : typing.Optional[core.File]
+-             See core.File for more documentation
++         ref_audio : typing.Optional[bytes]
+  
+          request_options : typing.Optional[RequestOptions]
+              Request-specific configuration.
+      ⋮ (12 unchanged line(s))
+                  "tau": tau,
+                  "format": format,
+              },
+-             data={},
++             data={
++                 "ref_audio": ref_audio,
++             },
+              files={
+                  "src_audio": src_audio,
+-                 **({"ref_audio": ref_audio} if ref_audio is not None else {}),
+              },
+              request_options=request_options,
+              omit=OMIT,
+      ⋮ (24 unchanged line(s))

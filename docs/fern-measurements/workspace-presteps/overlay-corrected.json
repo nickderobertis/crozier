@@ -1,0 +1,38 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Overlay measurement",
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "https://overlay.example.com"
+    }
+  ],
+  "paths": {
+    "/ping": {
+      "post": {
+        "operationId": "ping",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              },
+              "example": {}
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "ok"
+          }
+        },
+        "summary": "Send an empty object"
+      }
+    }
+  }
+}

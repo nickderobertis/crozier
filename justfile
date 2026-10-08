@@ -334,6 +334,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e huatuo_node_tree_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e lootlog_battlelog_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ego_microservices_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e netgsm_sms_matches_fern_output
 
 # The corpus byte-match with strict Fern compatibility on (docs/fern-refusals/):
 # a refusal class that refuses a document Fern generates from fails it. The
