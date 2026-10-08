@@ -16,6 +16,12 @@ docs/departures/evidence/readme-client-class-casing/fern-reference	core/client_w
 docs/departures/evidence/readme-client-class-casing/fern-reference	core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/departures/evidence/readme-client-class-casing/fern-reference	reference.md	16	readme-client-class-casing
 docs/departures/evidence/readme-client-class-casing/fern-reference	reference.md	19	readme-client-class-casing
+docs/fern-measurements/models-refs-literals/material-register/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/models-refs-literals/material-register/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/material-register/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/material-register/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/material-register/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/material-register/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	README.md	40	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	reference.md	20	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -387,6 +393,11 @@ docs/openapi-surface/handwritten/inline-property-unions/fern-expected	src/fern/c
 docs/openapi-surface/handwritten/inline-property-unions/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/inline-property-unions/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/inline-property-unions/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/material-register/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/material-register/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/material-register/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/material-register/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/material-register/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/meadow-tag-code/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/meadow-tag-code/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/meadow-tag-code/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

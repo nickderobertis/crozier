@@ -44,6 +44,34 @@ fn render(spec: &str) -> HashMap<String, String> {
         .collect()
 }
 
+#[test]
+fn material_register_formats_keep_their_certified_scalar_types() {
+    let spec = include_str!("../docs/openapi-surface/handwritten/material-register/openapi.yml");
+    let files = render(spec);
+    let model = &files["src/acme/types/material.py"];
+    for annotation in [
+        "mass: typing.Optional[int] = None",
+        "attributes: typing.Optional[typing.Any] = None",
+        "density: typing.Optional[float] = None",
+        "label: typing.Optional[str] = None",
+    ] {
+        assert!(model.contains(annotation), "missing {annotation}:\n{model}");
+    }
+    let unknown_formats = spec
+        .replace("format: uint64", "format: unrecognized-number")
+        .replace("format: json-string", "format: unrecognized-string");
+    let files = render(&unknown_formats);
+    let model = &files["src/acme/types/material.py"];
+    assert!(
+        model.contains("mass: typing.Optional[float] = None"),
+        "{model}"
+    );
+    assert!(
+        model.contains("attributes: typing.Optional[str] = None"),
+        "{model}"
+    );
+}
+
 /// [`render`] without the Fern refusal checks: the IR and emitter alone, for
 /// a guard that only a document crozier refuses reaches.
 fn render_ir(spec: &str) -> HashMap<String, String> {

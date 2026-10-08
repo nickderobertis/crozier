@@ -802,6 +802,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
+        (MODELS_REFS_LITERALS_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
@@ -2381,6 +2382,7 @@ fn unwritten_module_imports_names_a_missing_module() {
 }
 
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
+const MODELS_REFS_LITERALS_DIR: &str = "docs/fern-measurements/models-refs-literals";
 
 /// Every hand-written generation fixture, found by listing
 /// `docs/openapi-surface/handwritten/` and nothing else, held to the contract
@@ -2400,6 +2402,79 @@ fn handwritten_fixtures_match_fern_goldens() {
         "the hand-written fixtures break their contract \
          (docs/openapi-surface/handwritten/AGENTS.md):\n{}",
         failures.join("\n")
+    );
+}
+
+/// Complete certified output for integer-valued numbers and encoded JSON strings,
+/// with adjacent ordinary scalar formats kept as controls.
+#[test]
+fn material_register_matches_certified_fern_tree() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixture = root.join("docs/openapi-surface/handwritten/material-register");
+    let source = tempfile::tempdir().expect("source recovery directory");
+    let spec = source.path().join("openapi.yml");
+    let missing_output = source.path().join("missing-sdk");
+    probe_command(&spec, &missing_output)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("could not read spec"));
+    assert!(
+        !missing_output.exists(),
+        "a missing source must write no SDK"
+    );
+    std::fs::copy(fixture.join("openapi.yml"), &spec).expect("restore the source");
+    let failures = filtered_tree_failures(
+        "material-register",
+        "docs/openapi-surface/handwritten/material-register/fern-expected",
+        &spec,
+        &fixture.join("fern-expected"),
+        &[],
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let out = tempfile::tempdir().expect("literals output");
+    probe_command(&spec, out.path())
+        .args(["--enum-type", "literals"])
+        .assert()
+        .success();
+    let ledger = departure_ledger()
+        .golden(
+            "docs/fern-measurements/models-refs-literals/material-register/fern-expected",
+            &[],
+        )
+        .expect("registered certified golden");
+    let failures = golden_tree_failures(
+        "material-register literals",
+        "material-register/openapi.yml",
+        &ledger,
+        &root
+            .join(MODELS_REFS_LITERALS_DIR)
+            .join("material-register/fern-expected"),
+        out.path(),
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[test]
+fn material_register_scalar_controls_reject_an_unexplained_mismatch() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/material-register/fern-expected");
+    let rel = "src/fern/types/material.py";
+    let expected = std::fs::read_to_string(fixture.join(rel)).expect("certified model");
+    let changed = expected.replace(
+        "density: typing.Optional[float]",
+        "density: typing.Optional[int]",
+    );
+    assert_ne!(
+        expected, changed,
+        "the negative control must change an annotation"
+    );
+    let context = Context::from_trees(&fixture, &fixture);
+    assert!(
+        parity::compare_file(&context, rel, &changed, &expected)
+            .expect("compare the adjacent scalar control")
+            .diff()
+            .is_some(),
+        "an ordinary number annotation mismatch must fail parity"
     );
 }
 

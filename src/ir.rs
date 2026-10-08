@@ -7573,11 +7573,11 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
 
 /// The primitive for a `type: number` schema. Fern's importer keys the numeric
 /// type off `format` before `type`, so DaniWeb's `{type: number, format: int32}`
-/// fields land on Python `int` rather than `float`; only a non-integer format (or
-/// none) stays a float.
+/// fields land on Python `int` rather than `float`, as do unsigned 64-bit numbers;
+/// only a non-integer format (or none) stays a float.
 fn number_prim(schema: &Schema) -> Prim {
     match schema.format.as_deref() {
-        Some("int32" | "int64") => int_prim(schema),
+        Some("int32" | "int64" | "uint64") => int_prim(schema),
         _ => Prim::Float,
     }
 }
@@ -12748,6 +12748,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
     }
     match schema.ty.as_ref().and_then(|t| t.primary()) {
         Some("string") => match schema.format.as_deref() {
+            Some("json-string") => TypeRef::Primitive(Prim::Any),
             Some("date-time") => TypeRef::Primitive(Prim::Datetime),
             Some("date") => TypeRef::Primitive(Prim::Date),
             Some("binary") => TypeRef::Primitive(Prim::Bytes),
