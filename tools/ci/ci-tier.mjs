@@ -79,6 +79,14 @@ function main() {
     console.error(`${NAME}: usage: node tools/ci/ci-tier.mjs [--print] [-- GATE-ARGS...]`);
     process.exit(2);
   }
+  // On Windows `just` is started through a shell, which would read these before
+  // the gate could refuse them; the gate's own arguments never need its syntax.
+  const unsafe = gateArgs.find((arg) => !/^[A-Za-z0-9_.,:=@\/+-]+$/.test(arg));
+  if (unsafe !== undefined) {
+    console.error(`${NAME}: gate argument ${JSON.stringify(unsafe)} carries a character the gate never takes`);
+    console.error(`${NAME}: pass the gate's flags and project names as they are (letters, digits and _.,:=@/+-)`);
+    process.exit(2);
+  }
   const decision = decide();
   if (own.includes("--print")) {
     console.log(JSON.stringify(decision));

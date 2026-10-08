@@ -2,6 +2,7 @@
 // events the workflows run on, over a scratch repository with an origin/main.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { commitChange, git, ran, scratchWorkspace, write } from "./support.mjs";
@@ -84,6 +85,17 @@ test("ci-check runs the gate in the tier it chose, with its base and the argumen
   assert.match(release.stdout, /gate: broader tier \(--sweep\)/);
   assert.match(release.stdout, /gate: projects: b\n/);
   assert.ok(ran(root, "b"), release.output);
+});
+
+test("a gate argument carrying shell syntax is refused before anything runs", (t) => {
+  const root = scratchWorkspace(t);
+  commitChange(root, "a/src.txt", "feature\n");
+  const refused = ciCheck(root, ["--projects=a;touch pwned"], {
+    GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main",
+  });
+  assert.equal(refused.status, 2, refused.output);
+  assert.match(refused.output, /ci-tier: gate argument "--projects=a;touch pwned" carries a character the gate never takes/);
+  assert.ok(!existsSync(join(root, "pwned")) && !ran(root, "a"), refused.output);
 });
 
 test("ci-check exits with the gate's own failure", (t) => {
