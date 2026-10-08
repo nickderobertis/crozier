@@ -395,10 +395,9 @@ llmlint-plugins-refresh:
 # Boundary coverage for that plugin set: drives the REAL llmlint over the REAL
 # llmlint.yml with the plugin origin refused (a proxy at a closed port, a cold
 # cache), so a job-time fetch reintroduced into the config fails here instead of
-# failing a required PR check on a flaked connection. Part of `check`; skips
-# where llmlint is absent unless CROZIER_REQUIRE_LLMLINT=1, which CI's llmlint
-# job sets so the step cannot no-op.
-# Prove the judged tier resolves its rules with the plugin origin unreachable.
+# failing a required PR check on a flaked connection. Skips where llmlint is
+# absent unless CROZIER_REQUIRE_LLMLINT=1, which CI's llmlint job sets.
+# Part of `check`: the judged tier resolves its rules with the origin unreachable.
 test-llmlint-plugins:
     @just nx run llmlint-tooling:test-plugins
     @just nx run llmlint-resolution:test
