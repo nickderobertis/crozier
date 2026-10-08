@@ -36,6 +36,20 @@ test("NX_BASE set to a commit SHA is the affected base", (t) => {
   assert.ok(ran(root, "b") && !ran(root, "a"), run.output);
 });
 
+test("an inherited NX_HEAD never moves the affected tier's head off the checkout", (t) => {
+  const root = scratchWorkspace(t);
+  const afterA = commitChange(root, "a/src.txt", "a changed\n");
+  commitChange(root, "b/src.txt", "b changed\n");
+
+  // Read as Nx reads it, NX_HEAD=afterA against NX_BASE=afterA would leave
+  // nothing affected, and b's change would never be tested.
+  const run = just(root, ["check"], { NX_BASE: afterA, NX_HEAD: afterA });
+
+  assert.equal(run.status, 0, run.output);
+  assert.match(run.stdout, /gate: projects: b\n/);
+  assert.ok(ran(root, "b") && !ran(root, "a"), run.output);
+});
+
 test("NX_BASE that is neither a ref name nor a SHA fails closed and runs no target", (t) => {
   const root = scratchWorkspace(t);
   commitChange(root, "a/src.txt", "a changed\n");
