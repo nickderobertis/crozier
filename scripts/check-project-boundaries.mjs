@@ -107,7 +107,8 @@ function nxGraph() {
           (node.data.tags === undefined ||
             (Array.isArray(node.data.tags) && node.data.tags.every((tag) => typeof tag === "string"))) &&
           (node.data.targets === undefined ||
-            (typeof node.data.targets === "object" &&
+            (node.data.targets !== null &&
+              typeof node.data.targets === "object" &&
               !Array.isArray(node.data.targets) &&
               Object.values(node.data.targets).every(target))) &&
           namedInputs(node.data.namedInputs),
