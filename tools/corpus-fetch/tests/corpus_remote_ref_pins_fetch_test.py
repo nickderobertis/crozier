@@ -676,6 +676,23 @@ class PinMechanismTests(unittest.TestCase):
                 held = cache / ("openapi.yaml" if label == "directory" else "elsewhere")
                 self.assertEqual([], list(held.iterdir()), "the document was moved inside it")
 
+    @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "root enters a directory whatever its mode")
+    def test_a_library_directory_it_cannot_enter_stops_the_pin_step_with_its_fix(self) -> None:
+        library = self.root / "tools" / "corpus"
+        for step in ('corpus_pin_apply plain-row "$2" openapi.yaml', 'corpus_tree_root plain-row'):
+            with self.subTest(step=step):
+                result = subprocess.run(
+                    ["bash", "-c", f'. "$1/corpus-lib.sh" && chmod 0 "$1" && {{ {step}; status=$?; '
+                     'chmod 0755 "$1"; exit "$status"; }', "bash", str(library),
+                     str(self.root / "document.yaml")],
+                    text=True, capture_output=True, encoding="utf-8", check=False,
+                )
+                library.chmod(0o755)
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn("corpus: cannot resolve tools/corpus/", result.stderr)
+                self.assertIn("run it from a readable checkout", result.stderr)
+                self.assertNotIn("corpus_remote_ref_pins.py", result.stderr, "Python was started with no script")
+
     def test_an_unsupported_spec_suffix_names_the_supported_ones(self) -> None:
         result = subprocess.run(
             [

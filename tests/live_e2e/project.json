@@ -8,9 +8,6 @@
     "tier:promoted",
     "lang:python"
   ],
-  "implicitDependencies": [
-    "crozier"
-  ],
   "targets": {
     "test": {
       "executor": "nx:run-commands",

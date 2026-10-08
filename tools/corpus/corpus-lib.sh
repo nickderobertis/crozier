@@ -47,13 +47,26 @@ corpus_scripts_dir() {
   cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
 }
 
-corpus_aliases_file() {
-  local scripts
-  scripts="$(corpus_scripts_dir)" || {
+# The directory this library sits in, or a failure naming why it cannot be read.
+corpus_scripts_dir_or_fail() {
+  corpus_scripts_dir || {
     echo "corpus: cannot resolve tools/corpus/ from ${BASH_SOURCE[0]} — run it from a readable checkout" >&2
     return 1
   }
+}
+
+corpus_aliases_file() {
+  local scripts
+  scripts="$(corpus_scripts_dir_or_fail)" || return 1
   printf '%s\n' "$scripts/../../tests/fixtures/corpus-aliases.tsv"
+}
+
+# corpus_pins ARGS... — run corpus_remote_ref_pins.py, beside this library, with
+# ARGS; the directory is resolved first, so a failure there never reaches Python.
+corpus_pins() {
+  local scripts
+  scripts="$(corpus_scripts_dir_or_fail)" || return 1
+  python3 "$scripts/corpus_remote_ref_pins.py" "$@"
 }
 
 # Substitute a row's recorded remote-`$ref` pins into a freshly fetched document,
@@ -61,8 +74,7 @@ corpus_aliases_file() {
 # `$ref`. See tools/corpus/corpus_remote_ref_pins.py.
 corpus_pin_apply() {
   local name="$1" file="$2" document_name="$3"
-  python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" \
-    apply "$name" "$file" --as "$document_name"
+  corpus_pins apply "$name" "$file" --as "$document_name"
 }
 
 # Whether a cached document is already in the state `corpus_pin_apply` leaves it
@@ -71,17 +83,15 @@ corpus_pin_apply() {
 # `corpus_pin_apply` on that refetch.
 corpus_pin_verify() {
   local name="$1" file="$2"
-  python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" \
-    verify "$name" "$file" >/dev/null 2>&1
+  corpus_pins verify "$name" "$file" >/dev/null 2>&1
 }
 
 corpus_tree_root() {
-  python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" tree-root "$1"
+  corpus_pins tree-root "$1"
 }
 
 corpus_tree_verify() {
-  python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" \
-    verify-tree "$1" "$2" >/dev/null 2>&1
+  corpus_pins verify-tree "$1" "$2" >/dev/null 2>&1
 }
 
 corpus_fixture_for() {
