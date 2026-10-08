@@ -78,7 +78,7 @@ Publisher revision: `vocodedev/vocode-core:docs/openapi.json@e054c33a72787b6a492
 
 Remaining differences: One-member composed request body drops numbers operations and relocates body types; environment ignores the server-name extension; inherited action-trigger properties reuse one component type in Fern but use variant-specific types in crozier.
 
-Owner: Follow-on scenario plan: request-body-ref-to-alias-component-drops-operation, server-name-extension-ignored, allOf inherited property type reuse.
+Owner: Follow-on scenario plan: `server-name-extension-ignored` owns the environment difference; the allOf-wrapped request-body operation omission and inherited property type reuse are separate shapes owned by that plan, without confirmed scenario ids.
 
 Exact comparison: [vocode.diff](vocode.diff), **358** files compared, **14** differing, **5** Fern-only, **4** crozier-only.
 

@@ -1576,6 +1576,12 @@ witnesses do not byte-match and are **not** real-specification proof. Their
 pinned sources, exact remaining file differences and owning follow-on shapes
 are recorded in
 [the finished-tree measurement](fern-measurements/blocked-witnesses/README.md).
+In particular, `vocode-core` remains unregistered: its comparison has 14
+differing files, five Fern-only files and four crozier-only files. The follow-on
+scenario plan owns its ignored server-name extension
+(`server-name-extension-ignored`), omitted allOf-wrapped request-body operation
+and inherited property type reuse; the latter two have no confirmed scenario
+id. The linked measurement records every file difference.
 They were handed off for `inline-query-param-union-placement`,
 `required-query-param-scalar-or-array-union`, and
 `nested-discriminated-union-in-anyof`; their separate blockers are named in
