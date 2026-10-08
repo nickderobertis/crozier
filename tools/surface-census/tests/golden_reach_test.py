@@ -912,6 +912,39 @@ class ArmSearchOutcomeTests(unittest.TestCase):
             golden_reach_search.src_commits_since("0" * 40)
         self.assertIn("just golden-reach", str(refused.exception))
 
+    def test_only_a_commit_to_compiled_src_moves_a_build(self) -> None:
+        """`src/`'s Nx metadata is no build input; a Rust source change is.
+
+        Real git over a scratch history: commits that edit only `src/AGENTS.md`
+        or `src/project.json` leave the build current, and the one that edits a
+        `.rs` file is the only commit named.
+        """
+        directory = tempfile.TemporaryDirectory(prefix="golden-reach-search-src-")
+        self.addCleanup(directory.cleanup)
+        repo = Path(directory.name)
+
+        def git(*argv: str) -> str:
+            return subprocess.run(["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@t",
+                                   "-c", "commit.gpgsign=false", *argv],
+                                  capture_output=True, text=True, check=True, encoding="utf-8").stdout.strip()
+
+        def commit(path: str, text: str) -> str:
+            (repo / path).parent.mkdir(parents=True, exist_ok=True)
+            (repo / path).write_text(text, encoding="utf-8")
+            git("add", path)
+            git("commit", "-q", "-m", path)
+            return git("rev-parse", "HEAD")
+
+        git("init", "-q")
+        build = commit("src/lib.rs", "pub fn a() {}\n")
+        commit("src/AGENTS.md", "# src\n")
+        commit("src/project.json", "{}\n")
+        with mock.patch.object(golden_reach_search, "REPO", repo):
+            self.assertEqual([], golden_reach_search.src_commits_since(build))
+            moved = commit("src/lib.rs", "pub fn b() {}\n")
+            commit("src/project.json", '{"name": "crozier"}\n')
+            self.assertEqual([moved[:8]], golden_reach_search.src_commits_since(build))
+
 
 class _StageScratch(unittest.TestCase):
     """A scratch evidence tree for the arm search's stages, and three pinned documents.
