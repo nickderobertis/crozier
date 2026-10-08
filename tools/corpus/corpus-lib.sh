@@ -15,9 +15,9 @@ corpus_rows() {
       failed = 1
       exit 1
     }
-    # CORPUS.md contains status tables after the canonical numbered manifest.
-    # Accept only numbered rows from that first table; otherwise prose/status
-    # cells are misread as fixture names and URLs.
+    # CORPUS.md also holds status tables whose rows are not numbered; only a row
+    # whose first cell is a number is a manifest row, so prose and status cells
+    # are never read as fixture names and URLs.
     $2 ~ /^[[:space:]]*[0-9]+[[:space:]]*$/ {
       number=$2; name=$3; url=$5; ref=$6; decision=$8;
       gsub(/[[:space:]]/, "", number);

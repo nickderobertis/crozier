@@ -201,6 +201,12 @@ function projectTags() {
     ) {
       die("'nx graph' wrote a graph whose nodes are not projects with string tags", "run 'just bootstrap' to reinstall the pinned Nx, then rerun");
     }
+    // A project name reaches Nx's command line, through a shell on Windows: it is held to the names --projects takes.
+    const unnamed = Object.keys(nodes).filter((name) => !NAME_LIST.test(name) || name.includes(","));
+    if (unnamed.length > 0) {
+      die(`'nx graph' names project(s) ${JSON.stringify(unnamed)}, which are not project names (lower-case letters, digits and '-')`,
+        "rename the project in its project.json, then rerun");
+    }
     return Object.fromEntries(Object.entries(nodes).map(([name, node]) => [name, tagsOf(node)]));
   } finally {
     rmSync(scratch, { recursive: true, force: true });

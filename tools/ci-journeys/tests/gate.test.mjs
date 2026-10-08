@@ -167,6 +167,18 @@ test("an Nx answer of the wrong shape stops the gate before any target runs", { 
   }
 });
 
+test("a project name that is no name --projects takes stops the gate before any target runs", { skip: process.platform === "win32" }, (t) => {
+  // It would reach Nx's command line, which Windows runs through a shell.
+  const root = scratchWorkspace(t);
+  commitChange(root, "a/src.txt", "a changed\n");
+  standInNx(root, { nodes: { "a&calc": { data: { root: "a", tags: [] } } }, dependencies: {} }, ["a"]);
+  const run = just(root, ["check"], { NX_BASE: undefined });
+  assert.notEqual(run.status, 0, run.output);
+  assert.match(run.stderr, /names project\(s\) \["a&calc"\], which are not project names/);
+  assert.match(run.stderr, /rename the project in its project.json/);
+  assert.ok(!ran(root, "a") && !ran(root, "b"));
+});
+
 test("--projects=tag:<tag> selects that tag's carriers and --exclude drops one, in either tier", (t) => {
   const root = scratchWorkspace(t);
   write(root, {
