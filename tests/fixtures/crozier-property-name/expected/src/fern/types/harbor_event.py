@@ -10,10 +10,10 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 
 
-class PracticeEvent_Opened(UniversalBaseModel):
+class HarborEvent_Opened(UniversalBaseModel):
     kind: typing.Literal["opened"] = "opened"
-    opened_practice_id: typing_extensions.Annotated[
-        str, FieldMetadata(alias="practice_id"), pydantic.Field(alias="practice_id")
+    opened_harbor_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="harbor_id"), pydantic.Field(alias="harbor_id")
     ]
 
     if IS_PYDANTIC_V2:
@@ -26,7 +26,7 @@ class PracticeEvent_Opened(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-class PracticeEvent_Closed(UniversalBaseModel):
+class HarborEvent_Closed(UniversalBaseModel):
     kind: typing.Literal["closed"] = "closed"
     closed_on: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="closedAt"), pydantic.Field(alias="closedAt")
@@ -42,6 +42,6 @@ class PracticeEvent_Closed(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-PracticeEvent = typing_extensions.Annotated[
-    typing.Union[PracticeEvent_Opened, PracticeEvent_Closed], pydantic.Field(discriminator="kind")
+HarborEvent = typing_extensions.Annotated[
+    typing.Union[HarborEvent_Opened, HarborEvent_Closed], pydantic.Field(discriminator="kind")
 ]

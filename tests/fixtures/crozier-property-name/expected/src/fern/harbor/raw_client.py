@@ -11,55 +11,55 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
-from ..types.practice_event import PracticeEvent
-from ..types.practice_intent import PracticeIntent
-from ..types.practice_service_metadata import PracticeServiceMetadata
-from .types.create_insurance_product_request_coverage import CreateInsuranceProductRequestCoverage
+from ..types.harbor_berth_assignment import HarborBerthAssignment
+from ..types.harbor_event import HarborEvent
+from ..types.harbor_voyage import HarborVoyage
+from .types.create_mooring_permit_request_vessel import CreateMooringPermitRequestVessel
 from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
 
 
-class RawPracticeClient:
+class RawHarborClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def create_service_metadata(
+    def create_berth_assignment(
         self,
-        practice_id: str,
+        harbor_id: str,
         *,
-        practice_service_metadata_create_practice_id: str,
-        service_name: str,
-        duration_minutes: typing.Optional[int] = OMIT,
+        harbor_berth_assignment_create_harbor_id: str,
+        vessel_name: str,
+        stay_hours: typing.Optional[int] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[PracticeServiceMetadata]:
+    ) -> HttpResponse[HarborBerthAssignment]:
         """
         Parameters
         ----------
-        practice_id : str
+        harbor_id : str
 
-        practice_service_metadata_create_practice_id : str
+        harbor_berth_assignment_create_harbor_id : str
 
-        service_name : str
+        vessel_name : str
 
-        duration_minutes : typing.Optional[int]
+        stay_hours : typing.Optional[int]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[PracticeServiceMetadata]
-            The created metadata.
+        HttpResponse[HarborBerthAssignment]
+            The created berth assignment.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"practice/{encode_path_param(practice_id)}/service-metadata",
+            f"harbor/{encode_path_param(harbor_id)}/berth-assignments",
             method="POST",
             json={
-                "practice_id": practice_service_metadata_create_practice_id,
-                "service_name": service_name,
-                "duration_minutes": duration_minutes,
+                "harbor_id": harbor_berth_assignment_create_harbor_id,
+                "vessel_name": vessel_name,
+                "stay_hours": stay_hours,
             },
             headers={
                 "content-type": "application/json",
@@ -70,9 +70,9 @@ class RawPracticeClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    PracticeServiceMetadata,
+                    HarborBerthAssignment,
                     parse_obj_as(
-                        type_=PracticeServiceMetadata,
+                        type_=HarborBerthAssignment,
                         object_=_response.json(),
                     ),
                 )
@@ -86,23 +86,23 @@ class RawPracticeClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_intent(
+    def create_voyage(
         self,
-        practice_id: str,
+        harbor_id: str,
         *,
-        practice_intent_create_practice_id: str,
-        intent: str,
+        harbor_voyage_create_harbor_id: str,
+        route: str,
         tags: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[PracticeIntent]:
+    ) -> HttpResponse[HarborVoyage]:
         """
         Parameters
         ----------
-        practice_id : str
+        harbor_id : str
 
-        practice_intent_create_practice_id : str
+        harbor_voyage_create_harbor_id : str
 
-        intent : str
+        route : str
 
         tags : typing.Optional[typing.Sequence[str]]
 
@@ -111,15 +111,15 @@ class RawPracticeClient:
 
         Returns
         -------
-        HttpResponse[PracticeIntent]
-            The created intent.
+        HttpResponse[HarborVoyage]
+            The created voyage.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"practice/{encode_path_param(practice_id)}/intents",
+            f"harbor/{encode_path_param(harbor_id)}/voyages",
             method="POST",
             json={
-                "practice_id": practice_intent_create_practice_id,
-                "intent": intent,
+                "harbor_id": harbor_voyage_create_harbor_id,
+                "route": route,
                 "tags": tags,
             },
             headers={
@@ -131,9 +131,9 @@ class RawPracticeClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    PracticeIntent,
+                    HarborVoyage,
                     parse_obj_as(
-                        type_=PracticeIntent,
+                        type_=HarborVoyage,
                         object_=_response.json(),
                     ),
                 )
@@ -147,38 +147,38 @@ class RawPracticeClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_insurance_product(
+    def create_mooring_permit(
         self,
-        practice_id: str,
+        harbor_id: str,
         *,
-        insurance_product_practice_id: str,
-        coverage: typing.Optional[CreateInsuranceProductRequestCoverage] = OMIT,
+        mooring_permit_harbor_id: str,
+        vessel: typing.Optional[CreateMooringPermitRequestVessel] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[PracticeEvent]:
+    ) -> HttpResponse[HarborEvent]:
         """
         Parameters
         ----------
-        practice_id : str
+        harbor_id : str
 
-        insurance_product_practice_id : str
+        mooring_permit_harbor_id : str
 
-        coverage : typing.Optional[CreateInsuranceProductRequestCoverage]
+        vessel : typing.Optional[CreateMooringPermitRequestVessel]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[PracticeEvent]
-            The created product's events.
+        HttpResponse[HarborEvent]
+            The created permit's events.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"practice/{encode_path_param(practice_id)}/insurance-products",
+            f"harbor/{encode_path_param(harbor_id)}/mooring-permits",
             method="POST",
             json={
-                "practice_id": insurance_product_practice_id,
-                "coverage": convert_and_respect_annotation_metadata(
-                    object_=coverage, annotation=CreateInsuranceProductRequestCoverage, direction="write"
+                "harbor_id": mooring_permit_harbor_id,
+                "vessel": convert_and_respect_annotation_metadata(
+                    object_=vessel, annotation=CreateMooringPermitRequestVessel, direction="write"
                 ),
             },
             headers={
@@ -190,9 +190,9 @@ class RawPracticeClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    PracticeEvent,
+                    HarborEvent,
                     parse_obj_as(
-                        type_=PracticeEvent,
+                        type_=HarborEvent,
                         object_=_response.json(),
                     ),
                 )
@@ -206,20 +206,20 @@ class RawPracticeClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_note(
+    def create_log_entry(
         self,
-        practice_id: str,
+        harbor_id: str,
         *,
-        note_practice_id: str,
+        log_entry_harbor_id: str,
         body: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
         Parameters
         ----------
-        practice_id : str
+        harbor_id : str
 
-        note_practice_id : str
+        log_entry_harbor_id : str
 
         body : str
 
@@ -231,10 +231,10 @@ class RawPracticeClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"practice/{encode_path_param(practice_id)}/notes",
+            f"harbor/{encode_path_param(harbor_id)}/log-entries",
             method="POST",
             data={
-                "practice_id": note_practice_id,
+                "harbor_id": log_entry_harbor_id,
                 "body": body,
             },
             headers={
@@ -256,45 +256,45 @@ class RawPracticeClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
-class AsyncRawPracticeClient:
+class AsyncRawHarborClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def create_service_metadata(
+    async def create_berth_assignment(
         self,
-        practice_id: str,
+        harbor_id: str,
         *,
-        practice_service_metadata_create_practice_id: str,
-        service_name: str,
-        duration_minutes: typing.Optional[int] = OMIT,
+        harbor_berth_assignment_create_harbor_id: str,
+        vessel_name: str,
+        stay_hours: typing.Optional[int] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[PracticeServiceMetadata]:
+    ) -> AsyncHttpResponse[HarborBerthAssignment]:
         """
         Parameters
         ----------
-        practice_id : str
+        harbor_id : str
 
-        practice_service_metadata_create_practice_id : str
+        harbor_berth_assignment_create_harbor_id : str
 
-        service_name : str
+        vessel_name : str
 
-        duration_minutes : typing.Optional[int]
+        stay_hours : typing.Optional[int]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[PracticeServiceMetadata]
-            The created metadata.
+        AsyncHttpResponse[HarborBerthAssignment]
+            The created berth assignment.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"practice/{encode_path_param(practice_id)}/service-metadata",
+            f"harbor/{encode_path_param(harbor_id)}/berth-assignments",
             method="POST",
             json={
-                "practice_id": practice_service_metadata_create_practice_id,
-                "service_name": service_name,
-                "duration_minutes": duration_minutes,
+                "harbor_id": harbor_berth_assignment_create_harbor_id,
+                "vessel_name": vessel_name,
+                "stay_hours": stay_hours,
             },
             headers={
                 "content-type": "application/json",
@@ -305,9 +305,9 @@ class AsyncRawPracticeClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    PracticeServiceMetadata,
+                    HarborBerthAssignment,
                     parse_obj_as(
-                        type_=PracticeServiceMetadata,
+                        type_=HarborBerthAssignment,
                         object_=_response.json(),
                     ),
                 )
@@ -321,23 +321,23 @@ class AsyncRawPracticeClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_intent(
+    async def create_voyage(
         self,
-        practice_id: str,
+        harbor_id: str,
         *,
-        practice_intent_create_practice_id: str,
-        intent: str,
+        harbor_voyage_create_harbor_id: str,
+        route: str,
         tags: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[PracticeIntent]:
+    ) -> AsyncHttpResponse[HarborVoyage]:
         """
         Parameters
         ----------
-        practice_id : str
+        harbor_id : str
 
-        practice_intent_create_practice_id : str
+        harbor_voyage_create_harbor_id : str
 
-        intent : str
+        route : str
 
         tags : typing.Optional[typing.Sequence[str]]
 
@@ -346,15 +346,15 @@ class AsyncRawPracticeClient:
 
         Returns
         -------
-        AsyncHttpResponse[PracticeIntent]
-            The created intent.
+        AsyncHttpResponse[HarborVoyage]
+            The created voyage.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"practice/{encode_path_param(practice_id)}/intents",
+            f"harbor/{encode_path_param(harbor_id)}/voyages",
             method="POST",
             json={
-                "practice_id": practice_intent_create_practice_id,
-                "intent": intent,
+                "harbor_id": harbor_voyage_create_harbor_id,
+                "route": route,
                 "tags": tags,
             },
             headers={
@@ -366,9 +366,9 @@ class AsyncRawPracticeClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    PracticeIntent,
+                    HarborVoyage,
                     parse_obj_as(
-                        type_=PracticeIntent,
+                        type_=HarborVoyage,
                         object_=_response.json(),
                     ),
                 )
@@ -382,38 +382,38 @@ class AsyncRawPracticeClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_insurance_product(
+    async def create_mooring_permit(
         self,
-        practice_id: str,
+        harbor_id: str,
         *,
-        insurance_product_practice_id: str,
-        coverage: typing.Optional[CreateInsuranceProductRequestCoverage] = OMIT,
+        mooring_permit_harbor_id: str,
+        vessel: typing.Optional[CreateMooringPermitRequestVessel] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[PracticeEvent]:
+    ) -> AsyncHttpResponse[HarborEvent]:
         """
         Parameters
         ----------
-        practice_id : str
+        harbor_id : str
 
-        insurance_product_practice_id : str
+        mooring_permit_harbor_id : str
 
-        coverage : typing.Optional[CreateInsuranceProductRequestCoverage]
+        vessel : typing.Optional[CreateMooringPermitRequestVessel]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[PracticeEvent]
-            The created product's events.
+        AsyncHttpResponse[HarborEvent]
+            The created permit's events.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"practice/{encode_path_param(practice_id)}/insurance-products",
+            f"harbor/{encode_path_param(harbor_id)}/mooring-permits",
             method="POST",
             json={
-                "practice_id": insurance_product_practice_id,
-                "coverage": convert_and_respect_annotation_metadata(
-                    object_=coverage, annotation=CreateInsuranceProductRequestCoverage, direction="write"
+                "harbor_id": mooring_permit_harbor_id,
+                "vessel": convert_and_respect_annotation_metadata(
+                    object_=vessel, annotation=CreateMooringPermitRequestVessel, direction="write"
                 ),
             },
             headers={
@@ -425,9 +425,9 @@ class AsyncRawPracticeClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    PracticeEvent,
+                    HarborEvent,
                     parse_obj_as(
-                        type_=PracticeEvent,
+                        type_=HarborEvent,
                         object_=_response.json(),
                     ),
                 )
@@ -441,20 +441,20 @@ class AsyncRawPracticeClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_note(
+    async def create_log_entry(
         self,
-        practice_id: str,
+        harbor_id: str,
         *,
-        note_practice_id: str,
+        log_entry_harbor_id: str,
         body: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
-        practice_id : str
+        harbor_id : str
 
-        note_practice_id : str
+        log_entry_harbor_id : str
 
         body : str
 
@@ -466,10 +466,10 @@ class AsyncRawPracticeClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"practice/{encode_path_param(practice_id)}/notes",
+            f"harbor/{encode_path_param(harbor_id)}/log-entries",
             method="POST",
             data={
-                "practice_id": note_practice_id,
+                "harbor_id": log_entry_harbor_id,
                 "body": body,
             },
             headers={

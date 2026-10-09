@@ -8,9 +8,14 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 
 
-class PracticeClosed(UniversalBaseModel):
-    closed_on: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="closedAt"), pydantic.Field(alias="closedAt")
+class HarborBerthAssignment(UniversalBaseModel):
+    id: str
+    owning_harbor_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="harbor_id"), pydantic.Field(alias="harbor_id")
+    ]
+    vessel_name: str
+    label: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="displayName"), pydantic.Field(alias="displayName")
     ] = None
 
     if IS_PYDANTIC_V2:

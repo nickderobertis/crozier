@@ -8,9 +8,9 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 
 
-class PracticeOpened(UniversalBaseModel):
-    opened_practice_id: typing_extensions.Annotated[
-        str, FieldMetadata(alias="practice_id"), pydantic.Field(alias="practice_id")
+class HarborOpened(UniversalBaseModel):
+    opened_harbor_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="harbor_id"), pydantic.Field(alias="harbor_id")
     ]
 
     if IS_PYDANTIC_V2:
