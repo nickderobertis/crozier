@@ -2180,6 +2180,11 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
     }
+    // A webhook naming its SDK group and method (`x-fern-sdk-group-name` beside
+    // `x-fern-sdk-method-name`) has its inline payload named for both and placed
+    // in the group's package (`parcels/types/delivered_parcels_payload.py`);
+    // any other is `{Method}{Event}Payload` in the root `types/`.
+    let mut webhook_placements: Vec<(String, String)> = Vec::new();
     for (event, item) in &doc.webhooks {
         for (method, operation) in item.operations() {
             let Some(schema) = operation
@@ -2193,7 +2198,25 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             if schema.reference.is_some() {
                 continue;
             }
-            let name = naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_")));
+            let name = match (operation.sdk_method_name(), declared_group(operation)) {
+                (Some(sdk_method), Some(group)) => {
+                    let name = naming::sanitize_identifier(&format!(
+                        "{}{}Payload",
+                        naming::to_pascal_case(sdk_method),
+                        naming::to_pascal_case(group.last().copied().unwrap_or_default())
+                    ));
+                    webhook_placements.push((
+                        name.clone(),
+                        group
+                            .iter()
+                            .map(|segment| group_segment_module(segment))
+                            .collect::<Vec<_>>()
+                            .join("/"),
+                    ));
+                    name
+                }
+                _ => naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_"))),
+            };
             builder.add_named(&name, schema);
         }
     }
@@ -2365,6 +2388,12 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             continue;
         };
         let class = ref_to_class(&format!("#/components/schemas/{name}"));
+        if let Some(index) = types.iter().position(|decl| decl.name() == class) {
+            let decl = types.remove(index);
+            tag_types.push(TagTypeDecl { module, decl });
+        }
+    }
+    for (class, module) in webhook_placements {
         if let Some(index) = types.iter().position(|decl| decl.name() == class) {
             let decl = types.remove(index);
             tag_types.push(TagTypeDecl { module, decl });

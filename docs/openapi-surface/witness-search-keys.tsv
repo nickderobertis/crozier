@@ -57,3 +57,4 @@ server-default-url-templated	server.x-fern-default-url:templated	document-paths.
 server-name-several	server.x-fern-server-name:several-undescribed	document-paths.md	supported
 type-misspelled-scalar	schema.type:misspelled-scalar	schemas.md	supported
 unread-date-time-example	schema.example:unread-date-time	schemas.md	supported
+webhook-inline-json-body-named	openapi.webhooks:inline-json-body-named	oas31-extensions.md	supported

@@ -1948,6 +1948,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "courier-delivery-hooks-literals",
+        "docs/openapi-surface/handwritten/courier-delivery-hooks/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "crane-hire-cursor",
         "docs/fern-measurements/clients-extensions/crane-hire-cursor/openapi.yml",
         &[],

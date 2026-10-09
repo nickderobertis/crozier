@@ -279,6 +279,14 @@ The shape: a component schema declaring a non-empty `x-tags` list (`schema.x-tag
 |---|---|---|
 | `schema-x-tags` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Named webhook payload
+
+The shape: a `webhooks` operation whose `application/json` request body is an inline schema and that declares an SDK group or method name (`openapi.webhooks:inline-json-body-named`). With both, Fern names the payload `{Method}{Group}Payload` in the group's package (`parcels/types/delivered_parcels_payload.py`).
+
+| key | verdict | remaining work |
+|---|---|---|
+| `webhook-inline-json-body-named` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -307,3 +315,4 @@ The shape: a component schema declaring a non-empty `x-tags` list (`schema.x-tag
 | `operation-group-types-beside-child-group` | `none-registrable` | `dock-yard-bookings` |
 | `schema-sdk-group-name` | `none-registrable` | `vineyard-cellar-glossary` |
 | `schema-x-tags` | `none-registrable` | `vineyard-cellar-glossary` |
+| `webhook-inline-json-body-named` | `none-registrable` | `courier-delivery-hooks` |
