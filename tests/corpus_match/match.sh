@@ -14,8 +14,9 @@
 # matches by substring); nextest still runs each test in its own process, and
 # `--no-fail-fast` names every failing golden in its summary, so a source
 # problem stays attributable to its API. Before running, the selection is
-# checked against `cargo nextest list` name for name; `CORPUS_MATCH_LIST=1`
-# prints that checked selection and stops before the source check and the run.
+# checked against `cargo nextest list` name for name; `CORPUS_MATCH_LIST=PATH`
+# writes that checked selection to PATH and stops before the source check and
+# the run.
 #
 # The inventory is held to the registered corpora in both directions by
 # crates/crozier-e2e/tests/e2e.rs's `every_registered_corpus_is_wired_into_the_gate`:
@@ -324,8 +325,8 @@ selected=$(cargo nextest list "${nextest[@]}" --message-format oneline --color n
   echo "corpus-match: list each test once, by its exact nextest name (a test in a module by its full path, as \`cargo nextest list -p crozier-e2e --test e2e\` prints it), then re-run" >&2
   exit 1
 }
-if [ "${CORPUS_MATCH_LIST:-}" = 1 ]; then
-  printf '%s\n' "$selected"
+if [ -n "${CORPUS_MATCH_LIST:-}" ]; then
+  printf '%s\n' "$selected" >"$CORPUS_MATCH_LIST"
   exit 0
 fi
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -50,11 +51,14 @@ class MatchSelection(unittest.TestCase):
 
     def test_nextest_selects_exactly_the_listed_inventory(self) -> None:
         # Nx forces colour on, as CI can; the selection must still read as plain names.
-        result = subprocess.run(["bash", str(SCRIPT)], capture_output=True, text=True, timeout=1800,
-                                env={**os.environ, "CORPUS_MATCH_LIST": "1", "FORCE_COLOR": "1",
-                                     "CLICOLOR_FORCE": "1", "CARGO_TERM_COLOR": "always"})
-        self.assertEqual(0, result.returncode, result.stderr)
-        selected = result.stdout.splitlines()
+        with tempfile.TemporaryDirectory() as scratch:
+            written = Path(scratch) / "selection"
+            result = subprocess.run(["bash", str(SCRIPT)], capture_output=True, text=True, timeout=1800,
+                                    env={**os.environ, "CORPUS_MATCH_LIST": str(written), "FORCE_COLOR": "1",
+                                         "CLICOLOR_FORCE": "1", "CARGO_TERM_COLOR": "always"})
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual("", result.stdout)
+            selected = written.read_text(encoding="utf-8").splitlines()
         self.assertEqual(len(self.listed), len(set(self.listed)), "the inventory lists a test twice")
         self.assertEqual(sorted(self.listed), sorted(selected))
         # A substring filter would also pick these siblings of listed names up.
@@ -67,10 +71,11 @@ class MatchSelection(unittest.TestCase):
                              (self.listed + [self.listed[0]], f"< {self.listed[0]}"),
                              ([name.removeprefix("overlay_goldens::") for name in self.listed],
                               "< overlay_goldens_match_fern_output")):
-            with self.subTest(named=named):
-                result = run(with_inventory(self.text, names), CORPUS_MATCH_LIST="1")
+            with self.subTest(named=named), tempfile.TemporaryDirectory() as scratch:
+                written = Path(scratch) / "selection"
+                result = run(with_inventory(self.text, names), CORPUS_MATCH_LIST=str(written))
                 self.assertEqual(1, result.returncode, result.stderr)
-                self.assertEqual("", result.stdout)
+                self.assertFalse(written.exists(), "a refused selection was written")
                 self.assertIn("corpus-match: nextest's selection differs from the inventory", result.stderr)
                 self.assertIn(f"\n{named}\n", result.stderr)
                 self.assertIn("then re-run", result.stderr)
