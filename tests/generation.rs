@@ -14884,6 +14884,66 @@ components:
 
 const PLAN_BODY: &str = "    PlanBody:\n      type: object\n      properties:\n        origin: { type: string }\n        live: { type: boolean }\n";
 
+/// A `stream-condition` split with no `format`, or `format: json`, over a
+/// success that declares only `application/json`: the streaming half reads that
+/// media as JSON lines and the buffered half returns the model, as measured at
+/// Fern 5.20.0.
+#[test]
+fn a_json_stream_condition_streams_its_json_media_as_lines() {
+    for format in ["", "\n        format: json"] {
+        let files = render(&format!(
+            r##"openapi: 3.0.3
+info: {{ title: Glossary, version: "1" }}
+paths:
+  /define:
+    post:
+      operationId: define
+      x-fern-streaming:{format}
+        stream-condition: $request.live
+        response: {{ $ref: "#/components/schemas/Definition" }}
+        response-stream: {{ $ref: "#/components/schemas/Definition" }}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [term]
+              properties:
+                term: {{ type: string }}
+                live: {{ type: boolean }}
+      responses:
+        "200":
+          description: The definition.
+          content:
+            application/json: {{ schema: {{ $ref: "#/components/schemas/Definition" }} }}
+components:
+  schemas:
+    Definition:
+      type: object
+      properties:
+        text: {{ type: string }}
+"##
+        ));
+        let raw = &files["src/acme/raw_client.py"];
+        let stream = raw.find("def define_stream(").expect(raw);
+        let buffered = raw.find("def define(").expect(raw);
+        let streamed = &raw[stream..buffered];
+        assert!(
+            streamed.contains("for _text in _response.iter_lines():")
+                && streamed.contains("object_=json.loads(_text),")
+                && streamed.contains(r#""live": True,"#),
+            "{format:?}: {streamed}"
+        );
+        assert!(!raw.contains("EventSource"), "{format:?}: {raw}");
+        let client = &files["src/acme/client.py"];
+        assert!(
+            client.contains("-> typing.Iterator[Definition]:") && client.contains("-> Definition:"),
+            "{format:?}: {client}"
+        );
+    }
+}
+
 /// A `stream-condition` split's halves: the streaming half is named from the
 /// whole `operationId` and the buffered half by the operation's own name; a
 /// referenced body keeps its model and sends the JSON content-type; a body a

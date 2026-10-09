@@ -136,8 +136,10 @@ class Wire:
 WIRE = Wire()
 
 
+# llmlint: ignore-block[async_typed_clients_at_boundaries] The synchronous `FernApi` is half of the generated SDK under test, not this script's own choice of HTTP client: every journey drives it and `async_client`'s `AsyncFernApi` alike, because the task is proving both halves of each streaming method.
 def sync_client(wire):
     return fern.FernApi(base_url=wire.base, max_retries=0)
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
 
 
 def async_client(wire):

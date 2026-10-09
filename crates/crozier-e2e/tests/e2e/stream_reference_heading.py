@@ -48,11 +48,13 @@ class Events(BaseHTTPRequestHandler):
 
 server = ThreadingHTTPServer(("127.0.0.1", 0), Events)
 threading.Thread(target=server.serve_forever, daemon=True).start()
+# llmlint: ignore-block[async_typed_clients_at_boundaries] The synchronous `FernApi` is the generated SDK under test, not this script's own choice of HTTP client: `reference.md` heads the sync client's `follow_build_log`, so the departure's evidence compares that heading with that method.
 client = FernApi(base_url=f"http://127.0.0.1:{server.server_address[1]}")
 method = client.follow_build_log
 declared = inspect.signature(method).return_annotation
 declared = f"typing.Iterator[{declared.__args__[0].__name__}]"
 yielded = sorted({type(chunk).__name__ for chunk in method(build_id="b-1")})
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
 heading = documented["follow_build_log"]
 print(f"reference.md heads follow_build_log `-> {heading}`; the method declares `-> {declared}`; iterating yields {yielded}")
 agrees = heading == declared and yielded == [declared.removeprefix("typing.Iterator[").removesuffix("]")]
