@@ -67,12 +67,13 @@ def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
 
     def handle(request: httpx.Request) -> httpx.Response:
         recorded.append(request)
-        if json_parameter == "path":
-            assert request.url.path == "/plans/parameter-value"
-        elif json_parameter == "query":
-            assert request.url.params["json"] == "parameter-value"
-        elif json_parameter == "header":
-            assert request.headers["json"] == "parameter-value"
+        match json_parameter:
+            case "path":
+                assert request.url.path == "/plans/parameter-value"
+            case "query":
+                assert request.url.params["json"] == "parameter-value"
+            case "header":
+                assert request.headers["json"] == "parameter-value"
         content_type = request.headers["content-type"]
         assert content_type.startswith("multipart/form-data; boundary=")
         message = BytesParser(policy=policy.default).parsebytes(
