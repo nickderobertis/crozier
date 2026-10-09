@@ -4530,7 +4530,8 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
 /// Whether the operation's success response is a stream. A declared
 /// streaming extension without a `stream-condition` streams whatever the
 /// response's media types (Fern 5.20.0 streams `x-fern-streaming: {format: sse}`
-/// over a lone `application/json`), and the boolean `false` streams nothing.
+/// over a lone `application/json`); the boolean `false` declares nothing, as no
+/// extension does.
 /// Otherwise Fern prefers an `application/json` representation when a response
 /// advertises both it and `text/event-stream`; an SSE-only response becomes an
 /// iterator of chunks, typed through [`stream_chunk_view`] — unless its schema is a

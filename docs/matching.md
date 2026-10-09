@@ -1382,10 +1382,11 @@ Four of them shape the client tree and its methods, and corpus row 108
   `format: sse` decodes Server-Sent Events over any success media, ending at the
   `terminator`'s `data` when one is declared. `format: json`, the boolean
   `true`, and a `stream-condition` naming no format stream newline-delimited JSON
-  (`iter_lines` and `json.loads`), skipping blank and malformed lines. `false`
-  streams nothing. A mapping naming neither a format nor a condition leaves the
-  response's media to decide. Without the extension, a `text/event-stream`-only
-  success streams events, typed from its `schema` or `itemSchema`. An inline
+  (`iter_lines` and `json.loads`), skipping blank and malformed lines. `false`,
+  and a mapping naming neither a format nor a condition, leave the response's
+  media to decide, as no extension does. Without the extension, a `text/event-stream`-only
+  success streams events, typed from its `schema`, else its `itemSchema`
+  (Fern reads `itemSchema` on no other media type). An inline
   union hoists the same `{Ctx}Response` a JSON body would, and a binary schema
   downloads bytes instead. A chunk that is a `oneOf` discriminated on `event`,
   whose `$ref` variants declare exactly `event` and `data`, is dispatched on each

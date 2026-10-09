@@ -697,7 +697,8 @@ pub(crate) struct CrozierNaming {
 /// The value of `x-crozier-streaming` / `x-fern-streaming`: how an operation
 /// streams, written as a boolean or as a mapping. `true` streams the success
 /// response as newline-delimited JSON, as a mapping declaring `format: json`
-/// does; `false` declares no stream at all (see [`Streaming::declares_stream`]).
+/// does; `false` declares no stream, leaving the response's media to decide as
+/// if no extension were written (see [`Streaming::declares_stream`]).
 #[derive(Debug, Clone)]
 pub enum Streaming {
     /// The boolean form.
@@ -770,7 +771,8 @@ impl<'de> Deserialize<'de> for Streaming {
 
 impl Streaming {
     /// Whether the extension declares a stream: every mapping and `true` do;
-    /// `false` declares none, so the operation is an ordinary buffered call.
+    /// `false` declares none, so the response's media types decide, as for an
+    /// operation without the extension.
     #[must_use]
     pub fn declares_stream(&self) -> bool {
         !matches!(self, Streaming::Flag(false))
@@ -1026,11 +1028,15 @@ pub struct Response {
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(from = "MediaTypeDecl")]
 pub struct MediaType {
-    /// The schema for this media type. A sequential media type (`text/event-stream`)
-    /// may declare its schema per item as `itemSchema` instead, which Fern types
-    /// each streamed item from; that item schema lands here when no `schema`
+    /// The schema for this media type. A `text/event-stream` media type may
+    /// declare its schema per item as `itemSchema` instead, which Fern types each
+    /// streamed event from; [`load`] moves that item schema here when no `schema`
     /// is declared beside it.
     pub schema: Option<Schema>,
+    /// The per-item schema as written (`itemSchema`), until [`load`] reads it.
+    /// Fern reads it only on `text/event-stream`: on `application/json` it types
+    /// the body `typing.Any`, as a media type declaring no schema.
+    item_schema: Option<Schema>,
     /// Optional example value for the media payload.
     pub example: Option<serde_json::Value>,
     /// Named examples for the media payload, in declaration order.
@@ -1057,7 +1063,8 @@ struct MediaTypeDecl {
 impl From<MediaTypeDecl> for MediaType {
     fn from(decl: MediaTypeDecl) -> Self {
         MediaType {
-            schema: decl.schema.or(decl.item_schema),
+            schema: decl.schema,
+            item_schema: decl.item_schema,
             example: decl.example,
             examples: decl.examples,
             encoding: decl.encoding,
@@ -1960,6 +1967,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // before anything reads the map, so the validation below and every later pass
     // see the Security Scheme Object the reference names.
     normalize_security_scheme_refs(&mut doc);
+    normalize_event_stream_item_schemas(&mut doc);
     // An apiKey scheme's `name` (the header/query/cookie carrying the key) is
     // required by OpenAPI; without it the generated header name would be empty.
     // Fail at the boundary rather than emit a broken client.
@@ -3245,6 +3253,27 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
 /// `-> None` and the response schema is never reached (and, if it was only reachable
 /// through such a response, never generated). Resolving here restores both. Inert on
 /// specs that inline every response (every synthetic fixture).
+/// Type a `text/event-stream` response declaring only an `itemSchema` from that
+/// item schema, as Fern 5.20.0 types each streamed event; a `schema` beside it
+/// wins, and any other media type's `itemSchema` is not read at all.
+fn normalize_event_stream_item_schemas(doc: &mut OpenApi) {
+    let fold = |response: &mut Response| {
+        for (media_type, media) in &mut response.content {
+            let base = media_type.split(';').next().unwrap_or_default().trim();
+            if base.eq_ignore_ascii_case("text/event-stream") && media.schema.is_none() {
+                media.schema = media.item_schema.take();
+            }
+        }
+    };
+    for item in doc.paths.values_mut().chain(doc.webhooks.values_mut()) {
+        for slot in item.operation_slots() {
+            let Some(op) = slot else { continue };
+            op.responses.values_mut().for_each(fold);
+        }
+    }
+    doc.components.responses.values_mut().for_each(fold);
+}
+
 fn normalize_responses(doc: &mut OpenApi) {
     let defs = doc.components.responses.clone();
     for item in doc.paths.values_mut() {

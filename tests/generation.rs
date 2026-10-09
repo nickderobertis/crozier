@@ -14560,8 +14560,8 @@ fn stream_framing(raw: &str) -> Option<&'static str> {
 
 /// Every form of the streaming extension frames the stream as Fern 5.20.0 does,
 /// in both spellings: the boolean `true` and `format: json` stream JSON lines
-/// over any media, `format: sse` decodes events over any media, `false` streams
-/// nothing, and a mapping naming no format leaves the response's media to decide.
+/// over any media, `format: sse` decodes events over any media, and `false` or a
+/// mapping naming no format leaves the response's media to decide.
 #[test]
 fn streaming_extension_forms_frame_the_stream_as_declared() {
     for spelling in ["x-fern-streaming", "x-crozier-streaming"] {
@@ -14716,6 +14716,17 @@ fn event_stream_schemas_decide_download_item_type_and_heading() {
         item["reference.md"].contains("feed_items</a>() -> typing.Iterator[Chunk]</code>"),
         "{}",
         item["reference.md"]
+    );
+    // `itemSchema` on a buffered JSON body is not read: Fern 5.20.0 types it
+    // `typing.Any`, as a media type declaring no schema.
+    let json_item = render(&streaming_operation(
+        "",
+        r##"{ application/json: { itemSchema: { $ref: "#/components/schemas/Item" } } }"##,
+    ));
+    assert!(
+        json_item["src/acme/client.py"].contains(") -> typing.Any:"),
+        "{}",
+        json_item["src/acme/client.py"]
     );
     // A `schema` declared beside `itemSchema` types the events, as at Fern 5.20.0.
     let both = render(&streaming_operation(
