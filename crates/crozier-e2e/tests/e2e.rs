@@ -20667,6 +20667,172 @@ fn namespaced_enum_collisions_follow_the_parameter_location() {
     }
 }
 
+/// A component named like a request type Fern synthesizes for a
+/// `stream-condition` split — `{Ctx}Request` or `{Ctx}StreamRequest` — is refused
+/// in both modes, exit 1 and nothing written, naming the operation and the
+/// component; a name-only fault is never generated under a repaired name. The
+/// adjacent control, whose SDK method name moves the split clear of the body's
+/// name, generates (type-name-collision/evidence/stream-split-*.pinned-fern.log).
+#[test]
+fn stream_split_request_name_collisions_refuse_in_both_modes() {
+    let evidence = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("type-name-collision/evidence");
+    for (case, element) in [
+        (
+            "stream-split-request-name",
+            r#"POST /lookups stream-condition request type LookupRequest collides with component schema "LookupRequest""#,
+        ),
+        (
+            "stream-split-stream-request-name",
+            r#"POST /lookups stream-condition request type LookupStreamRequest collides with component schema "LookupStreamRequest""#,
+        ),
+        (
+            "stream-split-sdk-method-request-name",
+            r#"POST /lookups stream-condition request type FindRequest collides with component schema "FindRequest""#,
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &evidence.join(format!("{case}.yml")), strict).unwrap();
+            let failures = refused_failures("type-name-collision", &run, element, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{case}: {}", run.stderr);
+        }
+    }
+    assert_generates_in_both_modes(
+        &evidence.join("stream-split-sdk-method-control.yml"),
+        "stream-split-sdk-method-control",
+    );
+}
+
+/// The streaming fixtures' journeys (`e2e/streaming_journeys.py`): each generated
+/// SDK's sync and async streaming methods driven through httpx's transport
+/// boundary — chunks parsed, SSE events dispatched on their `event` field, a
+/// declared terminator ending the stream, JSON lines skipping blank and
+/// malformed lines, a binary event stream downloading bytes, each
+/// `stream-condition` half sending its condition, and a 400 raising `ApiError`
+/// with the next call recovering. The same journeys run over Fern's certified
+/// tree for each fixture, so the behaviour asserted is Fern's as well as crozier's.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_streaming_journeys_hold_for_crozier_and_fern() {
+    let script = repo_root().join("crates/crozier-e2e/tests/e2e/streaming_journeys.py");
+    let handwritten = repo_root().join(HANDWRITTEN_DIR);
+    let mut cases: Vec<(&str, PathBuf, PathBuf)> = [
+        "event-stream-binary-download",
+        "event-stream-const-tagged-union",
+        "event-stream-event-dispatch",
+        "event-stream-item-schema",
+        "stream-condition-ref-body-header",
+        "stream-condition-shared-body",
+        "stream-condition-union-body",
+        "streaming-extension-boolean",
+        "streaming-extension-sse-format",
+        "streaming-extension-terminator",
+    ]
+    .into_iter()
+    .map(|name| {
+        (
+            name,
+            handwritten.join(name).join("openapi.yml"),
+            handwritten.join(name).join("fern-expected/src"),
+        )
+    })
+    .collect();
+    cases.push((
+        "zylon-private-gpt",
+        repo_root().join("tests/fixtures/corpus-sources/zylon-private-gpt/openapi.json"),
+        fixture_dir("zylon-private-gpt").join("expected/src"),
+    ));
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let directory = tempfile::tempdir().expect("streaming SDKs");
+    for (name, spec, fern_src) in cases {
+        let sdk = directory.path().join(name);
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&sdk)
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+            ])
+            .assert()
+            .success();
+        for (side, src) in [("crozier", sdk.join("src")), ("fern", fern_src)] {
+            let run = std::process::Command::new(&python)
+                .arg(&script)
+                .arg(name)
+                .arg(&src)
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .output()
+                .expect("run the streaming journeys");
+            assert!(
+                run.status.success(),
+                "{name} ({side}): {}{}",
+                String::from_utf8_lossy(&run.stdout),
+                String::from_utf8_lossy(&run.stderr)
+            );
+            assert_eq!(
+                String::from_utf8_lossy(&run.stdout).trim(),
+                format!("{name}: ok"),
+                "{name} ({side})"
+            );
+        }
+    }
+}
+
+/// The `stream-reference-return-type` departure's evidence journey: over Fern's
+/// certified tree, `reference.md`'s heading contradicts the method's declared
+/// return and what iterating it yields; over crozier's, all three agree.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_stream_reference_heading_states_the_returned_iterator() {
+    let script = repo_root().join("docs/departures/evidence/stream-reference-return-type.py");
+    let fixture = repo_root()
+        .join(HANDWRITTEN_DIR)
+        .join("streaming-extension-terminator");
+    let directory = tempfile::tempdir().expect("terminator SDK");
+    let sdk = directory.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(fixture.join("openapi.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    for (root, expectation, succeeds) in [
+        (fixture.join("fern-expected"), "contradicts", true),
+        (fixture.join("fern-expected"), "agrees", false),
+        (sdk.clone(), "agrees", true),
+    ] {
+        let run = std::process::Command::new(&python)
+            .arg(&script)
+            .arg(&root)
+            .arg(expectation)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("run the heading journey");
+        assert_eq!(
+            run.status.success(),
+            succeeds,
+            "{} {expectation}: {}{}",
+            root.display(),
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
+    }
+}
+
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_body_query_collision_keeps_both_callers_values() {

@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: Lyric Finder
+  version: 1.0.0
+paths:
+  /lookups:
+    post:
+      operationId: lookup
+      x-fern-streaming:
+        format: sse
+        stream-condition: $request.follow
+        response:
+          $ref: '#/components/schemas/Match'
+        response-stream:
+          $ref: '#/components/schemas/Match'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LookupRequest'
+      responses:
+        '200':
+          description: The match.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/Match'
+components:
+  schemas:
+    LookupRequest:
+      type: object
+      properties:
+        phrase:
+          type: string
+        follow:
+          type: boolean
+    Match:
+      type: object
+      properties:
+        title:
+          type: string

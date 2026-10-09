@@ -316,3 +316,53 @@ fn a_blank_property_name_leaves_the_collision_refused() {
         r#"body property "practice_id" collides with another request property"#,
     );
 }
+
+/// The committed probe `docs/fern-refusals/type-name-collision/evidence/<name>.yml`.
+fn evidence_probe(name: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-refusals/type-name-collision/evidence")
+        .join(format!("{name}.yml"))
+}
+
+#[test]
+fn a_component_named_like_a_stream_condition_split_request_is_refused() {
+    // Pinned Fern synthesizes `{Ctx}Request` and `{Ctx}StreamRequest` for a
+    // stream-condition operation's two halves, the context being its SDK method
+    // name or else its operationId, and refuses a component already holding
+    // either name — the body's own schema or any other.
+    for (probe, element) in [
+        (
+            "stream-split-request-name",
+            r#"POST /lookups stream-condition request type LookupRequest collides with component schema "LookupRequest""#,
+        ),
+        (
+            "stream-split-stream-request-name",
+            r#"POST /lookups stream-condition request type LookupStreamRequest collides with component schema "LookupStreamRequest""#,
+        ),
+        (
+            "stream-split-sdk-method-request-name",
+            r#"POST /lookups stream-condition request type FindRequest collides with component schema "FindRequest""#,
+        ),
+    ] {
+        for strict in [false, true] {
+            let error = render(&evidence_probe(probe), strict)
+                .expect_err(&format!("{probe}: generated (strict: {strict})"));
+            assert!(
+                error.contains("type-name-collision: ") && error.contains(element),
+                "{probe} (strict: {strict}): {error}"
+            );
+            assert_eq!(error.contains("fern-strict"), strict, "{error}");
+        }
+    }
+}
+
+#[test]
+fn a_stream_condition_whose_method_name_clears_the_component_generates() {
+    // The control: an SDK method name moves the split's names off the body's
+    // `LookupRequest`, and pinned Fern generates.
+    for strict in [false, true] {
+        let files = render(&evidence_probe("stream-split-sdk-method-control"), strict)
+            .expect("the renamed split generates");
+        assert!(files > 0);
+    }
+}
