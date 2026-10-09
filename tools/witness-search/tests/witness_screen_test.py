@@ -181,6 +181,8 @@ class LegacyScreenCliTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    # Any: each row is a parsed screens.jsonl record, whose values are whatever
+    # JSON the screen wrote (strings, lists, nested objects); tests read them by key.
     def rows(self) -> list[dict[str, Any]]:
         path = self.evidence / "screens.jsonl"
         if not path.is_file():

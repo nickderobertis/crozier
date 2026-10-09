@@ -828,6 +828,8 @@ class LedgerShardTests(unittest.TestCase):
 class FixtureServer(ThreadingHTTPServer):
     """The loopback server, carrying the scripted state its handler reads and the tests steer."""
 
+    # Any: the tests script heterogeneous values here (counters, flags, recorded
+    # request lists, canned JSON bodies), each read back by key at its one site.
     state: dict[str, Any]
 
 

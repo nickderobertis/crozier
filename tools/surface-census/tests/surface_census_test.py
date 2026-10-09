@@ -11574,6 +11574,8 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         reads: Counter[str] = Counter()
         read_text = Path.read_text
 
+        # Any: forwarded untouched to `Path.read_text`, whose parameters differ by
+        # Python version (`newline` is 3.13+), so no one signature fits them all.
         def counted(path: Path, *args: Any, **kwargs: Any) -> str:
             if path.is_relative_to(self.root) and path.parent != self.root:
                 reads[path.relative_to(self.root).as_posix()] += 1
