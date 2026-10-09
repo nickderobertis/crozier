@@ -692,7 +692,7 @@ class PinMechanismTests(unittest.TestCase):
         self.assert_no_leftovers("empty-row", expected=set())
 
     def test_a_partial_download_it_cannot_remove_is_named_with_how_to_delete_it(self) -> None:
-        if os.geteuid() == 0:
+        if os.name != "nt" and os.geteuid() == 0:
             self.skipTest("root removes files from a read-only directory")
         self.server.documents["/specs/stuck-row.yaml"] = b""
         self.add_repository_row("stuck-row", self.spec_url("stuck-row"), "HEAD")
@@ -829,7 +829,7 @@ class PinMechanismTests(unittest.TestCase):
         self.assert_refused_without_a_path(self.fetch("plain-row"), "cannot create the cache directory", "plain-row")
 
     def test_an_unwritable_cache_directory_fails_before_fetching(self) -> None:
-        if os.geteuid() == 0:
+        if os.name != "nt" and os.geteuid() == 0:
             self.skipTest("root writes into a read-only directory")
         directory = self.destination("plain-row")
         directory.mkdir(parents=True)
@@ -869,7 +869,7 @@ class PinMechanismTests(unittest.TestCase):
         self.assert_no_leftovers("plain-row", expected={"openapi.yaml"})
 
     def test_a_stale_sibling_that_cannot_be_removed_fails_the_fetch(self) -> None:
-        if os.geteuid() == 0:
+        if os.name != "nt" and os.geteuid() == 0:
             self.skipTest("root removes a read-only directory's entries")
         blocking = self.destination("plain-row") / "openapi.json"
         blocking.mkdir(parents=True)

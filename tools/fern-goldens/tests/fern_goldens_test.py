@@ -200,7 +200,7 @@ class FixtureNewTests(unittest.TestCase):
         self.assertFalse((self.root / "nowhere").exists())
 
     def test_a_fixture_it_cannot_write_is_left_absent_with_the_fix(self) -> None:
-        if os.geteuid() == 0:
+        if os.name != "nt" and os.geteuid() == 0:
             self.skipTest("root writes through a read-only directory")
         self.fixtures.chmod(0o555)
         self.addCleanup(self.fixtures.chmod, 0o755)
@@ -211,7 +211,7 @@ class FixtureNewTests(unittest.TestCase):
         self.assertFalse((self.fixtures / "shapes").exists())
 
     def test_a_placeholder_it_cannot_write_removes_the_directory_it_made(self) -> None:
-        if os.geteuid() == 0:
+        if os.name != "nt" and os.geteuid() == 0:
             self.skipTest("root writes through a read-only directory")
         # Under this umask the new fixture directory is made unwritable, so
         # creating it succeeds and writing its openapi.yml fails.
@@ -356,7 +356,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
             self.assertEqual((golden / "version.py").read_text(encoding="utf-8"), "--enum-type literals\n")
 
     def test_a_failed_golden_install_fails_the_run_and_is_not_reported(self) -> None:
-        if os.geteuid() == 0:
+        if os.name != "nt" and os.geteuid() == 0:
             self.skipTest("root moves out of a read-only directory")
         result = self.run_overlay("alpha", "beta", fail_install="alpha")
         self.assertNotEqual(result.returncode, 0, result.stdout)
@@ -388,7 +388,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         """The failing `mktemp` runs in an `xargs` worker, a child shell: the report
         comes from the trap that worker re-arms with scripts/lib.sh's exported
         `arm_failure_report`, `_failure_tool` and `_failure_action`."""
-        if os.geteuid() == 0:
+        if os.name != "nt" and os.geteuid() == 0:
             self.skipTest("root writes through a read-only directory")
         alpha = self.root / "tests" / "fixtures" / "alpha"
         alpha.chmod(0o555)

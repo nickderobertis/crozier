@@ -71,6 +71,12 @@ DEFAULT_TIMEOUT_S = 600
 # an owner/name repository.
 FULL_COMMIT = re.compile(r"[0-9a-f]{40}")
 REPOSITORY = re.compile(r"[A-Za-z0-9-]+/[A-Za-z0-9._-]+")
+# The read end a spawn context's `Pipe` returns: on Windows a `PipeConnection`,
+# which is not a `Connection`.
+if sys.platform == "win32":
+    _Receiver = multiprocessing.connection.PipeConnection
+else:
+    _Receiver = multiprocessing.connection.Connection
 
 
 def _load(name: str, path: Path) -> ModuleType:
@@ -271,9 +277,7 @@ def bounded_reads(paths: dict[str, str], timeout: int, jobs: int) -> dict[str, d
             return {futures[future]: future.result() for future in concurrent.futures.as_completed(futures)}
     context = multiprocessing.get_context("spawn")
     queued = sorted(paths.items())
-    running: dict[
-        multiprocessing.connection.Connection, tuple[str, multiprocessing.process.BaseProcess, float | None, str]
-    ] = {}
+    running: dict[_Receiver, tuple[str, multiprocessing.process.BaseProcess, float | None, str]] = {}
     verdicts: dict[str, dict[str, Any]] = {}
     while queued or running:
         while queued and len(running) < jobs:

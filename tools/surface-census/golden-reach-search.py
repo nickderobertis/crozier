@@ -579,7 +579,7 @@ def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ..
     """
     path, sha256, document, keys, timeout = args
     alarm = getattr(signal, "SIGALRM", None)
-    if alarm is None:
+    if alarm is None or sys.platform == "win32":
         return _census_body(path, sha256, document, keys)
     previous = signal.signal(alarm, _alarm)
     signal.alarm(timeout)
@@ -1431,7 +1431,7 @@ def exclusive_lock(path: Path) -> Generator[None, None, None]:
     """
     if fcntl is not None or msvcrt is not None:
         with path.open("a+b") as handle:
-            if fcntl is not None:
+            if fcntl is not None and sys.platform != "win32":
                 fcntl.flock(handle, fcntl.LOCK_EX)
                 yield
                 return

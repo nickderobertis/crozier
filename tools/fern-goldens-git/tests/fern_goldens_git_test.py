@@ -1970,7 +1970,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             self.assertIn("pass the version to generate at as FERN_PYTHON_VERSION", invalid.stderr)
 
         with self.subTest("an unwritable fixture directory names the failed step and the fix"):
-            if os.geteuid() == 0:
+            if os.name != "nt" and os.geteuid() == 0:
                 self.skipTest("root writes through a read-only directory")
             expected = fixtures / "beta" / "expected"
             before = self.tree(expected) if expected.exists() else None
@@ -2331,7 +2331,7 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         self.assertIn("generate-fern-fixture: simulated failure\n", failed.stderr)
 
     @unittest.skipIf(
-        not Path("/proc/self/fd").is_dir() or os.geteuid() == 0,
+        not Path("/proc/self/fd").is_dir() or os.name == "nt" or os.geteuid() == 0,
         "the stand-in hides its log through /proc, from a reader file modes deny",
     )
     def test_a_summary_it_cannot_read_names_the_log_and_what_to_review(self) -> None:
@@ -2355,7 +2355,7 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         self.assertFalse(calls.exists(), "the generator ran without a log to keep its output in")
 
     @unittest.skipIf(
-        not Path("/proc/self/fd").is_dir() or os.geteuid() == 0,
+        not Path("/proc/self/fd").is_dir() or os.name == "nt" or os.geteuid() == 0,
         "the stand-in locks its log's directory through /proc, against a remover file modes deny",
     )
     def test_a_log_it_cannot_remove_is_named_and_the_generation_still_succeeds(self) -> None:
