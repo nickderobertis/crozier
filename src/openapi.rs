@@ -1415,6 +1415,17 @@ pub struct Schema {
     /// by `x-crozier-type-name` when both appear (see [`Schema::declared_type_name`]).
     #[serde(rename = "x-fern-type-name", default)]
     pub(crate) type_name_fern: Option<String>,
+    /// `x-crozier-sdk-group-name` / `x-fern-sdk-group-name` on a component: the
+    /// group package its type is written into. Read through
+    /// [`Schema::sdk_group_name`].
+    #[serde(rename = "x-crozier-sdk-group-name", default)]
+    pub(crate) sdk_group_name_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-sdk-group-name", default)]
+    pub(crate) sdk_group_name_fern: Option<serde_json::Value>,
+    /// `x-tags`: the tags a component belongs to, the first naming the package
+    /// its type is written into. Read through [`Schema::placement_tag`].
+    #[serde(rename = "x-tags", default)]
+    pub(crate) x_tags: Option<serde_json::Value>,
     /// `x-crozier-enum`: per-value member names for a string enum, keyed by wire
     /// value (canonical spelling). Read via [`Schema::enum_member_names`], which
     /// also honours the `x-fern-enum` variant per the
@@ -1500,6 +1511,42 @@ impl Schema {
             .or(self.property_name_fern.as_deref())
             .map(str::trim)
             .filter(|name| !name.is_empty())
+    }
+
+    /// The SDK group a component declares (`x-crozier-sdk-group-name` over
+    /// `x-fern-sdk-group-name`, see the [dual-header
+    /// policy](self#fern-compatible-extensions)): a string or a list of
+    /// segments; blank segments drop.
+    #[must_use]
+    pub fn sdk_group_name(&self) -> Option<Vec<&str>> {
+        let declared = self
+            .sdk_group_name_crozier
+            .as_ref()
+            .or(self.sdk_group_name_fern.as_ref())?;
+        let segments: Vec<&str> = match declared {
+            serde_json::Value::String(name) => vec![name.trim()],
+            serde_json::Value::Array(names) => names
+                .iter()
+                .filter_map(serde_json::Value::as_str)
+                .map(str::trim)
+                .collect(),
+            _ => Vec::new(),
+        };
+        let segments: Vec<&str> = segments.into_iter().filter(|s| !s.is_empty()).collect();
+        (!segments.is_empty()).then_some(segments)
+    }
+
+    /// The first non-blank `x-tags` entry of a component, the tag whose package
+    /// Fern writes its type into.
+    #[must_use]
+    pub fn placement_tag(&self) -> Option<&str> {
+        self.x_tags
+            .as_ref()?
+            .as_array()?
+            .iter()
+            .filter_map(serde_json::Value::as_str)
+            .map(str::trim)
+            .find(|tag| !tag.is_empty())
     }
 
     /// The SDK type name this schema declares, canonicalizing on the
@@ -3828,6 +3875,22 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_component_reads_its_group_and_placement_tag() {
+        let schema =
+            |value: serde_json::Value| -> Schema { serde_json::from_value(value).unwrap() };
+        let placed = schema(serde_json::json!({
+            "x-fern-sdk-group-name": "lexicon",
+            "x-crozier-sdk-group-name": [" glossary ", ""],
+            "x-tags": [" ", "Fermentation", "Cellar"],
+        }));
+        assert_eq!(placed.sdk_group_name(), Some(vec!["glossary"]));
+        assert_eq!(placed.placement_tag(), Some("Fermentation"));
+        let plain = schema(serde_json::json!({"x-fern-sdk-group-name": 3, "x-tags": "Cellar"}));
+        assert_eq!(plain.sdk_group_name(), None);
+        assert_eq!(plain.placement_tag(), None);
+    }
 
     #[test]
     fn a_boolean_pagination_takes_the_root_contract() {

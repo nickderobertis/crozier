@@ -263,6 +263,22 @@ The shape: an operation declaring an SDK group and method name whose group is a 
 |---|---|---|
 | `operation-group-types-beside-child-group` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Component SDK group
+
+The shape: a component schema declaring an SDK group name (`x-fern-sdk-group-name` or `x-crozier-sdk-group-name`) (`schema.x-fern-sdk-group-name:component`). Fern writes its type into that group's package (`glossary/types/phrase.py`), re-exported from the root through it.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `schema-sdk-group-name` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Component x-tags
+
+The shape: a component schema declaring a non-empty `x-tags` list (`schema.x-tags:component`). Fern writes its type into its first tag's package (`fermentation/types/batch.py`).
+
+| key | verdict | remaining work |
+|---|---|---|
+| `schema-x-tags` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -289,3 +305,5 @@ The shape: an operation declaring an SDK group and method name whose group is a 
 | `operation-pagination-offset` | `none-registrable` | `ledger-records-offset` |
 | `operation-pagination-boolean` | `none-registrable` | `beacon-registry-pages` |
 | `operation-group-types-beside-child-group` | `none-registrable` | `dock-yard-bookings` |
+| `schema-sdk-group-name` | `none-registrable` | `vineyard-cellar-glossary` |
+| `schema-x-tags` | `none-registrable` | `vineyard-cellar-glossary` |

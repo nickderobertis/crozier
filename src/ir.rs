@@ -2345,6 +2345,32 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .unwrap_or_else(|| crate::config::default_client_class_name(config.package_name.as_str()));
     let environment = environment_model(doc, &client_name);
 
+    // A component declaring an SDK group (`x-fern-sdk-group-name`, either
+    // spelling) or `x-tags` is written into that group's or first tag's package,
+    // `glossary/types/phrase.py`, as Fern places it, rather than the root
+    // `types/`; the root still re-exports it through the package.
+    let mut types = builder.types;
+    for (name, schema) in &doc.components.schemas {
+        let module = schema
+            .sdk_group_name()
+            .map(|segments| {
+                segments
+                    .iter()
+                    .map(|segment| group_segment_module(segment))
+                    .collect::<Vec<_>>()
+                    .join("/")
+            })
+            .or_else(|| schema.placement_tag().map(snake_module));
+        let Some(module) = module.filter(|module| !module.is_empty()) else {
+            continue;
+        };
+        let class = ref_to_class(&format!("#/components/schemas/{name}"));
+        if let Some(index) = types.iter().position(|decl| decl.name() == class) {
+            let decl = types.remove(index);
+            tag_types.push(TagTypeDecl { module, decl });
+        }
+    }
+
     // Fern's flat tree is its token-less local run, which writes the pagination
     // runtime and its exports but returns each paginated method's page model
     // rather than a pager: the operation keeps only the mark that it declared a
@@ -2373,7 +2399,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),
         client_name,
-        types: builder.types,
+        types,
         tag_types,
         endpoint_modules: endpoint_modules(doc),
         empty_endpoint_namespace,

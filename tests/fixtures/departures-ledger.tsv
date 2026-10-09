@@ -166,6 +166,12 @@ docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected	
 docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	README.md	40	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	reference.md	20	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -756,6 +762,11 @@ docs/openapi-surface/handwritten/unread-date-time-examples/fern-expected	src/fer
 docs/openapi-surface/handwritten/unread-date-time-examples/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/unread-date-time-examples/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/unread-date-time-examples/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/vineyard-cellar-glossary/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/vineyard-cellar-glossary/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/vineyard-cellar-glossary/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/vineyard-cellar-glossary/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/vineyard-cellar-glossary/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

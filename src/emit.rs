@@ -1731,6 +1731,29 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         }
     }
 
+    // A package that only holds types (a component placed by its SDK group or
+    // `x-tags`) has no client, so no module above wrote its `__init__.py`.
+    let type_only_modules: Vec<String> = tag_type_modules
+        .keys()
+        .filter(|module| {
+            !module.is_empty()
+                && **module != "_"
+                && !ir.endpoint_modules.iter().any(|m| m == *module)
+                && !parent_modules.iter().any(|m| m == *module)
+        })
+        .map(|module| (*module).to_string())
+        .collect();
+    for module in &type_only_modules {
+        files.push(tag_pkg_init_file(
+            &env,
+            pkg,
+            module,
+            &tag_type_modules[module.as_str()],
+            &[],
+            &[],
+        )?);
+    }
+
     let root_eps: Vec<&Endpoint> = ir
         .endpoints
         .iter()
@@ -1880,7 +1903,14 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if !ir.types.is_empty() || !root_tag_types.is_empty() {
         files.push(types_init_file(&env, pkg, &ir.types, root_tag_types)?);
     }
-    files.push(root_init_file(&env, pkg, ir, &root_modules)?);
+    // The root package lists a types-only package beside the client ones.
+    let mut init_modules = root_modules.clone();
+    init_modules.extend(
+        type_only_modules
+            .iter()
+            .filter(|module| !module.contains('/')),
+    );
+    files.push(root_init_file(&env, pkg, ir, &init_modules)?);
 
     // Fern treats a leading-dot operationId (`.GetThing`) as an explicit empty
     // endpoint namespace. Its empty tag package lands at the package root and is

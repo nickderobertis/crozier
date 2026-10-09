@@ -2052,6 +2052,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         "docs/openapi-surface/handwritten/twin-key-relay/openapi.yml",
         &["--enum-type", "literals"],
     ),
+    (
+        "vineyard-cellar-glossary-literals",
+        "docs/openapi-surface/handwritten/vineyard-cellar-glossary/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
 ];
 
 /// The naming tickets' (#350, #354, #357) authored probes are the case
@@ -16984,6 +16989,34 @@ print(seen[:2], attempts(lambda: client.cancel_parcel("p-1")), attempts(lambda: 
         String::from_utf8_lossy(&run.stdout).trim(),
         "[('POST', 't-1'), ('POST', None)] 1 3"
     );
+}
+
+/// A component's SDK group places its type in crozier's spelling on its own and
+/// over a conflicting Fern spelling.
+#[test]
+fn component_group_names_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, groups: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Cellar, version: '1'}}\npaths:\n  /phrases:\n    get:\n      operationId: listPhrases\n      responses: {{'200': {{description: ok, content: {{application/json: {{schema: {{$ref: '#/components/schemas/Phrase'}}}}}}}}}}\ncomponents:\n  schemas:\n    Phrase:\n      type: object\n{groups}      properties: {{text: {{type: string}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        out
+    };
+    let out = generate("crozier", "      x-crozier-sdk-group-name: glossary\n");
+    assert!(out.join("src/fern/glossary/types/phrase.py").is_file());
+    let out = generate(
+        "conflict",
+        "      x-fern-sdk-group-name: lexicon\n      x-crozier-sdk-group-name: glossary\n",
+    );
+    assert!(out.join("src/fern/glossary/types/phrase.py").is_file());
+    assert!(!out.join("src/fern/lexicon").exists());
 }
 
 /// A pagination contract over a response the document declares `nullable: true`
