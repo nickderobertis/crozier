@@ -8952,10 +8952,12 @@ fn netgsm_sms_matches_fern_output() {
     assert_committed_corpus_matches(&NETGSM_SMS);
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); this one generates a six-operation document in about two seconds, and moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
 #[test]
 fn mermade_openapi_converter_matches_fern_output() {
     assert_committed_corpus_matches(&MERMADE_OPENAPI_CONVERTER);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn waylay_queries_matches_fern_output() {

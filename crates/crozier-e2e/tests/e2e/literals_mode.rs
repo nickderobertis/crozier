@@ -258,6 +258,7 @@ fn case(name: &str) -> Case {
         .unwrap_or_else(|| panic!("no literals-mode case {name}"))
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and parameter-lowering gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; this family of 29 cases joins them at about six seconds of a three-minute run, and giving golden comparisons their own Nx edge is a graph change for that whole family, not for this one.
 /// Every case's complete literals tree equals crozier's `--enum-type literals`
 /// output under the corpus gate's normalization, departures held to the ledger.
 #[test]
@@ -277,6 +278,7 @@ fn literals_mode_measurements_match_fern() {
         .collect();
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// The cases measure the enum mode: a described component enum is a bare
 /// `Literal` alias under literals, so crozier's `python-enums` output over the
