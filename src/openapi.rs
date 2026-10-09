@@ -1016,7 +1016,9 @@ impl<'de> Deserialize<'de> for DeclaredPagination {
         impl<'de> serde::de::Visitor<'de> for Declared {
             type Value = DeclaredPagination;
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a pagination contract, or a boolean naming the document's")
+                formatter.write_str(
+                    "a pagination contract, or a boolean taking the document's root contract",
+                )
             }
             fn visit_bool<E: serde::de::Error>(
                 self,

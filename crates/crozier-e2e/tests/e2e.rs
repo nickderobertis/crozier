@@ -17878,6 +17878,26 @@ fn pagination_boolean_form_takes_the_root_contract_in_crozier_spelling() {
         "false\n      x-fern-pagination: {cursor: $request.after, next_cursor: $response.next, results: $response.beacons}",
     );
     assert!(!overruled.contains("Pager"), "{overruled}");
+    // The nearby malformed form, neither a contract nor a boolean, is still
+    // refused at the boundary, exit 1 and nothing written.
+    let spec = dir.path().join("number.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Beacons, version: '1'}\npaths:\n  /beacons:\n    get:\n      operationId: listBeacons\n      x-crozier-pagination: 7\n      responses: {'204': {description: ok}}\n",
+    )
+    .expect("write spec");
+    let out = dir.path().join("number");
+    probe_command(&spec, &out)
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicates::str::contains(
+            "paths./beacons.get.x-crozier-pagination: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract",
+        ));
+    assert!(
+        !out.join("src").exists(),
+        "a refused document writes nothing"
+    );
 }
 
 /// A path operation marked a webhook in crozier's spelling has no method and its
