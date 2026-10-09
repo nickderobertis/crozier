@@ -14512,23 +14512,23 @@ components:
     );
 }
 
-/// The hand-written union fixtures crozier is byte-gated against, each with its
-/// literals overlay under `docs/fern-measurements/union-literals/`.
-const UNION_SHAPE_FIXTURES: [&str; 13] = [
-    "atlas-untagged-inline-discriminator",
-    "bakery-get-body-member",
-    "ferry-mapping-outside-schemas",
-    "greenhouse-undiscriminated-unions",
-    "harbor-nullable-inline-object",
-    "kitchen-nested-mapping-target",
-    "library-union-shared-fields",
-    "museum-titled-array-items",
-    "pharmacy-nullable-scalar-unions",
-    "quiz-nullable-response-union",
-    "survey-map-value-union",
-    "telescope-renamed-discriminant",
-    "thermostat-nullable-member",
-];
+/// The hand-written union fixtures crozier is byte-gated against: one per
+/// literals overlay directory under `docs/fern-measurements/union-literals/`,
+/// each holding its overlay in `fern-expected/`. The e2e suite's
+/// `union_literals_overlays_are_exactly_the_fixtures` holds that directory to
+/// its own fixture list, so the two suites read one inventory.
+fn union_shape_fixtures(repo: &Path) -> Vec<String> {
+    let mut names: Vec<String> =
+        std::fs::read_dir(repo.join("docs/fern-measurements/union-literals"))
+            .expect("the literals overlays are committed")
+            .map(|entry| entry.expect("entry"))
+            .filter(|entry| entry.path().is_dir())
+            .map(|entry| entry.file_name().to_string_lossy().into_owned())
+            .collect();
+    names.sort();
+    assert!(!names.is_empty(), "no union fixture overlay is committed");
+    names
+}
 
 /// Every file of a stripped Fern tree but its provenance record, by relative
 /// path.
@@ -14584,11 +14584,12 @@ fn union_literals_tree(fixture: &Path, overlay: &Path) -> Vec<(String, String)> 
 fn union_shape_goldens_match_in_process_in_both_enum_modes() {
     use crozier::settings::EnumType;
     let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
-    for name in UNION_SHAPE_FIXTURES {
+    for name in &union_shape_fixtures(repo) {
         let fixture = repo.join("docs/openapi-surface/handwritten").join(name);
         let overlay = repo
             .join("docs/fern-measurements/union-literals")
-            .join(name);
+            .join(name)
+            .join("fern-expected");
         for (mode, reference) in [
             (
                 EnumType::PythonEnums,

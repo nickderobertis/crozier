@@ -1157,11 +1157,6 @@ pub struct Schema {
     /// [`Schema::discriminated`]).
     #[serde(rename = "x-fern-discriminated", default)]
     pub(crate) discriminated_fern: Option<bool>,
-    /// Set when [`Schema::discriminated`] read `false` and
-    /// `normalize_undiscriminated_unions` removed the node's `discriminator`.
-    /// Not a wire field: no discriminant is inferred over its members either.
-    #[serde(skip)]
-    pub undiscriminated: bool,
     /// Set when this node's `type` was a list with more than one non-`null` member,
     /// which `normalize_multi_type_schemas` rewrote into the equivalent `anyOf`.
     /// Not a wire field. Fern names such a union rather than inlining it — EN
@@ -2469,18 +2464,18 @@ fn normalize_multi_type_schemas(doc: &mut OpenApi) {
 }
 
 /// Make every union that declares itself undiscriminated (see
-/// [`Schema::discriminated`]) an ordinary one: its `discriminator` goes, and it
-/// is marked so no discriminant is inferred over its members' tags. The
+/// [`Schema::discriminated`]) an ordinary one: its `discriminator` goes. No
+/// discriminant is inferred over its members' tags either; the inference reads
+/// [`Schema::discriminated`] itself, so the extension stays the one record. The
 /// hand-written `greenhouse-undiscriminated-unions` fixture writes
 /// `x-fern-discriminated: false` on a request body, on a component, and beside
 /// an explicit `discriminator`, and Fern declares `Union[Seedling, Cutting]` at
 /// all three, each member keeping its own `method` enum.
-fn normalize_undiscriminated_unions(doc: &mut OpenApi) {
+pub(crate) fn normalize_undiscriminated_unions(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
             if node.discriminated() == Some(false) {
                 node.discriminator = None;
-                node.undiscriminated = true;
             }
         });
     });

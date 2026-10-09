@@ -19,67 +19,67 @@
     "docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected": {},
-    "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator": {
+    "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/bakery-get-body-member": {
+    "docs/fern-measurements/union-literals/bakery-get-body-member/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/ferry-mapping-outside-schemas": {
+    "docs/fern-measurements/union-literals/ferry-mapping-outside-schemas/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/greenhouse-undiscriminated-unions": {
+    "docs/fern-measurements/union-literals/greenhouse-undiscriminated-unions/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/harbor-nullable-inline-object": {
+    "docs/fern-measurements/union-literals/harbor-nullable-inline-object/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/kitchen-nested-mapping-target": {
+    "docs/fern-measurements/union-literals/kitchen-nested-mapping-target/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/library-union-shared-fields": {
+    "docs/fern-measurements/union-literals/library-union-shared-fields/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/museum-titled-array-items": {
+    "docs/fern-measurements/union-literals/museum-titled-array-items/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/pharmacy-nullable-scalar-unions": {
+    "docs/fern-measurements/union-literals/pharmacy-nullable-scalar-unions/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/quiz-nullable-response-union": {
+    "docs/fern-measurements/union-literals/quiz-nullable-response-union/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/survey-map-value-union": {
+    "docs/fern-measurements/union-literals/survey-map-value-union/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/telescope-renamed-discriminant": {
+    "docs/fern-measurements/union-literals/telescope-renamed-discriminant/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/union-literals/thermostat-nullable-member": {
+    "docs/fern-measurements/union-literals/thermostat-nullable-member/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]

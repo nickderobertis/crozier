@@ -12779,9 +12779,10 @@ class NamingMirrorTests(unittest.TestCase):
 
         Each is pinned by the same normalized-body digest the other ports use,
         read from the file that declares it, so an edit to the Rust arm fails
-        here until the port is read again.
+        here until the port is read again. The refusal ports of
+        `operation.requestBody:get-union-member` are pinned the same way.
         """
-        for (path, name), pinned in census.EXAMPLE_PORT_DIGESTS.items():
+        for (path, name), pinned in {**census.EXAMPLE_PORT_DIGESTS, **census.REFUSAL_PORT_DIGESTS}.items():
             lines = (REPO / path).read_text(encoding="utf-8").splitlines()
             start = next(
                 (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None

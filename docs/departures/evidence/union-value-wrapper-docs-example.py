@@ -58,4 +58,6 @@ def main(fern_root: str, crozier_root: str) -> None:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        sys.exit(f"usage: python {sys.argv[0]} FERN_TREE CROZIER_TREE — the Fern tree and crozier's for one document")
     main(sys.argv[1], sys.argv[2])

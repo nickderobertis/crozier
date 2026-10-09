@@ -3167,7 +3167,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "2559e9f33703f173",
+    "endpoint_method_name": "5e4b65bdd9fa8056",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3719,7 +3719,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
 # scalar arms of `base_type_ref`.
 UNION_PORT_DIGESTS = {
-    "inferred_discriminant_property_with": "c022ad3b8943e79a",
+    "inferred_discriminant_property_with": "ab3c68f20ce92ccd",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "aed18925c5369dea",
 }
@@ -4599,6 +4599,18 @@ def request_body_media(document: Any) -> set[int]:
 EXAMPLE_PORT_DIGESTS = {
     ("src/ir.rs", "own_deprecated"): "453b400276e22e0a",
     ("src/emit.rs", "read_datetime"): "17d1f36be9e0d0c2",
+}
+
+
+# The two functions of `src/document_refusals/type_not_defined.rs` the
+# `operation.requestBody:get-union-member` predicate ports:
+# `Census.tagged_union_members` reads `inferred_discriminant`, and the predicate's
+# `GET`-only reading is `body_member_union`'s skip of `GET` bodies. Pinned by the
+# same normalized-body digest, so an edit to either fails until the port is read
+# again.
+REFUSAL_PORT_DIGESTS = {
+    ("src/document_refusals/type_not_defined.rs", "inferred_discriminant"): "89031d16c07fa07a",
+    ("src/document_refusals/type_not_defined.rs", "body_member_union"): "86555f260408efe9",
 }
 
 

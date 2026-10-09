@@ -8760,7 +8760,7 @@ fn inferred_discriminant_property_with(
     schemas: &IndexMap<String, Schema>,
     enum_tag: bool,
 ) -> Option<String> {
-    if schema.undiscriminated {
+    if schema.discriminated() == Some(false) {
         return None;
     }
     let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
@@ -8869,7 +8869,7 @@ fn inferred_union_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
-    if schema.undiscriminated {
+    if schema.discriminated() == Some(false) {
         return None;
     }
     inferred_discriminant_property(schema, schemas).or_else(|| {
@@ -8904,7 +8904,7 @@ fn inferred_strip_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
-    if schema.undiscriminated {
+    if schema.discriminated() == Some(false) {
         return None;
     }
     inferred_discriminant_property_with(schema, schemas, false).or_else(|| {
@@ -9770,10 +9770,7 @@ impl Builder<'_> {
                     // `pharmacy-nullable-scalar-unions` fixture's `Dose` is
                     // `{nullable: true, oneOf: [integer, string]}` and Fern's
                     // alias is `typing.Union[int, str]`.
-                    (false, _) if variants.iter().all(is_plain_scalar) => {
-                        // The nullability stays off the alias (see above).
-                        TypeRef::Union(members)
-                    }
+                    (false, _) if variants.iter().all(is_plain_scalar) => TypeRef::Union(members),
                     (false, _) => optional_type_ref(TypeRef::Union(members)),
                 };
                 self.types.push(TypeDecl::Alias(AliasType {
@@ -20063,6 +20060,10 @@ mod tests {
             "Observed",
         )
         .expect("the config is well formed");
+        // The one load-time rewrite the shared inputs' union readings depend
+        // on, applied as the loader applies it.
+        let mut doc = doc;
+        crate::openapi::normalize_undiscriminated_unions(&mut doc);
         arm_trace::observe(|| super::build(&doc, &config))
     }
 
@@ -20567,7 +20568,7 @@ mod tests {
              case names one the file does not write"
         );
         assert_eq!(
-            317, drives,
+            322, drives,
             "the number of drives the twenty-nine cases make"
         );
     }

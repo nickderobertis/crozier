@@ -33,6 +33,8 @@ const FIXTURES: [&str; 13] = [
 /// generated with `enum_type` unset that differ from its `fern-expected/`, and
 /// a manifest naming the files it omits and the complete tree's digest.
 const LITERALS_DIR: &str = "docs/fern-measurements/union-literals";
+/// The directory in each fixture's entry that holds Fern's overlay tree.
+const OVERLAY_DIR: &str = "fern-expected";
 
 /// The overlay manifest.
 const MANIFEST: &str = ".crozier-overlay.json";
@@ -43,7 +45,12 @@ const MANIFEST: &str = ".crozier-overlay.json";
 pub(super) fn compared() -> Vec<(String, Vec<String>)> {
     FIXTURES
         .iter()
-        .map(|name| (format!("{LITERALS_DIR}/{name}"), vec![MANIFEST.to_string()]))
+        .map(|name| {
+            (
+                format!("{LITERALS_DIR}/{name}/{OVERLAY_DIR}"),
+                vec![MANIFEST.to_string()],
+            )
+        })
         .collect()
 }
 
@@ -57,7 +64,7 @@ fn fixture(name: &str) -> PathBuf {
 /// overlay's own rows for the files it carries, `fern-expected/`'s for the
 /// rest.
 fn literals_tree(name: &str) -> Result<(tempfile::TempDir, GoldenLedger), String> {
-    let overlay = repo_root().join(LITERALS_DIR).join(name);
+    let overlay = repo_root().join(LITERALS_DIR).join(name).join(OVERLAY_DIR);
     let text = std::fs::read_to_string(overlay.join(MANIFEST))
         .map_err(|error| format!("{name}: cannot read its literals manifest: {error}"))?;
     let manifest: serde_json::Value = serde_json::from_str(&text)
@@ -78,8 +85,12 @@ fn literals_tree(name: &str) -> Result<(tempfile::TempDir, GoldenLedger), String
         .as_array()
         .ok_or_else(|| format!("{name}: its literals manifest has no `removed` list"))?
         .iter()
-        .filter_map(serde_json::Value::as_str)
-        .collect();
+        .map(|entry| {
+            entry.as_str().ok_or_else(|| {
+                format!("{name}: its literals manifest lists a non-path in `removed`: {entry}")
+            })
+        })
+        .collect::<Result<_, _>>()?;
     let tree = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
     let copy = |from: &Path, rel: &str| -> Result<(), String> {
         let to = tree.path().join(rel);
@@ -112,7 +123,7 @@ fn literals_tree(name: &str) -> Result<(tempfile::TempDir, GoldenLedger), String
         .collect();
     let removed: Vec<String> = removed.iter().map(|rel| (*rel).to_string()).collect();
     let ledger = departure_ledger()
-        .golden(&format!("{LITERALS_DIR}/{name}"), &[])
+        .golden(&format!("{LITERALS_DIR}/{name}/{OVERLAY_DIR}"), &[])
         .and_then(|own_rows| {
             Ok(own_rows.inherit(
                 departure_ledger().golden(&golden_path(&base), &[])?,
@@ -306,49 +317,6 @@ fn union_extensions_are_documented_under_both_spellings() {
              x-crozier-{stem} for a discriminated union"
         );
     }
-}
-
-/// `union-value-wrapper-docs-example` accounts for the wrapper call alone: the
-/// fixture's README matches Fern's under it, and the same README with one
-/// adjacent line of the snippet changed (an argument of the method call the
-/// wrapper sits in) still fails.
-#[test]
-fn union_value_wrapper_departure_is_scoped_to_the_wrapper_call() {
-    let name = "kitchen-nested-mapping-target";
-    let expected = fixture(name).join("fern-expected");
-    let out = tempfile::tempdir().expect("tempdir");
-    probe_command(&fixture(name).join("openapi.yml"), out.path())
-        .assert()
-        .success();
-    let context = crozier::departures::Context::from_trees(&expected, out.path());
-    let fern = std::fs::read_to_string(expected.join("README.md")).expect("README");
-    let generated = std::fs::read_to_string(out.path().join("README.md")).expect("README");
-    let compared = crozier::parity::compare_file(&context, "README.md", &generated, &fern)
-        .expect("comparable");
-    assert!(
-        compared.matches(),
-        "{}",
-        compared.diff().unwrap_or_default()
-    );
-    assert!(
-        generated.contains("value=SteakOrder(") && fern.contains("grill=,"),
-        "the departure no longer has a wrapper call to account for"
-    );
-    let perturbed = generated.replacen(
-        "client.fire_ticket(\n    request=Course_Grill(",
-        "client.fire_ticket(\n    request_options=None,\n    request=Course_Grill(",
-        1,
-    );
-    assert_ne!(
-        perturbed, generated,
-        "the perturbation must change the README"
-    );
-    let compared = crozier::parity::compare_file(&context, "README.md", &perturbed, &fern)
-        .expect("comparable");
-    assert!(
-        !compared.matches(),
-        "an unexplained line beside the wrapper call was accounted for"
-    );
 }
 
 /// The refusals beside the shapes that now generate: a non-identifier

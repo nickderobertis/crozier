@@ -2,7 +2,7 @@
 
 Each directory here is named for one hand-written union fixture under
 [`../../openapi-surface/handwritten/`](../../openapi-surface/handwritten/AGENTS.md).
-It holds the tree Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0
+Its `fern-expected/` holds the tree Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0
 generated from that fixture's unedited `openapi.yml` with `enum_type` unset
 (Fern's literals default; crozier's `--enum-type literals`), in the same
 workspace as the fixture's own `fern-expected/` but for that setting, stripped

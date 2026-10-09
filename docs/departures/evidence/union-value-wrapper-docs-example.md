@@ -63,6 +63,8 @@ Each file's departure is one window, from its import line to its last
 wrapper call, so the fixture's `union-value-wrapper-docs-example` rows in
 `tests/fixtures/departures-ledger.tsv` are `README.md` line 37 and
 `reference.md` line 15, where those windows open. The
-`union_value_wrapper_departure_is_scoped_to_the_wrapper_call` journey in
-`crates/crozier-e2e/tests/e2e/unions.rs` shows an adjacent unexplained mismatch in the
-same snippet still failing.
+`compare_reports_the_union_value_wrapper_departure_and_rejects_an_adjacent_line`
+journey in `crates/crozier-e2e/tests/e2e/compare.rs` drives `crozier compare`
+over the fixture and shows an adjacent unexplained mismatch in the same snippet
+still failing; `sdk_env_union_value_wrapper_docs_examples_compile_only_in_crozier`
+in `crates/crozier-e2e/tests/e2e.rs` runs the script above in the SDK tier.

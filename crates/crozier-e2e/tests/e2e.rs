@@ -20723,6 +20723,77 @@ fn namespaced_enum_collisions_follow_the_parameter_location() {
 
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_union_value_wrapper_docs_examples_compile_only_in_crozier() {
+    let fixture =
+        repo_root().join("docs/openapi-surface/handwritten/kitchen-nested-mapping-target");
+    let script = repo_root().join("docs/departures/evidence/union-value-wrapper-docs-example.py");
+    let directory = tempfile::tempdir().expect("crozier tree");
+    let sdk = directory.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(fixture.join("openapi.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let run = std::process::Command::new(python)
+        .arg(&script)
+        .arg(fixture.join("fern-expected"))
+        .arg(&sdk)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert!(
+        run.status.success(),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    // Fern's three Markdown snippets pass the wrapper an empty argument;
+    // crozier's three compile and bind to the generated method.
+    let lines: Vec<&str> = stdout.lines().collect();
+    let fern: Vec<&&str> = lines
+        .iter()
+        .filter(|line| line.starts_with("fern "))
+        .collect();
+    let crozier: Vec<&&str> = lines
+        .iter()
+        .filter(|line| line.starts_with("crozier "))
+        .collect();
+    assert_eq!(3, fern.len(), "{stdout}");
+    assert!(
+        fern.iter()
+            .all(|line| line.contains("SyntaxError") && line.contains("'grill=,'")),
+        "{stdout}"
+    );
+    assert_eq!(3, crozier.len(), "{stdout}");
+    assert!(
+        crozier.iter().all(|line| line
+            .contains("compiles; request=Course_Grill(value=SteakOrder(")
+            && line.ends_with("binds fire_ticket")),
+        "{stdout}"
+    );
+
+    // The script refuses a call missing a tree rather than indexing past it.
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let refused = std::process::Command::new(python)
+        .arg(&script)
+        .arg(fixture.join("fern-expected"))
+        .output()
+        .unwrap();
+    assert!(!refused.status.success());
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("usage:"));
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_body_query_collision_keeps_both_callers_values() {
     let source = repo_root().join("tests/fixtures/corpus-sources/waylay-queries/openapi.yaml");
     let script = repo_root().join("docs/departures/evidence/body-query-parameter-value.py");
