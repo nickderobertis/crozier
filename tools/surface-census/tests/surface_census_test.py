@@ -2439,6 +2439,7 @@ class GrammarContractTests(unittest.TestCase):
             "thirty-seven": 37,
             "forty-one": 41,
             "forty-two": 42,
+            "forty-six": 46,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text)
