@@ -70,9 +70,7 @@ LICENCE = (
 # Bare whitespace does not, so ordinary prose that happens to name two licences
 # in one sentence cannot be mistaken for a list.
 SEPARATOR = r"\s*(?:/|,\s*(?:and\s+|or\s+)?|\s+(?:and|or)\s+)\s*"
-ENUMERATION = re.compile(
-    rf"\b{LICENCE}(?:{SEPARATOR}{LICENCE}\b){{2,}}", re.IGNORECASE
-)
+ENUMERATION = re.compile(rf"\b{LICENCE}(?:{SEPARATOR}{LICENCE}\b){{2,}}", re.IGNORECASE)
 
 
 def is_read(path: str) -> bool:
@@ -138,8 +136,7 @@ def main() -> int:
     if not problems:
         return 0
     print(
-        "corpus-licensing-drift: the admissible-licence set is enumerated outside"
-        f" {RULE}:",
+        f"corpus-licensing-drift: the admissible-licence set is enumerated outside {RULE}:",
         file=sys.stderr,
     )
     for problem in problems:

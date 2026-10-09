@@ -107,10 +107,7 @@ class TheLintStillDiscriminates(unittest.TestCase):
         )
 
     def check(self, *records: tuple[str, ...] | str) -> subprocess.CompletedProcess[str]:
-        body = "".join(
-            (record if isinstance(record, str) else "\t".join(record)) + "\n"
-            for record in records
-        )
+        body = "".join((record if isinstance(record, str) else "\t".join(record)) + "\n" for record in records)
         (self.root / "tests" / "fixtures" / MANIFEST_NAME).write_text(body, encoding="utf-8")
         return subprocess.run(
             [sys.executable, str(MODULE), "--root", str(self.root), "check"],
@@ -165,10 +162,13 @@ class TheLintStillDiscriminates(unittest.TestCase):
             "openapi: 3.0.3\npaths:\n"
             f"  /a:\n    $ref: '{self.GOOD[1]}'\n  /b:\n    $ref: '{self.SECOND[1]}'\n"
             "  /c:\n    $ref: 'http://[raw.githubusercontent.com/x.yaml'\n",
-            encoding="utf-8")
+            encoding="utf-8",
+        )
         result = subprocess.run(
             [sys.executable, str(MODULE), "--root", str(self.root), "apply", "helios-verifiable-api", str(document)],
-            text=True, capture_output=True, check=False,
+            text=True,
+            capture_output=True,
+            check=False,
         )
         self.assertEqual(1, result.returncode, result.stderr)
         self.assertIn("is not a well-formed URL", result.stderr)
@@ -176,9 +176,7 @@ class TheLintStillDiscriminates(unittest.TestCase):
         self.assertNotIn("Traceback", result.stderr)
 
     def test_a_malformed_digest_is_rejected(self) -> None:
-        self.assert_rejected(
-            self.check((*self.GOOD[:3], "NOTADIGEST")), "NOTADIGEST", "sha256sum"
-        )
+        self.assert_rejected(self.check((*self.GOOD[:3], "NOTADIGEST")), "NOTADIGEST", "sha256sum")
 
     def test_an_unknown_corpus_name_is_rejected(self) -> None:
         self.assert_rejected(
@@ -209,9 +207,7 @@ class TheLintStillDiscriminates(unittest.TestCase):
         self.assert_rejected(self.check(self.GOOD, prefixed), "prefix", "drop a record")
 
     def test_too_few_columns_is_rejected(self) -> None:
-        self.assert_rejected(
-            self.check(self.GOOD[:3]), "3 tab-separated column(s)", "rewrite the record"
-        )
+        self.assert_rejected(self.check(self.GOOD[:3]), "3 tab-separated column(s)", "rewrite the record")
 
     def test_too_many_columns_is_rejected(self) -> None:
         self.assert_rejected(

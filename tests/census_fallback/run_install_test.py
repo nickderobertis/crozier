@@ -20,13 +20,27 @@ class ThePinMustInstall(unittest.TestCase):
     @unittest.skipUnless(shutil.which("uv"), "uv installs the fallback suites' parser pin")
     def test_a_pin_uv_cannot_install_names_the_suite_and_the_pin(self) -> None:
         # The real uv with no network and no cache: the install the stage owes fails.
-        pin = subprocess.run(["bash", str(RUNNER), "pin", "tools/surface-census/golden-reach-search.py"],
-                             cwd=REPO, capture_output=True, text=True, check=True).stdout.strip()
-        result = subprocess.run(["bash", str(RUNNER), "parsers"], cwd=REPO, capture_output=True, text=True,
-                                env={**os.environ, "UV_OFFLINE": "1", "UV_NO_CACHE": "1"}, timeout=300)
+        pin = subprocess.run(
+            ["bash", str(RUNNER), "pin", "tools/surface-census/golden-reach-search.py"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        result = subprocess.run(
+            ["bash", str(RUNNER), "parsers"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            env={**os.environ, "UV_OFFLINE": "1", "UV_NO_CACHE": "1"},
+            timeout=300,
+        )
         self.assertNotEqual(0, result.returncode, result.stderr)
-        self.assertIn(f"census-fallback: python3 tools/surface-census/tests/golden_reach_test.py exited "
-                      f"{result.returncode} under {pin}", result.stderr)
+        self.assertIn(
+            f"census-fallback: python3 tools/surface-census/tests/golden_reach_test.py exited "
+            f"{result.returncode} under {pin}",
+            result.stderr,
+        )
         self.assertIn("check that PyPI is reachable", result.stderr)
 
 

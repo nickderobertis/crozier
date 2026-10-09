@@ -13,7 +13,10 @@
       },
       "executor": "nx:run-commands",
       "options": {
-        "command": "sh scripts/census-python.sh tools/witness-search/tests/witness_search_redo_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/witness-search/tests/witness_search_redo_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/witness-search/test-redo/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -27,13 +30,20 @@
         "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/witness-search/test-redo"
       ]
     },
     "test-acquisition": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "sh scripts/census-python.sh tools/witness-search/tests/witness_search_acquisition_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/witness-search/tests/witness_search_acquisition_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/witness-search/test-acquisition/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -47,13 +57,20 @@
         "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/witness-search/test-acquisition"
       ]
     },
     "test-github": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "sh scripts/census-python.sh tools/witness-search/tests/witness_search_github_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/witness-search/tests/witness_search_github_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/witness-search/test-github/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -67,13 +84,20 @@
         "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/witness-search/test-github"
       ]
     },
     "test-screen": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "sh scripts/census-python.sh tools/witness-search/tests/witness_screen_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/witness-search/tests/witness_screen_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/witness-search/test-screen/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -87,21 +111,32 @@
         "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/witness-search/test-screen"
       ]
     },
     "test-rate-limit-guard": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "sh scripts/census-python.sh tools/witness-search/tests/rate_limit_guard_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/witness-search/tests/rate_limit_guard_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/witness-search/test-rate-limit-guard/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
         "{projectRoot}/rate_limit_guard.py",
         "{projectRoot}/tests/rate_limit_guard_test.py",
-        "{workspaceRoot}/scripts/census-python.sh"
+        "{workspaceRoot}/scripts/census-python.sh",
+        "pythonTooling"
       ],
-      "parallelism": false
+      "parallelism": false,
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/witness-search/test-rate-limit-guard"
+      ]
     },
     "test": {
       "executor": "nx:noop",
@@ -113,7 +148,7 @@
         "test-rate-limit-guard"
       ]
     },
-    "lint": {
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs witness-search"
@@ -121,6 +156,52 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/witness-search"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/witness-search"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/witness-search"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/witness-search"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{workspaceRoot}/tools/surface-census/tests/*.py",
+        "pythonTooling"
       ]
     }
   }

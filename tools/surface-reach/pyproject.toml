@@ -1,0 +1,18 @@
+# The `surface-reach` Nx project's uv workspace member (the workspace is declared in
+# the root pyproject.toml). It publishes nothing: there is no [build-system],
+# and `package = false` keeps uv from trying to build or install it. Its
+# workspace dependencies are the members whose Python it imports, loads by path
+# or runs (often as a copy in a scratch root).
+[project]
+name = "crozier-surface-reach"
+version = "0.0.0"
+description = "Suites measuring what the goldens reach in src/."
+requires-python = ">=3.11"
+dependencies = ["crozier-corpus", "crozier-surface-census"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+crozier-corpus = { workspace = true }
+crozier-surface-census = { workspace = true }

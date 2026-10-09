@@ -13,13 +13,20 @@
       },
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/llmlint/tests/llmlint_plugins_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/llmlint/tests/llmlint_plugins_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/llmlint-tooling/test-plugins/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
         "default",
         "{workspaceRoot}/llmlint.yml",
-        "{workspaceRoot}/llmlint-plugins/**/*"
+        "{workspaceRoot}/llmlint-plugins/**/*",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/llmlint-tooling/test-plugins"
       ]
     },
     "test-diff": {
@@ -28,12 +35,19 @@
       },
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/llmlint/tests/llmlint_diff_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/llmlint/tests/llmlint_diff_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/llmlint-tooling/test-diff/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/llmlint-tooling/test-diff"
       ]
     },
     "test": {
@@ -43,7 +57,7 @@
         "test-diff"
       ]
     },
-    "lint": {
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs llmlint-tooling"
@@ -51,6 +65,51 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/llmlint"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/llmlint"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/llmlint"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/llmlint"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
       ]
     }
   }

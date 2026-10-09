@@ -105,6 +105,10 @@
         "runtime": "ruff --version"
       }
     ],
+    "pythonTooling": [
+      "{workspaceRoot}/pyproject.toml",
+      "{workspaceRoot}/uv.lock"
+    ],
     "boundaries": [
       "{projectRoot}/project.json",
       "{workspaceRoot}/nx.json",

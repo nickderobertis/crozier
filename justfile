@@ -17,8 +17,16 @@ bootstrap:
     @just install-nx
     @./scripts/install-dev-tools.sh
     @./scripts/install-ruff.sh
+    @just sync-python
     @git config core.hooksPath .githooks
     @echo "enabled .githooks (visual-regression pre-push guard)"
+
+# Install the Python tooling's uv workspace (the root pyproject.toml's members,
+# resolved once in uv.lock) into `.venv` on Python 3.14. Part of `bootstrap`;
+# every Python target also runs through `uv run --locked`, which syncs on demand.
+sync-python:
+    @command -v uv >/dev/null 2>&1 || { echo "sync-python: uv not found — install it (https://docs.astral.sh/uv/), then rerun" >&2; exit 1; }
+    @uv sync --quiet --locked --all-packages --python 3.14
 
 # Install the pinned Nx the gate runs through (bun.lock). Part of `bootstrap`;
 # CI jobs that need Nx but not the rest of bootstrap call it alone.
@@ -35,10 +43,11 @@ install-toolchain:
 
 # The quality gate — one recipe, two tiers, the tier a flag on it. tools/ci/gate.mjs
 # validates the base and selects the projects; the Nx command below runs over them:
-#   just check            the affected tier: every gate target (format, lint, test,
-#                         build, coverage, supply-chain, doc) of the projects a change
-#                         since the base can reach. The base is NX_BASE (a ref name or
-#                         commit SHA) or the merge base of HEAD with origin/main.
+#   just check            the affected tier: every gate target (format, lint,
+#                         typecheck, test, build, coverage, supply-chain, doc) of the
+#                         projects a change since the base can reach. The base is
+#                         NX_BASE (a ref name or commit SHA) or the merge base of
+#                         HEAD with origin/main.
 #   just check --sweep    the broader tier: the same targets over every project,
 #                         promoted tiers included, uncached.
 #   just check --plan     either tier's selection and Nx command, without running it.
@@ -46,7 +55,7 @@ install-toolchain:
 # to run each promoted tier on the runner that holds its toolchain. Fails on any
 # issue (no warnings-only mode); e2e is part of the gate, not opt-in.
 check *args:
-    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=format,lint,test,build,coverage,supply-chain,doc
+    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=format,lint,typecheck,test,build,coverage,supply-chain,doc
 
 # What CI runs: the tier the GitHub event owes (tools/ci/ci-tier.mjs) — the
 # broader tier on the release-plz release pull request, the affected tier against
@@ -64,14 +73,16 @@ nx *args:
 fmt-check:
     @just nx run-many --targets=format
 
-# Every affected project's `lint` (clippy with warnings as errors, the module-
-# boundary rule, the corpus/licence lints); `--sweep` for all of them.
+# Every affected project's `lint` (clippy with warnings as errors, ruff check, the
+# module-boundary rule, the corpus/licence lints); `--sweep` for all of them.
 lint *args:
     @node tools/ci/gate.mjs "$@" -- nx run-many --targets=lint
 
-# Every affected project's `test`, then the 95% line-coverage floor over the crate
-# (`workspace:coverage`, over the profiles `crozier:test` writes); `--sweep` for all.
-# Lower the floor only with a reason in AGENTS.md.
+# Every affected project's `test`, then the line-coverage floors: the crate's 95%
+# (`workspace:coverage`, over the profiles `crozier:test` writes) and the Python
+# tooling's combined floor (`python-workspace:coverage`, over the data every
+# tooling project's pytest run writes); `--sweep` for all. Lower a floor only with
+# its measurement and reason in AGENTS.md.
 test *args:
     @node tools/ci/gate.mjs "$@" -- nx run-many --targets=test,coverage
 
@@ -138,6 +149,8 @@ doc:
 # Upgrade dependencies, then re-run the gate over everything the update reaches.
 upgrade:
     cargo update
+    uv lock --upgrade
+    @just sync-python
     @just check
 
 # Rebuild-only: fetch pinned corpus sources into .local/corpus or a supplied

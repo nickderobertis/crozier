@@ -11,6 +11,7 @@ Run: `just nx run corpus-match-selection:test`. It builds and drives the real
 nextest and crozier, so it is its own promoted project, apart from corpus-match's
 offline proof; CI runs it in the live-e2e leg.
 """
+
 from __future__ import annotations
 
 import os
@@ -39,8 +40,9 @@ def with_inventory(text: str, names: list[str]) -> str:
 
 
 def run(text: str, **env: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["bash", "-c", text, str(SCRIPT)], capture_output=True, text=True,
-                          timeout=1800, env={**os.environ, **env})
+    return subprocess.run(
+        ["bash", "-c", text, str(SCRIPT)], capture_output=True, text=True, timeout=1800, env={**os.environ, **env}
+    )
 
 
 @unittest.skipIf(os.name == "nt", "match.sh runs on the Linux legs only")
@@ -53,9 +55,19 @@ class MatchSelection(unittest.TestCase):
         # Nx forces colour on, as CI can; the selection must still read as plain names.
         with tempfile.TemporaryDirectory() as scratch:
             written = Path(scratch) / "selection"
-            result = subprocess.run(["bash", str(SCRIPT)], capture_output=True, text=True, timeout=1800,
-                                    env={**os.environ, "CORPUS_MATCH_LIST": str(written), "FORCE_COLOR": "1",
-                                         "CLICOLOR_FORCE": "1", "CARGO_TERM_COLOR": "always"})
+            result = subprocess.run(
+                ["bash", str(SCRIPT)],
+                capture_output=True,
+                text=True,
+                timeout=1800,
+                env={
+                    **os.environ,
+                    "CORPUS_MATCH_LIST": str(written),
+                    "FORCE_COLOR": "1",
+                    "CLICOLOR_FORCE": "1",
+                    "CARGO_TERM_COLOR": "always",
+                },
+            )
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertEqual("", result.stdout)
             selected = written.read_text(encoding="utf-8").splitlines()
@@ -66,11 +78,11 @@ class MatchSelection(unittest.TestCase):
         self.assertIn("overlay_goldens::overlay_goldens_match_fern_output", selected)
 
     def test_an_inventory_nextest_selects_differently_is_refused_before_running(self) -> None:
-        for names, named in ((self.listed + ["no_such_golden_matches_fern_output"],
-                              "< no_such_golden_matches_fern_output"),
-                             (self.listed + [self.listed[0]], f"< {self.listed[0]}"),
-                             ([name.removeprefix("overlay_goldens::") for name in self.listed],
-                              "< overlay_goldens_match_fern_output")):
+        for names, named in (
+            ([*self.listed, "no_such_golden_matches_fern_output"], "< no_such_golden_matches_fern_output"),
+            ([*self.listed, self.listed[0]], f"< {self.listed[0]}"),
+            ([name.removeprefix("overlay_goldens::") for name in self.listed], "< overlay_goldens_match_fern_output"),
+        ):
             with self.subTest(named=named), tempfile.TemporaryDirectory() as scratch:
                 written = Path(scratch) / "selection"
                 result = run(with_inventory(self.text, names), CORPUS_MATCH_LIST=str(written))
@@ -83,13 +95,20 @@ class MatchSelection(unittest.TestCase):
     def test_a_failing_golden_fails_the_recipe_naming_it(self) -> None:
         # A client class name Fern's golden was not generated with: the real
         # crozier writes a different SDK, so the byte comparison fails.
-        result = run(with_inventory(self.text, ["basic_auth_matches_fern_output", "bracketed_property_names_matches_fern_output"]),
-                     CROZIER_CLIENT_CLASS_NAME="NotFernsClient", CARGO_TERM_COLOR="always")
+        result = run(
+            with_inventory(
+                self.text, ["basic_auth_matches_fern_output", "bracketed_property_names_matches_fern_output"]
+            ),
+            CROZIER_CLIENT_CLASS_NAME="NotFernsClient",
+            CARGO_TERM_COLOR="always",
+        )
         # Nx forces colour on; the names are asserted on the text a reader sees.
         output = re.sub(r"\x1b\[[0-9;]*m", "", result.stdout + result.stderr)
         self.assertEqual(100, result.returncode, output)
         self.assertRegex(output, r"FAIL \[.*\] \(\s*\d+/2\) crozier-e2e::e2e basic_auth_matches_fern_output")
-        self.assertRegex(output, r"FAIL \[.*\] \(\s*\d+/2\) crozier-e2e::e2e bracketed_property_names_matches_fern_output")
+        self.assertRegex(
+            output, r"FAIL \[.*\] \(\s*\d+/2\) crozier-e2e::e2e bracketed_property_names_matches_fern_output"
+        )
         self.assertIn("2 tests run: 0 passed, 2 failed", output)
         self.assertIn("corpus-match: `CROZIER_REQUIRE_CORPUS=1 cargo nextest run", output)
         self.assertNotIn("Ran 2 tests", output, "the surface census ran after a failing golden")

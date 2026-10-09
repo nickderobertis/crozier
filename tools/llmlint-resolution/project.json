@@ -10,7 +10,10 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/llmlint-resolution/tests/llmlint_resolution_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/llmlint-resolution/tests/llmlint_resolution_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/llmlint-resolution/test/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -25,10 +28,14 @@
         },
         {
           "runtime": "llmlint --version || echo llmlint-absent"
-        }
+        },
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/llmlint-resolution/test"
       ]
     },
-    "lint": {
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs llmlint-resolution"
@@ -36,6 +43,52 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/llmlint-resolution"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/llmlint-resolution"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/llmlint-resolution"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/llmlint-resolution"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{workspaceRoot}/tools/llmlint/tests/*.py",
+        "pythonTooling"
       ]
     }
   }

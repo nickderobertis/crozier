@@ -57,11 +57,7 @@ def schema_rows(text: str) -> dict[str, list[list[str]]]:
         if not line.startswith("| "):
             continue
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if (
-            len(cells) == 8
-            and value(cells[0]) != "key"
-            and value(cells[3]) in CATEGORIES
-        ):
+        if len(cells) == 8 and value(cells[0]) != "key" and value(cells[3]) in CATEGORIES:
             found.setdefault(value(cells[0]), []).append(cells)
     return found
 
@@ -73,9 +69,7 @@ def authoritative_details(
     cell = " | ".join(row)
     outcome = re.search(r"search outcome `([^`]+)`", cell)
     details: dict[str, tuple[str, str]] = {}
-    pattern = re.compile(
-        r"\*\*([^*]+)\*\*\s+(`[^`]+`)\s+(?:→|->)\s+(`?unanswered`?|\d+)"
-    )
+    pattern = re.compile(r"\*\*([^*]+)\*\*\s+(`[^`]+`)\s+(?:→|->)\s+(`?unanswered`?|\d+)")
     for source, query, result in pattern.findall(cell):
         details[value(source)] = (query, value(result))
     return (outcome.group(1) if outcome else None), details
@@ -127,13 +121,9 @@ def validate_shard(path: Path, contract: Path) -> list[str]:
     seen: set[tuple[str, str]] = set()
     for number, row in enumerate(rows[1:], 1):
         if len(row) != len(FIELDS):
-            failures.append(
-                f"{path}: record {number} has {len(row)} fields, expected {len(FIELDS)}"
-            )
+            failures.append(f"{path}: record {number} has {len(row)} fields, expected {len(FIELDS)}")
             continue
-        key, selector, source, query, result, candidates, provenance, licence, fern = (
-            row
-        )
+        key, selector, source, query, result, candidates, provenance, licence, fern = row
         key, selector, source, result = map(value, (key, selector, source, result))
         pair = (key, source)
         if pair in seen:
@@ -148,21 +138,13 @@ def validate_shard(path: Path, contract: Path) -> list[str]:
         if not (query.startswith("`") and query.endswith("`") and len(query) > 2):
             failures.append(f"{path}: {source}/{key} is missing a rerunnable query")
         if result != "unanswered" and not re.fullmatch(r"\d+", result):
-            failures.append(
-                f"{path}: {source}/{key} result must be a nonnegative integer or unanswered"
-            )
+            failures.append(f"{path}: {source}/{key} result must be a nonnegative integer or unanswered")
             continue
-        supporting = tuple(
-            value(cell) for cell in (candidates, provenance, licence, fern)
-        )
+        supporting = tuple(value(cell) for cell in (candidates, provenance, licence, fern))
         if result == "unanswered" and any(cell not in EMPTY for cell in supporting):
-            failures.append(
-                f"{path}: {source}/{key} unanswered result has supporting fields"
-            )
+            failures.append(f"{path}: {source}/{key} unanswered result has supporting fields")
         elif result == "0" and any(cell not in EMPTY for cell in supporting):
-            failures.append(
-                f"{path}: {source}/{key} zero result has candidate evidence"
-            )
+            failures.append(f"{path}: {source}/{key} zero result has candidate evidence")
         elif result.isdigit() and int(result) > 0:
             labels = (
                 "candidates",
@@ -170,13 +152,9 @@ def validate_shard(path: Path, contract: Path) -> list[str]:
                 "licence screen",
                 "Fern screen",
             )
-            missing = [
-                label for label, cell in zip(labels, supporting) if cell in EMPTY
-            ]
+            missing = [label for label, cell in zip(labels, supporting, strict=False) if cell in EMPTY]
             if missing:
-                failures.append(
-                    f"{path}: {source}/{key} positive result is missing {missing}"
-                )
+                failures.append(f"{path}: {source}/{key} positive result is missing {missing}")
     return failures
 
 
@@ -189,10 +167,7 @@ def validate_documents(paths: list[Path], contract: Path) -> list[str]:
                 continue
             pair = (value(row[0]), value(row[2]))
             if pair in seen:
-                failures.append(
-                    f"duplicate source/key record {pair[1]}/{pair[0]} across "
-                    f"{seen[pair]} and {path}"
-                )
+                failures.append(f"duplicate source/key record {pair[1]}/{pair[0]} across {seen[pair]} and {path}")
             else:
                 seen[pair] = path
     return failures
@@ -208,8 +183,10 @@ def screened_keys(path: Path, *, artifact: str | None = None) -> set[str]:
         # An artifact row is eight cells; one of another width would otherwise be
         # read as no witness at all, and the evidence would pass as empty.
         if len(cells) != 8:
-            raise ValueError(f"{path}:{number}: a candidate row has {len(cells)} cells, not the 8 of "
-                             "artifact | keys | four screens | disposition | evidence")
+            raise ValueError(
+                f"{path}:{number}: a candidate row has {len(cells)} cells, not the 8 of "
+                "artifact | keys | four screens | disposition | evidence"
+            )
         if value(cells[6]) != "witness-found":
             continue
         if artifact is not None and value(cells[0]) != artifact:
@@ -247,15 +224,12 @@ def frozen_outcomes(
         witnesses.update(screened_keys(supplement))
     outcomes = {}
     for key in keys:
-        answered = all(
-            value(records[(key, source)][4]) != "unanswered" for source in ALL_SOURCES
-        )
+        answered = all(value(records[(key, source)][4]) != "unanswered" for source in ALL_SOURCES)
         outcomes[key] = (
             "witness-found"
             if key in witnesses
             else "none-found"
-            if answered
-            and all(value(records[(key, source)][4]) == "0" for source in ALL_SOURCES)
+            if answered and all(value(records[(key, source)][4]) == "0" for source in ALL_SOURCES)
             else "search-incomplete"
             if not answered
             else "witness-blocked"
@@ -274,16 +248,13 @@ def handwritten_module():
     return module
 
 
-def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path, supplement_candidates: tuple[Path, ...] = ()) -> list[str]:
+def reconcile(
+    paths: list[Path], contract: Path, schemas: Path, candidates: Path, supplement_candidates: tuple[Path, ...] = ()
+) -> list[str]:
     failures = validate_documents(paths, contract)
     keys = contract_keys(contract)
     records = shard_records(paths)
-    missing = sorted(
-        (key, source)
-        for key in keys
-        for source in ALL_SOURCES
-        if (key, source) not in records
-    )
+    missing = sorted((key, source) for key in keys for source in ALL_SOURCES if (key, source) not in records)
     if missing:
         failures.append(f"reconciliation: missing source/key coverage {missing}")
         return failures
@@ -293,9 +264,7 @@ def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path
         expected = outcomes[key]
         owned_rows = rows.get(key, [])
         if len(owned_rows) != 1:
-            failures.append(
-                f"reconciliation: schemas.md has {len(owned_rows)} rows for {key}"
-            )
+            failures.append(f"reconciliation: schemas.md has {len(owned_rows)} rows for {key}")
             continue
         if value(owned_rows[0][3]) == "handwritten":
             # The amendment schemas.md states beside the frozen record (this
@@ -310,21 +279,15 @@ def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path
             continue
         outcome, details = authoritative_details(owned_rows[0])
         if outcome != expected:
-            failures.append(
-                f"reconciliation: schemas.md row {key} records outcome {outcome!r}, expected {expected!r}"
-            )
+            failures.append(f"reconciliation: schemas.md row {key} records outcome {outcome!r}, expected {expected!r}")
         missing_details = sorted(set(ALL_SOURCES) - set(details))
         if missing_details:
-            failures.append(
-                f"reconciliation: schemas.md row {key} omits source details {missing_details}"
-            )
+            failures.append(f"reconciliation: schemas.md row {key} omits source details {missing_details}")
         for source in sorted(set(ALL_SOURCES) & set(details)):
             shard_query = records[(key, source)][3]
             shard_result = value(records[(key, source)][4])
             if details[source] != (shard_query, shard_result):
-                failures.append(
-                    f"reconciliation: schemas.md row {key} mismatches {source} query/result"
-                )
+                failures.append(f"reconciliation: schemas.md row {key} mismatches {source} query/result")
     return failures
 
 
@@ -335,8 +298,13 @@ def main() -> int:
     parser.add_argument("--reconcile", action="store_true")
     parser.add_argument("--schemas", type=Path)
     parser.add_argument("--candidates", type=Path, help="four-screen record (default: beside CONTRACT)")
-    parser.add_argument("--supplement-candidates", type=Path, action="append", default=[],
-                        help="additional four-screen records; repeatable, historical inputs unchanged")
+    parser.add_argument(
+        "--supplement-candidates",
+        type=Path,
+        action="append",
+        default=[],
+        help="additional four-screen records; repeatable, historical inputs unchanged",
+    )
     args = parser.parse_args()
     for supplement in args.supplement_candidates:
         if not supplement.is_file():
@@ -345,13 +313,21 @@ def main() -> int:
         parser.error("--reconcile requires --schemas PATH")
     try:
         failures = (
-            reconcile(args.shards, args.contract, args.schemas, args.candidates or args.contract.with_name("candidates.md"), tuple(args.supplement_candidates))
+            reconcile(
+                args.shards,
+                args.contract,
+                args.schemas,
+                args.candidates or args.contract.with_name("candidates.md"),
+                tuple(args.supplement_candidates),
+            )
             if args.reconcile
             else validate_documents(args.shards, args.contract)
         )
     except (OSError, ValueError) as error:
-        print(f"witness-search-redo: {error} — repair the contract, or restore the committed one, and rerun",
-              file=sys.stderr)
+        print(
+            f"witness-search-redo: {error} — repair the contract, or restore the committed one, and rerun",
+            file=sys.stderr,
+        )
         return 1
     if failures:
         print("\n".join(failures), file=sys.stderr)

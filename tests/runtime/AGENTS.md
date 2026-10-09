@@ -37,3 +37,7 @@ out of the affected tier.
   *calls* it — the Fern fixture supplies the expected behavior for free.
 - **No skip.** Missing Python / venv / deps fails the test (see
   `runtime_python_env`): the tier exists to run it, so it never passes unrun.
+
+- Python: `format`, `lint` and `typecheck` only. `test` keeps its own runner and
+  these files stay out of the combined coverage floor, because its suite needs
+  the generated SDKs' PyPI venv.

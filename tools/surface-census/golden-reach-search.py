@@ -73,18 +73,18 @@ import json
 import os
 import re
 import signal
-import types
 import subprocess
 import sys
 import tempfile
 import time
+import types
 import urllib.parse
 from collections import Counter, defaultdict
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Generator, Iterable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, Literal, NoReturn
 
 try:
     import fcntl
@@ -152,7 +152,7 @@ SCREEN = _load("witness_screen", REPO / "tools" / "witness-search" / "witness_sc
 INDEX = _load("witness_search_index_for_reach", REPO / "tools" / "witness-search" / "witness-search-github-index.py")
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     raise SystemExit(f"golden-reach-search: {message}")
 
 
@@ -179,8 +179,10 @@ def read_tsv(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[st
             if None in row or None in row.values():
                 cells = sum(1 for column, cell in row.items() if column is not None and cell is not None)
                 cells += len(row.get(None) or ())
-                fail(f"{path}:{reader.line_num} has {cells} cell(s) where its header names "
-                     f"{len(reader.fieldnames or ())} — {remedy}")
+                fail(
+                    f"{path}:{reader.line_num} has {cells} cell(s) where its header names "
+                    f"{len(reader.fieldnames or ())} — {remedy}"
+                )
             rows.append(row)
         return rows
 
@@ -219,8 +221,6 @@ def read_jsonl(
     return rows
 
 
-
-
 def _parameterized_media_keys(document: Any) -> int:
     """Content-map keys whose every `;`-delimited segment after the type is `name=value`.
 
@@ -238,9 +238,12 @@ def _parameterized_media_keys(document: Any) -> int:
                 for media in content:
                     head, _, rest = str(media).partition(";")
                     segments = [s.strip() for s in rest.split(";")] if rest else []
-                    if "/" in head and segments and all(
-                        "=" in s and s.split("=", 1)[0].strip() and s.split("=", 1)[1].strip()
-                        for s in segments
+                    if (
+                        "/" in head
+                        and segments
+                        and all(
+                            "=" in s and s.split("=", 1)[0].strip() and s.split("=", 1)[1].strip() for s in segments
+                        )
                     ):
                         found += 1
             stack.extend(node.values())
@@ -266,7 +269,9 @@ def selectors_of(key: str) -> tuple[str, ...]:
         return (f"predicate:{key}",)
     selectors = tuple(s for s in table[key].selectors if not s.startswith("fixture="))
     if not selectors:
-        fail(f"{key} names its witnesses directly; no census selector can search for it. Add it to PREDICATE_ROWS with a predicate, or give its site-table row a census selector")
+        fail(
+            f"{key} names its witnesses directly; no census selector can search for it. Add it to PREDICATE_ROWS with a predicate, or give its site-table row a census selector"
+        )
     return selectors
 
 
@@ -306,7 +311,9 @@ def ledger_unreached(key: str) -> tuple[str, ...]:
     for _rank, reach in REACH.read_ledger():
         if reach.key == key:
             return tuple(spec for spec, hit, _total in reach.sites if not hit)
-    fail(f"{key} is not in the ledger; check the key against docs/openapi-surface/golden-reach.tsv, or re-run `just golden-reach-report`")
+    fail(
+        f"{key} is not in the ledger; check the key against docs/openapi-surface/golden-reach.tsv, or re-run `just golden-reach-report`"
+    )
     raise AssertionError
 
 
@@ -319,7 +326,7 @@ def searched_arm(key: str) -> tuple[str, ...]:
     resolves nowhere, and a declarer cannot be probed for it.
     """
     arms = []
-    for spec in re.findall(r"`((?:[^`\\]|\\.)+)`", searched_for(key)[len(SEARCHED_FOR):]):
+    for spec in re.findall(r"`((?:[^`\\]|\\.)+)`", searched_for(key)[len(SEARCHED_FOR) :]):
         spec = spec.replace("\\|", "|")
         try:
             REACH.resolve_site(spec)
@@ -359,8 +366,6 @@ def declared(counts: dict[str, int], selectors: tuple[str, ...]) -> int:
     return sum(counts.get(selector, 0) for selector in selectors)
 
 
-
-
 def source_dir(source: str) -> Path:
     if source not in DECLARED_SOURCES:
         fail(f"{source} is not a declared source; it is one of {', '.join(DECLARED_SOURCES)}")
@@ -369,7 +374,7 @@ def source_dir(source: str) -> Path:
     return path
 
 
-def read_enumeration(path: Path, remedy: str, quoting: int = csv.QUOTE_NONE) -> list[dict[str, str]]:
+def read_enumeration(path: Path, remedy: str, quoting: Literal[0, 1, 2, 3] = csv.QUOTE_NONE) -> list[dict[str, str]]:
     """A walk's `enumeration.tsv.gz`: its header exactly `WALK_FIELDS`, every row as
     wide as it, and each row naming its walk and document."""
     with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
@@ -399,8 +404,9 @@ def read_records(source: str) -> list[dict[str, str]]:
     path = source_dir(source) / "records.tsv"
     if not path.is_file():
         return []
-    rows = read_exact_tsv(path, RECORD_FIELDS, f"restore it from git (`git checkout -- {path}`) "
-                          "or re-file the source's stages")
+    rows = read_exact_tsv(
+        path, RECORD_FIELDS, f"restore it from git (`git checkout -- {path}`) or re-file the source's stages"
+    )
     for row in rows:
         opaque_candidate(row["subject"].split(" ", 1)[0])
     return rows
@@ -443,16 +449,30 @@ def record_guard_logs(source: str) -> None:
         path = directory / name
         if path.is_file():
             calls = sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
-            rows.append({"key": "*", "kind": "wait", "subject": f"{source} guard log {name}",
-                         "result": f"{calls} entries", "file": name})
+            rows.append(
+                {
+                    "key": "*",
+                    "kind": "wait",
+                    "subject": f"{source} guard log {name}",
+                    "result": f"{calls} entries",
+                    "file": name,
+                }
+            )
     write_records(source, {"*"}, rows)
 
 
-
-
 PIN_FIELDS = ("walk", "document", "revision", "blob", "sha256")
-HANDOFF_FIELDS = ("golden_key", "unreached_site", "candidate_url", "immutable_ref", "sha256",
-                  "licence_spdx", "fern_screen", "gap_keys", "disposition")
+HANDOFF_FIELDS = (
+    "golden_key",
+    "unreached_site",
+    "candidate_url",
+    "immutable_ref",
+    "sha256",
+    "licence_spdx",
+    "fern_screen",
+    "gap_keys",
+    "disposition",
+)
 
 
 def git_blob(data: bytes) -> str:
@@ -473,8 +493,9 @@ def committed_bytes(path: Path) -> bytes:
         return data
     git = ["git", "-C", str(path.parent)]
     literal = {**os.environ, "GIT_LITERAL_PATHSPECS": "1"}
-    staged = subprocess.run([*git, "ls-files", "--stage", "--", path.name],
-                            capture_output=True, text=True, env=literal, encoding="utf-8")
+    staged = subprocess.run(
+        [*git, "ls-files", "--stage", "--", path.name], capture_output=True, text=True, env=literal, encoding="utf-8"
+    )
     fields = staged.stdout.split() if staged.returncode == 0 else []
     if len(fields) < 2 or fields[1] == git_blob(data):
         return data
@@ -511,11 +532,16 @@ def pinned_listing(source: str) -> list[dict[str, str]]:
         if not resolved.is_file():
             fail("the publisher trees' pins are unresolved; run `fetch-pins` first")
         return read_tsv(resolved, PIN_FIELDS, "re-run `fetch-pins` to rewrite it")
-    rows = read_tsv(shared / "acquisition-manifest.tsv", ("walk", "document", "revision", "sha256"),
-                    f"restore it from git, or re-acquire {source} through its witness-search script")
+    rows = read_tsv(
+        shared / "acquisition-manifest.tsv",
+        ("walk", "document", "revision", "sha256"),
+        f"restore it from git, or re-acquire {source} through its witness-search script",
+    )
     immutable = [row for row in rows if len(row["revision"]) == 40]
     if not immutable:
-        fail(f"{source}'s acquisition manifest names no document at an immutable ref; re-acquire the source through its witness-search script before walking it")
+        fail(
+            f"{source}'s acquisition manifest names no document at an immutable ref; re-acquire the source through its witness-search script before walking it"
+        )
     return immutable
 
 
@@ -553,7 +579,7 @@ def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ..
     """
     path, sha256, document, keys, timeout = args
     alarm = getattr(signal, "SIGALRM", None)
-    if alarm is None:
+    if alarm is None or sys.platform == "win32":
         return _census_body(path, sha256, document, keys)
     previous = signal.signal(alarm, _alarm)
     signal.alarm(timeout)
@@ -566,7 +592,9 @@ def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ..
         signal.signal(alarm, previous)
 
 
-def _census_body(path: str, sha256: str, document: str, keys: tuple[tuple[str, tuple[str, ...]], ...]) -> dict[str, str]:
+def _census_body(
+    path: str, sha256: str, document: str, keys: tuple[tuple[str, tuple[str, ...]], ...]
+) -> dict[str, str]:
     try:
         data = Path(path).read_bytes()
     except OSError as error:
@@ -622,15 +650,19 @@ def _precomputed(
                 or not isinstance(census, dict)
                 or not all(isinstance(key, str) and type(n) is int and n >= 0 for key, n in census.items())
             ):
-                fail(f"{path}:{number} is not `{{document, sha256, sha256_ok, status, census}}` with a string `error` "
-                     "and a selector-count `census`; take the walk census again, or walk without --census")
+                fail(
+                    f"{path}:{number} is not `{{document, sha256, sha256_ok, status, census}}` with a string `error` "
+                    "and a selector-count `census`; take the walk census again, or walk without --census"
+                )
             if row.get("local") != "missing" and (
                 not isinstance(row.get("sha256_ok"), bool)
                 or not isinstance(row.get("sha256"), str)
                 or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"])
             ):
-                fail(f"{path}:{number} states no boolean `sha256_ok` and SHA-256 `sha256` for the copy it read — "
-                     "take the walk census again, or walk without --census")
+                fail(
+                    f"{path}:{number} states no boolean `sha256_ok` and SHA-256 `sha256` for the copy it read — "
+                    "take the walk census again, or walk without --census"
+                )
             taken[row["document"]] = row
     out = []
     for row in listing:
@@ -639,26 +671,34 @@ def _precomputed(
             out.append({"status": "unreadable: no local copy", "matched_keys": ""})
         elif found["sha256"] != row["sha256"]:
             # Taken over other bytes than this listing pins: read the document again.
-            out.append({"status": "unreadable: precomputed census was taken over other bytes", "matched_keys": "",
-                        "census_error": "1"})
+            out.append(
+                {
+                    "status": "unreadable: precomputed census was taken over other bytes",
+                    "matched_keys": "",
+                    "census_error": "1",
+                }
+            )
         elif found["sha256_ok"] is not True:
             out.append({"status": "unreadable: local bytes differ from the pinned SHA-256", "matched_keys": ""})
         elif "error" in found:
             # A parse refusal (`DocumentError: …`) is worth reading again for its
             # whole reason; a census that ran out of time is not.
             refusal = bool(re.match(r"\w+: ", found["error"]))
-            out.append({"status": f"unreadable: {found['error']}", "matched_keys": "",
-                        "census_error": "1" if refusal else ""})
+            out.append(
+                {"status": f"unreadable: {found['error']}", "matched_keys": "", "census_error": "1" if refusal else ""}
+            )
         else:
             # Only an OpenAPI 3 document is one crozier generates from; a Swagger 2
             # one is read, and declares nothing this search can use.
             counts = (found.get("census") or {}) if str(found.get("openapi", "")).startswith("3") else {}
             matched = {key: declared(counts, selectors) for key, selectors in keys}
-            out.append({
-                "status": "readable",
-                "matched_keys": ",".join(key for key, n in matched.items() if n),
-                "counts": json.dumps({key: n for key, n in matched.items() if n}),
-            })
+            out.append(
+                {
+                    "status": "readable",
+                    "matched_keys": ",".join(key for key, n in matched.items() if n),
+                    "counts": json.dumps({key: n for key, n in matched.items() if n}),
+                }
+            )
     return out
 
 
@@ -690,7 +730,7 @@ def walk(args: argparse.Namespace) -> int:
         # it could not read is read again here for the whole reason.
         again = [index for index, result in enumerate(results) if result.get("census_error")]
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-            for index, result in zip(again, pool.map(_census_one, [jobs[i] for i in again])):
+            for index, result in zip(again, pool.map(_census_one, [jobs[i] for i in again]), strict=False):
                 results[index] = result
     else:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
@@ -700,7 +740,7 @@ def walk(args: argparse.Namespace) -> int:
         jobs = [(str(locate(source, args.root, row, by_digest)), row["sha256"], predicate_keys) for row in listing]
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
             extra = list(pool.map(_predicate_one, jobs, chunksize=64))
-        for result, found in zip(results, extra):
+        for result, found in zip(results, extra, strict=False):
             if not found or result["status"] != "readable":
                 continue
             counts = {**json.loads(result.get("counts") or "{}"), **found}
@@ -714,29 +754,49 @@ def walk(args: argparse.Namespace) -> int:
     with gzip.open(out, "wt", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, WALK_FIELDS, delimiter="\t", lineterminator="\n")
         writer.writeheader()
-        for row, result in zip(listing, results):
+        for row, result in zip(listing, results, strict=False):
             walks[(row["walk"], row["revision"])] += 1
             # A row another search matched keeps that match: this walk answers for
             # the keys it was given, and the other keys' document records rest on it.
-            kept = earlier.get((row["walk"], row["document"], row["sha256"]), []) if result["status"] == "readable" else []
+            kept = (
+                earlier.get((row["walk"], row["document"], row["sha256"]), []) if result["status"] == "readable" else []
+            )
             matched = ",".join(dict.fromkeys([*kept, *filter(None, result["matched_keys"].split(","))]))
-            writer.writerow({**{f: row[f] for f in ("walk", "document", "revision", "sha256")},
-                             "matched_keys": matched, "status": result["status"]})
+            writer.writerow(
+                {
+                    **{f: row[f] for f in ("walk", "document", "revision", "sha256")},
+                    "matched_keys": matched,
+                    "status": result["status"],
+                }
+            )
             counts = json.loads(result.get("counts") or "{}")
             for key, count in counts.items():
-                records.append({"key": key, "kind": "document", "subject": document_subject(row, repeated),
-                                "result": f"census {count}", "file": out.name})
+                records.append(
+                    {
+                        "key": key,
+                        "kind": "document",
+                        "subject": document_subject(row, repeated),
+                        "result": f"census {count}",
+                        "file": out.name,
+                    }
+                )
     listing_file = "pins.tsv" if source == "github-publisher-trees" else out.name
     for key, _selectors in keys:
         for (tree, revision), count in sorted(walks.items()):
-            records.append({"key": key, "kind": "walk", "subject": f"{tree}@{revision}",
-                            "result": str(count), "file": listing_file})
+            records.append(
+                {
+                    "key": key,
+                    "kind": "walk",
+                    "subject": f"{tree}@{revision}",
+                    "result": str(count),
+                    "file": listing_file,
+                }
+            )
     kept = [r for r in read_records(source) if r["key"] in requested and r["kind"] not in ("walk", "document")]
     write_records(source, requested, kept + records)
     unreadable = sum(1 for r in results if r["status"] != "readable")
     print(f"golden-reach-search: {source}: {len(listing)} documents walked, {unreadable} unreadable")
     return 0
-
 
 
 def earlier_matches(path: Path, requested: set[str]) -> dict[tuple[str, str, str], list[str]]:
@@ -781,8 +841,11 @@ def fetch_pins(args: argparse.Namespace) -> int:
     shared = SURFACE / f"witness-search-{source}" / "documents.jsonl"
     resolved, fetched, missing, screened = [], 0, 0, 0
     seen: set[tuple[str, str, str]] = set()
-    pins = read_jsonl(shared, ("repository", "path", "commit", "blob"),
-                      "restore it from git; it is the publisher trees' committed pin list")
+    pins = read_jsonl(
+        shared,
+        ("repository", "path", "commit", "blob"),
+        "restore it from git; it is the publisher trees' committed pin list",
+    )
     for pin in pins:
         # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_fetch_pins_skips_opaque_history_and_refuses_invalid_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
         if INDEX.opaque_identity(pin["path"]):
@@ -809,10 +872,19 @@ def fetch_pins(args: argparse.Namespace) -> int:
                 fetched += 1
         sha256 = hashlib.sha256(data).hexdigest() if local else ""
         if pin.get("sha256") and sha256 and sha256 != pin["sha256"]:
-            fail(f"{pin['path']}: the blob matches but the SHA-256 differs from the pin; delete {local} and re-run `fetch-pins`")
+            fail(
+                f"{pin['path']}: the blob matches but the SHA-256 differs from the pin; delete {local} and re-run `fetch-pins`"
+            )
         missing += not sha256
-        resolved.append({"walk": pin["repository"], "document": pin["path"], "revision": pin["commit"],
-                         "blob": pin["blob"], "sha256": sha256})
+        resolved.append(
+            {
+                "walk": pin["repository"],
+                "document": pin["path"],
+                "revision": pin["commit"],
+                "blob": pin["blob"],
+                "sha256": sha256,
+            }
+        )
     with (source_dir(source) / "pins.tsv").open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, PIN_FIELDS, delimiter="\t", lineterminator="\n")
         writer.writeheader()
@@ -823,11 +895,10 @@ def fetch_pins(args: argparse.Namespace) -> int:
     return 0
 
 
-
-
 def phrasings(key: str, source: str) -> list[str]:
     rows = [
-        r for r in read_tsv(QUERIES, ("key", "source", "phrasing"), "restore it from git")
+        r
+        for r in read_tsv(QUERIES, ("key", "source", "phrasing"), "restore it from git")
         if r["key"] == key and r["source"] == source
     ]
     found = [r["phrasing"] for r in rows]
@@ -848,42 +919,74 @@ def _fetch(read: Callable[..., dict[str, Any]], *args: Any) -> dict[str, Any]:
         return read(*args)
     except (OSError, ValueError, http.client.HTTPException) as error:
         item = args[-1]
-        return {"disposition": "acquisition-failure", "diagnostic": f"{type(error).__name__}: {error}",
-                "repository": (item.get("repository") or {}).get("full_name")
-                if isinstance(item.get("repository"), dict) else item.get("repository"),
-                "path": item.get("path"), "commit": item.get("commit")}
+        return {
+            "disposition": "acquisition-failure",
+            "diagnostic": f"{type(error).__name__}: {error}",
+            "repository": (item.get("repository") or {}).get("full_name")
+            if isinstance(item.get("repository"), dict)
+            else item.get("repository"),
+            "path": item.get("path"),
+            "commit": item.get("commit"),
+        }
 
 
 # `acquirer` is `tools/witness-search/witness-search-github.py`'s `Acquirer`, loaded from a
 # hyphenated file by path, so there is no importable name to annotate it with.
-def _one_query(acquirer: Any, source: str, key: str, phrasing: str, selectors: tuple[str, ...],
-               new: list[dict[str, str]]) -> tuple[list[dict[str, Any]] | None, int]:
+def _one_query(
+    acquirer: Any, source: str, key: str, phrasing: str, selectors: tuple[str, ...], new: list[dict[str, str]]
+) -> tuple[list[dict[str, Any]] | None, int]:
     """Issue one phrasing; its reported count and its first page's documents, or None if refused."""
     if source == "github-code-search":
-        path = "/search/code?" + urllib.parse.urlencode(
-            {"q": phrasing, "per_page": FIRST_PAGE, "page": 1}
-        )
+        path = "/search/code?" + urllib.parse.urlencode({"q": phrasing, "per_page": FIRST_PAGE, "page": 1})
         status, payload, _ = acquirer.github_json("code_search", path)
         if status != 200:
-            new.append({"key": key, "kind": "query", "subject": phrasing,
-                        "result": f"unanswered: HTTP {status} refused", "file": "queries.jsonl"})
-            acquirer.write("queries.jsonl", {"source": source, "key": key, "query": phrasing,
-                                             "outcome": "refused", "status": status})
+            new.append(
+                {
+                    "key": key,
+                    "kind": "query",
+                    "subject": phrasing,
+                    "result": f"unanswered: HTTP {status} refused",
+                    "file": "queries.jsonl",
+                }
+            )
+            acquirer.write(
+                "queries.jsonl",
+                {"source": source, "key": key, "query": phrasing, "outcome": "refused", "status": status},
+            )
             return None, 0
         total = payload.get("total_count") if isinstance(payload, dict) else None
         items = payload.get("items") if isinstance(payload, dict) else None
-        if not isinstance(total, int) or not isinstance(items, list) or not all(
-            isinstance(item, dict) and isinstance(item.get("url"), str) for item in items
+        if (
+            not isinstance(total, int)
+            or not isinstance(items, list)
+            or not all(isinstance(item, dict) and isinstance(item.get("url"), str) for item in items)
         ):
-            new.append({"key": key, "kind": "query", "subject": phrasing,
-                        "result": "unanswered: HTTP 200 carried no `total_count` and `items` list", "file": "queries.jsonl"})
-            acquirer.write("queries.jsonl", {"source": source, "key": key, "query": phrasing,
-                                             "outcome": "malformed", "status": status})
+            new.append(
+                {
+                    "key": key,
+                    "kind": "query",
+                    "subject": phrasing,
+                    "result": "unanswered: HTTP 200 carried no `total_count` and `items` list",
+                    "file": "queries.jsonl",
+                }
+            )
+            acquirer.write(
+                "queries.jsonl",
+                {"source": source, "key": key, "query": phrasing, "outcome": "malformed", "status": status},
+            )
             return None, 0
         items = items[:FIRST_PAGE]
-        acquirer.write("queries.jsonl", {"source": source, "key": key, "query": phrasing,
-                                         "outcome": "answered", "result_count": total,
-                                         "retrieved": len(items)})
+        acquirer.write(
+            "queries.jsonl",
+            {
+                "source": source,
+                "key": key,
+                "query": phrasing,
+                "outcome": "answered",
+                "result_count": total,
+                "retrieved": len(items),
+            },
+        )
         fetched = [
             _fetch(acquirer.github_document, key, {**item, "selector": selectors[0], "url": _quoted(item["url"])})
             for item in items
@@ -891,12 +994,19 @@ def _one_query(acquirer: Any, source: str, key: str, phrasing: str, selectors: t
     else:
         items = acquirer.sourcegraph_search(key, phrasing) or []
         total = len(items)
-        acquirer.write("queries.jsonl", {"source": source, "key": key, "query": phrasing,
-                                         "outcome": "answered", "result_count": total,
-                                         "retrieved": min(total, FIRST_PAGE)})
+        acquirer.write(
+            "queries.jsonl",
+            {
+                "source": source,
+                "key": key,
+                "query": phrasing,
+                "outcome": "answered",
+                "result_count": total,
+                "retrieved": min(total, FIRST_PAGE),
+            },
+        )
         fetched = [_fetch(acquirer.sourcegraph_document, key, selectors[0], item) for item in items[:FIRST_PAGE]]
     return fetched, total
-
 
 
 def query(args: argparse.Namespace) -> int:
@@ -915,13 +1025,21 @@ def query(args: argparse.Namespace) -> int:
             try:
                 fetched, total = _one_query(acquirer, source, key, phrasing, selectors, new)
             except github.SearchStopped as error:
-                new.append({"key": key, "kind": "query", "subject": phrasing,
-                            "result": f"unanswered: {error}", "file": "queries.jsonl"})
+                new.append(
+                    {
+                        "key": key,
+                        "kind": "query",
+                        "subject": phrasing,
+                        "result": f"unanswered: {error}",
+                        "file": "queries.jsonl",
+                    }
+                )
                 continue
             if fetched is None:
                 continue
-            new.append({"key": key, "kind": "query", "subject": phrasing, "result": str(total),
-                        "file": "queries.jsonl"})
+            new.append(
+                {"key": key, "kind": "query", "subject": phrasing, "result": str(total), "file": "queries.jsonl"}
+            )
             for document in fetched:
                 # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_query_and_screen_skip_opaque_inputs_and_reject_unknown_versions`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
                 candidate = f"{INDEX.candidate_name(document)}@{INDEX.candidate_revision(document)}"
@@ -951,8 +1069,9 @@ def query(args: argparse.Namespace) -> int:
                     result = INDEX.EXCLUDED_CENSUS
                 else:
                     result = f"acquisition-failure: {document.get('disposition')}"
-                new.append({"key": key, "kind": "document", "subject": candidate, "result": result,
-                            "file": "candidates.jsonl"})
+                new.append(
+                    {"key": key, "kind": "document", "subject": candidate, "result": result, "file": "candidates.jsonl"}
+                )
         # Filed key by key, so a search stopped part-way keeps every key it finished.
         index_path.parent.mkdir(parents=True, exist_ok=True)
         index_path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8", newline="\n")
@@ -987,8 +1106,6 @@ def _dedupe(rows: list[dict[str, str]]) -> list[dict[str, str]]:
             seen.add(identity)
             out.append(row)
     return out
-
-
 
 
 def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]]:
@@ -1046,8 +1163,10 @@ def measured_build() -> str:
     commit = REACH.measured_commit(REACH.DEFAULT_OUT)
     clean = subprocess.run(["git", "diff", "--quiet", commit, "--", *SRC_PATHSPEC], cwd=REPO)
     if clean.returncode != 0:
-        fail(f"src/ differs from {commit[:12]}, the commit the instrumented build was measured at; "
-             "re-run `just golden-reach` (or `golden-reach.py measure`) before probing")
+        fail(
+            f"src/ differs from {commit[:12]}, the commit the instrumented build was measured at; "
+            "re-run `just golden-reach` (or `golden-reach.py measure`) before probing"
+        )
     return commit[:12]
 
 
@@ -1070,15 +1189,17 @@ def probe(args: argparse.Namespace) -> int:
     universe = REACH.load_regions(REACH.DEFAULT_OUT / "universe.json")
     # Every unreached site the ledger names is read off each profile, so a cached
     # run answers any key's arm and not only the keys this invocation asked for.
-    all_sites = sorted({spec for _rank, reach in REACH.read_ledger()
-                        for spec, hit, _total in reach.sites if not hit})
+    all_sites = sorted({spec for _rank, reach in REACH.read_ledger() for spec, hit, _total in reach.sites if not hit})
     # A reached row's searched arm is read too; its profiles are cached apart,
     # since a cached run of the ledger's sites alone never read those regions.
     extra = sorted({spec for key in args.key for spec in probe_arms(key)} - set(all_sites))
     tag = "." + hashlib.sha256("\n".join(extra).encode("utf-8")).hexdigest()[:12] if extra else ""
     all_sites += extra
-    regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
-               for spec in all_sites for site in [REACH.resolve_site(spec)]}
+    regions = {
+        spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
+        for spec in all_sites
+        for site in [REACH.resolve_site(spec)]
+    }
     sources = sorted({str(REPO / file) for file, _found in regions.values()})
     cache = load_probe_cache(build + tag)
     plans: dict[str, tuple[tuple[str, ...], list[dict[str, Any]], list[tuple[str, Path]]]] = {}
@@ -1089,8 +1210,10 @@ def probe(args: argparse.Namespace) -> int:
         if args.resume:
             # A stopped probe resumes document by document: what it filed stands.
             earlier = [
-                row for row in read_probes(args.source)
-                if row["key"] == key and row.get("build") == build
+                row
+                for row in read_probes(args.source)
+                if row["key"] == key
+                and row.get("build") == build
                 and not (args.retry_timeouts and row["status"].startswith("timeout"))
             ]
             done = {row["candidate"] for row in earlier}
@@ -1130,8 +1253,15 @@ def probe(args: argparse.Namespace) -> int:
                 rows.append({"key": key, "candidate": candidate, "status": digest, "reached": []})
             elif digest in cache:
                 result = cache[digest]
-                rows.append({"key": key, "candidate": candidate, "status": result["status"],
-                             "reached": [spec for spec in result["reached"] if spec in arms], "build": build})
+                rows.append(
+                    {
+                        "key": key,
+                        "candidate": candidate,
+                        "status": result["status"],
+                        "reached": [spec for spec in result["reached"] if spec in arms],
+                        "build": build,
+                    }
+                )
         return rows
 
     tools = (str(crozier), str(profdata), str(llvm_cov), tuple(sources), args.timeout)
@@ -1139,15 +1269,17 @@ def probe(args: argparse.Namespace) -> int:
     # document, which threads would serialize.
     with ProcessPoolExecutor(max_workers=args.jobs) as pool:
         for start in range(0, len(todo), PROBE_BATCH):
-            batch = [(digest, str(by_digest[digest]), tools, regions) for digest in todo[start:start + PROBE_BATCH]]
+            batch = [(digest, str(by_digest[digest]), tools, regions) for digest in todo[start : start + PROBE_BATCH]]
             for digest, result in pool.map(_probe_one, batch):
                 cache[digest] = result
                 append_probe_cache(build + tag, digest, result)
             file_probes_many(args.source, {key: rows_for(key) for key in plans})
     file_probes_many(args.source, {key: rows_for(key) for key in plans})
     reaching = sum(1 for key in plans for row in rows_for(key) if row["reached"])
-    print(f"golden-reach-search: {args.source}: {len(by_digest)} document(s) for {len(plans)} key(s), "
-          f"{len(todo)} generated, {reaching} declarer row(s) reach an unreached arm")
+    print(
+        f"golden-reach-search: {args.source}: {len(by_digest)} document(s) for {len(plans)} key(s), "
+        f"{len(todo)} generated, {reaching} declarer row(s) reach an unreached arm"
+    )
     return 0
 
 
@@ -1158,9 +1290,11 @@ def to_generate(documents: Iterable[str], cache: dict[str, dict[str, Any]], retr
     generates it again (under the invocation's `--timeout`) rather than filing
     the cached timeout a second time.
     """
-    return [digest for digest in documents
-            if digest not in cache
-            or (retry_timeouts and cache[digest]["status"].startswith("timeout"))]
+    return [
+        digest
+        for digest in documents
+        if digest not in cache or (retry_timeouts and cache[digest]["status"].startswith("timeout"))
+    ]
 
 
 def _probe_one(
@@ -1173,9 +1307,23 @@ def _probe_one(
         env = dict(os.environ, LLVM_PROFILE_FILE=str(scratch_path / "%p-%m.profraw"))
         try:
             run = subprocess.run(
-                [crozier, "generate", "--spec", path, "--output", str(scratch_path / "out"),
-                 "--package-name", "fern", "--project-name", "default_package_name"],
-                capture_output=True, text=True, timeout=timeout, env=env, encoding="utf-8",
+                [
+                    crozier,
+                    "generate",
+                    "--spec",
+                    path,
+                    "--output",
+                    str(scratch_path / "out"),
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                env=env,
+                encoding="utf-8",
             )
         except subprocess.TimeoutExpired:
             return digest, {"status": f"timeout after {timeout}s", "reached": []}
@@ -1186,8 +1334,9 @@ def _probe_one(
         REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
         export = scratch_path / "export.json"
         with export.open("w", encoding="utf-8", newline="\n") as sink:
-            REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", crozier,
-                            *sources], stdout=sink)
+            REACH.run_llvm(
+                [llvm_cov, "export", "-format=text", f"-instr-profile={merged}", crozier, *sources], stdout=sink
+            )
         hit = executed_regions(export, {file for file, _found in regions.values()})
     reached = sorted(spec for spec, (file, found) in regions.items() if found & hit.get(file, set()))
     status = "generated" if run.returncode == 0 else f"exit {run.returncode}: {run.stderr.strip()[-160:]}"
@@ -1202,8 +1351,11 @@ def executed_regions(export: Path, files: set[str]) -> dict[str, set[tuple[int, 
     region: a region is executed exactly when that maximum is positive.
     """
     tier = REACH.REPORT.load_tier(export, REPO)
-    hit = {name: {tuple(region) for region, count in regions.items() if count > 0}
-           for name, regions in tier.items() if name in files}
+    hit = {
+        name: {tuple(region) for region, count in regions.items() if count > 0}
+        for name, regions in tier.items()
+        if name in files
+    }
     return {name: regions for name, regions in hit.items() if regions}
 
 
@@ -1241,8 +1393,10 @@ def load_probe_cache(build: str) -> dict[str, dict[str, Any]]:
             or not isinstance(row.get("reached"), list)
             or not all(isinstance(site, str) for site in row["reached"])
         ):
-            fail(f"{path}:{number} is not a probe run (`digest` SHA-256, string `status`, `reached` site "
-                 f"names) — delete {path}; the next `probe` generates its documents again")
+            fail(
+                f"{path}:{number} is not a probe run (`digest` SHA-256, string `status`, `reached` site "
+                f"names) — delete {path}; the next `probe` generates its documents again"
+            )
         out[row["digest"]] = {"status": row["status"], "reached": list(row["reached"])}
     return out
 
@@ -1250,21 +1404,24 @@ def load_probe_cache(build: str) -> dict[str, dict[str, Any]]:
 def append_probe_cache(build: str, digest: str, result: dict[str, Any]) -> None:
     path = probe_cache_path(build)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with exclusive_lock(CACHE / "probe-cache.lock"):
-        with path.open("a", encoding="utf-8", newline="\n") as handle:
-            handle.write(json.dumps({"digest": digest, **result}, sort_keys=True) + "\n")
+    with exclusive_lock(CACHE / "probe-cache.lock"), path.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps({"digest": digest, **result}, sort_keys=True) + "\n")
 
 
 def read_probes(source: str) -> list[dict[str, Any]]:
     path = source_dir(source) / "probe.jsonl"
     if not path.is_file():
         return []
-    return read_jsonl(path, ("key", "candidate", "status", "reached"),
-                      "restore it from git, or re-run `probe` for the source", kinds={"reached": list})
+    return read_jsonl(
+        path,
+        ("key", "candidate", "status", "reached"),
+        "restore it from git, or re-run `probe` for the source",
+        kinds={"reached": list},
+    )
 
 
 @contextlib.contextmanager
-def exclusive_lock(path: Path) -> Iterator[None]:
+def exclusive_lock(path: Path) -> Generator[None, None, None]:
     """Hold an inter-process lock on `path` for the body, waiting as long as it is held.
 
     `fcntl.flock` where the platform has it and `msvcrt.locking` on Windows,
@@ -1274,10 +1431,12 @@ def exclusive_lock(path: Path) -> Iterator[None]:
     """
     if fcntl is not None or msvcrt is not None:
         with path.open("a+b") as handle:
-            if fcntl is not None:
+            if fcntl is not None and sys.platform != "win32":
                 fcntl.flock(handle, fcntl.LOCK_EX)
                 yield
                 return
+            # The test above leaves only Windows' `msvcrt` here.
+            assert msvcrt is not None and sys.platform == "win32"
             handle.seek(0)
             while True:
                 try:
@@ -1299,8 +1458,9 @@ def exclusive_lock(path: Path) -> Iterator[None]:
             break
         except FileExistsError:
             if tick % 600 == 0:
-                print(f"golden-reach-search: still waiting on {marker}; remove it if no probe is filing",
-                      file=sys.stderr)
+                print(
+                    f"golden-reach-search: still waiting on {marker}; remove it if no probe is filing", file=sys.stderr
+                )
             time.sleep(0.1)
     try:
         yield
@@ -1314,10 +1474,8 @@ def file_probes_many(source: str, probed: dict[str, list[dict[str, Any]]]) -> No
     CACHE.mkdir(parents=True, exist_ok=True)
     with exclusive_lock(CACHE / f"{source}.probe.lock"):
         # llmlint: ignore-block[changed_behavior_has_e2e] This guard is proven through `main(argv)`, the function `python3 tools/surface-census/golden-reach-search.py` runs, by tools/surface-census/tests/golden_reach_test.py's `test_probe_publication_preserves_opaque_history_while_replacing_current_rows`; a subprocess would write into the committed docs/openapi-surface evidence and the .local cache, roots this script fixes as module constants with no CLI flag, so the test redirects them to a scratch tree and calls the CLI entry point in-process.
-        kept = [row for row in read_probes(source)
-                if row["key"] not in probed or opaque_candidate(row["candidate"])]
-        rows = kept + [row for key in probed for row in probed[key]
-                       if not opaque_candidate(row["candidate"])]
+        kept = [row for row in read_probes(source) if row["key"] not in probed or opaque_candidate(row["candidate"])]
+        rows = kept + [row for key in probed for row in probed[key] if not opaque_candidate(row["candidate"])]
         # llmlint: ignore-end[changed_behavior_has_e2e]
         path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8", newline="\n")
 
@@ -1331,7 +1489,6 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     arm-reaching declarer nobody screened stays visible here as outstanding.
     """
     file_probes_many(source, {key: probed})
-
 
 
 # The measured reason a candidate passing every screen is still no witness: a
@@ -1358,9 +1515,11 @@ def candidate_ref(source: str, candidate: str) -> tuple[str, str, str, str]:
     if source in QUERY_SOURCES:
         found = re.fullmatch(r"(?:github\.com/)?([^/:]+/[^/:]+):(.+)@([0-9a-f]{40})", candidate)
         if not found:
-            fail(f"{candidate} names no `<owner>/<repo>:<path>@<commit>` a screen can read at its commit; "
-                 f"check its spelling against {source}'s records.tsv, or pass --measured with a record "
-                 "tools/witness-search/witness_screen.py measured at the document's pinned commit")
+            fail(
+                f"{candidate} names no `<owner>/<repo>:<path>@<commit>` a screen can read at its commit; "
+                f"check its spelling against {source}'s records.tsv, or pass --measured with a record "
+                "tools/witness-search/witness_screen.py measured at the document's pinned commit"
+            )
         cached = candidate_index(source).get(candidate, "")
         digest = Path(cached).stem if re.fullmatch(r"[0-9a-f]{64}", Path(cached).stem) else ""
         return found.group(1), found.group(3), found.group(2), digest
@@ -1371,30 +1530,51 @@ def candidate_ref(source: str, candidate: str) -> tuple[str, str, str, str]:
             path, prefix = row["document"], row["walk"].replace("/", "--") + "/"
             # A vendor-portal copy is filed under its repository's `<owner>--<repo>/` directory.
             return row["walk"], row["revision"], path.removeprefix(prefix), row.get("sha256", "")
-    fail(f"{candidate} is in no {source} pinned listing; check the candidate's spelling against "
-         f"{source}'s records.tsv, or re-walk {source} if its listing moved")
+    fail(
+        f"{candidate} is in no {source} pinned listing; check the candidate's spelling against "
+        f"{source}'s records.tsv, or re-walk {source} if its listing moved"
+    )
     raise AssertionError  # unreachable: `fail` exits
 
 
 def file_screen(source: str, key: str, candidate: str, row: dict[str, Any]) -> None:
     """Append one screen row and restate the candidate's `records.tsv` rows from it."""
     census = next(
-        (r["result"] for r in read_records(source)
-         if r["key"] == key and r["kind"] == "document" and r["subject"] == candidate),
+        (
+            r["result"]
+            for r in read_records(source)
+            if r["key"] == key and r["kind"] == "document" and r["subject"] == candidate
+        ),
         None,
     )
     if census is None:
-        fail(f"{candidate} is no declarer of {key} in {source}'s records; `walk` or `query` {source} for {key} first, or check the candidate's spelling")
-    rows = [
+        fail(
+            f"{candidate} is no declarer of {key} in {source}'s records; `walk` or `query` {source} for {key} first, or check the candidate's spelling"
+        )
+    rows: list[dict[str, str]] = [
         {"key": key, "kind": "candidate", "subject": candidate, "result": census, "file": "probe.jsonl"},
-        *({"key": key, "kind": "screen", "subject": f"{candidate} {name}", "result": row[name], "file": "screens.jsonl"}
-          for name in SCREEN.SCREENS),
+        *(
+            {
+                "key": key,
+                "kind": "screen",
+                "subject": f"{candidate} {name}",
+                "result": row[name],
+                "file": "screens.jsonl",
+            }
+            for name in SCREEN.SCREENS
+        ),
     ]
     with (source_dir(source) / "screens.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps({"key": key, "candidate": candidate, **row}, sort_keys=True) + "\n")
-    others = [r for r in read_records(source)
-              if not (r["key"] == key and r["kind"] in ("screen", "candidate")
-                      and (r["subject"] == candidate or r["subject"].startswith(candidate + " ")))]
+    others = [
+        r
+        for r in read_records(source)
+        if not (
+            r["key"] == key
+            and r["kind"] in ("screen", "candidate")
+            and (r["subject"] == candidate or r["subject"].startswith(candidate + " "))
+        )
+    ]
     replace_records(source, others + rows)
 
 
@@ -1413,60 +1593,105 @@ def screen(args: argparse.Namespace) -> int:
         print(f"golden-reach-search: {args.source}: {args.candidate} screened by repository rule")
         return 0
     # llmlint: ignore-end[changed_behavior_has_e2e]
-    stated = [flag for flag, value in (("--licence", args.licence), ("--ref", args.ref), ("--fern", args.fern))
-              if value is not None]
+    stated = [
+        flag
+        for flag, value in (("--licence", args.licence), ("--ref", args.ref), ("--fern", args.fern))
+        if value is not None
+    ]
     if stated:
-        fail(f"{', '.join(stated)} free text is no longer a measurement: `screen` takes the licence, ref and "
-             "fern screens through the measured stage (tools/witness-search/witness_screen.py) and records each one's exit "
-             "status and redacted log — drop " + ", ".join(stated))
+        fail(
+            f"{', '.join(stated)} free text is no longer a measurement: `screen` takes the licence, ref and "
+            "fern screens through the measured stage (tools/witness-search/witness_screen.py) and records each one's exit "
+            "status and redacted log — drop " + ", ".join(stated)
+        )
     if args.declined and args.registered:
         fail("a candidate is registered or declined, not both; pass one of --registered and --declined")
-    if args.declined.startswith(FIXTURE_DECLINE) and not args.declined[len(FIXTURE_DECLINE):].startswith(" — "):
-        fail(f"a fixture decline reads `{FIXTURE_DECLINE} — <what makes it one>`: name the repository, the "
-             "path at its pinned commit, and the test or fixtures directory it sits in or the test that loads it")
+    if args.declined.startswith(FIXTURE_DECLINE) and not args.declined[len(FIXTURE_DECLINE) :].startswith(" — "):
+        fail(
+            f"a fixture decline reads `{FIXTURE_DECLINE} — <what makes it one>`: name the repository, the "
+            "path at its pinned commit, and the test or fixtures directory it sits in or the test that loads it"
+        )
     directory = source_dir(args.source)
-    if not any(r["key"] == args.key and r["kind"] == "document" and r["subject"] == args.candidate
-               for r in read_records(args.source)):
-        fail(f"{args.candidate} is no declarer of {args.key} in {args.source}'s records; `walk` or `query` {args.source} for {args.key} first, or check the candidate's spelling")
+    if not any(
+        r["key"] == args.key and r["kind"] == "document" and r["subject"] == args.candidate
+        for r in read_records(args.source)
+    ):
+        fail(
+            f"{args.candidate} is no declarer of {args.key} in {args.source}'s records; `walk` or `query` {args.source} for {args.key} first, or check the candidate's spelling"
+        )
     if args.measured:
         record = SCREEN.read_measured(args.measured)
         # A record measured elsewhere is filed only against the document it read.
         repository, commit, path, expected = candidate_ref(args.source, args.candidate)
-        document = record.get("document") if isinstance(record, dict) and isinstance(record.get("document"), dict) else {}
+        document = (
+            record.get("document") if isinstance(record, dict) and isinstance(record.get("document"), dict) else {}
+        )
         read = (document.get("repository"), document.get("commit"), document.get("path"))
         if read != (repository, commit, path) or (expected and document.get("sha256") not in (expected, "")):
-            fail(f"--measured names {read}, not {args.candidate}'s pinned document "
-                 f"{(repository, commit, path)}{' with sha256 ' + expected if expected else ''}; pass the record "
-                 "measured for this candidate, or drop --measured to measure it now")
+            fail(
+                f"--measured names {read}, not {args.candidate}'s pinned document "
+                f"{(repository, commit, path)}{' with sha256 ' + expected if expected else ''}; pass the record "
+                "measured for this candidate, or drop --measured to measure it now"
+            )
     else:
         repository, commit, path, expected = candidate_ref(args.source, args.candidate)
         github = _load("witness_search_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
         acquirer = github.Acquirer(directory, cache=CACHE / args.source, **ACQUIRER_OPTIONS)
         record = SCREEN.measure(
-            repository=repository, commit=commit, path=path, raw_base=acquirer.raw_github_url,
+            repository=repository,
+            commit=commit,
+            path=path,
+            raw_base=acquirer.raw_github_url,
             fetch=lambda url, subject: acquirer.raw_github_get(url, args.key, subject),
-            logs=directory / SCREEN.LOG_DIR, base=directory, expected_sha256=expected,
-            licence_refusal=args.licence_refusal, timeout=args.timeout,
+            logs=directory / SCREEN.LOG_DIR,
+            base=directory,
+            expected_sha256=expected,
+            licence_refusal=args.licence_refusal,
+            timeout=args.timeout,
         )
         record_guard_logs(args.source)
     missing = SCREEN.measured_failures(record, directory)
-    refusal = (f"{args.candidate}: a screen is filed only with its measured record, and this one lacks "
-               + "; ".join(missing) + " — measure it again: run `screen` without --measured") if missing else ""
-    if not refusal and args.registered and not all(
-            SCREEN.passed(outcome) for outcome in SCREEN.outcomes(record).values()):
-        refusal = (f"--registered claims {args.candidate} passed every screen, and its measured outcomes read "
-                   f"{SCREEN.outcomes(record)}; drop --registered to file the refusal as measured")
+    refusal = (
+        (
+            f"{args.candidate}: a screen is filed only with its measured record, and this one lacks "
+            + "; ".join(missing)
+            + " — measure it again: run `screen` without --measured"
+        )
+        if missing
+        else ""
+    )
+    if (
+        not refusal
+        and args.registered
+        and not all(SCREEN.passed(outcome) for outcome in SCREEN.outcomes(record).values())
+    ):
+        refusal = (
+            f"--registered claims {args.candidate} passed every screen, and its measured outcomes read "
+            f"{SCREEN.outcomes(record)}; drop --registered to file the refusal as measured"
+        )
     if refusal:
         if not args.measured and isinstance(record, dict):
             SCREEN.discard_logs(record, directory)
         fail(refusal)
     result = SCREEN.outcomes(record)
-    file_screen(args.source, args.key, args.candidate, {
-        **result, "measured": record, "screened_at": record["screened_at"], "gap_keys": args.gap_keys,
-        "evidence": args.evidence, "declined": args.declined, "registered": args.registered,
-    })
-    print(f"golden-reach-search: {args.source}: {args.candidate} — "
-          + ", ".join(f"{name} {outcome.split(':', 1)[0]}" for name, outcome in result.items()))
+    file_screen(
+        args.source,
+        args.key,
+        args.candidate,
+        {
+            **result,
+            "measured": record,
+            "screened_at": record["screened_at"],
+            "gap_keys": args.gap_keys,
+            "evidence": args.evidence,
+            "declined": args.declined,
+            "registered": args.registered,
+        },
+    )
+    print(
+        f"golden-reach-search: {args.source}: {args.candidate} — "
+        + ", ".join(f"{name} {outcome.split(':', 1)[0]}" for name, outcome in result.items())
+    )
     return 0
 
 
@@ -1487,8 +1712,10 @@ def _dispositions(key: str, build: str) -> list[str]:
         for row in read_tsv(handoff, HANDOFF_FIELDS, "restore it from git"):
             if row["golden_key"] == key:
                 gaps = "" if row["gap_keys"] in ("", "-") else f", declaring `gap` row(s) {row['gap_keys']}"
-                out.append(f"- **Hand-off** (see [`handoff.tsv`](../handoff.tsv)): <{row['candidate_url']}>{gaps} — "
-                           f"{row['fern_screen']} — disposition: {row['disposition']}")
+                out.append(
+                    f"- **Hand-off** (see [`handoff.tsv`](../handoff.tsv)): <{row['candidate_url']}>{gaps} — "
+                    f"{row['fern_screen']} — disposition: {row['disposition']}"
+                )
     for source in DECLARED_SOURCES:
         screens = source_dir(source) / "screens.jsonl"
         if not screens.is_file():
@@ -1501,11 +1728,13 @@ def _dispositions(key: str, build: str) -> list[str]:
             if row.get("registered"):
                 out.append(f"- **Registered** (`{source}`): `{candidate}` — {row['registered']}")
             if row.get("declined") and candidate not in _reaching(key, source, build):
-                out.append(f"- **No longer a candidate** (`{source}`): `{candidate}` — its probe of build "
-                           f"`{build}` executes no unreached site; declined when screened: {row['declined']}")
+                out.append(
+                    f"- **No longer a candidate** (`{source}`): `{candidate}` — its probe of build "
+                    f"`{build}` executes no unreached site; declined when screened: {row['declined']}"
+                )
             elif row.get("declined"):
                 out.append(f"- **Declined** (`{source}`): `{candidate}` — {row['declined']}")
-    return ["", "#### Candidates passing every screen", ""] + out if out else []
+    return ["", "#### Candidates passing every screen", "", *out] if out else []
 
 
 def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
@@ -1516,11 +1745,19 @@ def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
         # walk's enumeration, not a per-key row, is where that is recorded.
         rows = read_enumeration(enumeration, f"restore it from git, or re-run `walk --source {source}`")
         repeated = repeated_documents(rows)
-        return [(document_subject(row, repeated), row["status"], row["sha256"])
-                for row in rows if row["status"] != "readable"]
-    return [(r["subject"], r["result"], "") for r in read_records(source)
-            if r["key"] == key and r["kind"] == "document"
-            and r["result"] != INDEX.EXCLUDED_CENSUS and not r["result"].startswith("census ")]
+        return [
+            (document_subject(row, repeated), row["status"], row["sha256"])
+            for row in rows
+            if row["status"] != "readable"
+        ]
+    return [
+        (r["subject"], r["result"], "")
+        for r in read_records(source)
+        if r["key"] == key
+        and r["kind"] == "document"
+        and r["result"] != INDEX.EXCLUDED_CENSUS
+        and not r["result"].startswith("census ")
+    ]
 
 
 def read_refused(source: str) -> dict[str, dict[str, str]]:
@@ -1531,11 +1768,13 @@ def read_refused(source: str) -> dict[str, dict[str, str]]:
     rows = read_exact_tsv(path, REFUSED_FIELDS, f"restore it from git or re-run `refuse --source {source}`")
     for row in rows:
         if row["verdict"] not in REFUSED_VERDICTS or not (
-                (opaque_candidate(row["document"]) and opaque_candidate(row["sha256"])
-                 and "@" not in row["sha256"])
-                or re.fullmatch(r"[0-9a-f]{64}", row["sha256"])):
-            fail(f"{path}: `{row['document']}` is not a {'/'.join(REFUSED_VERDICTS)} verdict over a SHA-256; "
-                 f"re-run `refuse --source {source}`")
+            (opaque_candidate(row["document"]) and opaque_candidate(row["sha256"]) and "@" not in row["sha256"])
+            or re.fullmatch(r"[0-9a-f]{64}", row["sha256"])
+        ):
+            fail(
+                f"{path}: `{row['document']}` is not a {'/'.join(REFUSED_VERDICTS)} verdict over a SHA-256; "
+                f"re-run `refuse --source {source}`"
+            )
     return {row["document"]: row for row in rows}
 
 
@@ -1593,9 +1832,15 @@ def screen_states_in(directory: Path, key: str) -> dict[str, str]:
     rescreen = directory / RESCREEN_FILE
     # A candidate `fern-rescreen` ran pinned Fern over and saw refused: that run,
     # not the wording its screen row was filed with, is the measurement.
-    measured_refusals = {row["candidate"] for row in (
-        read_jsonl(rescreen, ("sha256", "candidate", "check_exit"), "restore it from git")
-        if rescreen.is_file() else []) if str(fern_verdict(row)).startswith("failed: ")}
+    measured_refusals = {
+        row["candidate"]
+        for row in (
+            read_jsonl(rescreen, ("sha256", "candidate", "check_exit"), "restore it from git")
+            if rescreen.is_file()
+            else []
+        )
+        if str(fern_verdict(row)).startswith("failed: ")
+    }
     states = {}
     for candidate, row in latest.items():
         if "measured" in row and not SCREEN.measured_failures(row["measured"], directory):
@@ -1617,29 +1862,38 @@ def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]
     read that no full standard parser refused.
     """
     records = [r for r in read_records(source) if r["key"] == key]
-    declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
-                 and r["result"] != "census 0"}
-    probes = {row["candidate"]: row for row in read_probes(source)
-              if row["key"] == key and row.get("build") == build}
+    declarers = {
+        r["subject"]
+        for r in records
+        if r["kind"] == "document" and r["result"].startswith("census ") and r["result"] != "census 0"
+    }
+    probes = {row["candidate"]: row for row in read_probes(source) if row["key"] == key and row.get("build") == build}
     items = [(c, f"unprobed on build {build}") for c in sorted(declarers - set(probes))]
-    items += [(c, f"probe on build {build}: {probes[c]['status']}") for c in sorted(declarers & set(probes))
-              if probes[c]["status"].startswith(("timeout", "no profile"))]
+    items += [
+        (c, f"probe on build {build}: {probes[c]['status']}")
+        for c in sorted(declarers & set(probes))
+        if probes[c]["status"].startswith(("timeout", "no profile"))
+    ]
     historical = {c for c, state in screen_states(key, source).items() if state == "historical"}
-    items += [(c, HISTORICAL_SCREEN) for c in sorted((historical & _reaching(key, source, build))
-                                                       - fixture_declined(key, source))]
+    items += [
+        (c, HISTORICAL_SCREEN)
+        for c in sorted((historical & _reaching(key, source, build)) - fixture_declined(key, source))
+    ]
     return items + [(document, reason) for document, reason in _unreadable(key, source)]
 
 
 def _tally(key: str, source: str, build: str) -> dict[str, int]:
     """What one source's evidence says about one key: declarers, and how each fared."""
     records = [r for r in read_records(source) if r["key"] == key]
-    declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
-                 and r["result"] != "census 0"}
+    declarers = {
+        r["subject"]
+        for r in records
+        if r["kind"] == "document" and r["result"].startswith("census ") and r["result"] != "census 0"
+    }
     refused, unreadable = _refused_split(key, source)
     # Only a probe of the measured build counts; one run while `src/` differed from
     # it read another arm's regions (see [`measured_build`]) and says nothing.
-    probes = {row["candidate"]: row for row in read_probes(source)
-              if row["key"] == key and row.get("build") == build}
+    probes = {row["candidate"]: row for row in read_probes(source) if row["key"] == key and row.get("build") == build}
     states = screen_states(key, source)
     declined = fixture_declined(key, source)
     # A historical screen settles nothing: only a measured one, or a fixture
@@ -1657,8 +1911,12 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
         "refused": len(refused),
         "probed": len(declarers & set(probes)),
         "timeouts": sum(1 for c in declarers if probes.get(c, {}).get("status", "").startswith("timeout")),
-        "failed": sum(1 for c in declarers if probes.get(c, {}).get("status", "generated") not in ("generated",)
-                      and not probes[c]["status"].startswith("timeout")),
+        "failed": sum(
+            1
+            for c in declarers
+            if probes.get(c, {}).get("status", "generated") not in ("generated",)
+            and not probes[c]["status"].startswith("timeout")
+        ),
         "unprofiled": sum(1 for c in declarers if probes.get(c, {}).get("status", "").startswith("no profile")),
         "reaching": len(reaching),
         "screened": len(reaching & screened),
@@ -1669,14 +1927,23 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
 
 def _reaching(key: str, source: str, build: str) -> set[str]:
     """The declarers of one source whose probe of `build` executes an unreached site."""
-    return {row["candidate"] for row in read_probes(source)
-            if row["key"] == key and row.get("build") == build and row["reached"]}
+    return {
+        row["candidate"]
+        for row in read_probes(source)
+        if row["key"] == key and row.get("build") == build and row["reached"]
+    }
 
 
 def _outstanding(tally: dict[str, int]) -> int:
     """Declarers the arm may still be in: unprobed, timed out, unprofiled, unreadable, or historically screened."""
-    return (tally["declarers"] - tally["probed"] + tally["timeouts"] + tally["unprofiled"]
-            + tally["unreadable"] + tally["historical"])
+    return (
+        tally["declarers"]
+        - tally["probed"]
+        + tally["timeouts"]
+        + tally["unprofiled"]
+        + tally["unreadable"]
+        + tally["historical"]
+    )
 
 
 def src_commits_since(build: str) -> list[str]:
@@ -1685,11 +1952,18 @@ def src_commits_since(build: str) -> list[str]:
     Not `%h`: git lengthens that abbreviation as the object store grows, so the
     same history would render differently in a clone that has fetched more.
     """
-    run = subprocess.run(["git", "log", "--format=%H", f"{build}..HEAD", "--", *SRC_PATHSPEC],
-                         cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+    run = subprocess.run(
+        ["git", "log", "--format=%H", f"{build}..HEAD", "--", *SRC_PATHSPEC],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
     if run.returncode != 0:
-        fail(f"cannot read src/'s history since {build}: {run.stderr.strip()} — "
-             "fetch that commit, or re-run `just golden-reach` on this checkout")
+        fail(
+            f"cannot read src/'s history since {build}: {run.stderr.strip()} — "
+            "fetch that commit, or re-run `just golden-reach` on this checkout"
+        )
     return [commit[:8] for commit in run.stdout.split()]
 
 
@@ -1703,8 +1977,7 @@ def _outcome(tallies: dict[str, dict[str, int]], src_moved: bool = False) -> str
     them has to be re-taken before it can say the arm is absent.
     """
     outstanding = src_moved or any(
-        _outstanding(t) or t["screened"] < t["reaching"] or t["passing"]
-        for t in tallies.values()
+        _outstanding(t) or t["screened"] < t["reaching"] or t["passing"] for t in tallies.values()
     )
     return "search-incomplete" if outstanding else "exhausted"
 
@@ -1714,11 +1987,18 @@ SEARCHED_FOR = "The unreached handling site(s) searched for: "
 
 def probed_build(commit: str) -> str:
     """The short commit of an earlier build whose probes a record is rendered as of."""
-    run = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{commit}^{{commit}}"],
-                         cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+    run = subprocess.run(
+        ["git", "rev-parse", "--verify", "-q", f"{commit}^{{commit}}"],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
     if run.returncode != 0:
-        fail(f"--build {commit} names no commit in this checkout; pass the build a record's probes "
-             "were counted on, as its `build of commit` line spells it")
+        fail(
+            f"--build {commit} names no commit in this checkout; pass the build a record's probes "
+            "were counted on, as its `build of commit` line spells it"
+        )
     return run.stdout.strip()[:12]
 
 
@@ -1748,12 +2028,18 @@ def render(args: argparse.Namespace) -> int:
     ledger = "was measured on when these probes ran" if args.build else "is measured on"
     for key in args.key:
         reached = not ledger_unreached(key)
-        header = searched_for(key) if args.build or reached else (
-            SEARCHED_FOR + ", ".join(f"`{_cell(s)}`" for s in unreached_sites(key)) + ".")
+        header = (
+            searched_for(key)
+            if args.build or reached
+            else (SEARCHED_FOR + ", ".join(f"`{_cell(s)}`" for s in unreached_sites(key)) + ".")
+        )
         tallies = {source: _tally(key, source, build) for source in DECLARED_SOURCES}
         moved = src_commits_since(build)
-        outcome = args.outcome if args.outcome != "auto" else (
-            "witness-found" if reached and not args.build else _outcome(tallies, bool(moved)))
+        outcome = (
+            args.outcome
+            if args.outcome != "auto"
+            else ("witness-found" if reached and not args.build else _outcome(tallies, bool(moved)))
+        )
         lines = [
             f"# Arm search: `{key}`",
             "",
@@ -1788,35 +2074,47 @@ def render(args: argparse.Namespace) -> int:
             ]
         elif reached:
             arms = probe_arms(key)
-            gone = [s for s in searched_for(key)[len(SEARCHED_FOR):].split("`, `") if s.strip("`.")
-                    and s.strip("`.").replace("\\|", "|") not in arms]
+            gone = [
+                s
+                for s in searched_for(key)[len(SEARCHED_FOR) :].split("`, `")
+                if s.strip("`.") and s.strip("`.").replace("\\|", "|") not in arms
+            ]
             table = lines.index("### Witness search (exhaustive)")
             lines[table:table] = [
                 "The arm this search looked for is now reached, so the search reads",
                 "`witness-found`: a witness registered since reaches every handling site the",
                 "ledger names for the row. Its declarers are still probed on the counted build,",
                 "against the arm as it resolves in today's `src/`, so none is left unprobed."
-                + (" A site a later repair restructured out of `src/` resolves nowhere: "
-                   + ", ".join(f"`{s.strip('`.')}`" for s in gone) + (
-                       ". The declarers are probed against the arm's remaining sites."
-                       if len(gone) < len(searched_for(key)[len(SEARCHED_FOR):].split("`, `")) else
-                       ". The declarers are probed against the row's handling sites as the ledger "
-                       "names them today: " + ", ".join(f"`{_cell(a)}`" for a in arms) + ".")
-                   if gone else ""),
+                + (
+                    " A site a later repair restructured out of `src/` resolves nowhere: "
+                    + ", ".join(f"`{s.strip('`.')}`" for s in gone)
+                    + (
+                        ". The declarers are probed against the arm's remaining sites."
+                        if len(gone) < len(searched_for(key)[len(SEARCHED_FOR) :].split("`, `"))
+                        else ". The declarers are probed against the row's handling sites as the ledger "
+                        "names them today: " + ", ".join(f"`{_cell(a)}`" for a in arms) + "."
+                    )
+                    if gone
+                    else ""
+                ),
                 "",
             ]
         for source in DECLARED_SOURCES:
             records = [r for r in read_records(source) if r["key"] == key]
-            queries = "; ".join(
-                f"`{_cell(r['subject'])}` → {_cell(r['result'])}" for r in records if r["kind"] == "query"
-            ) or "—"
-            walks = "; ".join(
-                f"`{r['subject'].rsplit('@', 1)[0]}` at `{r['subject'].rsplit('@', 1)[1]}` → {r['result']} documents"
-                for r in records if r["kind"] == "walk") or "—"
-            candidates, screen_cell = _candidate_cells(records)
-            lines.append(
-                f"| `{key}` | `{source}` | `{outcome}` | {queries} | {walks} | {candidates} | {screen_cell} |"
+            queries = (
+                "; ".join(f"`{_cell(r['subject'])}` → {_cell(r['result'])}" for r in records if r["kind"] == "query")
+                or "—"
             )
+            walks = (
+                "; ".join(
+                    f"`{r['subject'].rsplit('@', 1)[0]}` at `{r['subject'].rsplit('@', 1)[1]}` → {r['result']} documents"
+                    for r in records
+                    if r["kind"] == "walk"
+                )
+                or "—"
+            )
+            candidates, screen_cell = _candidate_cells(records)
+            lines.append(f"| `{key}` | `{source}` | `{outcome}` | {queries} | {walks} | {candidates} | {screen_cell} |")
         lines += [
             "",
             "#### Declarers, and how the instrumented run fared on each",
@@ -1869,9 +2167,14 @@ def _candidate_cells(records: list[dict[str, str]]) -> tuple[str, str]:
         if r["kind"] == "screen":
             candidate, screen_name = r["subject"].rsplit(" ", 1)
             screens.setdefault(candidate, {})[screen_name] = r["result"]
-    screen_cell = "; ".join(
-        f"`{c}` " + " ".join(f"{s} `{screens[c][s]}`" for s in ("licence", "ref", "fern") if s in screens[c])
-        for c in reaching if c in screens) or "—"
+    screen_cell = (
+        "; ".join(
+            f"`{c}` " + " ".join(f"{s} `{screens[c][s]}`" for s in ("licence", "ref", "fern") if s in screens[c])
+            for c in reaching
+            if c in screens
+        )
+        or "—"
+    )
     return ", ".join(f"`{c}`" for c in reaching) or "—", _cell(screen_cell)
 
 
@@ -1880,24 +2183,33 @@ HISTORICAL_NOTE = "candidate(s) reaching the arm carry only a historical screen"
 
 def _historical_note(tallies: dict[str, dict[str, int]]) -> list[str]:
     historical = sum(t["historical"] for t in tallies.values())
-    return [
-        "",
-        f"{historical} {HISTORICAL_NOTE}: one filed",
-        "before the measured screening stage (`tools/witness-search/witness_screen.py`), with no exit",
-        "status, pins or redacted log behind its outcomes. A historical screen is kept as",
-        "it was filed and settles nothing, so each such candidate is outstanding — counted",
-        "in `outstanding` below and listed in `outstanding.tsv` — until it is re-screened.",
-    ] if historical else []
+    return (
+        [
+            "",
+            f"{historical} {HISTORICAL_NOTE}: one filed",
+            "before the measured screening stage (`tools/witness-search/witness_screen.py`), with no exit",
+            "status, pins or redacted log behind its outcomes. A historical screen is kept as",
+            "it was filed and settles nothing, so each such candidate is outstanding — counted",
+            "in `outstanding` below and listed in `outstanding.tsv` — until it is re-screened.",
+        ]
+        if historical
+        else []
+    )
 
 
 def _exhausted_verdict(key: str, build: str) -> str:
-    fixtures = sum(len(fixture_declined(key, source) & _reaching(key, source, build))
-                   for source in DECLARED_SOURCES)
-    return (f"**Verdict: `exhausted`.** No real-world document in the six declared sources "
-            "both declares this row and reaches the arm while passing every screen, so the "
-            "arm has no real witness and stays open."
-            + (f" The {fixtures} test fixture(s) that do reach it are hand-written, not "
-               "specifications, and settle nothing." if fixtures else ""))
+    fixtures = sum(len(fixture_declined(key, source) & _reaching(key, source, build)) for source in DECLARED_SOURCES)
+    return (
+        "**Verdict: `exhausted`.** No real-world document in the six declared sources "
+        "both declares this row and reaches the arm while passing every screen, so the "
+        "arm has no real witness and stays open."
+        + (
+            f" The {fixtures} test fixture(s) that do reach it are hand-written, not "
+            "specifications, and settle nothing."
+            if fixtures
+            else ""
+        )
+    )
 
 
 CELL_BREAK = re.compile(r"(?<!\\) \| ")
@@ -1940,9 +2252,14 @@ def restate(args: argparse.Namespace) -> int:
         lines = text.split("\n")
         prefix = f"| `{key}` | `"
         stated = {CELL_BREAK.split(line)[2].strip("`") for line in lines if line.startswith(prefix)}
-        outcome = stated.pop() if len(stated) == 1 else fail(
-            f"{path.name}: its lines read {sorted(stated)}, not one outcome; render it again with "
-            f"`render --key {key} --build {build}` before restating it")
+        outcome = (
+            stated.pop()
+            if len(stated) == 1
+            else fail(
+                f"{path.name}: its lines read {sorted(stated)}, not one outcome; render it again with "
+                f"`render --key {key} --build {build}` before restating it"
+            )
+        )
         if outcome != "witness-found":
             restated = _outcome(tallies)
             if restated == "exhausted" and outcome != "exhausted":
@@ -1981,7 +2298,7 @@ def restate(args: argparse.Namespace) -> int:
             elif line.startswith("| source | declarers |"):
                 while out and out[-1] == "":
                     out.pop()
-                out += _historical_note(tallies) + [""]
+                out += [*_historical_note(tallies), ""]
             elif HISTORICAL_NOTE in line:
                 in_note = True
                 if out and out[-1] == "":
@@ -1990,7 +2307,7 @@ def restate(args: argparse.Namespace) -> int:
             elif line.startswith("**Verdict: `exhausted`.**"):
                 if out and out[-1] == "":
                     out.pop()
-                out += [""] + verdict if verdict else []
+                out += ["", *verdict] if verdict else []
                 continue
             elif line == "#### Candidates passing every screen":
                 section = [line]
@@ -2004,7 +2321,7 @@ def restate(args: argparse.Namespace) -> int:
         if dispositions and not disposed:
             while out and out[-1] == "":
                 out.pop()
-            out += dispositions + [""]
+            out += [*dispositions, ""]
         while len(out) > 1 and out[-1] == "" and out[-2] == "":
             out.pop()
         if out[-1] != "":
@@ -2017,8 +2334,6 @@ def restate(args: argparse.Namespace) -> int:
     return 0
 
 
-
-
 OUTSTANDING = EVIDENCE / "outstanding.tsv"
 OUTSTANDING_FIELDS = ("key", "source", "item", "blocker", "build", "src_moved_since")
 RECORD_BUILD = re.compile(r"^build `([0-9a-f]+)` only\.", re.M)
@@ -2029,8 +2344,11 @@ CONFIG_GATE_HEADING = "### Configuration gate"
 
 def probed_records() -> list[Path]:
     """Every committed arm-search record that counts probes, leaving out the configuration-gated ones."""
-    return [path for path in sorted((EVIDENCE / "searches").glob("*.md"))
-            if CONFIG_GATE_HEADING not in path.read_text(encoding="utf-8").splitlines()]
+    return [
+        path
+        for path in sorted((EVIDENCE / "searches").glob("*.md"))
+        if CONFIG_GATE_HEADING not in path.read_text(encoding="utf-8").splitlines()
+    ]
 
 
 def record_build(text: str, path: Path) -> str:
@@ -2055,17 +2373,28 @@ def outstanding(args: argparse.Namespace) -> int:
         build = record_build(path.read_text(encoding="utf-8"), path)
         moved = " ".join(src_commits_since(build))
         for source in DECLARED_SOURCES:
-            rows += [{"key": path.stem, "source": source, "item": item, "blocker": blocker,
-                      "build": build, "src_moved_since": moved}
-                     for item, blocker in outstanding_items(path.stem, source, build)]
+            rows += [
+                {
+                    "key": path.stem,
+                    "source": source,
+                    "item": item,
+                    "blocker": blocker,
+                    "build": build,
+                    "src_moved_since": moved,
+                }
+                for item, blocker in outstanding_items(path.stem, source, build)
+            ]
     with OUTSTANDING.open("w", encoding="utf-8", newline="") as handle:
         # Split on tabs and nothing else, as `records.tsv` is: a quote is text.
-        writer = csv.DictWriter(handle, OUTSTANDING_FIELDS, delimiter="\t", lineterminator="\n",
-                                quoting=csv.QUOTE_NONE, quotechar=None)
+        writer = csv.DictWriter(
+            handle, OUTSTANDING_FIELDS, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE, quotechar=None
+        )
         writer.writeheader()
         writer.writerows(rows)
-    print(f"golden-reach-search: {len(rows)} outstanding item(s) across "
-          f"{len({row['key'] for row in rows})} arm search(es)")
+    print(
+        f"golden-reach-search: {len(rows)} outstanding item(s) across "
+        f"{len({row['key'] for row in rows})} arm search(es)"
+    )
     return 0
 
 
@@ -2075,13 +2404,19 @@ YAML_LOADER = f"ruamel.yaml {RUAMEL_YAML_PIN} (YAML 1.2)"
 def _ruamel_yaml() -> ModuleType:
     """ruamel.yaml at the pinned version, or a refusal naming how to run with it."""
     try:
-        import ruamel.yaml
+        # A PEP 723 script: ty resolves it in the header's own environment, where the
+        # project's `allowed-unresolved-imports` entry for ruamel does not reach.
+        import ruamel.yaml  # ty: ignore[unresolved-import]
     except ModuleNotFoundError:
-        fail(f"this stage reads YAML with ruamel.yaml {RUAMEL_YAML_PIN}, a full YAML 1.2 parser; run it as "
-             "`uv run tools/surface-census/golden-reach-search.py ...`, whose inline metadata pins it")
+        fail(
+            f"this stage reads YAML with ruamel.yaml {RUAMEL_YAML_PIN}, a full YAML 1.2 parser; run it as "
+            "`uv run tools/surface-census/golden-reach-search.py ...`, whose inline metadata pins it"
+        )
     if ruamel.yaml.__version__ != RUAMEL_YAML_PIN:
-        fail(f"ruamel.yaml {ruamel.yaml.__version__} is installed, not the pinned {RUAMEL_YAML_PIN}; "
-             "run through `uv run tools/surface-census/golden-reach-search.py ...`")
+        fail(
+            f"ruamel.yaml {ruamel.yaml.__version__} is installed, not the pinned {RUAMEL_YAML_PIN}; "
+            "run through `uv run tools/surface-census/golden-reach-search.py ...`"
+        )
     return ruamel.yaml
 
 
@@ -2097,7 +2432,9 @@ def yaml_stream(data: bytes) -> list[Any]:
     class TextTimestamps(ruamel_yaml.constructor.SafeConstructor):
         pass
 
-    TextTimestamps.add_constructor("tag:yaml.org,2002:timestamp", ruamel_yaml.constructor.SafeConstructor.construct_yaml_str)
+    TextTimestamps.add_constructor(
+        "tag:yaml.org,2002:timestamp", ruamel_yaml.constructor.SafeConstructor.construct_yaml_str
+    )
     reader = ruamel_yaml.YAML(typ="safe", pure=True)
     reader.Constructor = TextTimestamps
     return list(reader.load_all(data))
@@ -2126,8 +2463,7 @@ def fallback_reading(path: Path, data: bytes) -> tuple[Any, str] | None:
         stream = yaml_stream(data)
     except Exception:  # a syntax rejection: `refuse`'s to file, not a reading
         return None
-    described = [(index, document) for index, document in enumerate(stream, start=1)
-                 if _names_a_version(document)]
+    described = [(index, document) for index, document in enumerate(stream, start=1) if _names_a_version(document)]
     if len(described) != 1:
         return None
     index, document = described[0]
@@ -2159,13 +2495,19 @@ def parse_verdict(path: Path, data: bytes) -> tuple[str, str, str] | None:
         if len(stream) != 1:
             if any(_names_a_version(d) for d in stream):
                 return None
-            return parser, "not-openapi", (f"parses as a stream of {len(stream)} YAML documents, none naming an "
-                                           "`openapi` or `swagger` version")
+            return (
+                parser,
+                "not-openapi",
+                (f"parses as a stream of {len(stream)} YAML documents, none naming an `openapi` or `swagger` version"),
+            )
         parsed = stream[0]
     if _names_a_version(parsed):
         return None
-    shape = (f"top-level keys {sorted(str(k) for k in parsed)[:12]}" if isinstance(parsed, dict)
-             else f"top level is a {type(parsed).__name__}")
+    shape = (
+        f"top-level keys {sorted(str(k) for k in parsed)[:12]}"
+        if isinstance(parsed, dict)
+        else f"top level is a {type(parsed).__name__}"
+    )
     return parser, "not-openapi", f"parses, but names no `openapi` or `swagger` version: {shape}"
 
 
@@ -2180,7 +2522,11 @@ def opaque_summary(count: int) -> str:
 
 
 def local_copies(
-    source: str, root: Path | None, fetch: bool, every: bool = False, timed_out: bool = False,
+    source: str,
+    root: Path | None,
+    fetch: bool,
+    every: bool = False,
+    timed_out: bool = False,
     screened: set[str] | None = None,
 ) -> dict[str, tuple[Path, str]]:
     """Local copies of one source's documents to read again, each with its pinned digest.
@@ -2236,7 +2582,8 @@ def local_copies(
             continue
         # llmlint: ignore-end[changed_behavior_has_e2e]
         if not (every and record["result"].startswith("census ")) and not record["result"].startswith(
-                ("acquisition-failure: parse-failure", "unreadable: ")):
+            ("acquisition-failure: parse-failure", "unreadable: ")
+        ):
             continue
         row = fetched.get(record["subject"])
         if row is None:
@@ -2251,7 +2598,9 @@ def local_copies(
             url = f"{acquirer.raw_github_url}/{repository}/{row['commit']}/{urllib.parse.quote(row['path'])}"
             status, data = acquirer.raw_github_get(url, "*", f"{repository}:{row['path']}")
             # Sourcegraph names no blob; its candidate's recorded digest pins the bytes instead.
-            pinned = git_blob(data) == row["blob"] if row.get("blob") else hashlib.sha256(data).hexdigest() == row["sha256"]
+            pinned = (
+                git_blob(data) == row["blob"] if row.get("blob") else hashlib.sha256(data).hexdigest() == row["sha256"]
+            )
             if status == 200 and pinned:
                 local.parent.mkdir(parents=True, exist_ok=True)
                 local.write_bytes(data)
@@ -2322,7 +2671,11 @@ def recensus(args: argparse.Namespace) -> int:
         if not isinstance(parsed, dict):
             continue
         try:
-            counts = CENSUS.census_document(parsed, root_path=local) if str(parsed.get("openapi", "")).startswith("3") else {}
+            counts = (
+                CENSUS.census_document(parsed, root_path=local)
+                if str(parsed.get("openapi", "")).startswith("3")
+                else {}
+            )
         except Exception:  # the census's walk refused this reading too: it stays outstanding
             continue
         readings[document] = (counts, parsed, loader, digest)
@@ -2338,8 +2691,9 @@ def recensus(args: argparse.Namespace) -> int:
         repeated = repeated_documents(pinned_listing(source))
         enumeration = source_dir(source) / "enumeration.tsv.gz"
         # Read in the dialect `walk` writes, so a status the walk quoted round-trips.
-        rows = read_enumeration(enumeration, f"restore it from git, or re-run `walk --source {source}`",
-                                quoting=csv.QUOTE_MINIMAL)
+        rows = read_enumeration(
+            enumeration, f"restore it from git, or re-run `walk --source {source}`", quoting=csv.QUOTE_MINIMAL
+        )
         added: list[dict[str, str]] = []
         for row in rows:
             if document_subject(row, repeated) not in readings:
@@ -2347,8 +2701,16 @@ def recensus(args: argparse.Namespace) -> int:
             counts, parsed, _loader, _digest = readings[document_subject(row, repeated)]
             found = {key: n for key in walked for n in [count(key, counts, parsed)] if n}
             row["status"], row["matched_keys"] = "readable", ",".join(found)
-            added += [{"key": key, "kind": "document", "subject": document_subject(row, repeated),
-                       "result": f"census {n}", "file": enumeration.name} for key, n in found.items()]
+            added += [
+                {
+                    "key": key,
+                    "kind": "document",
+                    "subject": document_subject(row, repeated),
+                    "result": f"census {n}",
+                    "file": enumeration.name,
+                }
+                for key, n in found.items()
+            ]
         with gzip.open(enumeration, "wt", encoding="utf-8", newline="") as handle:
             writer = csv.DictWriter(handle, WALK_FIELDS, delimiter="\t", lineterminator="\n")
             writer.writeheader()
@@ -2361,16 +2723,24 @@ def recensus(args: argparse.Namespace) -> int:
                 record["result"] = f"census {count(record['key'], counts, parsed)}"
         replace_records(source, records)
     filed = {document: row for document, row in read_fallback(source).items() if document not in readings}
-    filed.update({document: {"document": document, "sha256": digest, "loader": loader}
-                  for document, (_counts, _parsed, loader, digest) in readings.items() if loader})
+    filed.update(
+        {
+            document: {"document": document, "sha256": digest, "loader": loader}
+            for document, (_counts, _parsed, loader, digest) in readings.items()
+            if loader
+        }
+    )
     with (source_dir(source) / FALLBACK_FILE).open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, FALLBACK_FIELDS, delimiter="\t", lineterminator="\n",
-                                quoting=csv.QUOTE_NONE, quotechar=None)
+        writer = csv.DictWriter(
+            handle, FALLBACK_FIELDS, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE, quotechar=None
+        )
         writer.writeheader()
         writer.writerows(filed[document] for document in sorted(filed))
     fallback = sum(1 for _counts, _parsed, loader, _digest in readings.values() if loader)
-    print(f"golden-reach-search: {source}: {len(readings)} of {len(copies)} documents counted, "
-          f"{fallback} through {YAML_LOADER}{opaque_summary(len(skipped))}")
+    print(
+        f"golden-reach-search: {source}: {len(readings)} of {len(copies)} documents counted, "
+        f"{fallback} through {YAML_LOADER}{opaque_summary(len(skipped))}"
+    )
     return 0
 
 
@@ -2400,17 +2770,20 @@ def refuse(args: argparse.Namespace) -> int:
             kept += 1
             continue
         parser, kind, evidence = verdict
-        rows.append({"document": document, "sha256": sha256, "parser": parser, "verdict": kind,
-                     "evidence": evidence})
+        rows.append({"document": document, "sha256": sha256, "parser": parser, "verdict": kind, "evidence": evidence})
     with (source_dir(source) / REFUSED_FILE).open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, REFUSED_FIELDS, delimiter="\t", lineterminator="\n",
-                                quoting=csv.QUOTE_NONE, quotechar=None)
+        writer = csv.DictWriter(
+            handle, REFUSED_FIELDS, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE, quotechar=None
+        )
         writer.writeheader()
         writer.writerows(rows)
-    print(f"golden-reach-search: {source}: {len(unread)} unread, {len(rows)} census-refused, "
-          f"{kept} read by the full parser (still outstanding), {len(unread) - (len(rows) - historical) - kept} without local bytes"
-          f"{opaque_summary(len(skipped))}")
+    print(
+        f"golden-reach-search: {source}: {len(unread)} unread, {len(rows)} census-refused, "
+        f"{kept} read by the full parser (still outstanding), {len(unread) - (len(rows) - historical) - kept} without local bytes"
+        f"{opaque_summary(len(skipped))}"
+    )
     return 0
+
 
 RESCREEN_FILE = "fern-rescreen.jsonl"
 RESCREEN_CACHE = "fern-rescreen-cache.jsonl"
@@ -2446,14 +2819,18 @@ def retire(args: argparse.Namespace) -> int:
     of this build is left as it is: it is outstanding, not settled.
     """
     build = _current_build()
-    keys = set(args.key or (p.stem for p in probed_records()
-                            if record_build(p.read_text(encoding="utf-8"), p) == build))
+    keys = set(
+        args.key or (p.stem for p in probed_records() if record_build(p.read_text(encoding="utf-8"), p) == build)
+    )
     note = NOT_REACHING.format(build=build)
     marked = 0
     for source in DECLARED_SOURCES:
         records = read_records(source)
-        declared = {(r["key"], r["subject"]): r["result"] for r in records
-                    if r["kind"] == "document" and r["result"].startswith("census ") and r["result"] != "census 0"}
+        declared = {
+            (r["key"], r["subject"]): r["result"]
+            for r in records
+            if r["kind"] == "document" and r["result"].startswith("census ") and r["result"] != "census 0"
+        }
         probed = {(row["key"], row["candidate"]): row for row in read_probes(source) if row.get("build") == build}
         changed = 0
         for r in records:
@@ -2489,8 +2866,9 @@ def fern_rescreen(args: argparse.Namespace) -> int:
     old screen in place, so the declarer stays open rather than settled.
     """
     build = _current_build()
-    keys = args.key or sorted(p.stem for p in probed_records()
-                              if record_build(p.read_text(encoding="utf-8"), p) == build)
+    keys = args.key or sorted(
+        p.stem for p in probed_records() if record_build(p.read_text(encoding="utf-8"), p) == build
+    )
     wanted: dict[str, list[tuple[str, str, dict[str, Any]]]] = defaultdict(list)
     paths: dict[str, Path] = {}
     skipped = set()
@@ -2512,13 +2890,19 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             row = latest.get(candidate)
             # A refusal already measured here stands; only one filed without
             # Fern's exit status is taken again.
-            if not row or "measured" in row or row["fern"] == "passed" \
-                    or row["fern"].startswith(f"failed: {fern_label()} fern "):
+            if (
+                not row
+                or "measured" in row
+                or row["fern"] == "passed"
+                or row["fern"].startswith(f"failed: {fern_label()} fern ")
+            ):
                 continue
             path = located.get(candidate)
             if path is None or not path.is_file():
-                fail(f"{args.source}: no local bytes for {candidate}; pass --root with the walk's copy, "
-                     "or `query` the source again to cache it")
+                fail(
+                    f"{args.source}: no local bytes for {candidate}; pass --root with the walk's copy, "
+                    "or `query` the source again to cache it"
+                )
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
             wanted[digest].append((key, candidate, row))
             paths.setdefault(digest, path)
@@ -2531,20 +2915,33 @@ def fern_rescreen(args: argparse.Namespace) -> int:
         for row in read_jsonl(cache_path, ("sha256",), "delete it; a re-screen re-runs"):
             cache[row["sha256"]] = row
     todo = [digest for digest in wanted if digest not in cache or fern_verdict(cache[digest]) is None]
-    with tempfile.TemporaryDirectory(prefix="golden-reach-fern-") as scratch, \
-            ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {digest: pool.submit(fern_screen_document, paths[digest], Path(scratch), args.timeout)
-                   for digest in todo}
+    with (
+        tempfile.TemporaryDirectory(prefix="golden-reach-fern-") as scratch,
+        ThreadPoolExecutor(max_workers=args.jobs) as pool,
+    ):
+        futures = {
+            digest: pool.submit(fern_screen_document, paths[digest], Path(scratch), args.timeout) for digest in todo
+        }
         for digest, future in futures.items():
             result = future.result()
             result.pop("logs")
             cache[digest] = result
             CACHE.mkdir(parents=True, exist_ok=True)
-            with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8", newline="\n") as handle:
+            with (
+                exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"),
+                cache_path.open("a", encoding="utf-8", newline="\n") as handle,
+            ):
                 handle.write(json.dumps(result, sort_keys=True) + "\n")
     evidence = source_dir(args.source) / RESCREEN_FILE
-    kept = [row for row in read_jsonl(evidence, ("sha256", "candidate"), "restore it from git")
-            if row["sha256"] not in wanted] if evidence.is_file() else []
+    kept = (
+        [
+            row
+            for row in read_jsonl(evidence, ("sha256", "candidate"), "restore it from git")
+            if row["sha256"] not in wanted
+        ]
+        if evidence.is_file()
+        else []
+    )
     filed = unsettled = 0
     for digest, uses in wanted.items():
         result = cache[digest]
@@ -2556,16 +2953,34 @@ def fern_rescreen(args: argparse.Namespace) -> int:
         for key, candidate, row in uses:
             # Its licence and ref stay as historically filed; the Fern refusal is
             # measured, and `fern-rescreen.jsonl` carries the run that measured it.
-            file_screen(args.source, key, candidate, {
-                "licence": row["licence"], "ref": row["ref"], "fern": verdict,
-                "gap_keys": row.get("gap_keys", ""), "declined": "", "registered": "",
-                "evidence": f"{row.get('evidence', '')} — re-screened: {RESCREEN_FILE} sha256 {digest[:12]}".lstrip(" —"),
-            })
+            file_screen(
+                args.source,
+                key,
+                candidate,
+                {
+                    "licence": row["licence"],
+                    "ref": row["ref"],
+                    "fern": verdict,
+                    "gap_keys": row.get("gap_keys", ""),
+                    "declined": "",
+                    "registered": "",
+                    "evidence": f"{row.get('evidence', '')} — re-screened: {RESCREEN_FILE} sha256 {digest[:12]}".lstrip(
+                        " —"
+                    ),
+                },
+            )
             filed += 1
-    evidence.write_text("".join(json.dumps(r, sort_keys=True) + "\n"
-                                for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8", newline="\n")
-    print(f"golden-reach-search: {args.source}: {len(wanted)} documents re-screened, {filed} screens re-filed, "
-          f"{unsettled} left on their earlier screen by a timeout{opaque_summary(len(skipped))}")
+    evidence.write_text(
+        "".join(
+            json.dumps(r, sort_keys=True) + "\n" for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))
+        ),
+        encoding="utf-8",
+        newline="\n",
+    )
+    print(
+        f"golden-reach-search: {args.source}: {len(wanted)} documents re-screened, {filed} screens re-filed, "
+        f"{unsettled} left on their earlier screen by a timeout{opaque_summary(len(skipped))}"
+    )
     return 0
 
 
@@ -2578,8 +2993,12 @@ def main(argv: list[str] | None = None) -> int:
     w.add_argument("--key", action="append", required=True)
     w.add_argument("--jobs", type=REACH.positive_int, default=8)
     w.add_argument("--census", type=Path, help="a census already taken over these pinned bytes (JSONL.gz)")
-    w.add_argument("--census-timeout", type=REACH.positive_int, default=600,
-                   help="seconds one document's census may take before it is recorded unreadable")
+    w.add_argument(
+        "--census-timeout",
+        type=REACH.positive_int,
+        default=600,
+        help="seconds one document's census may take before it is recorded unreadable",
+    )
     f = sub.add_parser("fetch-pins")
     f.add_argument("--root", type=Path, required=True, help="local copies; fetched pins land in its fetched/")
     q = sub.add_parser("query")
@@ -2600,7 +3019,9 @@ def main(argv: list[str] | None = None) -> int:
     # Refused when given: an outcome is measured, never stated.
     for stated in ("--licence", "--ref", "--fern"):
         s.add_argument(stated, help=argparse.SUPPRESS)
-    s.add_argument("--measured", type=Path, help="a record tools/witness-search/witness_screen.py measured, filed as it stands")
+    s.add_argument(
+        "--measured", type=Path, help="a record tools/witness-search/witness_screen.py measured, filed as it stands"
+    )
     s.add_argument("--licence-refusal", default="", help="refuse a licence the measured reading would pass, and why")
     s.add_argument("--timeout", type=REACH.positive_int, default=1800)
     s.add_argument("--gap-keys", default="")
@@ -2627,8 +3048,20 @@ def main(argv: list[str] | None = None) -> int:
         x.add_argument("--source", required=True)
         x.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
     args = parser.parse_args(argv)
-    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "fern-rescreen": fern_rescreen, "retire": retire, "render": render, "restate": restate,
-            "outstanding": outstanding, "refuse": refuse, "recensus": recensus}[args.command](args)
+    return {
+        "walk": walk,
+        "fetch-pins": fetch_pins,
+        "query": query,
+        "probe": probe,
+        "screen": screen,
+        "fern-rescreen": fern_rescreen,
+        "retire": retire,
+        "render": render,
+        "restate": restate,
+        "outstanding": outstanding,
+        "refuse": refuse,
+        "recensus": recensus,
+    }[args.command](args)
 
 
 if __name__ == "__main__":

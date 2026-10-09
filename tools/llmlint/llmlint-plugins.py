@@ -32,15 +32,18 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 # Every vendored plugin document lives here; the lock may name nothing outside it.
 VENDOR_DIR = "llmlint-plugins"
 LOCK = REPO / VENDOR_DIR / "lock.json"
 FETCH_TIMEOUT_SECONDS = 30
-# The hand-edited fields of a lock entry; refresh generates the rest.
+# The hand-edited fields of a lock entry; refresh generates the rest. A plugin
+# llmlint ships (`"bundled": true`) is resolved from its URL and never vendored,
+# so it has no `file`.
 INPUT_FIELDS = ("name", "url", "pin", "file")
+BUNDLED_INPUT_FIELDS = ("name", "url", "pin")
 # A plugin config declares its version on a top-level `version:` line; that
 # declared version is what a consumer's `@pin` ranges over and what identifies a
 # cache entry, so it is the version the lock records.
@@ -54,7 +57,7 @@ ORIGIN_ENV = "CROZIER_LLMLINT_PLUGINS_ORIGIN"
 LOOPBACK_ORIGIN = re.compile(r"http://(?:127\.0\.0\.1|localhost):([0-9]{1,5})")
 
 
-def fail(message: str, remedy: str) -> None:
+def fail(message: str, remedy: str) -> NoReturn:
     print(f"llmlint-plugins: {message}", file=sys.stderr)
     print(f"llmlint-plugins: {remedy}", file=sys.stderr)
     raise SystemExit(1)
@@ -70,18 +73,31 @@ def load_lock() -> dict[str, Any]:
     if not isinstance(lock, dict) or not isinstance(lock.get("plugins"), list) or not lock["plugins"]:
         fail(f"{LOCK.relative_to(REPO)} declares no plugins", "add a plugin entry")
     for index, plugin in enumerate(lock["plugins"]):
-        missing = [key for key in INPUT_FIELDS
-                   if not isinstance(plugin, dict) or not isinstance(plugin.get(key), str) or not plugin[key]]
+        bundled = isinstance(plugin, dict) and plugin.get("bundled") is True
+        missing = [
+            key
+            for key in (BUNDLED_INPUT_FIELDS if bundled else INPUT_FIELDS)
+            if not isinstance(plugin, dict) or not isinstance(plugin.get(key), str) or not plugin[key]
+        ]
         if missing:
-            fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} lacks {', '.join(missing)}",
-                 "give every plugin entry a non-empty name, url, pin and file (docs/llmlint-plugins.md)")
+            fail(
+                f"{LOCK.relative_to(REPO)} plugin #{index + 1} lacks {', '.join(missing)}",
+                "give every plugin entry a non-empty name, url and pin, and every vendored one a file"
+                " (docs/llmlint-plugins.md)",
+            )
         rules = plugin.get("rules", [])
         if not isinstance(rules, list) or not all(isinstance(rule, str) and rule for rule in rules):
-            fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} has `rules` {rules!r}, not a list of rule names",
-                 "restore the lock from git, or delete the field and refresh to regenerate it")
+            fail(
+                f"{LOCK.relative_to(REPO)} plugin #{index + 1} has `rules` {rules!r}, not a list of rule names",
+                "restore the lock from git, or delete the field and refresh to regenerate it",
+            )
         if not isinstance(plugin.get("bundled", False), bool):
-            fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} has `bundled` {plugin['bundled']!r}, not a boolean",
-                 "write `\"bundled\": true` for a plugin llmlint ships, or drop the field for a vendored one")
+            fail(
+                f"{LOCK.relative_to(REPO)} plugin #{index + 1} has `bundled` {plugin['bundled']!r}, not a boolean",
+                'write `"bundled": true` for a plugin llmlint ships, or drop the field for a vendored one',
+            )
+        if bundled:
+            continue
         file = PurePosixPath(plugin["file"])
         vendored = (REPO / VENDOR_DIR).resolve()
         # A relative path's first part is the vendor directory only when it is
@@ -93,8 +109,10 @@ def load_lock() -> dict[str, Any]:
             or file.parts[0] != VENDOR_DIR
             or not (REPO / file).resolve().is_relative_to(vendored)
         ):
-            fail(f"{LOCK.relative_to(REPO)} plugin #{index + 1} file {plugin['file']!r} is not under {VENDOR_DIR}/",
-                 f"record a relative path inside {VENDOR_DIR}/ with no '..' (e.g. {VENDOR_DIR}/base.llmlint.yml)")
+            fail(
+                f"{LOCK.relative_to(REPO)} plugin #{index + 1} file {plugin['file']!r} is not under {VENDOR_DIR}/",
+                f"record a relative path inside {VENDOR_DIR}/ with no '..' (e.g. {VENDOR_DIR}/base.llmlint.yml)",
+            )
     return lock
 
 
@@ -111,8 +129,10 @@ def fetch_url(url: str) -> str:
         return url
     port = LOOPBACK_ORIGIN.fullmatch(origin)
     if not port or not 1 <= int(port.group(1)) <= 65535:
-        fail(f"{ORIGIN_ENV}={origin!r} is not a loopback origin",
-             f"unset {ORIGIN_ENV}; it exists only for the boundary suite's own server")
+        fail(
+            f"{ORIGIN_ENV}={origin!r} is not a loopback origin",
+            f"unset {ORIGIN_ENV}; it exists only for the boundary suite's own server",
+        )
     return origin + urllib.parse.urlsplit(url).path
 
 
@@ -128,8 +148,10 @@ def fetch(url: str) -> str:
     try:
         return data.decode("utf-8")
     except UnicodeDecodeError as error:
-        fail(f"{url} served a document that is not UTF-8 ({error})",
-             "check that the recorded URL names the rule document itself, or report it upstream")
+        fail(
+            f"{url} served a document that is not UTF-8 ({error})",
+            "check that the recorded URL names the rule document itself, or report it upstream",
+        )
     raise AssertionError("unreachable")
 
 
@@ -151,9 +173,7 @@ def rules_by_source(plugins: list[dict[str, Any]]) -> dict[str, list[str]]:
     itself resolved rather than a second YAML reading of the same files.
     """
     entries = [
-        f"{plugin['url']}@{plugin['pin']}"
-        if plugin.get("bundled")
-        else str(REPO / plugin["file"])
+        f"{plugin['url']}@{plugin['pin']}" if plugin.get("bundled") else str(REPO / plugin["file"])
         for plugin in plugins
     ]
     config = "plugins:\n" + "".join(f'  - "{entry}"\n' for entry in entries)
@@ -175,8 +195,10 @@ def rules_by_source(plugins: list[dict[str, Any]]) -> dict[str, list[str]]:
                 f"llmlint could not resolve the refreshed plugin set: {resolved.stderr.strip()}",
                 "fix the reported plugin, then re-run",
             )
-    remedy = ("check that `llmlint --version` is the release `just setup-llmlint` installs"
-              " (reinstall it with that recipe), then re-run")
+    remedy = (
+        "check that `llmlint --version` is the release `just setup-llmlint` installs"
+        " (reinstall it with that recipe), then re-run"
+    )
     try:
         reported = json.loads(resolved.stdout)
     except json.JSONDecodeError as error:
@@ -202,8 +224,10 @@ def llmlint_version() -> str:
         fail("llmlint is not on PATH", "install it with `just setup-llmlint`")
     words = reported.stdout.split()
     if reported.returncode != 0 or not words:
-        fail(f"`llmlint --version` exited {reported.returncode} and printed {reported.stdout.strip()!r}, no version",
-             "reinstall llmlint with `just setup-llmlint`, then re-run")
+        fail(
+            f"`llmlint --version` exited {reported.returncode} and printed {reported.stdout.strip()!r}, no version",
+            "reinstall llmlint with `just setup-llmlint`, then re-run",
+        )
     return words[-1]
 
 
