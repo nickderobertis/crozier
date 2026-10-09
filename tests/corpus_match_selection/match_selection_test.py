@@ -7,8 +7,9 @@ a golden that fails fails the recipe by name.
 The variants run the script's own text with one inventory swapped in, as
 `bash -c TEXT PATH` so `$0` is still the real script and it runs in this checkout.
 
-Run: `just nx run corpus-match:test-selection` (part of the project's `test`).
-It builds and runs the real nextest and crozier, so it stays out of `test-offline`.
+Run: `just nx run corpus-match-selection:test`. It builds and drives the real
+nextest and crozier, so it is its own promoted project, apart from corpus-match's
+offline proof; CI runs it in the live-e2e leg.
 """
 from __future__ import annotations
 
