@@ -102,13 +102,13 @@ split four ways:
 491 + 66 + 36 + 10 = 603.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 493 `golden` rows declare 933 handling sites in
+same way. The 493 `golden` rows declare 935 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv), and
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv), measured at commit
-`54f71563b` over all 244 golden tests, with the records it links splits them
+`3acf7ef4c` over all 244 golden tests, with the records it links splits them
 three ways:
 
-- **857 are reached by a registered real specification.** A golden-only
+- **859 are reached by a registered real specification.** A golden-only
   witness executes the arm and its golden byte-matches.
 - **68 are reached only by a hand-written fixture.** An arm-level cover
   in [the hand-written fixtures](openapi-surface/handwritten/AGENTS.md) executes
@@ -136,7 +136,7 @@ three ways:
   ([Unproven arms, named](#unproven-arms-named)). `format-duration`'s `scalar_body` arm is reached on this measurement by corpus row 308,
   `yourbrand-ticketing`.
 
-857 + 68 + 5 + 3 = 933. Fourteen sites left the table with the two functions
+859 + 68 + 5 + 3 = 935. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. No arm rests on a witness whose redistribution grant is
@@ -2234,8 +2234,8 @@ unreached by any Fern-accepted document.
 |---|---|---|---|---|---|---|
 | 1 | `parameter-schema` | `parameters` | **4** | **84** | **199** | open — real-specification witness search remains open |
 | 2 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
-| 3 | `media-type-event-stream` | `bodies-media` | **2** | **115** | **18** | open — real-specification witness search remains open |
-| 4 | `fern-streaming-extension` | `oas31-extensions` | **2** | **50** | **5** | open — real-specification witness search remains open |
+| 3 | `media-type-event-stream` | `bodies-media` | **2** | **121** | **18** | open — real-specification witness search remains open |
+| 4 | `fern-streaming-extension` | `oas31-extensions` | **2** | **53** | **5** | open — real-specification witness search remains open |
 | 5 | `anyof-discriminated-union` | `schemas` | **2** | **45** | **14** | owned — first-pass search record below |
 | 6 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
 | 7 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
