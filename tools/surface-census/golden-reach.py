@@ -54,6 +54,7 @@ import tempfile
 import threading
 import tomllib
 from collections import defaultdict
+from enum import StrEnum
 from pathlib import Path
 from typing import IO, Any, NamedTuple, NoReturn
 
@@ -795,9 +796,6 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
 COVERAGE_DOC = REPO / "docs" / "openapi-surface-coverage.md"
 EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
 CONFIG_GATE_HEADING = "### Configuration gate"
-EXHAUSTED = "exhausted"
-SEARCH_INCOMPLETE = "search-incomplete"
-CONFIG_GATED = "config-gated"
 NOT_SEARCHED_CELL = "`not searched` — no arm search has run"
 ARM_COUNTS_BEGIN = "<!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->"
 ARM_COUNTS_END = "<!-- END GENERATED ARM COUNTS -->"
@@ -808,6 +806,46 @@ ARM_TABLE_HEADER = (
 )
 
 
+class Verdict(StrEnum):
+    """What an arm-search record states for an arm (fern-limitations.md's vocabulary)."""
+
+    EXHAUSTED = "exhausted"
+    SEARCH_INCOMPLETE = "search-incomplete"
+    CONFIG_GATED = "config-gated"
+
+
+class Cover(NamedTuple):
+    """One `[[covers]]` entry of a hand-written fixture's `evidence.toml`."""
+
+    fixture: str
+    key: str
+    arm: str | None
+    verdict: Verdict
+    # The fixture declares a generation setting (`audiences`), so its runs are gated.
+    set_up: bool
+
+
+class ArmRow(NamedTuple):
+    """One unreached arm, as the coverage index's arm table states it."""
+
+    rank: int
+    key: str
+    site: str
+    regions: int
+    verdict: Verdict | None  # None: no arm search has run
+    covers: tuple[str, ...]
+
+    def cells(self) -> list[str]:
+        return [
+            str(self.rank),
+            f"`{self.key}`",
+            f"`{self.site}`",
+            str(self.regions),
+            NOT_SEARCHED_CELL if self.verdict is None else f"`{self.verdict}`",
+            ", ".join(f"`{name}`" for name in self.covers) or "—",
+        ]
+
+
 def table_cells(line: str, width: int) -> list[str] | None:
     """One markdown table row as `width` cells, or None; `\\|` is an escaped pipe, overflow folds into the last."""
     if not line.startswith("| "):
@@ -816,6 +854,13 @@ def table_cells(line: str, width: int) -> list[str] | None:
     if len(cells) < width:
         return None
     return cells[: width - 1] + ["|".join(cells[width - 1 :])]
+
+
+def _verdict(text: str, where: str) -> Verdict:
+    try:
+        return Verdict(text)
+    except ValueError:
+        fail(f"{where} states the verdict {text!r}, not one of {[v.value for v in Verdict]}; correct it, then re-run")
 
 
 def config_gated_verdict(text: str, key: str) -> str | None:
@@ -831,21 +876,47 @@ def config_gated_verdict(text: str, key: str) -> str | None:
     return stated.pop() if len(stated) == 1 else None
 
 
-def _tsv_rows(path: Path) -> list[dict[str, str]]:
+def _measurements(path: Path, columns: tuple[str, ...], counts: tuple[str, ...]) -> list[dict[str, str]]:
+    """A `just handwritten-reach` TSV's rows, refused unless it has `columns` and whole-number `counts`."""
     with path.open(encoding="utf-8", newline="") as handle:
-        return list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if tuple(reader.fieldnames or ()) != columns:
+            fail(f"{path} has columns {reader.fieldnames}, not {list(columns)}; re-run `just handwritten-reach`")
+        rows = list(reader)
+    for number, row in enumerate(rows, start=2):
+        if not all((row[column] or "").isdigit() for column in counts):
+            fail(f"{path}:{number} carries a count that is not a whole number; re-run `just handwritten-reach`")
+    return rows
 
 
-def _evidence(regions_dir: Path) -> list[tuple[str, dict[str, Any]]]:
-    """`(fixture, evidence.toml)` for every hand-written fixture."""
-    found = []
+def handwritten_covers(regions_dir: Path = REGIONS_DIR) -> list[Cover]:
+    """Every cover a hand-written fixture's `evidence.toml` declares, validated."""
+    covers = []
     for path in sorted((regions_dir / "handwritten").glob("*/evidence.toml")):
         with path.open("rb") as handle:
-            found.append((path.parent.name, tomllib.load(handle)))
-    return found
+            declared = tomllib.load(handle)
+        audiences = declared.get("audiences", [])
+        entries = declared.get("covers", [])
+        if not isinstance(audiences, list) or not isinstance(entries, list):
+            fail(f"{path}: `audiences` and `covers` must be arrays; correct it, then re-run")
+        for cover in entries:
+            arm = cover.get("arm") if isinstance(cover, dict) else None
+            if (
+                not isinstance(cover, dict)
+                or not isinstance(cover.get("key"), str)
+                or not isinstance(cover.get("verdict"), str)
+                or not isinstance(arm, (str, type(None)))
+            ):
+                fail(f"{path}: every cover needs a string `key` and `verdict`, and a string `arm` if any")
+            covers.append(
+                Cover(path.parent.name, cover["key"], arm, _verdict(cover["verdict"], str(path)), bool(audiences))
+            )
+    return covers
 
 
-def config_gated_arm_verdict(key: str, site: str, text: str, regions_dir: Path = REGIONS_DIR) -> str | None:
+def config_gated_arm_verdict(
+    key: str, site: str, text: str, regions_dir: Path = REGIONS_DIR, covers: list[Cover] | None = None
+) -> Verdict | None:
     """The verdict a `config-gated` record's key gives one of its arms, by measurement.
 
     The gate table's verdict is the measured gate's: it holds for an arm
@@ -855,26 +926,35 @@ def config_gated_arm_verdict(key: str, site: str, text: str, regions_dir: Path =
     `handwritten-reach.tsv` shows a cover's fixture, declaring no setting,
     executing it. Otherwise no one verdict is stated (`None`).
     """
-    gated = {row["site"] for row in _tsv_rows(regions_dir / "handwritten-config-gates.tsv") if row["key"] == key}
-    if site in gated:
-        return config_gated_verdict(text, key)
-    verdicts: set[str] = set()
-    ungated: set[str] = set()
-    for fixture, declared in _evidence(regions_dir):
-        for cover in declared.get("covers", []):
-            if cover["key"] == key and cover.get("arm") == site:
-                verdicts.add(cover["verdict"])
-                if not declared.get("audiences"):
-                    ungated.add(fixture)
-    executed = any(
-        row["fixture"] in ungated and row["key"] == key and row["site"] == site and int(row["regions_executed"])
-        for row in _tsv_rows(regions_dir / "handwritten-reach.tsv")
+    gates = _measurements(
+        regions_dir / "handwritten-config-gates.tsv",
+        ("fixture", "key", "site", "setting", "regions_executed", "regions"),
+        ("regions_executed", "regions"),
     )
+    if site in {row["site"] for row in gates if row["key"] == key}:
+        stated = config_gated_verdict(text, key)
+        return None if stated is None else _verdict(stated, f"{key}'s gate table")
+    citing = [
+        c for c in (handwritten_covers(regions_dir) if covers is None else covers) if (c.key, c.arm) == (key, site)
+    ]
+    ungated = {c.fixture for c in citing if not c.set_up}
+    reach = _measurements(
+        regions_dir / "handwritten-reach.tsv",
+        ("fixture", "key", "site", "regions_executed", "regions"),
+        ("regions_executed", "regions"),
+    )
+    executed = any(
+        row["fixture"] in ungated and (row["key"], row["site"]) == (key, site) and int(row["regions_executed"])
+        for row in reach
+    )
+    verdicts = {c.verdict for c in citing}
     return verdicts.pop() if executed and len(verdicts) == 1 else None
 
 
-def arm_verdict(key: str, site: str, regions_dir: Path = REGIONS_DIR) -> str | None:
-    """The verdict cell an unreached arm's linked arm-search record gives it, or None for no record.
+def arm_verdict(
+    key: str, site: str, regions_dir: Path = REGIONS_DIR, covers: list[Cover] | None = None
+) -> Verdict | None:
+    """The verdict an unreached arm's linked arm-search record gives it, or None when no record exists.
 
     An ordinary record states one verdict for its key in its exhaustive-search
     table; a `config-gated` one gives each arm its own (`config_gated_arm_verdict`).
@@ -884,60 +964,54 @@ def arm_verdict(key: str, site: str, regions_dir: Path = REGIONS_DIR) -> str | N
         return None
     text = record.read_text(encoding="utf-8")
     if CONFIG_GATE_HEADING in text.splitlines():
-        verdict = config_gated_arm_verdict(key, site, text, regions_dir)
+        verdict = config_gated_arm_verdict(key, site, text, regions_dir, covers)
     else:
-        verdicts: set[str] = set()
+        stated: set[str] = set()
         if EXHAUSTIVE_SEARCH_HEADING in text:
             body = text.split(EXHAUSTIVE_SEARCH_HEADING, 1)[1].split("\n#", 1)[0]
             for line in body.splitlines():
                 cells = table_cells(line, 7)
                 if cells and cells[0].strip("`") == key:
-                    verdicts.add(cells[2].strip("`"))
-        verdict = verdicts.pop() if len(verdicts) == 1 else None
-    if verdict not in (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED):
+                    stated.add(cells[2].strip("`"))
+        verdict = _verdict(stated.pop(), str(record)) if len(stated) == 1 else None
+    if verdict is None:
         fail(f"{record}: states no one verdict for `{site}`; correct its record or measurements, then re-run")
     return verdict
 
 
-def arm_rows(ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR) -> list[list[str]]:
-    """The six cells of every unreached arm, in ledger rank order, as the arm table states them."""
+def arm_rows(ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR) -> list[ArmRow]:
+    """Every unreached arm, in ledger rank order, as the arm table states it."""
+    covers = handwritten_covers(regions_dir)
     covering: dict[tuple[str, str], set[str]] = defaultdict(set)
-    for fixture, declared in _evidence(regions_dir):
-        for cover in declared.get("covers", []):
-            if cover.get("arm"):
-                covering[(cover["key"], cover["arm"])].add(fixture)
-    rows = []
-    for rank, reach in ledger:
-        for spec, hit, total in reach.sites:
-            if hit:
-                continue
-            verdict = arm_verdict(reach.key, spec, regions_dir)
-            rows.append(
-                [
-                    str(rank),
-                    f"`{reach.key}`",
-                    f"`{spec}`",
-                    str(total),
-                    NOT_SEARCHED_CELL if verdict is None else f"`{verdict}`",
-                    ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—",
-                ]
-            )
-    return rows
+    for cover in covers:
+        if cover.arm:
+            covering[(cover.key, cover.arm)].add(cover.fixture)
+    return [
+        ArmRow(
+            rank,
+            reach.key,
+            spec,
+            total,
+            arm_verdict(reach.key, spec, regions_dir, covers),
+            tuple(sorted(covering.get((reach.key, spec), ()))),
+        )
+        for rank, reach in ledger
+        for spec, hit, total in reach.sites
+        if not hit
+    ]
 
 
-def arm_counts_text(ledger: list[tuple[int, Reach]], rows: list[list[str]]) -> str:
+def arm_counts_text(ledger: list[tuple[int, Reach]], rows: list[ArmRow]) -> str:
     """The generated sentence counting the golden rows' reach and the arm table's verdicts."""
     partial = sum(1 for _rank, reach in ledger if reach.unreached_sites)
-    tally = {cell: sum(1 for row in rows if row[4] == cell) for cell in {row[4] for row in rows}}
-    phrases = [
-        f"{tally.get(f'`{verdict}`', 0)} read `{verdict}`" for verdict in (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED)
-    ]
+    phrases = [f"{sum(1 for row in rows if row.verdict is verdict)} read `{verdict}`" for verdict in Verdict]
+    unsearched = sum(1 for row in rows if row.verdict is None)
     return (
         f"The golden rows split in two. **{len(ledger) - partial}** reach every handling site their\n"
         "[site table](openapi-surface/golden-reach-sites.tsv) declares, and "
         f"**{partial}** carry at least one handling site no golden-only witness executes: "
         f"{len(rows)} unreached arms in all. By the verdict each arm's linked record states, "
-        f"{', '.join(phrases)}, and {tally.get(NOT_SEARCHED_CELL, 0)} have no arm search.\n"
+        f"{', '.join(phrases)}, and {unsearched} have no arm search.\n"
     )
 
 
@@ -954,7 +1028,7 @@ def render_arm_sections(
 ) -> str:
     """`text` with its generated arm counts and arm table restated from the committed measurements."""
     rows = arm_rows(ledger, regions_dir)
-    table = ARM_TABLE_HEADER + "".join("| " + " | ".join(row) + " |\n" for row in rows)
+    table = ARM_TABLE_HEADER + "".join("| " + " | ".join(row.cells()) + " |\n" for row in rows)
     text = _replace_between(text, ARM_COUNTS_BEGIN, ARM_COUNTS_END, arm_counts_text(ledger, rows), path)
     return _replace_between(text, ARM_TABLE_BEGIN, ARM_TABLE_END, table, path)
 

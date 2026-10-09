@@ -2109,6 +2109,14 @@ class ConfigGatedArmVerdictTests(unittest.TestCase):
         self.assertIn("unchanged", second.stdout)
         self.assertEqual(doc, (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8"))
 
+    def test_a_measurement_with_other_columns_is_refused_with_its_fix(self) -> None:
+        root = self.tree(executed=20)
+        reach = root / "docs" / "openapi-surface" / "handwritten-reach.tsv"
+        reach.write_text(reach.read_text(encoding="utf-8").replace("regions_executed", "executed"), encoding="utf-8")
+        run = self.arms(root)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("re-run `just handwritten-reach`", run.stderr)
+
     def test_a_later_arm_no_setting_free_run_executes_states_no_verdict(self) -> None:
         run = self.arms(self.tree(executed=0))
         self.assertNotEqual(0, run.returncode)
@@ -10171,9 +10179,9 @@ class RankedBacklogTests(unittest.TestCase):
                 for spec, hit, total in reach.sites
                 if not hit
             ],
-            [tuple(row[:4]) for row in rows],
+            [tuple(row.cells()[:4]) for row in rows],
         )
-        self.assertEqual(rows, self.reach_table(self.REACH_ARMS, 6))
+        self.assertEqual([row.cells() for row in rows], self.reach_table(self.REACH_ARMS, 6))
         self.assertEqual(
             self.doc,
             module.render_arm_sections(self.doc, ledger, self.REGIONS, self.DOC),
