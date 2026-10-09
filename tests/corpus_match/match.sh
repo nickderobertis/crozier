@@ -311,6 +311,7 @@ inventory=(
   ego_microservices_matches_fern_output
   netgsm_sms_matches_fern_output
   zylon_private_gpt_matches_fern_output
+  aws_mobileanalytics_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

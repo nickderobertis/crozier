@@ -657,10 +657,11 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 12] = [
+pub const RULE_IDS: [&str; 14] = [
     "body-query-parameter-value",
     "closed-empty-object-example",
     "constant-header-docs-arguments",
+    "date-header-constructor-example",
     "fern-metadata-generator-config",
     "init-type-checking-import-order",
     "lifted-base-path-docs-examples",
@@ -669,6 +670,7 @@ pub const RULE_IDS: [&str; 12] = [
     "readme-client-class-casing",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
+    "sdk-variable-docs-examples",
     "stream-reference-return-type",
 ];
 
@@ -688,6 +690,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "constant-header-docs-arguments" => Rule {
             region: Some(constant_header_docs_arguments),
+            ..none
+        },
+        "date-header-constructor-example" => Rule {
+            region: Some(date_header_constructor_example),
             ..none
         },
         "fern-metadata-generator-config" => Rule {
@@ -726,6 +732,10 @@ pub fn rule(id: &str) -> Option<Rule> {
             line: Some(sdk_name_version_header),
             added: Some(sdk_name_version_header_added),
             region: None,
+        },
+        "sdk-variable-docs-examples" => Rule {
+            region: Some(sdk_variable_docs_examples),
+            ..none
         },
         _ => return None,
     })
@@ -1484,18 +1494,196 @@ fn lifted_base_path_docs_examples(pair: &Pair<'_>) -> Result<Option<Region>, Str
     if names.is_empty() {
         return Ok(None);
     }
+    if !pair.fern.iter().enumerate().any(|(index, line)| {
+        lifted_argument(line, names).is_some()
+            && call_opener(pair.fern, index).is_some_and(opens_method_call)
+    }) {
+        return Ok(None);
+    }
     let (Some(fern), Some(crozier)) = (
         fern_docs_without_lifted(pair.fern, names),
         crozier_docs_without_lifted(pair.crozier, names),
     ) else {
         return Ok(None);
     };
-    if fern.len() != crozier.len()
-        || fern
-            .iter()
-            .zip(&crozier)
-            .any(|(left, right)| *left != right)
+    if !fern
+        .iter()
+        .zip(&crozier)
+        .all(|(left, right)| *left == right)
+        || fern.len() != crozier.len()
     {
+        let methods: BTreeSet<String> = lifted_methods(pair.context, names)
+            .into_iter()
+            .filter(|method| {
+                crozier
+                    .iter()
+                    .any(|line| line.contains(&format!(".{method}()")))
+            })
+            .collect();
+        if without_lifted_method_placeholders(&fern, &methods) != crozier {
+            return Ok(None);
+        }
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// Constructor examples must supply a date, rather than a placeholder string.
+/// Only constructor parameters typed as optional dates qualify. After replacing
+/// those exact placeholders and accounting for the example import, every line
+/// must match; string-header placeholders remain untouched.
+fn date_header_constructor_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !pair.rel.ends_with("client.py") || pair.rel.ends_with("raw_client.py") {
+        return Ok(None);
+    }
+    let names: BTreeSet<&str> = pair
+        .fern
+        .iter()
+        .filter_map(|line| {
+            line.trim()
+                .split_once(": typing.Optional[dt.date] = None")
+                .map(|(name, _)| name)
+        })
+        .collect();
+    if names.is_empty() {
+        return Ok(None);
+    }
+    let mut changed = false;
+    let fern: Vec<String> = pair
+        .fern
+        .iter()
+        .map(|line| {
+            let mut line = (*line).to_string();
+            for name in &names {
+                let placeholder = format!("{name}=\"YOUR_{}\"", name.to_uppercase());
+                if line.contains(&placeholder) {
+                    changed = true;
+                    line = line.replace(
+                        &placeholder,
+                        &format!("{name}=datetime.date.fromisoformat(\"2023-01-15\")"),
+                    );
+                }
+            }
+            line
+        })
+        .collect();
+    let without_example_import = |lines: &[String]| {
+        let mut result = Vec::new();
+        let mut index = 0;
+        while index < lines.len() {
+            if lines[index].trim() == "import datetime"
+                && index + 2 < lines.len()
+                && lines[index + 1].is_empty()
+                && lines[index + 2].trim_start().starts_with("from ")
+            {
+                index += if index > 0 && lines[index - 1].trim() == "import asyncio" {
+                    1
+                } else {
+                    2
+                };
+            } else {
+                result.push(lines[index].clone());
+                index += 1;
+            }
+        }
+        result
+    };
+    let crozier: Vec<String> = pair
+        .crozier
+        .iter()
+        .map(|line| (*line).to_string())
+        .collect();
+    if !changed || without_example_import(&fern) != without_example_import(&crozier) {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// Methods whose generated URL reads a client field.
+fn lifted_methods(context: &Context, names: &BTreeSet<String>) -> BTreeSet<String> {
+    let Some((_, root)) = &context.roots else {
+        return BTreeSet::new();
+    };
+    let mut methods = BTreeSet::new();
+    for (_, source) in python_sources(root) {
+        let mut method = None;
+        for line in source.lines() {
+            let trimmed = line.trim_start();
+            if let Some(rest) = trimmed
+                .strip_prefix("def ")
+                .or_else(|| trimmed.strip_prefix("async def "))
+            {
+                method = rest.split_once('(').map(|(name, _)| name.to_string());
+            }
+            if names
+                .iter()
+                .any(|name| line.contains(&format!("self._client_wrapper._{name}")))
+            {
+                if let Some(method) = &method {
+                    methods.insert(method.clone());
+                }
+            }
+        }
+    }
+    methods
+}
+
+/// Remove only positional placeholders and empty calls for lifted methods.
+fn without_lifted_method_placeholders(lines: &[&str], methods: &BTreeSet<String>) -> Vec<String> {
+    let mut kept: Vec<String> = Vec::new();
+    for line in lines {
+        let mut line = (*line).to_string();
+        for method in methods {
+            line = line.replace(&format!(".{method}(..., "), &format!(".{method}("));
+            line = line.replace(&format!(".{method}(...)"), &format!(".{method}()"));
+            line = line.replace(&format!(">{method}</a>(...)"), &format!(">{method}</a>()"));
+        }
+        if line.trim() == ")"
+            && kept.last().is_some_and(|previous| {
+                methods
+                    .iter()
+                    .any(|method| previous.trim_end().ends_with(&format!(".{method}(")))
+            })
+        {
+            if let Some(previous) = kept.last_mut() {
+                previous.push(')');
+            }
+        } else {
+            kept.push(line);
+        }
+    }
+    kept
+}
+
+/// SDK-variable documentation forgets the lifted constructor argument and
+/// retains a method parameter block and positional placeholder for it. Only
+/// methods whose generated route reads a lifted client field are eligible;
+/// every remaining line must equal the reference.
+fn sdk_variable_docs_examples(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let names = pair.context.crozier_lifted_parameters();
+    let methods = lifted_methods(pair.context, names);
+    let Some(crozier) = crozier_docs_without_lifted(pair.crozier, names) else {
+        return Ok(None);
+    };
+    let mut fern = Vec::new();
+    let mut index = 0;
+    while index < pair.fern.len() {
+        if let Some(length) = lifted_parameter_block(pair.fern, index, names) {
+            index += length;
+            continue;
+        }
+        let mut line = pair.fern[index].to_string();
+        for method in &methods {
+            line = line.replace(&format!(".{method}(..., "), &format!(".{method}("));
+            line = line.replace(&format!(".{method}(...)"), &format!(".{method}()"));
+            line = line.replace(&format!(">{method}</a>(...)"), &format!(">{method}</a>()"));
+        }
+        fern.push(line);
+        index += 1;
+    }
+    if methods.is_empty() || fern != crozier {
         return Ok(None);
     }
     Ok(differing_window(pair.fern, pair.crozier))

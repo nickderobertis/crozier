@@ -524,6 +524,11 @@ Additional SMS request specification:
     MIT; corpus row 332 records the immutable reference. The unmodified source
     and Fern-generated output are vendored, with Python comments stripped as above.
 
+  * AWS Mobile Analytics source and generated SDK golden: https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/amazonaws.com/mobileanalytics/2014-06-05/openapi.yaml.
+    Copyright Amazon.com, Inc. or its affiliates. The source records the
+    publisher model in info.x-origin and its redistribution grant in info.license.
+    The source bytes are unchanged; generated Python comments are stripped.
+
 Additional streaming specification:
 
   * PrivateGPT API: the publisher's own description at

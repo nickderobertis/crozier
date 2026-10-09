@@ -68,6 +68,7 @@ const KINDS: &[Kind] = &[
             "enum-receiver-collision",
             "openfigi.com",
             "zylon-private-gpt",
+            "aws-mobileanalytics",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

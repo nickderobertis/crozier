@@ -15044,3 +15044,79 @@ fn the_reference_documents_the_condition_after_required_fields() {
     let notes = section.find("**notes:**").expect(section);
     assert!(origin < live && live < notes, "{section}");
 }
+
+#[test]
+fn global_header_constructor_names_are_checked_before_python_emission() {
+    let source =
+        include_str!("../docs/openapi-surface/handwritten/warehouse-header-token/openapi.yml");
+    for spelling in ["x-fern-global-headers", "x-crozier-global-headers"] {
+        for name in ["", "/", "ledger"] {
+            let mut document: serde_json::Value = serde_json::from_str(source).unwrap();
+            let mut headers = document
+                .as_object_mut()
+                .unwrap()
+                .remove("x-fern-global-headers")
+                .unwrap();
+            headers[0]["name"] = name.into();
+            document[spelling] = headers;
+            if spelling == "x-crozier-global-headers" {
+                document["x-fern-global-headers"] =
+                    serde_json::json!([{"header": "X-Other", "name": "other"}]);
+            }
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("api.json");
+            std::fs::write(&path, serde_json::to_vec(&document).unwrap()).unwrap();
+            for strict in [false, true] {
+                let result = render_files(GenerateArgs {
+                    spec: path.clone(),
+                    output: dir.path().join("sdk"),
+                    package_name: Some("fern".into()),
+                    project_name: None,
+                    client_class_name: None,
+                    audiences: Vec::new(),
+                    audience_strict: false,
+                    fern_strict: strict,
+                    extra_fields: crozier::settings::ExtraFields::Allow,
+                    enum_type: crozier::settings::EnumType::PythonEnums,
+                    default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+                    layout: crozier::settings::Layout::Packaged,
+                });
+                if name == "ledger" {
+                    assert!(!result.unwrap().is_empty());
+                } else {
+                    let message = result.unwrap_err().to_string();
+                    assert!(message.contains("generator-lint-failure"), "{message}");
+                    assert!(
+                        message.contains(&format!("constructor name {name:?}")),
+                        "{message}"
+                    );
+                    assert!(!dir.path().join("sdk").exists());
+                }
+            }
+        }
+    }
+}
+
+#[path = "support/parameter_controls.rs"]
+mod parameter_controls;
+
+#[test]
+fn parameter_lifting_controls_render_through_the_public_boundary() {
+    for case in parameter_controls::CASES {
+        let files = render(&serde_json::to_string(&parameter_controls::document(case)).unwrap());
+        let client = &files["src/acme/client.py"];
+        match *case {
+            "promoted-header" | "security-header" => {
+                assert!(client.contains("station: str"), "{case}: {client}")
+            }
+            "missing-variable" => assert!(client.contains("self, station_code: str"), "{client}"),
+            "renamed-path" => assert!(client.contains("self, area_code: str"), "{client}"),
+            "repeated-variable" => assert!(client.contains("def list_readings("), "{client}"),
+            "base-collision" => assert!(
+                client.contains("cycle: typing.Optional[str] = \"night\""),
+                "{client}"
+            ),
+            _ => unreachable!(),
+        }
+    }
+}

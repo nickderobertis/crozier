@@ -73,3 +73,22 @@ finished detector, are refused in both modes: exit 1, no files, and one stderr
 line with the strict cause when it applies. Ten are refused by this class,
 covering every measured shape but the union collision. `875e6bce…` (OSRD) is
 refused first by `object-extends-non-object`; its own failure is the union F811.
+
+## Global-header constructor-name cases
+
+Fresh independently authored [punctuation-only](global-header-punctuation-name-probe.yml)
+and [empty](global-header-empty-name-probe.yml) names were measured with CLI
+5.67.1 and Python SDK 5.20.0, packaged preview, package `fern`, client `FernApi`,
+Python enums, extra fields `allow`, retries 2, and no audience filtering. Both
+`fern check` runs exit 0; both generation runs exit 1 with no SDK tree because
+`ruff check` rejects an empty constructor argument identifier. The certified
+[punctuation check](evaluation-logs/global-header-punctuation-name.check.log),
+[punctuation generation](evaluation-logs/global-header-punctuation-name.generate.log),
+[empty check](evaluation-logs/global-header-empty-name.check.log), and
+[empty generation](evaluation-logs/global-header-empty-name.generate.log) record
+the failures. This extends the existing `generator-lint-failure` mechanism; its
+status and historical evaluation remain unchanged. These name-only faults
+refuse in both modes, naming the declared header and constructor name. They
+are never generated under repaired names. The independently authored Warehouse
+Ledger complete golden remains the adjacent valid constructor-name control,
+including the canonical alias and conflicting values.
