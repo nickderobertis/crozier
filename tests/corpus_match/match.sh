@@ -316,7 +316,8 @@ for test in "${inventory[@]:1}"; do filter+=" | test(=$test)"; done
 nextest=(--locked -p crozier-e2e --test e2e -E "$filter")
 
 listed=$(printf '%s\n' "${inventory[@]}" | sort)
-selected=$(cargo nextest list "${nextest[@]}" --message-format oneline | awk '{print $2}' | sort)
+# Nx and CI force colour on; a coloured name would never equal its listed one.
+selected=$(cargo nextest list "${nextest[@]}" --message-format oneline --color never | awk '{print $2}' | sort)
 [ "$selected" = "$listed" ] || {
   echo "corpus-match: nextest's selection differs from the inventory in tests/corpus_match/match.sh (< listed only, > selected only):" >&2
   diff <(printf '%s\n' "$listed") <(printf '%s\n' "$selected") | grep '^[<>]' >&2 || true

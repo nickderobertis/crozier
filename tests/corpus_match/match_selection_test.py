@@ -12,6 +12,7 @@ Run: `just test-corpus-offline` (the `corpus-match` project's `test-offline`).
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import unittest
 from pathlib import Path
@@ -46,8 +47,10 @@ class MatchSelection(unittest.TestCase):
         self.listed = inventory(self.text)
 
     def test_nextest_selects_exactly_the_listed_inventory(self) -> None:
+        # Nx forces colour on, as CI can; the selection must still read as plain names.
         result = subprocess.run(["bash", str(SCRIPT)], capture_output=True, text=True, timeout=1800,
-                                env={**os.environ, "CORPUS_MATCH_LIST": "1"})
+                                env={**os.environ, "CORPUS_MATCH_LIST": "1", "FORCE_COLOR": "1",
+                                     "CLICOLOR_FORCE": "1", "CARGO_TERM_COLOR": "always"})
         self.assertEqual(0, result.returncode, result.stderr)
         selected = result.stdout.splitlines()
         self.assertEqual(len(self.listed), len(set(self.listed)), "the inventory lists a test twice")
@@ -74,8 +77,9 @@ class MatchSelection(unittest.TestCase):
         # A client class name Fern's golden was not generated with: the real
         # crozier writes a different SDK, so the byte comparison fails.
         result = run(with_inventory(self.text, ["basic_auth_matches_fern_output", "bracketed_property_names_matches_fern_output"]),
-                     CROZIER_CLIENT_CLASS_NAME="NotFernsClient")
-        output = result.stdout + result.stderr
+                     CROZIER_CLIENT_CLASS_NAME="NotFernsClient", CARGO_TERM_COLOR="always")
+        # Nx forces colour on; the names are asserted on the text a reader sees.
+        output = re.sub(r"\x1b\[[0-9;]*m", "", result.stdout + result.stderr)
         self.assertEqual(100, result.returncode, output)
         self.assertRegex(output, r"FAIL \[.*\] \(\s*\d+/2\) crozier-e2e::e2e basic_auth_matches_fern_output")
         self.assertRegex(output, r"FAIL \[.*\] \(\s*\d+/2\) crozier-e2e::e2e bracketed_property_names_matches_fern_output")
