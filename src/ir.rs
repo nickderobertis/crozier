@@ -1764,7 +1764,7 @@ pub struct EndpointExtensions {
     pub retries_disabled: bool,
     /// Whether the operation declared a pagination contract the layout leaves
     /// without a pager (the flat tree): the pagination runtime still ships.
-    // llmlint: ignore[invalid_states_unrepresentable] `Endpoint::pagination` predates this field and the standing ruling for this change forbids retyping existing IR fields, so the one enum the finding asks for cannot replace it; this flag is set only where the flat layout takes that pagination away, so the two are never both set.
+    // llmlint: ignore[invalid_states_unrepresentable] `Endpoint::pagination` is an existing IR field other generator code builds and reads, so it keeps its type; this flag is set only where the flat layout clears that pagination, so the two are never both set.
     pub pagination_declared: bool,
     /// In a multi-URL environment, the field whose URL the operation's requests
     /// go to (`base`, or an operation server's name); `None` otherwise.
@@ -4178,7 +4178,7 @@ pub struct EndpointPagination {
     pub advance: PageAdvance,
     /// The Python name of the request parameter the advance writes: the cursor,
     /// or the offset.
-    // llmlint: ignore[names_match_behavior] The field predates the offset form and the standing ruling for this change forbids renaming existing IR fields; its doc comment states that it names the offset parameter too.
+    // llmlint: ignore[names_match_behavior] `cursor_param` is an existing IR field other generator code reads by that name; its doc comment states that it names the offset parameter too.
     pub cursor_param: String,
     /// The element type of the item list, which parameterizes the pager.
     pub item_type: TypeRef,
@@ -4196,7 +4196,7 @@ pub enum PageAdvance {
         /// The cursor attribute itself, e.g. the `next_page_token` of
         /// `["pagination", "next_page_token"]`. Split from its container at
         /// construction so the pair cannot represent a chain with no cursor.
-        // llmlint: ignore[invalid_states_unrepresentable] The leaf is the last segment `str::split` yields over the declared response path, so a cursor always exists, each segment passing through `naming::model_field_name` like every other model attribute crozier emits; it is the pre-existing `next_cursor_leaf` the manager's ruling on this change kept as it is.
+        // llmlint: ignore[invalid_states_unrepresentable] The leaf is the last segment `str::split` yields over the declared response path, so a cursor always exists, each segment passing through `naming::model_field_name` like every other model attribute crozier emits.
         leaf: String,
     },
     /// The offset form (`x-fern-pagination: {offset: …, results: …}`): the
