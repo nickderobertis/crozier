@@ -1897,6 +1897,41 @@ def config_gated_verdict(text: str, key: str) -> str | None:
     return stated.pop() if len(stated) == 1 else None
 
 
+def config_gated_arm_verdict(key: str, site: str, text: str, root: Path) -> str | None:
+    """The verdict a `config-gated` record's key gives one of its arms, by measurement.
+
+    The gate table's verdict is the measured gate's: it holds for an arm
+    `handwritten-config-gates.tsv` records with and without the setting. Any
+    other arm of the key joined it later and is gated only if measured so: it
+    reads the verdict its hand-written covers cite, and only when
+    `handwritten-reach.tsv` shows a cover's fixture, declaring no setting,
+    executing it. Otherwise no one verdict is stated (`None`).
+    """
+    regions = root / "docs" / "openapi-surface"
+    with (regions / "handwritten-config-gates.tsv").open(encoding="utf-8", newline="") as handle:
+        gated = {
+            row["site"] for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE) if row["key"] == key
+        }
+    if site in gated:
+        return config_gated_verdict(text, key)
+    verdicts: set[str] = set()
+    ungated: set[str] = set()
+    for evidence in sorted((regions / "handwritten").glob("*/evidence.toml")):
+        with evidence.open("rb") as handle:
+            declared = tomllib.load(handle)
+        for cover in declared.get("covers", []):
+            if cover["key"] == key and cover.get("arm") == site:
+                verdicts.add(cover["verdict"])
+                if not declared.get("audiences"):
+                    ungated.add(evidence.parent.name)
+    with (regions / "handwritten-reach.tsv").open(encoding="utf-8", newline="") as handle:
+        executed = any(
+            row["fixture"] in ungated and row["key"] == key and row["site"] == site and int(row["regions_executed"])
+            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        )
+    return verdicts.pop() if executed and len(verdicts) == 1 else None
+
+
 def config_gated_record_failures(
     key: str,
     text: str,
@@ -10092,31 +10127,37 @@ class RankedBacklogTests(unittest.TestCase):
             record = self.ARM_SEARCHES / "searches" / f"{reach.key}.md"
             if record.is_file():
                 text = record.read_text(encoding="utf-8")
-                outcomes = (
-                    {line[2].strip("`") for line in exhaustive_search_lines(text).get(reach.key, [])}
-                    if not is_config_gated(text)
-                    else {config_gated_verdict(text, reach.key)}
-                )
-                self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
-                verdict = outcomes.pop()
-                self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED), reach.key)
-                cell = f"`{verdict}`"
+                outcomes = {line[2].strip("`") for line in exhaustive_search_lines(text).get(reach.key, [])}
+                if not is_config_gated(text):
+                    self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
             else:
-                # No record is no search, which is its own reason, never a
-                # search's verdict.
-                cell = f"{NOT_SEARCHED} — no arm search has run"
-            expected.extend(
-                [
-                    str(rank),
-                    f"`{reach.key}`",
-                    f"`{spec}`",
-                    str(total),
-                    cell,
-                    ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—",
-                ]
-                for spec, hit, total in reach.sites
-                if not hit
-            )
+                text = None
+            for spec, hit, total in reach.sites:
+                if hit:
+                    continue
+                if text is None:
+                    # No record is no search, which is its own reason, never a
+                    # search's verdict.
+                    cell = f"{NOT_SEARCHED} — no arm search has run"
+                else:
+                    # A gated key's verdict is per arm: only a measured gate gates.
+                    verdict = (
+                        next(iter(outcomes))
+                        if not is_config_gated(text)
+                        else config_gated_arm_verdict(reach.key, spec, text, REPO)
+                    )
+                    self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED), f"{reach.key}: {spec}")
+                    cell = f"`{verdict}`"
+                expected.append(
+                    [
+                        str(rank),
+                        f"`{reach.key}`",
+                        f"`{spec}`",
+                        str(total),
+                        cell,
+                        ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—",
+                    ]
+                )
         self.assertEqual(expected, self.reach_table(self.REACH_ARMS, 6))
         flat = " ".join(self.section(self.REACH_ARMS).split("\n#", 1)[0].split())
         partial = sum(1 for _rank, reach in ledger if reach.unreached_sites)

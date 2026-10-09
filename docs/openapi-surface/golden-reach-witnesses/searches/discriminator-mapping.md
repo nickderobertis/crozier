@@ -83,8 +83,12 @@ specifications. The fixture above covers it at the lower level of proof.
 the union repair for the shape `nested-oneof-mapping-target-wrapped-as-value`,
 joined this key after the gate above was recorded. Neither is behind a
 generation setting: both run on any document whose `discriminator.mapping`
-names a schema that is itself a `oneOf` or `anyOf` of references. So the
-`config-gated` verdict above is the earlier site's alone. No Contract B search
+names a schema that is itself a `oneOf` or `anyOf` of references, and
+`just handwritten-reach` measures the hand-written fixture below, which
+declares no setting, executing 20 of 20 and 18 of 20 of their regions
+([`handwritten-reach.tsv`](../../handwritten-reach.tsv)). So the
+`config-gated` verdict above is the earlier site's alone, and these two arms
+read `search-incomplete`. No Contract B search
 has run for these two either. The bounded
 [union witness search](../../witness-search-union-scenarios/README.md#witness-search) read the APIs.guru archive at
 `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` and the already-acquired GitHub

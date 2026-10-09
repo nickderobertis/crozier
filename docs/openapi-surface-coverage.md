@@ -2424,21 +2424,22 @@ The golden rows split in two. **425** reach every handling site their
 states under Contract B's six declared sources, or `not searched` where no arm
 search has run. 54 read `exhausted`: each of those arms' six-source searches
 owes nothing and found no registrable real-world document that executes it.
-Twenty-two read `search-incomplete`: the ignored-schema arm, the four
+Twenty-four read `search-incomplete`: the ignored-schema arm, the four
 `parameter-schema` arms, the path and header parameter-lowering arms, and
-fifteen arms of the eleven keys the union repairs added sites to. Three of the
-fifteen are earlier arms whose six-source searches read `exhausted` — the
+seventeen arms of the twelve keys the union repairs added sites to. Three of the
+seventeen are earlier arms whose six-source searches read `exhausted` — the
 `nested_array_element` arms of `oneof-discriminated-union` and
 `items-oneof-element` and the head lookup of
 `ref-pointer-undeclared-component-head` — and whose key now also holds a
 successor arm no declared source has been searched for, so the key's record
 reads `search-incomplete`; each record's **Successor arm** section names it.
 Their records keep the source-search obligations separate from certified
-generation. `discriminator-mapping` reads `config-gated` on three arms: its
-`collect_schema_refs` arm, and the two union arms its record's **Successor
-arms** section names, which no setting gates and whose bounded search is
-`search-incomplete`; the verdict cell is the key's, read off the record's gate
-table. Seven have no arm search:
+generation. `discriminator-mapping` reads `config-gated` only on its
+`collect_schema_refs` arm, the one `handwritten-config-gates.tsv` measures
+behind `audiences`. The two union arms its record's **Successor arms** section
+names read `search-incomplete`, the verdict their covers cite:
+`handwritten-reach.tsv` measures the setting-free `kitchen-nested-mapping-target`
+fixture executing both, so no setting gates them. Seven have no arm search:
 three example arms remain named gaps (`schema-example-empty-object`,
 `schema-example-object-on-map` and `schema-example-outside-enum`); four root-body
 format or typed-query arms are instead covered by independent fixtures whose
@@ -2522,8 +2523,8 @@ why. The changes that took the arm off:
 | 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
 | 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
 | 3 | `discriminator-mapping` | `src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]` | 9 | `config-gated` | `discriminator-mapping-audience` |
-| 3 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 20 | `config-gated` | `kitchen-nested-mapping-target` |
-| 3 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | 20 | `config-gated` | `kitchen-nested-mapping-target` |
+| 3 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 20 | `search-incomplete` | `kitchen-nested-mapping-target` |
+| 3 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | 20 | `search-incomplete` | `kitchen-nested-mapping-target` |
 | 4 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `search-incomplete` | `nested-array-discriminated-unions` |
 | 4 | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | 10 | `search-incomplete` | `library-union-shared-fields` |
 | 5 | `anyof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]` | 9 | `exhausted` | `nested-array-discriminated-unions` |
@@ -2626,7 +2627,10 @@ fixture [`discriminator-mapping-audience`](openapi-surface/handwritten/discrimin
 declares `audiences = ["public"]` and executes 9 of the arm's 9 regions with it
 and 0 without. Fern keeps the subtypes only the `mapping` names. The
 real-specification route stays open: a corpus row registered with an audience
-over a document that declares a `discriminator`.
+over a document that declares a `discriminator`. The verdict is the measured
+arm's alone. The key's two later union arms run with no setting, as
+`handwritten-reach.tsv` measures, so the arm table reads them
+`search-incomplete`, the verdict their covers cite.
 
 **No arm rests on a disputed grant.** `ref-pointer-composition-index`'s
 `ref_to_class` pointer-walk site was reached only through corpus row 224,
