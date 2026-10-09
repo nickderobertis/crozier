@@ -11,11 +11,14 @@ generated SDK is replaced: the clients are the SDK's own, pointed at the server'
 address. Prints `<fixture>: ok` and exits 0 when every assertion holds.
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import pathlib
 import sys
 import threading
+from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
@@ -34,8 +37,28 @@ if pathlib.Path(fern.__file__).resolve().parent != (pathlib.Path(SRC) / "fern").
     sys.exit(f"`fern` imported from {fern.__file__}, not from {SRC}\n{USAGE}")
 
 
+@dataclass(frozen=True)
+class Answer:
+    """One response the server sends."""
+
+    status: int
+    headers: dict[str, str] = field(default_factory=dict)
+    body: bytes = b""
+
+
+@dataclass(frozen=True)
+class Request:
+    """One request the server received, as the journeys assert on it."""
+
+    method: str
+    path: str
+    query: dict[str, str]
+    content_type: str | None
+    json: object
+
+
 def answer(status, headers=None, text=None, json=None, content=None):
-    """One response the server sends: its status, headers and body bytes."""
+    """An `Answer` whose body is `json` encoded, `text` encoded or raw `content`."""
     headers = dict(headers or {})
     if json is not None:
         body = globals()["json"].dumps(json).encode()
@@ -44,7 +67,7 @@ def answer(status, headers=None, text=None, json=None, content=None):
         body = text.encode()
     else:
         body = content or b""
-    return status, headers, body
+    return Answer(status, headers, body)
 
 
 def sse(*events):
@@ -70,8 +93,8 @@ class Wire:
     """The local server: answers each request in turn and records it."""
 
     def __init__(self):
-        self.answers = []
-        self.sent = []
+        self.answers: list[Answer] = []
+        self.sent: list[Request] = []
         wire = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -79,21 +102,21 @@ class Wire:
                 raw = self.rfile.read(int(self.headers.get("Content-Length", "0")))
                 url = urlsplit(self.path)
                 wire.sent.append(
-                    {
-                        "method": self.command,
-                        "path": url.path,
-                        "query": {key: values[0] for key, values in parse_qs(url.query).items()},
-                        "content_type": self.headers.get("Content-Type"),
-                        "json": json.loads(raw) if raw else None,
-                    }
+                    Request(
+                        method=self.command,
+                        path=url.path,
+                        query={key: values[0] for key, values in parse_qs(url.query).items()},
+                        content_type=self.headers.get("Content-Type"),
+                        json=json.loads(raw) if raw else None,
+                    )
                 )
-                status, headers, body = wire.answers.pop(0)
-                self.send_response(status)
-                for name, value in headers.items():
+                reply = wire.answers.pop(0)
+                self.send_response(reply.status)
+                for name, value in reply.headers.items():
                     self.send_header(name, value)
-                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Content-Length", str(len(reply.body)))
                 self.end_headers()
-                self.wfile.write(body)
+                self.wfile.write(reply.body)
 
             do_GET = do_POST = handle_one
 
@@ -123,7 +146,7 @@ def async_client(wire):
 
 def both(call, *answers, collect=list):
     """Run `call(client)` with the sync client and then the async one, each served
-    its own copy of `answers`; return each result with the requests it sent."""
+    its own copy of `answers`; return each result with the `Request`s it sent."""
     sync_result = collect(call(sync_client(WIRE.serve(*answers))))
     sync_sent = list(WIRE.sent)
 
@@ -134,14 +157,7 @@ def both(call, *answers, collect=list):
         return await result
 
     async_result = asyncio.run(drive())
-    return (sync_result, Sent(sync_sent)), (async_result, Sent(list(WIRE.sent)))
-
-
-class Sent:
-    """The requests one run sent, as `wire.sent`."""
-
-    def __init__(self, sent):
-        self.sent = sent
+    return (sync_result, sync_sent), (async_result, list(WIRE.sent))
 
 
 def raises_then_recovers(call, recovered, success):
@@ -172,10 +188,10 @@ def raises_then_recovers(call, recovered, success):
 def terminator():
     events = sse({"step": "lint", "passed": True}, {"step": "test", "passed": False}, "[DONE]", {"step": "late"})
     call = lambda client: client.follow_build_log("b-1")
-    for chunks, wire in both(call, events):
+    for chunks, sent in both(call, events):
         # The declared terminator ends the stream; the event after it is never read.
         assert [(chunk.step, chunk.passed) for chunk in chunks] == [("lint", True), ("test", False)], chunks
-        assert wire.sent[0]["path"] == "/builds/b-1/log", wire.sent
+        assert sent[0].path == "/builds/b-1/log", sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, events)
 
 
@@ -183,9 +199,9 @@ def sse_format():
     # `format: sse` over a JSON-only success: the body is decoded as events.
     events = sse({"pm25": 4.5, "pm10": 9.0}, {"pm25": 5.0})
     call = lambda client: client.subscribe_readings("s-7")
-    for chunks, wire in both(call, events):
+    for chunks, sent in both(call, events):
         assert [(chunk.pm25, chunk.pm10) for chunk in chunks] == [(4.5, 9.0), (5.0, None)], chunks
-        assert wire.sent[0]["path"] == "/sensors/s-7/readings", wire.sent
+        assert sent[0].path == "/sensors/s-7/readings", sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, events)
 
 
@@ -194,9 +210,9 @@ def boolean():
     # not JSON are skipped.
     lines = json_lines('{"level": "info", "message": "up"}', "", "not json", '{"level": "warn", "message": "slow"}')
     call = lambda client: client.tail_logs(service="api")
-    for chunks, wire in both(call, lines):
+    for chunks, sent in both(call, lines):
         assert [(chunk.level, chunk.message) for chunk in chunks] == [("info", "up"), ("warn", "slow")], chunks
-        assert wire.sent[0]["query"] == {"service": "api"}, wire.sent
+        assert sent[0].query == {"service": "api"}, sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, lines)
 
 
@@ -209,11 +225,11 @@ def event_dispatch():
         ("arrived", {"data": {"terminal": "South"}}),
     )
     call = lambda client: client.watch_movements("r-2")
-    for chunks, wire in both(call, events):
+    for chunks, sent in both(call, events):
         assert [type(chunk).__name__ for chunk in chunks] == ["Departure", "Arrival"], chunks
         assert [chunk.data.terminal for chunk in chunks] == ["North", "South"], chunks
         assert chunks[0].data.minutes_late == 3, chunks
-        assert wire.sent[0]["path"] == "/routes/r-2/movements", wire.sent
+        assert sent[0].path == "/routes/r-2/movements", sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, events)
     # A named event whose data is not JSON, or does not fit its model, is
     # skipped with a warning, and the events after it still arrive.
@@ -222,18 +238,30 @@ def event_dispatch():
         ("arrived", {"data": "not a berth"}),
         ("arrived", {"data": {"terminal": "East"}}),
     )
-    for chunks, _wire in both(call, damaged):
+    for chunks, _sent in both(call, damaged):
         assert [(type(chunk).__name__, chunk.data.terminal) for chunk in chunks] == [("Arrival", "East")], chunks
+    # With no mapping, each variant's `const` names the event it is parsed for.
+    gangway = sse(
+        ("raised", {"data": {"terminal": "West"}}),
+        ("boarding", {"data": {"terminal": "nowhere"}}),
+        ("lowered", {"data": {"terminal": "West", "minutesLate": 1}}),
+    )
+    call = lambda client: client.watch_gangway("t-4")
+    for chunks, sent in both(call, gangway):
+        assert [type(chunk).__name__ for chunk in chunks] == ["Raised", "Lowered"], chunks
+        assert chunks[1].data.minutes_late == 1, chunks
+        assert sent[0].path == "/terminals/t-4/gangway", sent
+    raises_then_recovers(call, lambda chunks: len(chunks) == 2, gangway)
 
 
 def const_tagged_union():
     # The inline const-tagged `oneOf` is a discriminated union on `trend`.
     events = sse({"trend": "flood", "height": 1.25}, {"trend": "ebb", "height": 0.5, "slack": True})
     call = lambda client: client.stations.follow_levels("st-1")
-    for chunks, wire in both(call, events):
+    for chunks, sent in both(call, events):
         assert [type(chunk).__name__ for chunk in chunks] == ["FollowLevelsResponse_Flood", "FollowLevelsResponse_Ebb"]
         assert (chunks[0].height, chunks[1].slack) == (1.25, True), chunks
-        assert wire.sent[0]["path"] == "/stations/st-1/levels", wire.sent
+        assert sent[0].path == "/stations/st-1/levels", sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, events)
 
 
@@ -241,9 +269,9 @@ def item_schema():
     # `itemSchema` types each event.
     events = sse({"altitude": 1200.5, "pressure": 880.0}, {"altitude": 1300.0})
     call = lambda client: client.stream_samples("bal-9")
-    for chunks, wire in both(call, events):
+    for chunks, sent in both(call, events):
         assert [(chunk.altitude, chunk.pressure) for chunk in chunks] == [(1200.5, 880.0), (1300.0, None)], chunks
-        assert wire.sent[0]["path"] == "/balloons/bal-9/samples", wire.sent
+        assert sent[0].path == "/balloons/bal-9/samples", sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, events)
 
 
@@ -252,9 +280,9 @@ def binary_download():
     payload = b"RIFF\x00\x01frames-and-more-frames"
     download = answer(200, headers={"content-type": "text/event-stream"}, content=payload)
     call = lambda client: client.listen_live(channel=3)
-    for chunks, wire in both(call, download):
+    for chunks, sent in both(call, download):
         assert b"".join(chunks) == payload, chunks
-        assert wire.sent[0]["query"] == {"channel": "3"}, wire.sent
+        assert sent[0].query == {"channel": "3"}, sent
     raises_then_recovers(call, lambda chunks: b"".join(chunks) == payload, download)
 
 
@@ -264,15 +292,15 @@ def ref_body_header():
     # header is the byte golden's to prove; this proves the two halves end to end.
     events = sse({"hex": "#aa0000"}, {"hex": "#bb0000"})
     call = lambda client: client.blend_stream(pigments=["red"])
-    for chunks, wire in both(call, events):
+    for chunks, sent in both(call, events):
         assert [chunk.hex for chunk in chunks] == ["#aa0000", "#bb0000"], chunks
-        assert wire.sent[0]["json"] == {"pigments": ["red"], "preview": True}, wire.sent
-        assert wire.sent[0]["content_type"] == "application/json", wire.sent
+        assert sent[0].json == {"pigments": ["red"], "preview": True}, sent
+        assert sent[0].content_type == "application/json", sent
     buffered = answer(200, json={"hex": "#cc0000"})
-    for swatch, wire in both(lambda client: client.blend(pigments=["blue"]), buffered, collect=lambda x: x):
+    for swatch, sent in both(lambda client: client.blend(pigments=["blue"]), buffered, collect=lambda x: x):
         assert swatch.hex == "#cc0000", swatch
-        assert wire.sent[0]["json"] == {"pigments": ["blue"], "preview": False}, wire.sent
-        assert wire.sent[0]["content_type"] == "application/json", wire.sent
+        assert sent[0].json == {"pigments": ["blue"], "preview": False}, sent
+        assert sent[0].content_type == "application/json", sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, events)
 
 
@@ -282,18 +310,18 @@ def shared_body():
     assert not hasattr(fern, "PlanRequestBody"), "the shared body model is exported"
     events = sse({"legs": 2}, {"legs": 3})
     call = lambda client: client.plan_stream(origin="Oslo", destination="Bergen")
-    for chunks, wire in both(call, events):
+    for chunks, sent in both(call, events):
         assert [chunk.legs for chunk in chunks] == [2, 3], chunks
-        assert wire.sent[0]["json"] == {"origin": "Oslo", "destination": "Bergen", "progressive": True}, wire.sent
-        assert wire.sent[0]["content_type"] == "application/json", wire.sent
+        assert sent[0].json == {"origin": "Oslo", "destination": "Bergen", "progressive": True}, sent
+        assert sent[0].content_type == "application/json", sent
     buffered = answer(200, json={"legs": 4})
     for method, progressive in (("plan", False), ("estimate_route", None)):
         call_buffered = lambda client: getattr(client, method)(origin="Oslo")
-        for itinerary, wire in both(call_buffered, buffered, collect=lambda x: x):
+        for itinerary, sent in both(call_buffered, buffered, collect=lambda x: x):
             assert itinerary.legs == 4, itinerary
             expected = {"origin": "Oslo"} if progressive is None else {"origin": "Oslo", "progressive": progressive}
-            assert wire.sent[0]["json"] == expected, wire.sent
-            assert wire.sent[0]["content_type"] == "application/json", wire.sent
+            assert sent[0].json == expected, sent
+            assert sent[0].content_type == "application/json", sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, events)
 
 
@@ -307,13 +335,13 @@ def union_body():
         assert inspect.signature(method).parameters["request"].annotation == alias, method
     events = sse({"cents": 1250})
     call = lambda client: client.estimate_stream(request=Crate(kilograms=2.5))
-    for chunks, wire in both(call, events):
+    for chunks, sent in both(call, events):
         assert [chunk.cents for chunk in chunks] == [1250], chunks
-        assert wire.sent[0]["json"] == {"kilograms": 2.5}, wire.sent
+        assert sent[0].json == {"kilograms": 2.5}, sent
     buffered = answer(200, json={"cents": 990})
-    for estimate, wire in both(lambda client: client.estimate(request="TRK-1"), buffered, collect=lambda x: x):
+    for estimate, sent in both(lambda client: client.estimate(request="TRK-1"), buffered, collect=lambda x: x):
         assert estimate.cents == 990, estimate
-        assert wire.sent[0]["json"] == "TRK-1", wire.sent
+        assert sent[0].json == "TRK-1", sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 1, events)
 
 
@@ -327,15 +355,15 @@ def private_gpt():
     lines = json_lines(json.dumps(completion("Hel")), json.dumps(completion("lo")))
     completions = lambda client: client.contextual_completions
     call = lambda client: completions(client).prompt_completion_v1completions_post_stream(prompt="Hi")
-    for chunks, wire in both(call, lines):
+    for chunks, sent in both(call, lines):
         assert [chunk.choices[0].delta.content for chunk in chunks] == ["Hel", "lo"], chunks
-        assert wire.sent[0]["path"] == "/v1/completions", wire.sent
-        assert wire.sent[0]["json"] == {"prompt": "Hi", "stream": True}, wire.sent
+        assert sent[0].path == "/v1/completions", sent
+        assert sent[0].json == {"prompt": "Hi", "stream": True}, sent
     buffered = answer(200, json={**completion("Hello"), "object": "completion"})
     call_buffered = lambda client: completions(client).prompt_completion(prompt="Hi")
-    for result, wire in both(call_buffered, buffered, collect=lambda x: x):
+    for result, sent in both(call_buffered, buffered, collect=lambda x: x):
         assert result.choices[0].delta.content == "Hello", result
-        assert wire.sent[0]["json"] == {"prompt": "Hi", "stream": False}, wire.sent
+        assert sent[0].json == {"prompt": "Hi", "stream": False}, sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, lines)
 
 

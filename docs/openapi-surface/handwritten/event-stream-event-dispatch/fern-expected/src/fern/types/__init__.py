@@ -9,14 +9,22 @@ if typing.TYPE_CHECKING:
     from .arrival import Arrival
     from .berth import Berth
     from .departure import Departure
+    from .gangway_change import GangwayChange, GangwayChange_Lowered, GangwayChange_Raised
+    from .lowered import Lowered
     from .movement import Movement, Movement_Arrived, Movement_Departed
+    from .raised import Raised
 _dynamic_imports: typing.Dict[str, str] = {
     "Arrival": ".arrival",
     "Berth": ".berth",
     "Departure": ".departure",
+    "GangwayChange": ".gangway_change",
+    "GangwayChange_Lowered": ".gangway_change",
+    "GangwayChange_Raised": ".gangway_change",
+    "Lowered": ".lowered",
     "Movement": ".movement",
     "Movement_Arrived": ".movement",
     "Movement_Departed": ".movement",
+    "Raised": ".raised",
 }
 
 
@@ -41,4 +49,16 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["Arrival", "Berth", "Departure", "Movement", "Movement_Arrived", "Movement_Departed"]
+__all__ = [
+    "Arrival",
+    "Berth",
+    "Departure",
+    "GangwayChange",
+    "GangwayChange_Lowered",
+    "GangwayChange_Raised",
+    "Lowered",
+    "Movement",
+    "Movement_Arrived",
+    "Movement_Departed",
+    "Raised",
+]

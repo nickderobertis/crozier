@@ -4592,8 +4592,9 @@ fn stream_protocol(doc: &OpenApi, op: &Operation) -> StreamProtocol {
 /// `event` and `data`, streams as those events: each `_sse.event` value selects
 /// its variant, parsed from the event's JSON `data`. The values are the
 /// discriminator mapping's keys in mapping order, or each variant's own `event`
-/// enum value in `oneOf` order when there is no mapping. A variant with any other
-/// property, or another discriminator property, keeps the ordinary parse.
+/// `const` or first enum value in `oneOf` order when there is no mapping. A
+/// variant with any other property, or another discriminator property, keeps the
+/// ordinary parse.
 fn sse_event_dispatch(doc: &OpenApi, op: &Operation) -> Vec<SseEvent> {
     let view = stream_chunk_view(op);
     let Some(union) = success_response_schema(&view)

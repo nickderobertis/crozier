@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: Ferry Movements
   version: 1.2.0
@@ -19,6 +19,22 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/Movement'
+  /terminals/{terminalId}/gangway:
+    get:
+      operationId: watchGangway
+      parameters:
+        - name: terminalId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The gangway lowering and rising at the terminal.
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/GangwayChange'
 components:
   schemas:
     Movement:
@@ -30,6 +46,34 @@ components:
         mapping:
           departed: '#/components/schemas/Departure'
           arrived: '#/components/schemas/Arrival'
+    GangwayChange:
+      oneOf:
+        - $ref: '#/components/schemas/Lowered'
+        - $ref: '#/components/schemas/Raised'
+      discriminator:
+        propertyName: event
+    Lowered:
+      type: object
+      required:
+        - event
+        - data
+      properties:
+        event:
+          type: string
+          const: lowered
+        data:
+          $ref: '#/components/schemas/Berth'
+    Raised:
+      type: object
+      required:
+        - event
+        - data
+      properties:
+        event:
+          type: string
+          const: raised
+        data:
+          $ref: '#/components/schemas/Berth'
     Departure:
       type: object
       required:

@@ -1,6 +1,6 @@
 fern_cli_version = "5.67.1"
 fern_python_sdk_version = "5.20.0"
-digest = "065242b7800fc36ef70cf8278104b0cad97f316a41a4b99655547d98fbfd9c89"
+digest = "6f4718ed7577add14fb1623b6e30f5c0a004441a61b7ee43e756e76cd4bc7502"
 
 [[covers]]
 key = "media-type-event-stream-event-dispatch"

@@ -6,7 +6,19 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import Arrival, Berth, Departure, Movement, Movement_Arrived, Movement_Departed
+    from .types import (
+        Arrival,
+        Berth,
+        Departure,
+        GangwayChange,
+        GangwayChange_Lowered,
+        GangwayChange_Raised,
+        Lowered,
+        Movement,
+        Movement_Arrived,
+        Movement_Departed,
+        Raised,
+    )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
@@ -18,9 +30,14 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DefaultAsyncHttpxClient": "._default_clients",
     "Departure": ".types",
     "FernApi": ".client",
+    "GangwayChange": ".types",
+    "GangwayChange_Lowered": ".types",
+    "GangwayChange_Raised": ".types",
+    "Lowered": ".types",
     "Movement": ".types",
     "Movement_Arrived": ".types",
     "Movement_Departed": ".types",
+    "Raised": ".types",
     "__version__": ".version",
 }
 
@@ -54,8 +71,13 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "Departure",
     "FernApi",
+    "GangwayChange",
+    "GangwayChange_Lowered",
+    "GangwayChange_Raised",
+    "Lowered",
     "Movement",
     "Movement_Arrived",
     "Movement_Departed",
+    "Raised",
     "__version__",
 ]

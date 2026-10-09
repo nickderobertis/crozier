@@ -7,6 +7,7 @@ from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
 from .raw_client import AsyncRawFernApi, RawFernApi
+from .types.gangway_change import GangwayChange
 from .types.movement import Movement
 
 
@@ -124,6 +125,38 @@ class FernApi:
             yield chunk
         """
         with self._raw_client.watch_movements(route_id, request_options=request_options) as r:
+            yield from r.data
+
+    def watch_gangway(
+        self, terminal_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.Iterator[GangwayChange]:
+        """
+        Parameters
+        ----------
+        terminal_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Yields
+        ------
+        typing.Iterator[GangwayChange]
+            The gangway lowering and rising at the terminal.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        response = client.watch_gangway(
+            terminal_id="terminalId",
+        )
+        for chunk in response:
+            yield chunk
+        """
+        with self._raw_client.watch_gangway(terminal_id, request_options=request_options) as r:
             yield from r.data
 
 
@@ -265,5 +298,46 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         async with self._raw_client.watch_movements(route_id, request_options=request_options) as r:
+            async for _chunk in r.data:
+                yield _chunk
+
+    async def watch_gangway(
+        self, terminal_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.AsyncIterator[GangwayChange]:
+        """
+        Parameters
+        ----------
+        terminal_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Yields
+        ------
+        typing.AsyncIterator[GangwayChange]
+            The gangway lowering and rising at the terminal.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            response = await client.watch_gangway(
+                terminal_id="terminalId",
+            )
+            async for chunk in response:
+                yield chunk
+
+
+        asyncio.run(main())
+        """
+        async with self._raw_client.watch_gangway(terminal_id, request_options=request_options) as r:
             async for _chunk in r.data:
                 yield _chunk

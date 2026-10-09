@@ -14799,8 +14799,8 @@ components:
 
 /// An SSE union discriminated on `event` over `event`/`data`-only variants
 /// dispatches on the SSE `event` field: in mapping order with a mapping, in
-/// `oneOf` order by each variant's enum value without one. A variant with any
-/// other property keeps the ordinary parse.
+/// `oneOf` order by each variant's `const` or enum value without one. A variant
+/// with any other property keeps the ordinary parse.
 #[test]
 fn an_event_discriminated_stream_dispatches_on_the_sse_event() {
     let mapped = render(&DISPATCH_SPEC.replace(
@@ -14822,6 +14822,19 @@ fn an_event_discriminated_stream_dispatches_on_the_sse_event() {
     let departed = raw.find(r#"if _sse.event == "departed":"#).expect(raw);
     let arrived = raw.find(r#"elif _sse.event == "arrived":"#).expect(raw);
     assert!(departed < arrived, "{raw}");
+    let constant = render(
+        &DISPATCH_SPEC
+            .replace("openapi: 3.0.3", "openapi: 3.1.0")
+            .replace("enum: [departed]", "const: departed")
+            .replace("enum: [arrived]", "const: arrived")
+            .replace("MAPPING", "")
+            .replace("EXTRA", ""),
+    );
+    let raw = &constant["src/acme/raw_client.py"];
+    let departed = raw.find(r#"if _sse.event == "departed":"#).expect(raw);
+    let arrived = raw.find(r#"elif _sse.event == "arrived":"#).expect(raw);
+    assert!(departed < arrived, "{raw}");
+    assert!(!raw.contains("parse_sse_obj"), "{raw}");
     let extra = render(
         &DISPATCH_SPEC
             .replace("MAPPING", "")
