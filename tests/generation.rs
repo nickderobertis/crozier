@@ -5723,9 +5723,12 @@ components:
 "#,
     );
     let maybe = &files["src/acme/types/maybe_scalar.py"];
+    // Fern 5.20 keeps a nullable union of plain scalars bare, as the
+    // `pharmacy-nullable-scalar-unions` golden measures; the nullability lands
+    // on the fields that reference it instead.
     assert!(
-        maybe.contains("MaybeScalar = typing.Union[str, typing.Optional[int]]"),
-        "nullable unions apply Optional to Fern's final variant: {maybe}"
+        maybe.contains("MaybeScalar = typing.Union[str, int]"),
+        "a nullable union of plain scalars stays a bare union: {maybe}"
     );
     let closed = &files["src/acme/types/closed_map.py"];
     assert!(
