@@ -13933,7 +13933,6 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
                     "/post": {"post": self.operation(body=self.json_body(ref("Rye")))},
                     # A member of a union whose members do not all tag `grain`.
                     "/plain": {"get": self.operation(body=self.json_body(ref("Plain")))},
-                    # The union itself, and an inline body.
                     "/loaf": {"get": self.operation(body=self.json_body(ref("Loaf")))},
                     "/inline": {"get": self.operation(body=self.json_body(tagged("rye")))},
                 },

@@ -3128,9 +3128,9 @@ fn build_endpoint(
             );
             Some(optional_type_ref(base))
         }
-        // A composition of exactly one `$ref` is that reference: the hand-written
-        // `tide-single-member-response` fixture's `get_tides` answers `oneOf:
-        // [$ref TideTable]`, and Fern returns `TideTable`, declaring no alias.
+        // A composition of exactly one `$ref` is that reference: the
+        // offchain-metadata-tools corpus answers its specific-property query with
+        // `oneOf: [$ref Property]`, and Fern returns `Property`, declaring no alias.
         Some(schema) if sole_reference_member(schema).is_some() => {
             sole_reference_member(schema).map(|reference| TypeRef::Named(ref_to_class(reference)))
         }
