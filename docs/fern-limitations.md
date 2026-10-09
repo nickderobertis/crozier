@@ -18,7 +18,7 @@ them rather than linked, so this file is readable with nothing but this checkout
 **Versions in force for every measurement below:** Fern CLI `5.67.1`
 (`fern.config.json`) and generator `fernapi/fern-python-sdk:5.20.0`
 (`generators.yml`) — the same pin the corpus goldens record. Runs set
-`CI=true`/`GITHUB_ACTIONS=true` to match `scripts/generate-fern-fixture.sh`, which
+`CI=true`/`GITHUB_ACTIONS=true` to match `tools/fern-goldens/generate-fern-fixture.sh`, which
 is why quoted logs carry doubled `::warning::` annotation lines.
 
 ## How to read a verdict
@@ -495,14 +495,14 @@ methods Fern emits, so the two already agree by construction.
 The blocker is the **Fern workspace**, not the fetcher. Three facts about this
 repository, unchanged by the screen:
 
-1. `scripts/fern-goldens` validates each `CORPUS.md` URL and refuses a path that
+1. `tools/fern-goldens/fern-goldens` validates each `CORPUS.md` URL and refuses a path that
    does not end in `.json`/`.yaml`/`.yml`; its `fetch_spec` then requires exactly
    one spec path pointing at an existing non-empty file.
-2. `scripts/corpus-lib.sh` does have a repository-clone shape
+2. `tools/corpus/corpus-lib.sh` does have a repository-clone shape
    (`corpus_fetch_repo`, a `git clone --filter=blob:none` at the pinned ref), but
    the suffix check in (1) makes it unreachable from the golden path — and every
    numbered `CORPUS.md` row is a direct spec URL anyway.
-3. `scripts/generate-fern-fixture.sh` copies the one spec file into the workspace,
+3. `tools/fern-goldens/generate-fern-fixture.sh` copies the one spec file into the workspace,
    leaving its siblings behind.
 
 Given the tree, **Fern resolves relative-file `$ref`s perfectly well**: the
@@ -697,7 +697,7 @@ absences. Round 4 closes them one family at a time, and each subsection below
 records the evidence for its own rows. Every Round 4 measurement was taken on
 2026-08-22 under the pins this file already declares — Fern CLI `5.67.1`,
 generator `fernapi/fern-python-sdk:5.20.0`, `CI=true`/`GITHUB_ACTIONS=true` —
-against a workspace scaffolded exactly as `scripts/generate-fern-fixture.sh`
+against a workspace scaffolded exactly as `tools/fern-goldens/generate-fern-fixture.sh`
 builds one.
 
 **Fourteen of the eighteen are documented limitations. Two are registrable, and
@@ -1063,7 +1063,7 @@ explicitly.** The two AWS Query-protocol rows are the corpus's XML documents,
 and they declare `text/xml`, never `application/xml`:
 
 ```console
-$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ tools/corpus/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
 $ ls -d .local/corpus/*/ | wc -l
 91
 $ grep -rl 'application/xml' .local/corpus | wc -l
@@ -1083,7 +1083,7 @@ $ grep -rhoE '[a-z]+/[a-z0-9.+-]*xml[a-z0-9.+-]*' .local/corpus \
 ```
 
 All 91 `link-ok` sources were fetched from their pinned `CORPUS.md` URLs with
-the repository's own `scripts/fetch-corpus.sh` and searched, together with all
+the repository's own `tools/corpus/fetch-corpus.sh` and searched, together with all
 31 vendored fixture specs: **zero** declare `application/xml`. The XML-ish media
 types that *are* present are `text/xml` (`amazonaws.com-cloudformation`,
 `amazonaws.com-cloudfront`), `image/svg+xml` (`atlassian.com-jira`,
@@ -1336,7 +1336,7 @@ and **two** declare an Encoding object, and between them they declare *none* of 
 five fields these six rows are about:
 
 ```console
-$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ tools/corpus/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
 $ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
 > import glob, os, yaml
 > def links(n):
@@ -1893,7 +1893,7 @@ three.
 bar — it is that the shape is already registered.** `CORPUS.md` rows 73 and 76 are
 exactly this shape (row 73's `shapes` column reads *"multipart `encoding` properties
 combining `contentType` and per-part `headers`"*), both are registered in
-`tests/e2e.rs`, and both byte-match. A third fixture for a shape two goldens already
+`crates/crozier-e2e/tests/e2e.rs`, and both byte-match. A third fixture for a shape two goldens already
 pin would add coverage of nothing.
 
 #### `encoding-explode-or-allowReserved` — refuses one configuration, ignores six
@@ -2109,7 +2109,7 @@ densely, nullable-via-`type`-array densely, **and neither of the two `const` typ
 these rows are about, nor a single multi-type array with two non-null members**:
 
 ```console
-$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ tools/corpus/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
 $ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
 > import glob, os, yaml, collections
 > def walk(n):
@@ -2221,7 +2221,7 @@ real-world candidates, because the probe result was large enough to deserve a re
 document behind it.
 
 Every probe below was run through the workspace scaffold
-`scripts/generate-fern-fixture.sh` builds — Fern CLI `5.67.1`, generator
+`tools/fern-goldens/generate-fern-fixture.sh` builds — Fern CLI `5.67.1`, generator
 `fernapi/fern-python-sdk:5.20.0` under `pydantic_config.enum_type: python_enums`,
 `CI=true`/`GITHUB_ACTIONS=true`, `fern check` then
 `fern generate --group python-sdk --local --preview --output <ws>/preview --force`.
@@ -2901,7 +2901,7 @@ rocketmq-sre-phase05.openapi.json {'additionalProperties': 7, 'property': 10}
 
 **Route 1. `openbanking.org.uk-account-info-openapi`, `CORPUS.md` row 58**
 (`https://api.apis.guru/v2/specs/openbanking.org.uk/account-info-openapi/3.1.7/openapi.json`),
-registered in `tests/e2e.rs` with `unmatched: &[]`. Its source reaches inline depth
+registered in `crates/crozier-e2e/tests/e2e.rs` with `unmatched: &[]`. Its source reaches inline depth
 **19**, with **91** inline schema nodes at depth ≥ 15:
 
 ```console
@@ -3040,7 +3040,7 @@ registered and byte-matching, so crozier already reproduces the loss exactly.
 
 #### `REGISTRABLE` — two candidate sets
 
-Neither is registered here; `justfile`, `tests/e2e.rs` and `tests/fixtures/CORPUS.md`
+Neither is registered here; `justfile`, `crates/crozier-e2e/tests/e2e.rs` and `tests/fixtures/CORPUS.md`
 belong to the registering node. Every candidate below was carried end to end on this
 host under the pins above: `fern check` **exit 0**, `fern generate` **exit 0**, and
 the shape's artifact present in the generated tree. That is a stronger bar than the
@@ -3182,7 +3182,7 @@ where the **last** of them stood (`oneOf: [string, integer, string/uri]` generat
 
 A fifth pass, reading the four measurement subsections above as a whole rather
 than row by row on their own branches. It changed no `expected/` tree, deleted no
-`.crozier-fern-golden.json` marker, and touched neither `justfile`, `tests/e2e.rs`
+`.crozier-fern-golden.json` marker, and touched neither `justfile`, `crates/crozier-e2e/tests/e2e.rs`
 nor `tests/fixtures/CORPUS.md`. Every figure below was re-measured in this
 checkout on 2026-08-22, against fetched specifications and committed goldens
 rather than against the prose.
@@ -3260,7 +3260,7 @@ against the same pins (`fern check` then `fern generate --group python-sdk --loc
   survive; and the `oneOf`-branch exception reproduces exactly, `value: typing.Any`
   beside `storage: typing.Literal["inline"]`.
 
-**Both registrations hold.** `tests/e2e.rs` declares 108 corpora and 108
+**Both registrations hold.** `crates/crozier-e2e/tests/e2e.rs` declares 108 corpora and 108
 `unmatched: &[]`, with no non-empty exclusion list anywhere in the file, and
 `just test-corpus-match`'s `eozilla_matches_fern_output` and
 `openepcis_dpp_ready_matches_fern_output` lines both pass. That recipe sets
@@ -3283,7 +3283,7 @@ falsified it:
   arrays every one has a single non-null member."* Re-running that census at 124
   documents returns **2 occurrences in 1 document**, `openepcis-dpp-ready` — which
   is the row's own registered primary, and matches the 2 its candidate table
-  declares. Scoped, and the registration named. (`tests/e2e.rs` already worded this
+  declares. Scoped, and the registration named. (`crates/crozier-e2e/tests/e2e.rs` already worded this
   correctly as *"before this row"*.)
 - The servers-and-XML family's forward-looking note said the six links-and-encoding
   rows *"are still `unmeasured` until one is."* They were measured, in this same
@@ -3309,7 +3309,7 @@ document anywhere declares one, so no corpus row can ever pin them and nothing
 had measured what Fern does with them either. Round 5 measures all seven, on
 2026-09-05, under the pins this file already declares — Fern CLI `5.67.1`,
 generator `fernapi/fern-python-sdk:5.20.0`, `CI=true`/`GITHUB_ACTIONS=true` —
-against a workspace scaffolded exactly as `scripts/generate-fern-fixture.sh`
+against a workspace scaffolded exactly as `tools/fern-goldens/generate-fern-fixture.sh`
 builds one, with the workspace itself under `mktemp -d` so Fern's `.fern/`
 provenance carries no `originGitCommit`.
 
@@ -3341,7 +3341,7 @@ replacement for a golden.
 generated by crozier from the *same* document and compared file by file under the
 gate's own normalization — comments stripped from both sides, SDK-identity
 headers normalized, `__init__.py` import order canonicalized with `ruff` isort,
-`.fern/metadata.json`'s `generatorConfig` dropped, exactly as `tests/e2e.rs`
+`.fern/metadata.json`'s `generatorConfig` dropped, exactly as `crates/crozier-e2e/tests/e2e.rs`
 compares a corpus golden. That comparison is corroborating evidence beside each
 verdict. It moves no row's category — a probe produces no parity evidence the
 coverage index counts, and every row Round 5 settles is `limitations` on its
@@ -3561,7 +3561,7 @@ spellings, one operation each, all `fern check` 0 and `fern generate` 0:
 The alias was declared before and after its target and with the target
 referenced elsewhere as well, and none of that moved the answer either. So the
 pass is confined to alias targets `src/refs.rs` reports as remotely declared, and
-is `normalize_fetched_response_alias_refs` now. `tests/e2e.rs`'s
+is `normalize_fetched_response_alias_refs` now. `crates/crozier-e2e/tests/e2e.rs`'s
 `a_pure_ref_component_names_the_response_it_types` drives the real binary over a
 local-alias document and holds the response to the alias name;
 `src/openapi.rs` holds the load-time model to both halves —
@@ -3600,7 +3600,7 @@ blank.
 **The pins each measurement runs under** are the ones this file already declares —
 Fern CLI `5.67.1`, generator `fernapi/fern-python-sdk:5.20.0`,
 `CI=true`/`GITHUB_ACTIONS=true` — against a workspace scaffolded exactly as
-`scripts/generate-fern-fixture.sh` builds one, with the workspace itself under
+`tools/fern-goldens/generate-fern-fixture.sh` builds one, with the workspace itself under
 `mktemp -d` so Fern's `.fern/` provenance carries no `originGitCommit`. A
 measurement recorded under a different pin says so in its own subsection.
 
@@ -3719,7 +3719,7 @@ with the referenced Parameter Object's own name and type. Verdict: **discards**.
 generated by crozier and compared file by file under the gate's own normalization
 (`crozier internal-strip` on both sides, SDK-identity headers normalized,
 `__init__.py` import order canonicalized with `ruff` isort, `.fern/metadata.json`'s
-`generatorConfig` dropped), which is what `tests/e2e.rs` does to a corpus golden.
+`generatorConfig` dropped), which is what `crates/crozier-e2e/tests/e2e.rs` does to a corpus golden.
 Eleven byte-matched on first run. The twelfth,
 `parameter-style-simple-path-object`, diverged in four files and is repaired
 below. That comparison moves no row's category: a probe produces no parity
@@ -3760,7 +3760,7 @@ case; and a required field that is itself a generated model costs the endpoint i
 `client.probe(...)` in `reference.md`, with the README anchoring its usage snippet
 on a different operation instead. `src/emit.rs`'s `path_field_render` states that
 rule once, and `path_object_documented` is what the README's endpoint selection
-and the `reference.md` snippet gap read. `tests/e2e.rs`'s
+and the `reference.md` snippet gap read. `crates/crozier-e2e/tests/e2e.rs`'s
 `an_object_typed_path_parameter_is_converted_into_the_url_and_documented_by_its_type`
 and `a_path_parameter_object_with_a_model_field_documents_no_example_at_all` drive
 the real binary over both halves. With the repair in place all twelve documents
@@ -3941,7 +3941,7 @@ probes and the two controls — was generated by crozier from the *same* documen
 and compared file by file under the gate's own normalization: comments stripped
 from both sides, SDK-identity headers normalized, `__init__.py` import order
 canonicalized with `ruff` isort, `.fern/metadata.json`'s `generatorConfig`
-dropped, exactly as `tests/e2e.rs` compares a corpus golden. **crozier
+dropped, exactly as `crates/crozier-e2e/tests/e2e.rs` compares a corpus golden. **crozier
 byte-matches Fern on every file of all fourteen** — 39 files each for the eleven
 single-model documents and 40 each for the three `dollar-anchor*` ones, with no
 file missing from either side. **This round found no divergence and made no
@@ -4115,7 +4115,7 @@ behind too, printing `Failed to resolve` out of `resolveSecuritySchemeReference`
 and parsing nothing. A reference naming another reference, or naming itself, is
 left alone for the same reason.
 
-`tests/e2e.rs`'s `a_security_scheme_reference_emits_the_credential_it_names`
+`crates/crozier-e2e/tests/e2e.rs`'s `a_security_scheme_reference_emits_the_credential_it_names`
 drives the real binary over a document holding the reference beside its target and
 holds the client to both credentials; `src/openapi.rs` holds the load-time model to
 both halves — `an_in_document_security_scheme_ref_resolves_to_the_scheme_it_names`
@@ -4318,7 +4318,7 @@ and then `fern generate --local --preview` on each, in a workspace built under
 `mktemp -d` the way [`probes/AGENTS.md`](openapi-surface/probes/AGENTS.md#re-running-one)
 prescribes. crozier's reach was measured with the instrumented build of commit
 `63c6be58754e`, the build `just handwritten-reach` uses, with one run per
-document scoped the way `scripts/handwritten-fixtures.py measure` scopes a
+document scoped the way `tools/surface-census/handwritten-fixtures.py measure` scopes a
 fixture. On every minimal document that run executes the arm (1 of its 1
 region). On every control it executes none of it.
 

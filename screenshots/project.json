@@ -1,0 +1,118 @@
+{
+  "name": "screenshots",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "metadata": {
+    "description": "llmlint: ignore-file[new_projects_keep_the_graph_uniform] The screenshots project's capture and demo-gif generation needs `freeze` and the screencomp toolchain, which the check, sdk-env and live-e2e legs do not carry; a `build` target would pull that generation into every `--sweep` build fan-out; and its drift is gated separately by the visual-docs PR check."
+  },
+  "targets": {
+    "capture": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash scripts/screenshots.sh"
+      },
+      "cache": false,
+      "inputs": [
+        "default"
+      ]
+    },
+    "demo-gif": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cargo build --release --locked --bin crozier",
+          "python3 screenshots/demo-gif.py"
+        ],
+        "parallel": false
+      },
+      "cache": false,
+      "inputs": [
+        "default"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= screenshots/tests/demo_gif_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/screenshots/test/.coverage"
+        }
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "pythonTooling"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/screenshots/test"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs screenshots"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check screenshots"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format screenshots"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check screenshots"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check screenshots"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    }
+  }
+}

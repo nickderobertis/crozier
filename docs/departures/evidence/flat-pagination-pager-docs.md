@@ -17,7 +17,7 @@ and for a root contract taken through `x-fern-pagination: true` in
 ## Fern's output
 
 Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, run token-less in the
-workspace `scripts/generate-fern-fixture.sh --layout flat` scaffolds
+workspace `tools/fern-goldens/generate-fern-fixture.sh --layout flat` scaffolds
 (`organization: fern`, `pydantic_config.enum_type: python_enums`, `fern
 generate --group python-sdk --local`), exits 0; the comment-stripped tree is
 [`ledger-records-offset-flat/fern-expected`](../../fern-measurements/clients-extensions/ledger-records-offset-flat/fern-expected).

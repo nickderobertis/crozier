@@ -1,0 +1,151 @@
+{
+  "name": "census-fallback",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:python"
+  ],
+  "targets": {
+    "test-samples": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/census_fallback/run.sh samples"
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/golden-reach-search.py",
+        "{workspaceRoot}/tools/surface-census/golden-reach.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/fixtures-coverage-report.py",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "witnessIndexReads",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/tools/surface-census/tests/data/**/*"
+      ]
+    },
+    "test-parsers": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/census_fallback/run.sh parsers"
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/golden-reach-search.py",
+        "{workspaceRoot}/tools/surface-census/golden-reach.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/fixtures-coverage-report.py",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "witnessIndexReads",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/tools/surface-census/tests/golden_reach_test.py",
+        "{workspaceRoot}/tools/surface-census/tests/without-posix-modules/**/*",
+        "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
+        "{workspaceRoot}/tools/witness-search/witness-scrape-wide.py",
+        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/witness-search/witness-search-recensus.py",
+        "{workspaceRoot}/tools/witness-search/tests/witness_search_recensus_test.py",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md"
+      ]
+    },
+    "test-runner": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/census_fallback/run_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
+    "test-install": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] census-fallback is the promoted uv tier: its samples and parsers stages install their parser pin through uv, and this journey runs that same uv offline (UV_OFFLINE, no cache) to prove an install failure names the suite and the pin; only test-runner, with its stand-in uv, needs no host tool."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/census_fallback/run_install_test.py"
+      },
+      "cache": false,
+      "inputs": [
+        "default"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-samples",
+        "test-parsers",
+        "test-runner",
+        "test-install"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs census-fallback"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tests/census_fallback"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tests/census_fallback"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tests/census_fallback"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tests/census_fallback"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    }
+  }
+}

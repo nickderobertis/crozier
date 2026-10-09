@@ -1,0 +1,131 @@
+{
+  "name": "corpus-fetch",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test-sources": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/corpus-fetch/tests/corpus_sources_fetch_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/corpus-fetch/test-sources/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
+        "{workspaceRoot}/tools/corpus/tests/corpus_sources_test.py",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv",
+        "{workspaceRoot}/tests/fixtures/CORPUS.md",
+        "{workspaceRoot}/tests/fixtures/corpus-sources.tsv",
+        "{workspaceRoot}/tests/fixtures/corpus-remote-ref-pins.tsv",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/corpus-fetch/test-sources"
+      ]
+    },
+    "test-remote-ref-pins": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/corpus-fetch/tests/corpus_remote_ref_pins_fetch_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/corpus-fetch/test-remote-ref-pins/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
+        "{workspaceRoot}/tools/corpus/tests/corpus_sources_test.py",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv",
+        "{workspaceRoot}/tests/fixtures/CORPUS.md",
+        "{workspaceRoot}/tests/fixtures/corpus-sources.tsv",
+        "{workspaceRoot}/tests/fixtures/corpus-remote-ref-pins.tsv",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/corpus-fetch/test-remote-ref-pins"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-sources",
+        "test-remote-ref-pins"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs corpus-fetch"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/corpus-fetch"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/corpus-fetch"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/corpus-fetch"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/corpus-fetch"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{workspaceRoot}/tools/corpus/*.py",
+        "{workspaceRoot}/tools/corpus/tests/*.py",
+        "pythonTooling"
+      ]
+    }
+  }
+}

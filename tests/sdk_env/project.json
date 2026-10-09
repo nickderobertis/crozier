@@ -1,0 +1,47 @@
+{
+  "name": "sdk-env",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:rust"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo nextest run --locked -p crozier-e2e --run-ignored only -E \"test(/^sdk_env_/) and not test(=sdk_env_crozier_matches_fern_runtime_behavior)\""
+      },
+      "cache": false,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "goldenReads",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/tests/runtime/**/*",
+        "generator",
+        "default"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs sdk-env"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

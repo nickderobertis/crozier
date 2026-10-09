@@ -29,7 +29,7 @@ The full logs are losslessly gzip-compressed to retain Fern’s original whitesp
 
 ## Fresh reference-generator runs
 
-Both invocations used an unchanged copy of Route A’s `scripts/generate-fern-fixture.sh` and its shared `fern-generator-config.txt` in dispatch scratch. No fixture-specific row applies. The generator pin `5.20.0` was read from `tests/fixtures/eos.local/expected/.crozier-fern-golden.json`; the script selected CLI `5.67.1` and wrote its standard `python_enums` configuration. `TMPDIR` was dispatch scratch. No hosted dispatch ran. The existing real Crozier binary from discovery scratch supplied the script prerequisite; rejection occurred before comment stripping or Crozier execution.
+Both invocations used an unchanged copy of Route A’s `tools/fern-goldens/generate-fern-fixture.sh` and its shared `fern-generator-config.txt` in dispatch scratch. No fixture-specific row applies. The generator pin `5.20.0` was read from `tests/fixtures/eos.local/expected/.crozier-fern-golden.json`; the script selected CLI `5.67.1` and wrote its standard `python_enums` configuration. `TMPDIR` was dispatch scratch. No hosted dispatch ran. The existing real Crozier binary from discovery scratch supplied the script prerequisite; rejection occurred before comment stripping or Crozier execution.
 
 Generation script SHA-256: `1876e45217a9139f2ef2719f16ab7989d766933f51f7909cbf7811470e1db3e9`. Shared config SHA-256: `044c4ae3bad8ce50b5438d107566bb836628063bd5349cf61c77e2706d57ad94`.
 

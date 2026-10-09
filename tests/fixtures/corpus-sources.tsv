@@ -1,5 +1,5 @@
 # The committed source document of every registered corpus row, one record per
-# file. `scripts/corpus_sources.py` is the validator (`check`, offline) and the
+# file. `tools/corpus/corpus_sources.py` is the validator (`check`, offline) and the
 # only writer (`vendor`, which fetches); see its docstring.
 #
 # corpus_name	path	source_url	sha256

@@ -60,8 +60,11 @@ jobs:
             echo "pypi=false" >> "$GITHUB_OUTPUT"
           fi
 
-  # Gate the release on a passing run of the same full gate CI enforces, so a tag
-  # can never publish an artifact that would not pass `just check`.
+  # Gate the release on a passing run of the gate's full sweep (`check --sweep`),
+  # so a tag can never publish an artifact that would not pass it. It sweeps every
+  # project this runner holds the toolchain for — everything the check matrix
+  # gates; the promoted tiers (PyPI, Prism, uv) are swept on the release pull
+  # request's own sdk-env and live-e2e legs.
   # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit, release_does_not_regate_an_already_swept_commit] A Release is not tied to a commit ci.yml swept: the header names a Release cut by hand in the GitHub UI as the supported fallback, and it can tag any commit. This job is the only gate such a tag passes before publishing to crates.io and PyPI, which cannot be taken back.
   test:
     runs-on: ubuntu-latest
@@ -69,14 +72,22 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install just
         uses: extractions/setup-just@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+      - uses: astral-sh/setup-uv@v8.3.2
       - name: Bootstrap
         run: just bootstrap
       - name: Check
-        run: just check
+        # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit, release_does_not_regate_an_already_swept_commit] The standing exception the job's own directive records: a Release cut by hand in the GitHub UI can tag any commit, release-PR or not, and this sweep is the only gate such a tag passes before an irreversible crates.io/PyPI publish.
+        run: just check --sweep --exclude=tag:tier:promoted
 
   upload:
     name: upload (${{ matrix.target }})
@@ -432,7 +443,7 @@ jobs:
   # decision itself — derive the major, skip pre-releases (by the Release's
   # `prerelease` flag as well as by the tag's spelling) and older releases — is
   # scripts/update-major-tag.sh's, driven over real repositories, through this
-  # step's own `run:` and `env:`, by tests/e2e/major_tag.rs. The exact `vX.Y.Z`
+  # step's own `run:` and `env:`, by crates/crozier-e2e/tests/e2e/major_tag.rs. The exact `vX.Y.Z`
   # tag stays as release-plz cut it.
   major-tag:
     needs:

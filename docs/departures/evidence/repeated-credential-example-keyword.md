@@ -27,7 +27,7 @@ headers, both named `token` by `x-fern-header`, and Fern's examples pass
 ## Fern's output
 
 Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
-`scripts/generate-fern-fixture.sh` scaffolds (`organization: fern`,
+`tools/fern-goldens/generate-fern-fixture.sh` scaffolds (`organization: fern`,
 `pydantic_config.enum_type: python_enums`, `fern generate --group python-sdk
 --local --preview`), exits 0 on both; each comment-stripped tree is the
 document's `fern-expected/`.

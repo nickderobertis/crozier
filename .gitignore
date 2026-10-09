@@ -17,7 +17,7 @@ llmlint.buildout.yml
 # when run without LLVM_PROFILE_FILE (the coverage recipes always set it)
 *.profraw
 
-# Machine-local scratch: a deliberate re-fetch by scripts/fetch-corpus.sh (golden
+# Machine-local scratch: a deliberate re-fetch by tools/corpus/fetch-corpus.sh (golden
 # rebuilds and source audits only — the committed copies under
 # tests/fixtures/corpus-sources/ are what every gate reads) and measurement output.
 /.local
@@ -37,3 +37,14 @@ llmlint.buildout.yml
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# The Nx orchestrator's install, its computation cache and the gate's logs.
+# `just bootstrap` re-creates node_modules from the committed bun.lock.
+/node_modules
+/.nx
+
+# The Python tooling workspace's venv (`uv sync`) and the coverage data its
+# `test` targets write and `python-workspace:coverage` combines.
+/.venv
+/.coverage-data
+/.ruff_cache

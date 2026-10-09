@@ -7,13 +7,13 @@ the evidence row 224 was withdrawn on ([`codat-assess.md`](codat-assess.md)): an
 aggregation's grant without a publisher grant does not pass the licence screen
 of [`../../corpus-licensing.md`](../../corpus-licensing.md). The search below
 found no grant from Vonage, so the row is withdrawn (`tests/fixtures/CORPUS.md`,
-*Row 223 withdrawn*). Its committed source, golden, `tests/e2e.rs` corpus and
+*Row 223 withdrawn*). Its committed source, golden, `crates/crozier-e2e/tests/e2e.rs` corpus and
 test, and `just test-corpus-match` line are removed.
 
 ## The publisher-grant search
 
 Searched on 2026-10-02. GitHub was read only through
-`scripts/rate_limit_guard.py` (REST `core`, `search` and `code_search` buckets,
+`tools/witness-search/rate_limit_guard.py` (REST `core`, `search` and `code_search` buckets,
 never GraphQL). Postman and SwaggerHub were not consulted.
 
 | step | what was read | result |

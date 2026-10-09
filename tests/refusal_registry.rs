@@ -1,6 +1,6 @@
 //! In-process sweep of the Fern refusal registry (`docs/fern-refusals/`). The
 //! binary e2e (`fern_refusal_classes_hold` and the per-class journeys in
-//! `tests/e2e.rs`) proves the CLI contract; this drives the same committed
+//! `crates/crozier-e2e/tests/e2e.rs`) proves the CLI contract; this drives the same committed
 //! documents through the library so the refusal detectors are measured by the
 //! fast tier's coverage, and holds the contract every one of them shares:
 //!

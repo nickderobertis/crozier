@@ -7,7 +7,7 @@
 Over the committed `alma-france` corpus document, with the corpus's settings:
 
 ```text
-$ spec=$(python3 scripts/corpus_sources.py prepare --fixture alma-france --output /tmp/alma-src)
+$ spec=$(python3 tools/corpus/corpus_sources.py prepare --fixture alma-france --output /tmp/alma-src)
 $ crozier generate --spec "$spec" --output /tmp/alma --package-name fern --project-name default_package_name
 $ diff tests/fixtures/alma-france/expected/src/fern/core/client_wrapper.py /tmp/alma/src/fern/core/client_wrapper.py
 1c1

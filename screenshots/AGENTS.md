@@ -4,8 +4,11 @@ The README's "See it in action" images are **real captures of the `crozier`
 CLI**, gated by [screencomp](https://github.com/nickderobertis/screencomp) so a
 change to what a command prints can't land without the committed image changing
 with it. This folder holds the inputs; the mechanics live in
-[`scripts/screenshots.sh`](../scripts/screenshots.sh) (static SVGs) and
-[`scripts/demo-gif.py`](../scripts/demo-gif.py) (the animated hero).
+[`scripts/screenshots.sh`](../scripts/screenshots.sh) (static SVGs; it stays in
+`scripts/` because the pre-push guard and the Visual-docs workflow run it by that
+path) and [`demo-gif.py`](demo-gif.py) (the animated hero). `capture` and
+`demo-gif` build crozier but run outside both gate tiers: screencomp owns the
+comparison.
 
 ## What's here
 
@@ -60,3 +63,12 @@ guard (enabled by `just bootstrap`) re-captures automatically when a
 `[guard].paths` file changed and stops the push on un-blessed drift; CI's
 `.github/workflows/visual-docs.yml` is the authoritative gate and also posts a
 before/after gallery comment on the PR.
+
+## Python checks
+
+`demo-gif.py` is Python tooling like `tools/`'s: a uv workspace member (Pillow is
+its locked dependency, so every leg's `just bootstrap` provides it) with
+`format`, `lint`, `typecheck` and a pytest `test` whose coverage counts toward
+the combined floor. That is why the project is `type:tooling` and runs in the
+check matrix rather than a promoted leg; `capture` and `demo-gif` are not gate
+targets, and screencomp and the visual-docs check still own the images.

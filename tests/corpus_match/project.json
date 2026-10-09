@@ -1,0 +1,157 @@
+{
+  "name": "corpus-match",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:rust"
+  ],
+  "targets": {
+    "test-match": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/corpus_match/match.sh"
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "goldenReads",
+        "generator",
+        "default",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/tools/surface-census/*.py",
+        "witnessIndexReads"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "test-strict": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tests/corpus_match/match.sh --strict"
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "goldenReads",
+        "generator",
+        "default",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/tools/surface-census/*.py",
+        "witnessIndexReads"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "test-offline": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "python3 tests/corpus_match/corpus_offline_test.py",
+          "python3 tests/corpus_match/corpus_offline_recovery_test.py",
+          "python3 tests/corpus_match/match_usage_test.py"
+        ],
+        "parallel": false
+      },
+      "cache": false,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "goldenReads",
+        "generator",
+        "default",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/tests/census_fallback/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
+        "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/fern-refusals/**/*",
+        "witnessIndexReads",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py"
+      ],
+      "parallelism": false
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-match",
+        "test-strict",
+        "test-offline"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs corpus-match"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tests/corpus_match"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tests/corpus_match"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tests/corpus_match"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tests/corpus_match"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    }
+  }
+}

@@ -26,7 +26,7 @@ through a segment no schema is named by (Codat's
 ## Replacement search
 
 Searched on 2026-09-30 in the order the task set. GitHub was read only through
-`scripts/rate_limit_guard.py` (REST `core` and `search` buckets, never GraphQL);
+`tools/witness-search/rate_limit_guard.py` (REST `core` and `search` buckets, never GraphQL);
 Postman and SwaggerHub were not consulted.
 
 | key | arm | step | what was read | result | outcome |
@@ -106,7 +106,7 @@ documents in `github-publisher-trees` and `vendor-portals` are not candidates.
 
 ## Selectors no other golden-bearing source declares
 
-The census over row 224's bytes (`scripts/openapi-surface-census.py`'s
+The census over row 224's bytes (`tools/surface-census/openapi-surface-census.py`'s
 `census_document`, 128 selectors) against the census of the 236 registered
 sources that remain (`just golden-reach`'s `.local/golden-reach/census.json`, on
 2026-10-01) finds seven selectors no other golden-bearing source declares. Six

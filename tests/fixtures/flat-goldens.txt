@@ -1,8 +1,8 @@
 # The fixtures carrying a flat Fern golden (`expected-flat/`): Fern's output for a
 # `local-file-system` output path, which crozier reproduces with `layout: flat`.
-# Read by scripts/generate-fern-fixture.sh (`--layout flat` refuses an undeclared
-# fixture), scripts/fern-goldens (refreshes the flat golden of every listed
-# CORPUS.md row beside its packaged one) and tests/e2e.rs (`FLAT_GOLDENS` must
+# Read by tools/fern-goldens/generate-fern-fixture.sh (`--layout flat` refuses an undeclared
+# fixture), tools/fern-goldens/fern-goldens (refreshes the flat golden of every listed
+# CORPUS.md row beside its packaged one) and crates/crozier-e2e/tests/e2e.rs (`FLAT_GOLDENS` must
 # list exactly these). A flat golden takes its fixture's settings from
 # fern-generator-config.txt.
 #

@@ -77,15 +77,34 @@ and surfacing the rest as follow-ups:
 ## Stack and composition
 
 - **Product shape:** cli
-- **Language(s):** rust
-- **References composed:** base, shapes/cli, languages/rust, intersections/rust-cli, ci, llmlint, releasing
+- **Language(s):** rust, bash (`scripts/*.sh` and the projects' shell scripts),
+  python (the repository tooling under `tools/` and `screenshots/`, and the
+  promoted tiers' harnesses: one uv workspace —
+  [`docs/python-tooling.md`](docs/python-tooling.md))
+- **References composed:** base, shapes/cli, languages/rust, languages/bash, languages/python, intersections/rust-cli, ci, project-graph, llmlint, releasing
 - **Excluded, and why:**
+  - **Virtual root manifest** — the root `Cargo.toml` stays the `crozier`
+    package and also declares the workspace; why, and why its Nx project is
+    rooted at `src/`: [`src/AGENTS.md`](src/AGENTS.md).
   - **MSRV pin / `just msrv`** — no MSRV is promised yet (pre-1.0, single
     maintainer); `rust-toolchain.toml` pins one stable channel and CI installs
     from it. Add an MSRV when external consumers appear.
   - **Bench tier** — performance is a goal, but the informational Criterion/
     hyperfine tier is deferred until there's a hot path worth tracking; it never
     gates, so its absence costs no correctness.
+  - **Departures from `languages/python.md`'s defaults:**
+    - Source valid on 3.11 (ruff `target-version`, ty `python-version`) though
+      the venv runs 3.14: recipes, promoted tiers and PEP 723 stages also run the
+      scripts under the host's `python3`, and the workspace `requires-python`
+      steers the interpreter `uv venv` picks for the e2e suite's SDK envs.
+    - The tooling ruff is pinned to `.ruff-version`: `uv run` puts the venv's
+      ruff first on PATH, where crozier's generation shells out to it.
+    - No Pydantic boundary models or async clients: the census and witness
+      scripts stay stdlib-only so they run installless and no parser's version
+      moves their measurements; their explicit checks are the validation.
+    - The promoted tiers' harnesses get format, lint and typecheck only; their
+      suites need Prism, PyPI or a release build, so they keep their runners and
+      stay out of the coverage floor.
 
 ## Command surface
 
@@ -96,18 +115,16 @@ Use the `just` recipes; do not hand-roll equivalents.
   `target/` (never shared across worktrees) and `profile.dev.debug = 1`. It
   configures no `sccache`; a compile cache is a user-level `~/.cargo/config.toml`
   `[build] rustc-wrapper`, which cargo merges with this one.
-- `just check` — the full gate (the recipe's own dependency list is the step
-  list). Must pass before any commit/PR.
+- `just check` — the gate (`--sweep` for the broader tier). Must pass before any
+  commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
-- `just test-live-e2e` — live runtime e2e: boot a Prism OpenAPI mock server per
-  fixture and drive the generated SDK through every documented endpoint, asserting
-  typed responses come back. Spec-driven; separate from `check` (keeps the gate
-  Node-free) but a required CI leg. Needs Node/Prism + uv. See
-  [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
-- `just test-sdk-env` — the e2e journeys (`sdk_env_*`, `#[ignore]`d out of
-  `check`) that build a generated SDK's venv from PyPI and run mypy/pytest in it:
-  the runtime wire suite and the fern-refusals gate's `wire_test.py` among them.
-  Separate from the offline `check`; CI's `sdk-env` matrix job runs it, gated.
+- A target's `inputs` are both its cache key and its affected trigger: code that
+  starts reading a new path adds it there, or a change to that path never reruns
+  it. Where an edge may go is `nx.json`'s `boundaries`, enforced by every
+  project's `lint`.
+- `just test-live-e2e` / `just test-sdk-env` — the generated SDK driven against
+  a Prism mock / inside its own PyPI venv. Promoted out of the affected tier; each
+  is a required CI leg. See [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
 - `just test-corpus-match` — byte-compare every registered corpus against Fern
   using committed sources. `just test-corpus-offline` proves it, its strict form,
   the census, the refusal-class gate and the census-fallback samples with sockets
@@ -177,11 +194,19 @@ Use the `just` recipes; do not hand-roll equivalents.
   `gh-secrets sync` — the manifest is `gh-secrets.json`.
 - **PRs follow `.github/pull_request_template.md`** (What / Why); it becomes the
   squash body.
+- **Where each tier runs.** Releases are batched — the release-plz pull request
+  accumulates merges until a person merges it — so pull requests and pushes to
+  main run the affected tier (`just ci-check`, against the merge base or the
+  commit the push replaced) and the broader tier runs at release-prep, on the
+  release-plz pull request (`release-plz-*`), split across the `check`,
+  `sdk-env` and `live-e2e` legs by toolchain. `release.yml` sweeps again before
+  publishing — a standing exception: a hand-cut Release can tag any commit. No
+  measured affected-tier threshold is recorded yet.
 - **Releases:** `release-plz` opens a release PR from merged Conventional Commits;
   merging it bumps the version, writes `CHANGELOG.md`, pushes the `vX.Y.Z` tag,
   and cuts the GitHub Release (under `RELEASE_PLZ_TOKEN`, a PAT — a tag from the
   default `GITHUB_TOKEN` would not fire `release.yml`). That Release's
-  `published` event drives `release.yml`, which re-gates on `just check` then, in
+  `published` event drives `release.yml`, which re-gates on `just check --sweep` then, in
   parallel: builds/attests/uploads the per-platform archives (+ `.sha256` +
   `.sigstore.json`), publishes the crate to **crates.io**, and builds +
   publishes the **PyPI** wheels + sdist. Fully automated — the only human action
@@ -251,7 +276,7 @@ Use the `just` recipes; do not hand-roll equivalents.
   failure fingerprint and has no golden until Fern can generate one.
 - A corpus document naming another document by absolute URL is reproducible only
   if that URL is immutable, so `tests/fixtures/corpus-remote-ref-pins.tsv` records
-  the substitution and `scripts/fetch-corpus.sh` applies it before publishing the
+  the substitution and `tools/corpus/fetch-corpus.sh` applies it before publishing the
   fetch — the row's inputs are upstream's bytes plus that one record. The fetch
   refuses ANY row whose document would carry a mutable absolute `$ref`, so a new
   row referencing one fails rather than inheriting the liability. Moving a pin:
@@ -268,10 +293,27 @@ The suite is the only QA loop. E2E runs the real binary and byte-compares its
 (comment-stripped) output to the committed fixtures — never mock the generator or
 the filesystem it writes. Done means complete, not minimal: cover malformed-spec
 failure and missing-file recovery, not just the happy path. Coverage is a floor
-(95%), not the target. `tests/e2e.rs` is the source of truth for measured
+(95%), not the target. `crates/crozier-e2e/tests/e2e.rs` is the source of truth for measured
 divergence — every corpus's `unmatched` list is empty, so a non-empty one means
 work in flight, never an accepted state; [`docs/matching.md`](docs/matching.md)
 holds the judgment about why.
+
+<!-- llmlint: ignore-block[agents_md_durable_and_terse] The per-project figures and the two structural 0% files are the measurement the lowered floor rests on; the create-repo Python reference lets a floor sit below 95% only with that reason recorded in AGENTS.md itself, and the manager's ruling for this floor required them here. -->
+**The Python tooling's floor is 88%, lower than the crate's 95% — a floor to
+ratchet up, not a target** (`python-workspace:coverage`, combined over every
+tooling project's suite; test files are the only exclusion). It rests on the
+2026-10-08 measurement of 88.61% (12428/14026 lines, 34 files): screenshots
+97.10, corpus 93.23, corpus-licensing 100, fern-goldens 83.86, fern-refusals
+95.40, llmlint-tooling 93.16, python-workspace 95.89, surface-census 88.79,
+witness-search 86.16. Two files are 0% here by structure, 529 lines between them:
+`witness-search-recensus.py`, whose suite needs the census-fallback tier's
+ruamel.yaml pin (kept out of the workspace venv because the golden-reach suites
+assert its absence), and `probe-differential-isolation.py`, which only the Rust
+e2e harness drives. It holds on the Linux and macOS check legs and the sweep; the
+Windows leg runs every suite without the floor, because the suites skip their
+POSIX-only cases there. Raise it as those lines get reached; never lower it
+without a new measurement here.
+<!-- llmlint: ignore-end[agents_md_durable_and_terse] -->
 
 ## Keeping the allowlist current
 

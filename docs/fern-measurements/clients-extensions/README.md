@@ -4,10 +4,10 @@ Each directory here is a tree Fern generated at Fern CLI 5.67.1 with
 `fernapi/fern-python-sdk` 5.20.0 under a setting other than the one its
 document's own gate uses, comment-stripped by `crozier internal-strip`. The
 trees are Fern's output as measured; nothing in them was edited. The workspace
-is the one `scripts/generate-fern-fixture.sh` scaffolds (Route A of
+is the one `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (Route A of
 [`../../fern-goldens.md`](../../fern-goldens.md)), built outside any checkout.
 `clients_extensions_measurements_match_fern` in
-[`../../../tests/e2e.rs`](../../../tests/e2e.rs) generates each case's document
+[`crates/crozier-e2e/tests/e2e.rs`](../../../crates/crozier-e2e/tests/e2e.rs) generates each case's document
 with crozier under the same setting and holds the whole tree to
 `fern-expected/` under the corpus gate's normalization.
 

@@ -29,7 +29,7 @@ ledgers beneath them. That search read both complete document corpora whole — 
 `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743`, beside five further sources — and is
 the authoritative one, so **no fresh world search was run here**.
 
-The scope is derived rather than asserted. `scripts/licence-rescreening-check.py`
+The scope is derived rather than asserted. `tools/corpus/licence-rescreening-check.py`
 walks those tables and takes:
 
 * every **candidate ledger row** whose licence cell or verdict cell names a
@@ -63,14 +63,14 @@ fern check
 fern generate --group python-sdk --preview
 ```
 
-That is the workspace [`../scripts/generate-fern-fixture.sh`](../scripts/generate-fern-fixture.sh)
+That is the workspace [`../tools/fern-goldens/generate-fern-fixture.sh`](../tools/fern-goldens/generate-fern-fixture.sh)
 builds, at the Fern CLI and generator versions the region files' searches record —
 CLI **5.114.1**, `fernapi/fern-python-sdk` **5.20.0**, the version
 `tests/fixtures/eos.local/expected/.crozier-fern-golden.json` pins. Every exit
 status and diagnostic below is that run's own output on this host, quoted rather
 than paraphrased, beside the byte count and MD5 of exactly what the fetch
 returned. Declaration counts are re-measured out of those bytes with
-`scripts/openapi-surface-census.py`'s own object model, not inherited.
+`tools/surface-census/openapi-surface-census.py`'s own object model, not inherited.
 
 Three references the world does not make immutable are screened all the same and
 say so: a SwaggerHub version string is republishable in place, and Short.io
@@ -82,7 +82,7 @@ path at CLI 5.114.1, and a preview-path exit 0 is not an acceptance.** Two thing
 separate the two, and both have bitten this corpus:
 
 * **A Fern verdict is CLI-version-bound.** The corpus generates at the CLI
-  [`../scripts/generate-fern-fixture.sh`](../scripts/generate-fern-fixture.sh)
+  [`../tools/fern-goldens/generate-fern-fixture.sh`](../tools/fern-goldens/generate-fern-fixture.sh)
   pins — `FERN_CLI_VERSION` **5.67.1**, the version every committed golden's
   `.fern/metadata.json` records — and a document this record admits can still be
   refused there. Eclipse Ditto is that case.

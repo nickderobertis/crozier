@@ -1,0 +1,1172 @@
+#!/usr/bin/env python3
+"""Refresh, compare, and safely publish Fern corpus goldens."""
+
+from __future__ import annotations
+
+import argparse
+import ast
+import contextlib
+import gzip
+import importlib.util
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
+from dataclasses import dataclass
+from pathlib import Path
+from typing import IO
+from urllib.parse import urlsplit
+
+GENERATOR = "fernapi/fern-python-sdk"
+TAGS_URL = "https://hub.docker.com/v2/repositories/fernapi/fern-python-sdk/tags?page_size=100&ordering=name"
+STATE_FILE = ".crozier-fern-golden.json"
+KNOWN_FAILURE_FILE = "known-fern-failure.json"
+FIXTURE_ALIASES_FILE = "corpus-aliases.tsv"
+FLAT_GOLDENS_FILE = "flat-goldens.txt"
+PACKAGED = "packaged"
+FLAT = "flat"
+GOLDEN_DIRS = {PACKAGED: "expected", FLAT: "expected-flat"}
+"""Each layout's golden directory under `tests/fixtures/<fixture>/`."""
+VERSION_RE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?")
+FIXTURE_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+
+
+class GoldensError(RuntimeError):
+    """An actionable command-boundary error."""
+
+
+@dataclass(frozen=True)
+class CorpusRow:
+    number: int
+    name: str
+    fixture: str
+    url: str
+    ref: str
+    decision: str
+
+
+@dataclass(frozen=True)
+class KnownFailure:
+    path: Path
+    exit_code: int
+    fingerprint: dict[str, object]
+    generator_version: str
+
+
+def repo_root() -> Path:
+    override = os.environ.get("CROZIER_FERN_GOLDENS_ROOT")
+    root = Path(override) if override else Path(__file__).resolve().parents[2]
+    root = root.resolve()
+    if not root.is_dir():
+        raise GoldensError(f"repository root is not a directory: {root}")
+    return root
+
+
+def report_root(root: Path) -> Path:
+    return root / ".local" / "fern-goldens"
+
+
+def validate_fixture(value: str) -> str:
+    if not FIXTURE_RE.fullmatch(value) or value.startswith((".", "-")) or ".." in value:
+        raise GoldensError(
+            f"invalid fixture name {value!r}; expected one safe path segment matching [A-Za-z0-9][A-Za-z0-9._-]*"
+        )
+    return value
+
+
+def validate_version(value: str) -> str:
+    if not VERSION_RE.fullmatch(value):
+        raise GoldensError(f"invalid Fern version {value!r}; expected an exact semantic version such as 5.20.0")
+    return value
+
+
+def validate_url(value: str) -> str:
+    if any(ord(char) < 33 or char in {'"', "'", "\\"} for char in value):
+        raise GoldensError(f"invalid corpus spec URL {value!r}")
+    parsed = urlsplit(value)
+    if (
+        parsed.scheme != "https"
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.fragment
+    ):
+        raise GoldensError(f"invalid corpus spec URL {value!r}; expected credential-free https URL without a fragment")
+    suffix = Path(parsed.path).suffix.lower()
+    if suffix not in {".json", ".yaml", ".yml"}:
+        raise GoldensError(f"invalid corpus spec URL {value!r}; path must end in .json, .yaml, or .yml")
+    return value
+
+
+def unquote_cell(value: str, label: str, line_number: int) -> str:
+    value = value.strip()
+    if len(value) < 2 or not value.startswith("`") or not value.endswith("`"):
+        raise GoldensError(f"CORPUS.md line {line_number}: {label} must be enclosed in backticks")
+    return value[1:-1]
+
+
+def load_fixture_aliases(root: Path) -> dict[str, str]:
+    path = root / "tests" / "fixtures" / FIXTURE_ALIASES_FILE
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise GoldensError(f"could not read fixture aliases {path}: {error}") from error
+
+    aliases: dict[str, str] = {}
+    fixtures: set[str] = set()
+    for line_number, line in enumerate(lines, start=1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        cells = line.split("\t")
+        if len(cells) != 2:
+            raise GoldensError(f"{path} line {line_number}: expected name and fixture separated by one tab")
+        try:
+            name = validate_fixture(cells[0])
+            fixture = validate_fixture(cells[1])
+        except GoldensError as error:
+            raise GoldensError(f"{path} line {line_number}: {error}") from error
+        if name == fixture:
+            raise GoldensError(f"{path} line {line_number}: alias source and fixture directory must differ")
+        if name in aliases:
+            raise GoldensError(f"{path} line {line_number}: duplicate alias source {name!r}")
+        if fixture in fixtures:
+            raise GoldensError(f"{path} line {line_number}: duplicate fixture directory {fixture!r}")
+        aliases[name] = fixture
+        fixtures.add(fixture)
+    return aliases
+
+
+def load_flat_goldens(root: Path) -> set[str]:
+    """The fixtures `tests/fixtures/flat-goldens.txt` declares a flat golden for.
+
+    Only a fixture whose flat golden generates from its own spec is returned: a
+    row naming another fixture's vendored document is a hand-authored golden this
+    tool never generates, and a CORPUS.md row cannot take its spec from anywhere
+    but its fetch.
+    """
+    path = root / "tests" / "fixtures" / FLAT_GOLDENS_FILE
+    if not path.exists():
+        return set()
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise GoldensError(f"could not read flat goldens {path}: {error}") from error
+    fixtures: set[str] = set()
+    seen: set[str] = set()
+    for line_number, line in enumerate(lines, start=1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        cells = line.split("|")
+        if len(cells) != 2:
+            raise GoldensError(f"{path} line {line_number}: expected fixture and spec separated by one |")
+        try:
+            fixture = validate_fixture(cells[0])
+            spec = validate_fixture(cells[1]) if cells[1] else ""
+        except GoldensError as error:
+            raise GoldensError(f"{path} line {line_number}: {error}") from error
+        if fixture in seen:
+            raise GoldensError(f"{path} line {line_number}: duplicate flat golden {fixture!r}")
+        seen.add(fixture)
+        if not spec:
+            fixtures.add(fixture)
+    return fixtures
+
+
+MANIFEST_HEADER = [
+    "#",
+    "name",
+    "method",
+    "source",
+    "pinned ref",
+    "license",
+    "decision",
+    "shapes",
+]
+"""The canonical CORPUS.md manifest table's header, as `tests/fixtures/CORPUS.md` writes it."""
+
+
+def load_manifest(root: Path) -> list[CorpusRow]:
+    manifest = root / "tests" / "fixtures" / "CORPUS.md"
+    try:
+        lines = manifest.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise GoldensError(f"could not read corpus manifest {manifest}: {error}") from error
+
+    aliases = load_fixture_aliases(root)
+    rows: list[CorpusRow] = []
+    names: set[str] = set()
+    fixtures: set[str] = set()
+    # CORPUS.md carries per-batch STATUS tables after the canonical numbered
+    # manifest, and those are numbered too (`| 130 | `komga` | … |`, four cells).
+    # Only the canonical table — the one under the documented eight-column header
+    # — is the manifest, so a status row is skipped rather than read as a
+    # malformed manifest row, which is what `tools/corpus/corpus-lib.sh` already does.
+    in_manifest = False
+    for line_number, line in enumerate(lines, start=1):
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if cells == MANIFEST_HEADER:
+            in_manifest = True
+            continue
+        if not line.strip().startswith("|"):
+            in_manifest = False
+            continue
+        if not in_manifest:
+            continue
+        if not cells or not cells[0].isdigit():
+            continue
+        if len(cells) != 8:
+            raise GoldensError(f"CORPUS.md line {line_number}: numbered row has {len(cells)} cells; expected 8")
+        name = validate_fixture(unquote_cell(cells[1], "name", line_number))
+        fixture = validate_fixture(aliases.get(name, name))
+        url = validate_url(cells[3])
+        ref = unquote_cell(cells[4], "pinned ref", line_number)
+        if not ref or any(ord(char) < 33 for char in ref):
+            raise GoldensError(f"CORPUS.md line {line_number}: invalid empty/whitespace ref")
+        decision = cells[6]
+        if decision not in {"link-ok", "committed"}:
+            raise GoldensError(
+                f"CORPUS.md line {line_number}: invalid decision {decision!r}; expected link-ok or committed"
+            )
+        if name in names or fixture in fixtures:
+            raise GoldensError(f"CORPUS.md line {line_number}: duplicate corpus name/fixture {name!r}")
+        names.add(name)
+        fixtures.add(fixture)
+        rows.append(
+            CorpusRow(
+                number=int(cells[0]),
+                name=name,
+                fixture=fixture,
+                url=url,
+                ref=ref,
+                decision=decision,
+            )
+        )
+    if not rows:
+        raise GoldensError(f"no numbered corpus rows found in {manifest}")
+    return rows
+
+
+def run_command(
+    argv: list[str],
+    *,
+    cwd: Path,
+    stdout: int | IO[str] = subprocess.PIPE,
+    stderr: int | IO[str] = subprocess.PIPE,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    # Output is decoded as UTF-8 whatever the platform's locale, so every child
+    # writes UTF-8: Python children (behind `just` and the generator) via UTF-8 mode.
+    environment = {**(os.environ if env is None else env), "PYTHONUTF8": "1"}
+    try:
+        return subprocess.run(
+            argv,
+            cwd=cwd,
+            check=False,
+            text=True,
+            encoding="utf-8",
+            stdout=stdout,
+            stderr=stderr,
+            env=environment,
+        )
+    except OSError as error:
+        raise GoldensError(f"could not run {argv[0]!r}: {error}") from error
+
+
+def curl_text(root: Path, url: str) -> str:
+    result = run_command(["curl", "-fsSL", url], cwd=root)
+    if result.returncode != 0:
+        detail = (result.stderr or "").strip()
+        raise GoldensError(f"could not fetch {url}: {detail or f'curl exited {result.returncode}'}")
+    return result.stdout or ""
+
+
+def semantic_key(version: str) -> tuple[int, int, int]:
+    numeric = version.split("-", 1)[0]
+    major, minor, patch = numeric.split(".")
+    return int(major), int(minor), int(patch)
+
+
+def resolve_latest_version(root: Path) -> str:
+    url: str | None = TAGS_URL
+    versions: set[str] = set()
+    seen_pages: set[str] = set()
+    while url:
+        if url in seen_pages:
+            raise GoldensError("Docker Hub tag pagination repeated a page")
+        seen_pages.add(url)
+        try:
+            payload = json.loads(curl_text(root, url))
+        except json.JSONDecodeError as error:
+            raise GoldensError(f"Docker Hub returned invalid tag JSON: {error}") from error
+        if not isinstance(payload, dict) or not isinstance(payload.get("results"), list):
+            raise GoldensError("Docker Hub tag response has no results list")
+        for item in payload["results"]:
+            name = item.get("name") if isinstance(item, dict) else None
+            if isinstance(name, str) and VERSION_RE.fullmatch(name) and "-" not in name:
+                versions.add(name)
+        next_url = payload.get("next")
+        if next_url is not None and not isinstance(next_url, str):
+            raise GoldensError("Docker Hub tag response has an invalid next URL")
+        if next_url:
+            parsed = urlsplit(next_url)
+            if parsed.scheme != "https" or parsed.hostname != "hub.docker.com":
+                raise GoldensError(f"Docker Hub returned unsafe pagination URL {next_url!r}")
+        url = next_url
+    if not versions:
+        raise GoldensError(f"no stable semantic-version tags found for {GENERATOR}")
+    return max(versions, key=semantic_key)
+
+
+PINS_MODULE = "corpus_remote_ref_pins"
+
+
+def load_pins_module(root: Path):
+    """`tools/corpus/corpus_remote_ref_pins.py`, imported rather than re-parsed.
+
+    The substitution `tools/corpus/fetch-corpus.sh` applies and the provenance this
+    tool records have to be the same records, so the manifest has exactly one
+    reader and this is a caller of it.
+    """
+    path = root / "tools" / "corpus" / f"{PINS_MODULE}.py"
+    cached = sys.modules.get(PINS_MODULE)
+    if cached is not None and getattr(cached, "__file__", None) == str(path):
+        return cached
+    spec = importlib.util.spec_from_file_location(PINS_MODULE, path)
+    if spec is None or spec.loader is None:
+        raise GoldensError(f"could not load the pin manifest reader {path}")
+    module = importlib.util.module_from_spec(spec)
+    # Registered before execution because the reader defines dataclasses, and
+    # `@dataclass` resolves annotations through `sys.modules[cls.__module__]`.
+    sys.modules[PINS_MODULE] = module
+    try:
+        spec.loader.exec_module(module)
+    except OSError as error:
+        del sys.modules[PINS_MODULE]
+        raise GoldensError(f"could not load the pin manifest reader {path}: {error}") from error
+    return module
+
+
+def corpus_remote_ref_pins(root: Path, row: CorpusRow) -> list[dict[str, str]]:
+    """This row's recorded remote-`$ref` pins, sorted by the URL each replaces."""
+    module = load_pins_module(root)
+    try:
+        records = module.records_for(row.name, root)
+    except module.PinError as error:
+        raise GoldensError(str(error)) from error
+    return [
+        {
+            "url": record.mutable_url,
+            "pinned_url": record.pinned_url,
+            "sha256": record.sha256,
+        }
+        for record in sorted(records, key=lambda record: record.mutable_url)
+    ]
+
+
+def expected_state(root: Path, row: CorpusRow, version: str, layout: str = PACKAGED) -> bytes:
+    state: dict[str, object] = {
+        "fern_python_sdk_version": version,
+        "corpus_spec_name": row.name,
+        "corpus_spec_ref": row.ref,
+        "corpus_spec_url": row.url,
+    }
+    # Emitted ONLY for a row that has pin records. `is_current()` byte-compares
+    # the on-disk state file against this, so an unconditional key would make
+    # every other golden stale at once and send the whole corpus back through
+    # Docker on the next scheduled run.
+    #
+    # The consequence to keep: editing a `pinned_url` or `sha256` in
+    # `tests/fixtures/corpus-remote-ref-pins.tsv` makes this row stale, so a
+    # `workflow_dispatch` with `fixtures=<name>` regenerates it through the
+    # ordinary path. The manifest is the input; no workflow input is needed.
+    pins = corpus_remote_ref_pins(root, row)
+    if pins:
+        state["corpus_remote_ref_pins"] = pins
+    tree = load_pins_module(root).tree_records_for(row.name, root)
+    if tree:
+        state["corpus_tree_pins"] = [
+            {"path": member.path, "pinned_url": member.pinned_url, "sha256": member.sha256} for member in tree
+        ]
+    # A flat golden records its layout; a packaged record keeps exactly the form
+    # it always had, so no packaged golden goes stale over this key.
+    if layout == FLAT:
+        state["layout"] = FLAT
+    return (json.dumps(state, indent=2) + "\n").encode("utf-8")
+
+
+def load_known_failure(root: Path, row: CorpusRow, version: str | None = None) -> KnownFailure | None:
+    path = root / "tests" / "fixtures" / row.fixture / KNOWN_FAILURE_FILE
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise GoldensError(f"could not read known Fern failure {path}: {error}") from error
+    expected_keys = {
+        "schema_version",
+        "generator",
+        "generator_version",
+        "corpus_spec_name",
+        "corpus_spec_ref",
+        "corpus_spec_url",
+        "exit_code",
+        "fingerprint",
+    }
+    if not isinstance(payload, dict) or set(payload) != expected_keys:
+        raise GoldensError(f"known Fern failure {path} must contain exactly {sorted(expected_keys)}")
+    identity = {
+        "schema_version": 1,
+        "generator": GENERATOR,
+        "corpus_spec_name": row.name,
+        "corpus_spec_ref": row.ref,
+        "corpus_spec_url": row.url,
+    }
+    mismatches = {
+        key: (payload.get(key), expected) for key, expected in identity.items() if payload.get(key) != expected
+    }
+    if mismatches:
+        raise GoldensError(f"known Fern failure {path} has stale corpus/generator identity: {mismatches}")
+    generator_version = payload.get("generator_version")
+    if not isinstance(generator_version, str):
+        raise GoldensError(f"known Fern failure {path} has no exact generator_version")
+    validate_version(generator_version)
+    exit_code = payload.get("exit_code")
+    fingerprint = payload.get("fingerprint")
+    if not isinstance(exit_code, int) or isinstance(exit_code, bool) or exit_code <= 0:
+        raise GoldensError(f"known Fern failure {path} has invalid exit_code {exit_code!r}")
+    if not isinstance(fingerprint, dict):
+        raise GoldensError(f"known Fern failure {path} has no fingerprint object")
+    known = KnownFailure(path, exit_code, fingerprint, generator_version)
+    return known if version is None or generator_version == version else None
+
+
+def extract_fern_failure_fingerprint(log_path: Path) -> dict[str, object]:
+    try:
+        log = log_path.read_text(encoding="utf-8")
+    except OSError as error:
+        raise GoldensError(f"could not read Fern failure log {log_path}: {error}") from error
+    command = "ruff check --fix --no-cache --ignore E741 /fern/output"
+    if f"Failed to run command: {command}" not in log:
+        raise GoldensError(f"Fern failure log has no failed {command!r} marker")
+    encoded = next(
+        (line.strip() for line in log.splitlines() if line.strip().startswith("b'fern/output/")),
+        None,
+    )
+    if encoded is None:
+        raise GoldensError("Fern failure log has no Ruff diagnostic payload")
+    try:
+        diagnostic_bytes = ast.literal_eval(encoded)
+    except (SyntaxError, ValueError) as error:
+        raise GoldensError(f"Fern Ruff diagnostic payload is malformed: {error}") from error
+    if not isinstance(diagnostic_bytes, bytes):
+        raise GoldensError("Fern Ruff diagnostic payload is not bytes")
+    try:
+        diagnostic_text = diagnostic_bytes.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise GoldensError(f"Fern Ruff diagnostic payload is not UTF-8: {error}") from error
+
+    diagnostics: list[dict[str, object]] = []
+    header = re.compile(
+        r"^fern/output/(?P<path>[^:]+):(?P<line>[0-9]+):(?P<column>[0-9]+): "
+        r"(?P<message>.+)$"
+    )
+    for block in diagnostic_text.split("\n\n"):
+        lines = block.splitlines()
+        if not lines:
+            continue
+        match = header.fullmatch(lines[0])
+        if match is None:
+            continue
+        source_prefix = f"{match.group('line')} | "
+        source_lines = [line for line in lines[1:] if line.startswith(source_prefix)]
+        if len(source_lines) != 1:
+            raise GoldensError(f"Fern Ruff diagnostic {lines[0]!r} has {len(source_lines)} source lines")
+        diagnostics.append(
+            {
+                "path": match.group("path"),
+                "line": int(match.group("line")),
+                "column": int(match.group("column")),
+                "message": match.group("message"),
+                "source": source_lines[0][len(source_prefix) :],
+            }
+        )
+    summaries = re.findall(r"(?m)^Found [0-9]+ errors \(.+\)\.$", diagnostic_text)
+    if len(summaries) != 1:
+        raise GoldensError(f"Fern Ruff diagnostic payload has {len(summaries)} aggregate summaries")
+    if not diagnostics:
+        raise GoldensError("Fern Ruff diagnostic payload has no syntax diagnostics")
+    return {
+        "failed_command": command,
+        "diagnostics": diagnostics,
+        "ruff_summary": summaries[0],
+    }
+
+
+def is_complete_tree(golden: Path, layout: str) -> bool:
+    """Whether `golden` has the shape of its layout's Fern tree: the packaged
+    SDK's `src/`, or the flat tree's root `__init__.py` with no `src/`."""
+    if layout == FLAT:
+        return (golden / "__init__.py").is_file() and not (golden / "src").exists()
+    return (golden / "src").is_dir()
+
+
+def is_current(root: Path, row: CorpusRow, version: str, layout: str = PACKAGED) -> bool:
+    expected = root / "tests" / "fixtures" / row.fixture / GOLDEN_DIRS[layout]
+    state = expected / STATE_FILE
+    try:
+        return (
+            not expected.is_symlink()
+            and is_complete_tree(expected, layout)
+            and state.read_bytes() == expected_state(root, row, version, layout)
+            and any(path.is_file() and path.name != STATE_FILE for path in expected.rglob("*"))
+        )
+    except OSError:
+        return False
+
+
+def select_rows(root: Path, rows: list[CorpusRow], requested: list[str]) -> list[CorpusRow]:
+    by_selector: dict[str, CorpusRow] = {}
+    for row in rows:
+        by_selector[row.name] = row
+        by_selector[row.fixture] = row
+    if requested:
+        selected: list[CorpusRow] = []
+        seen: set[str] = set()
+        for selector in requested:
+            validate_fixture(selector)
+            row = by_selector.get(selector)
+            if row is None:
+                raise GoldensError(f"fixture {selector!r} is not a numbered CORPUS.md row")
+            if row.fixture not in seen:
+                selected.append(row)
+                seen.add(row.fixture)
+        return selected
+
+    selected = []
+    for row in rows:
+        expected = root / "tests" / "fixtures" / row.fixture / "expected"
+        if expected.is_dir() and not expected.is_symlink():
+            selected.append(row)
+    if not selected:
+        raise GoldensError("no existing corpus goldens selected; pass --fixture NAME to generate a new fixture")
+    return selected
+
+
+def fetch_spec(root: Path, row: CorpusRow, *, force: bool) -> Path:
+    argv = [
+        "just",
+        "--justfile",
+        str(root / "justfile"),
+        "fetch-corpus",
+        "--fixture",
+        row.name,
+    ]
+    if not force:
+        argv.append("--if-missing")
+    result = run_command(argv, cwd=root)
+    if result.returncode != 0:
+        detail = ((result.stderr or "") + (result.stdout or "")).strip()
+        raise GoldensError(f"spec fetch failed: {detail or f'fetch-corpus exited {result.returncode}'}")
+    paths = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if len(paths) != 1:
+        raise GoldensError("fetch-corpus returned success without exactly one spec path")
+    destination = Path(paths[0])
+    if not destination.is_file() or destination.stat().st_size == 0:
+        raise GoldensError(f"fetch-corpus returned success without {destination}")
+    return destination
+
+
+def replace_directory_with_rollback(staged: Path, destination: Path) -> None:
+    """Move `staged` over `destination` in two renames, restoring the prior tree
+    from its backup if the second fails. Not atomic: between the renames
+    `destination` is absent, so no reader may run concurrently."""
+    if not staged.is_dir():
+        raise GoldensError(f"staged golden is not a directory: {staged}")
+    if destination.is_symlink():
+        raise GoldensError(f"refusing to replace symlinked golden directory: {destination}")
+    backup = destination.parent / f".{destination.name}.backup.{os.getpid()}"
+    if backup.exists():
+        raise GoldensError(f"stale golden backup blocks publication: {backup}")
+    had_destination = destination.exists()
+    if had_destination:
+        destination.rename(backup)
+    try:
+        staged.rename(destination)
+    except BaseException:
+        if had_destination and backup.exists() and not destination.exists():
+            backup.rename(destination)
+        raise
+    if had_destination:
+        shutil.rmtree(backup)
+
+
+def write_deterministic_archive(root: Path, fixtures: list[str], output: Path) -> None:
+    if not fixtures:
+        output.unlink(missing_ok=True)
+        return
+    with (
+        output.open("wb") as raw,
+        gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed,
+        tarfile.open(fileobj=compressed, mode="w") as archive,
+    ):
+        bases = [
+            root / "tests" / "fixtures" / fixture / directory
+            for fixture in sorted(fixtures)
+            for directory in GOLDEN_DIRS.values()
+        ]
+        for base in (base for base in bases if base.is_dir()):
+            for path in [base, *sorted(base.rglob("*"))]:
+                relative = path.relative_to(root)
+                info = archive.gettarinfo(str(path), arcname=relative.as_posix())
+                info.uid = 0
+                info.gid = 0
+                info.uname = ""
+                info.gname = ""
+                info.mtime = 0
+                if info.isfile():
+                    with path.open("rb") as source:
+                        archive.addfile(info, source)
+                else:
+                    archive.addfile(info)
+
+
+def write_patch(root: Path, report: Path) -> None:
+    result = run_command(
+        ["git", "-C", str(root), "diff", "--binary", "--", "tests/fixtures"],
+        cwd=root,
+    )
+    if result.returncode == 0:
+        (report / "fern-goldens.patch").write_text(result.stdout or "", encoding="utf-8", newline="\n")
+
+
+def generate_flat(root: Path, generator: Path, row: CorpusRow, version: str, spec: Path, log_path: Path) -> None:
+    """Generate a row's flat golden and install it atomically, or raise.
+
+    A failure leaves the prior `expected-flat/` golden and its provenance intact.
+    """
+    fixture_dir = root / "tests" / "fixtures" / row.fixture
+    stage = Path(tempfile.mkdtemp(prefix=".fern-goldens-stage.", dir=fixture_dir))
+    try:
+        staged = stage / GOLDEN_DIRS[FLAT]
+        with log_path.open("w", encoding="utf-8", newline="\n") as log:
+            result = run_command(
+                [
+                    str(generator),
+                    "--layout",
+                    FLAT,
+                    row.fixture,
+                    version,
+                    str(spec),
+                    str(staged),
+                ],
+                cwd=root,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+            )
+        if result.returncode != 0:
+            raise GoldensError(f"flat generator exited {result.returncode}; see {log_path}")
+        if not is_complete_tree(staged, FLAT):
+            raise GoldensError(f"generator returned success without a flat module tree; see {log_path}")
+        (staged / STATE_FILE).write_bytes(expected_state(root, row, version, FLAT))
+        replace_directory_with_rollback(staged, fixture_dir / GOLDEN_DIRS[FLAT])
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
+
+
+def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
+    rows = load_manifest(root)
+    version = validate_version(version_arg) if version_arg else resolve_latest_version(root)
+    selected = select_rows(root, rows, selectors)
+    report = report_root(root)
+    if report.exists():
+        shutil.rmtree(report)
+    (report / "generation-logs").mkdir(parents=True)
+    (report / "fern-version.txt").write_text(version + "\n", encoding="utf-8", newline="\n")
+
+    generated: list[str] = []
+    current: list[str] = []
+    known_upstream_failures: list[str] = []
+    failures: list[str] = []
+    generator = root / "tools" / "fern-goldens" / "generate-fern-fixture.sh"
+    if not generator.is_file():
+        raise GoldensError(f"missing Fern generator script: {generator}")
+    flat_goldens = load_flat_goldens(root)
+
+    for row in selected:
+        fixture_dir = root / "tests" / "fixtures" / row.fixture
+        fixture_existed = fixture_dir.exists()
+        log_path = report / "generation-logs" / f"{row.fixture}.log"
+        try:
+            spec = fetch_spec(root, row, force=True)
+            known_failure = load_known_failure(root, row, version)
+            if known_failure is not None and is_current(root, row, version):
+                raise GoldensError(f"{known_failure.path} is stale because a complete current golden exists")
+            packaged_generated = False
+            if known_failure is None and is_current(root, row, version):
+                log_path.write_text(
+                    f"current: {row.fixture} at {GENERATOR}:{version}\n", encoding="utf-8", newline="\n"
+                )
+            else:
+                fixture_dir.mkdir(parents=True, exist_ok=True)
+                stage = Path(tempfile.mkdtemp(prefix=".fern-goldens-stage.", dir=fixture_dir))
+                try:
+                    staged_expected = stage / "expected"
+                    with log_path.open("w", encoding="utf-8", newline="\n") as log:
+                        result = run_command(
+                            [
+                                str(generator),
+                                row.fixture,
+                                version,
+                                str(spec),
+                                str(staged_expected),
+                            ],
+                            cwd=root,
+                            stdout=log,
+                            stderr=subprocess.STDOUT,
+                        )
+                    if result.returncode != 0:
+                        if known_failure is not None:
+                            if result.returncode != known_failure.exit_code:
+                                raise GoldensError(
+                                    f"known upstream failure exit changed from "
+                                    f"{known_failure.exit_code} to {result.returncode}; see {log_path}"
+                                )
+                            actual_fingerprint = extract_fern_failure_fingerprint(log_path)
+                            if actual_fingerprint != known_failure.fingerprint:
+                                raise GoldensError(f"known upstream failure fingerprint changed; see {log_path}")
+                            known_upstream_failures.append(row.fixture)
+                            print(
+                                f"fern-goldens: warning: exact known upstream Fern failure "
+                                f"reproduced for {row.fixture} at {GENERATOR}:{version}"
+                            )
+                            continue
+                        raise GoldensError(f"generator exited {result.returncode}; see {log_path}")
+                    if known_failure is not None:
+                        raise GoldensError(
+                            "registered known upstream failure unexpectedly succeeded; "
+                            f"preserved the prior golden and discarded staged output; see {log_path}"
+                        )
+                    if not (staged_expected / "src").is_dir() or not any(
+                        path.is_file() for path in staged_expected.rglob("*")
+                    ):
+                        raise GoldensError(f"generator returned success without a packaged src/ tree; see {log_path}")
+                    (staged_expected / STATE_FILE).write_bytes(expected_state(root, row, version))
+                    replace_directory_with_rollback(staged_expected, fixture_dir / "expected")
+                    packaged_generated = True
+                    generated.append(row.fixture)
+                    print(f"fern-goldens: generated {row.fixture} at {GENERATOR}:{version}")
+                finally:
+                    shutil.rmtree(stage, ignore_errors=True)
+
+            # The flat golden refreshes beside the packaged one, from the same
+            # fetched spec and settings, whenever flat-goldens.txt declares it.
+            flat_generated = False
+            if row.fixture in flat_goldens:
+                flat_log = report / "generation-logs" / f"{row.fixture}.flat.log"
+                if is_current(root, row, version, FLAT):
+                    flat_log.write_text(
+                        f"current: {row.fixture} (flat) at {GENERATOR}:{version}\n",
+                        encoding="utf-8",
+                        newline="\n",
+                    )
+                else:
+                    generate_flat(root, generator, row, version, spec, flat_log)
+                    flat_generated = True
+                    print(f"fern-goldens: generated {row.fixture} (flat) at {GENERATOR}:{version}")
+            if flat_generated and not packaged_generated:
+                generated.append(row.fixture)
+            if not (packaged_generated or flat_generated):
+                current.append(row.fixture)
+        except (GoldensError, OSError) as error:
+            failures.append(f"{row.fixture}: {error}")
+            if not fixture_existed:
+                with contextlib.suppress(OSError):
+                    fixture_dir.rmdir()
+
+    (report / "generated.txt").write_text(
+        "".join(f"{fixture}\n" for fixture in generated), encoding="utf-8", newline="\n"
+    )
+    (report / "current.txt").write_text("".join(f"{fixture}\n" for fixture in current), encoding="utf-8", newline="\n")
+    (report / "known-upstream-failures.txt").write_text(
+        "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8", newline="\n"
+    )
+    (report / "generation-failures.txt").write_text(
+        "".join(f"{failure}\n" for failure in failures), encoding="utf-8", newline="\n"
+    )
+    summary = (
+        f"Fern generation summary: {len(generated)} generated, {len(current)} current, "
+        f"{len(failures)} failed, {len(known_upstream_failures)} exact known upstream "
+        f"Fern failure(s) at {GENERATOR}:{version}.\n"
+    )
+    (report / "generation-summary.txt").write_text(summary, encoding="utf-8", newline="\n")
+    write_deterministic_archive(root, generated, report / "generated-goldens.tar.gz")
+    write_patch(root, report)
+    print(summary, end="")
+    if failures:
+        print("\n".join(failures), file=sys.stderr)
+        return 1
+    return 0
+
+
+def compare(root: Path) -> int:
+    report = report_root(root)
+    report.mkdir(parents=True, exist_ok=True)
+    rows = load_manifest(root)
+    fetch_failures: list[str] = []
+    process_failures: list[str] = []
+    known_upstream_failures: list[str] = []
+    managed_rows = [row for row in rows if (root / "tests" / "fixtures" / row.fixture / "expected").is_dir()]
+    comparison_log = report / "comparison.log"
+    comparison_log.write_text("", encoding="utf-8", newline="\n")
+    differences = 0
+    generation_failures = 0
+    processing_failures = 0
+
+    for index, row in enumerate(managed_rows, start=1):
+        progress = f"{index}/{len(managed_rows)} {row.fixture}"
+        print(f"fern-goldens: comparing {progress}", file=sys.stderr, flush=True)
+        try:
+            known_failure = load_known_failure(root, row)
+            if known_failure is not None and is_current(root, row, known_failure.generator_version):
+                raise GoldensError(f"{known_failure.path} is stale because a complete matching golden exists")
+        except (GoldensError, OSError) as error:
+            processing_failures += 1
+            failure = f"{row.fixture}: invalid known upstream failure: {error}"
+            process_failures.append(failure)
+            with comparison_log.open("a", encoding="utf-8", newline="\n") as log:
+                log.write(f"\n=== {row.fixture} ===\n  Comparison processing failed: {error}\n")
+            print(f"fern-goldens: failed {progress}: invalid known failure", flush=True)
+            continue
+        try:
+            fetch_spec(root, row, force=False)
+        except (GoldensError, OSError) as error:
+            failure = f"{row.fixture}: {error}"
+            fetch_failures.append(failure)
+            with comparison_log.open("a", encoding="utf-8", newline="\n") as log:
+                log.write(f"\n=== {row.fixture} ===\n  Spec fetch failed: {error}\n")
+            print(f"fern-goldens: skipped {progress}: spec fetch failed", flush=True)
+            continue
+
+        environment = os.environ.copy()
+        environment.pop("CROZIER_DIFF_CORPORA", None)
+        environment["CROZIER_DIFF_CORPUS"] = row.fixture
+        environment["CROZIER_DIFF_SUMMARY_ONLY"] = "1"
+        try:
+            command = run_command(
+                [
+                    "just",
+                    "--justfile",
+                    str(root / "justfile"),
+                    "fixtures-diff",
+                    row.fixture,
+                ],
+                cwd=root,
+                env=environment,
+            )
+        except (GoldensError, OSError) as error:
+            processing_failures += 1
+            failure = f"{row.fixture}: could not start comparison: {error}"
+            process_failures.append(failure)
+            with comparison_log.open("a", encoding="utf-8", newline="\n") as log:
+                log.write(f"\n=== {row.fixture} ===\n  Comparison processing failed: {error}\n")
+            print(f"fern-goldens: failed {progress}: comparison could not start", flush=True)
+            continue
+
+        output = (command.stdout or "") + (command.stderr or "")
+        with comparison_log.open("a", encoding="utf-8", newline="\n") as log:
+            log.write(output)
+            if output and not output.endswith("\n"):
+                log.write("\n")
+        difference_match = re.search(r"(?m)^(\d+) differing file\(s\) across the reported corpora\.$", output)
+        generation_match = re.search(
+            r"(?m)^(\d+) comparison generation failure\(s\) across the reported corpora\.$",
+            output,
+        )
+        processing_match = re.search(
+            r"(?m)^(\d+) comparison processing failure\(s\) across the reported corpora\.$",
+            output,
+        )
+        summaries_present = (
+            difference_match is not None and generation_match is not None and processing_match is not None
+        )
+        if difference_match is not None and generation_match is not None and processing_match is not None:
+            fixture_differences = int(difference_match.group(1))
+            fixture_generation_failures = int(generation_match.group(1))
+            fixture_processing_failures = int(processing_match.group(1))
+            differences += fixture_differences
+            generation_failures += fixture_generation_failures
+            processing_failures += fixture_processing_failures
+        else:
+            fixture_differences = 0
+            fixture_generation_failures = 0
+            fixture_processing_failures = 1
+            processing_failures += 1
+
+        if known_failure is not None:
+            marker = (
+                f"KNOWN UPSTREAM FERN FAILURE: {row.fixture} at "
+                f"{GENERATOR}:{known_failure.generator_version}; "
+                "Crozier generation succeeded."
+            )
+            if marker in output:
+                known_upstream_failures.append(row.fixture)
+            else:
+                processing_failures += 1
+                fixture_processing_failures += 1
+                process_failures.append(f"{row.fixture}: comparison did not report the exact known upstream failure")
+
+        if command.returncode != 0 or not summaries_present:
+            if command.returncode < 0:
+                detail = f"terminated by signal {-command.returncode}"
+            else:
+                detail = f"exited {command.returncode}"
+            if not summaries_present:
+                detail += " without aggregate summaries"
+            failure = f"{row.fixture}: comparison {detail}"
+            process_failures.append(failure)
+            if summaries_present:
+                processing_failures += 1
+                fixture_processing_failures += 1
+
+        if any(
+            count > 0
+            for count in (
+                fixture_differences,
+                fixture_generation_failures,
+                fixture_processing_failures,
+            )
+        ):
+            print(
+                f"fern-goldens: compared {progress}: "
+                f"{fixture_differences} differences, "
+                f"{fixture_generation_failures} Crozier generation failures, "
+                f"{fixture_processing_failures} processing failures",
+                flush=True,
+            )
+
+    summary = (
+        f"Fern comparison summary: {differences} differing files, "
+        f"{generation_failures} Crozier generation failures, "
+        f"{processing_failures} comparison processing failures, "
+        f"{len(fetch_failures)} spec fetch failures, "
+        f"{len(known_upstream_failures)} exact known upstream Fern failure(s).\n"
+    )
+    (report / "comparison-summary.txt").write_text(summary, encoding="utf-8", newline="\n")
+    (report / "comparison-fetch-failures.txt").write_text(
+        "".join(f"{failure}\n" for failure in fetch_failures), encoding="utf-8", newline="\n"
+    )
+    (report / "comparison-processing-failures.txt").write_text(
+        "".join(f"{failure}\n" for failure in process_failures), encoding="utf-8", newline="\n"
+    )
+    (report / "comparison-known-upstream-failures.txt").write_text(
+        "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8", newline="\n"
+    )
+    print(summary, end="")
+    if fetch_failures:
+        print("\n".join(fetch_failures), file=sys.stderr)
+    if process_failures:
+        print("\n".join(process_failures), file=sys.stderr)
+    return int(differences > 0 or generation_failures > 0 or processing_failures > 0 or bool(fetch_failures))
+
+
+def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return run_command(["git", "-C", str(root), *args], cwd=root)
+
+
+def publish(root: Path, branch: str) -> int:
+    if not branch or branch.startswith(("-", "refs/")) or any(ord(char) < 33 for char in branch):
+        raise GoldensError(f"invalid branch name {branch!r}")
+    check = git(root, "check-ref-format", "--branch", branch)
+    if check.returncode != 0:
+        raise GoldensError(f"invalid branch name {branch!r}")
+
+    report = report_root(root)
+    generated_file = report / "generated.txt"
+    if not generated_file.is_file():
+        raise GoldensError("no generation report found; run fern-goldens generate first")
+    fixtures = [line for line in generated_file.read_text(encoding="utf-8").splitlines() if line]
+    if len(fixtures) != len(set(fixtures)):
+        raise GoldensError("generation report contains duplicate fixture names")
+    rows = {row.fixture: row for row in load_manifest(root)}
+    flat_goldens = load_flat_goldens(root)
+    version_file = report / "fern-version.txt"
+    version = validate_version(version_file.read_text(encoding="utf-8").strip())
+    paths: list[str] = []
+    for fixture in fixtures:
+        validate_fixture(fixture)
+        row = rows.get(fixture)
+        if row is None:
+            raise GoldensError(f"successful fixture is no longer in CORPUS.md: {fixture}")
+        if not is_current(root, row, version):
+            raise GoldensError(f"successful fixture has no complete golden/state: {fixture}")
+        paths.append(f"tests/fixtures/{fixture}/{GOLDEN_DIRS[PACKAGED]}")
+        # A flat golden publishes only once it is complete and current; one whose
+        # refresh failed keeps its prior committed tree untouched.
+        if fixture in flat_goldens and is_current(root, row, version, FLAT):
+            paths.append(f"tests/fixtures/{fixture}/{GOLDEN_DIRS[FLAT]}")
+    if not paths:
+        print("fern-goldens: nothing generated; publish is a no-op")
+        return 0
+
+    status = git(root, "status", "--porcelain=v1", "--", *paths)
+    if status.returncode != 0:
+        raise GoldensError((status.stderr or "git status failed").strip())
+    if not (status.stdout or "").strip():
+        print("fern-goldens: generated goldens are unchanged; publish is a no-op")
+        return 0
+
+    pre_staged = git(root, "diff", "--cached", "--name-only")
+    if pre_staged.returncode != 0:
+        raise GoldensError((pre_staged.stderr or "could not inspect staged paths").strip())
+    if (pre_staged.stdout or "").strip():
+        raise GoldensError("refusing to publish with pre-existing staged changes")
+
+    fetched = git(root, "fetch", "--no-tags", "origin", f"refs/heads/{branch}")
+    if fetched.returncode != 0:
+        raise GoldensError((fetched.stderr or "git fetch failed").strip())
+    remote = git(root, "rev-parse", "FETCH_HEAD")
+    head = git(root, "rev-parse", "HEAD")
+    if remote.returncode != 0 or head.returncode != 0:
+        raise GoldensError("could not resolve local/remote branch heads")
+    if (remote.stdout or "").strip() != (head.stdout or "").strip():
+        raise GoldensError(f"origin/{branch} advanced during generation; refusing a non-fast-forward publish")
+
+    added = git(root, "add", "-A", "--", *paths)
+    if added.returncode != 0:
+        raise GoldensError((added.stderr or "git add failed").strip())
+    staged = git(root, "diff", "--cached", "--name-only")
+    if staged.returncode != 0:
+        raise GoldensError((staged.stderr or "could not inspect staged paths").strip())
+    allowed = tuple(f"{path}/" for path in paths)
+    unexpected = [path for path in (staged.stdout or "").splitlines() if not path.startswith(allowed)]
+    if unexpected:
+        raise GoldensError("refusing to commit paths outside successful Fern goldens: " + ", ".join(unexpected))
+    committed = git(root, "commit", "-m", f"test(fixtures): refresh Fern goldens at {version}")
+    if committed.returncode != 0:
+        raise GoldensError((committed.stderr or committed.stdout or "git commit failed").strip())
+    pushed = git(root, "push", "origin", f"HEAD:refs/heads/{branch}")
+    if pushed.returncode != 0:
+        raise GoldensError((pushed.stderr or pushed.stdout or "git push failed").strip())
+    print(f"fern-goldens: published {len(paths)} successful fixture(s) to {branch}")
+    return 0
+
+
+def result(
+    generation: str,
+    publication: str,
+    generation_summary: str,
+    generation_evidence: str,
+    comparison: str,
+    comparison_summary: str,
+    comparison_evidence: str,
+) -> int:
+    outcomes = {
+        "generation": generation,
+        "publication": publication,
+        "generation summary": generation_summary,
+        "generation evidence": generation_evidence,
+        "comparison": comparison,
+        "comparison summary": comparison_summary,
+        "comparison evidence": comparison_evidence,
+    }
+    invalid = {name: value for name, value in outcomes.items() if value not in {"success", "failure"}}
+    if invalid:
+        raise GoldensError(f"invalid workflow outcome(s): {invalid}")
+    failures = [name for name, value in outcomes.items() if value == "failure"]
+    if failures:
+        print("fern-goldens: failed phases: " + ", ".join(failures), file=sys.stderr)
+        return 1
+    print("fern-goldens: generation, publication, summaries, comparison, and evidence succeeded")
+    return 0
+
+
+def add_generation_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--version",
+        help=f"exact {GENERATOR} version (default: latest stable Docker Hub tag)",
+    )
+    parser.add_argument("--fixture", action="append", default=[], help="corpus fixture/name")
+    parser.add_argument(
+        "--fixtures",
+        default="",
+        help="comma-separated corpus fixture/names (for workflow_dispatch)",
+    )
+
+
+def selectors_from(args: argparse.Namespace) -> list[str]:
+    selectors = list(args.fixture)
+    if args.fixtures:
+        selectors.extend(part.strip() for part in args.fixtures.split(","))
+    if any(not selector for selector in selectors):
+        raise GoldensError("fixture list contains an empty name")
+    return selectors
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(prog="tools/fern-goldens/fern-goldens")
+    commands = parser.add_subparsers(dest="command", required=True)
+    generate_parser = commands.add_parser("generate", help="best-effort Fern generation")
+    add_generation_arguments(generate_parser)
+    run_parser = commands.add_parser("run", help="generate then compare without fail-fast")
+    add_generation_arguments(run_parser)
+    commands.add_parser("compare", help="aggregate all available golden differences")
+    commands.add_parser("latest-version", help=f"print the latest stable {GENERATOR} tag")
+    publish_parser = commands.add_parser("publish", help="commit/push successful outputs")
+    publish_parser.add_argument("--branch", required=True)
+    result_parser = commands.add_parser("result", help="emit the final deferred workflow status")
+    result_parser.add_argument("--generation", required=True)
+    result_parser.add_argument("--publication", required=True)
+    result_parser.add_argument("--generation-summary", required=True)
+    result_parser.add_argument("--generation-evidence", required=True)
+    result_parser.add_argument("--comparison", required=True)
+    result_parser.add_argument("--comparison-summary", required=True)
+    result_parser.add_argument("--comparison-evidence", required=True)
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str]) -> int:
+    try:
+        args = parse_args(argv)
+        root = repo_root()
+        if args.command == "generate":
+            return generate(root, args.version, selectors_from(args))
+        if args.command == "compare":
+            return compare(root)
+        if args.command == "latest-version":
+            print(resolve_latest_version(root))
+            return 0
+        if args.command == "publish":
+            return publish(root, args.branch)
+        if args.command == "result":
+            return result(
+                args.generation,
+                args.publication,
+                args.generation_summary,
+                args.generation_evidence,
+                args.comparison,
+                args.comparison_summary,
+                args.comparison_evidence,
+            )
+        generation_status = generate(root, args.version, selectors_from(args))
+        comparison_status = compare(root)
+        return result(
+            "success" if generation_status == 0 else "failure",
+            # llmlint: ignore[tool_output_is_signal] Local `run` never publishes or uploads; success is the neutral value for those workflow-only phases.
+            "success",
+            "success",
+            "success",
+            "success" if comparison_status == 0 else "failure",
+            "success",
+            "success",
+        )
+    except (GoldensError, OSError, ValueError) as error:
+        print(f"fern-goldens: {error}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

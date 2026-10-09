@@ -21,7 +21,7 @@ Two documents carry the construct:
 ## Fern's output
 
 Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
-`scripts/generate-fern-fixture.sh` scaffolds (`organization: fern`,
+`tools/fern-goldens/generate-fern-fixture.sh` scaffolds (`organization: fern`,
 `pydantic_config.enum_type: python_enums`, `fern generate --group python-sdk
 --local --preview`), exits 0 on `lamp-room-log`; the comment-stripped tree is
 its `fern-expected/`. The `bungie.net` golden is

@@ -62,8 +62,8 @@ version supplied from a workflow input:
 
 | | Route A (local) | Route B (hosted) |
 |---|---|---|
-| **generator image** | `just fern-goldens-generate --version X` → `scripts/fern-goldens` `generate()`, which validates `X` and passes it to the generator script | the `Generate every selected fixture independently` step of [`fern-goldens.yml`](../.github/workflows/fern-goldens.yml) turns `inputs.fern-version` into that same `just fern-goldens-generate --version X` |
-| **generator config** | `scripts/generate-fern-fixture.sh`, which reads the fixture's row from [`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt) and writes `generators.yml` | identical — the workflow has no generator-config input and no second config site |
+| **generator image** | `just fern-goldens-generate --version X` → `tools/fern-goldens/fern-goldens` `generate()`, which validates `X` and passes it to the generator script | the `Generate every selected fixture independently` step of [`fern-goldens.yml`](../.github/workflows/fern-goldens.yml) turns `inputs.fern-version` into that same `just fern-goldens-generate --version X` |
+| **generator config** | `tools/fern-goldens/generate-fern-fixture.sh`, which reads the fixture's row from [`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt) and writes `generators.yml` | identical — the workflow has no generator-config input and no second config site |
 
 Both therefore emit one `generators.yml` naming `fernapi/fern-python-sdk` at the
 resolved version, and both apply the corpus-wide `pydantic_config.enum_type:
@@ -93,7 +93,7 @@ it is usually already done).
    OpenAPI document can express needs no new spec: give the
    already-registered source a second row name and declare the setting for that
    name in `fern-generator-config.txt`.
-2. Register the same name as a `Corpus` in `tests/e2e.rs` with `unmatched: &[]`,
+2. Register the same name as a `Corpus` in `crates/crozier-e2e/tests/e2e.rs` with `unmatched: &[]`,
    add the `#[test]` that drives it, and — for a fetched `link-ok` spec — add its
    `just test-corpus-match` line;
    `every_registered_corpus_is_wired_into_the_gate` fails without both. Commit
@@ -209,9 +209,9 @@ packaged `expected/`. That is the tree `fern generate --local` writes to a
 `local-file-system` output path without `--preview`, which crozier reproduces
 with `--layout flat` (see [`matching.md`](matching.md#the-flat-layout)).
 [`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt) declares every flat
-golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
+golden, and `crates/crozier-e2e/tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
 
-- **The script's layout option.** `scripts/generate-fern-fixture.sh --layout
+- **The script's layout option.** `tools/fern-goldens/generate-fern-fixture.sh --layout
   flat <fixture> <pin>` runs that local-file-system generation, strips comments,
   and installs the result atomically as `tests/fixtures/<fixture>/expected-flat/`.
   It refuses a fixture `flat-goldens.txt` does not declare. It runs Fern with no
@@ -224,7 +224,7 @@ golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
   writes for a `CORPUS.md` row. Packaged records carry no `layout` key, so no
   packaged golden goes stale over it.
 - **Route A** for a hand-authored fixture: declare it in `flat-goldens.txt`, add
-  its `FLAT_GOLDENS` entry and `flat_goldens!` test in `tests/e2e.rs`, run the
+  its `FLAT_GOLDENS` entry and `flat_goldens!` test in `crates/crozier-e2e/tests/e2e.rs`, run the
   script's flat mode at the pin, then measure with `just fixtures-gaps
   <fixture>`. A flat golden whose directory has no spec names the fixture whose
   source it uses in its row's second column
@@ -245,7 +245,7 @@ golden, and `tests/e2e.rs::FLAT_GOLDENS` must list exactly its rows.
 ### Literal-enum goldens
 
 A targeted set of registered fixtures (`KINDS` in
-`tests/e2e/overlay_goldens.rs`, chosen so that together they reach every enum shape
+`crates/crozier-e2e/tests/e2e/overlay_goldens.rs`, chosen so that together they reach every enum shape
 crozier generates: named, inline-property, parameter, sanitized-name, optional
 and nullable enums) also carries `expected-literals/`: Fern's output for the
 same spec, pins and settings with
@@ -256,15 +256,15 @@ which crozier reproduces with `--enum-type literals`.
   python-enums tree only where an enum appears, so the directory holds just the
   files whose bytes differ, plus `.crozier-overlay.json`: the Fern
   versions, and the `expected/` files Fern does not emit in that mode
-  (`core/enum.py`). The gate in `tests/e2e/overlay_goldens.rs` rebuilds the full tree
+  (`core/enum.py`). The gate in `crates/crozier-e2e/tests/e2e/overlay_goldens.rs` rebuilds the full tree
   as `expected/` minus those files plus the overlay, and compares it with the
   corpus's own residuals. The gate also fails when a listed fixture lacks the
   overlay, when an overlay sits outside the list, and when the overlay's Fern
   version differs from `expected/`'s provenance. Add a fixture to the set only
   for an enum shape the set does not yet reach.
 - **Generate it locally**, after `expected/` is current:
-  `scripts/fern-overlay-goldens.sh [--jobs N] --enum-type literals <fixture>...` runs
-  `scripts/generate-fern-fixture.sh --enum-type literals` per fixture with the
+  `tools/fern-goldens/fern-overlay-goldens.sh [--jobs N] --enum-type literals <fixture>...` runs
+  `tools/fern-goldens/generate-fern-fixture.sh --enum-type literals` per fixture with the
   spec `expected/` was generated from (the vendored `openapi.yml`, the committed
   corpus source, or `just fetch-corpus` for a row with pinned remote refs), the
   version its provenance records, and its `fern-generator-config.txt` row. It
@@ -275,7 +275,7 @@ which crozier reproduces with `--enum-type literals`.
 - **Other settings use the same mechanism.** `expected-default-max-retries/` is
   Fern with `default_max_retries: 0` for crozier's `default-max-retries: 0`, on
   `enum-query-param` and `openfigi.com`
-  (`scripts/fern-overlay-goldens.sh --default-max-retries 0 <fixture>...`). It
+  (`tools/fern-goldens/fern-overlay-goldens.sh --default-max-retries 0 <fixture>...`). It
   reaches only the root `client.py` and `core/client_wrapper.py`. A new setting
   gets a `KINDS` entry and the fewest fixtures that reach what it changes, never
   a copy of the corpus.
@@ -287,7 +287,7 @@ reproducible if that URL is immutable, so
 [`../tests/fixtures/corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv)
 records the substitution — `corpus_name`, the `mutable_url` upstream writes, the
 `pinned_url` replacing it, and the SHA-256 of the bytes that URL serves.
-`scripts/fetch-corpus.sh` applies a row's records to the fetched document before
+`tools/corpus/fetch-corpus.sh` applies a row's records to the fetched document before
 publishing it, so Fern generates from, and crozier byte-matches against, the same
 pinned inputs. The manifest also records complete multi-file trees as `tree`
 rows; those use one row revision and one digest per member.
@@ -396,7 +396,7 @@ table [`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt)
 the audience list, Crozier strict-audience identity, Fern `client_class_name`,
 Fern `pydantic_config.extra_fields`, and the Fern workspace `organization` (the
 input that names the module, client and README the way crozier's
-`--package-name` does; see [`matching.md`](matching.md#the-flat-layout)). `scripts/generate-fern-fixture.sh` loads
+`--package-name` does). `tools/fern-goldens/generate-fern-fixture.sh` loads
 them by fixture name on both routes, so a `CORPUS.md` row is generated with them
 too — that is what lets a generator setting no OpenAPI document can express
 (`eos.local-extra-fields-forbid`, row 82) be pinned by a second row over an
@@ -408,7 +408,7 @@ so `fern-generator-config.txt` is the authority for what a corpus row was
 generated with.
 
 One non-default setting is **not** in that table and applies corpus-wide:
-`scripts/generate-fern-fixture.sh` writes `pydantic_config.enum_type:
+`tools/fern-goldens/generate-fern-fixture.sh` writes `pydantic_config.enum_type:
 python_enums` into `generators.yml` for every fixture it generates — on both
 routes, since both drive the same script. Fern records it in each golden's
 `.fern/metadata.json` (`generatorConfig`) and the e2e normalizes that block off

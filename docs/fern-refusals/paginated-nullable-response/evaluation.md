@@ -23,6 +23,6 @@ crozier refuses the probe with exit 1 and nothing written, by default and under
 naming the operation, the response property the contract reads and the nullable
 component. A response component without `nullable` generates its pager
 (`paginated_nullable_response_refuses_in_both_modes_beside_a_generating_control`
-in `tests/e2e.rs`).
+in `crates/crozier-e2e/tests/e2e.rs`).
 
 No document of the refused population carries the class (`documents` 0).

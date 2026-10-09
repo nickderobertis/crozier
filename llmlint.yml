@@ -43,7 +43,7 @@ files:
     # the animated GIF, the digest baseline, and the vendored binary font. They
     # are not authored source to judge, and feeding the megabytes of base64 to the
     # judge overflows it (it returns no parseable JSON). The scripts that PRODUCE
-    # them (scripts/screenshots.sh, scripts/demo-gif.py) are code and stay linted.
+    # them (scripts/screenshots.sh, screenshots/demo-gif.py) are code and stay linted.
     - "docs/screenshots/**"
     - "shots/**"
     - "screenshots/fonts/**"
@@ -63,13 +63,13 @@ files:
     - "docs/openapi-surface/witness-search-*/**/LICENSE*"
     - "docs/openapi-surface/witness-search-*/licences/**"
     # The census-fallback samples — unmodified publisher OpenAPI documents, each
-    # pinned by commit and SHA-256 in tests/data/census-fallback-sample.tsv and
+    # pinned by commit and SHA-256 in tools/surface-census/tests/data/census-fallback-sample.tsv and
     # attributed in NOTICE. The pinned Stripe description (7 MB) overflows the
     # judge as the fetched specifications above do; the manifest and the tests
     # that read the samples stay linted.
-    - "tests/data/census-fallback-sample/*.y*ml"
+    - "tools/surface-census/tests/data/census-fallback-sample/*.y*ml"
     # The golden-reach arm searches' evidence is the same kind of data, written by
-    # scripts/golden-reach-search.py: walk enumerations, query and call logs,
+    # tools/surface-census/golden-reach-search.py: walk enumerations, query and call logs,
     # probe results and screens. The per-row records (searches/*.md), the README
     # and the scripts that write and reconcile the data stay linted.
     - "docs/openapi-surface/golden-reach-witnesses/**/*.tsv"
@@ -103,7 +103,7 @@ files:
     - "assets/scaffolding/conftest.py"
     - "assets/scaffolding/default_clients.py.tmpl"
     - "assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
-    # The Fern refusal population's evidence, written by scripts/fern-refusals.py
+    # The Fern refusal population's evidence, written by tools/fern-refusals/fern-refusals.py
     # `measure`/`probe`/`confirm`/`build`: Fern's own logs, the per-document
     # measurements, the sampled confirmations and the three machine-written
     # tables. None is authored source and the logs alone overflow the judge; the
@@ -117,7 +117,7 @@ files:
     - "docs/fern-refusals/generated.tsv"
     - "docs/fern-refusals/unretrievable.tsv"
     # Vendored upstream rule plugins (llmlint-plugins/, refreshed by
-    # scripts/llmlint-plugins.py): someone else's authored configs, judged in
+    # tools/llmlint/llmlint-plugins.py): someone else's authored configs, judged in
     # their own repository, not crozier's code.
     - "llmlint-plugins/**"
 rationales: true
@@ -135,7 +135,14 @@ plugins:
   # their rules (robust_shell, portable_to_target_shell) and the rule names the
   # scripts' `llmlint: ignore` directives reference.
   - "./llmlint-plugins/languages/bash.llmlint.yml"
+  # The repository's tooling (tools/*, screenshots/) is Python in a uv
+  # workspace; the python plugin judges it.
+  - "./llmlint-plugins/languages/python.llmlint.yml"
   - "./llmlint-plugins/ci.llmlint.yml"
   # crozier ships versioned artifacts (release-plz → crates.io, PyPI, GitHub
   # Releases), so the releasing plugin judges the release wiring.
   - "./llmlint-plugins/releasing.llmlint.yml"
+  # The gate runs through an Nx project graph (nx.json, a project.json per
+  # unit), so the project-graph plugin judges where new code lands and how its
+  # targets, inputs and boundaries are declared.
+  - "./llmlint-plugins/project-graph.llmlint.yml"
