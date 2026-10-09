@@ -75,3 +75,22 @@ An excluded synthetic input, `screened-nonpublic-input:v2:2a9e147687d94da191ed78
 audience over a document that declares a `discriminator` reaches this arm. No
 row is registered that way yet, so the arm stays unreached by real
 specifications. The fixture above covers it at the lower level of proof.
+
+### Successor arms
+
+`src/ir.rs::Builder::discriminated_union[if union_target \{]` and
+`src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]`,
+the union repair for the shape `nested-oneof-mapping-target-wrapped-as-value`,
+joined this key after the gate above was recorded. Neither is behind a
+generation setting: both run on any document whose `discriminator.mapping`
+names a schema that is itself a `oneOf` or `anyOf` of references. So the
+`config-gated` verdict above is the earlier site's alone. No Contract B search
+has run for these two either. The bounded
+[union witness search](../../witness-search-union-scenarios/README.md#witness-search) read the APIs.guru archive at
+`f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` and the already-acquired GitHub
+code-search and Sourcegraph pools for the shape and screened its three
+declarers, none registrable, so their search is `search-incomplete`; the
+hand-written fixture
+[`kitchen-nested-mapping-target`](../../handwritten/kitchen-nested-mapping-target/)
+covers them at the lower level of proof.
+
