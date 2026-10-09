@@ -654,6 +654,15 @@ impl Operation {
         self.streaming_crozier
             .as_deref()
             .or(self.streaming_fern.as_deref())
+            .filter(|streaming| streaming.declares_stream())
+    }
+
+    /// Replace the declared streaming contract, in both spellings, with
+    /// `streaming` — how one half of a `stream-condition` split sees the
+    /// operation.
+    pub(crate) fn set_streaming(&mut self, streaming: Option<Streaming>) {
+        self.streaming_crozier = streaming.map(Box::new);
+        self.streaming_fern = None;
     }
 
     /// Take out the `x-crozier-sdk-group-name` / `x-crozier-sdk-method-name`
@@ -689,24 +698,116 @@ pub(crate) struct CrozierNaming {
 /// streams. An operation that declares a `stream-condition` generates *two*
 /// methods — one that sets the condition and streams, one that clears it and
 /// returns the buffered response.
-#[derive(Debug, Default, Clone, Deserialize)]
+///
+/// Besides the mapping, the extension may be a boolean: `true` streams the
+/// success response as newline-delimited JSON, as a mapping declaring
+/// `format: json` does; `false` declares no stream at all (see
+/// [`Streaming::declares_stream`]).
+#[derive(Debug, Default, Clone)]
 pub struct Streaming {
-    /// The stream encoding (`sse`).
-    #[serde(default)]
+    /// The stream encoding: `sse`, or `json` for newline-delimited JSON.
     pub format: Option<String>,
     /// The buffered response schema, used when the condition is cleared.
-    #[serde(default)]
     pub response: Option<Schema>,
     /// The streamed chunk schema, used when the condition is set.
-    #[serde(rename = "response-stream", default)]
     pub response_stream: Option<Schema>,
     /// The request property that selects between the two forms
     /// (`$request.stream`).
-    #[serde(rename = "stream-condition", default)]
     pub stream_condition: Option<String>,
+    /// The SSE `data` payload that ends the stream (`[DONE]`). Absent, an
+    /// event without data ends it.
+    pub terminator: Option<String>,
+    /// How the extension was written: the boolean form, or a mapping.
+    form: StreamingForm,
+}
+
+/// The two spellings of the streaming extension's value.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+enum StreamingForm {
+    /// A mapping (`{format: sse, …}`).
+    #[default]
+    Mapping,
+    /// The boolean `true`/`false`.
+    Flag(bool),
+}
+
+/// The mapping form of the streaming extension, as written.
+#[derive(Deserialize)]
+struct StreamingMapping {
+    #[serde(default)]
+    format: Option<String>,
+    #[serde(default)]
+    response: Option<Schema>,
+    #[serde(rename = "response-stream", default)]
+    response_stream: Option<Schema>,
+    #[serde(rename = "stream-condition", default)]
+    stream_condition: Option<String>,
+    #[serde(default)]
+    terminator: Option<String>,
+}
+
+impl<'de> Deserialize<'de> for Streaming {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
+        struct StreamingVisitor;
+        impl<'de> Visitor<'de> for StreamingVisitor {
+            type Value = Streaming;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("a boolean or a streaming mapping")
+            }
+            fn visit_bool<E: serde::de::Error>(
+                self,
+                flag: bool,
+            ) -> std::result::Result<Streaming, E> {
+                Ok(Streaming {
+                    form: StreamingForm::Flag(flag),
+                    ..Streaming::default()
+                })
+            }
+            fn visit_map<A: MapAccess<'de>>(
+                self,
+                map: A,
+            ) -> std::result::Result<Streaming, A::Error> {
+                let mapping = StreamingMapping::deserialize(
+                    serde::de::value::MapAccessDeserializer::new(map),
+                )?;
+                Ok(Streaming {
+                    format: mapping.format,
+                    response: mapping.response,
+                    response_stream: mapping.response_stream,
+                    stream_condition: mapping.stream_condition,
+                    terminator: mapping.terminator,
+                    form: StreamingForm::Mapping,
+                })
+            }
+        }
+        deserializer.deserialize_any(StreamingVisitor)
+    }
 }
 
 impl Streaming {
+    /// Whether the extension declares a stream: every mapping and `true` do;
+    /// `false` declares none, so the operation is an ordinary buffered call.
+    #[must_use]
+    pub fn declares_stream(&self) -> bool {
+        self.form != StreamingForm::Flag(false)
+    }
+
+    /// Whether the stream is Server-Sent Events rather than newline-delimited
+    /// JSON. Measured at Fern 5.20.0: `format: sse` is SSE and `format: json` or
+    /// the boolean `true` is JSON lines whatever the response's media types; a
+    /// mapping that names no format follows the response's own media —
+    /// `sse_media` says whether it declares `text/event-stream`.
+    #[must_use]
+    pub fn is_sse(&self, sse_media: bool) -> bool {
+        match (self.form, self.format.as_deref()) {
+            (StreamingForm::Flag(_), _) => false,
+            (StreamingForm::Mapping, Some(format)) => format == "sse",
+            (StreamingForm::Mapping, None) => sse_media,
+        }
+    }
+
     /// The request property the condition names, with its `$request.` prefix
     /// stripped. `None` when the operation streams unconditionally.
     #[must_use]
@@ -913,19 +1014,45 @@ pub struct Response {
 
 /// A media-type object carrying the body/response schema.
 #[derive(Debug, Default, Clone, Deserialize)]
+#[serde(from = "MediaTypeDecl")]
 pub struct MediaType {
-    /// The schema for this media type.
-    #[serde(default)]
+    /// The schema for this media type. A sequential media type (`text/event-stream`)
+    /// may declare its schema per item as `itemSchema` instead, which Fern types
+    /// each streamed item from; that item schema lands here when no `schema`
+    /// is declared beside it.
     pub schema: Option<Schema>,
     /// Optional example value for the media payload.
-    #[serde(default)]
     pub example: Option<serde_json::Value>,
     /// Named examples for the media payload, in declaration order.
-    #[serde(default)]
     pub examples: IndexMap<String, ParameterExample>,
     /// Per-part multipart serialization metadata.
-    #[serde(default)]
     pub encoding: IndexMap<String, Encoding>,
+}
+
+/// A media-type object as written, before its `itemSchema` folds into `schema`.
+#[derive(Deserialize)]
+struct MediaTypeDecl {
+    #[serde(default)]
+    schema: Option<Schema>,
+    #[serde(rename = "itemSchema", default)]
+    item_schema: Option<Schema>,
+    #[serde(default)]
+    example: Option<serde_json::Value>,
+    #[serde(default)]
+    examples: IndexMap<String, ParameterExample>,
+    #[serde(default)]
+    encoding: IndexMap<String, Encoding>,
+}
+
+impl From<MediaTypeDecl> for MediaType {
+    fn from(decl: MediaTypeDecl) -> Self {
+        MediaType {
+            schema: decl.schema.or(decl.item_schema),
+            example: decl.example,
+            examples: decl.examples,
+            encoding: decl.encoding,
+        }
+    }
 }
 
 /// Serialization metadata for one multipart property.

@@ -19,7 +19,7 @@ use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Endpoint,
     EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim,
-    QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -3106,11 +3106,26 @@ fn reference_entry(
                 .map_or(usize::MAX, |field| field.reference_order)
         });
         // The field a stream condition fixes is not a method argument, but the
-        // reference documents it — as a bare `typing.Literal`, ahead of the rest.
+        // reference documents it — as a bare `typing.Literal`, ahead of the rest
+        // when the body is a component `$ref`, and in its declared place among
+        // an inline body's fields.
         if let Some((wire, _)) = ep.stream_condition.as_ref() {
             if let Some(field) = fields.iter().find(|field| field.wire_name == *wire) {
+                let at = if ep.body_schema_shape == BodySchemaShape::Ref {
+                    0
+                } else {
+                    reference_body
+                        .iter()
+                        .position(|param| {
+                            fields
+                                .iter()
+                                .find(|other| other.py_name == param.name)
+                                .is_none_or(|other| other.reference_order > field.reference_order)
+                        })
+                        .unwrap_or(reference_body.len())
+                };
                 reference_body.insert(
-                    0,
+                    at,
                     DocParam {
                         name: field.py_name.clone(),
                         annotation: "typing.Literal".to_string(),
@@ -5793,7 +5808,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             && ep.body_response_same_ref
                             && !ep.body_schema_titled
                             && !resource_envelope)
+                        // A `stream-condition` body escapes this drop as it
+                        // escapes the surviving-schema one above, and for the
+                        // same reason: Fern sends the condition beside it.
                         && !(ep.query_params.is_empty()
+                            && ep.stream_condition.is_none()
                             && matches!(body, RequestBody::Inline(fields)
                             if ep.body_schema_shape == BodySchemaShape::Ref
                                 && (!ep.body_schema_dropped
@@ -5912,12 +5931,8 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_plain("contextlib");
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_from("logging", "error");
-    imports.add_from("logging", "warning");
     imports.add_core("api_error", "ApiError");
-    imports.add_core("http_sse._api", "EventSource");
     imports.add_core("parse_error", "ParsingError");
-    imports.add_core("pydantic_utilities", "parse_sse_obj");
     imports.add_from("pydantic", "ValidationError");
     if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
@@ -5976,18 +5991,22 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     call.push("        ) as _response:".to_string());
 
     let inner_return = format!("{wrapper}(response=_response, data=_iter())");
-    let body = format!(
-        "\
-{call}
-
-            {async_kw}def _stream() -> {wrapper}[{data_type}]:
-                try:
-                    if 200 <= _response.status_code < 300:
-
-                        {async_kw}def _iter():
-                            _event_source = EventSource(_response)
+    let iter_body = match &ep.stream_protocol {
+        StreamProtocol::Sse { terminator } => {
+            imports.add_from("logging", "error");
+            imports.add_from("logging", "warning");
+            imports.add_core("http_sse._api", "EventSource");
+            imports.add_core("pydantic_utilities", "parse_sse_obj");
+            // Fern ends the stream at the declared terminator's `data`, or at an
+            // event carrying none.
+            let end = terminator.as_deref().map_or_else(
+                || "None".to_string(),
+                |end| format!("\"{}\"", escape_py_str(end)),
+            );
+            format!(
+                "                            _event_source = EventSource(_response)
                             {for_kw} _sse in _event_source.{iter_sse}():
-                                if _sse.data == None:
+                                if _sse.data == {end}:
                                     return
                                 try:
                                     yield typing.cast(
@@ -6006,7 +6025,45 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                                 except Exception as e:
                                     error(
                                         f\"Unexpected error processing SSE event: {{type(e).__name__}}: {{e}}, sse: {{_sse!r}}\"
+                                    )"
+            )
+        }
+        StreamProtocol::JsonLines => {
+            imports.add_plain("json");
+            imports.add_core("pydantic_utilities", "parse_obj_as");
+            // One chunk per non-empty line; Fern skips a line that does not parse.
+            let iter_lines = if is_async {
+                "aiter_lines"
+            } else {
+                "iter_lines"
+            };
+            format!(
+                "                            {for_kw} _text in _response.{iter_lines}():
+                                try:
+                                    if len(_text) == 0:
+                                        continue
+                                    yield typing.cast(
+                                        {chunk},
+                                        parse_obj_as(
+                                            type_={chunk},
+                                            object_=json.loads(_text),
+                                        ),
                                     )
+                                except Exception:
+                                    pass"
+            )
+        }
+    };
+    let body = format!(
+        "\
+{call}
+
+            {async_kw}def _stream() -> {wrapper}[{data_type}]:
+                try:
+                    if 200 <= _response.status_code < 300:
+
+                        {async_kw}def _iter():
+{iter_body}
                             return
 
                         return {inner_return}
@@ -11953,6 +12010,7 @@ mod tests {
             reference_description_suffix: String::new(),
             streaming: false,
             stream_chunk: None,
+            stream_protocol: crate::ir::StreamProtocol::Sse { terminator: None },
             text_response: false,
             markdown_response: false,
             binary_response: false,

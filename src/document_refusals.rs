@@ -1776,9 +1776,20 @@ fn check_reference_objects(
                     )?;
                     continue;
                 }
+                // A schema slot is a Schema Object, not a Reference Object of the
+                // enclosing kind: `itemSchema` is a sequential media type's
+                // per-item schema, so a `#/components/schemas` reference there is
+                // as valid as under `schema`.
                 if matches!(
                     key.as_str(),
-                    "schema" | "schemas" | "example" | "examples" | "default" | "enum" | "const"
+                    "schema"
+                        | "itemSchema"
+                        | "schemas"
+                        | "example"
+                        | "examples"
+                        | "default"
+                        | "enum"
+                        | "const"
                 ) || key.starts_with("x-")
                 {
                     continue;
