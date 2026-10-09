@@ -4695,7 +4695,7 @@ the recipe, a stale table fails the gate.
 So refreshing is: run the recipe, then bring the table to what it printed.
 
 **The cells in the join table now come from one run**: `just fixtures-coverage`
-on **2026-10-09**, with production `src/` unchanged from commit `741ed66b8a43`.
+on **2026-10-09**, with production `src/` unchanged from commit `a4d7ee2507ee`.
 It measures 245 golden-only tests and their union with 374 other e2e tests,
 plus the non-e2e tier. The printed columns and function contributions above
 are derived from those exports, with test code excluded. The per-row reach
