@@ -39,12 +39,28 @@ import sys
 import tempfile
 import tomllib
 from pathlib import Path
-from typing import TypeGuard
+from typing import NamedTuple, TypeGuard
 
 from coverage import CoverageData
 
 TOOL = "python-coverage"
 DATA_FILE = ".coverage"
+
+
+class Lines(NamedTuple):
+    """A file's, or a project's, executable lines and how many no run reached."""
+
+    statements: int
+    missed: int
+
+    def __add__(self, other: object) -> Lines:
+        if not isinstance(other, Lines):
+            return NotImplemented
+        return Lines(self.statements + other.statements, self.missed + other.missed)
+
+    @property
+    def percent(self) -> float:
+        return 100.0 * (self.statements - self.missed) / self.statements if self.statements else 100.0
 
 
 def fail(message: str, action: str) -> int:
@@ -98,17 +114,15 @@ def project_of(path: Path, sources: list[str]) -> str:
     return "(outside every source)"
 
 
-def by_project(analysis: dict[Path, tuple[int, int]], sources: list[str]) -> list[str]:
-    totals: dict[str, list[int]] = {}
-    for path, (statements, missed) in analysis.items():
-        total = totals.setdefault(project_of(path, sources), [0, 0])
-        total[0] += statements
-        total[1] += missed
-    lines = []
-    for project, (statements, missed) in sorted(totals.items()):
-        percent = 100.0 * (statements - missed) / statements if statements else 100.0
-        lines.append(f"  {project:<36} {statements - missed:>6}/{statements:<6} {percent:6.2f}%")
-    return lines
+def by_project(analysis: dict[Path, Lines], sources: list[str]) -> list[str]:
+    totals: dict[str, Lines] = {}
+    for path, lines in analysis.items():
+        project = project_of(path, sources)
+        totals[project] = totals.get(project, Lines(0, 0)) + lines
+    return [
+        f"  {project:<36} {total.statements - total.missed:>6}/{total.statements:<6} {total.percent:6.2f}%"
+        for project, total in sorted(totals.items())
+    ]
 
 
 def strings(value: object) -> TypeGuard[list[str]]:
@@ -196,21 +210,19 @@ def main(argv: list[str]) -> int:
             (root / name).resolve(): summary["summary"]
             for name, summary in json.loads(report.read_text(encoding="utf-8"))["files"].items()
         }
-    analysis: dict[Path, tuple[int, int]] = {}
+    analysis: dict[Path, Lines] = {}
     for path in files:
         summary = measured.get((root / path).resolve())
         if summary is None:
             return fail(f"{path} is missing from the combined report", "re-run the tooling projects' tests")
-        analysis[path] = (summary["num_statements"], summary["missing_lines"])
-    total_statements = sum(statements for statements, _ in analysis.values())
-    total_missed = sum(missed for _, missed in analysis.values())
-    percent = 100.0 * (total_statements - total_missed) / total_statements if total_statements else 100.0
+        analysis[path] = Lines(summary["num_statements"], summary["missing_lines"])
+    total = sum(analysis.values(), Lines(0, 0))
     summary_line = (
-        f"{percent:.2f}% of {total_statements} lines across {len(files)} files "
+        f"{total.percent:.2f}% of {total.statements} lines across {len(files)} files "
         f"(floor {args.fail_under:g}%, {len(unrecorded)} never run)"
     )
 
-    if round(percent, 2) < args.fail_under:
+    if round(total.percent, 2) < args.fail_under:
         table = coverage_cli("report", f"--data-file={combined}", "--skip-covered", "--sort=-miss", *map(str, files))
         print(table.stdout.rstrip(), file=sys.stderr)
         print(f"{TOOL}: per project:", file=sys.stderr)

@@ -54,6 +54,8 @@
         "default",
         "pythonTooling",
         "{workspaceRoot}/.ruff-version",
+        "{workspaceRoot}/docs/python-tooling.md",
+        "{workspaceRoot}/AGENTS.md",
         "{workspaceRoot}/screenshots/project.json",
         "{workspaceRoot}/tools/corpus/project.json",
         "{workspaceRoot}/tools/corpus-fetch/project.json",

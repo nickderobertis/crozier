@@ -7,6 +7,8 @@
   `crozier generate` emits.
 * The root manifest is still the maturin-built `crozier` distribution, and uv
   never builds or installs it into the tooling venv.
+* The floor `python-workspace:coverage` enforces is the one AGENTS.md records
+  and docs/python-tooling.md's command uses.
 * Every project directory the coverage paths name is a workspace member with its own
   manifest beside its project.json, that project declares the four uniform
   Python targets the gate runs, and the coverage aggregate depends on its
@@ -16,6 +18,7 @@
 from __future__ import annotations
 
 import json
+import re
 import tomllib
 import unittest
 from pathlib import Path
@@ -81,6 +84,19 @@ class EveryMeasuredProjectIsAWorkspaceProject(unittest.TestCase):
         }
         self.assertEqual(measured - {aggregate["name"]}, set(aggregate["implicitDependencies"]))
         self.assertEqual(["^test", "test"], aggregate["targets"]["coverage"]["dependsOn"])
+
+    def test_the_floor_the_target_enforces_is_the_one_recorded(self) -> None:
+        aggregate = json.loads((REPO / "tools" / "python-workspace" / "project.json").read_text(encoding="utf-8"))
+        command = aggregate["targets"]["coverage"]["options"]["command"]
+        floor = re.search(r"--fail-under (\d+(?:\.\d+)?)", command)
+        assert floor is not None, command
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn(f"**The Python tooling's floor is {floor.group(1)}%", agents)
+        guide = (REPO / "docs" / "python-tooling.md").read_text(encoding="utf-8")
+        self.assertIn(f"coverage_gate.py --fail-under {floor.group(1)} --by-project", guide)
+        inputs = aggregate["targets"]["test"]["inputs"]
+        self.assertIn("{workspaceRoot}/AGENTS.md", inputs)
+        self.assertIn("{workspaceRoot}/docs/python-tooling.md", inputs)
 
     def test_this_suite_reruns_when_any_manifest_it_reads_changes(self) -> None:
         # The suite reads every measured project's project.json and pyproject.toml;
