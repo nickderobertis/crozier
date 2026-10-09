@@ -13199,6 +13199,8 @@ fn scalar_narrowed_enum_type(
 fn narrowed_enum_example(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<String> {
     let (target, member) = scalar_narrowed_enum_ref(schema, schemas)?;
     // A pattern-only correction cannot certify additional string constraints.
+    // Both nodes are string-typed, so `normalize_empty_compositions` has already
+    // discarded any composition on them, as Fern does.
     if [target, member].iter().any(|node| {
         node.min_length.is_some()
             || node.max_length.is_some()
@@ -13206,9 +13208,6 @@ fn narrowed_enum_example(schema: &Schema, schemas: &IndexMap<String, Schema>) ->
             || node.not_schema.is_some()
             || node.format.is_some()
     }) || target.pattern.is_some()
-        || target.all_of.is_some()
-        || target.any_of.is_some()
-        || target.one_of.is_some()
     {
         return None;
     }

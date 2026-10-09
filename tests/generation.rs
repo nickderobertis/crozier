@@ -80,13 +80,44 @@ fn narrowed_enum_defaults_respect_the_pattern_without_changing_the_type() {
     assert!(render(&accepted_first)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
     let malformed = source.replace("^(?!preparation$).*$", "'['");
     assert!(render(&malformed)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
-    let further_constraint = source.replace(
-        "\n            pattern: ^(?!preparation$).*$",
-        "\n            minLength: 100\n            pattern: ^(?!preparation$).*$",
-    );
-    assert!(
-        render(&further_constraint)["README.md"].contains("phase=MeasurementPhase.PREPARATION,")
-    );
+    // A pattern-only correction cannot certify any further string constraint,
+    // on the scalar member or on the enum it narrows, so each keeps Fern's first
+    // member as the example.
+    for member in [
+        "minLength: 100",
+        "maxLength: 1",
+        "const: recording",
+        "not: { enum: [recording] }",
+        "format: uuid",
+    ] {
+        let further_constraint = source.replace(
+            "\n            pattern: ^(?!preparation$).*$",
+            &format!("\n            {member}\n            pattern: ^(?!preparation$).*$"),
+        );
+        assert!(
+            render(&further_constraint)["README.md"]
+                .contains("phase=MeasurementPhase.PREPARATION,"),
+            "member {member}"
+        );
+    }
+    for target in [
+        "minLength: 100",
+        "maxLength: 1",
+        "format: uuid",
+        "pattern: ^.*$",
+        "not: { enum: [recording] }",
+    ] {
+        let further_constraint = source.replace(
+            "    Phase:\n      type: string\n",
+            &format!("    Phase:\n      type: string\n      {target}\n"),
+        );
+        assert_ne!(further_constraint, source);
+        assert!(
+            render(&further_constraint)["README.md"]
+                .contains("phase=MeasurementPhase.PREPARATION,"),
+            "target {target}"
+        );
+    }
     let no_valid = source.replace("^(?!preparation$).*$", "^excluded$");
     assert!(render(&no_valid)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
 }
