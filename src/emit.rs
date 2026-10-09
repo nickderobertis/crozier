@@ -12429,6 +12429,8 @@ mod tests {
             types: Vec::new(),
             tag_types: Vec::new(),
             endpoint_modules,
+            empty_endpoint_namespace: false,
+            empty_namespace_types: Vec::new(),
             endpoint_module_titles: Default::default(),
             endpoints,
             errors: Vec::new(),
