@@ -102,6 +102,10 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
         idempotency_headers_fern: None,
         pagination_crozier: None,
         pagination_fern: None,
+        global_headers_crozier: None,
+        global_headers_fern: None,
+        sdk_variables_crozier: None,
+        sdk_variables_fern: None,
     };
     for (route, item) in source["paths"].as_mapping().into_iter().flatten() {
         let Some(route) = route.as_str() else {

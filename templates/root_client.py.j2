@@ -30,7 +30,7 @@ class {{ class_name }}:
 
 {{ tr_doc }}    Examples
     --------
-    from {{ pkg }} import {{ class_name }}
+{{ client_example_imports }}    from {{ pkg }} import {{ class_name }}
 
 {% if client_param_example == "" and example_line == "" and example_base_url == "" %}
     client = {{ class_name }}()

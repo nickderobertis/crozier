@@ -122,10 +122,9 @@ extension not listed here does not change crozier's output.
 | Fern | crozier alias | On | Effect |
 | --- | --- | --- | --- |
 | `x-fern-audiences` | `x-crozier-audiences` | operation | The audience labels the `audiences` setting filters on. |
-| `x-fern-ignore` | `x-crozier-ignore` | operation, component schema | Leaves the node out of the SDK. |
+| `x-fern-ignore` | `x-crozier-ignore` | operation, component schema, parameter | Leaves the node out of the SDK. |
 | `x-fern-sdk-group-name` | `x-crozier-sdk-group-name` | operation, component schema | On an operation, the sub-client the method belongs to (a list nests it), honoured only beside a method name; on a component, the package its type is written into. |
 | `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | operation | The method's name. A sequence of strings is read joined by `,`, as Fern reads it (`[fetch]` is `fetch`). |
-| `x-fern-type-name` | `x-crozier-type-name` | component schema, inline schema | The name of the type the schema becomes, in place of the one derived from its component key or its position (`ShotSize` in `types/shot_size.py`). |
 | `x-fern-pagination` | `x-crozier-pagination` | operation | Returns a pager over the response's items. |
 | `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response; a `stream-condition` splits the method in two. |
 | `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name for each value. |
@@ -141,6 +140,16 @@ extension not listed here does not change crozier's output.
 | `x-fern-retries` | `x-crozier-retries` | operation | `{disabled: true}` sends the request with `max_retries` 0, whatever the caller's options say. |
 | `x-fern-webhook` | `x-crozier-webhook` | path operation | `true` leaves the operation out of the client; the schemas it names stay ordinary types. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
+| `x-fern-parameter-name` | `x-crozier-parameter-name` | parameter | Names the SDK argument while retaining the parameter wire name. |
+| `x-fern-default` | `x-crozier-default` | query parameter | Supplies the generated argument default. |
+| `x-fern-sdk-variables` | `x-crozier-sdk-variables` | document | Declares client constructor variables. |
+| `x-fern-sdk-variable` | `x-crozier-sdk-variable` | path parameter | Reads a declared client variable instead of taking a method argument. |
+| `x-fern-global-headers` | `x-crozier-global-headers` | document | Declares client constructor arguments sent as headers. |
+| `x-fern-version` | `x-crozier-version` | document | Refuses a version header also declared as a required operation parameter. |
+
+The parameter-extension alias gate reads these spellings and placements from
+this table, then checks their complete generated output. Its header refusal
+control does the same for the version extension.
 
 ## The script
 

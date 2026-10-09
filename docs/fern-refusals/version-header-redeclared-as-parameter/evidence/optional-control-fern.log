@@ -1,0 +1,13 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Close-160-certified-SDK-parity-scenarios/scratch/1216328-3/version-optional-control/raw
+[api]: crozier-reference Started.
+[api]: crozier-reference fernapi/fern-python-sdk Started.
+[api]: crozier-reference ✓ All checks passed
+[api]: crozier-reference fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: crozier-reference fernapi/fern-python-sdk Generator logs here: /tmp/tmp-944320-DBZIPq7POloB
+[api]: crozier-reference fernapi/fern-python-sdk Wrote files to /home/whoop/ai-orchestrator/runs/Close-160-certified-SDK-parity-scenarios/scratch/1216328-3/version-optional-control/raw/fern-python-sdk
+[api]: crozier-reference fernapi/fern-python-sdk Finished.
+[api]: crozier-reference Finished.
