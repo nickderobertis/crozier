@@ -2,13 +2,18 @@
 # the root pyproject.toml). It publishes nothing: there is no [build-system],
 # and `package = false` keeps uv from trying to build or install it. A promoted
 # tier: its dependencies are here so ty resolves the harness's imports; the
-# tier's own runner still builds the environment its suite runs in.
+# tier's own runner still builds the environment its suite runs in. Its
+# workspace dependencies are the members whose Python its harness loads or runs.
 [project]
 name = "crozier-corpus-match"
 version = "0.0.0"
 description = "The corpus byte-match tier's offline and usage suites."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["crozier-surface-census", "crozier-witness-search"]
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+crozier-surface-census = { workspace = true }
+crozier-witness-search = { workspace = true }

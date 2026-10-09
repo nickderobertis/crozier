@@ -213,6 +213,16 @@ dev = [
 name = "crozier-census-fallback"
 version = "0.0.0"
 source = { virtual = "tests/census_fallback" }
+dependencies = [
+    { name = "crozier-surface-census" },
+    { name = "crozier-witness-search" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+    { name = "crozier-witness-search", virtual = "tools/witness-search" },
+]
 
 [[package]]
 name = "crozier-corpus"
@@ -249,6 +259,16 @@ source = { virtual = "tools/corpus-licensing" }
 name = "crozier-corpus-match"
 version = "0.0.0"
 source = { virtual = "tests/corpus_match" }
+dependencies = [
+    { name = "crozier-surface-census" },
+    { name = "crozier-witness-search" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+    { name = "crozier-witness-search", virtual = "tools/witness-search" },
+]
 
 [[package]]
 name = "crozier-fern-goldens"
@@ -313,6 +333,7 @@ name = "crozier-live-e2e"
 version = "0.0.0"
 source = { virtual = "tests/live_e2e" }
 dependencies = [
+    { name = "crozier-corpus" },
     { name = "httpx" },
     { name = "pydantic" },
     { name = "pytest" },
@@ -321,6 +342,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "crozier-corpus", virtual = "tools/corpus" },
     { name = "httpx", specifier = ">=0.28" },
     { name = "pydantic", specifier = ">=2" },
     { name = "pytest", specifier = ">=8.4" },

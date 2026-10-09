@@ -50,7 +50,7 @@ extensionless `#!…python` scripts alike, whether or not any test runs it; only
 the test files under `tests/` are omitted. It runs the `coverage` CLI in child
 processes: a second `coverage.Coverage` inside a measured process stops that
 process's own data from being saved, which once hid the gate's own runs from its
-suite. The floor and the measurement it rests on are recorded in `AGENTS.md`.
+suite.
 
 ## ruff and ty
 

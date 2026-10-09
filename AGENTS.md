@@ -119,8 +119,6 @@ Use the `just` recipes; do not hand-roll equivalents.
 - `just check` — the gate (`--sweep` for the broader tier). Must pass before any
   commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
-- Python tooling: `just sync-python` (part of `bootstrap`) syncs the uv
-  workspace; every Python target runs under `uv run --locked`.
 - A target's `inputs` are both its cache key and its affected trigger: code that
   starts reading a new path adds it there, or a change to that path never reruns
   it. Where an edge may go is `nx.json`'s `boundaries`, enforced by every
