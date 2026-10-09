@@ -35,8 +35,9 @@ import re
 import sys
 import textwrap
 from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, NamedTuple
+from typing import NamedTuple, NoReturn
 
 # LLVM's coverage export encodes a region as
 # [line_start, col_start, line_end, col_end, count, file_id, expanded_file_id, kind]
@@ -210,7 +211,7 @@ def _char_literal_width(line: str, position: int) -> int:
     return 0  # `'a` — a lifetime, whose following token must still be scanned
 
 
-def _refuse_export(path: Path, detail: str) -> None:
+def _refuse_export(path: Path, detail: str) -> NoReturn:
     """Refuse a coverage export whose shape is not llvm.coverage.json.export 3.x."""
     raise SystemExit(
         f"fixtures-coverage: {path} is not the llvm-cov export this report "
@@ -264,8 +265,10 @@ def load_tier(path: Path, repo_root: Path) -> dict[str, dict[Region, int]]:
         if not all(isinstance(name, str) for name in filenames):
             _refuse_export(path, f"a function record's filenames are not all strings: {filenames!r}")
         for raw in regions:
-            if not isinstance(raw, list) or len(raw) <= REGION_KIND_INDEX or not all(
-                _is_count(field) for field in raw[: REGION_KIND_INDEX + 1]
+            if (
+                not isinstance(raw, list)
+                or len(raw) <= REGION_KIND_INDEX
+                or not all(_is_count(field) for field in raw[: REGION_KIND_INDEX + 1])
             ):
                 _refuse_export(
                     path,
@@ -291,9 +294,7 @@ def load_tier(path: Path, repo_root: Path) -> dict[str, dict[Region, int]]:
     return dict(files)
 
 
-def drop_test_regions(
-    tiers: dict[str, dict[str, dict[Region, int]]], repo_root: Path
-) -> dict[str, list[Span]]:
+def drop_test_regions(tiers: dict[str, dict[str, dict[Region, int]]], repo_root: Path) -> dict[str, list[Span]]:
     """Remove every region that starts inside a `#[cfg(test)]` span, in place."""
     spans: dict[str, list[Span]] = {}
     measured = {name for tier in tiers.values() for name in tier}
@@ -377,33 +378,20 @@ def render(
     for name in order:
         rc, rt, lc, lt = running[name]
         totals[name] = (rc, rt)
-        out.append(
-            f"{'TOTAL':<20} {name:<12} "
-            f"{rc:>6}/{rt:<6} {percent(rc, rt)}  {lc:>6}/{lt:<6} {percent(lc, lt)}"
-        )
+        out.append(f"{'TOTAL':<20} {name:<12} {rc:>6}/{rt:<6} {percent(rc, rt)}  {lc:>6}/{lt:<6} {percent(lc, lt)}")
     return out, totals
 
 
-def blind_spots(
-    tiers: dict[str, dict[str, dict[Region, int]]], golden: str, order: Iterable[str]
-) -> list[str]:
+def blind_spots(tiers: dict[str, dict[str, dict[Region, int]]], golden: str, order: Iterable[str]) -> list[str]:
     """Regions some other tier reaches that no committed golden reaches."""
     reached = {
-        name: {
-            (relative, region)
-            for relative, counts in tier.items()
-            for region, count in counts.items()
-            if count > 0
-        }
+        name: {(relative, region) for relative, counts in tier.items() for region, count in counts.items() if count > 0}
         for name, tier in tiers.items()
     }
     others = [name for name in order if name != golden]
     out: list[str] = []
     out.append("")
-    out.append(
-        "golden blind spots — production regions another tier executes but no "
-        "committed Fern golden does:"
-    )
+    out.append("golden blind spots — production regions another tier executes but no committed Fern golden does:")
     per_file: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for name in others:
         for relative, _region in reached[name] - reached[golden]:
@@ -414,10 +402,7 @@ def blind_spots(
     width = max(len(relative) for relative in per_file)
     for relative in sorted(per_file, key=lambda f: -sum(per_file[f].values())):
         breakdown = ", ".join(f"{name} {per_file[relative][name]}" for name in others)
-        out.append(
-            f"  {relative:<{width}} {sum(per_file[relative].values()):>5}"
-            f"   ({breakdown})"
-        )
+        out.append(f"  {relative:<{width}} {sum(per_file[relative].values()):>5}   ({breakdown})")
     unique = len(set().union(*(reached[name] for name in others)) - reached[golden])
     out.append(f"  total {unique} region(s) across {len(per_file)} file(s)")
     out.append("")
@@ -499,9 +484,7 @@ def main(argv: list[str] | None = None) -> int:
         selections[name] = (tier["selection"], tier["tests"])
 
     if args.golden_tier not in order:
-        parser.error(
-            f"--golden-tier {args.golden_tier!r} is not one of the declared tiers {order}"
-        )
+        parser.error(f"--golden-tier {args.golden_tier!r} is not one of the declared tiers {order}")
     # A typo here would match no tier and silently retire the subprocess proof,
     # which is the one assertion keeping the e2e figures from understating.
     unknown = [name for name in args.subprocess_tier if name not in order]

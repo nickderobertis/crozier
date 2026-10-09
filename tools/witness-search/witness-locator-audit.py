@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Reject public locators for excluded inputs in committed evidence and notes."""
+
 from __future__ import annotations
 
 import argparse
@@ -27,13 +28,13 @@ LOCATOR = re.compile(
     re.IGNORECASE,
 )
 # Certified SDK contribution and issue links identify no input document.
-ALLOWED_URLS = frozenset((
-    "https://github.com/fern-api/fern/blob/main/CONTRIBUTING.md",
-    "https://github.com/fern-api/fern/issues",
-))
-QUALIFIED_REVISION = re.compile(
-    rf"(?:{REPOSITORIES})[`\"']?\s+(?:at\s+)?[`\"']?[0-9a-f]{{40}}", re.IGNORECASE
+ALLOWED_URLS = frozenset(
+    (
+        "https://github.com/fern-api/fern/blob/main/CONTRIBUTING.md",
+        "https://github.com/fern-api/fern/issues",
+    )
 )
+QUALIFIED_REVISION = re.compile(rf"(?:{REPOSITORIES})[`\"']?\s+(?:at\s+)?[`\"']?[0-9a-f]{{40}}", re.IGNORECASE)
 
 PROSE_LOCATOR = re.compile(
     rf"(?:{REPOSITORIES})[`\"']?(?:'s)?\s+(?:(?:own|input|document|fixture|test|file)\s+)*"
@@ -47,32 +48,32 @@ def findings(text: str) -> list[str]:
     if not any(repo.lower() in text.lower() for repo in INDEX.EXCLUDED_REPOSITORIES):
         return errors
     for match in LOCATOR.finditer(text):
-        if match[0].rstrip(').,;') in ALLOWED_URLS:
+        if match[0].rstrip(").,;") in ALLOWED_URLS:
             continue
-        value = match['value'].rstrip('.,;)')
+        value = match["value"].rstrip(".,;)")
         if not value:
             continue
-        parts = value.split('@', 1)
+        parts = value.split("@", 1)
         if not all(TOKEN.fullmatch(part) for part in parts):
-            errors.append('excluded repository retains a public locator')
+            errors.append("excluded repository retains a public locator")
     if PROSE_LOCATOR.search(text):
-        errors.append('excluded repository retains a public locator in prose')
+        errors.append("excluded repository retains a public locator in prose")
     if QUALIFIED_REVISION.search(text):
-        errors.append('excluded repository retains a public revision')
+        errors.append("excluded repository retains a public revision")
     return errors
 
 
 def structured_findings(value: Any) -> list[str]:
     errors = []
     if isinstance(value, dict):
-        repository = value.get('repository')
+        repository = value.get("repository")
         if isinstance(repository, dict):
-            repository = repository.get('nameWithOwner') or repository.get('full_name')
+            repository = repository.get("nameWithOwner") or repository.get("full_name")
         if isinstance(repository, str) and INDEX.excluded_repository(repository):
-            for field in ('path', *INDEX.OPAQUE_LOCATORS, 'supersedes'):
+            for field in ("path", *INDEX.OPAQUE_LOCATORS, "supersedes"):
                 locator = value.get(field)
                 if locator is not None and not INDEX.opaque_subject(locator):
-                    errors.append(f'excluded repository retains a public {field}')
+                    errors.append(f"excluded repository retains a public {field}")
         for item in value.values():
             errors.extend(structured_findings(item))
     elif isinstance(value, list):
@@ -82,42 +83,46 @@ def structured_findings(value: Any) -> list[str]:
 
 
 def audit(root: Path) -> list[str]:
-    paths = subprocess.check_output(
-        ['git', '-C', str(root), 'ls-files', '-z', 'docs/openapi-surface', 'docs/openapi-surface-coverage.md']
-    ).decode('utf-8').split('\0')
+    paths = (
+        subprocess.check_output(
+            ["git", "-C", str(root), "ls-files", "-z", "docs/openapi-surface", "docs/openapi-surface-coverage.md"]
+        )
+        .decode("utf-8")
+        .split("\0")
+    )
     errors = []
     for name in filter(None, paths):
         path = root / name
-        if path.suffix not in ('.md', '.json', '.jsonl', '.tsv', '.gz'):
+        if path.suffix not in (".md", ".json", ".jsonl", ".tsv", ".gz"):
             continue
-        compressed = path.suffix == '.gz'
-        format_suffix = path.with_suffix('').suffix if compressed else path.suffix
-        text = gzip.decompress(path.read_bytes()).decode('utf-8') if compressed else path.read_text(encoding='utf-8')
+        compressed = path.suffix == ".gz"
+        format_suffix = path.with_suffix("").suffix if compressed else path.suffix
+        text = gzip.decompress(path.read_bytes()).decode("utf-8") if compressed else path.read_text(encoding="utf-8")
         for line_number, line in enumerate(text.splitlines(), 1):
             problems = findings(line)
-            if format_suffix == '.jsonl':
+            if format_suffix == ".jsonl":
                 problems.extend(structured_findings(json.loads(line)))
-            errors.extend(f'{name}:{line_number}: {problem}' for problem in problems)
-        if format_suffix == '.json':
-            errors.extend(f'{name}: {problem}' for problem in structured_findings(json.loads(text)))
+            errors.extend(f"{name}:{line_number}: {problem}" for problem in problems)
+        if format_suffix == ".json":
+            errors.extend(f"{name}: {problem}" for problem in structured_findings(json.loads(text)))
     return errors
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=ROOT)
+    parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args()
     try:
         errors = audit(args.root)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
-        print(f'witness-locator-audit: {error}; restore valid evidence and retry', file=sys.stderr)
+        print(f"witness-locator-audit: {error}; restore valid evidence and retry", file=sys.stderr)
         return 1
     if errors:
-        print('\n'.join(errors), file=sys.stderr)
-        print('Replace excluded input locators with their existing anonymous identities and retry.', file=sys.stderr)
+        print("\n".join(errors), file=sys.stderr)
+        print("Replace excluded input locators with their existing anonymous identities and retry.", file=sys.stderr)
         return 1
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     raise SystemExit(main())

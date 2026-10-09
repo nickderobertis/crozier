@@ -77,8 +77,11 @@ and surfacing the rest as follow-ups:
 ## Stack and composition
 
 - **Product shape:** cli
-- **Language(s):** rust, bash (`scripts/*.sh` and the projects' shell scripts)
-- **References composed:** base, shapes/cli, languages/rust, languages/bash, intersections/rust-cli, ci, project-graph, llmlint, releasing
+- **Language(s):** rust, bash (`scripts/*.sh` and the projects' shell scripts),
+  python (the repository tooling under `tools/` and `screenshots/`, and the
+  promoted tiers' harnesses: one uv workspace —
+  [`docs/python-tooling.md`](docs/python-tooling.md))
+- **References composed:** base, shapes/cli, languages/rust, languages/bash, languages/python, intersections/rust-cli, ci, project-graph, llmlint, releasing
 - **Excluded, and why:**
   - **Virtual root manifest** — the root `Cargo.toml` stays the `crozier`
     package and also declares the workspace; why, and why its Nx project is
@@ -89,6 +92,19 @@ and surfacing the rest as follow-ups:
   - **Bench tier** — performance is a goal, but the informational Criterion/
     hyperfine tier is deferred until there's a hot path worth tracking; it never
     gates, so its absence costs no correctness.
+  - **Departures from `languages/python.md`'s defaults:**
+    - Source valid on 3.11 (ruff `target-version`, ty `python-version`) though
+      the venv runs 3.14: recipes, promoted tiers and PEP 723 stages also run the
+      scripts under the host's `python3`, and the workspace `requires-python`
+      steers the interpreter `uv venv` picks for the e2e suite's SDK envs.
+    - The tooling ruff is pinned to `.ruff-version`: `uv run` puts the venv's
+      ruff first on PATH, where crozier's generation shells out to it.
+    - No Pydantic boundary models or async clients: the census and witness
+      scripts stay stdlib-only so they run installless and no parser's version
+      moves their measurements; their explicit checks are the validation.
+    - The promoted tiers' harnesses get format, lint and typecheck only; their
+      suites need Prism, PyPI or a release build, so they keep their runners and
+      stay out of the coverage floor.
 
 ## Command surface
 
@@ -281,6 +297,23 @@ failure and missing-file recovery, not just the happy path. Coverage is a floor
 divergence — every corpus's `unmatched` list is empty, so a non-empty one means
 work in flight, never an accepted state; [`docs/matching.md`](docs/matching.md)
 holds the judgment about why.
+
+<!-- llmlint: ignore-block[agents_md_durable_and_terse] The per-project figures and the two structural 0% files are the measurement the lowered floor rests on; the create-repo Python reference lets a floor sit below 95% only with that reason recorded in AGENTS.md itself, and the manager's ruling for this floor required them here. -->
+**The Python tooling's floor is 88%, lower than the crate's 95% — a floor to
+ratchet up, not a target** (`python-workspace:coverage`, combined over every
+tooling project's suite; test files are the only exclusion). It rests on the
+2026-10-08 measurement of 88.61% (12428/14026 lines, 34 files): screenshots
+97.10, corpus 93.23, corpus-licensing 100, fern-goldens 83.86, fern-refusals
+95.40, llmlint-tooling 93.16, python-workspace 95.89, surface-census 88.79,
+witness-search 86.16. Two files are 0% here by structure, 529 lines between them:
+`witness-search-recensus.py`, whose suite needs the census-fallback tier's
+ruamel.yaml pin (kept out of the workspace venv because the golden-reach suites
+assert its absence), and `probe-differential-isolation.py`, which only the Rust
+e2e harness drives. It holds on the Linux and macOS check legs and the sweep; the
+Windows leg runs every suite without the floor, because the suites skip their
+POSIX-only cases there. Raise it as those lines get reached; never lower it
+without a new measurement here.
+<!-- llmlint: ignore-end[agents_md_durable_and_terse] -->
 
 ## Keeping the allowlist current
 

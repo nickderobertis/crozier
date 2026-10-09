@@ -70,8 +70,9 @@ class LlmlintDiffTests(unittest.TestCase):
         self.git("checkout", "-q", "-b", "feature")
 
     def git(self, *args: str) -> None:
-        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
-                       cwd=self.repo, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=self.repo, check=True, capture_output=True
+        )
 
     def write(self, path: str, text: str) -> None:
         target = self.repo / path
@@ -86,8 +87,9 @@ class LlmlintDiffTests(unittest.TestCase):
 
     def run_script(self, *args: str, **exits: str) -> subprocess.CompletedProcess[str]:
         env = {**self.env, **{f"STUB_EXIT_{k}": v for k, v in exits.items()}}
-        return subprocess.run([sys.executable, str(SCRIPT), "base", *args], cwd=self.repo, env=env,
-                              capture_output=True, text=True)
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "base", *args], cwd=self.repo, env=env, capture_output=True, text=True
+        )
 
     def calls(self) -> list[list[str]]:
         if not self.log.is_file():
@@ -102,8 +104,15 @@ class LlmlintDiffTests(unittest.TestCase):
         self.assertEqual("", run.stdout)
 
     def test_a_diff_over_budget_is_judged_in_path_ordered_batches_under_it(self) -> None:
-        self.commit({"src/a.rs": "a" * 400, "src/b.rs": "b" * 400, "docs/c.md": "c" * 400,
-                     "data/big/rows.tsv": "t" * 5000, "gone.md": "x\n"})
+        self.commit(
+            {
+                "src/a.rs": "a" * 400,
+                "src/b.rs": "b" * 400,
+                "docs/c.md": "c" * 400,
+                "data/big/rows.tsv": "t" * 5000,
+                "gone.md": "x\n",
+            }
+        )
         self.git("rm", "-q", "gone.md")
         self.git("commit", "-q", "-m", "drop")
         run = self.run_script("--budget", "1500")
@@ -121,7 +130,7 @@ class LlmlintDiffTests(unittest.TestCase):
         # argument through intact (CI saw "caf\ufffd.md"), so the accented name
         # is asserted where the stub is the executable itself.
         names = ["a b.md"] if os.name == "nt" else ["a b.md", "café.md"]
-        self.commit({name: "a" * 400 for name in names})
+        self.commit(dict.fromkeys(names, "a" * 400))
         run = self.run_script("--budget", "500")
         self.assertEqual(0, run.returncode, run.stderr)
         base = ["--diff", "git", "--diff-base", "base"]
@@ -148,7 +157,7 @@ class LlmlintDiffTests(unittest.TestCase):
         self.assertEqual(2, run.returncode, "so is the single plain invocation")
 
     def test_every_changed_file_is_judged_in_exactly_one_batch(self) -> None:
-        files = {f"d{n}/f{n}.md": "x" * (200 * n) for n in range(1, 9)}
+        files: dict[str, str] = {f"d{n}/f{n}.md": "x" * (200 * n) for n in range(1, 9)}
         self.commit(files)
         self.assertEqual(0, self.run_script("--budget", "2500").returncode)
         named = [path for call in self.calls() for path in call[4:]]
@@ -160,8 +169,9 @@ class LlmlintDiffTests(unittest.TestCase):
         run = self.run_script("--budget", "0")
         self.assertEqual(2, run.returncode)
         self.assertIn("--budget must be a positive byte count", run.stderr)
-        run = subprocess.run([sys.executable, str(SCRIPT), "no-such-base"], cwd=self.repo, env=self.env,
-                             capture_output=True, text=True)
+        run = subprocess.run(
+            [sys.executable, str(SCRIPT), "no-such-base"], cwd=self.repo, env=self.env, capture_output=True, text=True
+        )
         self.assertEqual(2, run.returncode, "a run that cannot be made is no rule failure")
         self.assertIn("git fetch origin main", run.stderr)
         self.assertEqual([], self.calls())
@@ -181,8 +191,9 @@ class LlmlintDiffTests(unittest.TestCase):
         )
         (wrapper / "git").chmod(0o755)
         env = {**self.env, "PATH": f"{wrapper}{os.pathsep}{self.env['PATH']}"}
-        run = subprocess.run([sys.executable, str(SCRIPT), "base"], cwd=self.repo, env=env,
-                             capture_output=True, text=True)
+        run = subprocess.run(
+            [sys.executable, str(SCRIPT), "base"], cwd=self.repo, env=env, capture_output=True, text=True
+        )
         self.assertEqual(2, run.returncode)
         self.assertIn("-- a.md` exited 128: fatal: simulated", run.stderr)
         self.assertIn("run from inside the checkout, then retry", run.stderr)
@@ -190,8 +201,10 @@ class LlmlintDiffTests(unittest.TestCase):
 
     def test_the_recipe_runs_this_script(self) -> None:
         justfile = (REPO / "justfile").read_text(encoding="utf-8")
-        self.assertIn('lint-llm-diff base="origin/main" *args:\n    python3 tools/llmlint/llmlint-diff.py {{base}} {{args}}',
-                      justfile)
+        self.assertIn(
+            'lint-llm-diff base="origin/main" *args:\n    python3 tools/llmlint/llmlint-diff.py {{base}} {{args}}',
+            justfile,
+        )
 
 
 if __name__ == "__main__":

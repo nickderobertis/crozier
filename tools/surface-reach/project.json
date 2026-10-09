@@ -15,7 +15,10 @@
     "test-fixtures-coverage": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/surface-reach/tests/fixtures_coverage_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-reach/tests/fixtures_coverage_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-reach/test-fixtures-coverage/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -28,14 +31,21 @@
         "{workspaceRoot}/tools/corpus/corpus_sources.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
       ],
-      "parallelism": false
+      "parallelism": false,
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-reach/test-fixtures-coverage"
+      ]
     },
     "test-handwritten-reach": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/surface-reach/tests/handwritten_reach_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-reach/tests/handwritten_reach_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-reach/test-handwritten-reach/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -54,26 +64,40 @@
         "{workspaceRoot}/tools/corpus/corpus_sources.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
       ],
-      "parallelism": false
+      "parallelism": false,
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-reach/test-handwritten-reach"
+      ]
     },
     "test-llvm": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/surface-reach/tests/golden_reach_llvm_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-reach/tests/golden_reach_llvm_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-reach/test-llvm/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
         "default",
         "{workspaceRoot}/tools/surface-census/golden-reach.py",
-        "{workspaceRoot}/rust-toolchain.toml"
+        "{workspaceRoot}/rust-toolchain.toml",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-reach/test-llvm"
       ]
     },
     "test-residual-attribution": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/surface-reach/tests/residual_attribution_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-reach/tests/residual_attribution_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-reach/test-residual-attribution/.coverage"
+        }
       },
       "cache": true,
       "dependsOn": [
@@ -88,7 +112,11 @@
         "e2eSource",
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/tools/corpus/corpus_sources.py",
-        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py"
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-reach/test-residual-attribution"
       ]
     },
     "test": {
@@ -100,7 +128,7 @@
         "test-residual-attribution"
       ]
     },
-    "lint": {
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs surface-reach"
@@ -108,6 +136,52 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/surface-reach"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/surface-reach"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/surface-reach"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/surface-reach"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{workspaceRoot}/tools/surface-census/tests/*.py",
+        "pythonTooling"
       ]
     }
   }

@@ -135,6 +135,9 @@ plugins:
   # their rules (robust_shell, portable_to_target_shell) and the rule names the
   # scripts' `llmlint: ignore` directives reference.
   - "./llmlint-plugins/languages/bash.llmlint.yml"
+  # The repository's tooling (tools/*, screenshots/) is Python in a uv
+  # workspace; the python plugin judges it.
+  - "./llmlint-plugins/languages/python.llmlint.yml"
   - "./llmlint-plugins/ci.llmlint.yml"
   # crozier ships versioned artifacts (release-plz → crates.io, PyPI, GitHub
   # Releases), so the releasing plugin judges the release wiring.

@@ -25,9 +25,7 @@ Location = tuple[str | int, ...]
 
 
 def fingerprint(value: Any) -> str:
-    return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
 def profile(
@@ -57,22 +55,14 @@ def profile(
             ):
                 IDENTITY.validate_opaque_values(value)
                 name = IDENTITY.candidate_name(value)
-                nodes.append(
-                    (location, value, context, name, IDENTITY.candidate_revision(value))
-                )
+                nodes.append((location, value, context, name, IDENTITY.candidate_revision(value)))
             for key, item in value.items():
                 visit(item, (*location, key), context)
 
     for file in files:
         relative = Path(file)
-        if (
-            relative.is_absolute()
-            or ".." in relative.parts
-            or not file.startswith("docs/openapi-surface/")
-        ):
-            raise ValueError(
-                f"invalid historical ledger path {file!r}; restore the baseline from git"
-            )
+        if relative.is_absolute() or ".." in relative.parts or not file.startswith("docs/openapi-surface/"):
+            raise ValueError(f"invalid historical ledger path {file!r}; restore the baseline from git")
         lines = (root / relative).read_text(encoding="utf-8").splitlines()
         if len(lines) < files[file]:
             raise ValueError(
@@ -86,10 +76,7 @@ def profile(
     blobs = collections.defaultdict(list)
     digests = collections.defaultdict(list)
     verdicts = collections.defaultdict(list)
-    locators = {
-        kind: collections.defaultdict(list)
-        for kind in ("path", "revision", "blob", "digest")
-    }
+    locators = {kind: collections.defaultdict(list) for kind in ("path", "revision", "blob", "digest")}
     screens = {}
     candidates = []
     for location, value, context, name, revision in nodes:
@@ -127,20 +114,12 @@ def profile(
         )
         if "fern" in value:
             for screen_key in value.get("keys") or [key]:
-                screens[(directory, screen_key, name, value.get("sha256", ""))] = (
-                    location
-                )
-        elif Path(file).name.startswith("candidates") and value.get(
-            "selector_count", 0
-        ):
-            candidates.append(
-                (location, (directory, key, name, value.get("sha256", "")))
-            )
-    edges = sorted(
-        (location, screens[key]) for location, key in candidates if key in screens
-    )
+                screens[(directory, screen_key, name, value.get("sha256", ""))] = location
+        elif Path(file).name.startswith("candidates") and value.get("selector_count", 0):
+            candidates.append((location, (directory, key, name, value.get("sha256", ""))))
+    edges = sorted((location, screens[key]) for location, key in candidates if key in screens)
     superseded = []
-    for location, value, context, name, revision in nodes:
+    for location, value, context, name, _revision in nodes:
         if value.get("supersedes"):
             group = (
                 str(Path(location[0]).parent),
@@ -160,19 +139,14 @@ def profile(
             continue
         group = (str(Path(location[0]).parent), context.get("key", ""), name, revision)
         subject_edges.extend((location, target) for target in groups.get(group, ()))
-        subject_verdicts.append(
-            (location, {key: item for key, item in value.items() if key != "candidate"})
-        )
+        subject_verdicts.append((location, {key: item for key, item in value.items() if key != "candidate"}))
 
     def memberships(groups: dict[Any, list[Location]]) -> dict[str, Any]:
         members = sorted(sorted(group, key=str) for group in groups.values())
         return {
             "groups": len(members),
             "sizes": {
-                str(size): count
-                for size, count in sorted(
-                    collections.Counter(len(group) for group in members).items()
-                )
+                str(size): count for size, count in sorted(collections.Counter(len(group) for group in members).items())
             },
             "memberships": fingerprint(members),
         }
@@ -180,13 +154,9 @@ def profile(
     return {
         "version": PROFILE_VERSION,
         "record_counts": counts,
-        "node_counts": dict(
-            sorted(collections.Counter(n[0][0] for n in nodes).items())
-        ),
+        "node_counts": dict(sorted(collections.Counter(n[0][0] for n in nodes).items())),
         "revision_groups": memberships(groups),
-        "locator_groups": {
-            kind: memberships(values) for kind, values in locators.items()
-        },
+        "locator_groups": {kind: memberships(values) for kind, values in locators.items()},
         "blob_groups": memberships(blobs),
         "digest_groups": memberships(digests),
         "screen_joins": {"pairs": len(edges), "memberships": fingerprint(edges)},
@@ -205,9 +175,7 @@ def profile(
         "verdicts": {
             file: {
                 "count": len(rows),
-                "multiset": fingerprint(
-                    sorted(rows, key=lambda r: json.dumps(r, sort_keys=True))
-                ),
+                "multiset": fingerprint(sorted(rows, key=lambda r: json.dumps(r, sort_keys=True))),
             }
             for file, rows in sorted(verdicts.items())
         },
@@ -222,9 +190,7 @@ spec = importlib.util.spec_from_file_location(
     "witness_integrity_index", REPO / "tools/witness-search/witness-search-github-index.py"
 )
 if spec is None or spec.loader is None:
-    raise SystemExit(
-        "witness-evidence-integrity: cannot load the identity contract; restore it from git"
-    )
+    raise SystemExit("witness-evidence-integrity: cannot load the identity contract; restore it from git")
 IDENTITY = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = IDENTITY
 spec.loader.exec_module(IDENTITY)
@@ -238,13 +204,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         expected = json.loads(args.baseline.read_text(encoding="utf-8"))
         if not isinstance(expected, dict):
-            raise ValueError(
-                "profile must be a JSON object; restore the baseline from git"
-            )
-        if (
-            type(expected.get("version")) is not int
-            or expected["version"] != PROFILE_VERSION
-        ):
+            raise ValueError("profile must be a JSON object; restore the baseline from git")
+        if type(expected.get("version")) is not int or expected["version"] != PROFILE_VERSION:
             raise ValueError(
                 f"unsupported profile version {expected.get('version')}; restore version {PROFILE_VERSION} evidence from git"
             )
@@ -252,20 +213,11 @@ def main(argv: list[str] | None = None) -> int:
         if (
             not isinstance(files, dict)
             or not files
-            or any(
-                not isinstance(name, str) or type(count) is not int or count < 1
-                for name, count in files.items()
-            )
+            or any(not isinstance(name, str) or type(count) is not int or count < 1 for name, count in files.items())
         ):
-            raise ValueError(
-                "record_counts must map ledger paths to positive integers; restore the baseline from git"
-            )
+            raise ValueError("record_counts must map ledger paths to positive integers; restore the baseline from git")
         measured = profile(files, opaque_path, args.root)
-        changed = sorted(
-            key
-            for key in set(expected) | set(measured)
-            if expected.get(key) != measured.get(key)
-        )
+        changed = sorted(key for key in set(expected) | set(measured) if expected.get(key) != measured.get(key))
         if changed:
             raise ValueError(
                 f"historical evidence changed in {', '.join(changed)}; restore the retained records and joins"
