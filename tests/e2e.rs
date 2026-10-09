@@ -2013,6 +2013,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "locker-archive-hosts-literals",
+        "docs/openapi-surface/handwritten/locker-archive-hosts/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "locker-bank-claims-literals",
         "docs/openapi-surface/handwritten/locker-bank-claims/openapi.yml",
         &["--enum-type", "literals"],
@@ -2818,6 +2823,55 @@ fn server_extensions_read_crozier_spelling_over_fern() {
             assert!(
                 !environment.contains(text),
                 "{name}: `{text}` survives:\n{environment}"
+            );
+        }
+    }
+}
+
+/// An operation's own named server takes its name from either spelling, the
+/// crozier one winning a conflict: the environment gains that field beside
+/// `base`, and the operation's request reads it.
+#[test]
+fn operation_server_names_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cases = [
+        ("fern", "x-fern-server-name: archive", "archive", None),
+        ("crozier", "x-crozier-server-name: archive", "archive", None),
+        (
+            "conflict",
+            "x-fern-server-name: vault\n          x-crozier-server-name: archive",
+            "archive",
+            Some("vault"),
+        ),
+    ];
+    for (name, extension, field, loser) in cases {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Lockers, version: '1'}}\nservers:\n  - url: https://lockers.test\npaths:\n  /rentals:\n    get:\n      operationId: listRentals\n      servers:\n        - url: https://archive.lockers.test\n          {extension}\n      responses: {{'204': {{description: ok}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        let environment =
+            std::fs::read_to_string(out.join("src/fern/environment.py")).expect("environment");
+        assert!(
+            environment.contains(&format!(
+                "base=\"https://lockers.test\", {field}=\"https://archive.lockers.test\""
+            )),
+            "{name}: lacks the `{field}` field:\n{environment}"
+        );
+        let raw = std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client");
+        assert!(
+            raw.contains(&format!("get_environment().{field}")),
+            "{name}: the request does not read `{field}`:\n{raw}"
+        );
+        if let Some(loser) = loser {
+            assert!(
+                !environment.contains(loser) && !raw.contains(loser),
+                "{name}: the fern spelling `{loser}` survives"
             );
         }
     }
@@ -7143,13 +7197,10 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/analyze/reports/raw_client.py",
         "src/fern/analyze/reports/types/__init__.py",
         "src/fern/analyze/reports/types/top_pages_reports_request_sort_by.py",
-        "src/fern/assets/raw_client.py",
-        "src/fern/client.py",
         "src/fern/collections/__init__.py",
         "src/fern/collections/client.py",
         "src/fern/collections/fields/__init__.py",
         "src/fern/collections/fields/client.py",
-        "src/fern/collections/fields/raw_client.py",
         "src/fern/collections/fields/types/__init__.py",
         "src/fern/collections/fields/types/create_fields_request_body.py",
         "src/fern/collections/fields/types/create_fields_response.py",
@@ -7196,7 +7247,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/collections/items/types/single_item_field_data.py",
         "src/fern/collections/items/types/single_live_item.py",
         "src/fern/collections/items/types/single_live_item_field_data.py",
-        "src/fern/collections/raw_client.py",
         "src/fern/collections/types/__init__.py",
         "src/fern/collections/types/create_collections_request_fields_item.py",
         "src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties.py",
@@ -7220,7 +7270,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/comments/types/comment_created_payload_payload_type.py",
         "src/fern/components/__init__.py",
         "src/fern/components/client.py",
-        "src/fern/components/raw_client.py",
         "src/fern/components/types/__init__.py",
         "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/components/types/update_content_components_request_nodes_item.py",
@@ -7232,10 +7281,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/components/types/update_content_components_request_nodes_item_property_overrides_property_overrides_item.py",
         "src/fern/components/types/update_content_components_request_nodes_item_text.py",
         "src/fern/components/types/update_content_components_request_nodes_item_waiting_text.py",
-        "src/fern/core/client_wrapper.py",
-        "src/fern/custom_fonts/raw_client.py",
-        "src/fern/ecommerce/raw_client.py",
-        "src/fern/environment.py",
         "src/fern/forms/__init__.py",
         "src/fern/forms/client.py",
         "src/fern/forms/raw_client.py",
@@ -7246,7 +7291,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/forms/types/form_submission_payload_payload_schema_item_field_type.py",
         "src/fern/forms/types/list_submissions_forms_response.py",
         "src/fern/inventory/__init__.py",
-        "src/fern/inventory/raw_client.py",
         "src/fern/inventory/types/__init__.py",
         "src/fern/inventory/types/ecomm_inventory_changed_payload.py",
         "src/fern/inventory/types/ecomm_inventory_changed_payload_payload.py",
@@ -7272,7 +7316,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/items/types/collection_item_unpublished_payload_payload.py",
         "src/fern/items/types/collection_item_unpublished_payload_payload_field_data.py",
         "src/fern/orders/__init__.py",
-        "src/fern/orders/raw_client.py",
         "src/fern/orders/types/__init__.py",
         "src/fern/orders/types/ecomm_new_order_payload.py",
         "src/fern/orders/types/ecomm_new_order_payload_payload.py",
@@ -7348,7 +7391,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/orders/types/ecomm_order_changed_payload_payload_totals_total.py",
         "src/fern/pages/__init__.py",
         "src/fern/pages/client.py",
-        "src/fern/pages/raw_client.py",
         "src/fern/pages/scripts/client.py",
         "src/fern/pages/scripts/raw_client.py",
         "src/fern/pages/scripts/types/get_custom_code_scripts_response.py",
@@ -7374,34 +7416,22 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/pages/types/update_static_content_request_nodes_item_text.py",
         "src/fern/pages/types/update_static_content_request_nodes_item_waiting_text.py",
         "src/fern/products/client.py",
-        "src/fern/products/raw_client.py",
         "src/fern/products/types/create_products_request_product.py",
-        "src/fern/scripts/raw_client.py",
         "src/fern/sites/__init__.py",
-        "src/fern/sites/activity_logs/raw_client.py",
-        "src/fern/sites/comments/raw_client.py",
-        "src/fern/sites/forms/raw_client.py",
-        "src/fern/sites/google_tag/raw_client.py",
-        "src/fern/sites/plans/raw_client.py",
-        "src/fern/sites/raw_client.py",
         "src/fern/sites/redirects/client.py",
         "src/fern/sites/redirects/raw_client.py",
         "src/fern/sites/robots_txt/client.py",
-        "src/fern/sites/robots_txt/raw_client.py",
         "src/fern/sites/scripts/client.py",
         "src/fern/sites/scripts/raw_client.py",
         "src/fern/sites/types/__init__.py",
         "src/fern/sites/types/site_publish_payload.py",
         "src/fern/sites/types/site_publish_payload_payload.py",
         "src/fern/sites/types/site_publish_payload_payload_publish_scope.py",
-        "src/fern/sites/well_known/raw_client.py",
-        "src/fern/token/raw_client.py",
         "src/fern/types/__init__.py",
         "src/fern/webhooks/client.py",
         "src/fern/webhooks/raw_client.py",
         "src/fern/workspaces/__init__.py",
         "src/fern/workspaces/audit_logs/__init__.py",
-        "src/fern/workspaces/audit_logs/raw_client.py",
         "src/fern/workspaces/audit_logs/types/__init__.py",
         "src/fern/workspaces/audit_logs/types/custom_role.py",
         "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item.py",

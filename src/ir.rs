@@ -222,6 +222,13 @@ pub struct Environment {
     pub url_template: String,
     /// Server URL variables exposed as optional root-client constructor parameters.
     pub variables: Vec<ServerUrlVariable>,
+    /// The URLs operations reach beside the document's own, `(field, url)` in
+    /// first-appearance order: one per distinct `x-fern-server-name` an
+    /// operation-level server carries. Empty for a one-URL environment, the
+    /// `enum.Enum`; otherwise each member is an object whose `base` field is its
+    /// server and whose other fields are these, and each endpoint names its field
+    /// ([`EndpointExtensions::environment_field`]).
+    pub urls: Vec<(String, String)>,
 }
 
 /// One variable from the default server's URL template.
@@ -304,7 +311,40 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
                 default: variable.default.clone(),
             })
             .collect(),
+        urls: operation_server_urls(doc),
     })
+}
+
+/// The `(field, url)` pairs an operation-level server names
+/// (`x-fern-server-name`, either spelling), distinct by field, in document
+/// order: the fields of Fern's multi-URL environment beside `base`.
+fn operation_server_urls(doc: &OpenApi) -> Vec<(String, String)> {
+    let mut urls: Vec<(String, String)> = Vec::new();
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            for server in &op.servers {
+                let Some(name) = server.server_name() else {
+                    continue;
+                };
+                let field = naming::to_snake_case(name);
+                if !urls.iter().any(|(known, _)| *known == field) {
+                    urls.push((field, resolve_server_url(server)));
+                }
+            }
+        }
+    }
+    urls
+}
+
+/// The environment field an operation's requests read in a multi-URL
+/// environment: its first named server's, unless that server is the
+/// document's own, which is `base` — as is every operation declaring none.
+fn environment_field(doc: &OpenApi, op: &Operation) -> String {
+    op.servers
+        .first()
+        .filter(|server| doc.servers.first().is_none_or(|own| own.url != server.url))
+        .and_then(|server| server.server_name())
+        .map_or_else(|| "base".to_string(), naming::to_snake_case)
 }
 
 /// The root client's own keyword parameters, which a server URL variable cannot
@@ -1551,6 +1591,9 @@ pub struct EndpointExtensions {
     /// Whether the operation declared a pagination contract the layout leaves
     /// without a pager (the flat tree): the pagination runtime still ships.
     pub pagination_declared: bool,
+    /// In a multi-URL environment, the field whose URL the operation's requests
+    /// go to (`base`, or an operation server's name); `None` otherwise.
+    pub environment_field: Option<String>,
 }
 
 /// A resolved header parameter, rendered as a keyword-only method argument and a
@@ -3647,6 +3690,8 @@ fn build_endpoint(
             },
             retries_disabled: op.retries_disabled(),
             pagination_declared: false,
+            environment_field: (!operation_server_urls(doc).is_empty())
+                .then(|| environment_field(doc, op)),
         },
         header_order,
         constant_headers,
@@ -13977,6 +14022,39 @@ mod tests {
             deprecated: false,
             admits_only_empty_object: false,
         }
+    }
+
+    #[test]
+    fn operation_servers_make_environment_fields_and_pick_each_requests_field() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "servers": [{"url": "https://lockers.test/v2"}],
+            "paths": {
+                "/lockers": {"get": {"responses": {}}},
+                "/archive": {"get": {"servers": [
+                    {"url": "https://archive.lockers.test/v1", "x-fern-server-name": "Archive Host"}
+                ], "responses": {}}},
+                "/own": {"get": {"servers": [
+                    {"url": "https://lockers.test/v2", "x-crozier-server-name": "main"}
+                ], "responses": {}}},
+            },
+        }))
+        .unwrap();
+        assert_eq!(
+            super::operation_server_urls(&doc),
+            [
+                (
+                    "archive_host".to_string(),
+                    "https://archive.lockers.test/v1".to_string()
+                ),
+                ("main".to_string(), "https://lockers.test/v2".to_string()),
+            ]
+        );
+        let field =
+            |route: &str| super::environment_field(&doc, doc.paths[route].get.as_ref().unwrap());
+        assert_eq!(field("/lockers"), "base");
+        assert_eq!(field("/archive"), "archive_host");
+        // A first server that is the document's own reads `base`.
+        assert_eq!(field("/own"), "base");
     }
 
     #[test]

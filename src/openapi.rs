@@ -677,6 +677,11 @@ pub struct Operation {
     pub(crate) idempotent_crozier: Option<serde_json::Value>,
     #[serde(rename = "x-fern-idempotent", default)]
     pub(crate) idempotent_fern: Option<serde_json::Value>,
+    /// `servers`: the base URLs this operation alone is served from, in place of
+    /// the document's. Fern reads a named one (`x-fern-server-name`) as a field
+    /// of a multi-URL environment.
+    #[serde(default, deserialize_with = "de_servers")]
+    pub servers: Vec<Server>,
     /// `x-crozier-webhook` / `x-fern-webhook`: the operation describes a webhook
     /// the API sends rather than an endpoint the SDK calls. Read through
     /// [`Operation::webhook_marked`].

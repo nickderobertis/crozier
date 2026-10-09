@@ -287,6 +287,21 @@ The shape: a `webhooks` operation whose `application/json` request body is an in
 |---|---|---|
 | `webhook-inline-json-body-named` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Named operation server
+
+The shape: an operation whose `servers` are one URL named by `x-fern-server-name` (either spelling) other than the document's single server's (`operation.servers:named-beside-document-server`). Fern makes the environment an object with a `base` field and one per named operation server, takes it in place of `base_url`, and sends each request to its field's URL.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-servers-named` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+The registered `webflow-v2` declares operation-level servers too, and its
+golden's multi-URL environment (`environment.py`, the root client, the client
+wrapper and every raw client reading `get_environment().base`) now
+byte-matches. It is a partial witness: each of its operations lists two named
+servers, the first the document's own URL, so every request reads `base`; an
+operation reaching its own named URL, the missing portion, is the fixture's.
+
 ## Results
 
 | key | result | fixture |
@@ -316,3 +331,4 @@ The shape: a `webhooks` operation whose `application/json` request body is an in
 | `schema-sdk-group-name` | `none-registrable` | `vineyard-cellar-glossary` |
 | `schema-x-tags` | `none-registrable` | `vineyard-cellar-glossary` |
 | `webhook-inline-json-body-named` | `none-registrable` | `courier-delivery-hooks` |
+| `operation-servers-named` | `none-registrable` | `locker-archive-hosts` |

@@ -133,7 +133,7 @@ extension not listed here does not change crozier's output.
 | `x-fern-bearer` | `x-crozier-bearer` | http `bearer` security scheme | The credential's constructor parameter (`name`) and the environment variable it defaults to (`env`). |
 | `x-fern-token-variable-name` | `x-crozier-token-variable-name` | http `bearer` security scheme | The credential's constructor parameter, when the bearer extension names none. |
 | `x-fern-basic` | `x-crozier-basic` | http `basic` security scheme | The `username` and `password` parameters' `name` and `env`. |
-| `x-fern-server-name` | `x-crozier-server-name` | server | The environment member's name (`primary` is `PRIMARY`); every server naming itself is a member, the first the default. |
+| `x-fern-server-name` | `x-crozier-server-name` | server | The environment member's name (`primary` is `PRIMARY`); every server naming itself is a member, the first the default. On an operation's own server, a field of the environment object beside `base` that the operation's requests read. |
 | `x-fern-default-url` | `x-crozier-default-url` | server | The environment member's value, in place of the expanded `url`. |
 | `x-fern-idempotency-headers` | `x-crozier-idempotency-headers` | document | The headers (`[{header: X-Dedupe-Token}]`) an idempotent operation takes. |
 | `x-fern-idempotent` | `x-crozier-idempotent` | operation | Gives the method an optional argument per idempotency header after its body fields (`dedupe_token`), sent as that header. |

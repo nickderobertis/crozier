@@ -115,6 +115,12 @@ docs/fern-measurements/clients-extensions/lock-keeper-vault-literals/fern-expect
 docs/fern-measurements/clients-extensions/lock-keeper-vault-literals/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/lock-keeper-vault-literals/fern-expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/lock-keeper-vault-literals/fern-expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/locker-archive-hosts-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/clients-extensions/locker-archive-hosts-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/locker-archive-hosts-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/locker-archive-hosts-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/locker-archive-hosts-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/locker-archive-hosts-literals/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/locker-bank-claims-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/clients-extensions/locker-bank-claims-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/locker-bank-claims-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -618,6 +624,11 @@ docs/openapi-surface/handwritten/lock-keeper-vault/fern-expected	src/fern/core/c
 docs/openapi-surface/handwritten/lock-keeper-vault/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/lock-keeper-vault/fern-expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/lock-keeper-vault/fern-expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/locker-archive-hosts/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/locker-archive-hosts/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/locker-archive-hosts/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/locker-archive-hosts/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/locker-archive-hosts/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/locker-bank-claims/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/locker-bank-claims/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/locker-bank-claims/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -2830,6 +2841,11 @@ tests/fixtures/waylay-queries/expected	src/fern/core/client_wrapper.py	40	sdk-id
 tests/fixtures/waylay-queries/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/waylay-queries/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/waylay-queries/expected	src/fern/execute/raw_client.py	177	body-query-parameter-value
+tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/withsecure-gdpr-subject-rights/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/withsecure-gdpr-subject-rights/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/withsecure-gdpr-subject-rights/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

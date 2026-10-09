@@ -1674,6 +1674,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         &ir.global_headers,
         &ir.client_path_parameters,
         ir.default_max_retries,
+        ir.environment.as_ref(),
     ));
 
     // `environment.py`: the server-environment enum, when the document declares
@@ -2023,12 +2024,54 @@ fn environment_file(
     pkg: &str,
     environment: &crate::ir::Environment,
 ) -> Result<GeneratedFile> {
-    let mut body = format!(
-        "import enum\n\n\nclass {}(enum.Enum):\n",
-        environment.enum_name
-    );
-    for (member, url) in environment.members() {
-        body.push_str(&format!("    {member} = \"{}\"\n", escape_py_str(url)));
+    let mut body = String::new();
+    if environment.urls.is_empty() {
+        body.push_str(&format!(
+            "import enum\n\n\nclass {}(enum.Enum):\n",
+            environment.enum_name
+        ));
+        for (member, url) in environment.members() {
+            body.push_str(&format!("    {member} = \"{}\"\n", escape_py_str(url)));
+        }
+    } else {
+        // A multi-URL environment: each member an instance whose `base` is its
+        // server and whose other fields are the operation servers' URLs.
+        let name = &environment.enum_name;
+        let fields: Vec<&str> = std::iter::once("base")
+            .chain(environment.urls.iter().map(|(field, _)| field.as_str()))
+            .collect();
+        body.push_str(&format!(
+            "from __future__ import annotations\n\n\nclass {name}:\n"
+        ));
+        for (member, _) in environment.members() {
+            body.push_str(&format!("    {member}: {name}\n"));
+        }
+        body.push_str(&format!(
+            "\n    def __init__(self, *, {}):\n",
+            fields
+                .iter()
+                .map(|field| format!("{field}: str"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+        for field in &fields {
+            body.push_str(&format!("        self.{field} = {field}\n"));
+        }
+        for (member, url) in environment.members() {
+            let arguments: Vec<String> =
+                std::iter::once(format!("base=\"{}\"", escape_py_str(url)))
+                    .chain(
+                        environment
+                            .urls
+                            .iter()
+                            .map(|(field, url)| format!("{field}=\"{}\"", escape_py_str(url))),
+                    )
+                    .collect();
+            body.push_str(&format!(
+                "\n\n{name}.{member} = {name}({})\n",
+                arguments.join(", ")
+            ));
+        }
     }
     let contents = render(
         env,
@@ -3984,6 +4027,7 @@ fn client_wrapper_file(
     global_headers: &[GlobalHeader],
     client_path_parameters: &[ClientPathParameter],
     default_max_retries: u32,
+    environment: Option<&crate::ir::Environment>,
 ) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
     // A defaulted header trails every built-in field instead (see
@@ -4151,6 +4195,29 @@ fn client_wrapper_file(
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
     c.push_str("        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
+    // A multi-URL environment replaces the single `base_url` throughout: the
+    // wrapper is built from, keeps and serves the environment, each request
+    // naming its field's URL.
+    let c = match environment.filter(|environment| !environment.urls.is_empty()) {
+        None => c,
+        Some(environment) => {
+            let name = &environment.enum_name;
+            c.replacen(
+                "from .http_client import AsyncHttpClient, HttpClient\n",
+                &format!("from ..environment import {name}\nfrom .http_client import AsyncHttpClient, HttpClient\n"),
+                1,
+            )
+            .replace("        base_url: str,\n", &format!("        environment: {name},\n"))
+            .replacen("        self._base_url = base_url\n", "        self._environment = environment\n", 1)
+            .replacen(
+                "    def get_base_url(self) -> str:\n        return self._base_url\n",
+                &format!("    def get_environment(self) -> {name}:\n        return self._environment\n"),
+                1,
+            )
+            .replace("            base_url=base_url,\n", "            environment=environment,\n")
+            .replace("            base_url=self.get_base_url,\n", "")
+        }
+    };
     GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/core/client_wrapper.py")),
         contents: c,
@@ -5493,6 +5560,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     if ep.path != "/" {
         lines.push(format!("            {},", url_arg(ep, imports)));
     }
+    lines.extend(environment_base_url(ep));
     lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
     lines.extend(["        )".to_string(), "        try:".to_string()]);
@@ -5573,6 +5641,14 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
 /// `request_options`, and the `omit`/`force_multipart` sentinels. Shared by the
 /// buffered `.request(...)` path ([`raw_body`]) and the streaming `.stream(...)`
 /// path ([`raw_stream_body`]) so both serialize a body identically.
+/// A request's `base_url` argument in a multi-URL environment: the URL of the
+/// environment field the operation reads (`get_environment().archive`).
+fn environment_base_url(ep: &Endpoint) -> Option<String> {
+    ep.extensions.environment_field.as_ref().map(|field| {
+        format!("            base_url=self._client_wrapper.get_environment().{field},")
+    })
+}
+
 /// An offset-paginated operation's first statement: its offset argument
 /// defaulted to the first page (`page = page if page is not None else 1`), as
 /// Fern writes it, then a blank line.
@@ -6244,6 +6320,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     if ep.path != "/" {
         call.push(format!("            {},", url_arg(ep, imports)));
     }
+    call.extend(environment_base_url(ep));
     call.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut call, ep, imports);
     call.push("        ) as _response:".to_string());
@@ -6400,6 +6477,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     if ep.path != "/" {
         call.push(format!("            {},", url_arg(ep, imports)));
     }
+    call.extend(environment_base_url(ep));
     call.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut call, ep, imports);
     call.push("        ) as _response:".to_string());
@@ -6692,7 +6770,7 @@ fn root_client_file(
     )?);
     // When environments are in play, a module-level `_get_base_url` resolves the
     // explicit `base_url` or falls back to the selected environment's URL.
-    if let Some(e) = environment {
+    if let Some(e) = environment.filter(|e| e.urls.is_empty()) {
         body.push_str(&format!(
             "\n\n\ndef _get_base_url(*, base_url: typing.Optional[str] = None, environment: {enum}) -> str:\n    if base_url is not None:\n        return base_url\n    elif environment is not None:\n        return environment.value\n    else:\n        raise Exception(\"Please pass in either base_url or environment to construct the client\")",
             enum = e.enum_name,
@@ -6815,10 +6893,21 @@ fn root_client_class(
     // (defaulting to the first server) is added, and the wrapper's `base_url` is
     // resolved through `_get_base_url`.
     let e = environment.map(EnvClientParts::new);
-    let base_url_doc_ty = if e.is_some() {
-        "typing.Optional[str]"
+    // A multi-URL environment (operation-level servers) has no single base URL
+    // to override: the client takes only the environment, and the wrapper
+    // carries it whole.
+    let multi_url = environment.is_some_and(|environment| !environment.urls.is_empty());
+    let base_url_doc = if multi_url {
+        String::new()
     } else {
-        "str"
+        format!(
+            "    base_url : {}\n        The base url to use for requests from the client.\n\n",
+            if e.is_some() {
+                "typing.Optional[str]"
+            } else {
+                "str"
+            }
+        )
     };
     let env_doc = e.as_ref().map_or_else(String::new, |e| e.doc.clone());
     let server_variable_doc = e
@@ -6831,10 +6920,14 @@ fn root_client_class(
     let server_variable_init = e
         .as_ref()
         .map_or_else(String::new, |e| e.server_variable_init.clone());
-    let wrapper_base_url = e.as_ref().map_or_else(
-        || "base_url".to_string(),
-        |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
-    );
+    let wrapper_location = if multi_url {
+        "environment=environment".to_string()
+    } else {
+        e.as_ref().map_or_else(
+            || "base_url=base_url".to_string(),
+            |_| "base_url=_get_base_url(base_url=base_url, environment=environment)".to_string(),
+        )
+    };
     // A defaulted header trails `logging` instead and is in no example (see
     // [`GlobalHeader::default`]); the `353-string-default-*` authored probes
     // byte-match the resulting `client.py` end to end.
@@ -6961,12 +7054,12 @@ fn root_client_class(
         doc_param: a.doc_param,
         example_line: a.example_line,
         auth_check: a.check,
-        base_url_doc_ty: base_url_doc_ty.to_string(),
+        base_url_doc,
         env_doc,
         server_variable_doc,
         base_url_ctor,
         server_variable_init,
-        wrapper_base_url,
+        wrapper_location,
         example_base_url: if e.is_some() {
             String::new()
         } else {
@@ -7049,9 +7142,9 @@ struct RootClientView {
     example_line: String,
     /// The checks a required credential read from the environment gets.
     auth_check: String,
-    /// The docstring type for `base_url` (`str`, or `typing.Optional[str]` with an
-    /// environment).
-    base_url_doc_ty: String,
+    /// The `base_url` docstring block (`str`, or `typing.Optional[str]` with an
+    /// environment; empty with a multi-URL environment, which takes none).
+    base_url_doc: String,
     /// The `environment` docstring `Parameters` block (empty without environments).
     env_doc: String,
     /// Root-client parameter documentation for variables in the first server URL.
@@ -7060,9 +7153,10 @@ struct RootClientView {
     base_url_ctor: String,
     /// Constructor statements that apply explicitly supplied server URL variables.
     server_variable_init: String,
-    /// The value passed to the client wrapper's `base_url` (`base_url`, or a
-    /// `_get_base_url(...)` call with environments).
-    wrapper_base_url: String,
+    /// What the client wrapper is constructed from: `base_url=…` (`base_url`, or a
+    /// `_get_base_url(...)` call with environments), or `environment=environment`
+    /// for a multi-URL environment.
+    wrapper_location: String,
     /// The `Examples` client instantiation's `base_url` line (empty with
     /// environments, which drop it).
     example_base_url: String,
@@ -7160,6 +7254,11 @@ impl EnvClientParts {
                 url = escape_py_str(&e.url_template),
             )
         };
+        // A multi-URL environment replaces `base_url`.
+        let base_url_ctor = match e.urls.is_empty() {
+            true => "        base_url: typing.Optional[str] = None,\n",
+            false => "",
+        };
         EnvClientParts {
             // Fern's docstring here leaks the import statement onto the description
             // line and pads the block with blank lines; reproduced verbatim.
@@ -7167,7 +7266,7 @@ impl EnvClientParts {
                 "    environment : {enum_name}\n        The environment to use for requests from the client. from .environment import {enum_name}\n\n\n\n        Defaults to {default}\n\n\n\n"
             ),
             ctor: format!(
-                "        base_url: typing.Optional[str] = None,\n        environment: {enum_name} = {default},\n{variable_ctor}"
+                "{base_url_ctor}        environment: {enum_name} = {default},\n{variable_ctor}"
             ),
             server_variable_doc,
             server_variable_init,
@@ -11822,12 +11921,14 @@ mod tests {
             doc_param: "    token : str\n\n".to_string(),
             example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
             auth_check: String::new(),
-            base_url_doc_ty: "str".to_string(),
+            base_url_doc:
+                "    base_url : str\n        The base url to use for requests from the client.\n\n"
+                    .to_string(),
             env_doc: String::new(),
             server_variable_doc: String::new(),
             base_url_ctor: "        base_url: str,\n".to_string(),
             server_variable_init: String::new(),
-            wrapper_base_url: "base_url".to_string(),
+            wrapper_location: "base_url=base_url".to_string(),
             example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n"
                 .to_string(),
             client_param_doc: String::new(),
@@ -12358,6 +12459,7 @@ mod tests {
             }],
             retries_disabled: true,
             pagination_declared: false,
+            environment_field: None,
         };
         let out = raw_method(&ep, false, &mut Imports::default());
         assert!(
