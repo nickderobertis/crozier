@@ -14516,3 +14516,56 @@ components:
         "{reference}"
     );
 }
+
+/// `render_files`, the library's in-memory entry point, refuses an extension
+/// value crozier cannot emit exactly as `generate` does, naming the conflict,
+/// and renders the document once the value is corrected: a server named `1st`
+/// would make the digit-led environment member `1ST`, while `first` makes
+/// `FIRST`.
+#[test]
+fn render_files_refuses_an_unemittable_extension_and_renders_its_correction() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let render_named = |server_name: &str| {
+        let path = dir.path().join(format!("{server_name}.yml"));
+        std::fs::write(
+            &path,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Names, version: '1'}}\nservers:\n  - url: https://one.test\n    x-crozier-server-name: {server_name}\npaths:\n  /ping:\n    get:\n      operationId: ping\n      responses: {{'204': {{description: ok}}}}\n"
+            ),
+        )
+        .unwrap();
+        render_files(GenerateArgs {
+            spec: path,
+            output: PathBuf::from("unused"),
+            package_name: Some("acme".to_string()),
+            project_name: Some("acme".to_string()),
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            fern_strict: false,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+            enum_type: crozier::settings::EnumType::PythonEnums,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+            layout: crozier::settings::Layout::Packaged,
+        })
+    };
+    let refused = render_named("1st")
+        .expect_err("a digit-led environment member is refused")
+        .to_string();
+    assert!(
+        refused.contains("makes the environment member `1ST`, which starts with a digit"),
+        "{refused}"
+    );
+    let files = render_named("first").expect("the corrected name renders");
+    let environment = files
+        .iter()
+        .find(|file| file.path.ends_with("environment.py"))
+        .expect("an environment module");
+    assert!(
+        environment
+            .contents
+            .contains("FIRST = \"https://one.test\""),
+        "{}",
+        environment.contents
+    );
+}
