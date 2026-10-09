@@ -12555,8 +12555,10 @@ fn nested_and_union_nullability_is_preserved() {
     assert!(
         model.contains("typing.List[typing.Optional[str]]")
             && model.contains("typing.List[typing.Optional[WidgetRolesItem]]")
-            && alias.contains("Schedule = typing.Union[int, typing.Optional[str]]"),
-        "nested and union nullability should be retained at the schema node that declares it: {model}\n{alias}"
+            // A nullable union of plain scalars stays bare in Fern 5.20, as the
+            // `pharmacy-nullable-scalar-unions` golden measures.
+            && alias.contains("Schedule = typing.Union[int, str]"),
+        "nested nullability should be retained at the schema node that declares it: {model}\n{alias}"
     );
 }
 

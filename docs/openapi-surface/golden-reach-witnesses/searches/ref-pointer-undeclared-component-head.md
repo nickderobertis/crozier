@@ -130,3 +130,9 @@ declarer reaching the site; the hand-written fixture
 [`ferry-mapping-outside-schemas`](../../handwritten/ferry-mapping-outside-schemas/) covers it at the lower level of
 proof. The verdict above stands for the earlier site. This key's lines read
 `search-incomplete` because the successor site's search is outstanding.
+
+#### Bounded renewal
+
+| key | outcome | inspected evidence |
+|---|---|---|
+| `ref-pointer-undeclared-component-head` | `none-registrable` | The six-source search above found no registrable document reaching the earlier site, and the union witness search found none reaching the successor site. |
