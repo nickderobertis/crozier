@@ -55,7 +55,8 @@ def examples(sdk: ModuleType, method: str, expected: str) -> dict[str, str]:
     return results
 
 
-def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None) -> None:
+def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
+         part_content_type: str | None = None) -> None:
     recorded: list[httpx.Request] = []
     payload = b"cartography payload\x00\xff"
     file = ("payload.bin", payload, "application/octet-stream")
@@ -85,6 +86,8 @@ def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None) -> None
             assert isinstance(encoded, bytes) and json.loads(encoded) == {"bearing": 82}
         else:
             assert set(parts) == {field, "attachment"}
+            if part_content_type is not None:
+                assert parts[field].get_content_type() == part_content_type
             encoded = parts[field].get_payload(decode=True)
             assert isinstance(encoded, bytes) and json.loads(encoded) == {"bearing": 73}
             assert parts["attachment"].get_filename() == "payload.bin"
@@ -137,15 +140,18 @@ def main() -> None:
     parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
     parser.add_argument("--wire", action="store_true")
     parser.add_argument("--json-parameter", choices=("path", "query", "header"))
+    parser.add_argument("--part-content-type", choices=("application/json",))
     args = parser.parse_args()
     if args.json_parameter is not None and (args.shape != "alias" or not args.wire):
         parser.error("--json-parameter requires the alias shape and --wire")
+    if args.part_content_type is not None and not args.wire:
+        parser.error("--part-content-type requires --wire")
     if not (args.sdk_src / "fern" / "__init__.py").is_file():
         parser.error("sdk_src must contain the generated fern package")
     sys.path.insert(0, str(args.sdk_src.resolve()))
     sdk = importlib.import_module("fern")
     if args.wire:
-        wire(sdk, args.shape, args.json_parameter)
+        wire(sdk, args.shape, args.json_parameter, args.part_content_type)
     results = examples(sdk, "store_plan" if args.shape == "alias" else "store_survey", args.examples)
     if args.shape == "json":
         results.update(examples(sdk, "store_metadata", "valid"))

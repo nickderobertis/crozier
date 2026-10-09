@@ -23,6 +23,8 @@ parser.add_argument("sdk", type=Path)
 parser.add_argument("--reference", type=Path, required=True)
 parser.add_argument("--expected", choices=("invalid", "valid"), required=True)
 args = parser.parse_args()
+if not (args.sdk / "fern" / "__init__.py").is_file():
+    parser.error("sdk must contain the generated fern package")
 sys.path.insert(0, str(args.sdk.resolve()))
 sdk = importlib.import_module("fern")
 parameters = re.findall(r"\*\*([a-z_]+):\*\* `([^`]+)`", args.reference.read_text(encoding="utf-8"))

@@ -5551,8 +5551,7 @@ fn resolve_request_body(
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
         return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
-            // Own fields precede inherited fields. Preserve an own declaration
-            // when it overrides a parent, and reuse the parent's resolved types.
+            // Own fields precede inherited fields; reuse the parent's resolved types.
             let own_count = fields.len();
             for reference in schema
                 .all_of
@@ -5562,13 +5561,11 @@ fn resolve_request_body(
             {
                 if let Some(parent) = hoist_fields(&ref_to_class(reference), types) {
                     for mut field in parent {
-                        if !fields.iter().any(|own| own.wire_name == field.wire_name) {
-                            let inherited_order = fields.len() - own_count;
-                            field.reference_order = inherited_order;
-                            field.declaration_order = inherited_order;
-                            field.markdown_order = inherited_order;
-                            fields.push(field);
-                        }
+                        let inherited_order = fields.len() - own_count;
+                        field.reference_order = inherited_order;
+                        field.declaration_order = inherited_order;
+                        field.markdown_order = inherited_order;
+                        fields.push(field);
                     }
                 }
             }
