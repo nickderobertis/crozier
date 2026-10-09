@@ -3107,27 +3107,16 @@ fn reference_entry(
         });
         // The field a stream condition fixes is not a method argument, but the
         // reference documents it — as a bare `typing.Literal`, after the required
-        // fields and ahead of the optional ones.
+        // fields and ahead of the optional ones: it takes no default, so the
+        // required-first ordering below places it last of the required.
         if let Some((wire, _)) = ep.stream_condition.as_ref() {
             if let Some(field) = fields.iter().find(|field| field.wire_name == *wire) {
-                let at = reference_body
-                    .iter()
-                    .position(|param| {
-                        fields
-                            .iter()
-                            .find(|other| other.py_name == param.name)
-                            .is_none_or(|other| other.optional)
-                    })
-                    .unwrap_or(reference_body.len());
-                reference_body.insert(
-                    at,
-                    DocParam {
-                        name: field.py_name.clone(),
-                        annotation: "typing.Literal".to_string(),
-                        default: None,
-                        description: field.docstring.clone(),
-                    },
-                );
+                reference_body.push(DocParam {
+                    name: field.py_name.clone(),
+                    annotation: "typing.Literal".to_string(),
+                    default: None,
+                    description: field.docstring.clone(),
+                });
             }
         }
     }
