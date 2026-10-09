@@ -28,6 +28,12 @@ docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/json-binary-path-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/bodies-responses/json-binary-path-literals/fern-expected	README.md	45	binary-json-body-example
 docs/fern-measurements/bodies-responses/json-binary-path-literals/fern-expected	reference.md	24	binary-json-body-example
@@ -466,6 +472,11 @@ docs/openapi-surface/handwritten/inline-anyof-variants/fern-expected	src/fern/co
 docs/openapi-surface/handwritten/inline-anyof-variants/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/inline-anyof-variants/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/inline-anyof-variants/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
