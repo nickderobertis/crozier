@@ -1,0 +1,6 @@
+$ crozier generate python --spec probe.yml --output <tmp> --package-name fern 
+crozier: invalid OpenAPI document docs/fern-refusals/paginated-nullable-response/probe.yml: paginated-nullable-response: GET /jobs pagination reads $response.next off nullable JobPage
+exit 1, files written: 0
+$ crozier generate python --spec probe.yml --output <tmp> --package-name fern --fern-strict
+crozier: invalid OpenAPI document docs/fern-refusals/paginated-nullable-response/probe.yml: paginated-nullable-response: GET /jobs pagination reads $response.next off nullable JobPage (fern-strict refusal)
+exit 1, files written: 0

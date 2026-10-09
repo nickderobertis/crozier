@@ -242,6 +242,19 @@ TrueForge golden needs the Fern goldens workflow to publish it.
 |---|---|---|
 | `operation-pagination-cursor` | `golden` | `truefoundry-trueforge`, `truefoundry-trueforge-5adde28` |
 
+## Pagination over a nullable response
+
+The shape: an operation with a pagination contract whose `200` JSON response
+references a component declared `nullable: true`
+(`operation.x-fern-pagination:nullable-response`). Fern refuses it, and so does
+crozier, in both modes: it is the
+[`paginated-nullable-response`](../../fern-refusals/paginated-nullable-response/evaluation.md)
+refusal class, whose probe and Fern record live in the refusal registry.
+
+| key | outcome |
+|---|---|
+| `operation-pagination-nullable-response` | `refuse` (no declarer in the walk or the registered corpus) |
+
 ## Results
 
 | key | result | fixture |

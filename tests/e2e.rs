@@ -16981,6 +16981,40 @@ print(seen[:2], attempts(lambda: client.cancel_parcel("p-1")), attempts(lambda: 
     );
 }
 
+/// A pagination contract over a response the document declares `nullable: true`
+/// is refused by default and under `--fern-strict`: exit 1, nothing written, and
+/// a line naming the class, the operation, the property read and the nullable
+/// component. The adjacent document without `nullable` generates its pager.
+#[test]
+fn paginated_nullable_response_refuses_in_both_modes_beside_a_generating_control() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-refusals/paginated-nullable-response/probe.yml");
+    let dir = tempfile::tempdir().expect("tempdir");
+    for (name, strict) in [("default", false), ("strict", true)] {
+        let out = dir.path().join(name);
+        let mut command = probe_command(&probe, &out);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().failure().code(1).stderr(predicates::str::contains(
+            "paginated-nullable-response: GET /jobs pagination reads $response.next off nullable JobPage",
+        ));
+        assert!(!out.exists() || std::fs::read_dir(&out).unwrap().next().is_none());
+    }
+    let control = dir.path().join("control.yml");
+    std::fs::write(
+        &control,
+        std::fs::read_to_string(&probe)
+            .unwrap()
+            .replace("      nullable: true\n", ""),
+    )
+    .unwrap();
+    let out = dir.path().join("control");
+    probe_command(&control, &out).assert().success();
+    let raw = std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client");
+    assert!(raw.contains("SyncPager[Job, JobPage]"), "{raw}");
+}
+
 /// Pagination's boolean form takes the document's root contract in either
 /// spelling, crozier's winning when both appear: `x-crozier-pagination: true`
 /// under a root `x-crozier-pagination` offset contract pages by offset while the

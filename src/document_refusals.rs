@@ -43,6 +43,7 @@ enum Class {
     ExampleNotEnumValue,
     ExampleUnexpectedProperty,
     ExampleMissingRequiredProperty,
+    PaginatedNullableResponse,
 }
 
 impl Class {
@@ -76,6 +77,7 @@ impl Class {
             Self::ExampleNotEnumValue => "example-not-enum-value",
             Self::ExampleUnexpectedProperty => "example-unexpected-property",
             Self::ExampleMissingRequiredProperty => "example-missing-required-property",
+            Self::PaginatedNullableResponse => "paginated-nullable-response",
         }
     }
 }
@@ -1887,6 +1889,9 @@ fn imported_reference_scheme(scheme: &SecurityScheme, path: &Path) -> bool {
 /// Reject an evaluated class before rendering or writing an SDK.
 pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     check_version(&doc.openapi, path, strict)?;
+    if let Some(element) = paginated_nullable_response(doc) {
+        return refusal(path, strict, Class::PaginatedNullableResponse, &element);
+    }
     for (route, item) in &doc.paths {
         if let Some(operation) = &item.head {
             if !operation.ignored() && operation.request_body.is_some() {
@@ -2530,6 +2535,51 @@ fn promoted_optional_array_header(doc: &OpenApi, ir: &crate::ir::Ir) -> Option<S
     Some(format!("{method} {route} header {}", header.wire_name))
 }
 
+/// The first operation whose pagination contract reads its page off a
+/// response the document declares `nullable: true`: Fern refuses it ("Response
+/// must be an object in order to return property next as a response"), and a
+/// pager over a page that may be `null` has no page to read, so crozier refuses
+/// it too rather than dropping the pager. The element names the operation, the
+/// contract's response property and the nullable component.
+fn paginated_nullable_response(doc: &OpenApi) -> Option<String> {
+    for (route, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            let Some(pagination) = op.pagination() else {
+                continue;
+            };
+            let Some(property) = pagination
+                .next_cursor_property()
+                .or_else(|| pagination.results_property())
+            else {
+                continue;
+            };
+            let Some(reference) = op
+                .responses
+                .get("200")
+                .and_then(|response| response.content.get("application/json"))
+                .and_then(|media| media.schema.as_ref())
+                .and_then(|schema| schema.reference.as_deref())
+            else {
+                continue;
+            };
+            let Some(name) = reference.strip_prefix("#/components/schemas/") else {
+                continue;
+            };
+            if doc
+                .components
+                .schemas
+                .get(name)
+                .is_some_and(|schema| schema.nullable == Some(true))
+            {
+                return Some(format!(
+                    "{method} {route} pagination reads $response.{property} off nullable {name}"
+                ));
+            }
+        }
+    }
+    None
+}
+
 fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()> {
     Err(Error::InvalidSpec {
         path: path.to_path_buf(),
@@ -2566,6 +2616,27 @@ mod tests {
         )
         .unwrap();
         promoted_optional_array_header(&doc, &crate::ir::build(&doc, &config))
+    }
+
+    #[test]
+    fn a_pagination_contract_over_a_nullable_response_is_refused() {
+        let doc = |nullable: bool| -> OpenApi {
+            serde_json::from_value(serde_json::json!({
+                "openapi": "3.0.3",
+                "paths": {"/jobs": {"get": {
+                    "x-fern-pagination": {"offset": "$request.page", "results": "$response.jobs"},
+                    "responses": {"200": {"description": "ok", "content": {"application/json": {
+                        "schema": {"$ref": "#/components/schemas/JobPage"}}}}},
+                }}},
+                "components": {"schemas": {"JobPage": {"type": "object", "nullable": nullable}}},
+            }))
+            .unwrap()
+        };
+        assert_eq!(
+            paginated_nullable_response(&doc(true)).as_deref(),
+            Some("GET /jobs pagination reads $response.jobs off nullable JobPage")
+        );
+        assert_eq!(paginated_nullable_response(&doc(false)), None);
     }
 
     #[test]

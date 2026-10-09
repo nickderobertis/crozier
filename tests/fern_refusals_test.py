@@ -465,5 +465,41 @@ class MalformedInputs(unittest.TestCase):
         self.assertIn("is not JSON", result.stderr)
 
 
+
+class DiagnosticExtraction(unittest.TestCase):
+    """What `diagnostics` reads off a Fern log, over the generator's own lines."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        import importlib.util
+        script = Path(__file__).resolve().parent.parent / "scripts" / "fern-refusals.py"
+        spec = importlib.util.spec_from_file_location("fern_refusals_under_test", script)
+        assert spec and spec.loader
+        cls.module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = cls.module
+        spec.loader.exec_module(cls.module)
+
+    def test_the_generators_response_object_refusal_is_its_diagnostic(self) -> None:
+        log = "\n".join([
+            "[api]: python-sdk fernapi/fern-python-sdk Started.",
+            "[api]: python-sdk ✓ All checks passed",
+            "[api]: python-sdk fernapi/fern-python-sdk Response must be an object in order to "
+            "return property next as a response.",
+            "[api]: python-sdk fernapi/fern-python-sdk Failed.",
+        ])
+        self.assertEqual(
+            ["Response must be an object in order to return property next as a response."],
+            self.module.diagnostics(log),
+        )
+
+    def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
+        log = "\n".join([
+            "[api]: python-sdk fernapi/fern-python-sdk Started.",
+            "[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk",
+            "[api]: python-sdk fernapi/fern-python-sdk Finished.",
+        ])
+        self.assertEqual([], self.module.diagnostics(log))
+
+
 if __name__ == "__main__":
     unittest.main()
