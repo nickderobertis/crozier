@@ -2167,6 +2167,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         "docs/openapi-surface/handwritten/vineyard-cellar-glossary/openapi.yml",
         &["--enum-type", "literals"],
     ),
+    (
+        "weather-buoy-feeds",
+        "docs/fern-measurements/clients-extensions/weather-buoy-feeds/openapi.yml",
+        &[],
+    ),
 ];
 
 /// The naming tickets' (#350, #354, #357) authored probes are the case

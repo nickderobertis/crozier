@@ -34,6 +34,7 @@
     "docs/fern-measurements/clients-extensions/tide-gauge-sessions-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected": {},
+    "docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},

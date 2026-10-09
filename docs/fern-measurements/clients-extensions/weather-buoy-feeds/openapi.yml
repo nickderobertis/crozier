@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Weather Buoy Feeds
+  version: 1.4.0
+  description: Live readings and logbooks from moored weather buoys.
+servers:
+  - url: https://feeds.buoys.test
+paths:
+  /buoys:
+    get:
+      operationId: listBuoys
+      responses:
+        '200':
+          description: The moored buoys.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Buoy'
+  /buoys/{buoyId}/readings:
+    post:
+      operationId: streamReadings
+      x-fern-retries:
+        disabled: true
+      x-fern-streaming:
+        format: sse
+        chunk-schema-ref: Reading
+      servers:
+        - url: https://live.buoys.test
+          x-fern-server-name: live
+      parameters:
+        - name: buoyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Readings as the buoy reports them.
+          content:
+            text/event-stream: {}
+  /buoys/{buoyId}/logbook:
+    get:
+      operationId: downloadLogbook
+      x-fern-retries:
+        disabled: true
+      servers:
+        - url: https://live.buoys.test
+          x-fern-server-name: live
+      parameters:
+        - name: buoyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The buoy's raw logbook.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+components:
+  schemas:
+    Buoy:
+      type: object
+      properties:
+        id:
+          type: string
+        station:
+          type: string
+    Reading:
+      type: object
+      properties:
+        windKnots:
+          type: number
+        waveMetres:
+          type: number

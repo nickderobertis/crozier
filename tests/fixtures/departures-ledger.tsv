@@ -219,6 +219,11 @@ docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern
 docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	README.md	40	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	reference.md	20	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
