@@ -140,8 +140,10 @@ What became of every strict declarer of a key above, and why none is a witness.
 `reference.md` heading documents every server-sent-event method as returning
 `typing.Iterator[bytes]` while the generated method returns its event type
 (`typing.Iterator[Rotation]` in the document this search measured), and crozier
-reproduces it; that heading is a Fern defect whose correction is not yet on
-the default branch, so no tree carrying it is committed, in either enum mode.
+reproduces it. That heading is a Fern defect, corrected by the streaming
+work's `stream-reference-return-type` departure, which is not yet on the
+default branch; until it is, no tree carrying the heading is committed, in
+either enum mode.
 Its search found no witness either: the five registered declarers
 (`dot-ai`, `standrig`, `truefoundry-trueforge`, `truefoundry-trueforge-5adde28`,
 `zoonk`) type their `400` body as an object, never the bare `type: string`
