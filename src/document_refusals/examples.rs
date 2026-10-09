@@ -33,6 +33,7 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
             .empty_body_request_examples(&operation)
             .or_else(|| doc.header_name_fallback(&operation))
             .or_else(|| doc.nullable_parent_example(&operation))
+            .or_else(|| doc.read_only_shadows_required_parent(&operation))
             .or_else(|| doc.discriminant_required_by_grandparent(&operation))
             .or_else(|| doc.schema_scalar_example(&operation))
             .or_else(|| doc.media_scalar_example(&operation))
@@ -431,6 +432,44 @@ impl<'a> Doc<'a> {
             })
         })
         .map(|detail| (Class::ExampleMissingRequiredProperty, detail))
+    }
+
+    /// An inline JSON request body with its own `properties` and an `allOf`
+    /// `$ref` parent, where an own `readOnly` property shadows a property the
+    /// parent requires: Fern's request example omits the readOnly property yet
+    /// validates against the parent's `required`
+    /// (bodies-responses/inline-body-readonly-own-overlap). Measured refused
+    /// with the request body required or not; the same shadow over an
+    /// optional parent property generates.
+    fn read_only_shadows_required_parent(
+        &self,
+        operation: &Operation<'a>,
+    ) -> Option<(Class, String)> {
+        let schema = self.request_media(operation)?.get("schema")?;
+        let properties = schema.get("properties")?.as_mapping()?;
+        let members = schema.get("allOf")?.as_sequence()?;
+        properties.iter().find_map(|(name, property)| {
+            let name = name.as_str()?;
+            if property.get("readOnly").and_then(Value::as_bool) != Some(true) {
+                return None;
+            }
+            members.iter().find_map(|member| {
+                let reference = str_of(member, "$ref")?;
+                let parent = self.resolve(member)?;
+                (parent
+                    .get("properties")
+                    .is_some_and(|properties| properties.get(name).is_some())
+                    && required_names(parent).contains(&name))
+                .then(|| {
+                    (
+                        Class::ExampleMissingRequiredProperty,
+                        format!(
+                            "request property {name:?} is readOnly but required by {reference}"
+                        ),
+                    )
+                })
+            })
+        })
     }
 
     /// A discriminated `oneOf`/`anyOf` under the first success response whose

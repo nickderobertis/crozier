@@ -5561,13 +5561,19 @@ fn resolve_request_body(
             {
                 if let Some(parent) = hoist_fields(&ref_to_class(reference), types) {
                     for mut field in parent {
-                        // A parent field an own field redeclares is refused by
-                        // `name_refusals`; never append it as a second argument.
-                        if fields
-                            .iter()
+                        // A parent field an own field redeclares is never a second
+                        // argument. `name_refusals` refuses a writable own field; a
+                        // readOnly own field keeps its slot and, as pinned Fern does,
+                        // the parent's description (handwritten
+                        // inline-body-readonly-own-overlap).
+                        if let Some(own) = fields
+                            .iter_mut()
                             .take(own_count)
-                            .any(|own| own.wire_name == field.wire_name)
+                            .find(|own| own.wire_name == field.wire_name)
                         {
+                            if field.docstring.is_some() {
+                                own.docstring = field.docstring;
+                            }
                             continue;
                         }
                         let inherited_order = fields.len() - own_count;

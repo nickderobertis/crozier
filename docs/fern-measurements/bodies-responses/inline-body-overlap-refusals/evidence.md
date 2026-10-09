@@ -36,6 +36,16 @@ then renames the own field and requires a generated SDK that declares each
 argument once and compiles. Independently, the request-body flattening never
 appends a parent field whose wire name an own field already holds.
 
+That guard is also reached by a document Fern generates from. When an own
+`readOnly` property shadows an optional parent property, the own slot keeps its
+position and takes the parent's description, as the certified handwritten
+fixture
+[`inline-body-readonly-own-overlap`](../../../openapi-surface/handwritten/inline-body-readonly-own-overlap/openapi.yml)
+measures in both enum modes. When the shadowed parent property is required,
+pinned Fern refuses with `Example is missing required property`, and crozier
+refuses under `example-missing-required-property`
+([class evaluation](../../../fern-refusals/example-missing-required-property/evaluation.md)).
+
 `origin/main` at `5f224026330dd25fdc54d3bdf90fe6be0ef32b3c` generated 44 files
 for the read-only source (exit 0), because it did not flatten inherited fields.
 Before this repair, the branch reached ruff with `Duplicate keyword argument

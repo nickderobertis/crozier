@@ -2924,6 +2924,98 @@ fn inline_request_read_only_parent_overlap_refuses_and_disjoint_fields_recover_t
     assert_valid_python(&out);
 }
 
+/// An own readOnly request property shadowing an inherited one: over an
+/// optional parent property the certified pair generates, and crozier matches it
+/// in both enum modes; over a required one pinned Fern refuses
+/// (example-missing-required-property/evaluation-logs/fern-readonly-shadow-required*.generate.log).
+#[test]
+fn inline_body_read_only_own_overlap_matches_certified_output_and_refuses_a_required_parent() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixture = root.join("docs/openapi-surface/handwritten/inline-body-readonly-own-overlap");
+    for (mode, golden) in [
+        (
+            "python-enums",
+            "docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/fern-expected",
+        ),
+        (
+            "literals",
+            "docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected",
+        ),
+    ] {
+        let expected = root.join(golden);
+        if mode == "literals" {
+            let evidence =
+                std::fs::read_to_string(expected.parent().unwrap().join("evidence.md")).unwrap();
+            let declared = evidence
+                .split_once("Canonical tree SHA-256: `")
+                .unwrap()
+                .1
+                .split('`')
+                .next()
+                .unwrap();
+            assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+        }
+        let ledger = departure_ledger().golden(golden, &[]).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(fixture.join("openapi.yml"))
+            .arg("--output")
+            .arg(out.path())
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+                "--enum-type",
+                mode,
+            ])
+            .assert()
+            .success();
+        let failures = golden_tree_failures(
+            mode,
+            "inline body readOnly own overlap",
+            &ledger,
+            &expected,
+            out.path(),
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_valid_python(out.path());
+    }
+    let input = tempfile::tempdir().unwrap();
+    let spec = input.path().join("openapi.yml");
+    let source = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
+    let required = source.replace(
+        "    RunSettings:\n      type: object\n",
+        "    RunSettings:\n      type: object\n      required:\n        - station\n",
+    );
+    assert_ne!(required, source);
+    std::fs::write(&spec, &required).unwrap();
+    for strict in [false, true] {
+        let out = input.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&out)
+            .args(["--package-name", "fern"]);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let assert = command.assert().failure().code(1);
+        let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+        assert!(
+            stderr.contains(
+                "example-missing-required-property: POST /runs request property \"station\" is readOnly but required by #/components/schemas/RunSettings"
+            ),
+            "{stderr}"
+        );
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!out.exists(), "a refusal writes no output");
+    }
+}
+
 #[test]
 fn multipart_object_alias_cycles_and_unknown_refs_recover_through_the_cli() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
