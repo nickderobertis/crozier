@@ -90,6 +90,28 @@ const WITNESSES: &[Witness] = &[
         )],
     },
     Witness {
+        shape: "multipart-single-value-enum-part-kept-optional",
+        corpus: "mermade-openapi-converter",
+        declares: |doc| {
+            let schema = at(
+                doc,
+                "/paths/~1convert/post/requestBody/content/multipart~1form-data/schema",
+            )?;
+            let part = &schema["properties"]["validate"];
+            expect(
+                part["type"] == "string"
+                    && part["enum"].as_array().is_some_and(|values| values.len() == 1)
+                    && not_required(schema, "validate"),
+                "`validate` is an optional one-value string enum part",
+            )
+        },
+        golden: &[(
+            "src/fern/conversion/client.py",
+            &["        validate: typing.Optional[ConvertRequestValidate] = OMIT,\n"],
+            &[],
+        )],
+    },
+    Witness {
         shape: "open-object-body-example-extra-keys-dropped",
         corpus: "mockserver",
         declares: |doc| {

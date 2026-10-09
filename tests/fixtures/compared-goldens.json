@@ -579,6 +579,7 @@
     "tests/fixtures/marimo/expected": {},
     "tests/fixtures/maximo-wxo-integration/expected": {},
     "tests/fixtures/med-anvisa-price/expected": {},
+    "tests/fixtures/mermade-openapi-converter/expected": {},
     "tests/fixtures/mi-music/expected": {},
     "tests/fixtures/microcks.local/expected": {},
     "tests/fixtures/millenium-falcon-challenge/expected": {},

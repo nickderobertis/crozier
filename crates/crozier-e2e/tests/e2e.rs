@@ -5145,6 +5145,7 @@ const CORPORA: &[&Corpus] = &[
     &WAYLAY_QUERIES,
     &CONFLUENT_KAFKA_CONNECT,
     &NETGSM_SMS,
+    &MERMADE_OPENAPI_CONVERTER,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -8180,6 +8181,19 @@ const CONFLUENT_KAFKA_CONNECT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `mermade-openapi-converter`: corpus row 2400, the Swagger2OpenAPI converter,
+/// whose multipart bodies carry an optional one-value string enum part.
+const MERMADE_OPENAPI_CONVERTER: Corpus = Corpus {
+    api: "mermade-openapi-converter",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const NETGSM_SMS: Corpus = Corpus {
     api: "netgsm-sms",
     package_name: "fern",
@@ -8936,6 +8950,11 @@ fn confluent_kafka_connect_matches_fern_output() {
 #[test]
 fn netgsm_sms_matches_fern_output() {
     assert_committed_corpus_matches(&NETGSM_SMS);
+}
+
+#[test]
+fn mermade_openapi_converter_matches_fern_output() {
+    assert_committed_corpus_matches(&MERMADE_OPENAPI_CONVERTER);
 }
 
 #[test]

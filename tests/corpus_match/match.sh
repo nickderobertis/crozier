@@ -310,6 +310,7 @@ inventory=(
   lootlog_battlelog_matches_fern_output
   ego_microservices_matches_fern_output
   netgsm_sms_matches_fern_output
+  mermade_openapi_converter_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"
