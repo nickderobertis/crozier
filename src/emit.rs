@@ -14783,7 +14783,7 @@ mod parameter_lowering_tests {
         }
         let generated = files(
             serde_json::from_str(include_str!(
-                "../docs/openapi-surface/handwritten/observatory-nullable-array/openapi.yml"
+                "../docs/openapi-surface/handwritten/observatory-nullable-query/openapi.yml"
             ))
             .unwrap(),
         );

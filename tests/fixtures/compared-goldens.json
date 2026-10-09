@@ -76,7 +76,7 @@
     "docs/openapi-surface/handwritten/observatory-client-date/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-client-headers/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-client-variable/fern-expected": {},
-    "docs/openapi-surface/handwritten/observatory-nullable-array/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-nullable-query/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-query-extensions/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-route-order/fern-expected": {},
     "docs/openapi-surface/handwritten/observatory-unlocated-parameter/fern-expected": {},

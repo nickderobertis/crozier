@@ -2805,7 +2805,7 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
         "observatory-client-date",
         "observatory-client-headers",
         "observatory-client-variable",
-        "observatory-nullable-array",
+        "observatory-nullable-query",
         "observatory-route-order",
         "observatory-unlocated-parameter",
         "observatory-base-path",
@@ -3258,7 +3258,7 @@ fn sdk_env_parameter_extensions_and_serialization_reach_the_wire() {
         "observatory-client-date",
         "observatory-client-headers",
         "observatory-client-variable",
-        "observatory-nullable-array",
+        "observatory-nullable-query",
         "observatory-route-order",
         "observatory-unlocated-parameter",
         "observatory-base-path",
@@ -3316,7 +3316,7 @@ if case.endswith('query-extensions'):
     assert signature.parameters['size'].default == '12', signature
     assert 'obsolete' not in signature.parameters and 'channel' not in signature.parameters, signature
     kwargs['band'] = 'thermal'
-elif case.endswith('nullable-array'):
+elif case.endswith('nullable-query'):
     kwargs['kinds'] = ['thermal', 'visible']
 elif case.endswith('base-path'):
     assert 'cycle' not in signature.parameters
@@ -3347,7 +3347,7 @@ elif case.endswith('client-headers'):
 elif case.endswith('client-variable'):
     assert request.url.path == '/stations/north/signals', request.url
     assert 'station_code' not in signature.parameters
-elif case.endswith('nullable-array'):
+elif case.endswith('nullable-query'):
     assert list(request.url.params.multi_items()) == [('kinds', 'thermal'), ('kinds', 'visible')], request.url
     assert signature.parameters['region'].default is None, signature
     assert 'typing.Optional[str], typing.Sequence[typing.Optional[str]]' not in str(signature), signature
