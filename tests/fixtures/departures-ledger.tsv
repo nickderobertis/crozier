@@ -2857,6 +2857,11 @@ tests/fixtures/truefoundry-trueforge/expected	src/fern/core/client_wrapper.py	38
 tests/fixtures/truefoundry-trueforge/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/truefoundry-trueforge/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/truefoundry-trueforge/expected	src/fern/types/__init__.py	126	init-type-checking-import-order
+tests/fixtures/truefoundry-trueforge/expected-flat	README.md	16	flat-pagination-pager-docs
+tests/fixtures/truefoundry-trueforge/expected-flat	core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/truefoundry-trueforge/expected-flat	core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/truefoundry-trueforge/expected-flat	core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/truefoundry-trueforge/expected-flat	types/__init__.py	126	init-type-checking-import-order
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix

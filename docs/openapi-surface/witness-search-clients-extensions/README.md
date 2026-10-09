@@ -230,13 +230,16 @@ The shape: an operation whose pagination extension is the cursor form, `cursor`
 with `next_cursor` (`operation.x-fern-pagination:cursor`). Registered real
 specifications declare it: `truefoundry-trueforge` and
 `truefoundry-trueforge-5adde28` (7 sites each), whose packaged goldens
-byte-match. The scenario's divergence is Fern's flat tree, which neither
-registers: the flat behaviour is measured on the crozier-authored
-`crane-hire-cursor` case in
-[`../../fern-measurements/clients-extensions/`](../../fern-measurements/clients-extensions/README.md),
-and TrueForge's own flat output, run locally at the certified pair, differs
-from crozier's only by the `flat-pagination-pager-docs` departure; a flat
-TrueForge golden needs the Fern goldens workflow to publish it.
+byte-match. The scenario's divergence is Fern's flat tree, where each cursor-
+paginated method returns its page model: `truefoundry-trueforge` also carries
+that flat golden (`tests/fixtures/truefoundry-trueforge/expected-flat/`, a
+[`flat-goldens.txt`](../../../tests/fixtures/flat-goldens.txt) row), which
+crozier's `--layout flat` output matches apart from the catalogued
+`flat-pagination-pager-docs` departure. The crozier-authored `crane-hire-cursor`
+case in
+[`../../fern-measurements/clients-extensions/`](../../fern-measurements/clients-extensions/README.md)
+pins the same contract on a smaller document, with the next cursor at the top
+of the page model.
 
 | key | outcome | registered declarers |
 |---|---|---|

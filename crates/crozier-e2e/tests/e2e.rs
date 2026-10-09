@@ -9882,6 +9882,14 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
             unmatched: &[],
         }),
     },
+    // A registered real document declaring cursor pagination: Fern's flat tree
+    // returns each paginated method's page model, the pagination runtime still
+    // shipped, and its README documents the pager the method does not return
+    // (the `flat-pagination-pager-docs` departure).
+    FlatGolden {
+        fixture: "truefoundry-trueforge",
+        corpus: None,
+    },
 ];
 
 /// The spec and settings a flat golden drives crozier with.
@@ -10013,6 +10021,7 @@ flat_goldens! {
     audience_filter_strict_flat_matches_fern => "audience-filter-strict",
     eos_extra_fields_forbid_flat_matches_fern => "eos.local-extra-fields-forbid",
     swagger_petstore_organization_flat_matches_fern => "swagger-petstore-organization",
+    truefoundry_trueforge_flat_matches_fern => "truefoundry-trueforge",
 }
 
 /// `tests/fixtures/flat-goldens.txt` as `(fixture, spec fixture)` rows, the spec

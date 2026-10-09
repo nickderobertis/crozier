@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .session_agent_name_ref import SessionAgentNameRef
+from .session_agent_spec_body import SessionAgentSpecBody
+
+CreateSessionAgent = typing.Union[SessionAgentNameRef, SessionAgentSpecBody]

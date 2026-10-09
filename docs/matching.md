@@ -1673,7 +1673,7 @@ workflow for a `CORPUS.md` row), comment-stripped and provenance-stamped exactly
 as `expected/` is, with `"layout": "flat"` added to its
 `.crozier-fern-golden.json`. [`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt)
 declares every one. Between them they exercise every setting that changes the
-flat tree:
+flat tree, and a shape whose flat output differs from its packaged one:
 
 | Flat golden | Setting it pins |
 | --- | --- |
@@ -1683,6 +1683,7 @@ flat tree:
 | `eos.local-extra-fields-forbid` | `extra-fields: forbid` (a `CORPUS.md` row, refreshed by the workflow) |
 | `swagger-petstore-distribution` | package `acme` and project `acme-dist` |
 | `swagger-petstore-organization` | custom Fern organization naming |
+| `truefoundry-trueforge` | none: the default names, over a registered document whose cursor `x-fern-pagination` makes Fern's flat methods return the page model (a `CORPUS.md` row) |
 
 The distribution and organization variants use the registered Swagger Petstore
 source named by their `flat-goldens.txt` rows. They add goldens without adding

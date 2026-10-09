@@ -632,6 +632,7 @@
     "tests/fixtures/traccar.org/expected": {},
     "tests/fixtures/truefoundry-trueforge-5adde28/expected": {},
     "tests/fixtures/truefoundry-trueforge/expected": {},
+    "tests/fixtures/truefoundry-trueforge/expected-flat": {},
     "tests/fixtures/twilio.com-twilio_messaging_v1/expected": {},
     "tests/fixtures/twilio.com-twilio_voice_v1/expected": {},
     "tests/fixtures/typescript-service-template/expected": {},
