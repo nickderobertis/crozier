@@ -215,6 +215,15 @@ def event_dispatch():
         assert chunks[0].data.minutes_late == 3, chunks
         assert wire.sent[0]["path"] == "/routes/r-2/movements", wire.sent
     raises_then_recovers(call, lambda chunks: len(chunks) == 2, events)
+    # A named event whose data is not JSON, or does not fit its model, is
+    # skipped with a warning, and the events after it still arrive.
+    damaged = sse(
+        ("departed", "{not json"),
+        ("arrived", {"data": "not a berth"}),
+        ("arrived", {"data": {"terminal": "East"}}),
+    )
+    for chunks, _wire in both(call, damaged):
+        assert [(type(chunk).__name__, chunk.data.terminal) for chunk in chunks] == [("Arrival", "East")], chunks
 
 
 def const_tagged_union():

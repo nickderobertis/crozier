@@ -1376,6 +1376,7 @@ pub struct Endpoint {
     pub stream_chunk: Option<TypeRef>,
     /// How a streaming response frames its chunks: present exactly when
     /// `streaming` is.
+    // llmlint: ignore[invalid_states_unrepresentable] `streaming: bool` is the shared Endpoint field other generators' code reads; folding it and this protocol into one enum amends that shared interface, which this change may only propose (drafted as a follow-up). `build_endpoint` sets both from one `is_streaming` call.
     pub stream_protocol: Option<StreamProtocol>,
     /// Whether the selected success response uses `text/plain` media.
     pub text_response: bool,
