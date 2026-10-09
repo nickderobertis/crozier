@@ -108,3 +108,7 @@ Missing tooling — the `crozier` binary, Node/Prism, or the Python deps — is 
 the wire suite's posture so the mock e2e can never silently no-op in the gate.
 `tests/live_e2e/run.sh` additionally gates each tool with an actionable error when
 invoked directly.
+
+- Python: `format`, `lint` and `typecheck` only. `test` keeps its own runner and
+  these files stay out of the combined coverage floor, because its suite needs
+  Prism and a PyPI venv.

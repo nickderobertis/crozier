@@ -1,0 +1,145 @@
+{
+  "name": "python-workspace",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "implicitDependencies": [
+    "screenshots",
+    "corpus",
+    "corpus-fetch",
+    "corpus-licensing",
+    "fern-goldens",
+    "fern-goldens-git",
+    "fern-refusals",
+    "fern-refusals-strict",
+    "llmlint-tooling",
+    "llmlint-resolution",
+    "surface-census",
+    "surface-reach",
+    "witness-search",
+    "witness-search-git"
+  ],
+  "targets": {
+    "coverage": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages python tools/python-workspace/coverage_gate.py --fail-under 88"
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "pythonTooling"
+      ],
+      "dependsOn": [
+        "^test",
+        "test"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/python-workspace/tests/coverage_gate_test.py tools/python-workspace/tests/workspace_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/python-workspace/test/.coverage"
+        }
+      },
+      "cache": true,
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/python-workspace/test"
+      ],
+      "inputs": [
+        "default",
+        "pythonTooling",
+        "{workspaceRoot}/.ruff-version",
+        "{workspaceRoot}/docs/python-tooling.md",
+        "{workspaceRoot}/AGENTS.md",
+        "{workspaceRoot}/screenshots/project.json",
+        "{workspaceRoot}/tools/corpus/project.json",
+        "{workspaceRoot}/tools/corpus-fetch/project.json",
+        "{workspaceRoot}/tools/corpus-licensing/project.json",
+        "{workspaceRoot}/tools/fern-goldens/project.json",
+        "{workspaceRoot}/tools/fern-goldens-git/project.json",
+        "{workspaceRoot}/tools/fern-refusals/project.json",
+        "{workspaceRoot}/tools/fern-refusals-strict/project.json",
+        "{workspaceRoot}/tools/llmlint/project.json",
+        "{workspaceRoot}/tools/llmlint-resolution/project.json",
+        "{workspaceRoot}/tools/surface-census/project.json",
+        "{workspaceRoot}/tools/surface-reach/project.json",
+        "{workspaceRoot}/tools/witness-search/project.json",
+        "{workspaceRoot}/tools/witness-search-git/project.json",
+        "{workspaceRoot}/screenshots/pyproject.toml",
+        "{workspaceRoot}/tools/corpus/pyproject.toml",
+        "{workspaceRoot}/tools/corpus-fetch/pyproject.toml",
+        "{workspaceRoot}/tools/corpus-licensing/pyproject.toml",
+        "{workspaceRoot}/tools/fern-goldens/pyproject.toml",
+        "{workspaceRoot}/tools/fern-goldens-git/pyproject.toml",
+        "{workspaceRoot}/tools/fern-refusals/pyproject.toml",
+        "{workspaceRoot}/tools/fern-refusals-strict/pyproject.toml",
+        "{workspaceRoot}/tools/llmlint/pyproject.toml",
+        "{workspaceRoot}/tools/llmlint-resolution/pyproject.toml",
+        "{workspaceRoot}/tools/surface-census/pyproject.toml",
+        "{workspaceRoot}/tools/surface-reach/pyproject.toml",
+        "{workspaceRoot}/tools/witness-search/pyproject.toml",
+        "{workspaceRoot}/tools/witness-search-git/pyproject.toml"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/python-workspace"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/python-workspace"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/python-workspace"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs python-workspace"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/python-workspace"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    }
+  }
+}

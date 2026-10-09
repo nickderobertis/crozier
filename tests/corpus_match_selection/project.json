@@ -32,7 +32,7 @@
         }
       ]
     },
-    "lint": {
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs corpus-match-selection"
@@ -40,6 +40,51 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tests/corpus_match_selection"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ],
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tests/corpus_match_selection"
+        }
+      }
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tests/corpus_match_selection"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tests/corpus_match_selection"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
       ]
     }
   }

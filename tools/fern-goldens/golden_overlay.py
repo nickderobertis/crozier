@@ -37,18 +37,13 @@ def files(root: Path) -> set[str]:
 
 def reduce(base: Path, tree: Path, provenance: dict[str, object]) -> None:
     if not base.is_dir():
-        raise SystemExit(
-            f"golden_overlay: no python-enums golden at {base}; "
-            "generate the fixture's expected/ first"
-        )
+        raise SystemExit(f"golden_overlay: no python-enums golden at {base}; generate the fixture's expected/ first")
     base_files = files(base)
     tree_files = files(tree)
     for rel in sorted(tree_files & base_files):
         if (tree / rel).read_bytes() == (base / rel).read_bytes():
             (tree / rel).unlink()
-    for directory in sorted(
-        (p for p in tree.rglob("*") if p.is_dir()), key=lambda p: len(p.parts), reverse=True
-    ):
+    for directory in sorted((p for p in tree.rglob("*") if p.is_dir()), key=lambda p: len(p.parts), reverse=True):
         if not any(directory.iterdir()):
             directory.rmdir()
     manifest = {**provenance, "removed": sorted(base_files - tree_files)}
@@ -65,11 +60,15 @@ def main(argv: list[str]) -> int:
     try:
         provenance = json.loads(argv[3])
     except json.JSONDecodeError as error:
-        raise SystemExit(f"golden_overlay: PROVENANCE_JSON is not JSON ({error.msg}); pass the overlay's "
-                         "provenance as one JSON object") from None
+        raise SystemExit(
+            f"golden_overlay: PROVENANCE_JSON is not JSON ({error.msg}); pass the overlay's "
+            "provenance as one JSON object"
+        ) from None
     if not isinstance(provenance, dict) or "removed" in provenance:
-        raise SystemExit("golden_overlay: PROVENANCE_JSON must be a JSON object without a `removed` key "
-                         "(the reduction writes that one)")
+        raise SystemExit(
+            "golden_overlay: PROVENANCE_JSON must be a JSON object without a `removed` key "
+            "(the reduction writes that one)"
+        )
     reduce(Path(argv[1]), tree, provenance)
     return 0
 

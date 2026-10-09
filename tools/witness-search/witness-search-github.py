@@ -34,12 +34,12 @@ import urllib.parse
 import urllib.request
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 # The guard sits beside this module; callers in other projects load this file by
 # path, so its directory is not otherwise on sys.path.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from rate_limit_guard import (  # noqa: E402 - importable only once this directory is on sys.path
+from rate_limit_guard import (
     CALLS_FILE,
     REFUSAL_STATUSES,
     WAITS_FILE,
@@ -200,9 +200,7 @@ def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
             keys[key] = {
                 "region": region,
                 "selector": selector,
-                "selector_status": (
-                    "available" if CENSUS.selector_error(selector) is None else "unavailable"
-                ),
+                "selector_status": ("available" if CENSUS.selector_error(selector) is None else "unavailable"),
             }
     return dict(sorted(keys.items()))
 
@@ -218,8 +216,7 @@ def ingredients(selector: str) -> list[str]:
     if media is not None:
         # The census reads these Media Type shapes off request bodies only.
         fields.extend(("requestBody", media[1]))
-        fields.extend({"allof-parent-body": ("allOf",), "deprecated-property": ("deprecated",)}
-                      .get(media[2], ()))
+        fields.extend({"allof-parent-body": ("allOf",), "deprecated-property": ("deprecated",)}.get(media[2], ()))
     for composition in ("oneOf", "anyOf"):
         if f"pointer-walk-reaches={composition}" in selector:
             fields.append(composition)
@@ -232,11 +229,7 @@ def distinguishing_phrase(selector: str, language: str, variant: int) -> str | N
     if "unnamed-segment" in selector:
         return '"/definitions/"' if variant else '"/$defs/"'
     if "undeclared-component-head" in selector:
-        return (
-            '"#/components/schemas/Unknown"'
-            if variant
-            else '"#/components/schemas/undefined"'
-        )
+        return '"#/components/schemas/Unknown"' if variant else '"#/components/schemas/undefined"'
     if selector == "securityScheme:$ref":
         return '"securitySchemes/"' if variant else '"#/components/securitySchemes/"'
     if "primary=array" in selector:
@@ -263,17 +256,11 @@ def query_plan(selector: str) -> dict[str, list[str]]:
     github = []
     for index, name in enumerate(DOCUMENT_NAMES):
         language = "YAML" if name.endswith((".yaml", ".yml")) else "JSON"
-        spelling = [
-            f'"{term}:"' if language == "YAML" else f'"\\"{term}\\""' for term in terms
-        ]
+        spelling = [f'"{term}:"' if language == "YAML" else f'"\\"{term}\\""' for term in terms]
         extra = distinguishing_phrase(selector, language, index % 2)
-        github.append(
-            " ".join((*spelling, *([extra] if extra else []), f"filename:{name}"))
-        )
+        github.append(" ".join((*spelling, *([extra] if extra else []), f"filename:{name}")))
     for index, language in enumerate(("YAML", "JSON")):
-        spelling = [
-            f'"{term}:"' if language == "YAML" else f'"\\"{term}\\""' for term in terms
-        ]
+        spelling = [f'"{term}:"' if language == "YAML" else f'"\\"{term}\\""' for term in terms]
         extra = distinguishing_phrase(selector, language, index)
         github.append(
             " ".join(
@@ -288,10 +275,7 @@ def query_plan(selector: str) -> dict[str, list[str]]:
     sourcegraph = []
     for index, extension in enumerate((r"(yaml|yml)", "json")):
         language = "JSON" if extension == "json" else "YAML"
-        spelling = [
-            f'content:"{term}:"' if language == "YAML" else f'content:"\\"{term}\\""'
-            for term in terms
-        ]
+        spelling = [f'content:"{term}:"' if language == "YAML" else f'content:"\\"{term}\\""' for term in terms]
         extra = distinguishing_phrase(selector, language, index)
         sourcegraph.append(
             " ".join(
@@ -310,7 +294,8 @@ def query_plan(selector: str) -> dict[str, list[str]]:
 def publisher_set(root: Path = REPO) -> list[dict[str, Any]]:
     """Prior trees, registered publishers, and publisher-owned declarer repositories."""
     wide = root / "docs/openapi-surface/witness-scrape-wide/trees.json.gz"
-    trees = json.load(gzip.open(wide, "rt", encoding="utf-8"))["trees"]
+    with gzip.open(wide, "rt", encoding="utf-8") as stream:
+        trees = json.load(stream)["trees"]
     if not isinstance(trees, list):
         raise ValueError(f"{wide}: trees must be a list")
     selected = []
@@ -340,9 +325,7 @@ def publisher_set(root: Path = REPO) -> list[dict[str, Any]]:
         if len(parts) != 4 or not parts[-1].startswith(("openapi.", "swagger.")):
             continue
         repository = "/".join(parts[:2])
-        if "example" in repository.lower() or repository in {
-            item["repository"] for item in selected
-        }:
+        if "example" in repository.lower() or repository in {item["repository"] for item in selected}:
             continue
         selected.append(
             {
@@ -352,10 +335,7 @@ def publisher_set(root: Path = REPO) -> list[dict[str, Any]]:
                 "derivation": f"CORPUS.md row {cells[0]} root-level {parts[-1]}",
             }
         )
-    declarers = (
-        root
-        / "docs/openapi-surface/witness-search-github-publisher-trees/publisher-declarers.tsv"
-    )
+    declarers = root / "docs/openapi-surface/witness-search-github-publisher-trees/publisher-declarers.tsv"
     with declarers.open(encoding="utf-8", newline="") as stream:
         for item in csv.DictReader(stream, delimiter="\t"):
             repository = item["repository"]
@@ -379,18 +359,17 @@ def validate_publisher(publisher: dict[str, Any]) -> None:
     repository = publisher.get("repository")
     commit = publisher.get("commit")
     scope = publisher.get("scope")
-    if not isinstance(repository, str) or not re.fullmatch(
-        r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository
-    ):
+    if not isinstance(repository, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
         raise ValueError(f"invalid publisher repository: {repository!r}")
     if INDEX.excluded_repository(repository):
-        raise ValueError(f"{repository}: excluded by the repository rule; crozier does not register "
-                         "specifications from this repository; use the specification publisher's repository")
+        raise ValueError(
+            f"{repository}: excluded by the repository rule; crozier does not register "
+            "specifications from this repository; use the specification publisher's repository"
+        )
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
         raise ValueError(f"{repository}: publisher commit must be a 40-hex SHA")
     if not isinstance(scope, (str, list)) or (
-        isinstance(scope, list)
-        and any(not isinstance(item, str) for item in scope)
+        isinstance(scope, list) and any(not isinstance(item, str) for item in scope)
     ):
         raise ValueError(f"{repository}: publisher scope must be a path or path list")
 
@@ -459,18 +438,15 @@ class Acquirer:
                 sourcegraph_refusal_cooldown_s,
             ),
         }
-        self.guards = {
-            host: RateLimitGuard(host, evidence_dir=evidence)
-            for host in ("github", "sourcegraph")
-        }
+        self.guards = {host: RateLimitGuard(host, evidence_dir=evidence) for host in ("github", "sourcegraph")}
         # One parse and one census per distinct byte string, whichever keys ask.
         self.verdicts: dict[str, tuple[str, dict[str, int] | str | None]] = {}
 
     def assigned_identity(self, kind: str, value: str) -> str:
         identity = (kind, value)
         if identity not in self.excluded_identities:
-            self.excluded_identities[identity] = (
-                INDEX.make_opaque_identity(self.invocation_id, len(self.excluded_identities) + 1)
+            self.excluded_identities[identity] = INDEX.make_opaque_identity(
+                self.invocation_id, len(self.excluded_identities) + 1
             )
         return self.excluded_identities[identity]
 
@@ -499,8 +475,10 @@ class Acquirer:
             if result[field] is None:
                 result.pop(field)
                 continue
-            kind = "revision" if field in ("commit", "revision", "supersedes") else (
-                "blob" if field in ("sha", "blob") else field
+            kind = (
+                "revision"
+                if field in ("commit", "revision", "supersedes")
+                else ("blob" if field in ("sha", "blob") else field)
             )
             locator = f"{INDEX.normalize_repo(repository)}:{value[field]}" if field == "path" else str(value[field])
             result[field] = self.assigned_identity(kind, locator)
@@ -514,9 +492,14 @@ class Acquirer:
         redacted = self.opaque_record(item)
         if not INDEX.opaque_identity(redacted.get("path")):
             return None
-        record = {"source": source, "key": key, "selector": selector,
-                  "repository": redacted["repository"], "path": redacted["path"],
-                  "disposition": INDEX.RAW_EXCLUDED}
+        record = {
+            "source": source,
+            "key": key,
+            "selector": selector,
+            "repository": redacted["repository"],
+            "path": redacted["path"],
+            "disposition": INDEX.RAW_EXCLUDED,
+        }
         for field in ("commit", "sha", "blob"):
             if field in redacted:
                 record[field] = redacted[field]
@@ -532,9 +515,7 @@ class Acquirer:
             if status not in INDEX.RAW_STATUSES:
                 raise ValueError(f"unknown acquisition status: {status}")
         record = {
-            "at": datetime.datetime.now(datetime.timezone.utc).isoformat(
-                timespec="milliseconds"
-            ),
+            "at": datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds"),
             **record,
         }
         INDEX.append_ledger(self.evidence / filename, json.dumps(record, sort_keys=True) + "\n")
@@ -565,7 +546,9 @@ class Acquirer:
             guard.record(error)
             raise
         guard.record(response)
-        return response.status, body, response.headers
+        # typeshed types HTTPError.status as int | None and its headers as Message; urllib's HTTPError always
+        # carries the int code and the response's http.client.HTTPMessage, as a successful response does.
+        return response.status, body, response.headers  # ty: ignore[invalid-return-type]
 
     def wait_for_index_pacing(self, host: str, bucket: str) -> None:
         """Space index calls across process restarts and cool after refusals."""
@@ -575,8 +558,7 @@ class Acquirer:
         calls = [
             row
             for row in jsonl(self.evidence / CALLS_FILE)
-            if row.get("host") == host
-            and (row.get("bucket") or row.get("lane")) == bucket
+            if row.get("host") == host and (row.get("bucket") or row.get("lane")) == bucket
         ]
         if not calls:
             return
@@ -586,23 +568,17 @@ class Acquirer:
             (
                 row
                 for row in reversed(calls)
-                if row.get("status") in (
-                    REFUSAL_STATUSES | {403} if host == "github" else REFUSAL_STATUSES
-                )
+                if row.get("status") in (REFUSAL_STATUSES | {403} if host == "github" else REFUSAL_STATUSES)
             ),
             None,
         )
         spacing_until = last_time + spacing
-        refusal_until = (
-            datetime.datetime.fromisoformat(refusal["at"]).timestamp() + cooldown
-            if refusal
-            else 0.0
-        )
+        refusal_until = datetime.datetime.fromisoformat(refusal["at"]).timestamp() + cooldown if refusal else 0.0
         deadline = max(spacing_until, refusal_until)
         duration = max(0.0, deadline - time.time())
         if duration:
             cause = "refusal-cooldown" if refusal_until >= spacing_until else "spacing"
-            started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            started = datetime.datetime.now(datetime.UTC).isoformat()
             time.sleep(duration)
             self.write(
                 INDEX_PACING_WAITS,
@@ -667,9 +643,7 @@ class Acquirer:
             )
         return status, None, payload
 
-    def git_tree(
-        self, repository: str, sha: str, *, recursive: bool = False
-    ) -> dict[str, Any]:
+    def git_tree(self, repository: str, sha: str, *, recursive: bool = False) -> dict[str, Any]:
         path = (
             "/repos/"
             + urllib.parse.quote(repository, safe="/")
@@ -679,9 +653,7 @@ class Acquirer:
         )
         status, payload, _ = self.github_json("core", path)
         if status != 200:
-            raise SearchStopped(
-                f"GitHub git tree {repository}@{sha}: HTTP {status}; publisher walk outstanding"
-            )
+            raise SearchStopped(f"GitHub git tree {repository}@{sha}: HTTP {status}; publisher walk outstanding")
         if (
             not isinstance(payload, dict)
             or not isinstance(payload.get("tree"), list)
@@ -701,23 +673,15 @@ class Acquirer:
         for segment in scope.split("/") if scope else ():
             entries = self.git_tree(repository, sha)["tree"]
             child = next(
-                (
-                    item
-                    for item in entries
-                    if item["path"] == segment and item["type"] == "tree"
-                ),
+                (item for item in entries if item["path"] == segment and item["type"] == "tree"),
                 None,
             )
             if child is None:
-                raise MissingScope(
-                    f"publisher scope {repository}@{commit}/{scope} missing {segment}"
-                )
+                raise MissingScope(f"publisher scope {repository}@{commit}/{scope} missing {segment}")
             sha = child["sha"]
         return sha
 
-    def scope_files(
-        self, repository: str, commit: str, scope: str
-    ) -> list[dict[str, str]]:
+    def scope_files(self, repository: str, commit: str, scope: str) -> list[dict[str, str]]:
         sha = self.scope_sha(repository, commit, scope)
         payload = self.git_tree(repository, sha, recursive=True)
         if not payload.get("truncated"):
@@ -743,9 +707,7 @@ class Acquirer:
 
         return descend(sha, scope)
 
-    def publisher_walk(
-        self, publisher: dict[str, Any], keys: dict[str, dict[str, str]]
-    ) -> None:
+    def publisher_walk(self, publisher: dict[str, Any], keys: dict[str, dict[str, str]]) -> None:
         validate_publisher(publisher)
         repository = publisher["repository"]
         commit = publisher["commit"]
@@ -753,20 +715,14 @@ class Acquirer:
             (
                 row
                 for row in jsonl(self.evidence / "trees.jsonl")
-                if row.get("repository") == repository
-                and row.get("commit") == commit
-                and "paths" in row
+                if row.get("repository") == repository and row.get("commit") == commit and "paths" in row
             ),
             None,
         )
         if prior:
             paths = {item["path"]: item for item in prior["paths"]}
         else:
-            scopes = (
-                publisher["scope"]
-                if isinstance(publisher["scope"], list)
-                else [publisher["scope"]]
-            )
+            scopes = publisher["scope"] if isinstance(publisher["scope"], list) else [publisher["scope"]]
             paths = {}
             missing_scopes = []
             for scope in scopes:
@@ -814,9 +770,7 @@ class Acquirer:
                 "acquisition_route": ROUTE_PINNED_RAW_GITHUB,
             }
             try:
-                status, data = self.raw_github_get(
-                    url, "publisher-trees", f"{repository}/{path}@{commit}"
-                )
+                status, data = self.raw_github_get(url, "publisher-trees", f"{repository}/{path}@{commit}")
             except OSError as error:
                 self.write(
                     "documents.jsonl",
@@ -838,16 +792,12 @@ class Acquirer:
                     },
                 )
                 if status in (403, 429):
-                    raise SearchStopped(
-                        f"GitHub refused publisher contents {repository}/{path}: HTTP {status}"
-                    )
+                    raise SearchStopped(f"GitHub refused publisher contents {repository}/{path}: HTTP {status}")
                 continue
             result = self.census_tree_document(data, keys)
             self.write("documents.jsonl", {**identity, **result})
 
-    def recount_tree_document(
-        self, row: dict[str, Any], keys: dict[str, dict[str, str]]
-    ) -> None:
+    def recount_tree_document(self, row: dict[str, Any], keys: dict[str, dict[str, str]]) -> None:
         """Count, over a walked document's cached bytes, the keys its census never counted.
 
         A key joins the search after the trees were walked; the walk read each
@@ -874,7 +824,11 @@ class Acquirer:
         self.write(
             "documents.jsonl",
             {
-                **{field: row[field] for field in ("source", "repository", "path", "commit", "blob", "url", "acquisition_route") if field in row},
+                **{
+                    field: row[field]
+                    for field in ("source", "repository", "path", "commit", "blob", "url", "acquisition_route")
+                    if field in row
+                },
                 "sha256": digest,
                 "status": "readable",
                 "selector_counts": {**result["selector_counts"], **counts},
@@ -882,9 +836,7 @@ class Acquirer:
             },
         )
 
-    def census_tree_document(
-        self, data: bytes, keys: dict[str, dict[str, str]]
-    ) -> dict[str, Any]:
+    def census_tree_document(self, data: bytes, keys: dict[str, dict[str, str]]) -> dict[str, Any]:
         digest = hashlib.sha256(data).hexdigest()
         path = self.cache / "documents" / document_name(data)
         path.parent.mkdir(exist_ok=True)
@@ -892,14 +844,10 @@ class Acquirer:
             path.write_bytes(data)
         try:
             parsed = CENSUS.load_document(path)
-            if not isinstance(parsed, dict) or not OPENAPI_VERSION.fullmatch(
-                str(parsed.get("openapi", ""))
-            ):
+            if not isinstance(parsed, dict) or not OPENAPI_VERSION.fullmatch(str(parsed.get("openapi", ""))):
                 return {"sha256": digest, "status": "excluded-non-openapi-3"}
             counts = CENSUS.census_document(parsed)
-            selected = {
-                key: counts.get(value["selector"], 0) for key, value in keys.items()
-            }
+            selected = {key: counts.get(value["selector"], 0) for key, value in keys.items()}
             return {"sha256": digest, "status": "readable", "selector_counts": selected}
         except (CENSUS.DocumentError, ValueError, UnicodeError) as error:
             return {
@@ -912,28 +860,20 @@ class Acquirer:
         """Partition a large query by file size, then page every window."""
         return self._github_window(key, query, 0, None)
 
-    def _github_window(
-        self, key: str, query: str, lower: int, upper: int | None
-    ) -> list[dict[str, Any]] | None:
+    def _github_window(self, key: str, query: str, lower: int, upper: int | None) -> list[dict[str, Any]] | None:
         previous = [
             row
             for row in jsonl(self.evidence / "queries.jsonl")
-            if row.get("source") == "github-code-search"
-            and row.get("key") == key
-            and row.get("query") == query
+            if row.get("source") == "github-code-search" and row.get("key") == key and row.get("query") == query
         ]
-        partition = next(
-            (row for row in previous if row.get("outcome") == "partitioned"), None
-        )
+        partition = next((row for row in previous if row.get("outcome") == "partitioned"), None)
         if partition:
             if self.first_page_only:
                 return None
             found = []
             complete = True
             for child in partition["windows"]:
-                part = self._github_window(
-                    key, child["query"], child["lower"], child["upper"]
-                )
+                part = self._github_window(key, child["query"], child["lower"], child["upper"])
                 if part is None:
                     complete = False
                 else:
@@ -941,8 +881,7 @@ class Acquirer:
             return found if complete else None
         answered = [row for row in previous if row.get("outcome") == "answered"]
         if any(
-            not isinstance(row.get("result_count"), int)
-            or not isinstance(row.get("retrieved_total"), int)
+            not isinstance(row.get("result_count"), int) or not isinstance(row.get("retrieved_total"), int)
             for row in answered
         ):
             raise EvidenceError(
@@ -951,25 +890,21 @@ class Acquirer:
         if answered and self.first_page_only:
             return None
         if answered and answered[0].get("result_count", 0) > 1000:
-            return self._partition_window(
-                key, query, lower, upper, answered[0]["result_count"]
-            )
-        if answered and answered[-1].get("retrieved_total") >= answered[-1].get(
-            "result_count"
-        ):
+            return self._partition_window(key, query, lower, upper, answered[0]["result_count"])
+        if answered and answered[-1]["retrieved_total"] >= answered[-1]["result_count"]:
             return [item for row in answered for item in row["results"]]
-        if answered and (
-            answered[-1].get("page_count") == 0 or len(answered) >= CODE_SEARCH_PAGE_CAP
-        ):
+        if answered and (answered[-1].get("page_count") == 0 or len(answered) >= CODE_SEARCH_PAGE_CAP):
             split = self._split_truncated(
-                key, query, lower, upper, answered[0]["result_count"],
+                key,
+                query,
+                lower,
+                upper,
+                answered[0]["result_count"],
                 answered[-1]["retrieved_total"],
             )
             if split is not False:
                 return split
-            if not any(
-                row.get("outcome") == "outstanding-index-truncation" for row in previous
-            ):
+            if not any(row.get("outcome") == "outstanding-index-truncation" for row in previous):
                 self.write(
                     "queries.jsonl",
                     {
@@ -986,9 +921,7 @@ class Acquirer:
         found = [item for row in answered for item in row["results"]]
         page = len(answered) + 1
         while True:
-            path = "/search/code?" + urllib.parse.urlencode(
-                {"q": query, "per_page": 100, "page": page}
-            )
+            path = "/search/code?" + urllib.parse.urlencode({"q": query, "per_page": 100, "page": page})
             try:
                 status, payload, _ = self.github_json("code_search", path)
             except OSError as error:
@@ -1032,9 +965,7 @@ class Acquirer:
                         "diagnostic": payload,
                     },
                 )
-                raise SearchStopped(
-                    f"GitHub refused {query!r} page {page}: HTTP {status}; key {key} outstanding"
-                )
+                raise SearchStopped(f"GitHub refused {query!r} page {page}: HTTP {status}; key {key} outstanding")
             if (
                 not isinstance(payload, dict)
                 or not isinstance(payload.get("total_count"), int)
@@ -1043,10 +974,7 @@ class Acquirer:
                     not isinstance(item, dict)
                     or not isinstance(item.get("repository"), dict)
                     or not isinstance(item["repository"].get("full_name"), str)
-                    or any(
-                        not isinstance(item.get(field), str)
-                        for field in ("path", "sha", "url")
-                    )
+                    or any(not isinstance(item.get(field), str) for field in ("path", "sha", "url"))
                     for item in payload["items"]
                 )
             ):
@@ -1061,9 +989,7 @@ class Acquirer:
                         "diagnostic": "GitHub search response lacks a valid total_count or item identity",
                     },
                 )
-                raise SearchStopped(
-                    f"GitHub search returned malformed results for {query!r} page {page}"
-                )
+                raise SearchStopped(f"GitHub search returned malformed results for {query!r} page {page}")
             items = payload.get("items", [])
             total = payload.get("total_count", 0)
             if page == 1 and total > 1000:
@@ -1087,9 +1013,9 @@ class Acquirer:
                             "path": x["path"],
                             "sha": x["sha"],
                             "url": x["url"],
-                            "commit": urllib.parse.parse_qs(
-                                urllib.parse.urlsplit(x["url"]).query
-                            ).get("ref", [None])[0],
+                            "commit": urllib.parse.parse_qs(urllib.parse.urlsplit(x["url"]).query).get("ref", [None])[
+                                0
+                            ],
                         }
                         for x in items
                     ],
@@ -1128,9 +1054,14 @@ class Acquirer:
             page += 1
 
     def _split_truncated(
-        self, key: str, query: str, lower: int, upper: int | None,
-        reported: int, retrieved: int,
-    ) -> list[dict[str, Any]] | None | bool:
+        self,
+        key: str,
+        query: str,
+        lower: int,
+        upper: int | None,
+        reported: int,
+        retrieved: int,
+    ) -> list[dict[str, Any]] | None | Literal[False]:
         """Split a truncated window by size, or say it cannot be split now.
 
         Returns False when splitting is off or this run's budget is spent, so the
@@ -1180,11 +1111,7 @@ class Acquirer:
                 },
             )
             return None
-        midpoint = (
-            (lower + upper) // 2
-            if upper is not None
-            else max(lower + 100000, lower * 2)
-        )
+        midpoint = (lower + upper) // 2 if upper is not None else max(lower + 100000, lower * 2)
         base = re.sub(r" size:[^ ]+", "", query)
         windows = [
             {
@@ -1193,12 +1120,7 @@ class Acquirer:
                 "upper": midpoint - 1,
             },
             {
-                "query": base
-                + (
-                    f" size:{midpoint}..{upper}"
-                    if upper is not None
-                    else f" size:>={midpoint}"
-                ),
+                "query": base + (f" size:{midpoint}..{upper}" if upper is not None else f" size:>={midpoint}"),
                 "lower": midpoint,
                 "upper": upper,
             },
@@ -1231,11 +1153,7 @@ class Acquirer:
         )
 
     def sourcegraph_search(self, key: str, query: str) -> list[dict[str, Any]] | None:
-        url = (
-            self.sourcegraph_url
-            + "/.api/search/stream?"
-            + urllib.parse.urlencode({"v": "V3", "q": query})
-        )
+        url = self.sourcegraph_url + "/.api/search/stream?" + urllib.parse.urlencode({"v": "V3", "q": query})
         try:
             status, data = self.sourcegraph_get(url, key, query)
         except OSError as error:
@@ -1249,9 +1167,7 @@ class Acquirer:
                     "diagnostic": f"{type(error).__name__}: {error}",
                 },
             )
-            raise SearchStopped(
-                f"Sourcegraph search transport failed for {query!r}: {error}"
-            ) from error
+            raise SearchStopped(f"Sourcegraph search transport failed for {query!r}: {error}") from error
         except SecondaryLimit as error:
             self.write(
                 "queries.jsonl",
@@ -1276,9 +1192,7 @@ class Acquirer:
                     "diagnostic": data.decode("utf-8", "replace")[:1000],
                 },
             )
-            raise SearchStopped(
-                f"Sourcegraph refused search {query!r}: HTTP {status}; key {key} outstanding"
-            )
+            raise SearchStopped(f"Sourcegraph refused search {query!r}: HTTP {status}; key {key} outstanding")
         events = []
         try:
             for block in data.decode("utf-8", "replace").split("\n\n"):
@@ -1286,9 +1200,7 @@ class Acquirer:
                 body = re.search(r"^data: (.+)$", block, re.M)
                 if event and body:
                     events.append((event.group(1), json.loads(body.group(1))))
-            matches = [
-                item for name, body in events if name == "matches" for item in body
-            ]
+            matches = [item for name, body in events if name == "matches" for item in body]
             progress = [body for name, body in events if name == "progress"]
             if any(
                 not isinstance(item, dict)
@@ -1310,9 +1222,7 @@ class Acquirer:
                     "diagnostic": f"{type(error).__name__}: {error}",
                 },
             )
-            raise SearchStopped(
-                f"Sourcegraph returned malformed results for {query!r}: {error}"
-            ) from error
+            raise SearchStopped(f"Sourcegraph returned malformed results for {query!r}: {error}") from error
         done = progress[-1] if progress else {}
         record = {
             "source": "sourcegraph",
@@ -1350,9 +1260,7 @@ class Acquirer:
                 },
             )
 
-    def sourcegraph_document(
-        self, key: str, selector: str, item: dict[str, Any]
-    ) -> dict[str, Any]:
+    def sourcegraph_document(self, key: str, selector: str, item: dict[str, Any]) -> dict[str, Any]:
         excluded = self.record_excluded_candidate("sourcegraph", key, selector, item)
         if excluded is not None:
             return excluded
@@ -1367,8 +1275,8 @@ class Acquirer:
             "path": path,
             "commit": commit,
         }
-        if any(
-            not isinstance(value, str) or not value for value in (repo, path, commit)
+        if not (
+            isinstance(repo, str) and repo and isinstance(path, str) and path and isinstance(commit, str) and commit
         ):
             record = {
                 **identity,
@@ -1377,9 +1285,7 @@ class Acquirer:
             }
             self.write("candidates.jsonl", record)
             return record
-        github_repo = (
-            repo.removeprefix("github.com/") if repo.startswith("github.com/") else None
-        )
+        github_repo = repo.removeprefix("github.com/") if repo.startswith("github.com/") else None
         raw = bool(github_repo and re.fullmatch(r"[0-9a-f]{40}", commit))
         if raw:
             url = (
@@ -1437,9 +1343,7 @@ class Acquirer:
                 duration = self.raw_last_request + RAW_SPACING_S - time.monotonic()
                 if duration > 0:
                     self._raw_wait(duration, "spacing", key, subject)
-            request = urllib.request.Request(
-                url, headers={"User-Agent": "crozier-witness-search"}
-            )
+            request = urllib.request.Request(url, headers={"User-Agent": "crozier-witness-search"})
             try:
                 response = urllib.request.urlopen(request, timeout=90)
             except urllib.error.HTTPError as error:
@@ -1490,12 +1394,11 @@ class Acquirer:
                 },
             )
             if status not in (429, 503):
-                return status, data
+                # typeshed types HTTPError.status as int | None; urllib's HTTPError always carries the int code.
+                return status, data  # ty: ignore[invalid-return-type]
             refusals += 1
             if refusals >= 5:
-                raise SearchStopped(
-                    f"raw GitHub refused {subject} five times (HTTP {status})"
-                )
+                raise SearchStopped(f"raw GitHub refused {subject} five times (HTTP {status})")
             retry = response.headers.get("Retry-After")
             try:
                 retry_seconds = float(retry) if retry is not None else 0.0
@@ -1503,7 +1406,7 @@ class Acquirer:
                 try:
                     stamp = email.utils.parsedate_to_datetime(retry)
                     retry_seconds = max(
-                        (stamp - datetime.datetime.now(datetime.timezone.utc)).total_seconds(),
+                        (stamp - datetime.datetime.now(datetime.UTC)).total_seconds(),
                         0,
                     )
                 except (TypeError, ValueError, OverflowError):
@@ -1528,9 +1431,7 @@ class Acquirer:
             },
         )
 
-    def github_document(
-        self, key: str, item: dict[str, Any], *, route: str = "contents"
-    ) -> dict[str, Any]:
+    def github_document(self, key: str, item: dict[str, Any], *, route: str = "contents") -> dict[str, Any]:
         """Fetch exact result content at its indexed commit, then run the census.
 
         `route` `contents` reads the REST contents API on the guarded `core`
@@ -1551,9 +1452,7 @@ class Acquirer:
             "path": item["path"],
             "blob": item["sha"],
             "commit": item.get("commit")
-            or urllib.parse.parse_qs(urllib.parse.urlsplit(item["url"]).query).get(
-                "ref", [None]
-            )[0],
+            or urllib.parse.parse_qs(urllib.parse.urlsplit(item["url"]).query).get("ref", [None])[0],
             "url": item["url"],
         }
         if route == "raw":
@@ -1567,8 +1466,13 @@ class Acquirer:
                 self.write("candidates.jsonl", record)
                 return record
             raw_url = (
-                self.raw_github_url + "/" + urllib.parse.quote(identity["repository"], safe="/")
-                + "/" + commit + "/" + urllib.parse.quote(identity["path"], safe="/")
+                self.raw_github_url
+                + "/"
+                + urllib.parse.quote(identity["repository"], safe="/")
+                + "/"
+                + commit
+                + "/"
+                + urllib.parse.quote(identity["path"], safe="/")
             )
             identity["acquisition_route"] = ROUTE_PINNED_RAW_GITHUB
             identity["raw_url"] = raw_url
@@ -1576,13 +1480,20 @@ class Acquirer:
             try:
                 status, data = self.raw_github_get(raw_url, key, subject)
             except OSError as error:
-                record = {**identity, "disposition": "acquisition-failure",
-                          "diagnostic": f"{type(error).__name__}: {error}"}
+                record = {
+                    **identity,
+                    "disposition": "acquisition-failure",
+                    "diagnostic": f"{type(error).__name__}: {error}",
+                }
                 self.write("candidates.jsonl", record)
                 return record
             if status != 200:
-                record = {**identity, "disposition": "acquisition-failure", "status": status,
-                          "diagnostic": data.decode("utf-8", "replace")[:1000]}
+                record = {
+                    **identity,
+                    "disposition": "acquisition-failure",
+                    "status": status,
+                    "diagnostic": data.decode("utf-8", "replace")[:1000],
+                }
                 self.write("candidates.jsonl", record)
                 return record
             return self.classify_and_record(identity, data)
@@ -1599,9 +1510,7 @@ class Acquirer:
         # a directory name), which urllib refuses; escape it, keeping escapes.
         path, mark, query = url[len(self.github_url) :].partition("?")
         try:
-            status, data, diagnostic = self.github_contents(
-                urllib.parse.quote(path, safe="/%") + mark + query
-            )
+            status, data, diagnostic = self.github_contents(urllib.parse.quote(path, safe="/%") + mark + query)
         except OSError as error:
             record = {
                 **identity,
@@ -1633,9 +1542,7 @@ class Acquirer:
             return record
         return self.classify_and_record(identity, data)
 
-    def classify_and_record(
-        self, identity: dict[str, Any], data: bytes
-    ) -> dict[str, Any]:
+    def classify_and_record(self, identity: dict[str, Any], data: bytes) -> dict[str, Any]:
         """Cache bytes and record the selector engine's declaration verdict."""
         digest = hashlib.sha256(data).hexdigest()
         cache = self.cache / "documents"
@@ -1652,9 +1559,7 @@ class Acquirer:
         if verdict is None:
             try:
                 parsed = CENSUS.load_document(path)
-                if not isinstance(parsed, dict) or not OPENAPI_VERSION.fullmatch(
-                    str(parsed.get("openapi", ""))
-                ):
+                if not isinstance(parsed, dict) or not OPENAPI_VERSION.fullmatch(str(parsed.get("openapi", ""))):
                     verdict = ("excluded", None)
                 else:
                     verdict = ("counts", CENSUS.census_document(parsed))
@@ -1673,6 +1578,8 @@ class Acquirer:
                 diagnostic=f"census engine does not accept {selector}",
             )
         else:
+            if not isinstance(value, dict):
+                raise EvidenceError(f"census verdict for sha256 {digest} carries no selector counts")
             count = value.get(selector, 0)
             record.update(
                 disposition="declares" if count else "does-not-declare",
@@ -1739,8 +1646,9 @@ class Acquirer:
             )
         subject = f"{repository}/{path}@{commit}"
         try:
-            status, data = self._reacquire(row.get("acquisition_route"), row.get("source"),
-                                           repository, path, commit, key, subject)
+            status, data = self._reacquire(
+                row.get("acquisition_route"), row.get("source"), repository, path, commit, key, subject
+            )
         except SecondaryLimit as error:
             raise SearchStopped(f"reacquiring {subject}: {error}") from error
         if status in (403, 429):
@@ -1774,13 +1682,9 @@ class Acquirer:
                 f"{urllib.parse.quote(path, safe='/')}?ref={commit}"
             )
             return status, data
-        raise EvidenceError(
-            f"the ledger row for {subject} records no acquisition route to reacquire its document by"
-        )
+        raise EvidenceError(f"the ledger row for {subject} records no acquisition route to reacquire its document by")
 
-    def reuse(
-        self, fetched: dict[str, Any], key: str, selector: str
-    ) -> dict[str, Any]:
+    def reuse(self, fetched: dict[str, Any], key: str, selector: str) -> dict[str, Any]:
         """Classify one more key over a document another key's result fetched.
 
         Deduplication by repository, path and revision is the one reduction the
@@ -1789,13 +1693,22 @@ class Acquirer:
         same acquisition failure with the key it was recorded under.
         """
         if INDEX.opaque_identity(fetched.get("path")):
-            return self.record_excluded_candidate(fetched["source"], key, selector, fetched)
+            excluded = self.record_excluded_candidate(fetched["source"], key, selector, fetched)
+            # An opaque path survives opaque_record, so the candidate is always recorded as excluded.
+            if excluded is not None:
+                return excluded
         identity = {
             **{
                 field: fetched[field]
                 for field in (
-                    "source", "repository", "path", "commit", "blob", "url",
-                    "acquisition_route", "raw_url",
+                    "source",
+                    "repository",
+                    "path",
+                    "commit",
+                    "blob",
+                    "url",
+                    "acquisition_route",
+                    "raw_url",
                 )
                 if field in fetched
             },
@@ -1807,17 +1720,11 @@ class Acquirer:
         if document is None:
             record = {
                 **identity,
-                **{
-                    field: fetched[field]
-                    for field in ("disposition", "status", "diagnostic")
-                    if field in fetched
-                },
+                **{field: fetched[field] for field in ("disposition", "status", "diagnostic") if field in fetched},
             }
             self.write("candidates.jsonl", record)
             return record
-        return self.classify_and_record(
-            identity, (self.cache / "documents" / document).read_bytes()
-        )
+        return self.classify_and_record(identity, (self.cache / "documents" / document).read_bytes())
 
 
 def _main() -> int:
@@ -1875,7 +1782,12 @@ def _main() -> int:
     if args.split_budget < 0:
         parser.error("--split-budget must not be negative")
     supplied_publishers = None
-    if args.publisher_file and args.source == "github-publisher-trees" and args.stage == "walk" and not args.derive_only:
+    if (
+        args.publisher_file
+        and args.source == "github-publisher-trees"
+        and args.stage == "walk"
+        and not args.derive_only
+    ):
         try:
             supplied_publishers = publisher_file_rows(args.publisher_file)
         except ValueError as error:
@@ -1913,8 +1825,7 @@ def _main() -> int:
         try:
             keys = json.loads(recorded.read_text(encoding="utf-8"))["keys"]
             if not isinstance(keys, dict) or any(
-                not isinstance(value, dict) or not isinstance(value.get("selector"), str)
-                for value in keys.values()
+                not isinstance(value, dict) or not isinstance(value.get("selector"), str) for value in keys.values()
             ):
                 raise ValueError("every key must map to an object carrying its selector")
         except (OSError, ValueError, KeyError, TypeError) as error:
@@ -1936,7 +1847,8 @@ def _main() -> int:
                 sort_keys=True,
             )
             + "\n",
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
     if args.derive_only:
         print(f"derived {len(keys)} FIXTURE gap keys and handwritten keys")
@@ -1944,16 +1856,12 @@ def _main() -> int:
     if not args.source or not args.stage:
         parser.error("--source and --stage are required except for --derive-only")
     if (args.source == "github-publisher-trees") != (args.stage == "walk"):
-        parser.error(
-            "publisher trees require --source github-publisher-trees --stage walk"
-        )
+        parser.error("publisher trees require --source github-publisher-trees --stage walk")
     unknown = set(args.key) - set(keys)
     if unknown:
         parser.error(f"unknown key(s): {', '.join(sorted(unknown))}")
     selected = args.key or list(keys)
-    if args.source.startswith("github-") and not (
-        os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
-    ):
+    if args.source.startswith("github-") and not (os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")):
         try:
             os.environ["GH_TOKEN"] = subprocess.check_output(
                 ["gh", "auth", "token"], text=True, stderr=subprocess.DEVNULL, encoding="utf-8"
@@ -1965,16 +1873,16 @@ def _main() -> int:
             )
             return 1
     try:
-        github_url = checked_service_url(
-            github_api_url(), "CROZIER_GITHUB_API_URL", "api.github.com"
-        )
+        github_url = checked_service_url(github_api_url(), "CROZIER_GITHUB_API_URL", "api.github.com")
         sourcegraph_url = checked_service_url(
             os.environ.get("CROZIER_SOURCEGRAPH_URL", SOURCEGRAPH_URL),
-            "CROZIER_SOURCEGRAPH_URL", "sourcegraph.com",
+            "CROZIER_SOURCEGRAPH_URL",
+            "sourcegraph.com",
         )
         raw_github_url = checked_service_url(
             os.environ.get("CROZIER_RAW_GITHUB_URL", RAW_GITHUB_URL),
-            "CROZIER_RAW_GITHUB_URL", "raw.githubusercontent.com",
+            "CROZIER_RAW_GITHUB_URL",
+            "raw.githubusercontent.com",
         )
     except ValueError as error:
         parser.error(str(error))
@@ -2024,7 +1932,8 @@ def _main() -> int:
                 sort_keys=True,
             )
             + "\n",
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
         for publisher in publishers:
             try:
@@ -2051,13 +1960,11 @@ def _main() -> int:
                     and not row.get("incomplete_results")
                     and (
                         args.source == "sourcegraph"
-                        or row.get("retrieved_total") >= row.get("result_count")
+                        # Untyped ledger JSON: a row missing a count must still fail as main's TypeError, unchanged.
+                        or row.get("retrieved_total") >= row.get("result_count")  # ty: ignore[unsupported-operator]
                     )
                 )
-                or (
-                    args.first_page_only
-                    and row.get("outcome") in ("answered", "partitioned")
-                )
+                or (args.first_page_only and row.get("outcome") in ("answered", "partitioned"))
             )
         }
         for key in selected:
@@ -2086,9 +1993,7 @@ def _main() -> int:
         queries = [
             row
             for row in jsonl(args.evidence / "queries.jsonl")
-            if row.get("source") == args.source
-            and row.get("key") in selected
-            and row.get("outcome") == "answered"
+            if row.get("source") == args.source and row.get("key") in selected and row.get("outcome") == "answered"
         ]
         complete = {
             (
@@ -2108,9 +2013,7 @@ def _main() -> int:
                     item["repository"],
                     item["path"],
                     item.get("commit")
-                    or urllib.parse.parse_qs(
-                        urllib.parse.urlsplit(item.get("url", "")).query
-                    ).get("ref", [None])[0]
+                    or urllib.parse.parse_qs(urllib.parse.urlsplit(item.get("url", "")).query).get("ref", [None])[0]
                     or item.get("sha"),
                 )
                 candidates[identity] = item
@@ -2147,9 +2050,7 @@ def _main() -> int:
                 if args.source == "sourcegraph":
                     fetched = acquirer.sourcegraph_document(key, selector, item)
                 else:
-                    fetched = acquirer.github_document(
-                        key, {**item, "selector": selector}, route=args.route
-                    )
+                    fetched = acquirer.github_document(key, {**item, "selector": selector}, route=args.route)
                 for other, _ in members[1:]:
                     acquirer.reuse(fetched, other, keys[other]["selector"])
             except SearchStopped as error:
@@ -2228,12 +2129,10 @@ def jsonl(path: Path) -> list[dict[str, Any]]:
                 for item in paths
             ):
                 raise EvidenceError(f"{path}:{number}: invalid tree paths")
-        if path.name == "documents.jsonl":
-            if any(
-                not isinstance(row.get(field), str) or not row[field]
-                for field in ("repository", "path", "commit")
-            ):
-                raise EvidenceError(f"{path}:{number}: invalid document identity")
+        if path.name == "documents.jsonl" and any(
+            not isinstance(row.get(field), str) or not row[field] for field in ("repository", "path", "commit")
+        ):
+            raise EvidenceError(f"{path}:{number}: invalid document identity")
         if path.name == CALLS_FILE:
             stamp = row.get("at")
             if not isinstance(stamp, str):
@@ -2264,9 +2163,7 @@ def candidate_priority(
         penalty += 20
     if any(part in path for part in ("/test/", "/tests/", "/fixture/", "/fixtures/")):
         penalty += 10
-    if any(
-        part in path for part in ("/example/", "/examples/", "/sample/", "/samples/")
-    ):
+    if any(part in path for part in ("/example/", "/examples/", "/sample/", "/samples/")):
         penalty += 5
     if path.count("/") > 3:
         penalty += 1
@@ -2277,9 +2174,7 @@ def candidate_priority(
 def registered_github_repos() -> frozenset[str]:
     """Corpus publisher roots provide a reproducible candidate priority."""
     found = set()
-    for line in (
-        (REPO / "tests/fixtures/CORPUS.md").read_text(encoding="utf-8").splitlines()
-    ):
+    for line in (REPO / "tests/fixtures/CORPUS.md").read_text(encoding="utf-8").splitlines():
         if not re.match(r"^\| \d+ \|", line):
             continue
         cells = [cell.strip() for cell in line.strip("|").split("|")]

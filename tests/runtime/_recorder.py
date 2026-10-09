@@ -127,9 +127,7 @@ def request_construction_and_response(sdk):
     request = box["request"]
     assert request.method == "POST"
     assert request.url.path == "/v1/workspaces/create"
-    assert _body(request) == {
-        "name": "Dispatch desk", "anonymousDataCollection": False, "securityUpdates": True
-    }
+    assert _body(request) == {"name": "Dispatch desk", "anonymousDataCollection": False, "securityUpdates": True}
     assert request.headers["authorization"] == f"Bearer {TOKEN}"
     assert result.workspace_id == "workspace-a"
     return {
@@ -151,7 +149,9 @@ def no_auth_omits_authorization(sdk):
 
 def typed_error_is_raised(sdk):
     """A declared 400 raises a typed exception containing a parsed error model."""
-    client, box = _sync_client(sdk, 400, {"message": "invalid workspace", "exceptionClassName": "InvalidWorkspace"}, token=None)
+    client, box = _sync_client(
+        sdk, 400, {"message": "invalid workspace", "exceptionClassName": "InvalidWorkspace"}, token=None
+    )
     try:
         client.source_oauth.set_instancewide_source_oauth_params(params={}, source_definition_id="source-a")
     except sdk.BadRequestError as err:
@@ -194,11 +194,10 @@ def raw_response_exposes_underlying_http(sdk):
 
 def async_request_and_response(sdk):
     """The async client aliases the same body fields and parses the response."""
+
     async def run():
         transport, box = _capture(200, _workspace_payload())
-        client = sdk.AsyncFernApi(
-            base_url=BASE_URL, token=TOKEN, httpx_client=httpx.AsyncClient(transport=transport)
-        )
+        client = sdk.AsyncFernApi(base_url=BASE_URL, token=TOKEN, httpx_client=httpx.AsyncClient(transport=transport))
         result = await client.workspace.create_workspace(name="Dispatch desk", security_updates=True)
         assert _body(box["request"]) == {"name": "Dispatch desk", "securityUpdates": True}
         assert result.workspace_id == "workspace-a"
@@ -206,6 +205,7 @@ def async_request_and_response(sdk):
             "request": _request_record(box["request"]),
             "outcome": {"model": type(result).__name__, "data": _dump(result)},
         }
+
     return asyncio.run(run())
 
 

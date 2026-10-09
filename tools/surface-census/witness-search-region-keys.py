@@ -39,8 +39,7 @@ def region_rows(text: str) -> list[list[str]]:
         if not line.startswith("| "):
             continue
         cells = [
-            cell.replace("\x00", "\\|").strip()
-            for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
+            cell.replace("\x00", "\\|").strip() for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
         ]
         if len(cells) == 8 and cells[3].strip("`") in CATEGORIES:
             rows.append(cells)
@@ -132,7 +131,10 @@ def main() -> int:
     try:
         writer.writerows(keys(args.regions_dir))
     except (OSError, ValueError) as error:
-        print(f"witness-search-region-keys: {error}; repair the FIXTURE gap rows and handwritten rows in {args.regions_dir}", file=sys.stderr)
+        print(
+            f"witness-search-region-keys: {error}; repair the FIXTURE gap rows and handwritten rows in {args.regions_dir}",
+            file=sys.stderr,
+        )
         return 1
     return 0
 

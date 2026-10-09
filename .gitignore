@@ -42,3 +42,9 @@ __pycache__/
 # `just bootstrap` re-creates node_modules from the committed bun.lock.
 /node_modules
 /.nx
+
+# The Python tooling workspace's venv (`uv sync`) and the coverage data its
+# `test` targets write and `python-workspace:coverage` combines.
+/.venv
+/.coverage-data
+/.ruff_cache

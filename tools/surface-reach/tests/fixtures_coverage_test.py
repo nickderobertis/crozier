@@ -36,13 +36,12 @@ REPORTER = REPO / "tools" / "surface-census" / "fixtures-coverage-report.py"
 OFFLINE_GOLDEN = "med_anvisa_price_matches_fern_output"
 JOURNEY = "help_lists_generate"
 UNIT = "wrap::tests::flat_atom_is_verbatim"
-OFFLINE_SCOPE = (
-    f"test(={OFFLINE_GOLDEN}) or test(={JOURNEY}) or test(={UNIT})"
-)
+OFFLINE_SCOPE = f"test(={OFFLINE_GOLDEN}) or test(={JOURNEY}) or test(={UNIT})"
 
 
 def load_reporter():
     spec = importlib.util.spec_from_file_location("fixtures_coverage_report", REPORTER)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -51,9 +50,7 @@ def load_reporter():
 reporter = load_reporter()
 
 
-def nextest_list(
-    expression: str, env: dict[str, str] | None = None
-) -> set[tuple[str, str]]:
+def nextest_list(expression: str, env: dict[str, str] | None = None) -> set[tuple[str, str]]:
     """(binary id, test name) cargo-nextest actually selects — the real boundary.
 
     Keyed on the binary too: `generation.rs` and `e2e.rs` share some test names,
@@ -69,7 +66,8 @@ def nextest_list(
         capture_output=True,
         text=True,
         check=True,
-        env=env, encoding="utf-8",
+        env=env,
+        encoding="utf-8",
     ).stdout
     selected = set()
     for line in listing.splitlines():
@@ -124,9 +122,7 @@ class TierSelectionTests(unittest.TestCase):
         # not a byte comparison against a committed golden, and the CalorieNinjas
         # boundary asserts a Fern *failure* — there is no golden to reach.
         self.assertNotIn("sdk_env_crozier_matches_fern_runtime_behavior", golden)
-        self.assertNotIn(
-            "calorieninjas_reproduces_the_exact_known_fern_failure_boundary", golden
-        )
+        self.assertNotIn("calorieninjas_reproduces_the_exact_known_fern_failure_boundary", golden)
         for name in golden:
             self.assertIn("matches_fern_output", name)
 
@@ -149,9 +145,7 @@ class RecipeEndToEndTests(unittest.TestCase):
         return self.run_script("--no-fetch", "--out", str(out), *args, env=env), out
 
     def run_script(self, *args: str, env: dict[str, str] | None = None):
-        return subprocess.run(
-            [str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True, env=env, encoding="utf-8"
-        )
+        return subprocess.run([str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True, env=env, encoding="utf-8")
 
     def reporter_process(self, *args: str):
         """The reporter as its own process, exactly as the recipe invokes it."""
@@ -159,7 +153,8 @@ class RecipeEndToEndTests(unittest.TestCase):
             [sys.executable, str(REPORTER), "--repo-root", str(REPO), *args],
             cwd=REPO,
             capture_output=True,
-            text=True, encoding="utf-8",
+            text=True,
+            encoding="utf-8",
         )
 
     def run_reporter(self, *args: str):
@@ -213,10 +208,7 @@ class RecipeEndToEndTests(unittest.TestCase):
         # the exports; cargo's build/test scaffolding stays in the log file.
         self.assertEqual("", completed.stdout)
         self.assertEqual(
-            [
-                f"fixtures-coverage: wrote the report to {out / 'report.txt'}"
-                " (per-tier llvm-cov exports beside it)"
-            ],
+            [f"fixtures-coverage: wrote the report to {out / 'report.txt'} (per-tier llvm-cov exports beside it)"],
             completed.stderr.splitlines(),
         )
         self.assertTrue((out / "golden-only.json").is_file())
@@ -225,10 +217,7 @@ class RecipeEndToEndTests(unittest.TestCase):
         _completed, out = self.scoped_run()
 
         reported = _reported_region_total(self.scoped_report(), "src/emit.rs")
-        tiers = {
-            name: reporter.load_tier(out / f"{name}.json", REPO)
-            for name in ("golden-only", "all-e2e", "non-e2e")
-        }
+        tiers = {name: reporter.load_tier(out / f"{name}.json", REPO) for name in ("golden-only", "all-e2e", "non-e2e")}
         raw = {r for tier in tiers.values() for r in tier.get("src/emit.rs", {})}
         reporter.drop_test_regions(tiers, REPO)
         kept = {r for tier in tiers.values() for r in tier.get("src/emit.rs", {})}
@@ -246,18 +235,10 @@ class RecipeEndToEndTests(unittest.TestCase):
         block = self.scoped_report().split("golden blind spots")[1]
         self.assertIn("src/main.rs", block)
 
-        tiers = {
-            name: reporter.load_tier(out / f"{name}.json", REPO)
-            for name in ("golden-only", "all-e2e", "non-e2e")
-        }
+        tiers = {name: reporter.load_tier(out / f"{name}.json", REPO) for name in ("golden-only", "all-e2e", "non-e2e")}
         reporter.drop_test_regions(tiers, REPO)
         reached = {
-            name: {
-                (path, region)
-                for path, counts in tier.items()
-                for region, count in counts.items()
-                if count > 0
-            }
+            name: {(path, region) for path, counts in tier.items() for region, count in counts.items() if count > 0}
             for name, tier in tiers.items()
         }
         expected = (reached["all-e2e"] | reached["non-e2e"]) - reached["golden-only"]
@@ -297,9 +278,7 @@ class RecipeEndToEndTests(unittest.TestCase):
         broken.write_text('{"data": [{"functions": [{"regions": [[1, 1]]}]}]}', encoding="utf-8", newline="\n")
         completed = self.run_reporter(
             "--tier",
-            json.dumps(
-                {"name": "golden-only", "export": str(broken), "tests": 1, "selection": "s"}
-            ),
+            json.dumps({"name": "golden-only", "export": str(broken), "tests": 1, "selection": "s"}),
         )
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn("is not the llvm-cov export", completed.stderr)
@@ -335,8 +314,9 @@ class RecipeEndToEndTests(unittest.TestCase):
                     self.assertIn("is not the llvm-cov export", completed.stderr)
                     self.assertIn("update tools/surface-census/fixtures-coverage-report.py", completed.stderr)
             readable = Path(scratch) / "readable.json"
-            readable.write_text(json.dumps({"data": [{"functions": [{"filenames": [source], "regions": [good]}]}]}),
-                                encoding="utf-8")
+            readable.write_text(
+                json.dumps({"data": [{"functions": [{"filenames": [source], "regions": [good]}]}]}), encoding="utf-8"
+            )
             self.assertEqual({"src/main.rs": {reporter.Region(1, 1, 1, 2): 3}}, reporter.load_tier(readable, REPO))
 
     def test_a_malformed_tier_argument_is_refused(self) -> None:
@@ -366,9 +346,7 @@ class RecipeEndToEndTests(unittest.TestCase):
         _report, out = self.scoped_run()
         tiers = self.tier_args(out, "golden-only", "all-e2e", "non-e2e")
 
-        typo = self.reporter_process(
-            "--golden-tier", "golden-only", "--subprocess-tier", "goldenonly", *tiers
-        )
+        typo = self.reporter_process("--golden-tier", "golden-only", "--subprocess-tier", "goldenonly", *tiers)
         self.assertEqual(2, typo.returncode, typo.stdout)
         self.assertIn("names no declared tier", typo.stderr)
 
@@ -443,11 +421,7 @@ class RecipeEndToEndTests(unittest.TestCase):
 
     def test_a_missing_generation_dependency_fails_with_a_next_action(self) -> None:
         env = dict(os.environ)
-        stripped = [
-            entry
-            for entry in env.get("PATH", "").split(os.pathsep)
-            if not (Path(entry) / "ruff").exists()
-        ]
+        stripped = [entry for entry in env.get("PATH", "").split(os.pathsep) if not (Path(entry) / "ruff").exists()]
         env["PATH"] = os.pathsep.join(stripped)
         if shutil.which("ruff", path=env["PATH"]):  # pragma: no cover - defensive
             self.skipTest("ruff is still resolvable after stripping PATH")
@@ -474,8 +448,7 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn("cargo-llvm-cov did not answer --version", completed.stderr)
         self.assertIn("run 'just bootstrap' if it is not installed", completed.stderr)
-        self.assertIn("'cargo llvm-cov --version' said:\nerror: the llvm-tools component is broken",
-                      completed.stderr)
+        self.assertIn("'cargo llvm-cov --version' said:\nerror: the llvm-tools component is broken", completed.stderr)
 
     def test_a_report_it_cannot_write_fails_naming_it_and_keeps_the_exports(self) -> None:
         """Measurement done, the report's own write failing still fails the run, saying where to look."""
@@ -498,8 +471,11 @@ class RecipeEndToEndTests(unittest.TestCase):
         """
         root = Path(self.enterContext(tempfile.TemporaryDirectory()))
         fixtures = REPO / "tests" / "fixtures"
-        for relative in ("tools/surface-census/fixtures-coverage.sh", "tools/corpus/corpus_sources.py",
-                         "tools/corpus/corpus_remote_ref_pins.py"):
+        for relative in (
+            "tools/surface-census/fixtures-coverage.sh",
+            "tools/corpus/corpus_sources.py",
+            "tools/corpus/corpus_remote_ref_pins.py",
+        ):
             (root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(REPO / relative, root / relative)
         for entry in fixtures.iterdir():
@@ -507,16 +483,30 @@ class RecipeEndToEndTests(unittest.TestCase):
                 (root / "tests" / "fixtures").mkdir(parents=True, exist_ok=True)
                 shutil.copy2(entry, root / "tests" / "fixtures" / entry.name)
         shutil.copytree(fixtures / "corpus-sources", root / "tests" / "fixtures" / "corpus-sources")
-        checked = subprocess.run([sys.executable, str(root / "tools/corpus/corpus_sources.py"), "check"],
-                                 capture_output=True, text=True, encoding="utf-8")
-        self.assertEqual(0, checked.returncode, f"the copied corpus does not pass as the checkout's does:\n{checked.stderr}")
+        checked = subprocess.run(
+            [sys.executable, str(root / "tools/corpus/corpus_sources.py"), "check"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(
+            0, checked.returncode, f"the copied corpus does not pass as the checkout's does:\n{checked.stderr}"
+        )
         shutil.rmtree(root / "tests" / "fixtures" / "corpus-sources" / "frankfurter")
 
         out = Path(self.enterContext(tempfile.TemporaryDirectory())) / "out"
         completed = subprocess.run(
-            [str(root / "tools/surface-census/fixtures-coverage.sh"), "--no-fetch", "--out", str(out),
-             f"test(=frankfurter_matches_fern_output) or test(={JOURNEY}) or test(={UNIT})"],
-            cwd=root, capture_output=True, text=True, encoding="utf-8",
+            [
+                str(root / "tools/surface-census/fixtures-coverage.sh"),
+                "--no-fetch",
+                "--out",
+                str(out),
+                f"test(=frankfurter_matches_fern_output) or test(={JOURNEY}) or test(={UNIT})",
+            ],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
         )
         self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
         self.assertIn("recorded but missing", completed.stderr)
@@ -557,7 +547,7 @@ class CfgTestSpanTests(unittest.TestCase):
 
     def test_braces_inside_raw_strings_and_comments_do_not_close_the_span(self) -> None:
         source = textwrap.dedent(
-            '''\
+            """\
             fn production() {}
 
             #[cfg(test)]
@@ -573,7 +563,7 @@ class CfgTestSpanTests(unittest.TestCase):
             }
 
             fn after() {}
-            '''
+            """
         )
         self.assertEqual(
             [reporter.Span(3, 13)],
@@ -583,7 +573,7 @@ class CfgTestSpanTests(unittest.TestCase):
 
     def test_a_brace_inside_a_string_spanning_lines_does_not_close_the_span(self) -> None:
         source = textwrap.dedent(
-            '''\
+            """\
             #[cfg(test)]
             mod tests {
                 const MESSAGE: &str = "first line
@@ -592,7 +582,7 @@ class CfgTestSpanTests(unittest.TestCase):
             }
 
             fn after() {}
-            '''
+            """
         )
         self.assertEqual(
             [reporter.Span(1, 6)],
@@ -606,7 +596,7 @@ class CfgTestSpanTests(unittest.TestCase):
         self.assertIn("unbalanced braces", str(raised.exception))
 
     def test_an_unrecognized_test_conditional_attribute_is_refused(self) -> None:
-        source = "#[cfg(all(test, feature = \"x\"))]\nmod tests {}\n"
+        source = '#[cfg(all(test, feature = "x"))]\nmod tests {}\n'
         with self.assertRaises(SystemExit) as raised:
             reporter.cfg_test_spans(source)
         self.assertIn("does not recognize", str(raised.exception))
@@ -628,7 +618,8 @@ def _scoped_run():
             [str(SCRIPT), "--no-fetch", "--out", str(out), OFFLINE_SCOPE],
             cwd=REPO,
             capture_output=True,
-            text=True, encoding="utf-8",
+            text=True,
+            encoding="utf-8",
         )
         _SCOPED = (completed, out)
     return _SCOPED
@@ -637,10 +628,7 @@ def _scoped_run():
 def _subprocess_proof(report: str) -> dict[str, int]:
     """Parse the report's closing subprocess-coverage block."""
     tail = report.split("subprocess coverage proof")[-1]
-    return {
-        tier: int(count)
-        for tier, count in re.findall(r"^\s+(\S+)\s+(\d+) region\(s\) covered$", tail, re.M)
-    }
+    return {tier: int(count) for tier, count in re.findall(r"^\s+(\S+)\s+(\d+) region\(s\) covered$", tail, re.M)}
 
 
 def _reported_region_total(report: str, path: str) -> int:

@@ -82,6 +82,7 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+      - uses: astral-sh/setup-uv@v8.3.2
       - name: Bootstrap
         run: just bootstrap
       - name: Check
