@@ -3501,7 +3501,8 @@ def _extension(node: Any, base: str) -> Any:
 
 
 def _mapping(value: Any) -> dict[Any, Any]:
-    """`value` when it is a mapping, else an empty one."""
+    """`value` when it is a mapping, else an empty one, so a census of a malformed
+    document counts no site there rather than failing the whole walk."""
     return value if isinstance(value, dict) else {}
 
 
